@@ -1,0 +1,148 @@
+
+High Priority:
+
+make docstrings for these modules
+Tag_Blocks
+Constructor
+Defs\Tag_Def
+Defs\Tag_Obj
+
+Finish up changing the way encodings and endiannesses work for Field_Types
+    ints and floats will need their endianness manually specified with the encoding
+
+Replace all instances of Tag_ID and ID with Tag_Cls and Cls since each of the tag
+definitions are divided into classes and it makes sense to name things this way
+
+Rename Tag_Obj to just Tag
+
+finish up automatic structure padding and alignment
+
+Need to make it so if saving a block(not a whole tag) it instead copies the
+block and saves the copy. This is because pointers will be reset and wont
+be valid anymore in the main structure. This is especially bad on fixed
+pointer tags like incomplete structures.
+
+
+Make a "Switch" Field_Type that allows you to specify a function
+which will determine which descriptor to use.
+    do this by making the Switch have a reader which chooses from a list of
+    possible structures and uses a provided function to decide which one to use.
+    The Switch doesnt create its own Tag_Block, but instead calls the reader of
+    the proper Tag_Block with the same args and kwargs that were provided to it.
+
+    Will need to remove automatically updating descriptor of parent Tag_Block
+    when a Tag_Block is placed into it because it will overwrite the descriptor
+    that contains the Switch and create a unique descriptor EVERY TIME
+
+
+Rename Tag_Block and Tag_Parent_Block to List_Block, and List_Parent_Block
+Make Tag_Block class which is a subclass of object and has no methods.
+Make List_Block and List_Parent_Block subclasses of Tag_Block and list.
+Make new Flags_Block and Enum_Block which are subclasses of Tag_Block and int.
+    These will be used to allow getting and setting enums and flags by name
+    rather than value as these will each have a DESC reference.
+
+
+make an immutable dictionary class called a "Descriptor"
+    when doing this, make it so the entries in the descriptor such as SIZE,
+    TYPE, POINTER, etc can be accessed as attributes. Instead of Desc[SIZE]
+    you can do Desc.SIZE
+
+    Descriptors will require a custom set method such as Set() which will take
+    the changes being given to it and return a copy of itself with the changes
+    made. The reason for this is because __setattr__() cant return anything.
+
+    Do the above for __setattr__, __delattr__, __setitem__, and __delitem__
+
+
+
+Medium Priority:
+
+Try to make a mutable Tag_Block object that can be used to allow objects to
+have variables other than their structure properties. This approach should
+still use a descriptor so that accessing structure elements is done in the
+same way, code is less bloated, and some other reasons I can't remember atm.
+    THIS CAN BE DONE BY MAKING ONE OF THE SLOTS BE '__dict__'
+
+    Will need to make some modified functions for this block __deepcopy__ and
+    __copy__ so that they also take into account the __dict__ slot.
+    Will also need modified __setattr__, __delattr__, __getitem__, __setitem__,
+    and __delitem__ that each check __dict__ before checking DESC or __slots__
+
+
+Make wrapper class for read/writing to any memoryview-able object.
+    This will allow writing to non-files
+
+
+
+Low Priority:
+
+set up child block reading and writing so the offset is set to their pointer
+    this needs to be done for the Container, Struct, and Array Field_Types
+
+    Remove the pointer get/set code from the String_NT read/writers after this
+
+
+Implement recursive pointer based blocks.
+    Do this by keeping a dictionary of which block IDs have already had their
+    pointers calculated and what the pointer value is. When a reused block is
+    about to have its corrosponding pointer set, it will instead use the 
+    pointer that already exists. When the block is being written, a dictionary
+    will be passed around with which block ID was written to which location.
+    If an ID already exists in the dictionary, the block is not written.
+
+When reading, a dictionary of pointers to blocks is passed around. When a
+pointer is read that exists in the dictionary keys, the corrosponding
+block in the dictionary is used instead of reading it from the file again.
+
+
+
+Make descriptor for weapon hud tag
+Make descriptor for unit hud tag
+Make descriptor for grenade hud tag
+Make descriptor for hud_globals tag
+
+make program to load all hud, shader_environment, shader_model, and bitmap 
+tags it can find, load all bitmaps referenced within those tags, pass them 
+to the bitmap convertor with settings specifying how to convert them.
+*shader_environment requires the bump maps to be turned into P-8 bump
+*shader_model requires multipurpose maps to have their channels swapped
+(this also means change the channel usage enum in the shader_model
+
+
+
+BITMAP MODULE TODO:
+
+Make sure the linear size is computed correctly for DDS headers
+Finish DDS importer
+Incorporate CHANNEL_ORDER into raw packers and unpackers. use it by
+	getting which index A, R, G, and B are in and use those
+	indexes as the locations to place the unpacked channels into
+
+	not sure how I'm going to incorporate it in non raw formats(DXT)
+
+
+Make setting to use same palette for all mipmaps of a bitmap
+Write palettized mipmap generator.
+    make it so that a palette can be supplied to the 
+    mipmap generator so it already has one to work from
+
+Write _Palette_Picker() function
+
+
+
+
+GNUerilla Ideas:
+
+create "UNITS" and make it accept an object which defines a 
+way to display the data(bytes, KB, MB, degrees, radians, etc).
+	Make it so the first entry in the Units is the default
+	unit and all other ones base themselves around it
+
+Undo system that works by using a redo deque and undo deque object
+	https://docs.python.org/2/library/collections.html#deque-objects
+
+	Need an object which has these properties:
+		list to hold all the blocks that are changed
+		list to hold all the previous block values
+		list to hold which index of each block was changed
