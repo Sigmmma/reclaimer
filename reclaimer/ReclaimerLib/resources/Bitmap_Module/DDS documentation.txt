@@ -1,0 +1,267 @@
+Describes a DDS file header.
+Syntax
+C++
+
+
+typedef struct {
+  DWORD           dwSize;
+  DWORD           dwFlags;
+  DWORD           dwHeight;
+  DWORD           dwWidth;
+  DWORD           dwPitchOrLinearSize;
+  DWORD           dwDepth;
+  DWORD           dwMipMapCount;
+  DWORD           dwReserved1[11];
+  DDS_PIXELFORMAT ddspf;
+  DWORD           dwCaps;
+  DWORD           dwCaps2;
+  DWORD           dwCaps3;
+  DWORD           dwCaps4;
+  DWORD           dwReserved2;
+} DDS_HEADER;
+
+Members
+
+dwSize
+
+    Type: DWORD
+
+    Size of structure. This member must be set to 124.
+dwFlags
+
+    Type: DWORD
+
+dwHeight
+
+    Type: DWORD
+
+    Surface height (in pixels).
+dwWidth
+
+    Type: DWORD
+
+    Surface width (in pixels).
+dwPitchOrLinearSize
+
+    Type: DWORD
+
+    The pitch or number of bytes per scan line in an uncompressed texture; the total number of bytes in the top level texture for a compressed texture. For information about how to compute the pitch, see the DDS File Layout section of the Programming Guide for DDS.
+dwDepth
+
+    Type: DWORD
+
+    Depth of a volume texture (in pixels), otherwise unused.
+dwMipMapCount
+
+    Type: DWORD
+
+    Number of mipmap levels, otherwise unused.
+dwReserved1[11]
+
+    Type: DWORD
+
+    Unused.
+ddspf
+
+    Type: DDS_PIXELFORMAT
+
+    The pixel format (see DDS_PIXELFORMAT).
+dwCaps
+
+    Type: DWORD
+
+
+dwCaps2
+
+    Type: DWORD
+
+wCaps3
+
+    Type: DWORD
+
+    Unused.
+dwCaps4
+
+    Type: DWORD
+
+    Unused.
+dwReserved2
+
+    Type: DWORD
+
+    Unused.
+
+Remarks
+
+Include flags in dwFlags for the members of the structure that contain valid data.
+
+Use this structure in combination with a DDS_HEADER_DXT10 to store a resource array in a DDS file. For more information, see texture arrays.
+
+DDS_HEADER is identical to the DirectDraw DDSURFACEDESC2 structure without DirectDraw dependencies.
+Requirements
+
+
+
+
+
+
+
+
+
+Surface pixel format.
+Syntax
+C++
+
+
+struct DDS_PIXELFORMAT {
+  DWORD dwSize;
+  DWORD dwFlags;
+  DWORD dwFourCC;
+  DWORD dwRGBBitCount;
+  DWORD dwRBitMask;
+  DWORD dwGBitMask;
+  DWORD dwBBitMask;
+  DWORD dwABitMask;
+};
+
+Members
+
+dwSize
+
+    Type: DWORD
+
+    Structure size; set to 32 (bytes).
+dwFlags
+
+    Type: DWORD
+     
+dwFourCC
+
+    Type: DWORD
+
+    Four-character codes for specifying compressed or custom formats. Possible values include: DXT1, DXT2, DXT3, DXT4, or DXT5. A FourCC of DX10 indicates the prescense of the DDS_HEADER_DXT10 extended header, and the dxgiFormat member of that structure indicates the true format. When using a four-character code, dwFlags must include DDPF_FOURCC.
+dwRGBBitCount
+
+    Type: DWORD
+
+    Number of bits in an RGB (possibly including alpha) format. Valid when dwFlags includes DDPF_RGB, DDPF_LUMINANCE, or DDPF_YUV.
+dwRBitMask
+
+    Type: DWORD
+
+    Red (or lumiannce or Y) mask for reading color data. For instance, given the A8R8G8B8 format, the red mask would be 0x00ff0000.
+dwGBitMask
+
+    Type: DWORD
+
+    Green (or U) mask for reading color data. For instance, given the A8R8G8B8 format, the green mask would be 0x0000ff00.
+dwBBitMask
+
+    Type: DWORD
+
+    Blue (or V) mask for reading color data. For instance, given the A8R8G8B8 format, the blue mask would be 0x000000ff.
+dwABitMask
+
+    Type: DWORD
+
+    Alpha mask for reading alpha data. dwFlags must include DDPF_ALPHAPIXELS or DDPF_ALPHA. For instance, given the A8R8G8B8 format, the alpha mask would be 0xff000000.
+
+Remarks
+
+To store DXGI formats such as floating-point data, use a dwFlags of DDPF_FOURCC and set dwFourCC to 'D','X','1','0'. Use the DDS_HEADER_DXT10 extension header to store the DXGI format in the dxgiFormat member.
+
+Note that there are non-standard variants of DDS files where dwFlags has DDPF_FOURCC and the dwFourCC value is set directly to a D3DFORMAT or DXGI_FORMAT enumeration value. It is not possible to disambiguate the D3DFORMAT versus DXGI_FORMAT values using this non-standard scheme, so the DX10 extension header is recommended instead.
+
+
+
+    DDS Header Flags:
+
+        Flags to indicate which members contain valid data.
+        
+        DDSD_CAPS            Required in every .dds file          0x 00 00 01
+        DDSD_HEIGHT          Required in every .dds file          0x 00 00 02
+        DDSD_WIDTH           Required in every .dds file          0x 00 00 04
+        DDSD_PITCH           Required when pitch is provided for
+                             an uncompressed texture              0x 00 00 08
+                             
+        DDSD_PIXELFORMAT     Required in every .dds file          0x 00 10 00
+        DDSD_MIPMAPCOUNT     Required in a mipmapped texture      0x 02 00 00
+        DDSD_LINEARSIZE	     Required when pitch is provided for
+                             a compressed texture                 0x 08 00 00
+                             
+        DDSD_DEPTH           Required in a depth texture          0x 80 00 00
+
+
+
+    Pixel_Format_Flags:
+    
+            Values which indicate what type of data is in the surface.
+            
+        DDPF_ALPHAPIXELS   Texture contains alpha data; dwRGBAlphaBitMask
+                           contains valid data.                                      0x 00 00 01
+                                
+        DDPF_ALPHA	   Used in some older DDS files for alpha channel only
+                           uncompressed data (dwRGBBitCount contains the alpha
+                           channel bitcount; dwABitMask contains valid data)         0x 00 00 02
+                        
+        DDPF_FOURCC	   Texture contains compressed RGB data; dwFourCC
+                           contains valid data.                                      0x 00 00 04
+                        
+        DDPF_RGB	   Texture contains uncompressed RGB data; dwRGBBitCount
+                           and the RGB masks (dwRBitMask, dwGBitMask, dwBBitMask)
+                           contain valid data.                                       0x 00 00 40
+                        
+        DDPF_YUV	   Used in some older DDS files for YUV uncompressed data
+                           (dwRGBBitCount contains the YUV bit count; dwRBitMask
+                           contains the Y mask, dwGBitMask contains the U mask,
+                           dwBBitMask contains the V mask)                           0x 00 02 00
+                        
+        DDPF_LUMINANCE	   Used in some older DDS files for single channel color
+                           uncompressed data (dwRGBBitCount contains the luminance
+                           channel bit count; dwRBitMask contains the channel mask).
+                           Can be combined with DDPF_ALPHAPIXELS for a two channel
+                           DDS file.                                                 0x 02 00 00
+                        
+        DDPF_U8V8	   This is my own speculation, but it seems that setting
+                           this flag specifies the texture as a U8V8 normal map.
+                           U8V8 normal maps store only the red and green channels    0x 08 00 00
+
+
+
+    Caps_1:
+    
+        Specifies the complexity of the surfaces stored.
+        
+        DDSCAPS_COMPLEX	   Optional;    must be used on any file that
+                                        contains more than one surface
+                                        (a mipmap, a cubic environment
+                                        map, or mipmapped volume texture     0x 00 00 08
+        DDSCAPS_TEXTURE	   Required                                          0x 00 10 00
+        DDSCAPS_MIPMAP	   Optional;    should be used for a mipmap 	     0x 40 00 00
+
+
+    Caps_2:
+
+        Additional detail about the surfaces stored.
+        
+        DDSCAPS2_CUBEMAP                Required for a cube map        0x 00 02 00
+        
+        DDSCAPS2_CUBEMAP_POSITIVEX	Required when these surfaces
+                                        are stored in a cube map       0x 00 04 00
+                                        
+        DDSCAPS2_CUBEMAP_NEGATIVEX	Required when these surfaces
+                                        are stored in a cube map       0x 00 08 00
+                                        
+        DDSCAPS2_CUBEMAP_POSITIVEY	Required when these surfaces
+                                        are stored in a cube map       0x 00 10 00
+                                        
+        DDSCAPS2_CUBEMAP_NEGATIVEY	Required when these surfaces
+                                        are stored in a cube map       0x 00 20 00
+                                        
+        DDSCAPS2_CUBEMAP_POSITIVEZ	Required when these surfaces
+                                        are stored in a cube map       0x 00 40 00
+                                        
+        DDSCAPS2_CUBEMAP_NEGATIVEZ	Required when these surfaces
+                                        are stored in a cube map       0x 00 80 00
+                                        
+        DDSCAPS2_VOLUME                 Required for a volume texture  0x 20 00 00
