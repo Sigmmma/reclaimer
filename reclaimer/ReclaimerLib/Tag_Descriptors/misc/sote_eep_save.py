@@ -68,7 +68,7 @@ class SotE_EEP_Definition(Tag_Def):
                                                ELEMENTS:{0:{NAME:"No"},
                                                          1:{NAME:"Yes"} } }
                                            },
-                                       4:{ TYPE:Str_Latin_1, GUI_NAME:"Filename", SIZE:16,
+                                       4:{ TYPE:Str_Latin1, GUI_NAME:"Filename", SIZE:16,
                                            DEFAULT:"New Player"},
                                        5:{ TYPE:Bit_Struct, GUI_NAME:"Settings", SIZE:3, ENDIAN:"<",
                                            #I only realized this is a big endian file format after I wrote

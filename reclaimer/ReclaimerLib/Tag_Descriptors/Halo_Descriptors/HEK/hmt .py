@@ -18,8 +18,8 @@ class HMT_Definition(Tag_Def):
                      1:{ TYPE:Struct, SIZE:128, GUI_NAME:"Data",
                          0: {TYPE:Struct, OFFSET:0, GUI_NAME:"String" ,
                              ATTRIBUTES:Raw_Data_Reference_Structure,
-                             CHILD:{TYPE:Str_Raw_UTF_16LE, NAME:"Raw_String_Data",
-                                    SIZE:".Byte_Count"}
+                             CHILD:{TYPE:Str_Raw_UTF16, NAME:"Raw_String_Data",
+                                    ENDIAN:'<', SIZE:".Byte_Count"}
                              },
                          1: {TYPE:Struct, OFFSET:20, GUI_NAME:"Message Elements" ,
                              ATTRIBUTES:Block_Reference_Structure,
@@ -35,7 +35,7 @@ class HMT_Definition(Tag_Def):
                              ATTRIBUTES:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Messages_Array", SIZE:".Block_Count",
                                     ARRAY_ELEMENT:{ TYPE:Struct, SIZE:64, GUI_NAME:"Message",
-                                                    0:{ TYPE:Str_Latin_1, OFFSET:0,
+                                                    0:{ TYPE:Str_Latin1, OFFSET:0,
                                                         GUI_NAME:"Name", SIZE:32},
                                                     1:{ TYPE:UInt16, OFFSET:32, NAME:"Text_Start",
                                                         GUI_NAME:"Start Index Into Text Blob" },

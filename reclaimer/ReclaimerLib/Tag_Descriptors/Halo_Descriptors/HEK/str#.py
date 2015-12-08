@@ -22,7 +22,7 @@ class STR_Definition(Tag_Def):
                                    MAX:32767, SIZE:".Block_Count",
                                    ARRAY_ELEMENT:{TYPE:Struct, SIZE:20, GUI_NAME:"String",
                                                   ATTRIBUTES:Raw_Data_Reference_Structure,
-                                                  CHILD:{TYPE:Str_Latin_1, NAME:"Raw_String_Data",
+                                                  CHILD:{TYPE:Str_Latin1, NAME:"Raw_String_Data",
                                                          SIZE:".Byte_Count"}
                                                   }
                                    }

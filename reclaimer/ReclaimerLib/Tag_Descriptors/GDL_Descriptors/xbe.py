@@ -139,8 +139,8 @@ class GDL_XBE_Definition(XBE_Def):
                                                      15:{GUI_NAME:"Hyena"},
                                                      }
                                            },
-                                       2:{ TYPE:Str_Latin_1, OFFSET:8, GUI_NAME:"Activation Code", SIZE:7},
-                                       3:{ TYPE:Str_Latin_1, OFFSET:16, GUI_NAME:"Directory", SIZE:16 },
+                                       2:{ TYPE:Str_Latin1, OFFSET:8, GUI_NAME:"Activation Code", SIZE:7},
+                                       3:{ TYPE:Str_Latin1, OFFSET:16, GUI_NAME:"Directory", SIZE:16 },
                                        4:{ TYPE:UInt32,      OFFSET:32, GUI_NAME:"Flags",
                                            FLAGS:{ 0:{NAME:"Disable", VALUE:1}}
                                            },
@@ -149,7 +149,7 @@ class GDL_XBE_Definition(XBE_Def):
                      
                      5:{TYPE:Array, NAME:"Cheats", SIZE:18, POINTER:1136064,
                         ARRAY_ELEMENT:{TYPE:Struct, GUI_NAME:"Cheat", CHILD_ROOT:True,
-                                       0:{ TYPE:Str_Latin_1, SIZE:7,
+                                       0:{ TYPE:Str_Latin1, SIZE:7,
                                            OFFSET:0, GUI_NAME:"Activation Code"},
                                        1:{ TYPE:SInt32, OFFSET:8, GUI_NAME:"Item Type",
                                            ELEMENTS:{ 0:{GUI_NAME:"Gold", VALUE:1},

@@ -22,7 +22,7 @@ class TAGC_Definition(Tag_Def):
                                     SIZE:".Block_Count", MAX:200,
                                     ARRAY_ELEMENT:{TYPE:Struct, SIZE:16, GUI_NAME:"Tag",
                                                    ATTRIBUTES:Tag_Reference_Structure,
-                                                   0:{ TYPE:Str_Raw_Latin_1, GUI_NAME:"Tag Class", SIZE:4,
+                                                   0:{ TYPE:Str_Raw_Latin1, GUI_NAME:"Tag Class", SIZE:4,
                                                        ELEMENTS:All_Tag_Enums}
                                                    }
                                     }

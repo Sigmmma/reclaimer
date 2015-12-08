@@ -90,14 +90,14 @@ All_Tag_Enums = {0:{VALUE:'actr', NAME:"actor"},
 
 Tag_Header = { TYPE:Struct, SIZE:64, NAME:"Blam_Header", EDITABLE:False,
                0:{ PAD:36 },
-               1:{ TYPE:Str_Raw_Latin_1, GUI_NAME:"Type FourCC", SIZE:4,
+               1:{ TYPE:Str_Raw_Latin1, GUI_NAME:"Type FourCC", SIZE:4,
                    DEFAULT:b"\x00\x00\x00\x00", ELEMENTS:All_Tag_Enums},
                2:{ TYPE:UInt32, GUI_NAME:"Base Address", DEFAULT:0 },
                3:{ TYPE:UInt32, GUI_NAME:"Data Pointer", DEFAULT:64 },
                4:{ PAD:8 },
                5:{ TYPE:UInt16, NAME:"Version", DEFAULT:1 },
                6:{ TYPE:UInt16, NAME:"Unknown", DEFAULT:255 },
-               7:{ TYPE:Str_Raw_Latin_1, GUI_NAME:"Engine ID",
+               7:{ TYPE:Str_Raw_Latin1, GUI_NAME:"Engine ID",
                    DEFAULT:"blam", SIZE:4}
                }
 
@@ -274,7 +274,7 @@ Block_Reference_Structure = { TYPE:Struct, GUI_NAME:'Halo Block Ref',
 
 #This is the structure for all points where a tag references another tag
 Tag_Reference_Structure = { TYPE:Struct, GUI_NAME:'Halo Tag Ref',
-                            0:{ TYPE:Str_Raw_Latin_1, GUI_NAME:"Tag Class", SIZE:4,
+                            0:{ TYPE:Str_Raw_Latin1, GUI_NAME:"Tag Class", SIZE:4,
                                 EDITABLE:False, ELEMENTS:All_Tag_Enums},
                             1:{ TYPE:UInt32, GUI_NAME:"Tag Path Pointer", EDITABLE:False },
                             2:{ TYPE:UInt32, GUI_NAME:"Tag Path Length", EDITABLE:False },
@@ -333,7 +333,7 @@ Radiosity_Block = {TYPE:Struct, OFFSET:0, GUI_NAME:"Radiosity Settings",
 
 Extra_Layers_Block = {TYPE:Struct, GUI_NAME:"Extra Layer",
                       ATTRIBUTES:Tag_Reference_Structure,
-                      0:{ TYPE:Str_Raw_Latin_1, GUI_NAME:"Tag Class", SIZE:4,
+                      0:{ TYPE:Str_Raw_Latin1, GUI_NAME:"Tag Class", SIZE:4,
                           ELEMENTS:All_Shader_Enums}
                       }
 

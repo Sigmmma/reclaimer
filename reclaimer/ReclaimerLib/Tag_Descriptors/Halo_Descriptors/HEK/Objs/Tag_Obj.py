@@ -3,7 +3,7 @@ from .....Tag_Constructors.Halo_Constructors.HEK.Field_Types import *
 
 
 class Halo_Tag_Obj(Tag_Obj):
-    Calculate_Pointers = False
+    Calc_Pointers = False
     
     def __init__(self, **kwargs):
         #this is used by various things to store variables
