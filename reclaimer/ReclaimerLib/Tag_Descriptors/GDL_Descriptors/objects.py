@@ -145,10 +145,13 @@ class OBJECTS_PS2_Definition(Tag_Def):
                      6:{ TYPE:UInt32, OFFSET:28, GUI_NAME:'Sub-Object Models Pointer' },
 
                      #the number of unique verts in the object.
-                     #probably number number of verts before compiling
+                     #probably number of verts before compiling
                      7:{ TYPE:SInt32, OFFSET:32, GUI_NAME:"Vert Count" },
-                     8:{ TYPE:SInt32, OFFSET:36, GUI_NAME:"Tri Count" },                     
+                     8:{ TYPE:SInt32, OFFSET:36, GUI_NAME:"Tri Count" },
                      9:{ TYPE:SInt32, OFFSET:40, GUI_NAME:"ID Num"},
+                     
+                     #points to the obj def that this model uses
+                     10:{ TYPE:UInt32, OFFSET:44, GUI_NAME:"Obj Def"},
                     
                      CHILD:{ TYPE:Container, NAME:"Data",
                              0:{ TYPE:Array, GUI_NAME:"Sub-Objects",
@@ -166,6 +169,14 @@ class OBJECTS_PS2_Definition(Tag_Def):
 
 
     Bitmap_Block = { TYPE:Struct, SIZE:64, GUI_NAME:"Bitmap",
+                     #palletized textures are in either 16 or 256 color format
+                     #   if a texture has a 16 color palette then each byte counts as
+                     #   2 pixels with the least significant 4 bits being the left pixel
+                     #portraits used as background on player bar are in ABGR_8888_IDX_4
+
+                     #color data is stored in RGBA order
+                     #8x8 seems to be the smallest a texture is allowed to be
+                     
                      0:{ TYPE:UInt8,  OFFSET:0, GUI_NAME:"Bitmap Format",
                          ELEMENTS:{ 0:{NAME:"ABGR_1555", VALUE:0 },
                                     1:{NAME:"XBGR_1555", VALUE:1 },
@@ -188,6 +199,8 @@ class OBJECTS_PS2_Definition(Tag_Def):
                          },
                      1:{ TYPE:SInt8,  OFFSET:1, GUI_NAME:"Lod K"},
                      2:{ TYPE:UInt8,  OFFSET:2, GUI_NAME:"Mipmap Count"},
+                     
+                     #Width-64 == int(ceil(width/64))
                      3:{ TYPE:UInt8,  OFFSET:3, GUI_NAME:"Width-64"},
                      4:{ TYPE:UInt16, OFFSET:4, GUI_NAME:"Log2 of Width"},
                      5:{ TYPE:UInt16, OFFSET:6, GUI_NAME:"Log2 of Height"},
@@ -207,24 +220,44 @@ class OBJECTS_PS2_Definition(Tag_Def):
                          },
                         
                      7:{ TYPE:UInt16,  OFFSET:10, GUI_NAME:"Tex Palette Index"},
-                     8:{ TYPE:UInt32,  OFFSET:12, GUI_NAME:"Tex Base Pointer"},
+                     
+                     #pointer to the texture in the BITMAPS.ps2
+                     #where the pixel texture data is located
+                     8:{ TYPE:UInt32,  OFFSET:12, GUI_NAME:"Tex Base"},
                      
                      9:{ TYPE:UInt16,  OFFSET:16, GUI_NAME:"Tex Palette Count"},
                      10:{ TYPE:UInt16, OFFSET:18, GUI_NAME:"Tex Shift Index"},
                     
+                     #the number of bitmaps after the current
+                     #one that are included in the animation
+                     #animated textures can have different formats for each frame
                      11:{ TYPE:UInt16, OFFSET:20, GUI_NAME:"Frame Count"},
                     
                      12:{ TYPE:UInt16, OFFSET:22, GUI_NAME:"Width"},
                      13:{ TYPE:UInt16, OFFSET:24, GUI_NAME:"Height"},
-                    
-                     14:{ TYPE:UInt16, OFFSET:26, GUI_NAME:"Size"},
-                    
-                     15:{ TYPE:UInt32_Array, OFFSET:32, GUI_NAME:"Tex 0", SIZE:8},
-                     16:{ TYPE:UInt32_Array, OFFSET:40, GUI_NAME:"Mip TBP 1", SIZE:8},
-                     17:{ TYPE:UInt32_Array, OFFSET:48, GUI_NAME:"Mip TBP 2", SIZE:8},
                      
-                     18:{ TYPE:UInt16_Array, OFFSET:56, GUI_NAME:"VRAM Address", SIZE:4},
-                     19:{ TYPE:UInt16_Array, OFFSET:60, GUI_NAME:"CLUT Address", SIZE:4}
+                     #related to resolution as a texture with half the
+                     #size of another texture has this int halved as well
+                     14:{ TYPE:UInt16, OFFSET:26, GUI_NAME:"Size"},
+
+                     #points to the bitmap def that this bitmap uses
+                     #this seems to be the same pointer for each texture in
+                     #an animation, except for ones of a different format
+                     15:{ TYPE:UInt32, OFFSET:28, GUI_NAME:"Bitmap Def"},
+                    
+                     16:{ TYPE:UInt32_Array, OFFSET:32, GUI_NAME:"Tex 0", SIZE:8},
+                     17:{ TYPE:UInt32_Array, OFFSET:40, GUI_NAME:"Mip TBP 1", SIZE:8},
+                     18:{ TYPE:UInt32_Array, OFFSET:48, GUI_NAME:"Mip TBP 2", SIZE:8},
+                     
+                     19:{ TYPE:UInt16_Array, OFFSET:56, GUI_NAME:"VRAM Address", SIZE:4},
+                     20:{ TYPE:UInt16_Array, OFFSET:60, GUI_NAME:"CLUT Address", SIZE:4}
+
+                     
+                     #To animate a series of bitmaps, take the first bitmap and lets call it "base".
+                     #    In the chain and make a sequence block aiming to base. Create another bitmap
+                     #    block to act as the main object (so multiple, different, animations can exist).
+                     #    In the anim.ps2 create a texture animation aiming to the main sequence
+                     #    and aim the start of the animation to the base sequence.
                      }
 
 

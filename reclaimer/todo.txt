@@ -10,6 +10,17 @@ Defs\Tag_Obj
 Finish up changing the way encodings and endiannesses work for Field_Types
     ints and floats will need their endianness manually specified with the encoding
 
+    Ex:
+        UInt32 = Field_Type(**Com({"Name":"UInt32", "Size":4, 
+                                   "Enc":("<I",">I","=I","!I","@I")}, tmp))
+
+        Str_Raw_UTF_32 = Field_Type(**Com({"Name":"Str Raw UTF32", "Size":4,
+                                           "Enc":("utf32","utf_32_be","utf_32_le")}, tmp))
+
+    Need to also make it so there is a designated big and little endianness encoding
+    which will be used when automatically selecting a Field_Type by endianness
+
+
 Replace all instances of Tag_ID and ID with Tag_Cls and Cls since each of the tag
 definitions are divided into classes and it makes sense to name things this way
 
@@ -21,6 +32,12 @@ Need to make it so if saving a block(not a whole tag) it instead copies the
 block and saves the copy. This is because pointers will be reset and wont
 be valid anymore in the main structure. This is especially bad on fixed
 pointer tags like incomplete structures.
+
+Make Pointer32 and Pointer64 Field_Types so that pointers can be
+more contextually worked with when saving a tag or tag_block.
+    use this context to set pointers to NULL when their pointed to block DNE
+
+make Char Field_Type for single character strings
 
 
 Make a "Switch" Field_Type that allows you to specify a function
@@ -41,6 +58,15 @@ Make List_Block and List_Parent_Block subclasses of Tag_Block and list.
 Make new Flags_Block and Enum_Block which are subclasses of Tag_Block and int.
     These will be used to allow getting and setting enums and flags by name
     rather than value as these will each have a DESC reference.
+
+    when doing this, make sure to change the way NAME and VALUE are supplied in
+    enum and bool blocks.
+    Make it so a tuple is instead provided for NAME, GUI_NAME, and VALUE.
+    If its length is 1 it contains (NAME). A default value should be used.
+    If its length is 2 it contains (NAME, VALUE)
+    If its length is 3 it contains (NAME, VALUE, GUI_NAME)
+
+    each of these enum/flags objects MUST BE tuples to guarantee immutability
 
 
 make an immutable dictionary class called a "Descriptor"
@@ -126,8 +152,6 @@ Make setting to use same palette for all mipmaps of a bitmap
 Write palettized mipmap generator.
     make it so that a palette can be supplied to the 
     mipmap generator so it already has one to work from
-
-Write _Palette_Picker() function
 
 
 
