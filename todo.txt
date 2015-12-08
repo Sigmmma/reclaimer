@@ -1,47 +1,28 @@
+the integers -5 to 256 are stored as constants in python and any time one
+is used, that constant is used rather than a new PyObject being created.
+
 
 High Priority:
-
-make docstrings for these modules
-Tag_Blocks
-Constructor
-Defs\Tag_Def
-Defs\Tag_Obj
-
-Finish up changing the way encodings and endiannesses work for Field_Types
-    ints and floats will need their endianness manually specified with the encoding
-
-    Ex:
-        UInt32 = Field_Type(**Com({"Name":"UInt32", "Size":4, 
-                                   "Enc":("<I",">I","=I","!I","@I")}, tmp))
-
-        Str_Raw_UTF_32 = Field_Type(**Com({"Name":"Str Raw UTF32", "Size":4,
-                                           "Enc":("utf32","utf_32_be","utf_32_le")}, tmp))
-
-    Need to also make it so there is a designated big and little endianness encoding
-    which will be used when automatically selecting a Field_Type by endianness
+    
 
 
 Replace all instances of Tag_ID and ID with Tag_Cls and Cls since each of the tag
 definitions are divided into classes and it makes sense to name things this way
 
 Rename Tag_Obj to just Tag
+Rename Tag_Block and Tag_Parent_Block to List_Block, and List_Parent_Block
+Make Tag_Block class which is a subclass of object and has no methods.
+Make List_Block and List_Parent_Block subclasses of Tag_Block and list.
 
 finish up automatic structure padding and alignment
-
-Need to make it so if saving a block(not a whole tag) it instead copies the
-block and saves the copy. This is because pointers will be reset and wont
-be valid anymore in the main structure. This is especially bad on fixed
-pointer tags like incomplete structures.
 
 Make Pointer32 and Pointer64 Field_Types so that pointers can be
 more contextually worked with when saving a tag or tag_block.
     use this context to set pointers to NULL when their pointed to block DNE
 
-make Char Field_Type for single character strings
 
-
-Make a "Switch" Field_Type that allows you to specify a function
-which will determine which descriptor to use.
+Make a "Switch" Field_Type that allows you to specify
+a function which will determine which descriptor to use.
     do this by making the Switch have a reader which chooses from a list of
     possible structures and uses a provided function to decide which one to use.
     The Switch doesnt create its own Tag_Block, but instead calls the reader of
@@ -52,9 +33,6 @@ which will determine which descriptor to use.
     that contains the Switch and create a unique descriptor EVERY TIME
 
 
-Rename Tag_Block and Tag_Parent_Block to List_Block, and List_Parent_Block
-Make Tag_Block class which is a subclass of object and has no methods.
-Make List_Block and List_Parent_Block subclasses of Tag_Block and list.
 Make new Flags_Block and Enum_Block which are subclasses of Tag_Block and int.
     These will be used to allow getting and setting enums and flags by name
     rather than value as these will each have a DESC reference.
@@ -81,6 +59,8 @@ make an immutable dictionary class called a "Descriptor"
     Do the above for __setattr__, __delattr__, __setitem__, and __delitem__
 
 
+Finish docstrings for modules and update existing ones.
+
 
 Medium Priority:
 
@@ -102,6 +82,30 @@ Make wrapper class for read/writing to any memoryview-able object.
 
 
 Low Priority:
+
+Figure out why HBOC crashes when trying to write tag during Set_Pointers_Loop
+    Until then, Calc_Pointers will be set to False for all Halo tag types
+
+  Traceback (most recent call last):
+  File "e:\Dropbox\Reclaimer\ReclaimerLib\Tag_Handlers\Halo_Programs\Bitmap_Optimizer_and_Converter.py", line 242, in Process_Bitmap_Tags
+    Reprocess=not(Def_Flags["DONT REPROCESS"]))
+  File "e:\Dropbox\Reclaimer\ReclaimerLib\Tag_Operations\Halo_Operations\bitm.py", line 311, in Convert_Bitmap_Tag
+    Save_Status = Tag.Write()
+  File "C:\Python34\lib\site-packages\supyr_struct\Defs\Tag_Obj.py", line 511, in Write
+    self.Set_Pointers(Offset)
+  File "C:\Python34\lib\site-packages\supyr_struct\Defs\Tag_Obj.py", line 223, in Set_Pointers
+    Offset = self.Tag_Data.Set_Pointers_Loop(Offset, Seen, PB_Blocks)
+  File "C:\Python34\lib\site-packages\supyr_struct\Tag_Blocks.py", line 2033, in Set_Pointers_Loop
+    (Sub_Struct and Block.TYPE.Is_Struct))
+  File "C:\Python34\lib\site-packages\supyr_struct\Tag_Blocks.py", line 2033, in Set_Pointers_Loop
+    (Sub_Struct and Block.TYPE.Is_Struct))
+  File "C:\Python34\lib\site-packages\supyr_struct\Tag_Blocks.py", line 2033, in Set_Pointers_Loop
+    (Sub_Struct and Block.TYPE.Is_Struct))
+  File "C:\Python34\lib\site-packages\supyr_struct\Tag_Blocks.py", line 2033, in Set_Pointers_Loop
+    (Sub_Struct and Block.TYPE.Is_Struct))
+  File "C:\Python34\lib\site-packages\supyr_struct\Tag_Blocks.py", line 2035, in Set_Pointers_Loop
+    Block_Desc = Desc[i]
+  KeyError: 0
 
 set up child block reading and writing so the offset is set to their pointer
     this needs to be done for the Container, Struct, and Array Field_Types
