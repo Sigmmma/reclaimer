@@ -262,8 +262,8 @@ class OBJECTS_PS2_Definition(Tag_Def):
 
 
     Tag_Structure = {TYPE:Struct, SIZE:160, GUI_NAME:"GDL Objects Resource",
-                     0:{ TYPE:Str_Latin_1, OFFSET:0, GUI_NAME:"Dir Name", SIZE:32},
-                     1:{ TYPE:Str_Latin_1, OFFSET:32, GUI_NAME:"Model Name", SIZE:32},
+                     0:{ TYPE:Str_Latin1, OFFSET:0, GUI_NAME:"Dir Name", SIZE:32},
+                     1:{ TYPE:Str_Latin1, OFFSET:32, GUI_NAME:"Model Name", SIZE:32},
                      2:{ TYPE:UInt32, OFFSET:64, GUI_NAME:"Version", DEFAULT:4027252749},
                      
                      3:{ TYPE:UInt32, OFFSET:68, GUI_NAME:"Object Count" },
@@ -302,7 +302,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                             2:{TYPE:Array, GUI_NAME:"Object Defs",
                                SIZE:'..Object_Def_Count', POINTER:'..Object_Def_Pointer',
                                ARRAY_ELEMENT:{ TYPE:Struct, SIZE:24, GUI_NAME:"Object Def",
-                                               0:{ TYPE:Str_Latin_1, NAME:"Name", SIZE:16},
+                                               0:{ TYPE:Str_Latin1, NAME:"Name", SIZE:16},
                                                1:{ TYPE:Float, NAME:"BndRad", GUI_NAME:"Bounding Radius"},
                                                2:{ TYPE:SInt16, NAME:"Index"},
                                                3:{ TYPE:SInt16, NAME:"NFrames"},
@@ -311,7 +311,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                             3:{TYPE:Array, GUI_NAME:"Bitmap Defs",
                                SIZE:'..Bitmap_Def_Count', POINTER:'..Bitmap_Def_Pointer',
                                ARRAY_ELEMENT:{ TYPE:Struct, SIZE:36, GUI_NAME:"Bitmap Def",
-                                               0:{ TYPE:Str_Latin_1, OFFSET:0, NAME:"Name", SIZE:16},
+                                               0:{ TYPE:Str_Latin1, OFFSET:0, NAME:"Name", SIZE:16},
                                                1:{ TYPE:UInt16, OFFSET:30, NAME:"Index"},
                                                2:{ TYPE:UInt16, OFFSET:32, NAME:"Width"},
                                                3:{ TYPE:UInt16, OFFSET:34, NAME:"Height"},

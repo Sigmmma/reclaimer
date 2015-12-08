@@ -34,7 +34,7 @@ class BITM_Definition(Tag_Def):
                      }
 
     Sequences_Desc = { TYPE:Struct, SIZE:64, GUI_NAME:"Sequence",
-                       0:{ TYPE:Str_Latin_1, OFFSET:0, GUI_NAME:"Sequence Name", SIZE:32 },
+                       0:{ TYPE:Str_Latin1, OFFSET:0, GUI_NAME:"Sequence Name", SIZE:32 },
                        1:{ TYPE:UInt16, OFFSET:32, GUI_NAME:"First Bitmap Index" },
                        2:{ TYPE:UInt16, OFFSET:34, GUI_NAME:"Bitmap Count" },
                        3:{ TYPE:Struct, OFFSET:52, GUI_NAME:"Sprites",
@@ -47,7 +47,7 @@ class BITM_Definition(Tag_Def):
                        }
 
     Bitmaps_Desc = { TYPE:Struct, SIZE:48, GUI_NAME:"Bitmap",
-                     0:{ TYPE:Str_Raw_Latin_1, OFFSET:0,  GUI_NAME:"Bitmap Tag ID",
+                     0:{ TYPE:Str_Raw_Latin1, OFFSET:0,  GUI_NAME:"Bitmap Tag ID",
                          EDITABLE:False, DEFAULT:"bitm", SIZE:4 },
                      1:{ TYPE:UInt16, OFFSET:4, GUI_NAME:"Width"},
                      2:{ TYPE:UInt16, OFFSET:6, GUI_NAME:"Height"},

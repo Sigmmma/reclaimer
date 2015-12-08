@@ -1,0 +1,18 @@
+
+
+12.08.15 02:10:08  guerilla pc 01.00.00.0609 ----------------------------------------------
+12.08.15 02:10:08  reference function: _write_to_error_file
+12.08.15 02:10:08  reference address: 4011a4
+12.08.15 02:10:08  Couldn't read map file './guerillabeta.map'
+
+
+12.08.15 02:10:50  guerilla pc 01.00.00.0609 ----------------------------------------------
+12.08.15 02:10:50  reference function: _write_to_error_file
+12.08.15 02:10:50  reference address: 4011a4
+12.08.15 02:10:50  Couldn't read map file './guerillabeta.map'
+
+
+12.08.15 02:35:08  guerilla pc 01.00.00.0609 ----------------------------------------------
+12.08.15 02:35:08  reference function: _write_to_error_file
+12.08.15 02:35:08  reference address: 4011a4
+12.08.15 02:35:08  Couldn't read map file './guerillabeta.map'
