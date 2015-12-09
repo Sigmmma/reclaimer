@@ -6,12 +6,12 @@ curr_dir = os.path.abspath(os.curdir).replace('/', '\\')
 Words_to_Locate = []
 Word_Replacements = []
 Flags = None
-Mode = "replace"
+Mode = "locate"
 
 
 
-Words_to_Locate = ['Supyr_Struct']
-Word_Replacements = ['supyr_struct']
+Words_to_Locate = ['Tag_ID', 'ID', 'Tag_Block', 'Tag_Parent_Block']
+Word_Replacements = []
 #Flags = re.IGNORECASE
 
 

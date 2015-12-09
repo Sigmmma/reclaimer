@@ -8,7 +8,7 @@ class USTR_Definition(Tag_Def):
 
     Tag_Ext = ".unicode_string_list"
 
-    Tag_ID = "ustr"
+    Cls_ID = "ustr"
 
     Endianness = ">"
     

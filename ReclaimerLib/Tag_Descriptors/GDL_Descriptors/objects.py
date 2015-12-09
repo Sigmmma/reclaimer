@@ -10,7 +10,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
     
     Tag_Ext = ".ps2"
     
-    Tag_ID = "objects.ps2"
+    Cls_ID = "objects.ps2"
 
     #The constructor used to build this definitions Tag_Obj
     Tag_Obj = Objects_PS2_Tag
@@ -96,7 +96,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                   #        SIZE:'.Count', ARRAY_ELEMENT:{ }
                   #        }
                   }
-    
+    Pointer32
     #sub-objects are for things where you may have multiple textures on one mesh.
     #in that case each subobject would have one texture.
     Sub_Object_Block = { TYPE:Struct, GUI_NAME:"Sub-Object",
@@ -141,8 +141,8 @@ class OBJECTS_PS2_Definition(Tag_Def):
                      4:{ TYPE:Struct, OFFSET:16, GUI_NAME:"Sub-Object 0",
                          ATTRIBUTES:Sub_Object_Block },
                
-                     5:{ TYPE:UInt32, OFFSET:24, GUI_NAME:'Sub-Objects Pointer' },
-                     6:{ TYPE:UInt32, OFFSET:28, GUI_NAME:'Sub-Object Models Pointer' },
+                     5:{ TYPE:Pointer32, OFFSET:24, GUI_NAME:'Sub-Objects Pointer' },
+                     6:{ TYPE:Pointer32, OFFSET:28, GUI_NAME:'Sub-Object Models Pointer' },
 
                      #the number of unique verts in the object.
                      #probably number of verts before compiling
@@ -150,8 +150,8 @@ class OBJECTS_PS2_Definition(Tag_Def):
                      8:{ TYPE:SInt32, OFFSET:36, GUI_NAME:"Tri Count" },
                      9:{ TYPE:SInt32, OFFSET:40, GUI_NAME:"ID Num"},
                      
-                     #points to the obj def that this model uses
-                     10:{ TYPE:UInt32, OFFSET:44, GUI_NAME:"Obj Def"},
+                     #pointer to the obj def that this model uses
+                     10:{ TYPE:Pointer32, OFFSET:44, GUI_NAME:"Obj Def"},
                     
                      CHILD:{ TYPE:Container, NAME:"Data",
                              0:{ TYPE:Array, GUI_NAME:"Sub-Objects",
@@ -223,7 +223,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                      
                      #pointer to the texture in the BITMAPS.ps2
                      #where the pixel texture data is located
-                     8:{ TYPE:UInt32,  OFFSET:12, GUI_NAME:"Tex Base"},
+                     8:{ TYPE:Pointer32,  OFFSET:12, GUI_NAME:"Tex Base"},
                      
                      9:{ TYPE:UInt16,  OFFSET:16, GUI_NAME:"Tex Palette Count"},
                      10:{ TYPE:UInt16, OFFSET:18, GUI_NAME:"Tex Shift Index"},
@@ -243,7 +243,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                      #points to the bitmap def that this bitmap uses
                      #this seems to be the same pointer for each texture in
                      #an animation, except for ones of a different format
-                     15:{ TYPE:UInt32, OFFSET:28, GUI_NAME:"Bitmap Def"},
+                     15:{ TYPE:Pointer32, OFFSET:28, GUI_NAME:"Bitmap Def"},
                     
                      16:{ TYPE:UInt32_Array, OFFSET:32, GUI_NAME:"Tex 0", SIZE:8},
                      17:{ TYPE:UInt32_Array, OFFSET:40, GUI_NAME:"Mip TBP 1", SIZE:8},
@@ -271,13 +271,13 @@ class OBJECTS_PS2_Definition(Tag_Def):
                      5:{ TYPE:UInt32, OFFSET:76, GUI_NAME:"Object Def Count" },
                      6:{ TYPE:UInt32, OFFSET:80, GUI_NAME:"Bitmap Def Count" },
                      
-                     7:{ TYPE:UInt32, OFFSET:84, GUI_NAME:"Object Pointer" },
-                     8:{ TYPE:UInt32, OFFSET:88, GUI_NAME:"Bitmap Pointer" },
-                     9:{ TYPE:UInt32, OFFSET:92, GUI_NAME:"Object Def Pointer" },
-                     10:{ TYPE:UInt32, OFFSET:96, GUI_NAME:"Bitmap Def Pointer" },
+                     7:{ TYPE:Pointer32, OFFSET:84, GUI_NAME:"Object Pointer" },
+                     8:{ TYPE:Pointer32, OFFSET:88, GUI_NAME:"Bitmap Pointer" },
+                     9:{ TYPE:Pointer32, OFFSET:92, GUI_NAME:"Object Def Pointer" },
+                     10:{ TYPE:Pointer32, OFFSET:96, GUI_NAME:"Bitmap Def Pointer" },
                      
-                     11:{ TYPE:UInt32, OFFSET:100, GUI_NAME:"Sub-Objects Pointer"},
-                     12:{ TYPE:UInt32, OFFSET:104, GUI_NAME:"Geometry Pointer"},
+                     11:{ TYPE:Pointer32, OFFSET:100, GUI_NAME:"Sub-Objects Pointer"},
+                     12:{ TYPE:Pointer32, OFFSET:104, GUI_NAME:"Geometry Pointer"},
                      
                      13:{ TYPE:UInt32, OFFSET:108, GUI_NAME:"Filesize", NAME:"Obj End"},
                    

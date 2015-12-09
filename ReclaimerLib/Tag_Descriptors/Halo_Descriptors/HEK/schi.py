@@ -9,7 +9,7 @@ class SCHI_Definition(Tag_Def):
 
     Tag_Ext = ".shader_transparent_chicago"
 
-    Tag_ID = "schi"
+    Cls_ID = "schi"
 
     Tag_Obj = SCHI_Tag
 

@@ -9,7 +9,7 @@ class SENV_Definition(Tag_Def):
 
     Tag_Ext = ".shader_environment"
 
-    Tag_ID = "senv"
+    Cls_ID = "senv"
 
     Tag_Obj = SENV_Tag
 

@@ -8,7 +8,7 @@ class BOOM_Definition(Tag_Def):
 
     Tag_Ext = ".spheroid"
 
-    Tag_ID = "boom"
+    Cls_ID = "boom"
 
     Endianness = ">"
 
