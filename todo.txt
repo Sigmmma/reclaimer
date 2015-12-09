@@ -5,12 +5,7 @@ is used, that constant is used rather than a new PyObject being created.
 High Priority:
     
 
-Rename Tag_Block and Tag_Parent_Block to List_Block, and P_List_Block
-Make Tag_Block class which is a subclass of object and has no methods.
-Make List_Block and P_List_Block subclasses of Tag_Block and list.
-
 finish up automatic structure padding and alignment
-
 
 Make a "Switch" Field_Type that allows you to specify
 a function which will determine which descriptor to use.
