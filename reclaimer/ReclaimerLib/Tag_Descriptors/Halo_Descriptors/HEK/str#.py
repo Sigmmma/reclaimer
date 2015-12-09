@@ -6,7 +6,7 @@ def Construct():
 
 class STR_Definition(Tag_Def):
 
-    Tag_Ext = ".string_list"
+    Ext = ".string_list"
 
     Cls_ID = "str#"
 

@@ -8,7 +8,7 @@ def Construct():
 
 class ANIM_PS2_Definition(Tag_Def):
     
-    Tag_Ext = ".ps2"
+    Ext = ".ps2"
 
     Cls_ID = "anim.ps2"
 

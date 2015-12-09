@@ -6,7 +6,7 @@ def Construct():
 
 class USTR_Definition(Tag_Def):
 
-    Tag_Ext = ".unicode_string_list"
+    Ext = ".unicode_string_list"
 
     Cls_ID = "ustr"
 

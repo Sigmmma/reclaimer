@@ -6,7 +6,7 @@ def Construct():
     return BITM_Definition
 
 class BITM_Definition(Tag_Def):
-    Tag_Ext = ".bitmap"
+    Ext = ".bitmap"
 
     Cls_ID = "bitm"
 

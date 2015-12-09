@@ -6,7 +6,7 @@ def Construct():
 
 class TAGC_Definition(Tag_Def):
 
-    Tag_Ext = ".tag_collection"
+    Ext = ".tag_collection"
 
     Cls_ID = "tagc"
 

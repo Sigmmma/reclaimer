@@ -7,7 +7,7 @@ def Construct():
 
 class SotE_EEP_Definition(Tag_Def):
     
-    Tag_Ext = ".eep"
+    Ext = ".eep"
     
     Cls_ID = "sote_eep_save"
 

@@ -10,7 +10,7 @@ Mode = "locate"
 
 
 
-Words_to_Locate = ['Get_ID']
+Words_to_Locate = ['Tag_Test']
 Word_Replacements = []
 #Flags = re.IGNORECASE
 

@@ -7,7 +7,7 @@ def Construct():
 
 class SCHI_Definition(Tag_Def):
 
-    Tag_Ext = ".shader_transparent_chicago"
+    Ext = ".shader_transparent_chicago"
 
     Cls_ID = "schi"
 

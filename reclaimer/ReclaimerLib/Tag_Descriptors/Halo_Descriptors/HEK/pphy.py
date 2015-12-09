@@ -6,7 +6,7 @@ def Construct():
 
 class PPHY_Definition(Tag_Def):
 
-    Tag_Ext = ".point_physics"
+    Ext = ".point_physics"
 
     Cls_ID = "pphy"
 

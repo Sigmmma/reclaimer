@@ -7,7 +7,7 @@ def Construct():
 
 class SCEX_Definition(Tag_Def):
 
-    Tag_Ext = ".shader_transparent_chicago_extended"
+    Ext = ".shader_transparent_chicago_extended"
 
     Cls_ID = "scex"
 
