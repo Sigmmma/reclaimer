@@ -108,7 +108,7 @@ class Constructor(TC):
         del self.__dict__['ID_Ext_Mapping']
         
 
-    def Get_ID(self, Filepath):
+    def Get_Cls_ID(self, Filepath):
         '''It is more reliable to determine a Halo tag
         based on its 4CC Cls_ID than by file extension'''
         try:            
