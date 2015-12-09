@@ -6,7 +6,7 @@ def Construct():
 
 class BOOM_Definition(Tag_Def):
 
-    Tag_Ext = ".spheroid"
+    Ext = ".spheroid"
 
     Cls_ID = "boom"
 
