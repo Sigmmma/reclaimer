@@ -30,20 +30,20 @@ class Shader_Rectifier_Class(Halo_Tag_Handler):
         Target_Def = self.Constructor.Get_Def(self.Target_Tag)
         
         '''loop through both chicago and extended chicago tag types'''
-        for Tag_ID in self.Tag_Collection:
+        for Cls_ID in self.Tag_Collection:
             
-            Tag_Paths = list(self.Tag_Collection[Tag_ID])
+            Tag_Paths = list(self.Tag_Collection[Cls_ID])
 
             '''loop through each tag and remove extra
             layers and log them to a debug file'''
             for Tag_Path in Tag_Paths:
-                Tag = self.Tag_Collection[Tag_ID][Tag_Path]
+                Tag = self.Tag_Collection[Cls_ID][Tag_Path]
                 try:
 
                     '''CONVERT THE TAG'''
-                    if Tag_ID != self.Target_Tag:                    
+                    if Cls_ID != self.Target_Tag:                    
                         Tag.Convert_to_Other_Chicago()
-                        del self.Tag_Collection[Tag_ID][Tag_Path]
+                        del self.Tag_Collection[Cls_ID][Tag_Path]
 
                     '''REMOVE THE EXTRA LAYERS FROM THE TAG'''
                     EL = Tag.Tag_Data.Data.Extra_Layers.Extra_Layers_Array
@@ -69,7 +69,7 @@ class Shader_Rectifier_Class(Halo_Tag_Handler):
                         del EL[:]
 
                     New_Tag_Path = Tag.Tag_Path.split(self.Tags_Directory)[1]
-                    self.Tag_Collection[Tag_ID][New_Tag_Path] = Tag
+                    self.Tag_Collection[Cls_ID][New_Tag_Path] = Tag
                     Tag.Definition = Target_Def
                 except:
                     print("ERROR OCCURRED WHILE ATTEMPTING TO CONVERT:\n" +

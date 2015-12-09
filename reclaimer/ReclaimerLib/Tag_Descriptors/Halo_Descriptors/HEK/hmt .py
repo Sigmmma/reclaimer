@@ -8,7 +8,7 @@ class HMT_Definition(Tag_Def):
 
     Tag_Ext = ".hud_message_text"
 
-    Tag_ID = "hmt "
+    Cls_ID = "hmt "
 
     Endianness = ">"
 

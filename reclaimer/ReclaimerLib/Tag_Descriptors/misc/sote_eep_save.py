@@ -9,7 +9,7 @@ class SotE_EEP_Definition(Tag_Def):
     
     Tag_Ext = ".eep"
     
-    Tag_ID = "sote_eep_save"
+    Cls_ID = "sote_eep_save"
 
     Endianness = ">"
     

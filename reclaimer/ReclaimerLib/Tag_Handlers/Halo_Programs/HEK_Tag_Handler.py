@@ -19,8 +19,8 @@ class Halo_Tag_Handler(Handler):
             self.Default_Conversion_Flags = kwargs["Default_Conversion_Flags"]
         else:
             self.Default_Conversion_Flags = {}
-            for Tag_ID in self.Tag_Collection:
-                self.Default_Conversion_Flags[Tag_ID] = {}
+            for Cls_ID in self.Tag_Collection:
+                self.Default_Conversion_Flags[Cls_ID] = {}
         
         if "Data_Directory" in kwargs:
             self.Data_Directory = kwargs["Data_Directory"]

@@ -8,7 +8,7 @@ def Construct():
 class BITM_Definition(Tag_Def):
     Tag_Ext = ".bitmap"
 
-    Tag_ID = "bitm"
+    Cls_ID = "bitm"
 
     Tag_Obj = BITM_Tag
 
@@ -16,7 +16,7 @@ class BITM_Definition(Tag_Def):
 
     Pixel_Root_Desc = { TYPE:Array, NAME:'Pixel_Root_Desc', SIZE:0,
                         ARRAY_ELEMENT:{ TYPE:Array, NAME:'Bitmap_Pixels', SIZE:0,
-                                        ARRAY_ELEMENT:{TYPE:Bytearray_Raw, NAME:'Pixels' }
+                                        ARRAY_ELEMENT:{ TYPE:Bytearray_Raw, NAME:'Pixels' }
                                         }
                         }
     
@@ -47,7 +47,7 @@ class BITM_Definition(Tag_Def):
                        }
 
     Bitmaps_Desc = { TYPE:Struct, SIZE:48, GUI_NAME:"Bitmap",
-                     0:{ TYPE:Str_Raw_Latin1, OFFSET:0,  GUI_NAME:"Bitmap Tag ID",
+                     0:{ TYPE:Str_Raw_Latin1, OFFSET:0,  GUI_NAME:"BITM Class ID",
                          EDITABLE:False, DEFAULT:"bitm", SIZE:4 },
                      1:{ TYPE:UInt16, OFFSET:4, GUI_NAME:"Width"},
                      2:{ TYPE:UInt16, OFFSET:6, GUI_NAME:"Height"},

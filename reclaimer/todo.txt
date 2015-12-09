@@ -5,20 +5,11 @@ is used, that constant is used rather than a new PyObject being created.
 High Priority:
     
 
-
-Replace all instances of Tag_ID and ID with Tag_Cls and Cls since each of the tag
-definitions are divided into classes and it makes sense to name things this way
-
-Rename Tag_Obj to just Tag
-Rename Tag_Block and Tag_Parent_Block to List_Block, and List_Parent_Block
+Rename Tag_Block and Tag_Parent_Block to List_Block, and P_List_Block
 Make Tag_Block class which is a subclass of object and has no methods.
-Make List_Block and List_Parent_Block subclasses of Tag_Block and list.
+Make List_Block and P_List_Block subclasses of Tag_Block and list.
 
 finish up automatic structure padding and alignment
-
-Make Pointer32 and Pointer64 Field_Types so that pointers can be
-more contextually worked with when saving a tag or tag_block.
-    use this context to set pointers to NULL when their pointed to block DNE
 
 
 Make a "Switch" Field_Type that allows you to specify
@@ -27,10 +18,6 @@ a function which will determine which descriptor to use.
     possible structures and uses a provided function to decide which one to use.
     The Switch doesnt create its own Tag_Block, but instead calls the reader of
     the proper Tag_Block with the same args and kwargs that were provided to it.
-
-    Will need to remove automatically updating descriptor of parent Tag_Block
-    when a Tag_Block is placed into it because it will overwrite the descriptor
-    that contains the Switch and create a unique descriptor EVERY TIME
 
 
 Make new Flags_Block and Enum_Block which are subclasses of Tag_Block and int.
@@ -59,10 +46,17 @@ make an immutable dictionary class called a "Descriptor"
     Do the above for __setattr__, __delattr__, __setitem__, and __delitem__
 
 
+Make it so that Pointer32 and Pointer64 are set to NULL when their pointed to block DNE
+
 Finish docstrings for modules and update existing ones.
 
 
+
+
 Medium Priority:
+
+Need to make it so that readers/writers/decoders/encoders have better
+handling of exceptions and give better details regarding the exception.
 
 Try to make a mutable Tag_Block object that can be used to allow objects to
 have variables other than their structure properties. This approach should
@@ -82,30 +76,6 @@ Make wrapper class for read/writing to any memoryview-able object.
 
 
 Low Priority:
-
-Figure out why HBOC crashes when trying to write tag during Set_Pointers_Loop
-    Until then, Calc_Pointers will be set to False for all Halo tag types
-
-  Traceback (most recent call last):
-  File "e:\Dropbox\Reclaimer\ReclaimerLib\Tag_Handlers\Halo_Programs\Bitmap_Optimizer_and_Converter.py", line 242, in Process_Bitmap_Tags
-    Reprocess=not(Def_Flags["DONT REPROCESS"]))
-  File "e:\Dropbox\Reclaimer\ReclaimerLib\Tag_Operations\Halo_Operations\bitm.py", line 311, in Convert_Bitmap_Tag
-    Save_Status = Tag.Write()
-  File "C:\Python34\lib\site-packages\supyr_struct\Defs\Tag_Obj.py", line 511, in Write
-    self.Set_Pointers(Offset)
-  File "C:\Python34\lib\site-packages\supyr_struct\Defs\Tag_Obj.py", line 223, in Set_Pointers
-    Offset = self.Tag_Data.Set_Pointers_Loop(Offset, Seen, PB_Blocks)
-  File "C:\Python34\lib\site-packages\supyr_struct\Tag_Blocks.py", line 2033, in Set_Pointers_Loop
-    (Sub_Struct and Block.TYPE.Is_Struct))
-  File "C:\Python34\lib\site-packages\supyr_struct\Tag_Blocks.py", line 2033, in Set_Pointers_Loop
-    (Sub_Struct and Block.TYPE.Is_Struct))
-  File "C:\Python34\lib\site-packages\supyr_struct\Tag_Blocks.py", line 2033, in Set_Pointers_Loop
-    (Sub_Struct and Block.TYPE.Is_Struct))
-  File "C:\Python34\lib\site-packages\supyr_struct\Tag_Blocks.py", line 2033, in Set_Pointers_Loop
-    (Sub_Struct and Block.TYPE.Is_Struct))
-  File "C:\Python34\lib\site-packages\supyr_struct\Tag_Blocks.py", line 2035, in Set_Pointers_Loop
-    Block_Desc = Desc[i]
-  KeyError: 0
 
 set up child block reading and writing so the offset is set to their pointer
     this needs to be done for the Container, Struct, and Array Field_Types

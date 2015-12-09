@@ -9,7 +9,7 @@ class SOSO_Definition(Tag_Def):
 
     Tag_Ext = ".shader_model"
 
-    Tag_ID = "soso"
+    Cls_ID = "soso"
     
     Tag_Obj = SOSO_Tag
 

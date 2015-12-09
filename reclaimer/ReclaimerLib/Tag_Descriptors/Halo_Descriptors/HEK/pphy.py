@@ -8,7 +8,7 @@ class PPHY_Definition(Tag_Def):
 
     Tag_Ext = ".point_physics"
 
-    Tag_ID = "pphy"
+    Cls_ID = "pphy"
 
     Endianness = ">"
 
