@@ -7,7 +7,7 @@ class Constructor(TC):
     Default_Defs_Path = "ReclaimerLib\\Tag_Descriptors\\GDL_Descriptors\\"
     Default_Tag_Obj   = GDL_Tag_Obj
 
-    def Get_ID(self, Filepath):
+    def Get_Cls_ID(self, Filepath):
         Filepath = Filepath.replace('/', '\\')
         try:    Cls_ID = Filepath.split('\\')[-1].lower()
         except: Cls_ID = ''
