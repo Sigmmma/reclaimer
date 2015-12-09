@@ -7,7 +7,7 @@ def Construct():
 
 class SENV_Definition(Tag_Def):
 
-    Tag_Ext = ".shader_environment"
+    Ext = ".shader_environment"
 
     Cls_ID = "senv"
 

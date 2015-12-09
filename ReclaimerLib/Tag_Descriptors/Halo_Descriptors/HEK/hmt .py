@@ -6,7 +6,7 @@ def Construct():
 
 class HMT_Definition(Tag_Def):
 
-    Tag_Ext = ".hud_message_text"
+    Ext = ".hud_message_text"
 
     Cls_ID = "hmt "
 

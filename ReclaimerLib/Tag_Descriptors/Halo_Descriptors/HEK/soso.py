@@ -7,7 +7,7 @@ def Construct():
 
 class SOSO_Definition(Tag_Def):
 
-    Tag_Ext = ".shader_model"
+    Ext = ".shader_model"
 
     Cls_ID = "soso"
     

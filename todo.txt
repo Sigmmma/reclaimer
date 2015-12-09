@@ -1,6 +1,3 @@
-the integers -5 to 256 are stored as constants in python and any time one
-is used, that constant is used rather than a new PyObject being created.
-
 
 High Priority:
     
@@ -79,18 +76,22 @@ set up child block reading and writing so the offset is set to their pointer
 
 
 Implement recursive pointer based blocks.
-    Do this by keeping a dictionary of which block IDs have already had their
-    pointers calculated and what the pointer value is. When a reused block is
-    about to have its corrosponding pointer set, it will instead use the 
+    When writing, pass around a dictionary of which block IDs have already had
+    their pointers calculated and what the pointer value is. When a reused block
+    is about to have its corrosponding pointer set, it will instead use the
     pointer that already exists. When the block is being written, a dictionary
     will be passed around with which block ID was written to which location.
     If an ID already exists in the dictionary, the block is not written.
 
-When reading, a dictionary of pointers to blocks is passed around. When a
-pointer is read that exists in the dictionary keys, the corrosponding
-block in the dictionary is used instead of reading it from the file again.
+    When reading, a dictionary of pointers to blocks is passed around. When a
+    pointer is read that exists in the dictionary keys, the corrosponding
+    block in the dictionary is used instead of reading it from the file again.
 
 
+
+############
+HALO RELATED
+############
 
 Make descriptor for weapon hud tag
 Make descriptor for unit hud tag
@@ -103,6 +104,10 @@ to the bitmap convertor with settings specifying how to convert them.
 *shader_environment requires the bump maps to be turned into P-8 bump
 *shader_model requires multipurpose maps to have their channels swapped
 (this also means change the channel usage enum in the shader_model
+
+############
+HALO RELATED
+############
 
 
 
