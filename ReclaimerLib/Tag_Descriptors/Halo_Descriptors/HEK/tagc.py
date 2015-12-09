@@ -8,7 +8,7 @@ class TAGC_Definition(Tag_Def):
 
     Tag_Ext = ".tag_collection"
 
-    Tag_ID = "tagc"
+    Cls_ID = "tagc"
 
     Endianness = ">"
 

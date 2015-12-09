@@ -10,7 +10,7 @@ class ANIM_PS2_Definition(Tag_Def):
     
     Tag_Ext = ".ps2"
 
-    Tag_ID = "anim.ps2"
+    Cls_ID = "anim.ps2"
 
     #The constructor used to build this definitions Tag_Obj
     Tag_Obj = Anim_PS2_Tag

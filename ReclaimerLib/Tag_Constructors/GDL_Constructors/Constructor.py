@@ -9,11 +9,11 @@ class Constructor(TC):
 
     def Get_ID(self, Filepath):
         Filepath = Filepath.replace('/', '\\')
-        try:    ID = Filepath.split('\\')[-1].lower()
-        except: ID = ''
+        try:    Cls_ID = Filepath.split('\\')[-1].lower()
+        except: Cls_ID = ''
         
-        if splitext(ID)[-1].lower() == '.xbe':
-            ID = 'xbe'
+        if splitext(Cls_ID)[-1].lower() == '.xbe':
+            Cls_ID = 'xbe'
             
-        if ID in self.Definitions:
-            return ID
+        if Cls_ID in self.Definitions:
+            return Cls_ID

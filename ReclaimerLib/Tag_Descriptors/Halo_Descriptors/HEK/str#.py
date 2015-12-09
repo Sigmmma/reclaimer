@@ -8,7 +8,7 @@ class STR_Definition(Tag_Def):
 
     Tag_Ext = ".string_list"
 
-    Tag_ID = "str#"
+    Cls_ID = "str#"
 
     Endianness = ">"
     

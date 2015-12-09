@@ -110,13 +110,13 @@ class Constructor(TC):
 
     def Get_ID(self, Filepath):
         '''It is more reliable to determine a Halo tag
-        based on its 4CC Tag_ID than by file extension'''
+        based on its 4CC Cls_ID than by file extension'''
         try:            
             with open(Filepath, 'r+b') as Tag_File:
                 Tag_File.seek(36)
-                ID = str(Tag_File.read(4), 'latin-1')
+                Cls_ID = str(Tag_File.read(4), 'latin-1')
                 
-            if ID in self.Definitions:
-                return ID
+            if Cls_ID in self.Definitions:
+                return Cls_ID
         except:
             return None

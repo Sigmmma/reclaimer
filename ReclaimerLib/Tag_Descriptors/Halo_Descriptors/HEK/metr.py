@@ -8,7 +8,7 @@ class METR_Definition(Tag_Def):
 
     Tag_Ext = ".meter"
 
-    Tag_ID = "metr"
+    Cls_ID = "metr"
 
     Endianness = ">"
 
