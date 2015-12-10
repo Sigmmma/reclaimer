@@ -1,12 +1,14 @@
+import cProfile
 from traceback import format_exc
 from time import time
+
 try:
     from supyr_struct.Test import Tag_Test_Class
     from ReclaimerLib.Tag_Constructors.Halo_Constructors.\
          HEK.Constructor import Constructor
 
     if __name__ == '__main__':
-        Test = Tag_Test_Class(Print_Test=True, Save_Test=False, Debug=3,
+        Test = Tag_Test_Class(Print_Test=False, Save_Test=False, Debug=3,
                               Write_as_Temp=False, Backup_Old_Tags=False,
                               #Valid_Tag_IDs="ustr",
                               Constructor = Constructor,
@@ -17,7 +19,9 @@ try:
                                                      'Elements', 'Index', #'Flags',
                                                      'Tag_Path', #'Unique', 
                                                      'Bin_Size', 'Ram_Size'] })
-        Test.Run_Test()
+        #Test.Run_Test()
+        cProfile.run('Test.Load_Tags_and_Run()')
+        input()
         '''
         Test.Full_Debugging = False
         True_Times = []
