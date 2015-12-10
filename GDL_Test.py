@@ -1,3 +1,4 @@
+import cProfile
 from traceback import format_exc
 from copy import copy
 try:
@@ -7,7 +8,7 @@ try:
 
     if __name__ == '__main__':
         Test = Tag_Test_Class(Debug=3, Allow_Corrupt=True,
-                              Print_Test=True, Save_Test=False,
+                              Print_Test=False, Save_Test=False,
                               Write_as_Temp=True, Backup_Old_Tags=False,
                               Constructor=Constructor,
                               #Valid_Tag_IDs='xbe',
@@ -21,7 +22,9 @@ try:
                                                      'Tag_Path', 'Bin_Size','Ram_Size',
                                                      #'All'
                                                      ] })
-        Test.Run_Test()
+        #Test.Run_Test()
+        cProfile.run('Test.Load_Tags_and_Run()')
+        input()
 except:
     print(format_exc())
     input()
