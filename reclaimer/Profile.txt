@@ -1,0 +1,107 @@
+Halo_Test.py
+
+         114591 function calls (110654 primitive calls) in 0.713 seconds
+
+   Ordered by: standard name
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1    0.000    0.000    0.713    0.713 <string>:1(<module>)
+        1    0.000    0.000    0.713    0.713 {built-in method exec}
+     2407    0.059    0.000    0.059    0.000 {method 'read' of 'mmap.mmap' objects}
+      318    0.000    0.000    0.000    0.000 {method 'append' of 'list' objects}
+      279    0.001    0.000    0.002    0.000 {method 'decode' of 'bytes' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+       38    0.000    0.000    0.000    0.000 {method 'encode' of 'str' objects}
+       25    0.000    0.000    0.000    0.000 {method 'fileno' of '_io.BufferedRandom' objects}
+     3712    0.003    0.000    0.003    0.000 {method 'get' of 'dict' objects}
+       14    0.000    0.000    0.000    0.000 {method 'keys' of 'dict' objects}
+       25    0.000    0.000    0.000    0.000 {method 'lower' of 'str' objects}
+      120    0.005    0.000    0.005    0.000 {method 'read' of '_io.BufferedRandom' objects}
+      421    0.001    0.000    0.001    0.000 {method 'replace' of 'str' objects}
+       75    0.000    0.000    0.000    0.000 {method 'rfind' of 'str' objects}
+      120    0.001    0.000    0.001    0.000 {method 'seek' of '_io.BufferedRandom' objects}
+     2407    0.003    0.000    0.003    0.000 {method 'seek' of 'mmap.mmap' objects}
+      399    0.001    0.000    0.001    0.000 {method 'split' of 'str' objects}
+      174    0.000    0.000    0.000    0.000 {method 'strip' of 'str' objects}
+       25    0.000    0.000    0.000    0.000 genericpath.py:111(_splitext)
+        1    0.002    0.002    0.115    0.115 Handler.py:399(Index_Tags)
+        1    0.001    0.001    0.598    0.598 Handler.py:447(Load_Tags)
+        1    0.000    0.000    0.713    0.713 Test.py:154(Load_Tags_and_Run)
+        1    0.000    0.000    0.000    0.000 Handler.py:553(Reset_Tags)
+        3    0.000    0.000    0.000    0.000 Handler.py:586(Tally_Tags)
+      218    0.000    0.000    0.000    0.000 Field_Types.py:570(Str_Delimiter)
+       25    0.001    0.000    0.597    0.024 Constructor.py:133(Construct_Tag)
+    11030    0.053    0.000    0.054    0.000 Tag_Block.py:624(__getattr__)
+
+
+  3018/25    0.013    0.000    0.551    0.022 Field_Types.py:592(Reader)
+      222    0.005    0.000    0.011    0.000 Tag_Block.py:1040(Get_Neighbor)
+    70/35    0.004    0.000    0.274    0.008 Re_Wr_De_En.py:145(Array_Reader)
+  516/275    0.031    0.000    0.379    0.001 Re_Wr_De_En.py:229(Struct_Reader)
+     2379    0.030    0.000    0.297    0.000 Re_Wr_De_En.py:321(Data_Reader)
+       28    0.038    0.001    0.103    0.004 Re_Wr_De_En.py:457(Bytes_Reader)
+     3063    0.040    0.000    0.092    0.000 Tag_Block.py:1131(Get_Size)
+3206/2993    0.110    0.000    0.231    0.000 Tag_Block.py:512(__setitem__)
+  426/213    0.007    0.000    0.042    0.000 Tag_Block.py:644(__setattr__)
+    25653    0.025    0.000    0.025    0.000 {built-in method isinstance}
+      636    0.005    0.000    0.022    0.000 Tag_Block.py:70(__init__)
+       25    0.003    0.000    0.570    0.023 Tag_Obj.py:374(Read)
+       25    0.004    0.000    0.575    0.023 Tag_Obj.py:61(__init__)
+
+
+      120    0.007    0.000    0.099    0.001 Constructor.py:111(Get_Cls_ID)
+       25    0.000    0.000    0.000    0.000 Constructor.py:319(Get_Def)
+       98    0.000    0.000    0.000    0.000 Field_Types.py:166(Len_Size_Calc)
+       61    0.000    0.000    0.001    0.000 Field_Types.py:17(Calc_Tag_Ref_Size)
+      122    0.001    0.000    0.005    0.000 Field_Types.py:27(Tag_Ref_Size)
+      291    0.001    0.000    0.001    0.000 Field_Types.py:51(No_Size_Calc)
+     3234    0.002    0.000    0.002    0.000 Field_Types.py:512(Py_Type)
+    10584    0.009    0.000    0.009    0.000 Field_Types.py:532(Is_Array)
+     2981    0.003    0.000    0.003    0.000 Field_Types.py:538(Is_Var_Size)
+      230    0.000    0.000    0.000    0.000 Field_Types.py:547(Is_Delimited)
+     2280    0.002    0.000    0.002    0.000 Field_Types.py:551(Size)
+     2405    0.002    0.000    0.002    0.000 Field_Types.py:554(Enc)
+     2088    0.004    0.000    0.005    0.000 Field_Types.py:62(Default_Size_Calc)
+     2379    0.007    0.000    0.025    0.000 Field_Types.py:638(Decoder)
+     2768    0.009    0.000    0.019    0.000 Field_Types.py:668(Size_Calc)
+      192    0.001    0.000    0.002    0.000 Field_Types.py:70(Str_Size_Calc)
+       38    0.000    0.000    0.001    0.000 Field_Types.py:86(Str_Size_Calc_UTF)
+      166    0.001    0.000    0.002    0.000 Re_Wr_De_En.py:1015(Decode_Raw_String)
+       25    0.001    0.000    0.550    0.022 Re_Wr_De_En.py:64(Container_Reader)
+     2088    0.008    0.000    0.013    0.000 Re_Wr_De_En.py:978(Decode_Numeric)
+      125    0.001    0.000    0.002    0.000 Re_Wr_De_En.py:995(Decode_String)
+      802    0.007    0.000    0.013    0.000 Tag_Block.py:1023(Get_Tag)
+      152    0.003    0.000    0.015    0.000 Tag_Block.py:1241(Set_Neighbor)
+      680    0.016    0.000    0.064    0.000 Tag_Block.py:1347(Set_Size)
+     3448    0.013    0.000    0.015    0.000 Tag_Block.py:1548(Get_Desc)
+      636    0.010    0.000    0.017    0.000 Tag_Block.py:2110(Read)
+      213    0.001    0.000    0.006    0.000 Tag_Block.py:2389(__init__)
+  426/213    0.002    0.000    0.043    0.000 Tag_Block.py:2394(__setattr__)
+     3014    0.011    0.000    0.013    0.000 Tag_Block.py:503(__getitem__)
+
+
+       25    0.000    0.000    0.575    0.023 Tag_Obj.py:8(__init__)
+      210    0.002    0.000    0.014    0.000 ntpath.py:104(join)
+      420    0.004    0.000    0.010    0.000 ntpath.py:139(splitdrive)
+       25    0.000    0.000    0.001    0.000 ntpath.py:236(splitext)
+       10    0.000    0.000    0.006    0.001 ntpath.py:258(islink)
+      420    0.001    0.000    0.001    0.000 ntpath.py:35(_get_empty)
+      655    0.001    0.000    0.002    0.000 ntpath.py:41(_get_sep)
+      445    0.001    0.000    0.001    0.000 ntpath.py:47(_get_altsep)
+      210    0.000    0.000    0.001    0.000 ntpath.py:53(_get_bothseps)
+       25    0.000    0.000    0.000    0.000 ntpath.py:59(_get_dot)
+      630    0.001    0.000    0.002    0.000 ntpath.py:65(_get_colon)
+    41/12    0.001    0.000    0.027    0.002 os.py:292(walk)
+       38    0.000    0.000    0.000    0.000 utf_16_le.py:15(decode)
+       10    0.000    0.000    0.000    0.000 {built-in method S_ISLNK}
+      105    0.003    0.000    0.003    0.000 {built-in method _isdir}
+     4430    0.005    0.000    0.005    0.000 {built-in method hasattr}
+       28    0.000    0.000    0.000    0.000 {built-in method issubclass}
+     1754    0.001    0.000    0.001    0.000 {built-in method len}
+       11    0.010    0.001    0.010    0.001 {built-in method listdir}
+       10    0.006    0.001    0.006    0.001 {built-in method lstat}
+       25    0.000    0.000    0.000    0.000 {built-in method max}
+      145    0.101    0.001    0.101    0.001 {built-in method open}
+       13    0.000    0.000    0.000    0.000 {built-in method sorted}
+     2088    0.003    0.000    0.003    0.000 {built-in method unpack}
+       38    0.000    0.000    0.000    0.000 {built-in method utf_16_le_decode}
