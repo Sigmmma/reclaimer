@@ -54,14 +54,14 @@ class SCHI_Definition(Tag_Def):
                              ATTRIBUTES:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Extra_Layers_Array",
                                     MAX:4, SIZE:".Block_Count",
-                                    ARRAY_ELEMENT:Extra_Layers_Block
+                                    SUB_STRUCT:Extra_Layers_Block
                                     }
                              },
                         12:{ TYPE:Struct, OFFSET:84, GUI_NAME:"Maps",
                              ATTRIBUTES:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Maps_Array",
                                     MAX:4, SIZE:".Block_Count",
-                                    ARRAY_ELEMENT:Chicago_4_Stage_Maps
+                                    SUB_STRUCT:Chicago_4_Stage_Maps
                                     }
                              },
                         13:{ TYPE:UInt16, OFFSET:98, GUI_NAME:"Extra Flags" ,

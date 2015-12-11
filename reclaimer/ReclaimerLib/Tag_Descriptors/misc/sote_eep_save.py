@@ -37,7 +37,7 @@ class SotE_EEP_Definition(Tag_Def):
                             }
                         },
                      1:{TYPE:Array, GUI_NAME:"Save Files", SIZE:4, MIN:4, MAX:4,
-                        ARRAY_ELEMENT:{TYPE:Struct, SIZE:122, GUI_NAME:"Save File",
+                        SUB_STRUCT:{TYPE:Struct, SIZE:122, GUI_NAME:"Save File",
                                        0:{ TYPE:UInt8, GUI_NAME:"File CRC 1", DEFAULT:0, EDITABLE:False },
                                        1:{ TYPE:UInt8, GUI_NAME:"Difficulty",
                                            ELEMENTS:{ 0:{GUI_NAME:"None"},

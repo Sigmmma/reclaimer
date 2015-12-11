@@ -101,48 +101,48 @@ class SOSO_Definition(Tag_Def):
                             ATTRIBUTES:Block_Reference_Structure,
                             CHILD:{TYPE:Array, NAME:"OS_Shader_Model_Ext_Array",
                                    MAX:1, SIZE:".Block_Count",
-                                   ARRAY_ELEMENT:{ TYPE:Struct, SIZE:192, GUI_NAME:"Shader Model Ext",
-                                                   #Specular Color
-                                                   0:{ TYPE:Struct, OFFSET:0, GUI_NAME:"Specular Color Map",
-                                                       ATTRIBUTES:Tag_Reference_Structure
-                                                       },
-                                                   1:{ TYPE:Float, OFFSET:16, GUI_NAME:"Specular Color Coefficient" },
-                                                   2:{ TYPE:Float, OFFSET:24, GUI_NAME:"Specular Color Exponent" },
-                                                   3:{ TYPE:UInt16, OFFSET:28, GUI_NAME:"Flags",
-                                                       FLAGS:{0:{GUI_NAME:"Alpha as Exponent Mask"}}
-                                                       },
+                                   SUB_STRUCT:{ TYPE:Struct, SIZE:192, GUI_NAME:"Shader Model Ext",
+                                                #Specular Color
+                                                0:{ TYPE:Struct, OFFSET:0, GUI_NAME:"Specular Color Map",
+                                                    ATTRIBUTES:Tag_Reference_Structure
+                                                    },
+                                                1:{ TYPE:Float, OFFSET:16, GUI_NAME:"Specular Color Coefficient" },
+                                                2:{ TYPE:Float, OFFSET:24, GUI_NAME:"Specular Color Exponent" },
+                                                3:{ TYPE:UInt16, OFFSET:28, GUI_NAME:"Flags",
+                                                    FLAGS:{0:{GUI_NAME:"Alpha as Exponent Mask"}}
+                                                    },
 
-                                                   #Base Normal Map
-                                                   4:{ TYPE:Struct, OFFSET:32, GUI_NAME:"Base Normal Map",
-                                                       ATTRIBUTES:Tag_Reference_Structure
-                                                       },
-                                                   5:{ TYPE:Float, OFFSET:48, GUI_NAME:"Base Normal Coefficient" },
+                                                #Base Normal Map
+                                                4:{ TYPE:Struct, OFFSET:32, GUI_NAME:"Base Normal Map",
+                                                    ATTRIBUTES:Tag_Reference_Structure
+                                                    },
+                                                5:{ TYPE:Float, OFFSET:48, GUI_NAME:"Base Normal Coefficient" },
 
-                                                   #Detail Normal Maps
-                                                   6:{ TYPE:Struct, OFFSET:64, GUI_NAME:"Detail Normal 1 Map",
-                                                       ATTRIBUTES:Tag_Reference_Structure
-                                                       },
-                                                   7:{ TYPE:Float, OFFSET:80, GUI_NAME:"Detail Normal 1 Coefficient" },
-                                                   8:{ TYPE:Float, OFFSET:84, GUI_NAME:"Detail Normal 1 Scale" },
-                                                   9:{ TYPE:Float, OFFSET:88, GUI_NAME:"Detail Normal 1 V-Scale" },
-                                                   
-                                                   10:{ TYPE:Struct, OFFSET:96, GUI_NAME:"Detail Normal 2 Map",
-                                                        ATTRIBUTES:Tag_Reference_Structure
-                                                        },
-                                                   11:{ TYPE:Float, OFFSET:112, GUI_NAME:"Detail Normal 2 Coefficient" },
-                                                   12:{ TYPE:Float, OFFSET:116, GUI_NAME:"Detail Normal 2 Scale" },
-                                                   13:{ TYPE:Float, OFFSET:120, GUI_NAME:"Detail Normal 2 V-Scale" },
-                                                   
-                                                   #Specular Tint Override
-                                                   14:{ TYPE:Float, OFFSET:128, GUI_NAME:"Perpendicular Brightness"},#[0,1]
-                                                   15:Combine({OFFSET:132, GUI_NAME:"Perpendicular Tint Color"}, R_G_B_Float),
-                                                   
-                                                   16:{ TYPE:Float, OFFSET:144, GUI_NAME:"Parallel Brightness"},#[0,1]
-                                                   17:Combine({OFFSET:148, GUI_NAME:"Parallel Tint Color"}, R_G_B_Float),
-                                                   
-                                                   18:{ TYPE:Float, OFFSET:168, GUI_NAME:"Specular Lighting Exponent" },
-                                                   19:{ TYPE:Float, OFFSET:172, GUI_NAME:"Specular Lighting Coefficient" },
-                                                   }
+                                                #Detail Normal Maps
+                                                6:{ TYPE:Struct, OFFSET:64, GUI_NAME:"Detail Normal 1 Map",
+                                                    ATTRIBUTES:Tag_Reference_Structure
+                                                    },
+                                                7:{ TYPE:Float, OFFSET:80, GUI_NAME:"Detail Normal 1 Coefficient" },
+                                                8:{ TYPE:Float, OFFSET:84, GUI_NAME:"Detail Normal 1 Scale" },
+                                                9:{ TYPE:Float, OFFSET:88, GUI_NAME:"Detail Normal 1 V-Scale" },
+                                               
+                                                10:{ TYPE:Struct, OFFSET:96, GUI_NAME:"Detail Normal 2 Map",
+                                                     ATTRIBUTES:Tag_Reference_Structure
+                                                     },
+                                                11:{ TYPE:Float, OFFSET:112, GUI_NAME:"Detail Normal 2 Coefficient" },
+                                                12:{ TYPE:Float, OFFSET:116, GUI_NAME:"Detail Normal 2 Scale" },
+                                                13:{ TYPE:Float, OFFSET:120, GUI_NAME:"Detail Normal 2 V-Scale" },
+                                               
+                                                #Specular Tint Override
+                                                14:{ TYPE:Float, OFFSET:128, GUI_NAME:"Perpendicular Brightness"},#[0,1]
+                                                15:Combine({OFFSET:132, GUI_NAME:"Perpendicular Tint Color"}, R_G_B_Float),
+                                               
+                                                16:{ TYPE:Float, OFFSET:144, GUI_NAME:"Parallel Brightness"},#[0,1]
+                                                17:Combine({OFFSET:148, GUI_NAME:"Parallel Tint Color"}, R_G_B_Float),
+                                               
+                                                18:{ TYPE:Float, OFFSET:168, GUI_NAME:"Specular Lighting Exponent" },
+                                                19:{ TYPE:Float, OFFSET:172, GUI_NAME:"Specular Lighting Coefficient" },
+                                                }
                                    }
                             },
 

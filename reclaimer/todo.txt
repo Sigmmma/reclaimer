@@ -44,12 +44,40 @@ Finish docstrings for modules and update existing ones.
 
 
 
-
 Medium Priority:
 
 Need to make it so that readers/writers/decoders/encoders have better
 handling of exceptions and give better details regarding the exception.
     Do this for the whole library in general where necessary
+
+
+Make wrapper class for read/writing to any memoryview-able object.
+    This will allow writing to non-files
+
+set up child block reading and writing so the offset is set to their pointer
+    this needs to be done for the Container, Struct, and Array Field_Types
+
+    Remove the pointer get/set code from the String_NT read/writers after this
+
+
+
+Low Priority:
+
+Make it possible to call a Field_Type and provide a Name string
+followed by a calling of all the Field_Types of each of its fields.
+    This will return a constructor type object that, when called with
+    the proper arguments, will return a fully constructed Tag_Block.
+
+    Make it possible to get/set the descriptor of these constructor objects
+
+    This will be a good alternative for those who don't want to use the
+    JSON style dict definition method, though all of the keyword arguments
+    will need to go after all the fields have been specified, thus the
+    keyword arguments like GUI_NAME and POINTER will be at the bottom
+
+
+Speed up library by making special Tag_Blocks for each hierarchy type and
+remove all the checks for Field_Type as they will become unnecessary
 
 Try to make a mutable Tag_Block object that can be used to allow objects to
 have variables other than their structure properties. This approach should
@@ -61,22 +89,6 @@ same way, code is less bloated, and some other reasons I can't remember atm.
     __copy__ so that they also take into account the __dict__ slot.
     Will also need modified __setattr__, __delattr__, __getitem__, __setitem__,
     and __delitem__ that each check __dict__ before checking DESC or __slots__
-
-
-Make wrapper class for read/writing to any memoryview-able object.
-    This will allow writing to non-files
-
-
-
-Low Priority:
-
-Speed up library by making special Tag_Blocks for each hierarchy type and
-    remove all the checks for Field_Type as they will become unnecessary
-
-set up child block reading and writing so the offset is set to their pointer
-    this needs to be done for the Container, Struct, and Array Field_Types
-
-    Remove the pointer get/set code from the String_NT read/writers after this
 
 
 Implement recursive pointer based blocks.

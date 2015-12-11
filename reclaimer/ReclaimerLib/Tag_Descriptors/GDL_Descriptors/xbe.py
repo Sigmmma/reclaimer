@@ -110,67 +110,67 @@ class GDL_XBE_Definition(XBE_Def):
                      2:XBE_Def.XBE_Sec_Headers,
                      3:XBE_Def.XBE_Lib_Ver_Headers,
                      4:{TYPE:Array, GUI_NAME:"Secret Characters", SIZE:27, POINTER:1135088,
-                        ARRAY_ELEMENT:{TYPE:Struct, SIZE:36, GUI_NAME:"Secret Character",                         
-                                       0:{ TYPE:UInt32, OFFSET:0, GUI_NAME:"Color",
-                                           ELEMENTS:{0:{GUI_NAME:"Yellow"},
-                                                     1:{GUI_NAME:"Blue"},
-                                                     2:{GUI_NAME:"Red"},
-                                                     3:{GUI_NAME:"Green"}
-                                                     }
-                                           },
-                                       
-                                       1:{ TYPE:UInt32, OFFSET:4, GUI_NAME:"Character Type",
-                                           ELEMENTS:{0:{GUI_NAME:"Warrior"},
-                                                     1:{GUI_NAME:"Valkyrie"},
-                                                     2:{GUI_NAME:"Wizard"},
-                                                     3:{GUI_NAME:"Archer"},
-                                                     4:{GUI_NAME:"Dwarf"},
-                                                     5:{GUI_NAME:"Knight"},
-                                                     6:{GUI_NAME:"Sorceress"},
-                                                     7:{GUI_NAME:"Jester"},
-                                                     
-                                                     8:{GUI_NAME:"Minotaur"},
-                                                     9:{GUI_NAME:"Falconess"},
-                                                     10:{GUI_NAME:"Jackal"},
-                                                     11:{GUI_NAME:"Tigress"},
-                                                     12:{GUI_NAME:"Ogre"},
-                                                     13:{GUI_NAME:"Unicorn"},
-                                                     14:{GUI_NAME:"Medusa"},
-                                                     15:{GUI_NAME:"Hyena"},
-                                                     }
-                                           },
-                                       2:{ TYPE:Str_Latin1, OFFSET:8, GUI_NAME:"Activation Code", SIZE:7},
-                                       3:{ TYPE:Str_Latin1, OFFSET:16, GUI_NAME:"Directory", SIZE:16 },
-                                       4:{ TYPE:UInt32,      OFFSET:32, GUI_NAME:"Flags",
-                                           FLAGS:{ 0:{NAME:"Disable", VALUE:1}}
-                                           },
-                                       }
+                        SUB_STRUCT:{TYPE:Struct, SIZE:36, GUI_NAME:"Secret Character",                         
+                                    0:{ TYPE:UInt32, OFFSET:0, GUI_NAME:"Color",
+                                        ELEMENTS:{0:{GUI_NAME:"Yellow"},
+                                                  1:{GUI_NAME:"Blue"},
+                                                  2:{GUI_NAME:"Red"},
+                                                  3:{GUI_NAME:"Green"}
+                                                  }
+                                        },
+                                    
+                                    1:{ TYPE:UInt32, OFFSET:4, GUI_NAME:"Character Type",
+                                        ELEMENTS:{0:{GUI_NAME:"Warrior"},
+                                                  1:{GUI_NAME:"Valkyrie"},
+                                                  2:{GUI_NAME:"Wizard"},
+                                                  3:{GUI_NAME:"Archer"},
+                                                  4:{GUI_NAME:"Dwarf"},
+                                                  5:{GUI_NAME:"Knight"},
+                                                  6:{GUI_NAME:"Sorceress"},
+                                                  7:{GUI_NAME:"Jester"},
+                                                 
+                                                  8:{GUI_NAME:"Minotaur"},
+                                                  9:{GUI_NAME:"Falconess"},
+                                                  10:{GUI_NAME:"Jackal"},
+                                                  11:{GUI_NAME:"Tigress"},
+                                                  12:{GUI_NAME:"Ogre"},
+                                                  13:{GUI_NAME:"Unicorn"},
+                                                  14:{GUI_NAME:"Medusa"},
+                                                  15:{GUI_NAME:"Hyena"},
+                                                  }
+                                        },
+                                    2:{ TYPE:Str_Latin1, OFFSET:8, GUI_NAME:"Activation Code", SIZE:7},
+                                    3:{ TYPE:Str_Latin1, OFFSET:16, GUI_NAME:"Directory", SIZE:16 },
+                                    4:{ TYPE:UInt32,      OFFSET:32, GUI_NAME:"Flags",
+                                        FLAGS:{ 0:{NAME:"Disable", VALUE:1}}
+                                        }
+                                    }
                         },
                      
                      5:{TYPE:Array, NAME:"Cheats", SIZE:18, POINTER:1136064,
-                        ARRAY_ELEMENT:{TYPE:Struct, GUI_NAME:"Cheat", CHILD_ROOT:True,
-                                       0:{ TYPE:Str_Latin1, SIZE:7,
-                                           OFFSET:0, GUI_NAME:"Activation Code"},
-                                       1:{ TYPE:SInt32, OFFSET:8, GUI_NAME:"Item Type",
-                                           ELEMENTS:{ 0:{GUI_NAME:"Gold", VALUE:1},
-                                                      1:{GUI_NAME:"Key", VALUE:2},
-                                                      2:{GUI_NAME:"Potion", VALUE:4},
+                        SUB_STRUCT:{TYPE:Struct, GUI_NAME:"Cheat", CHILD_ROOT:True,
+                                    0:{ TYPE:Str_Latin1, SIZE:7,
+                                        OFFSET:0, GUI_NAME:"Activation Code"},
+                                    1:{ TYPE:SInt32, OFFSET:8, GUI_NAME:"Item Type",
+                                        ELEMENTS:{ 0:{GUI_NAME:"Gold", VALUE:1},
+                                                   1:{GUI_NAME:"Key", VALUE:2},
+                                                   2:{GUI_NAME:"Potion", VALUE:4},
 
-                                                      #these 3 utilize the below flags
-                                                      3:{GUI_NAME:"Weapon",  VALUE:5},
-                                                      4:{GUI_NAME:"Armor",   VALUE:6},
-                                                      5:{GUI_NAME:"Special", VALUE:9}
-                                                      }
-                                           },
-                                       2:{ TYPE:Float,  OFFSET:12, NAME:"Add" },
-                                       3:{ TYPE:UInt32, OFFSET:16, NAME:"Flags" },
+                                                   #these 3 utilize the below flags
+                                                   3:{GUI_NAME:"Weapon",  VALUE:5},
+                                                   4:{GUI_NAME:"Armor",   VALUE:6},
+                                                   5:{GUI_NAME:"Special", VALUE:9}
+                                                   }
+                                        },
+                                    2:{ TYPE:Float,  OFFSET:12, NAME:"Add" },
+                                    3:{ TYPE:UInt32, OFFSET:16, NAME:"Flags" },
 
-                                       #based on the above Item_Type, these are the
-                                       #different sets of meanings for the Flags
-                                       "Weapon":Weapon_Flags,
-                                       "Armor":Armor_Types,
-                                       "Special":Special_Types
-                                       }
+                                    #based on the above Item_Type, these are the
+                                    #different sets of meanings for the Flags
+                                    "Weapon":Weapon_Flags,
+                                    "Armor":Armor_Types,
+                                    "Special":Special_Types
+                                    }
                          }
                      }
 
