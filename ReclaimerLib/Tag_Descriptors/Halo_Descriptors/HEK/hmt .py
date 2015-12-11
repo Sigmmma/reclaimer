@@ -24,26 +24,26 @@ class HMT_Definition(Tag_Def):
                          1: {TYPE:Struct, OFFSET:20, GUI_NAME:"Message Elements" ,
                              ATTRIBUTES:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Message_Elements_Array", SIZE:".Block_Count",
-                                    ARRAY_ELEMENT:{ TYPE:Struct, SIZE:2, GUI_NAME:"Message Element",
-                                                    0:{ TYPE:UInt8, OFFSET:0, GUI_NAME:"Type" },
-                                                    1:{ TYPE:UInt8, OFFSET:1, GUI_NAME:"Data" }
-                                                    }
+                                    SUB_STRUCT:{ TYPE:Struct, SIZE:2, GUI_NAME:"Message Element",
+                                                 0:{ TYPE:UInt8, OFFSET:0, GUI_NAME:"Type" },
+                                                 1:{ TYPE:UInt8, OFFSET:1, GUI_NAME:"Data" }
+                                                 }
                                     }
                              },
                          
                          2: {TYPE:Struct, OFFSET:32, GUI_NAME:"Messages" ,
                              ATTRIBUTES:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Messages_Array", SIZE:".Block_Count",
-                                    ARRAY_ELEMENT:{ TYPE:Struct, SIZE:64, GUI_NAME:"Message",
-                                                    0:{ TYPE:Str_Latin1, OFFSET:0,
-                                                        GUI_NAME:"Name", SIZE:32},
-                                                    1:{ TYPE:UInt16, OFFSET:32, NAME:"Text_Start",
-                                                        GUI_NAME:"Start Index Into Text Blob" },
-                                                    2:{ TYPE:UInt16, OFFSET:34, NAME:"Message_Index",
-                                                        GUI_NAME:"Start Index of Message Block" },
-                                                    3:{ TYPE:UInt8, OFFSET:36,
-                                                        GUI_NAME:"Panel Count" }
-                                                    }
+                                    SUB_STRUCT:{ TYPE:Struct, SIZE:64, GUI_NAME:"Message",
+                                                 0:{ TYPE:Str_Latin1, OFFSET:0,
+                                                     GUI_NAME:"Name", SIZE:32},
+                                                 1:{ TYPE:UInt16, OFFSET:32, NAME:"Text_Start",
+                                                     GUI_NAME:"Start Index Into Text Blob" },
+                                                 2:{ TYPE:UInt16, OFFSET:34, NAME:"Message_Index",
+                                                     GUI_NAME:"Start Index of Message Block" },
+                                                 3:{ TYPE:UInt8, OFFSET:36,
+                                                     GUI_NAME:"Panel Count" }
+                                                 }
                                     }
                              }
                          }

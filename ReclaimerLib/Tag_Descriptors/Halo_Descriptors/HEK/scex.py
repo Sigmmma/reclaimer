@@ -54,21 +54,21 @@ class SCEX_Definition(Tag_Def):
                              ATTRIBUTES:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Extra_Layers_Array",
                                     MAX:4, SIZE:".Block_Count",
-                                    ARRAY_ELEMENT:Extra_Layers_Block
+                                    SUB_STRUCT:Extra_Layers_Block
                                     }
                              },
                         12:{ TYPE:Struct, OFFSET:84, GUI_NAME:"Four Stage Maps",
                              ATTRIBUTES:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Four_Stage_Maps_Array",
                                     MAX:4, SIZE:".Block_Count",
-                                    ARRAY_ELEMENT:Chicago_4_Stage_Maps
+                                    SUB_STRUCT:Chicago_4_Stage_Maps
                                     }
                              },
                         13:{ TYPE:Struct, OFFSET:96, GUI_NAME:"Two Stage Maps",
                              ATTRIBUTES:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Two_Stage_Maps_Array",
                                     MAX:2, SIZE:".Block_Count",
-                                    ARRAY_ELEMENT:Chicago_2_Stage_Maps
+                                    SUB_STRUCT:Chicago_2_Stage_Maps
                                     }
                              },
                         14:{ TYPE:UInt16, OFFSET:110, GUI_NAME:"Extra Flags" ,

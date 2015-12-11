@@ -278,7 +278,7 @@ def Convert_Bitmap_Tag(Tag, **kwargs):
             if len(BM.Texture_Block) and isinstance(BM.Texture_Block[0], array):
                 #change the type of data for the bitmap pixels to ANY array block.
                 #All Py_Array Field_Types use the same writer, thus any Py_Array Field_Type will work
-                Texture_Root.Set_Desc('TYPE', UInt8_Array, 'ARRAY_ELEMENT')
+                Texture_Root.Set_Desc('TYPE', UInt8_Array, 'SUB_STRUCT')
 
             #set the data block to the newly converted one
             Texture_Root.Read(BM.Texture_Block)

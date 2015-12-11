@@ -15,9 +15,9 @@ class BITM_Definition(Tag_Def):
     Endianness = ">"
 
     Pixel_Root_Desc = { TYPE:Array, NAME:'Pixel_Root_Desc', SIZE:0,
-                        ARRAY_ELEMENT:{ TYPE:Array, NAME:'Bitmap_Pixels', SIZE:0,
-                                        ARRAY_ELEMENT:{ TYPE:Bytearray_Raw, NAME:'Pixels' }
-                                        }
+                        SUB_STRUCT:{ TYPE:Array, NAME:'Bitmap_Pixels', SIZE:0,
+                                     SUB_STRUCT:{ TYPE:Bytearray_Raw, NAME:'Pixels' }
+                                     }
                         }
     
 
@@ -41,7 +41,7 @@ class BITM_Definition(Tag_Def):
                            ATTRIBUTES:Block_Reference_Structure,
                            CHILD:{TYPE:Array,  NAME:"Sprite_Block_Array",
                                   MAX:64, SIZE:".Block_Count",
-                                  ARRAY_ELEMENT:Sprites_Desc
+                                  SUB_STRUCT:Sprites_Desc
                                   }
                            }
                        }
@@ -184,14 +184,14 @@ class BITM_Definition(Tag_Def):
                                ATTRIBUTES:Block_Reference_Structure,
                                CHILD:{TYPE:Array,   NAME:"Sequence_Block_Array",
                                       MAX:256, SIZE:".Block_Count",
-                                      ARRAY_ELEMENT:Sequences_Desc
+                                      SUB_STRUCT:Sequences_Desc
                                       }
                                },
                           19:{ TYPE:Struct, OFFSET:96, GUI_NAME:"Bitmaps",
                                ATTRIBUTES:Block_Reference_Structure,
                                CHILD:{TYPE:Array, NAME:"Bitmap_Block_Array",
                                       MAX:32767, SIZE:".Block_Count",
-                                      ARRAY_ELEMENT:Bitmaps_Desc
+                                      SUB_STRUCT:Bitmaps_Desc
                                       }
                                }
                           }
