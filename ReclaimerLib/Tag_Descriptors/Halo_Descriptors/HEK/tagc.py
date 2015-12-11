@@ -20,11 +20,11 @@ class TAGC_Definition(Tag_Def):
                              
                              CHILD:{TYPE:Array, NAME:"Tag_Ref_Array",
                                     SIZE:".Block_Count", MAX:200,
-                                    ARRAY_ELEMENT:{TYPE:Struct, SIZE:16, GUI_NAME:"Tag",
-                                                   ATTRIBUTES:Tag_Reference_Structure,
-                                                   0:{ TYPE:Str_Raw_Latin1, GUI_NAME:"Tag Class", SIZE:4,
-                                                       ELEMENTS:All_Tag_Enums}
-                                                   }
+                                    SUB_STRUCT:{ TYPE:Struct, SIZE:16, GUI_NAME:"Tag",
+                                                 ATTRIBUTES:Tag_Reference_Structure,
+                                                 0:{ TYPE:Str_Raw_Latin1, GUI_NAME:"Tag Class", SIZE:4,
+                                                     ELEMENTS:All_Tag_Enums}
+                                                 }
                                     }
                              }
                          }

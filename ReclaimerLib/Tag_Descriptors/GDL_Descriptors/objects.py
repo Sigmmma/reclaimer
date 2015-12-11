@@ -93,7 +93,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                                  }
                       },
                   #CHILD:{ TYPE:Array, NAME:"Primitive_Array",
-                  #        SIZE:'.Count', ARRAY_ELEMENT:{ }
+                  #        SIZE:'.Count', SUB_STRUCT:{ }
                   #        }
                   }
     Pointer32
@@ -157,12 +157,12 @@ class OBJECTS_PS2_Definition(Tag_Def):
                              0:{ TYPE:Array, GUI_NAME:"Sub-Objects",
                                  POINTER:"..Sub_Objects_Pointer",
                                  CARRY_OFF:False, SIZE:Sub_Objects_Size,
-                                 ARRAY_ELEMENT:Sub_Object_Block
+                                 SUB_STRUCT:Sub_Object_Block
                                  },
                              1:{ TYPE:Array, GUI_NAME:"Sub-Object_Models",
                                  POINTER:"..Sub_Object_Models_Pointer",
                                  CARRY_OFF:False, SIZE:"..Sub_Objects_Count",
-                                 ARRAY_ELEMENT:Primitive
+                                 SUB_STRUCT:Primitive
                                  }
                              }
                      }
@@ -293,29 +293,29 @@ class OBJECTS_PS2_Definition(Tag_Def):
                      CHILD:{TYPE:Container, GUI_NAME:"Data",
                             0:{TYPE:Array, GUI_NAME:"Objects",
                                SIZE:'..Object_Count', POINTER:'..Object_Pointer',
-                               ARRAY_ELEMENT:Object_Block,
+                               SUB_STRUCT:Object_Block,
                                },
                             1:{TYPE:Array, GUI_NAME:"Bitmaps",
                                SIZE:'..Bitmap_Count', POINTER:'..Bitmap_Pointer',
-                               ARRAY_ELEMENT:Bitmap_Block
+                               SUB_STRUCT:Bitmap_Block
                                },
                             2:{TYPE:Array, GUI_NAME:"Object Defs",
                                SIZE:'..Object_Def_Count', POINTER:'..Object_Def_Pointer',
-                               ARRAY_ELEMENT:{ TYPE:Struct, SIZE:24, GUI_NAME:"Object Def",
-                                               0:{ TYPE:Str_Latin1, NAME:"Name", SIZE:16},
-                                               1:{ TYPE:Float, NAME:"BndRad", GUI_NAME:"Bounding Radius"},
-                                               2:{ TYPE:SInt16, NAME:"Index"},
-                                               3:{ TYPE:SInt16, NAME:"NFrames"},
-                                               }
+                               SUB_STRUCT:{ TYPE:Struct, SIZE:24, GUI_NAME:"Object Def",
+                                            0:{ TYPE:Str_Latin1, NAME:"Name", SIZE:16},
+                                            1:{ TYPE:Float, NAME:"BndRad", GUI_NAME:"Bounding Radius"},
+                                            2:{ TYPE:SInt16, NAME:"Index"},
+                                            3:{ TYPE:SInt16, NAME:"NFrames"},
+                                            }
                                },
                             3:{TYPE:Array, GUI_NAME:"Bitmap Defs",
                                SIZE:'..Bitmap_Def_Count', POINTER:'..Bitmap_Def_Pointer',
-                               ARRAY_ELEMENT:{ TYPE:Struct, SIZE:36, GUI_NAME:"Bitmap Def",
-                                               0:{ TYPE:Str_Latin1, OFFSET:0, NAME:"Name", SIZE:16},
-                                               1:{ TYPE:UInt16, OFFSET:30, NAME:"Index"},
-                                               2:{ TYPE:UInt16, OFFSET:32, NAME:"Width"},
-                                               3:{ TYPE:UInt16, OFFSET:34, NAME:"Height"},
-                                               }
+                               SUB_STRUCT:{ TYPE:Struct, SIZE:36, GUI_NAME:"Bitmap Def",
+                                            0:{ TYPE:Str_Latin1, OFFSET:0, NAME:"Name", SIZE:16},
+                                            1:{ TYPE:UInt16, OFFSET:30, NAME:"Index"},
+                                            2:{ TYPE:UInt16, OFFSET:32, NAME:"Width"},
+                                            3:{ TYPE:UInt16, OFFSET:34, NAME:"Height"},
+                                            }
                                }
                             }
                      }
