@@ -15,7 +15,7 @@ class ANIM_PS2_Definition(Tag_Def):
     #The constructor used to build this definitions Tag_Obj
     Tag_Obj = Anim_PS2_Tag
 
-    Endianness = "<"
+    Endian = "<"
 
     Incomplete = True
 

@@ -10,7 +10,7 @@ class HMT_Definition(Tag_Def):
 
     Cls_ID = "hmt "
 
-    Endianness = ">"
+    Endian = ">"
 
     Tag_Structure = {TYPE:Container, GUI_NAME:"hud_message_text",
                      0:Combine( {1:{ DEFAULT:"hmt " } }, Tag_Header),

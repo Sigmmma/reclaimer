@@ -13,7 +13,7 @@ class SCHI_Definition(Tag_Def):
 
     Tag_Obj = SCHI_Tag
 
-    Endianness = ">"
+    Endian = ">"
 
     Tag_Structure = {TYPE:Container, GUI_NAME:"shader_transparent_chicago",
                      0:Combine( {1:{ DEFAULT:"schi" } }, Tag_Header),

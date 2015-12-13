@@ -12,7 +12,7 @@ class BITM_Definition(Tag_Def):
 
     Tag_Obj = BITM_Tag
 
-    Endianness = ">"
+    Endian = ">"
 
     Pixel_Root_Desc = { TYPE:Array, NAME:'Pixel_Root_Desc', SIZE:0,
                         SUB_STRUCT:{ TYPE:Array, NAME:'Bitmap_Pixels', SIZE:0,

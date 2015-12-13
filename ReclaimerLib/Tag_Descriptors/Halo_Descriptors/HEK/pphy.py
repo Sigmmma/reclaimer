@@ -10,7 +10,7 @@ class PPHY_Definition(Tag_Def):
 
     Cls_ID = "pphy"
 
-    Endianness = ">"
+    Endian = ">"
 
     Tag_Structure = {TYPE:Container, GUI_NAME:"point_physics",
                      0:Combine( {1:{ DEFAULT:"pphy" } }, Tag_Header),
