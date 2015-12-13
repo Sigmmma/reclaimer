@@ -10,7 +10,7 @@ class BOOM_Definition(Tag_Def):
 
     Cls_ID = "boom"
 
-    Endianness = ">"
+    Endian = ">"
 
     Tag_Structure = { TYPE:Container, GUI_NAME:"spheroid",
                       0:Combine( {1:{ DEFAULT:"boom" } }, Tag_Header),

@@ -13,7 +13,7 @@ class SENV_Definition(Tag_Def):
 
     Tag_Obj = SENV_Tag
 
-    Endianness = ">"
+    Endian = ">"
 
     Tag_Structure = {TYPE:Container, GUI_NAME:"shader_environment",
                      0:Combine( {1:{ DEFAULT:"senv" },

@@ -10,7 +10,7 @@ class USTR_Definition(Tag_Def):
 
     Cls_ID = "ustr"
 
-    Endianness = ">"
+    Endian = ">"
     
     Tag_Structure = {TYPE:Container, GUI_NAME:"unicode_string_list",
                      0:Combine( {1:{ DEFAULT:"ustr" } }, Tag_Header),                    

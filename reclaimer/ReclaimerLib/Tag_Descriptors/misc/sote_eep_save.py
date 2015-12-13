@@ -11,7 +11,7 @@ class SotE_EEP_Definition(Tag_Def):
     
     Cls_ID = "sote_eep_save"
 
-    Endianness = ">"
+    Endian = ">"
     
     Weapons = { TYPE:Struct,
                 0:{ TYPE:UInt8, GUI_NAME:"Pulse"},

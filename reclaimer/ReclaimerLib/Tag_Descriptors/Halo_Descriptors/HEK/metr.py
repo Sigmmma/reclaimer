@@ -10,7 +10,7 @@ class METR_Definition(Tag_Def):
 
     Cls_ID = "metr"
 
-    Endianness = ">"
+    Endian = ">"
 
     Tag_Structure = {TYPE:Container, GUI_NAME:"meter",
                      0:Combine( {1:{ DEFAULT:"metr" } }, Tag_Header),

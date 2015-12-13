@@ -13,7 +13,7 @@ class SCEX_Definition(Tag_Def):
 
     Tag_Obj = SCEX_Tag
 
-    Endianness = ">"
+    Endian = ">"
 
     Tag_Structure = {TYPE:Container, GUI_NAME:"shader_transparent_chicago_extended",
                      0:Combine( {1:{ DEFAULT:"scex" } }, Tag_Header),

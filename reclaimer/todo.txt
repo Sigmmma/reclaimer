@@ -1,9 +1,6 @@
 
 High Priority:
     
-
-finish up automatic structure padding and alignment
-
 Make a "Switch" Field_Type that allows you to specify
 a function which will determine which descriptor to use.
     do this by making the Switch have a reader which chooses from a list of
@@ -37,11 +34,7 @@ make an immutable dictionary class called a "Descriptor"
 
     Do the above for __setattr__, __delattr__, __setitem__, and __delitem__
 
-
-Make it so that Pointer32 and Pointer64 are set to NULL when their pointed to block DNE
-
 Finish docstrings for modules and update existing ones.
-
 
 
 Medium Priority:
@@ -50,14 +43,10 @@ Need to make it so that readers/writers/decoders/encoders have better
 handling of exceptions and give better details regarding the exception.
     Do this for the whole library in general where necessary
 
+    place try/except around all encoding routines to catch and report errors better
 
 Make wrapper class for read/writing to any memoryview-able object.
     This will allow writing to non-files
-
-set up child block reading and writing so the offset is set to their pointer
-    this needs to be done for the Container, Struct, and Array Field_Types
-
-    Remove the pointer get/set code from the String_NT read/writers after this
 
 
 
@@ -78,6 +67,11 @@ followed by a calling of all the Field_Types of each of its fields.
 
 Speed up library by making special Tag_Blocks for each hierarchy type and
 remove all the checks for Field_Type as they will become unnecessary
+    somehow remove Reader, Writer, Encoder, Decoder, and Size_Calc from
+    the Field_Type class and make a factory function that builds the
+    class with those methods directly set, that way it doesnt have
+    to go through an intermediary function to get the class reference
+
 
 Try to make a mutable Tag_Block object that can be used to allow objects to
 have variables other than their structure properties. This approach should
@@ -102,6 +96,8 @@ Implement recursive pointer based blocks.
     When reading, a dictionary of pointers to blocks is passed around. When a
     pointer is read that exists in the dictionary keys, the corrosponding
     block in the dictionary is used instead of reading it from the file again.
+
+    Make it so that Pointer32/64 are set to 0 when their pointed to block DNE
 
 
 

@@ -13,7 +13,7 @@ class SOSO_Definition(Tag_Def):
     
     Tag_Obj = SOSO_Tag
 
-    Endianness = ">"
+    Endian = ">"
 
     Tag_Structure = {TYPE:Container, GUI_NAME:"shader_model",
                      0:Combine( {1:{ DEFAULT:"soso" },
