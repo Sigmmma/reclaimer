@@ -15,7 +15,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
     #The constructor used to build this definitions Tag_Obj
     Tag_Obj = Objects_PS2_Tag
 
-    Endianness = "<"
+    Endian = "<"
 
     #ELEMENTS: { 0:{NAME:"Point_List"},
     #            1:{NAME:"Line_List"},
