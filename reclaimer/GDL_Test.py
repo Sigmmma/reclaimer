@@ -24,9 +24,12 @@ try:
                                                      ] })
         #Test.Run_Test()
         cProfile.run('Test.Load_Tags_and_Run()')
+        Objs = Test.Tag_Collection.get('objects.ps2')
+        if Objs is not None:
+            for Tag_Path in Objs:
+                print("Size of: "+Tag_Path+" = ", Objs[Tag_Path].Tag_Data.Bin_Size)
+                #Objs[Tag_Path].Print(Show=('Name','Value','Children','Index'),Printout=True)
         input()
 except:
     print(format_exc())
     input()
-    
-Tag = Test.Tag_Collection['objects.ps2']['gdl\\sum\\OBJECTS.PS2']
