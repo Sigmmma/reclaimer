@@ -10,7 +10,7 @@ Mode = "locate"
 
 
 
-Words_to_Locate = ['Tag_Test']
+Words_to_Locate = ['ATTR_OFFSETS']
 Word_Replacements = []
 #Flags = re.IGNORECASE
 

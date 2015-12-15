@@ -12,5 +12,5 @@ class SCEX_Tag(Halo_Tag_Obj):
         Data = self.Tag_Data.Data
         del Data.Two_Stage_Maps
         Data.Numeric_Shader_ID = 6
-        Data.ATTR_OFFSETS['Extra_Flags'] = 98
+        Data.ATTR_OFFS['Extra_Flags'] = 98
         Data.Set_Size(108)
