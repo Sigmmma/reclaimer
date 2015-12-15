@@ -222,7 +222,7 @@ class BITM_Tag(Halo_Tag_Obj):
                     #change the type of data for the bitmap pixels
                     #to ANY array block. All Py_Array Tag_Types use
                     #the same writer, thus any Py_Array Tag_Type will work
-                    Tex_Block.Set_Desc('TYPE', UInt8_Array, 'ARRAY_ELEMENT')
+                    Tex_Block.Set_Desc('TYPE', UInt8_Array, 'SUB_STRUCT')
 
                 #this will be used to copy values from
                 Template = Tex_Block.__copy__()

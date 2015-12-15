@@ -28,20 +28,20 @@ class SCEX_Definition(Tag_Def):
                         3:{ TYPE:SInt32, OFFSET:37, GUI_NAME:"Numeric Counter Limit"},#[0,255]
                         
                         # Shader Properties
-                        4:{ TYPE:UInt8, OFFSET:41, GUI_NAME:"Chicago Shader Flags" ,
-                             FLAGS:Transparent_Shader_Properties
+                        4:{ TYPE:Bool8, OFFSET:41, GUI_NAME:"Chicago Shader Flags" ,
+                             OPTIONS:Transparent_Shader_Properties
                              },
-                        5:{ TYPE:UInt16, OFFSET:42, GUI_NAME:"First Map Type" ,
-                             ELEMENTS:Transparent_Shader_First_Map_Type
+                        5:{ TYPE:Enum16, OFFSET:42, GUI_NAME:"First Map Type" ,
+                             OPTIONS:Transparent_Shader_First_Map_Type
                              },
-                        6:{ TYPE:UInt16, OFFSET:44, GUI_NAME:"Framebuffer Blend Function" ,
-                             ELEMENTS:Framebuffer_Blend_Modes
+                        6:{ TYPE:Enum16, OFFSET:44, GUI_NAME:"Framebuffer Blend Function" ,
+                             OPTIONS:Framebuffer_Blend_Modes
                              },
-                        7:{ TYPE:UInt16, OFFSET:46, GUI_NAME:"Framebuffer Fade Mode" ,
-                             ELEMENTS:Transparent_Shader_Fade_Mode
+                        7:{ TYPE:Enum16, OFFSET:46, GUI_NAME:"Framebuffer Fade Mode" ,
+                             OPTIONS:Transparent_Shader_Fade_Mode
                              },
-                        8:{ TYPE:UInt16, OFFSET:48, GUI_NAME:"Framebuffer Fade Source" ,
-                             ELEMENTS:Function_Outputs
+                        8:{ TYPE:Enum16, OFFSET:48, GUI_NAME:"Framebuffer Fade Source" ,
+                             OPTIONS:Function_Outputs
                              },
                         
                         #Lens Flare
@@ -71,8 +71,8 @@ class SCEX_Definition(Tag_Def):
                                     SUB_STRUCT:Chicago_2_Stage_Maps
                                     }
                              },
-                        14:{ TYPE:UInt16, OFFSET:110, GUI_NAME:"Extra Flags" ,
-                             FLAGS:Chicago_Extra_Flags
+                        14:{ TYPE:Bool16, OFFSET:110, GUI_NAME:"Extra Flags" ,
+                             OPTIONS:Chicago_Extra_Flags
                              }
                         }
                      }

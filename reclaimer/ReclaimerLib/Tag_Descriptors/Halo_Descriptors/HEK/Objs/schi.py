@@ -11,5 +11,5 @@ class SCHI_Tag(Halo_Tag_Obj):
         
         Data = self.Tag_Data.Data
         Data.Numeric_Shader_ID = 7
-        Data.ATTR_OFFSETS['Extra_Flags'] = 110
+        Data.ATTR_OFFS['Extra_Flags'] = 110
         Data.Set_Size(120)

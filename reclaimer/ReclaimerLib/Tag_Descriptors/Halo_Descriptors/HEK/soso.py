@@ -29,31 +29,31 @@ class SOSO_Definition(Tag_Def):
                         2:Numeric_Shader_ID,
                         
                         #Model Shader Properties
-                        3:{ TYPE:UInt16, OFFSET:40, GUI_NAME:"Flags",
-                            FLAGS:{0:{GUI_NAME:"Detail After Reflection"},
-                                   1:{GUI_NAME:"Two-Sided"},
-                                   2:{GUI_NAME:"Not Alpha-Tested"},
-                                   3:{GUI_NAME:"Alpha-Blended Decal"},
-                                   4:{GUI_NAME:"True Atmospheric Fog"},
-                                   5:{GUI_NAME:"Disable Two-Sided Culling"}
-                                   }
+                        3:{ TYPE:Bool16, OFFSET:40, GUI_NAME:"Flags",
+                            OPTIONS:{ 0:{GUI_NAME:"Detail After Reflection"},
+                                      1:{GUI_NAME:"Two-Sided"},
+                                      2:{GUI_NAME:"Not Alpha-Tested"},
+                                      3:{GUI_NAME:"Alpha-Blended Decal"},
+                                      4:{GUI_NAME:"True Atmospheric Fog"},
+                                      5:{GUI_NAME:"Disable Two-Sided Culling"}
+                                      }
                             },
                         4:{ TYPE:Float, OFFSET:56, GUI_NAME:"Translucency" },
                         
                         #Color-Change
-                        5:{ TYPE:UInt16, OFFSET:76, GUI_NAME:"Color Change Source",
-                            ELEMENTS:Function_Names},
+                        5:{ TYPE:Enum16, OFFSET:76, GUI_NAME:"Color Change Source",
+                            OPTIONS:Function_Names},
                             
                         #Self-Illumination
                         6:{TYPE:Struct, OFFSET:108, GUI_NAME:"Animation",
-                           0:{ TYPE:UInt16, OFFSET:0, GUI_NAME:"Flags",
-                               FLAGS:{0:{GUI_NAME:"No Random Phase"}}
+                           0:{ TYPE:Bool16, OFFSET:0, GUI_NAME:"Flags",
+                               OPTIONS:{0:{GUI_NAME:"No Random Phase"}}
                                },
-                           1:{ TYPE:UInt16, OFFSET:4, GUI_NAME:"Color Source",
-                               ELEMENTS:Function_Names
+                           1:{ TYPE:Enum16, OFFSET:4, GUI_NAME:"Color Source",
+                               OPTIONS:Function_Names
                                },
-                           2:{ TYPE:UInt16, OFFSET:6, GUI_NAME:"Animation Function" ,
-                               ELEMENTS:Animation_Functions
+                           2:{ TYPE:Enum16, OFFSET:6, GUI_NAME:"Animation Function" ,
+                               OPTIONS:Animation_Functions
                                },
                            3:{ TYPE:Float, OFFSET:8, GUI_NAME:"Animation Period"},#seconds
                            4:Combine({OFFSET:12, GUI_NAME:"Animation Color Lower Bound"}, R_G_B_Float),
@@ -71,12 +71,12 @@ class SOSO_Definition(Tag_Def):
                                 ATTRIBUTES:Tag_Reference_Structure
                                 },
                              
-                            4:{ TYPE:UInt16, OFFSET:56, GUI_NAME:"Detail Function" ,
-                                ELEMENTS:Detail_Map_Functions
+                            4:{ TYPE:Enum16, OFFSET:56, GUI_NAME:"Detail Function" ,
+                                OPTIONS:Detail_Map_Functions
                                 },
                              
-                            5:{ TYPE:UInt16, OFFSET:58, GUI_NAME:"Detail Mask" ,
-                                ELEMENTS:{0:{GUI_NAME:"None"},
+                            5:{ TYPE:Enum16, OFFSET:58, GUI_NAME:"Detail Mask" ,
+                                OPTIONS:{ 0:{GUI_NAME:"None"},
                                           1:{GUI_NAME:"Red Inverse"},
                                           2:{GUI_NAME:"Red"},
                                           3:{GUI_NAME:"Green Inverse"},
@@ -108,8 +108,8 @@ class SOSO_Definition(Tag_Def):
                                                     },
                                                 1:{ TYPE:Float, OFFSET:16, GUI_NAME:"Specular Color Coefficient" },
                                                 2:{ TYPE:Float, OFFSET:24, GUI_NAME:"Specular Color Exponent" },
-                                                3:{ TYPE:UInt16, OFFSET:28, GUI_NAME:"Flags",
-                                                    FLAGS:{0:{GUI_NAME:"Alpha as Exponent Mask"}}
+                                                3:{ TYPE:Bool16, OFFSET:28, GUI_NAME:"Flags",
+                                                    OPTIONS:{0:{GUI_NAME:"Alpha as Exponent Mask"}}
                                                     },
 
                                                 #Base Normal Map

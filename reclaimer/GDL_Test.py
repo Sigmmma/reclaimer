@@ -8,7 +8,7 @@ try:
 
     if __name__ == '__main__':
         Test = Tag_Test_Class(Debug=3, Allow_Corrupt=True,
-                              Print_Test=False, Save_Test=False,
+                              Print_Test=True, Save_Test=False,
                               Write_as_Temp=True, Backup_Old_Tags=False,
                               Constructor=Constructor,
                               #Valid_Tag_IDs='xbe',
