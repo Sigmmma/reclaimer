@@ -16,14 +16,14 @@ class PPHY_Definition(Tag_Def):
                      0:Combine( {1:{ DEFAULT:"pphy" } }, Tag_Header),
                      
                      1:{TYPE:Struct, SIZE:64, GUI_NAME:"Data",
-                        0:{ TYPE:UInt16, OFFSET:2, GUI_NAME:"Flags",
-                            FLAGS:{0:{GUI_NAME:"Flamethrower Particle Collision"},
-                                   1:{GUI_NAME:"Collides with Structures"},
-                                   2:{GUI_NAME:"Collides with Water Surface"},
-                                   3:{GUI_NAME:"Uses Simple Wind"},
-                                   4:{GUI_NAME:"Uses Damped Wind"},
-                                   5:{GUI_NAME:"No Gravity"}
-                                   }
+                        0:{ TYPE:Bool16, OFFSET:2, GUI_NAME:"Flags",
+                            OPTIONS:{ 0:{GUI_NAME:"Flamethrower Particle Collision"},
+                                      1:{GUI_NAME:"Collides with Structures"},
+                                      2:{GUI_NAME:"Collides with Water Surface"},
+                                      3:{GUI_NAME:"Uses Simple Wind"},
+                                      4:{GUI_NAME:"Uses Damped Wind"},
+                                      5:{GUI_NAME:"No Gravity"}
+                                      }
                             },
                         #these next three are courtesy of Sparky. I had
                         #no idea these existed till I looked in Eschaton

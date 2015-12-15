@@ -52,38 +52,43 @@ class BITM_Definition(Tag_Def):
                      1:{ TYPE:UInt16, OFFSET:4, GUI_NAME:"Width"},
                      2:{ TYPE:UInt16, OFFSET:6, GUI_NAME:"Height"},
                      3:{ TYPE:UInt16, OFFSET:8, GUI_NAME:"Depth"},
-                     4:{ TYPE:UInt16, OFFSET:10, GUI_NAME:"Type",
-                         ELEMENTS:{0:{GUI_NAME:"Texture 2D"},
+                     4:{ TYPE:Enum16, OFFSET:10, GUI_NAME:"Type",
+                         OPTIONS:{ 0:{GUI_NAME:"Texture 2D"},
                                    1:{GUI_NAME:"Texture 3D"},
                                    2:{GUI_NAME:"Cubemap"},
                                    3:{GUI_NAME:"White"}
                                    }
                          },
-                     5:{ TYPE:UInt16, OFFSET:12, GUI_NAME:"Format",
-                         ELEMENTS:{0:{GUI_NAME:"A8"},
+                     5:{ TYPE:Enum16, OFFSET:12, GUI_NAME:"Format",
+                         OPTIONS:{ 0:{GUI_NAME:"A8"},
                                    1:{GUI_NAME:"Y8"},
                                    2:{GUI_NAME:"AY8"},
                                    3:{GUI_NAME:"A8Y8"},
+                                   4:{GUI_NAME:"---unused1---"},
+                                   5:{GUI_NAME:"---unused2---"},
                                    6:{GUI_NAME:"R5G6B5"},
+                                   7:{GUI_NAME:"---unused3---"},
                                    8:{GUI_NAME:"A1R5G5B5"},
                                    9:{GUI_NAME:"A4R4G4B4"},
                                    10:{GUI_NAME:"X8R8G8B8"},
                                    11:{GUI_NAME:"A8R8G8B8"},
+                                   12:{GUI_NAME:"---unused4---"},
+                                   13:{GUI_NAME:"---unused5---"},
                                    14:{GUI_NAME:"DXT1"},
                                    15:{GUI_NAME:"DXT3"},
                                    16:{GUI_NAME:"DXT5"},
                                    17:{GUI_NAME:"P8-bump"}
                                    }
                          },
-                     6:{ TYPE:UInt16, OFFSET:14, GUI_NAME:"Flags",
-                         FLAGS:{0:{GUI_NAME:"Power of 2 Dimensions", VALUE:1},
-                                1:{GUI_NAME:"Compressed", VALUE:2},
-                                2:{GUI_NAME:"Palletized", VALUE:4},
-                                3:{GUI_NAME:"Swizzled", VALUE:8},
-                                4:{GUI_NAME:"Linear", VALUE:16},
-                                5:{GUI_NAME:"V16U16", VALUE:32},
-                                6:{GUI_NAME:"Made by Arsenic", VALUE:128}
-                                }
+                     6:{ TYPE:Bool16, OFFSET:14, GUI_NAME:"Flags",
+                         OPTIONS:{ 0:{GUI_NAME:"Power of 2 Dimensions", VALUE:1},
+                                   1:{GUI_NAME:"Compressed", VALUE:2},
+                                   2:{GUI_NAME:"Palletized", VALUE:4},
+                                   3:{GUI_NAME:"Swizzled", VALUE:8},
+                                   4:{GUI_NAME:"Linear", VALUE:16},
+                                   5:{GUI_NAME:"V16U16", VALUE:32},
+                                   6:{GUI_NAME:"Made by Arsenic", VALUE:128}
+                                   }
                          },
                      7:{TYPE:Struct, OFFSET:16, GUI_NAME:"Registration Point",
                         0:{ TYPE:UInt16, OFFSET:0, GUI_NAME:"X" },
@@ -105,16 +110,16 @@ class BITM_Definition(Tag_Def):
                                  }, Tag_Header),
                      
                      1:{ TYPE:Struct, SIZE:108, GUI_NAME:"Data",
-                          0:{ TYPE:UInt16, OFFSET:0, GUI_NAME:"Type",
-                              ELEMENTS:{0:{GUI_NAME:"Textures 2D"},
+                          0:{ TYPE:Enum16, OFFSET:0, GUI_NAME:"Type",
+                              OPTIONS:{ 0:{GUI_NAME:"Textures 2D"},
                                         1:{GUI_NAME:"Textures 3D"},
                                         2:{GUI_NAME:"Cubemaps"},
                                         3:{GUI_NAME:"Sprites"},
                                         4:{GUI_NAME:"Interface Bitmaps"}
                                         }
                               },
-                          1:{ TYPE:UInt16, OFFSET:2, GUI_NAME:"Format",
-                              ELEMENTS:{0:{GUI_NAME:"Color key transparency"},
+                          1:{ TYPE:Enum16, OFFSET:2, GUI_NAME:"Format",
+                              OPTIONS:{ 0:{GUI_NAME:"Color key transparency"},
                                         1:{GUI_NAME:"Explicit Alpha"},
                                         2:{GUI_NAME:"Interpolated Alpha"},
                                         3:{GUI_NAME:"Color 16-Bit"},
@@ -122,8 +127,8 @@ class BITM_Definition(Tag_Def):
                                         5:{GUI_NAME:"Monochrome"}
                                         }
                               },
-                          2:{ TYPE:UInt16, OFFSET:4, GUI_NAME:"Usage",
-                              ELEMENTS:{0:{GUI_NAME:"Alpha-Blend"},
+                          2:{ TYPE:Enum16, OFFSET:4, GUI_NAME:"Usage",
+                              OPTIONS:{ 0:{GUI_NAME:"Alpha-Blend"},
                                         1:{GUI_NAME:"Default"},
                                         2:{GUI_NAME:"Height Map"},
                                         3:{GUI_NAME:"Detail Map"},
@@ -131,21 +136,21 @@ class BITM_Definition(Tag_Def):
                                         5:{GUI_NAME:"Vector Map"}
                                         }
                               },
-                          3:{ TYPE:UInt16, OFFSET:6, GUI_NAME:"Flags",
-                              FLAGS:{0:{GUI_NAME:"Enable Diffusion Dithering"},
-                                     1:{GUI_NAME:"Disable Height Map Compression"},
-                                     2:{GUI_NAME:"Uniform Sprite Sequences"},
-                                     3:{GUI_NAME:"Sprite Bug Fix"},
-                                     4:{GUI_NAME:"Processed by Reclaimer"}
-                                     }
+                          3:{ TYPE:Bool16, OFFSET:6, GUI_NAME:"Flags",
+                              OPTIONS:{ 0:{GUI_NAME:"Enable Diffusion Dithering"},
+                                        1:{GUI_NAME:"Disable Height Map Compression"},
+                                        2:{GUI_NAME:"Uniform Sprite Sequences"},
+                                        3:{GUI_NAME:"Sprite Bug Fix"},
+                                        4:{GUI_NAME:"Processed by Reclaimer"}
+                                        }
                               },
                           4:{ TYPE:Float, OFFSET:8, GUI_NAME:"Detail Fade Factor",
                               MIN:0.0 , MAX:1.0},
                           5:{ TYPE:Float, OFFSET:12, GUI_NAME:"Sharpen Amount",
                               MIN:0.0 , MAX:1.0},
                           6:{ TYPE:Float, OFFSET:16, GUI_NAME:"Bump Height"},#repeats
-                          7:{ TYPE:UInt16, OFFSET:20, GUI_NAME:"Sprite Budget Size",
-                              ELEMENTS:{0:{GUI_NAME:"32x32"},
+                          7:{ TYPE:Enum16, OFFSET:20, GUI_NAME:"Sprite Budget Size",
+                              OPTIONS:{ 0:{GUI_NAME:"32x32"},
                                         1:{GUI_NAME:"64x64"},
                                         2:{GUI_NAME:"128x128"},
                                         3:{GUI_NAME:"256x256"},
@@ -172,11 +177,11 @@ class BITM_Definition(Tag_Def):
                           14:{ TYPE:Float, OFFSET:72, GUI_NAME:"Alpha Bias",#[-1,1]
                                MIN:-1.0 , MAX:1.0},
                           15:{ TYPE:UInt16, OFFSET:76, GUI_NAME:"Mipmap Levels", MIN:0},
-                          16:{ TYPE:UInt16, OFFSET:78, GUI_NAME:"Sprite Usage",
-                               ELEMENTS:{ 0:{GUI_NAME:"Blend\Add\Subtract\Max"},
-                                          1:{GUI_NAME:"Multiply\Min"},
-                                          2:{GUI_NAME:"Double Multiply"}
-                                          }
+                          16:{ TYPE:Enum16, OFFSET:78, GUI_NAME:"Sprite Usage",
+                               OPTIONS:{ 0:{GUI_NAME:"Blend\Add\Subtract\Max"},
+                                         1:{GUI_NAME:"Multiply\Min"},
+                                         2:{GUI_NAME:"Double Multiply"}
+                                         }
                                },
                           17:{ TYPE:UInt16, OFFSET:80, GUI_NAME:"Sprite Spacing" },
                          

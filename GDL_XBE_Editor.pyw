@@ -34,7 +34,7 @@ try:
             
             
     def Validate_and_Set_Enum(Var, *args):
-        try:    Elements = Var.Block_Desc['ELEMENTS']
+        try:    Elements = Var.Block_Desc['OPTIONS']
         except: Elements = None
         if Elements is not None:
             Val = Var.get()
@@ -45,7 +45,7 @@ try:
 
     def Set_Enum(Widget, i):
         Var = Widget.Field_Var
-        Var.set(Var.Block_Desc['ELEMENTS'][i]['NAME'])
+        Var.set(Var.Block_Desc['OPTIONS'][i]['NAME'])
         try:    Var.Main_Window.Menu_Cheats.Option_Select()
         except: pass
 
@@ -289,9 +289,9 @@ try:
                     
                     Block_Val = Data_Block[i]
 
-                    if "ELEMENTS" in This_Desc:
+                    if Type.Is_Enum:
                         Widget_Height = 30
-                        Elements = This_Desc['ELEMENTS']
+                        Elements = This_Desc['OPTIONS']
                         New_Widget = OptionMenu(Child_Canvas, Field_Var, (), Func=Set_Enum)
                         
                         New_Widget['menu'].delete(0, 'end')
@@ -300,14 +300,13 @@ try:
                         
                         for x in range(Elements['ENTRIES']):
                             New_Widget.addOption(Elements[x]['GUI_NAME'])
-
                             if Block_Val == Elements[x]['VALUE']:
                                 Field_Var.set(Elements[x]['GUI_NAME'])
                                 
                         Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Enum(Var)
-                    elif "FLAGS" in This_Desc:
+                    elif Type.Is_Bool:
                         Widget_Height = 0
-                        Flags = This_Desc['FLAGS']
+                        Flags = This_Desc['OPTIONS']
                         New_Widget = Canvas(Child_Canvas, highlightthickness=0,
                                             width=Main_Window.winfo_width(),
                                             height=Main_Window.winfo_height())
