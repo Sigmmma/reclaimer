@@ -17,10 +17,10 @@ class METR_Definition(Tag_Def):
                      
                      1:{ TYPE:Struct, SIZE:172, GUI_NAME:"Data",
                          0:{ TYPE:Struct, OFFSET:4, GUI_NAME:"Stencil Bitmap",
-                              ATTRIBUTES:Tag_Reference_Structure
+                              ATTRS:Tag_Reference_Structure
                              },
                          1:{ TYPE:Struct, OFFSET:20, GUI_NAME:"Source Bitmap",
-                              ATTRIBUTES:Tag_Reference_Structure
+                              ATTRS:Tag_Reference_Structure
                              },
                          2:{ TYPE:UInt16, OFFSET:36, GUI_NAME:"Stencil Sequence Index" },
                          3:{ TYPE:UInt16, OFFSET:38, GUI_NAME:"Source Sequence Index" },
@@ -49,7 +49,7 @@ class METR_Definition(Tag_Def):
                          13:{ TYPE:UInt8, OFFSET:150, GUI_NAME:"UNKNOWN_2 Height" },
                      
                          14:{ TYPE:Struct, OFFSET:152, GUI_NAME:"Pixel Data", EDITABLE:False ,
-                             ATTRIBUTES:Raw_Data_Reference_Structure,
+                             ATTRS:Raw_Data_Reference_Structure,
                              CHILD:{TYPE:Bytearray_Raw, NAME:"Data", SIZE:".Byte_Count"}
                              }
                          }
