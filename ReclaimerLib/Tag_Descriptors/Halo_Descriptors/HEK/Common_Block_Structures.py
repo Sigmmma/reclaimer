@@ -328,7 +328,7 @@ Radiosity_Block = {TYPE:Struct, OFFSET:0, GUI_NAME:"Radiosity Settings",
 #Transparent Shader Stuff
 
 Extra_Layers_Block = {TYPE:Struct, GUI_NAME:"Extra Layer",
-                      ATTRIBUTES:Tag_Reference_Structure,
+                      ATTRS:Tag_Reference_Structure,
                       0:{ TYPE:Str_Latin1_Enum, GUI_NAME:"Tag Class", SIZE:4,
                           OPTIONS:All_Shader_Enums }
                       }
@@ -353,17 +353,17 @@ Chicago_4_Stage_Maps = {TYPE:Struct, SIZE:220, GUI_NAME:"Four Stage Map",
                         7:{ TYPE:Float, OFFSET:100, GUI_NAME:"Map Rotation"},#degrees
                         8:{ TYPE:Float, OFFSET:104, GUI_NAME:"Map Bias"},#[0,1]
                         9: {TYPE:Struct, OFFSET:108, GUI_NAME:"Bitmap" ,
-                            ATTRIBUTES:Tag_Reference_Structure },
+                            ATTRS:Tag_Reference_Structure },
 
                         #shader animations
                         10:{TYPE:Struct, OFFSET:164, GUI_NAME:"U-Animation",
-                            ATTRIBUTES:Anim_Src_Func_Per_Pha_Sca },
+                            ATTRS:Anim_Src_Func_Per_Pha_Sca },
                         
                         11:{TYPE:Struct, OFFSET:180, GUI_NAME:"V-Animation",
-                            ATTRIBUTES:Anim_Src_Func_Per_Pha_Sca },
+                            ATTRS:Anim_Src_Func_Per_Pha_Sca },
                         
                         12:{TYPE:Struct, OFFSET:196, GUI_NAME:"Rotation-Animation",
-                            ATTRIBUTES:Anim_Src_Func_Per_Pha_Sca,
+                            ATTRS:Anim_Src_Func_Per_Pha_Sca,
                             4:{ TYPE:Float, OFFSET:12, GUI_NAME:"Scale"}#degrees
                             },
                         13:Combine({OFFSET:212, GUI_NAME:"Rotation Center"}, X_Y_Float)

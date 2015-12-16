@@ -17,12 +17,12 @@ class HMT_Definition(Tag_Def):
                      
                      1:{ TYPE:Struct, SIZE:128, GUI_NAME:"Data",
                          0: {TYPE:Struct, OFFSET:0, GUI_NAME:"String" ,
-                             ATTRIBUTES:Raw_Data_Reference_Structure,
+                             ATTRS:Raw_Data_Reference_Structure,
                              CHILD:{TYPE:Str_Raw_UTF16, NAME:"Raw_String_Data",
                                     ENDIAN:'<', SIZE:".Byte_Count"}
                              },
                          1: {TYPE:Struct, OFFSET:20, GUI_NAME:"Message Elements" ,
-                             ATTRIBUTES:Block_Reference_Structure,
+                             ATTRS:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Message_Elements_Array", SIZE:".Block_Count",
                                     SUB_STRUCT:{ TYPE:Struct, SIZE:2, GUI_NAME:"Message Element",
                                                  0:{ TYPE:UInt8, OFFSET:0, GUI_NAME:"Type" },
@@ -32,7 +32,7 @@ class HMT_Definition(Tag_Def):
                              },
                          
                          2: {TYPE:Struct, OFFSET:32, GUI_NAME:"Messages" ,
-                             ATTRIBUTES:Block_Reference_Structure,
+                             ATTRS:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Messages_Array", SIZE:".Block_Count",
                                     SUB_STRUCT:{ TYPE:Struct, SIZE:64, GUI_NAME:"Message",
                                                  0:{ TYPE:Str_Latin1, OFFSET:0,

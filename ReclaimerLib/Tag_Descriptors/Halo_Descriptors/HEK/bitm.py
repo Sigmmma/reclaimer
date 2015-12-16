@@ -38,7 +38,7 @@ class BITM_Definition(Tag_Def):
                        1:{ TYPE:UInt16, OFFSET:32, GUI_NAME:"First Bitmap Index" },
                        2:{ TYPE:UInt16, OFFSET:34, GUI_NAME:"Bitmap Count" },
                        3:{ TYPE:Struct, OFFSET:52, GUI_NAME:"Sprites",
-                           ATTRIBUTES:Block_Reference_Structure,
+                           ATTRS:Block_Reference_Structure,
                            CHILD:{TYPE:Array,  NAME:"Sprite_Block_Array",
                                   MAX:64, SIZE:".Block_Count",
                                   SUB_STRUCT:Sprites_Desc
@@ -162,13 +162,13 @@ class BITM_Definition(Tag_Def):
                           10:{ TYPE:UInt16, OFFSET:26, GUI_NAME:"Color Plate Height"},
                           11:{ TYPE:Struct, OFFSET:28, GUI_NAME:"Compressed Color Plate Data",
                                EDITABLE:False,
-                               ATTRIBUTES:Raw_Data_Reference_Structure,
+                               ATTRS:Raw_Data_Reference_Structure,
                                CHILD:{TYPE:Bytearray_Raw, NAME:"Data",
                                       VISIBLE:False, SIZE:".Byte_Count"}
                                },
                           12:{ TYPE:Struct, OFFSET:48, GUI_NAME:"Processed Pixel Data",
                                EDITABLE:False,
-                               ATTRIBUTES:Raw_Data_Reference_Structure,
+                               ATTRS:Raw_Data_Reference_Structure,
                                CHILD:{TYPE:Bytearray_Raw, NAME:"Data",
                                       VISIBLE:False, SIZE:".Byte_Count"}
                                },
@@ -186,14 +186,14 @@ class BITM_Definition(Tag_Def):
                           17:{ TYPE:UInt16, OFFSET:80, GUI_NAME:"Sprite Spacing" },
                          
                           18:{ TYPE:Struct, OFFSET:84, GUI_NAME:"Sequences",
-                               ATTRIBUTES:Block_Reference_Structure,
+                               ATTRS:Block_Reference_Structure,
                                CHILD:{TYPE:Array,   NAME:"Sequence_Block_Array",
                                       MAX:256, SIZE:".Block_Count",
                                       SUB_STRUCT:Sequences_Desc
                                       }
                                },
                           19:{ TYPE:Struct, OFFSET:96, GUI_NAME:"Bitmaps",
-                               ATTRIBUTES:Block_Reference_Structure,
+                               ATTRS:Block_Reference_Structure,
                                CHILD:{TYPE:Array, NAME:"Bitmap_Block_Array",
                                       MAX:32767, SIZE:".Block_Count",
                                       SUB_STRUCT:Bitmaps_Desc
