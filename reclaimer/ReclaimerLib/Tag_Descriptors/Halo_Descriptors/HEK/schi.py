@@ -47,18 +47,18 @@ class SCHI_Definition(Tag_Def):
                         #Lens Flare
                         9:{ TYPE:Float, OFFSET:52, GUI_NAME:"Lens Flare Spacing"},#world units
                         10:{ TYPE:Struct, OFFSET:56, GUI_NAME:"Lens Flare" ,
-                             ATTRIBUTES:Tag_Reference_Structure
+                             ATTRS:Tag_Reference_Structure
                              },
                         
                         11:{ TYPE:Struct, OFFSET:72, GUI_NAME:"Extra Layers",
-                             ATTRIBUTES:Block_Reference_Structure,
+                             ATTRS:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Extra_Layers_Array",
                                     MAX:4, SIZE:".Block_Count",
                                     SUB_STRUCT:Extra_Layers_Block
                                     }
                              },
                         12:{ TYPE:Struct, OFFSET:84, GUI_NAME:"Maps",
-                             ATTRIBUTES:Block_Reference_Structure,
+                             ATTRS:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Maps_Array",
                                     MAX:4, SIZE:".Block_Count",
                                     SUB_STRUCT:Chicago_4_Stage_Maps

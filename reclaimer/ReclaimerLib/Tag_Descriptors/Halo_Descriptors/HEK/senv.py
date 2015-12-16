@@ -45,7 +45,7 @@ class SENV_Definition(Tag_Def):
                          #Lens Flare
                          5:{ TYPE:Float, OFFSET:44, GUI_NAME:"Lens Flare Spacing"},#world units
                          6:{ TYPE:Struct, OFFSET:48, GUI_NAME:"Lens Flare" ,
-                             ATTRIBUTES:Tag_Reference_Structure
+                             ATTRS:Tag_Reference_Structure
                          },
                          
                          #Diffuse Properties
@@ -55,7 +55,7 @@ class SENV_Definition(Tag_Def):
                                        }
                              },
                          8:{ TYPE:Struct, OFFSET:136, GUI_NAME:"Base Map",
-                             ATTRIBUTES:Tag_Reference_Structure
+                             ATTRS:Tag_Reference_Structure
                          },
 
                          9:{ TYPE:Enum16, OFFSET:176, GUI_NAME:"Detail Map Function" ,
@@ -63,11 +63,11 @@ class SENV_Definition(Tag_Def):
                               },
                          10:{ TYPE:Float, OFFSET:180, GUI_NAME:"Primary Detail Map Scale" },
                          11:{ TYPE:Struct, OFFSET:184, GUI_NAME:"Primary Detail Map" ,
-                              ATTRIBUTES:Tag_Reference_Structure
+                              ATTRS:Tag_Reference_Structure
                          },
                          12:{ TYPE:Float, OFFSET:200, GUI_NAME:"Secondary Detail Map Scale" },
                          13:{ TYPE:Struct, OFFSET:204, GUI_NAME:"Secondary Detail Map" ,
-                              ATTRIBUTES:Tag_Reference_Structure
+                              ATTRS:Tag_Reference_Structure
                          },
 
                          14:{ TYPE:Enum16, OFFSET:244, GUI_NAME:"Micro Detail Map Function" ,
@@ -75,7 +75,7 @@ class SENV_Definition(Tag_Def):
                               },
                          15:{ TYPE:Float, OFFSET:248, GUI_NAME:"Micro Detail Map Scale" },
                          16:{ TYPE:Struct, OFFSET:252, GUI_NAME:"Micro Detail Map" ,
-                              ATTRIBUTES:Tag_Reference_Structure
+                              ATTRS:Tag_Reference_Structure
                          },
                          
                          17:Combine({OFFSET:268, GUI_NAME:"Material Color"}, R_G_B_Float),
@@ -83,18 +83,18 @@ class SENV_Definition(Tag_Def):
                          #Bump Properties
                          18:{ TYPE:Float, OFFSET:292, GUI_NAME:"Bump Map Scale" },
                          19:{ TYPE:Struct, OFFSET:296, GUI_NAME:"Bump Map" ,
-                              ATTRIBUTES:Tag_Reference_Structure
+                              ATTRS:Tag_Reference_Structure
                          },
                          20:{ TYPE:Float, ENDIAN:"<", OFFSET:312, NAME:"UNKNOWN_1", GUI_NAME:"Unknown X" },
                          21:{ TYPE:Float, ENDIAN:"<", OFFSET:316, NAME:"UNKNOWN_2", GUI_NAME:"Unknown Y" },
                          
                          #Texture Animation
                          22:{TYPE:Struct, OFFSET:336, GUI_NAME:"U-Animation",
-                             ATTRIBUTES:Anim_Func_Per_Pha,
+                             ATTRS:Anim_Func_Per_Pha,
                              2:{ TYPE:Float, OFFSET:8, GUI_NAME:"Scale"}#base map repeats
                             },
                          23:{TYPE:Struct, OFFSET:336, GUI_NAME:"V-Animation",
-                             ATTRIBUTES:Anim_Func_Per_Pha,
+                             ATTRS:Anim_Func_Per_Pha,
                              2:{ TYPE:Float, OFFSET:8, GUI_NAME:"Scale"}#base map repeats
                             },
                          
@@ -102,24 +102,24 @@ class SENV_Definition(Tag_Def):
                          24:Combine({OFFSET:412, GUI_NAME:"Primary On-Color"}, R_G_B_Float),
                          25:Combine({OFFSET:424, GUI_NAME:"Primary Off-Color"}, R_G_B_Float),
                          26:{TYPE:Struct, OFFSET:436, GUI_NAME:"Primary Animation",
-                             ATTRIBUTES:Anim_Func_Per_Pha
+                             ATTRS:Anim_Func_Per_Pha
                              },
                          
                          27:Combine({OFFSET:472, GUI_NAME:"Secondary On-Color"}, R_G_B_Float),
                          28:Combine({OFFSET:484, GUI_NAME:"Secondary Off-Color"}, R_G_B_Float),
                          29:{TYPE:Struct, OFFSET:496, GUI_NAME:"Secondary Animation",
-                             ATTRIBUTES:Anim_Func_Per_Pha
+                             ATTRS:Anim_Func_Per_Pha
                              },
 
                          30:Combine({OFFSET:532, GUI_NAME:"Plasma On-Color"}, R_G_B_Float),
                          31:Combine({OFFSET:544, GUI_NAME:"Plasma Off-Color"}, R_G_B_Float),
                          32:{TYPE:Struct, OFFSET:556, GUI_NAME:"Plasma Animation",
-                             ATTRIBUTES:Anim_Func_Per_Pha
+                             ATTRS:Anim_Func_Per_Pha
                              },
                          
                          33:{ TYPE:Float, OFFSET:592, GUI_NAME:"Illumination Map Scale" },
                          34:{ TYPE:Struct, OFFSET:596, GUI_NAME:"Illumination Map" ,
-                              ATTRIBUTES:Tag_Reference_Structure
+                              ATTRS:Tag_Reference_Structure
                          },
 
                          #Specular Properties
@@ -149,7 +149,7 @@ class SENV_Definition(Tag_Def):
                          43:{ TYPE:Float, OFFSET:760, GUI_NAME:"Parallel Brightness"},#[0,1]
                          
                          44:{ TYPE:Struct, OFFSET:804, GUI_NAME:"Reflection Cube Map",
-                              ATTRIBUTES:Tag_Reference_Structure
+                              ATTRS:Tag_Reference_Structure
                               }
                           }
                      }

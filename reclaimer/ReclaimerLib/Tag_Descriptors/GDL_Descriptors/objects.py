@@ -49,25 +49,25 @@ class OBJECTS_PS2_Definition(Tag_Def):
     #           }
     
     Vertex_8_Block = { TYPE:Struct, SIZE:3, NAME:"Vertex_8",
-                       ATTRIBUTES:X_Y_Z_Byte
+                       ATTRS:X_Y_Z_Byte
                        }
     
     Vertex_16_Block = { TYPE:Struct, SIZE:6, NAME:"Vertex_16",
-                        ATTRIBUTES:X_Y_Z_Short
+                        ATTRS:X_Y_Z_Short
                         }
     
     UV_8_Block = { TYPE:Struct, SIZE:2, NAME:"UV_8",
-                   ATTRIBUTES:U_V_Byte
+                   ATTRS:U_V_Byte
                    }
     
     UV_16_Block = { TYPE:Struct, SIZE:4, NAME:"UV_16",
-                    ATTRIBUTES:U_V_Short
+                    ATTRS:U_V_Short
                     }
 
     #figure out how the normals are compressed
     #they are probably either 5,5,5, 5,6,5, 6,5,5, or 5,5,6
     V_Normal_16_Block = { TYPE:Bit_Struct, NAME:"V_Normal_16",
-                          ATTRIBUTES:Compressed_Normal_16
+                          ATTRS:Compressed_Normal_16
                           }
     
     
@@ -139,7 +139,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                     
                      3:{ TYPE:SInt32, OFFSET:12, GUI_NAME:'Sub-Objects Count' },
                      4:{ TYPE:Struct, OFFSET:16, GUI_NAME:"Sub-Object 0",
-                         ATTRIBUTES:Sub_Object_Block },
+                         ATTRS:Sub_Object_Block },
                
                      5:{ TYPE:Pointer32, OFFSET:24, GUI_NAME:'Sub-Objects Pointer' },
                      6:{ TYPE:Pointer32, OFFSET:28, GUI_NAME:'Sub-Object Models Pointer' },
