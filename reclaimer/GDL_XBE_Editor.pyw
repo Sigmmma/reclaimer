@@ -34,7 +34,7 @@ try:
             
             
     def Validate_and_Set_Enum(Var, *args):
-        try:    Elements = Var.Block_Desc['OPTIONS']
+        try:    Elements = Var.Block_Desc
         except: Elements = None
         if Elements is not None:
             Val = Var.get()
@@ -45,7 +45,7 @@ try:
 
     def Set_Enum(Widget, i):
         Var = Widget.Field_Var
-        Var.set(Var.Block_Desc['OPTIONS'][i]['NAME'])
+        Var.set(Var.Block_Desc[i]['NAME'])
         try:    Var.Main_Window.Menu_Cheats.Option_Select()
         except: pass
 
@@ -291,32 +291,30 @@ try:
 
                     if Type.Is_Enum:
                         Widget_Height = 30
-                        Elements = This_Desc['OPTIONS']
                         New_Widget = OptionMenu(Child_Canvas, Field_Var, (), Func=Set_Enum)
                         
                         New_Widget['menu'].delete(0, 'end')
                         New_Widget.config(width=16)
                         New_Widget.Field_Var = Field_Var
                         
-                        for x in range(Elements['ENTRIES']):
-                            New_Widget.addOption(Elements[x]['GUI_NAME'])
-                            if Block_Val == Elements[x]['VALUE']:
-                                Field_Var.set(Elements[x]['GUI_NAME'])
+                        for x in range(This_Desc['ENTRIES']):
+                            New_Widget.addOption(This_Desc[x]['GUI_NAME'])
+                            if Block_Val == This_Desc[x]['VALUE']:
+                                Field_Var.set(This_Desc[x]['GUI_NAME'])
                                 
                         Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Enum(Var)
                     elif Type.Is_Bool:
                         Widget_Height = 0
-                        Flags = This_Desc['OPTIONS']
                         New_Widget = Canvas(Child_Canvas, highlightthickness=0,
                                             width=Main_Window.winfo_width(),
                                             height=Main_Window.winfo_height())
                         New_Widget.place(x=0, y=Root_Y+Y, anchor=NW)
                         New_Widget.Field_Var = Field_Var
                         
-                        for x in range(Flags['ENTRIES']):
+                        for x in range(This_Desc['ENTRIES']):
                             Flag_Var = IntVar(Child_Canvas)
-                            Flag_Name = Flags[x]['GUI_NAME']
-                            Flag_Val = Flags[x]['VALUE']
+                            Flag_Name = This_Desc[x]['GUI_NAME']
+                            Flag_Val = This_Desc[x]['VALUE']
 
                             Flag_Var.Mask = Flag_Val
                             Flag_Var.Field_Var = Field_Var

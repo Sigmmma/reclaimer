@@ -1,6 +1,7 @@
 from supyr_struct.Defs.Common_Structures import *
 from ....Tag_Constructors.Halo_Constructors.HEK.Field_Types import *
 
+Com = Combine
 
 #Enumerators for different types of tag references
 All_Tag_Enums = {0:{VALUE:'actr', NAME:"actor"},
@@ -90,8 +91,8 @@ All_Tag_Enums = {0:{VALUE:'actr', NAME:"actor"},
 
 Tag_Header = { TYPE:Struct, SIZE:64, NAME:"Blam_Header", EDITABLE:False,
                0:{ PAD:36 },
-               1:{ TYPE:Str_Latin1_Enum, GUI_NAME:"Type FourCC", SIZE:4,
-                   DEFAULT:b"\x00\x00\x00\x00", OPTIONS:All_Tag_Enums},
+               1:Com({TYPE:Str_Latin1_Enum, GUI_NAME:"Type FourCC", SIZE:4,
+                          DEFAULT:b"\x00\x00\x00\x00"}, All_Tag_Enums),
                2:{ TYPE:UInt32, GUI_NAME:"Base Address", DEFAULT:0 },
                3:{ TYPE:UInt32, GUI_NAME:"Data Pointer", DEFAULT:64 },
                4:{ PAD:8 },
@@ -236,17 +237,17 @@ All_Shader_Enums = {0:{VALUE:"shdr", NAME:"shader"},
 
 #Miscellaneous blocks
 Anim_Func_Per_Pha = {TYPE:Struct,
-                     0:{ TYPE:Enum16, OFFSET:0, GUI_NAME:"Function" ,
-                         OPTIONS:Animation_Functions },
+                     0:Com({TYPE:Enum16, OFFSET:0, GUI_NAME:"Function"},
+                               Animation_Functions ),
                      1:{ TYPE:Float, OFFSET:4, GUI_NAME:"Period"},#seconds
                      2:{ TYPE:Float, OFFSET:8, GUI_NAME:"Phase"},#seconds
                      }
 
 Anim_Src_Func_Per_Pha_Sca = {TYPE:Struct,
-                            0:{ TYPE:Enum16, OFFSET:0, GUI_NAME:"Source" ,
-                                OPTIONS:Function_Outputs },
-                            1:{ TYPE:Enum16, OFFSET:2, GUI_NAME:"Function" ,
-                                OPTIONS:Animation_Functions },
+                            0:Com({TYPE:Enum16, OFFSET:0, GUI_NAME:"Source"},
+                                  Function_Outputs ),
+                            1:Com({TYPE:Enum16, OFFSET:2, GUI_NAME:"Function"},
+                                  Animation_Functions ),
                             2:{ TYPE:Float, OFFSET:4, GUI_NAME:"Period"},#seconds
                             3:{ TYPE:Float, OFFSET:8, GUI_NAME:"Phase"},
                             4:{ TYPE:Float, OFFSET:12, GUI_NAME:"Scale"}#repeats
@@ -271,8 +272,8 @@ Block_Reference_Structure = { TYPE:Struct, GUI_NAME:'Halo Block Ref',
 
 #This is the structure for all points where a tag references another tag
 Tag_Reference_Structure = { TYPE:Struct, GUI_NAME:'Halo Tag Ref',
-                            0:{ TYPE:Str_Latin1_Enum, GUI_NAME:"Tag Class", SIZE:4,
-                                EDITABLE:False, OPTIONS:All_Tag_Enums},
+                            0:Com({TYPE:Str_Latin1_Enum, GUI_NAME:"Tag Class",
+                                   SIZE:4, EDITABLE:False}, All_Tag_Enums),
                             1:{ TYPE:UInt32, GUI_NAME:"Tag Path Pointer", EDITABLE:False },
                             2:{ TYPE:UInt32, GUI_NAME:"Tag Path Length", EDITABLE:False },
                             3:{ TYPE:SInt32, GUI_NAME:"Tag ID", EDITABLE:False, DEFAULT:-1},
@@ -283,23 +284,21 @@ Tag_Reference_Structure = { TYPE:Struct, GUI_NAME:'Halo Tag Ref',
 
 """Shader Stuff"""
 
-Material_Type = { TYPE:Enum16, OFFSET:34, GUI_NAME:"Material Type" ,
-                  OPTIONS:Materials_List }
+Material_Type = Com({ TYPE:Enum16, OFFSET:34, GUI_NAME:"Material Type"}, Materials_List )
 
 #THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS
 #This means it likely doesn't matter, but lets not take that chance
 Numeric_Shader_ID = { TYPE:Enum8, OFFSET:36, GUI_NAME:"Numeric Shader ID", EDITABLE:False ,
-                      OPTIONS:{ 0:{NAME:"SHDR", VALUE:-1},#NOT TESTED, Guessed at
-                                1:{NAME:"SENV", VALUE:3},#Environment
-                                2:{NAME:"SOSO", VALUE:4},#Model
-                                3:{NAME:"SOTR", VALUE:5},#Transparent Generic
-                                4:{NAME:"SCHI", VALUE:6},#Transparent Chicago
-                                5:{NAME:"SCEX", VALUE:7},#Transparent Chicago Extended
-                                6:{NAME:"SWAT", VALUE:8},#Water
-                                7:{NAME:"SGLA", VALUE:9},#Glass
-                                8:{NAME:"SMET", VALUE:10},#Meter
-                                9:{NAME:"SPLA", VALUE:11}#Plasma
-                                }
+                      0:{NAME:"SHDR", VALUE:-1},#NOT TESTED, Guessed at
+                      1:{NAME:"SENV", VALUE:3},#Environment
+                      2:{NAME:"SOSO", VALUE:4},#Model
+                      3:{NAME:"SOTR", VALUE:5},#Transparent Generic
+                      4:{NAME:"SCHI", VALUE:6},#Transparent Chicago
+                      5:{NAME:"SCEX", VALUE:7},#Transparent Chicago Extended
+                      6:{NAME:"SWAT", VALUE:8},#Water
+                      7:{NAME:"SGLA", VALUE:9},#Glass
+                      8:{NAME:"SMET", VALUE:10},#Meter
+                      9:{NAME:"SPLA", VALUE:11}#Plasma
                       }
 
 
@@ -307,21 +306,19 @@ Numeric_Shader_ID = { TYPE:Enum8, OFFSET:36, GUI_NAME:"Numeric Shader ID", EDITA
 
 Radiosity_Block = {TYPE:Struct, OFFSET:0, GUI_NAME:"Radiosity Settings",
                    0:{ TYPE:Bool16, OFFSET:0, GUI_NAME:"Radiosity Flags",
-                       OPTIONS:{ 0:{GUI_NAME:"Simple Parameterization"},
-                                 1:{GUI_NAME:"Ignore Normals"},
-                                 2:{GUI_NAME:"Transparent Lit"}
-                                 }
+                       0:{GUI_NAME:"Simple Parameterization"},
+                       1:{GUI_NAME:"Ignore Normals"},
+                       2:{GUI_NAME:"Transparent Lit"}
                        },
                    1:{ TYPE:Enum16, OFFSET:2, GUI_NAME:"Radiosity Detail Level" ,
-                       OPTIONS:{ 0:{GUI_NAME:"High"},
-                                 1:{GUI_NAME:"Medium"},
-                                 2:{GUI_NAME:"Low"},
-                                 3:{GUI_NAME:"Turd"}
-                                 }
+                       0:{GUI_NAME:"High"},
+                       1:{GUI_NAME:"Medium"},
+                       2:{GUI_NAME:"Low"},
+                       3:{GUI_NAME:"Turd"}
                        },
                    2:{TYPE:Float, OFFSET:4, GUI_NAME:"Radiosity Light Power"},
-                   3:Combine({OFFSET:8, GUI_NAME:"Radiosity Light Color"}, R_G_B_Float),
-                   4:Combine({OFFSET:20, GUI_NAME:"Radiosity Tint Color"}, R_G_B_Float)
+                   3:Com({OFFSET:8, GUI_NAME:"Radiosity Light Color"}, R_G_B_Float),
+                   4:Com({OFFSET:20, GUI_NAME:"Radiosity Tint Color"}, R_G_B_Float)
                    }
 
 
@@ -329,22 +326,21 @@ Radiosity_Block = {TYPE:Struct, OFFSET:0, GUI_NAME:"Radiosity Settings",
 
 Extra_Layers_Block = {TYPE:Struct, GUI_NAME:"Extra Layer",
                       ATTRS:Tag_Reference_Structure,
-                      0:{ TYPE:Str_Latin1_Enum, GUI_NAME:"Tag Class", SIZE:4,
-                          OPTIONS:All_Shader_Enums }
+                      0:Com( {TYPE:Str_Latin1_Enum, GUI_NAME:"Tag Class",
+                             SIZE:4}, All_Shader_Enums )
                       }
 
 Chicago_4_Stage_Maps = {TYPE:Struct, SIZE:220, GUI_NAME:"Four Stage Map",
                         0:{ TYPE:Bool16, OFFSET:0, GUI_NAME:"Flags" ,
-                            OPTIONS:{ 0:{GUI_NAME:"Unfiltered"},
-                                      1:{GUI_NAME:"Alpha Replicate"},
-                                      2:{GUI_NAME:"U-Clamped"},
-                                      3:{GUI_NAME:"V-Clamped"}
-                                      }
+                            0:{GUI_NAME:"Unfiltered"},
+                            1:{GUI_NAME:"Alpha Replicate"},
+                            2:{GUI_NAME:"U-Clamped"},
+                            3:{GUI_NAME:"V-Clamped"}
                             },
-                        1:{TYPE:Enum16, OFFSET:44, GUI_NAME:"Color Function" ,
-                           OPTIONS:Blend_Functions },
-                        2:{TYPE:Enum16, OFFSET:46, GUI_NAME:"Alpha Function Function" ,
-                           OPTIONS:Blend_Functions },
+                        1:Com({TYPE:Enum16, OFFSET:44, GUI_NAME:"Color Function"},
+                              Blend_Functions ),
+                        2:Com({TYPE:Enum16, OFFSET:46, GUI_NAME:"Alpha Function Function"},
+                              Blend_Functions ),
                         #shader transformations
                         3:{ TYPE:Float, OFFSET:84, GUI_NAME:"Map U-Scale" },
                         4:{ TYPE:Float, OFFSET:88, GUI_NAME:"Map V-Scale" },
@@ -366,11 +362,11 @@ Chicago_4_Stage_Maps = {TYPE:Struct, SIZE:220, GUI_NAME:"Four Stage Map",
                             ATTRS:Anim_Src_Func_Per_Pha_Sca,
                             4:{ TYPE:Float, OFFSET:12, GUI_NAME:"Scale"}#degrees
                             },
-                        13:Combine({OFFSET:212, GUI_NAME:"Rotation Center"}, X_Y_Float)
+                        13:Com({OFFSET:212, GUI_NAME:"Rotation Center"}, X_Y_Float)
                         }
 
 
-Chicago_2_Stage_Maps = Combine({GUI_NAME:"Two Stage Map"}, Chicago_4_Stage_Maps)
+Chicago_2_Stage_Maps = Com({GUI_NAME:"Two Stage Map"}, Chicago_4_Stage_Maps)
 
 Chicago_Extra_Flags = {0:{GUI_NAME:"Don't Fade Active Camouflage"},
                        1:{GUI_NAME:"Numeric Countdown Timer"}

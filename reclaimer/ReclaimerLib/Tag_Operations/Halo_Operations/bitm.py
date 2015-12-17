@@ -333,7 +333,7 @@ def Parse_Bitmap_Blocks(Tag):
     
     #this is the block that will hold all of the bitmap blocks
     Root_Texture_Block = List_Block(Tag.Definition.Structures['Pixel_Root_Desc'])
-
+    
     #Read the pixel data blocks for each bitmap
     for i in range(Tag.Bitmap_Count()):
         

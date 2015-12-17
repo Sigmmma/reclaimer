@@ -22,27 +22,22 @@ class SCEX_Definition(Tag_Def):
                         #Radiosity Properties
                         0:Radiosity_Block,
                         
-                        #Shader TYPE
+                        #Shader Type
                         1:Material_Type,
                         2:Numeric_Shader_ID,
                         3:{ TYPE:SInt32, OFFSET:37, GUI_NAME:"Numeric Counter Limit"},#[0,255]
                         
                         # Shader Properties
-                        4:{ TYPE:Bool8, OFFSET:41, GUI_NAME:"Chicago Shader Flags" ,
-                             OPTIONS:Transparent_Shader_Properties
-                             },
-                        5:{ TYPE:Enum16, OFFSET:42, GUI_NAME:"First Map Type" ,
-                             OPTIONS:Transparent_Shader_First_Map_Type
-                             },
-                        6:{ TYPE:Enum16, OFFSET:44, GUI_NAME:"Framebuffer Blend Function" ,
-                             OPTIONS:Framebuffer_Blend_Modes
-                             },
-                        7:{ TYPE:Enum16, OFFSET:46, GUI_NAME:"Framebuffer Fade Mode" ,
-                             OPTIONS:Transparent_Shader_Fade_Mode
-                             },
-                        8:{ TYPE:Enum16, OFFSET:48, GUI_NAME:"Framebuffer Fade Source" ,
-                             OPTIONS:Function_Outputs
-                             },
+                        4:Com({ TYPE:Bool8, OFFSET:41, GUI_NAME:"Chicago Shader Flags"},
+                              Transparent_Shader_Properties),
+                        5:Com({ TYPE:Enum16, OFFSET:42, GUI_NAME:"First Map Type"},
+                              Transparent_Shader_First_Map_Type),
+                        6:Com({ TYPE:Enum16, OFFSET:44, GUI_NAME:"Framebuffer Blend Function"},
+                              Framebuffer_Blend_Modes),
+                        7:Com({ TYPE:Enum16, OFFSET:46, GUI_NAME:"Framebuffer Fade Mode"},
+                              Transparent_Shader_Fade_Mode),
+                        8:Com({ TYPE:Enum16, OFFSET:48, GUI_NAME:"Framebuffer Fade Source"},
+                              Function_Outputs),
                         
                         #Lens Flare
                         9:{ TYPE:Float, OFFSET:52, GUI_NAME:"Lens Flare Spacing"},#world units
@@ -71,8 +66,7 @@ class SCEX_Definition(Tag_Def):
                                     SUB_STRUCT:Chicago_2_Stage_Maps
                                     }
                              },
-                        14:{ TYPE:Bool16, OFFSET:110, GUI_NAME:"Extra Flags" ,
-                             OPTIONS:Chicago_Extra_Flags
-                             }
+                        14:Com({ TYPE:Bool16, OFFSET:110, GUI_NAME:"Extra Flags"},
+                               Chicago_Extra_Flags)
                         }
                      }
