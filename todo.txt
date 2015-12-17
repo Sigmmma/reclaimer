@@ -9,27 +9,13 @@ a function which will determine which descriptor to use.
     The Switch doesnt create its own Tag_Block, but instead calls the reader of
     the proper Tag_Block with the same args and kwargs that were provided to it.
 
+Finish Bool_Block
+Make Enum_Block
 
-Make new Flags_Block and Enum_Block which are subclasses of Tag_Block and int.
-    These will be used to allow getting and setting enums and flags by name
-    rather than value as these will each have a DESC reference.
-
-    when doing this, make sure to change the way NAME and VALUE are supplied in
-    enum and bool blocks.
-    Make it so a tuple is instead provided for NAME, GUI_NAME, and VALUE.
-    If its length is 1 it contains (NAME). A default value should be used.
-    If its length is 2 it contains (NAME, VALUE)
-    If its length is 3 it contains (NAME, VALUE, GUI_NAME)
-
-    each of these enum/flags objects MUST BE tuples to guarantee immutability
-
+Rename Tag_Collection to Tags and Handler to Library
 
 make an immutable dictionary class called a "Descriptor"
-    when doing this, make it so the entries in the descriptor such as SIZE,
-    TYPE, POINTER, etc can be accessed as attributes. Instead of Desc[SIZE]
-    you can do Desc.SIZE
-
-    Descriptors will require a custom set method such as Set() which will take
+    Descriptors will require a custom set method such as Replace() which will take
     the changes being given to it and return a copy of itself with the changes
     made. The reason for this is because __setattr__() cant return anything.
 

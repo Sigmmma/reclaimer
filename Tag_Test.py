@@ -12,7 +12,7 @@ try:
                                              'Printout':True, 'Precision':3,
                                              'Show':['Name', 'Children',# 'Type',
                                                      'Value',# 'Offset', 'Size',
-                                                     'Elements', 'Index', #'Flags',
+                                                     'Elements', 'Index', 'Flags',
                                                      'Tag_Path', #'Unique', 
                                                      'Bin_Size', 'Ram_Size',
                                                      #'All'

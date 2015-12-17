@@ -30,16 +30,14 @@ class SENV_Definition(Tag_Def):
                         
                          #Environment Shader Properties
                          3:{ TYPE:Bool16, OFFSET:40, GUI_NAME:"Environment Shader Flags" ,
-                             OPTIONS:{ 0:{GUI_NAME:"Alpha Tested"},
-                                       1:{GUI_NAME:"Bump-map is Specular Mask"},
-                                       2:{GUI_NAME:"True Atmospheric Fog"}
-                                       }
+                             0:{GUI_NAME:"Alpha Tested"},
+                             1:{GUI_NAME:"Bump-map is Specular Mask"},
+                             2:{GUI_NAME:"True Atmospheric Fog"}
                              },
                          4:{ TYPE:Enum16, OFFSET:42, GUI_NAME:"Environment Shader Type" ,
-                              OPTIONS:{ 0:{GUI_NAME:"Normal"},
-                                        1:{GUI_NAME:"Blended"},
-                                        2:{GUI_NAME:"Blended Base Specular"}
-                                        }
+                              0:{GUI_NAME:"Normal"},
+                              1:{GUI_NAME:"Blended"},
+                              2:{GUI_NAME:"Blended Base Specular"}
                               },
                          
                          #Lens Flare
@@ -50,17 +48,15 @@ class SENV_Definition(Tag_Def):
                          
                          #Diffuse Properties
                          7:{ TYPE:Bool16, OFFSET:108, GUI_NAME:"Diffuse Flags" ,
-                             OPTIONS:{ 0:{GUI_NAME:"Rescale Detail Maps"},
-                                       1:{GUI_NAME:"Rescale Bump Maps"}
-                                       }
+                             0:{GUI_NAME:"Rescale Detail Maps"},
+                             1:{GUI_NAME:"Rescale Bump Maps"}
                              },
                          8:{ TYPE:Struct, OFFSET:136, GUI_NAME:"Base Map",
                              ATTRS:Tag_Reference_Structure
                          },
 
-                         9:{ TYPE:Enum16, OFFSET:176, GUI_NAME:"Detail Map Function" ,
-                              OPTIONS:Detail_Map_Functions
-                              },
+                         9:Com({ TYPE:Enum16, OFFSET:176, GUI_NAME:"Detail Map Function"},
+                               Detail_Map_Functions),
                          10:{ TYPE:Float, OFFSET:180, GUI_NAME:"Primary Detail Map Scale" },
                          11:{ TYPE:Struct, OFFSET:184, GUI_NAME:"Primary Detail Map" ,
                               ATTRS:Tag_Reference_Structure
@@ -70,9 +66,8 @@ class SENV_Definition(Tag_Def):
                               ATTRS:Tag_Reference_Structure
                          },
 
-                         14:{ TYPE:Enum16, OFFSET:244, GUI_NAME:"Micro Detail Map Function" ,
-                              OPTIONS:Detail_Map_Functions
-                              },
+                         14:Com({ TYPE:Enum16, OFFSET:244, GUI_NAME:"Micro Detail Map Function"},
+                                Detail_Map_Functions),
                          15:{ TYPE:Float, OFFSET:248, GUI_NAME:"Micro Detail Map Scale" },
                          16:{ TYPE:Struct, OFFSET:252, GUI_NAME:"Micro Detail Map" ,
                               ATTRS:Tag_Reference_Structure
@@ -124,10 +119,9 @@ class SENV_Definition(Tag_Def):
 
                          #Specular Properties
                          35:{ TYPE:Bool16, OFFSET:636, GUI_NAME:"Specular Flags" ,
-                              OPTIONS:{ 0:{GUI_NAME:"Overbright"},
-                                        1:{GUI_NAME:"Extra-Shiny"},
-                                        2:{GUI_NAME:"Lightmap is Specular"}
-                                        }
+                              0:{GUI_NAME:"Overbright"},
+                              1:{GUI_NAME:"Extra-Shiny"},
+                              2:{GUI_NAME:"Lightmap is Specular"}
                               },
                          36:{ TYPE:Float, OFFSET:656, GUI_NAME:"Brightness"},#[0,1]
                          
@@ -136,12 +130,11 @@ class SENV_Definition(Tag_Def):
                          
                          #Reflection Properties
                          39:{ TYPE:Bool16, OFFSET:720, GUI_NAME:"Reflection Flags" ,
-                              OPTIONS:{ 0:{GUI_NAME:"Dynamic Mirror"}} },
+                              0:{GUI_NAME:"Dynamic Mirror"} },
                          40:{ TYPE:Enum16, OFFSET:722, GUI_NAME:"Reflection Type" ,
-                              OPTIONS:{ 0:{GUI_NAME:"Bumped Cubemap"},
-                                        1:{GUI_NAME:"Flat Cubemap"},
-                                        2:{GUI_NAME:"Bumped Radiosity"}
-                                        }
+                              0:{GUI_NAME:"Bumped Cubemap"},
+                              1:{GUI_NAME:"Flat Cubemap"},
+                              2:{GUI_NAME:"Bumped Radiosity"}
                               },
                          
                          41:{ TYPE:Float, OFFSET:724, GUI_NAME:"Lightmap Brightness Scale"},#[0,1]
