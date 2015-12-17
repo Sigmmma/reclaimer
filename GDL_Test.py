@@ -17,8 +17,8 @@ try:
                                              'Printout':True, 'Precision':3,
                                              'Show':['Name', 'Children', #'Type',
                                                      'Value',#'Offset', 'Py_ID',
-                                                     'Index', # 'Elements',
-                                                     'Size', #'Flags', 'Unique',
+                                                     'Index', 'Elements',
+                                                     'Size', 'Flags',# 'Unique',
                                                      'Tag_Path', 'Bin_Size','Ram_Size',
                                                      #'All'
                                                      ] })
@@ -28,7 +28,8 @@ try:
         if Objs is not None:
             for Tag_Path in Objs:
                 print("Size of: "+Tag_Path+" = ", Objs[Tag_Path].Tag_Data.Bin_Size)
-                #Objs[Tag_Path].Print(Show=('Name','Value','Children','Index'),Printout=True)
+                Objs[Tag_Path].Print(Show=('Name','Value','Children','Flags'),
+                                     Printout=True)
         input()
 except:
     print(format_exc())

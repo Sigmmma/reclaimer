@@ -25,17 +25,15 @@ class METR_Definition(Tag_Def):
                          2:{ TYPE:UInt16, OFFSET:36, GUI_NAME:"Stencil Sequence Index" },
                          3:{ TYPE:UInt16, OFFSET:38, GUI_NAME:"Source Sequence Index" },
                          4:{ TYPE:Enum16, OFFSET:60, GUI_NAME:"Interpolate Colors" ,
-                              OPTIONS:{ 0:{GUI_NAME:"Linearly"},
-                                        1:{GUI_NAME:"Faster near empty"},
-                                        2:{GUI_NAME:"Faster near full"},
-                                        3:{GUI_NAME:"Through random noise"}
-                                        }
+                              0:{GUI_NAME:"Linearly"},
+                              1:{GUI_NAME:"Faster near empty"},
+                              2:{GUI_NAME:"Faster near full"},
+                              3:{GUI_NAME:"Through random noise"}
                               },
                          5:{ TYPE:Enum16, OFFSET:62, GUI_NAME:"Anchor Colors" ,
-                              OPTIONS:{ 0:{GUI_NAME:"At both ends"},
-                                        1:{GUI_NAME:"At empty"},
-                                        2:{GUI_NAME:"At full"}
-                                        }
+                              0:{GUI_NAME:"At both ends"},
+                              1:{GUI_NAME:"At empty"},
+                              2:{GUI_NAME:"At full"}
                               },
                          6:Combine({OFFSET:72, GUI_NAME:"Empty Color"}, A_R_G_B_Float),
                          7:Combine({OFFSET:88, GUI_NAME:"Full Color"}, A_R_G_B_Float),
