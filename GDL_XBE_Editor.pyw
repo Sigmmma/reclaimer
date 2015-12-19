@@ -40,7 +40,7 @@ try:
             Val = Var.get()
             for i in range(Elements['ENTRIES']):
                 if Elements[i]['NAME'] == Val:
-                    Var.Block_Parent[Var.Block_Index] = Elements[i]['VALUE']
+                    Var.Block_Parent[Var.Block_Index].Val = Elements[i]['VALUE']
                     return
 
     def Set_Enum(Widget, i):
@@ -56,8 +56,8 @@ try:
         Mask = Flag_Var.Mask
         Inv_Mask = 4294967295-Mask
         
-        Val = Var.Block_Parent[Var.Block_Index]
-        Var.Block_Parent[Var.Block_Index] = Flag_Var.get()*Mask + (Val&Inv_Mask)
+        Val = Var.Block_Parent[Var.Block_Index].Val
+        Var.Block_Parent[Var.Block_Index].Val = Flag_Var.get()*Mask+(Val&Inv_Mask)
 
 
     class GDL_Editor_Window(Tk):
@@ -74,6 +74,13 @@ try:
             
             self.Selected_Char = StringVar(self)
             self.Selected_Cheat = StringVar(self)
+
+            Structs = self.XBE_Const.Definitions['xbe'].Structures
+
+            self._Cheat_Flags_Desc         = Structs['No_Types']
+            self._Cheat_Weapon_Flags_Desc  = Structs['Weapon_Types']
+            self._Cheat_Armor_Flags_Desc   = Structs['Armor_Types']
+            self._Cheat_Special_Flags_Desc = Structs['Special_Types']
 
             #Add the buttons
             self.btn_load = Button(self, text="Load GDL XBE", width=15, command=self.Load_XBE)
@@ -235,20 +242,21 @@ try:
                 i = Menu.Current_Index
                 
             Cheat = self.Loaded_XBE.Tag_Data.Cheats[i]
-            Desc = deepcopy(Cheat.DESC)
+            Cheat_Flags = Cheat.Flags
             Cheat_Type = Cheat.Item_Type
-
-            if Cheat_Type == 5:
-                Desc[3] = Desc["Weapon"]
-            elif Cheat_Type == 6:
-                Desc[3] = Desc["Armor"]
-            elif Cheat_Type == 9:
-                Desc[3] = Desc["Special"]
-            else:
-                Cheat[3] = 0
-                try:    Desc[3] = None
-                except: pass
+                
+            Desc = Cheat.DESC
             
+            if Cheat_Type.Val == 5:
+                Cheat_Flags.DESC = Desc[3] = self._Cheat_Weapon_Flags_Desc
+            elif Cheat_Type.Val == 6:
+                Cheat_Flags.DESC = Desc[3] = self._Cheat_Armor_Flags_Desc
+            elif Cheat_Type.Val == 9:
+                Cheat_Flags.DESC = Desc[3] = self._Cheat_Special_Flags_Desc
+            else:
+                Cheat_Flags.Val = 0
+                Cheat_Flags.DESC = Desc[3] = self._Cheat_Flags_Desc
+
             self._Reload_Widgets(Menu, Cheat, Desc)
             self.Selected_Cheat.set(Cheat.Activation_Code)
 
@@ -276,8 +284,7 @@ try:
                 Type = This_Desc['TYPE']
                 Trace_Func = None
 
-                Child_Canvas.create_text(10, Y, anchor="nw",
-                                         text=This_Desc["GUI_NAME"])
+                Child_Canvas.create_text(10, Y+3, anchor="nw", text=This_Desc["GUI_NAME"])
 
                 if Type.Is_Data:
                     Field_Var = StringVar(Child_Canvas)
@@ -299,7 +306,7 @@ try:
                         
                         for x in range(This_Desc['ENTRIES']):
                             New_Widget.addOption(This_Desc[x]['GUI_NAME'])
-                            if Block_Val == This_Desc[x]['VALUE']:
+                            if Block_Val.Val == This_Desc[x]['VALUE']:
                                 Field_Var.set(This_Desc[x]['GUI_NAME'])
                                 
                         Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Enum(Var)
@@ -326,7 +333,7 @@ try:
                             New_Flag_Button.place(x=0, y=Widget_Height, anchor=NW)
                             New_Flag_Button.Flag_Var = Flag_Var
                             
-                            if Block_Val & Flag_Val:
+                            if Block_Val.Val & Flag_Val:
                                 New_Flag_Button.select()
                             
                             Widget_Height += 16
