@@ -1,9 +1,9 @@
 import os
 
 from traceback import format_exc
-from .HEK_Tag_Handler import Halo_Tag_Handler
+from .HEK_Tag_Library import HEK_Tag_Library
 
-class Shader_Rectifier_Class(Halo_Tag_Handler):
+class Shader_Rectifier_Class(HEK_Tag_Library):
     Target_Tag = "schi"
     Backup_Tags = False
 
@@ -17,7 +17,7 @@ class Shader_Rectifier_Class(Halo_Tag_Handler):
         if "Backup_Tags" in kwargs:
             self.Backup_Tags = kwargs["Backup_Tags"]
         kwargs["Valid_Tag_IDs"] = ("schi","scex")
-        Halo_Tag_Handler.__init__(self, **kwargs)
+        HEK_Tag_Library.__init__(self, **kwargs)
 
 
     #This is used to convert extended chicago tags
@@ -30,20 +30,20 @@ class Shader_Rectifier_Class(Halo_Tag_Handler):
         Target_Def = self.Constructor.Get_Def(self.Target_Tag)
         
         '''loop through both chicago and extended chicago tag types'''
-        for Cls_ID in self.Tag_Collection:
+        for Cls_ID in self.Tags:
             
-            Tag_Paths = list(self.Tag_Collection[Cls_ID])
+            Tag_Paths = list(self.Tags[Cls_ID])
 
             '''loop through each tag and remove extra
             layers and log them to a debug file'''
             for Tag_Path in Tag_Paths:
-                Tag = self.Tag_Collection[Cls_ID][Tag_Path]
+                Tag = self.Tags[Cls_ID][Tag_Path]
                 try:
 
                     '''CONVERT THE TAG'''
                     if Cls_ID != self.Target_Tag:                    
                         Tag.Convert_to_Other_Chicago()
-                        del self.Tag_Collection[Cls_ID][Tag_Path]
+                        del self.Tags[Cls_ID][Tag_Path]
 
                     '''REMOVE THE EXTRA LAYERS FROM THE TAG'''
                     EL = Tag.Tag_Data.Data.Extra_Layers.Extra_Layers_Array
@@ -68,8 +68,8 @@ class Shader_Rectifier_Class(Halo_Tag_Handler):
                         #remove the extra layers
                         del EL[:]
 
-                    New_Tag_Path = Tag.Tag_Path.split(self.Tags_Directory)[1]
-                    self.Tag_Collection[Cls_ID][New_Tag_Path] = Tag
+                    New_Tag_Path = Tag.Tag_Path.split(self.Tags_Dir)[1]
+                    self.Tags[Cls_ID][New_Tag_Path] = Tag
                     Tag.Definition = Target_Def
                 except:
                     print("ERROR OCCURRED WHILE ATTEMPTING TO CONVERT:\n" +
@@ -78,11 +78,11 @@ class Shader_Rectifier_Class(Halo_Tag_Handler):
 
         #swap the tags around in the tag collection
         if self.Target_Tag == 'scex':
-            self.Tag_Collection['scex'].update(self.Tag_Collection['schi'])
-            self.Tag_Collection['schi'].clear()
+            self.Tags['scex'].update(self.Tags['schi'])
+            self.Tags['schi'].clear()
         else:
-            self.Tag_Collection['schi'].update(self.Tag_Collection['scex'])
-            self.Tag_Collection['scex'].clear()
+            self.Tags['schi'].update(self.Tags['scex'])
+            self.Tags['scex'].clear()
 
 
         Conversion_Report, Write_Exceptions = self.Write_Tags(False)
@@ -109,7 +109,7 @@ class Shader_Rectifier_Class(Halo_Tag_Handler):
               'detailing \nwhich tags had extra layers removed, the paths of '+
               'those extra \nlayers, and errors that occurred.\n'+
               '\nPress Enter to begin converting the shaders in:'+
-              '\n    %s\n\n' % self.Tags_Directory)
+              '\n    %s\n\n' % self.Tags_Dir)
         input()
         
         #Stream the data from the tags to class

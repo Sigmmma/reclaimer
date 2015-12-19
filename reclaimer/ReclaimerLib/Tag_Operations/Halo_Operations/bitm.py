@@ -54,6 +54,25 @@ BC.Define_Format(Format_ID=BC.FORMAT_P8,
                  Channel_Masks=(4278190080, 16711680, 65280, 255),
                  Channel_Offsets=(24,16,8,0))
 
+'''Constants that determine which index
+each of the flags are in per tag'''
+DONT_REPROCESS = 0
+RENAME_OLD = 1
+READ_ONLY = 2
+WRITE_LOG = 3
+PLATFORM = 4
+SWIZZLED = 5
+DOWNRES = 6
+MULTI_SWAP = 7
+CUTOFF_BIAS = 8
+P8_MODE = 9
+MONO_KEEP = 10
+MONO_SWAP = 11
+CK_TRANS = 12
+NEW_FORMAT = 13
+MIP_GEN = 14
+GAMMA = 15
+EXTRACT_TO = 16
 
 def Process_Bitmap_Tag(Tag):
     '''this function will return whether or not the conversion
@@ -68,42 +87,33 @@ def Process_Bitmap_Tag(Tag):
         Format = Tag.Bitmap_Format()
 
         #if all these are true we skip the tag
-        if ( Flags["DOWNRES"]=='0' and Flags["MULTI SWAP"] == 0 and
-             Flags["NEW FORMAT"] == FORMAT_NONE and Flags["MIP GEN"]== False and
-             Tag.Is_Xbox_Bitmap == Flags["PLATFORM"] and
-             (Flags["MONO SWAP"] == False or Format!= FORMAT_A8Y8) and
-             (Tag.Swizzled() == Flags["SWIZZLED"] or
+        if ( Flags[DOWNRES]=='0' and Flags[MULTI_SWAP] == 0 and
+             Flags[NEW_FORMAT] == FORMAT_NONE and Flags[MIP_GEN]== False and
+             Tag.Is_Xbox_Bitmap == Flags[PLATFORM] and
+             (Flags[MONO_SWAP] == False or Format!= FORMAT_A8Y8) and
+             (Tag.Swizzled() == Flags[SWIZZLED] or
               Format_Name_List[Format] in BC.DDS_FORMATS) ):
             return(False)
-    return(True)
+    return True
 
 
 def Extracting_Texture(Tag):
     '''determines if a texture extraction is to take place'''
-    return(Tag.Tag_Conversion_Settings["EXTRACT TO"] != " ")
+    return(Tag.Tag_Conversion_Settings[EXTRACT_TO] != " ")
 
 
 def Convert_Bitmap_Tag(Tag, **kwargs):
     '''tons of possibilities here. not gonna try to name
     them. Basically this is the main conversion routine'''
-    Root_Window = None
-    New_Bitmap = None
-    Conversion_Report = {}
-    Tag_Path = Tag.Tag_Path
     del Tex_Infos[:]
 
     Conversion_Flags = Tag.Tag_Conversion_Settings
 
-    if "Root_Window" in kwargs:
-        Root_Window = kwargs["Root_Window"]
-    if "New_Bitmap" in kwargs:
-        New_Bitmap = kwargs["New_Bitmap"]
-    if "Tag_Path" in kwargs:
-        Tag_Path = kwargs["Tag_Path"]
-    if "Conversion_Report" in kwargs:
-        Conversion_Report = kwargs["Conversion_Report"]
-    if "Reprocess" in kwargs:
-        Reprocess = kwargs["Reprocess"]
+    Root_Window = kwargs.get("Root_Window",None)
+    New_Bitmap = kwargs.get("New_Bitmap",None)
+    Tag_Path = kwargs.get("Tag_Path",Tag.Tag_Path)
+    Conversion_Report = kwargs.get("Conversion_Report",{})
+    Reprocess = kwargs.get("Reprocess", False)
     
     '''if ANY of the bitmaps does not have a power of 2 dimensions height/width/depth
     then we need to break out of this since we can't work with it properly'''
@@ -115,19 +125,19 @@ def Convert_Bitmap_Tag(Tag, **kwargs):
 
     """GET THE FLAGS FOR THE CONVERSION SETTINGS
     THAT DON'T DEPEND ON BITMAP FORMAT OR TYPE"""
-    Save_As_Xbox = Conversion_Flags["PLATFORM"]
-    Swizzler_Mode = Conversion_Flags["SWIZZLED"]
-    Downres_Amount = int(Conversion_Flags["DOWNRES"])
-    Alpha_Cutoff_Bias = int(Conversion_Flags["CUTOFF BIAS"])
-    P8_Mode = Conversion_Flags["P8 MODE"]
-    Channel_to_Keep = Conversion_Flags["MONO KEEP"]
-    Color_Key_Transparency = Conversion_Flags["CK TRANS"]
-    New_Format = Format_Name_List[Conversion_Flags["NEW FORMAT"]]
-    Multi_Swap = Conversion_Flags["MULTI SWAP"]
-    Mono_Swap = Conversion_Flags["MONO SWAP"]
-    Gamma = Conversion_Flags["GAMMA"]
-    Generate_Mipmaps = Conversion_Flags["MIP GEN"]
-    Export_Format = Conversion_Flags["EXTRACT TO"]
+    Save_As_Xbox = Conversion_Flags[PLATFORM]
+    Swizzler_Mode = Conversion_Flags[SWIZZLED]
+    Downres_Amount = int(Conversion_Flags[DOWNRES])
+    Alpha_Cutoff_Bias = int(Conversion_Flags[CUTOFF_BIAS])
+    P8_Mode = Conversion_Flags[P8_MODE]
+    Channel_to_Keep = Conversion_Flags[MONO_KEEP]
+    Color_Key_Transparency = Conversion_Flags[CK_TRANS]
+    New_Format = Format_Name_List[Conversion_Flags[NEW_FORMAT]]
+    Multi_Swap = Conversion_Flags[MULTI_SWAP]
+    Mono_Swap = Conversion_Flags[MONO_SWAP]
+    Gamma = Conversion_Flags[GAMMA]
+    Generate_Mipmaps = Conversion_Flags[MIP_GEN]
+    Export_Format = Conversion_Flags[EXTRACT_TO]
 
     Processing_Bitmap = Process_Bitmap_Tag(Tag)
 
@@ -266,7 +276,6 @@ def Convert_Bitmap_Tag(Tag, **kwargs):
             Path = BM.Filepath
             if Tag.Bitmap_Count() > 1:
                 Path += ("_"+str(i))
-                
             BM.Save_to_File(Output_Path = Path, Ext = Export_Format)
                 
 
@@ -328,8 +337,8 @@ def Parse_Bitmap_Blocks(Tag):
     Pixel_Data = Tag.Tag_Data.Data.Processed_Pixel_Data
     Raw_Bitmap_Data = Pixel_Data.Data
 
-    Tags_Directory = Tag.Handler.Tags_Directory
-    Data_Directory = Tag.Handler.Data_Directory
+    Tags_Dir = Tag.Library.Tags_Dir
+    Data_Dir = Tag.Library.Data_Dir
     
     #this is the block that will hold all of the bitmap blocks
     Root_Texture_Block = List_Block(Tag.Definition.Structures['Pixel_Root_Desc'])
@@ -352,8 +361,7 @@ def Parse_Bitmap_Blocks(Tag):
                           "Format":Format, "Mipmap_Count":(Mipmap_Count-1),
                           "Sub_Bitmap_Count":Sub_Bitmap_Count, "Swizzled":Tag.Swizzled(),
                           "Texture_Type":Type_Name_List[Type],
-                          "Filepath":splitext(Tag.Tag_Path.replace(Tags_Directory,
-                                                                   Data_Directory))[0]})
+                          "Filepath":splitext(Tag.Tag_Path.replace(Tags_Dir,Data_Dir))[0]})
         
         """IF THE TEXTURE IS IN P-8 FORMAT THEN WE NEED TO
         PROVIDE THE PALETTE AND SOME INFORMATION ABOUT IT"""
@@ -575,15 +583,15 @@ def Bitmap_Sanitize(Tag):
     #Read the pixel data blocks for each bitmap
     for i in range(Tag.Bitmap_Count()):
         Format = Format_Name_List[Tag.Bitmap_Format(i)]
+        Flags = Tag.Bitmap_Flags(i)
         Old_W, Old_H, _ = Tag.Bitmap_Width_Height_Depth(i)
         
         Reg_Point_X, Reg_Point_Y = Tag.Registration_Point_XY(i)
         TexInfo = Tex_Infos[i]
         
         #set the flags to the new value
-        Tag.Bitmap_Flags(i, (Tag.Bitmap_Flags(i)&65529 +
-                             (Format == BC.FORMAT_P8)*4 +
-                             (Format in BC.COMPRESSED_FORMATS)*2))
+        Flags.Palletized = Format == BC.FORMAT_P8
+        Flags.Compressed = Format in BC.COMPRESSED_FORMATS
         
         Tag.Bitmap_Width_Height_Depth(i, (TexInfo["Width"],
                                           TexInfo["Height"],

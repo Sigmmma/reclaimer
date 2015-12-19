@@ -12,7 +12,8 @@ a function which will determine which descriptor to use.
 Finish Bool_Block
 Make Enum_Block
 
-Rename Tag_Collection to Tags and Handler to Library
+Find out why Set_Pointers_Loop is making a ton of empty space in some things
+    from 3108 to 4684
 
 make an immutable dictionary class called a "Descriptor"
     Descriptors will require a custom set method such as Replace() which will take
@@ -34,8 +35,6 @@ handling of exceptions and give better details regarding the exception.
 
 Make wrapper class for read/writing to any memoryview-able object.
     This will allow writing to non-files
-
-Find out why Set_Pointers_Loop is making a ton of empty space in some things
 
 
 Low Priority:
