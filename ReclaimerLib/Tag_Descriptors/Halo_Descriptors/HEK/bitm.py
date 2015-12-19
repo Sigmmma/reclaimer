@@ -79,7 +79,7 @@ class BITM_Definition(Tag_Def):
                          17:{GUI_NAME:"P8-bump"}
                          },
                      6:{ TYPE:Bool16, OFFSET:14, GUI_NAME:"Flags",
-                         0:{GUI_NAME:"Power of 2 Dimensions", VALUE:1},
+                         0:{GUI_NAME:"Power of 2 Dim", VALUE:1},
                          1:{GUI_NAME:"Compressed", VALUE:2},
                          2:{GUI_NAME:"Palletized", VALUE:4},
                          3:{GUI_NAME:"Swizzled", VALUE:8},

@@ -40,11 +40,6 @@ class BITM_Tag(Halo_Tag_Obj):
         if New_Value is None:
             return(self.Tag_Data.Data.Bitmaps.Block_Count)
         self.Tag_Data.Data.Bitmaps.Block_Count = New_Value
-
-    def Bitmap_Body_Flags(self, New_Value=None):
-        if New_Value is None:
-            return(self.Tag_Data.Data.Flags)
-        self.Tag_Data.Data.Flags = New_Value
         
     def Bitmap_Width(self, Bitmap_Index=0, New_Value=None):
         if New_Value is None:
@@ -68,13 +63,13 @@ class BITM_Tag(Halo_Tag_Obj):
 
     def Bitmap_Type(self, Bitmap_Index=0, New_Value=None):
         if New_Value is None:
-            return(self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Type)
-        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Type = New_Value
+            return self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Type.Val
+        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Type.Val = New_Value
 
     def Bitmap_Format(self, Bitmap_Index=0, New_Value=None):
         if New_Value is None:
-            return(self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Format)
-        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Format = New_Value
+            return self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Format.Val
+        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Format.Val = New_Value
 
 
     def Bitmap_Width_Height_Depth(self, Bitmap_Index=0, New_Value=None):
@@ -87,8 +82,8 @@ class BITM_Tag(Halo_Tag_Obj):
 
     def Bitmap_Flags(self, Bitmap_Index=0, New_Value=None):
         if New_Value is None:
-            return(self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Flags)
-        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Flags = New_Value
+            return self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Flags
+        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Flags.Val = New_Value
         
     def Bitmap_Base_Address(self, Bitmap_Index=0, New_Value=None):
         if New_Value is None:
@@ -124,28 +119,24 @@ class BITM_Tag(Halo_Tag_Obj):
     @property
     def Is_Xbox_Bitmap(self):
         #we only need to check the first bitmap
-        return(self.Bitmap_Base_Address() == 1073751810)
+        return self.Bitmap_Base_Address() == 1073751810
+        
+    def Processed_by_Reclaimer(self, New_Flag=None):
+        if New_Flag is None:
+            return self.Tag_Data.Data.Flags.Processed_by_Reclaimer
+        self.Tag_Data.Data.Flags.Processed_by_Reclaimer = New_Flag
+        
 
     def Is_Power_of_2_Bitmap(self, Bitmap_Index=0):
-        return(bool(self.Bitmap_Flags(Bitmap_Index) & 1))
+        return self.Bitmap_Flags(Bitmap_Index).Power_of_2_Dim
             
     def Is_Compressed_Bitmap(self, Bitmap_Index=0):
-        return(bool(self.Bitmap_Flags(Bitmap_Index) & 2))
-
-
-    def Processed_by_Reclaimer(self, New_Flag=None):
-        Flags = self.Bitmap_Body_Flags()
-        if New_Flag is not None:
-            self.Bitmap_Body_Flags((Flags&(2**16-17))+ (New_Flag*16))
-        else:
-            return(bool(Flags & 16))
+        return self.Bitmap_Flags(Bitmap_Index).Compressed
         
     def Swizzled(self, New_Flag=None, Bitmap_Index = 0):
-        Flags = self.Bitmap_Flags(Bitmap_Index)
-        if New_Flag is not None:
-            self.Bitmap_Flags(Bitmap_Index, (Flags&(2**16-9))+ (New_Flag*8))
-        else:
-            return(bool(Flags & 8))
+        if New_Flag is None:
+            return self.Bitmap_Flags(Bitmap_Index).Swizzled
+        self.Bitmap_Flags(Bitmap_Index).Swizzled = New_Flag
     
 
     def Color_Plate_Data_Bytes_Size(self, New_Value=None):
@@ -168,9 +159,7 @@ class BITM_Tag(Halo_Tag_Obj):
         for Bitmap_Index in range(self.Bitmap_Count()):
             Bitmap = self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index]
             
-            Flags = Bitmap.Flags
-            
-            Bitmap.Flags = (Flags&(2**16-129))+(Save_As_Xbox*128)
+            Bitmap.Flags.Set_To('Made_by_Arsenic', Save_As_Xbox)
 
             '''Base_Address is the ONLY discernable difference
             between a bitmap made by arsenic from a PC map, and

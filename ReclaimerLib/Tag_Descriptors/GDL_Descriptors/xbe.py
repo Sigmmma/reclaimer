@@ -5,7 +5,7 @@ def Construct():
 
 class GDL_XBE_Definition(XBE_Def):
 
-    Special_Types = { TYPE:Bool32, GUI_NAME:"Special Type",
+    Special_Types = { TYPE:Bool32, GUI_NAME:"Flags",
                       0:{GUI_NAME:"Levitate", VALUE:1},
                       1:{GUI_NAME:"X Ray", VALUE:2},
                       2:{GUI_NAME:"Invisible", VALUE:4},
@@ -30,7 +30,7 @@ class GDL_XBE_Definition(XBE_Def):
                       21:{GUI_NAME:"Health Vampire", VALUE:4194304}
                    }
     
-    Armor_Types = { TYPE:Bool32, GUI_NAME:"Armor Type",
+    Armor_Types = { TYPE:Bool32, GUI_NAME:"Flags",
                     0:{GUI_NAME:"Resist Fire", VALUE:1},
                     1:{GUI_NAME:"Resist Elec", VALUE:2},
                     2:{GUI_NAME:"Resist Light", VALUE:4},
@@ -56,9 +56,9 @@ class GDL_XBE_Definition(XBE_Def):
                     18:{GUI_NAME:"Armor Protect", VALUE:8388608},
                     19:{GUI_NAME:"Armor Reflect2", VALUE:16777216}
                     }
-    
+    '''
     #these are for when the library can handle displaying structs
-    Weapon_Types = { TYPE:Bit_Struct, SIZE:32, GUI_NAME:"Weapon Properties",
+    Weapon_Types = { TYPE:Bit_Struct, SIZE:4, GUI_NAME:"Flags",
                      0:{TYPE:Bit_Enum, GUI_NAME:"Weapon Type", SIZE:4,
                         0:{GUI_NAME:"Normal"},
                         1:{GUI_NAME:"Fire"},
@@ -80,9 +80,9 @@ class GDL_XBE_Definition(XBE_Def):
                         10:{GUI_NAME:"Reflect", VALUE:2097152}
                         }
                      }
-
+    '''
     
-    Weapon_Flags = { TYPE:Bool32, GUI_NAME:"Weapon Properties", SIZE:4,
+    Weapon_Types = { TYPE:Bool32, GUI_NAME:"Flags",
                      0:{GUI_NAME:"Knockback", VALUE:16},
                      1:{GUI_NAME:"Knockdown", VALUE:32},
                      2:{GUI_NAME:"Whirlwind", VALUE:65536},
@@ -155,15 +155,12 @@ class GDL_XBE_Definition(XBE_Def):
                                         5:{GUI_NAME:"Special", VALUE:9}
                                         },
                                     2:{ TYPE:Float,  OFFSET:12, NAME:"Add" },
-                                    3:{ TYPE:UInt32, OFFSET:16, NAME:"Flags" },
-
-                                    #based on the above Item_Type, these are the
-                                    #different sets of meanings for the Flags
-                                    "Weapon":Weapon_Flags,
-                                    "Armor":Armor_Types,
-                                    "Special":Special_Types
+                                    3:{ TYPE:Bool32, OFFSET:16, NAME:"Flags" }
                                     }
                          }
                      }
 
-    Structures = {'Weapon_Types':Weapon_Types}
+    Structures = {'Weapon_Types':Weapon_Types,
+                  'Special_Types':Special_Types,
+                  'Armor_Types':Armor_Types,
+                  'No_Types':{ TYPE:Bool32, NAME:"Flags" }}
