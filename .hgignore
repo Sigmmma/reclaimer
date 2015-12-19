@@ -16,6 +16,7 @@ ReclaimerLib/Tag_Handlers/Halo_Programs/GUI/__pycache__/**
 ReclaimerLib/Tag_Operations/Halo_Operations/__pycache__/**
 
 data/**
+tags/**
 supyr_struct.rar
 Supyr_Struct.lnk
 staff deconstructed.max
@@ -25,4 +26,3 @@ vorbisenc.dll
 vorbisfile.dll
 vorbis.dll
 ogg.dll
-tags/GDL_Default.xbe
