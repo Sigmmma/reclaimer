@@ -8,7 +8,7 @@ try:
 
     if __name__ == '__main__':
         Test = Tag_Test_Class(Debug=3, Allow_Corrupt=True,
-                              Print_Test=False, Save_Test=True,
+                              Print_Test=False, Save_Test=False,
                               Write_as_Temp=True, Backup_Old_Tags=False,
                               Constructor=Constructor,
                               #Valid_Tag_IDs='xbe',
@@ -28,7 +28,7 @@ try:
         if Objs is not None:
             for Tag_Path in Objs:
                 print("Size of: "+Tag_Path+" = ", Objs[Tag_Path].Tag_Data.Bin_Size)
-                Objs[Tag_Path].Print(Show=('Name','Value','Children'),
+                Objs[Tag_Path].Print(Show=('Name','Value','Children','Flags','Elements'),
                                      Printout=True)
         input()
 except:
