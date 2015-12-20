@@ -3,7 +3,7 @@ from supyr_struct.Defs.Constants import *
 from supyr_struct.Re_Wr_De_En import *
 
 
-def Encode_Tag_Ref_Str(self, Block_Data, Parent, Attr_Index):
+def Enc_Tag_Ref_Str(self, Block_Data, Parent, Attr_Index):
     """This function is the same as Encode_String, except that
     when a halo reference string has zero length, the string doesnt
     actually exist. It's not just a delimiter character, the string
@@ -47,9 +47,22 @@ def Tag_Ref_Size(New_Value=None, *args, **kwargs):
         if Str_Len:
             return Str_Len + 1
         return Str_Len
+                
+
+def Decode_Raw_String(self, Bytes, Parent=None, Attr_Index=None):
+    return Bytes.decode(encoding=self.Enc)
 
 
-String_Var_Len = Field_Type(Name="Halo Ref Str", Default='', Delimited=True,
-                            Str=True, Reader=Data_Reader, Writer=Data_Writer,
-                            Decoder=Decode_String, Encoder=Encode_Tag_Ref_Str,
-                            Size_Calc=Calc_Tag_Ref_Size, Size=1, Enc='latin-1')
+tmp = {'Str':True, 'Default':'', 'Delimited':True,
+       'Reader':Data_Reader, 'Writer':Data_Writer,
+       'Decoder':Decode_Raw_String, 'Encoder':Encode_String}
+Com = Combine
+
+String_Var_Len = Field_Type(**Com({'Name':"Halo Ref Str", 'Size':1, 
+                                   'Decoder':Decode_String, 'Enc':'latin-1',
+                                   'Encoder':Enc_Tag_Ref_Str,
+                                   'Size_Calc':Calc_Tag_Ref_Size}, tmp))
+
+UTF16_Str_Data = Field_Type(**Com({'Name':"UTF16 Str Data", 'Size':2,
+                                   'Size_Calc':Str_Size_Calc_UTF,
+                                   'Enc':{"<":"utf_16_le",">":"utf_16_be"}},tmp))

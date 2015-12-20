@@ -9,13 +9,7 @@ a function which will determine which descriptor to use.
     The Switch doesnt create its own Tag_Block, but instead calls the reader of
     the proper Tag_Block with the same args and kwargs that were provided to it.
 
-Finish Bool_Block
 Finish Enum_Block
-
-Figure out how to handle DEFAULT value for Enum_Block since the DEFAULT
-    is what Enum_Block.Val is set to. This works fine for Bool_Block because
-    each flag has a default setting, but for Val based blocks the DEFAULT
-    needs to be redirected to setting Enum_Block.Val
 
 make an immutable dictionary class called a "Descriptor"
     Descriptors will require a custom set method such as Replace() which will take

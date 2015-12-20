@@ -10,7 +10,7 @@ Mode = "locate"
 
 
 
-Words_to_Locate = ['Data_Directory']
+Words_to_Locate = ['Init_Data']
 Word_Replacements = []
 #Flags = re.IGNORECASE
 
