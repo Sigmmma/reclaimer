@@ -8,7 +8,7 @@ try:
          HEK.Constructor import Constructor
 
     if __name__ == '__main__':
-        Test = Tag_Test_Class(Print_Test=False, Save_Test=False, Debug=3,
+        Test = Tag_Test_Class(Print_Test=True, Save_Test=False, Debug=3,
                               Write_as_Temp=False, Backup_Old_Tags=False,
                               #Valid_Tag_IDs="ustr",
                               Constructor = Constructor,
@@ -16,34 +16,13 @@ try:
                                              'Printout':True, 'Precision':3,
                                              'Show':['Name', 'Children', 'Type',
                                                      'Value', 'Offset', 'Size',
-                                                     'Elements', 'Index', #'Flags',
-                                                     'Tag_Path', #'Unique', 
+                                                     'Elements', 'Index', 'Flags',
+                                                     'Tag_Path', #'Unique', 'Py_Type',
                                                      'Bin_Size', 'Ram_Size'] })
-        #Test.Run_Test()
-        cProfile.run('Test.Load_Tags_and_Run()')
-        input()
-        '''
-        Test.Full_Debugging = False
-        True_Times = []
-        False_Times = []
-        
-        for i in range(30):
-            start = time()
-            Test.Load_Tags_and_Run()
-            if Test.Full_Debugging:
-                True_Times.append(time()-start)
-            else:
-                False_Times.append(time()-start)
-            
-            Test.Full_Debugging = not Test.Full_Debugging
+        Test.Run_Test()
+        #cProfile.run('Test.Load_Tags_and_Run()')
+        #input()
 
-        print("Debugging Times:")
-        print(True_Times)
-        print("Average Debugging Time:", sum(True_Times)/len(True_Times))
-        print("Non-Debugging Times:")
-        print(False_Times)
-        print("Average Non-Debugging Time:", sum(False_Times)/len(False_Times))
-        '''
 except:
     print(format_exc())
     input()

@@ -74,8 +74,8 @@ class OBJECTS_PS2_Definition(Tag_Def):
     '''When the type is Subobject, the Count is how ever many
     vertices all its primitives contain(minus the zeroed ones)'''
 
-    '''When the type is Vertex, the last vertex is
-    always X=0, Y=0, Z=0. not sure why, but it is.'''
+    '''When the type is Vertex, the last vertex is always set to
+    X=0, Y=0, Z=0. This must be to signal that the strip has ended.'''
     Primitive = { TYPE:Struct, NAME:"Primitive", ALIGN:4,
                   0:{ TYPE:UInt8, NAME:"Unknown_0", DEFAULT:4 },
                   1:{ TYPE:UInt8, NAME:"Unknown_1" },
@@ -95,7 +95,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                   #        SIZE:'.Count', SUB_STRUCT:{ }
                   #        }
                   }
-    Pointer32
+
     #sub-objects are for things where you may have multiple textures on one mesh.
     #in that case each subobject would have one texture.
     Sub_Object_Block = { TYPE:Struct, GUI_NAME:"Sub-Object",
@@ -154,12 +154,12 @@ class OBJECTS_PS2_Definition(Tag_Def):
                      CHILD:{ TYPE:Container, NAME:"Data",
                              0:{ TYPE:Array, GUI_NAME:"Sub-Objects",
                                  POINTER:"..Sub_Objects_Pointer",
-                                 CARRY_OFF:False, SIZE:Sub_Objects_Size,
+                                 SIZE:Sub_Objects_Size,
                                  SUB_STRUCT:Sub_Object_Block
                                  },
                              1:{ TYPE:Array, GUI_NAME:"Sub-Object_Models",
                                  POINTER:"..Sub_Object_Models_Pointer",
-                                 CARRY_OFF:False, SIZE:"..Sub_Objects_Count",
+                                 SIZE:"..Sub_Objects_Count",
                                  SUB_STRUCT:Primitive
                                  }
                              }
@@ -175,7 +175,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                      #color data is stored in RGBA order
                      #8x8 seems to be the smallest a texture is allowed to be
                      
-                     0:{ TYPE:Enum8,  OFFSET:0, GUI_NAME:"Bitmap Format",
+                     0:{ TYPE:Enum8,  OFFSET:0, GUI_NAME:"Format",
                          0:{NAME:"ABGR_1555", VALUE:0 },
                          1:{NAME:"XBGR_1555", VALUE:1 },
                          2:{NAME:"ABGR_8888", VALUE:2 },
@@ -208,7 +208,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                          2:{NAME:"Clamp U",   VALUE:0x4},
                          3:{NAME:"Clamp V",   VALUE:0x8},
                          4:{NAME:"Animation", VALUE:0x10},
-                         5:{NAME:"Eternal",   VALUE:0x20},
+                         5:{NAME:"External",   VALUE:0x20},
                          6:{NAME:"Tex Shift", VALUE:0x40},
                          7:{NAME:"Has Alpha", VALUE:0x80},
                          8:{NAME:"INVALID",   VALUE:0x100},
@@ -258,8 +258,8 @@ class OBJECTS_PS2_Definition(Tag_Def):
 
 
     Tag_Structure = {TYPE:Struct, SIZE:160, GUI_NAME:"GDL Objects Resource",
-                     0:{ TYPE:Str_Latin1, OFFSET:0, GUI_NAME:"Dir Name", SIZE:32},
-                     1:{ TYPE:Str_Latin1, OFFSET:32, GUI_NAME:"Model Name", SIZE:32},
+                     0:{ TYPE:Str_Raw_Latin1, OFFSET:0, GUI_NAME:"Dir Name", SIZE:32},
+                     1:{ TYPE:Str_Raw_Latin1, OFFSET:32, GUI_NAME:"Model Name", SIZE:32},
                      2:{ TYPE:UInt32, OFFSET:64, GUI_NAME:"Version", DEFAULT:4027252749},
                      
                      3:{ TYPE:UInt32, OFFSET:68, GUI_NAME:"Object Count" },
@@ -298,7 +298,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                             2:{TYPE:Array, GUI_NAME:"Object Defs",
                                SIZE:'..Object_Def_Count', POINTER:'..Object_Def_Pointer',
                                SUB_STRUCT:{ TYPE:Struct, SIZE:24, GUI_NAME:"Object Def",
-                                            0:{ TYPE:Str_Latin1, NAME:"Name", SIZE:16},
+                                            0:{ TYPE:Str_Raw_Latin1, NAME:"Name", SIZE:16},
                                             1:{ TYPE:Float, NAME:"BndRad", GUI_NAME:"Bounding Radius"},
                                             2:{ TYPE:SInt16, NAME:"Index"},
                                             3:{ TYPE:SInt16, NAME:"NFrames"},
@@ -307,7 +307,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                             3:{TYPE:Array, GUI_NAME:"Bitmap Defs",
                                SIZE:'..Bitmap_Def_Count', POINTER:'..Bitmap_Def_Pointer',
                                SUB_STRUCT:{ TYPE:Struct, SIZE:36, GUI_NAME:"Bitmap Def",
-                                            0:{ TYPE:Str_Latin1, OFFSET:0, NAME:"Name", SIZE:16},
+                                            0:{ TYPE:Str_Raw_Latin1, OFFSET:0, NAME:"Name", SIZE:16},
                                             1:{ TYPE:UInt16, OFFSET:30, NAME:"Index"},
                                             2:{ TYPE:UInt16, OFFSET:32, NAME:"Width"},
                                             3:{ TYPE:UInt16, OFFSET:34, NAME:"Height"},

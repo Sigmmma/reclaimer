@@ -10,10 +10,12 @@ a function which will determine which descriptor to use.
     the proper Tag_Block with the same args and kwargs that were provided to it.
 
 Finish Bool_Block
-Make Enum_Block
+Finish Enum_Block
 
-Find out why Set_Pointers_Loop is making a ton of empty space in some things
-    from 3108 to 4684
+Figure out how to handle DEFAULT value for Enum_Block since the DEFAULT
+    is what Enum_Block.Val is set to. This works fine for Bool_Block because
+    each flag has a default setting, but for Val based blocks the DEFAULT
+    needs to be redirected to setting Enum_Block.Val
 
 make an immutable dictionary class called a "Descriptor"
     Descriptors will require a custom set method such as Replace() which will take

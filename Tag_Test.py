@@ -3,7 +3,7 @@ try:
     from supyr_struct.Test import Tag_Test_Class
     
     if __name__ == '__main__':
-        Test = Tag_Test_Class(Debug=3, Print_Test=True, Save_Test=True,
+        Test = Tag_Test_Class(Debug=3, Print_Test=True, Save_Test=False,
                               Write_as_Temp=True, Backup_Old_Tags=False,
                               Valid_Tag_IDs="sote_eep_save",
                               Defs_Path="ReclaimerLib\\Tag_Descriptors\\misc\\",
