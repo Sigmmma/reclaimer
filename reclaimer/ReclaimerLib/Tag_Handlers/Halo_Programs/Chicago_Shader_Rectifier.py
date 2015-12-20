@@ -55,7 +55,7 @@ class Shader_Rectifier_Class(HEK_Tag_Library):
                         for i in range(len(EL)):
                             #get the 4 character identifier
                             #for the extra layer's type
-                            Ref_ID = EL[i].Tag_Class
+                            Ref_ID = EL[i].Tag_Class.Val
 
                             #add the extra layer's path to the debug log
                             Debug_Log_String += ("\n    " + EL[i].CHILD)
