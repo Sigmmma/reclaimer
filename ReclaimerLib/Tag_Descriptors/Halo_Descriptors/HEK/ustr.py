@@ -22,7 +22,7 @@ class USTR_Definition(Tag_Def):
                                    MAX:32767, SIZE:".Block_Count",
                                    SUB_STRUCT:{ TYPE:Struct, SIZE:20, GUI_NAME:"String",
                                                 ATTRS:Raw_Data_Reference_Structure,
-                                                CHILD:{TYPE:Str_Raw_UTF16, NAME:"Raw_String_Data",
+                                                CHILD:{TYPE:Str_UTF16, NAME:"Raw_String_Data",
                                                        ENDIAN:'<', SIZE:".Byte_Count"}
                                                 }
                                    }
