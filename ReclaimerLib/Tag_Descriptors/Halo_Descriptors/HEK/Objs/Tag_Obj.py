@@ -5,7 +5,7 @@ from .....Tag_Constructors.Halo_Constructors.HEK.Field_Types import *
 class Halo_Tag_Obj(Tag_Obj):
     __slots__ = ('Tag_Conversion_Settings',
                  'Library', 'Constructor', 'Definition',
-                 'Offset', 'Root_Offset', 'Calc_Pointers',
+                 'Root_Offset', 'Calc_Pointers',
                  'Tag_Source_Path', 'Tag_Path', 'Tag_Data')
     
     def __init__(self, **kwargs):

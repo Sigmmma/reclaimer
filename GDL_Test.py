@@ -25,6 +25,7 @@ try:
         #Test.Run_Test()
         cProfile.run('Test.Load_Tags_and_Run()')
         Objs = Test.Tags.get('objects.ps2')
+        input()
         if Objs is not None:
             for Tag_Path in Objs:
                 print("Size of: "+Tag_Path+" = ", Objs[Tag_Path].Tag_Data.Bin_Size)
