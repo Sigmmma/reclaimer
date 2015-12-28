@@ -9,8 +9,6 @@ a function which will determine which descriptor to use.
     The Switch doesnt create its own Tag_Block, but instead calls the reader of
     the proper Tag_Block with the same args and kwargs that were provided to it.
 
-Finish Enum_Block
-
 make an immutable dictionary class called a "Descriptor"
     Descriptors will require a custom set method such as Replace() which will take
     the changes being given to it and return a copy of itself with the changes
@@ -19,6 +17,9 @@ make an immutable dictionary class called a "Descriptor"
     Do the above for __setattr__, __delattr__, __setitem__, and __delitem__
 
 Finish docstrings for modules and update existing ones.
+
+Fix instances where it assumes the parent's DESC is more accurate than the
+block, even if the block has a custom descriptor(such as for switch blocks)
 
 
 Medium Priority:
@@ -29,11 +30,15 @@ handling of exceptions and give better details regarding the exception.
 
     place try/except around all encoding routines to catch and report errors better
 
-Make wrapper class for read/writing to any memoryview-able object.
+Make wrapper class for reading/writing any memoryview-able object.
     This will allow writing to non-files
 
 
 Low Priority:
+
+Improve speed of Enum_Block by including a mapping of Value:Index in enumerator
+descriptors under the name VALUE_MAP. This will make it so its not necessary to
+check every option, but will require adjustments to get_desc, set_desc, del_desc
 
 Make it possible to call a Field_Type and provide a Name string
 followed by a calling of all the Field_Types of each of its fields.
