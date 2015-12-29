@@ -1,5 +1,5 @@
 from supyr_struct.Defs.Tag_Obj import *
-from .....Tag_Constructors.Halo_Constructors.HEK.Field_Types import *
+from ...Field_Types import *
 
 
 class Halo_Tag_Obj(Tag_Obj):

@@ -1,9 +1,9 @@
 import os
 
 from traceback import format_exc
-from .HEK_Tag_Library import HEK_Tag_Library
+from ..Library import Halo_Library
 
-class Shader_Rectifier_Class(HEK_Tag_Library):
+class Shader_Rectifier_Class(Halo_Library):
     Target_Tag = "schi"
     Backup_Tags = False
 
@@ -17,7 +17,7 @@ class Shader_Rectifier_Class(HEK_Tag_Library):
         if "Backup_Tags" in kwargs:
             self.Backup_Tags = kwargs["Backup_Tags"]
         kwargs["Valid_Tag_IDs"] = ("schi","scex")
-        HEK_Tag_Library.__init__(self, **kwargs)
+        Halo_Library.__init__(self, **kwargs)
 
 
     #This is used to convert extended chicago tags
@@ -27,7 +27,7 @@ class Shader_Rectifier_Class(HEK_Tag_Library):
         Debug_Log_String = ("Debug log for CE-XBOX Shader Rectifier\n\n\n" +
                             "Removed extra layers from:\n\n")
 
-        Target_Def = self.Constructor.Get_Def(self.Target_Tag)
+        Target_Def = self.Get_Def(self.Target_Tag)
         
         '''loop through both chicago and extended chicago tag types'''
         for Cls_ID in self.Tags:
@@ -48,8 +48,7 @@ class Shader_Rectifier_Class(HEK_Tag_Library):
                     '''REMOVE THE EXTRA LAYERS FROM THE TAG'''
                     EL = Tag.Tag_Data.Data.Extra_Layers.Extra_Layers_Array
                     if len(EL):
-                        Debug_Log_String += ("\n" + Tag.Tag_Path +
-                                             "\nExtra Layers:")
+                        Debug_Log_String += "\n"+Tag.Tag_Path +"\nExtra Layers:"
                         
                         #we loop through each extra layer for the debug log
                         for i in range(len(EL)):
@@ -58,10 +57,10 @@ class Shader_Rectifier_Class(HEK_Tag_Library):
                             Ref_ID = EL[i].Tag_Class.Val
 
                             #add the extra layer's path to the debug log
-                            Debug_Log_String += ("\n    " + EL[i].CHILD)
+                            Debug_Log_String += "\n    " + EL[i].CHILD
 
                             try:
-                                Debug_Log_String += self.ID_Ext_Mapping[Ref_ID]
+                                Debug_Log_String += self.ID_Ext_Map[Ref_ID]
                             except:
                                 pass
 
@@ -75,7 +74,6 @@ class Shader_Rectifier_Class(HEK_Tag_Library):
                     print("ERROR OCCURRED WHILE ATTEMPTING TO CONVERT:\n" +
                           '    ' + Tag.Tag_Path + '\n')
                     print(format_exc())
-
         #swap the tags around in the tag collection
         if self.Target_Tag == 'scex':
             self.Tags['scex'].update(self.Tags['schi'])
@@ -89,8 +87,8 @@ class Shader_Rectifier_Class(HEK_Tag_Library):
         Debug_Log_String += Write_Exceptions
         
         #create the debug and take care of renaming and deleting tags
-        Debug_Log_String += self.Make_Tag_Write_Log(Conversion_Report,
-                                                    Backup=self.Backup_Tags)
+        Debug_Log_String += self.Make_Write_Log(Conversion_Report,
+                                                Backup=self.Backup_Tags)
         
         return(Debug_Log_String)
         
