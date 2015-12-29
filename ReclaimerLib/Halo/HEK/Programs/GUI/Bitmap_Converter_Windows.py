@@ -5,7 +5,7 @@ from time import time, sleep
 from os.path import basename, normpath
 from .mtTkinter import *
 from .Common_Window_Functions import *
-from ....Tag_Operations.Halo_Operations.bitm import *
+from ...Tag_Editing.bitm import *
 
 
 #used when displaying the format and type in windows

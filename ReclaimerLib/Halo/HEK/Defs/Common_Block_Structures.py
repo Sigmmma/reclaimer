@@ -1,5 +1,5 @@
 from supyr_struct.Defs.Common_Structures import *
-from ....Tag_Constructors.Halo_Constructors.HEK.Field_Types import *
+from ..Field_Types import *
 
 Com = Combine
 

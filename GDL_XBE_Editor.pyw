@@ -9,7 +9,7 @@ from copy import deepcopy
 curr_dir = os.path.abspath(os.curdir)
 
 try:
-    from ReclaimerLib.Tag_Constructors.GDL_Constructors.Constructor import Constructor as Const
+    from ReclaimerLib.GDL.Library import GDL_Library as Const
 
     def Validate_and_Set_Str(Var, *args):
         Val = Var.get()
@@ -75,7 +75,7 @@ try:
             self.Selected_Char = StringVar(self)
             self.Selected_Cheat = StringVar(self)
 
-            Structs = self.XBE_Const.Definitions['xbe'].Structures
+            Structs = self.XBE_Const.Defs['xbe'].Structures
 
             self._Cheat_Flags_Desc         = Structs['No_Types']
             self._Cheat_Weapon_Flags_Desc  = Structs['Weapon_Types']
@@ -157,7 +157,7 @@ try:
             Filepath = filedialog.askopenfilename(initialdir=curr_dir, title="Select Gauntlet's default.xbe")
             if Filepath != "":
                 try:
-                    XBE = self.XBE_Const.Construct_Tag(Tag_ID="xbe", Filepath=Filepath)
+                    XBE = self.XBE_Const.Build_Tag(Tag_ID="xbe", Filepath=Filepath)
                     if (XBE.Tag_Data.XBE_Image_Header.XBE_Magic != "XBEH" or
                         XBE.Tag_Data.XBE_Certificate.Title_Name != "Gauntlet Dark Legacy"):
                         raise IOError("The selected file does not appear to be a valid GDL default.xbe")
