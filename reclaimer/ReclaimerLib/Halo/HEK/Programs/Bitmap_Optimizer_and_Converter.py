@@ -1,19 +1,21 @@
-from time import sleep, time
 import threading
 import gc
 
+from time import sleep, time
+from traceback import format_exc
 from os.path import getsize
+
 from .GUI.Bitmap_Converter_Windows import *
-from .HEK_Tag_Library import *
-from ...Tag_Operations.Halo_Operations.bitm import *
+from ..Library import Halo_Library
+from ..Tag_Editing.bitm import *
 
 
-class Bitmap_Converter_Class(HEK_Tag_Library):
+class Bitmap_Converter_Class(Halo_Library):
 
     Log_Filename = "Bitmap_Converter.log"
     
     def __init__(self, **kwargs):
-        HEK_Tag_Library.__init__(self, Valid_Tag_IDs="bitm", **kwargs)
+        Halo_Library.__init__(self, Valid_Tag_IDs="bitm", **kwargs)
         
         self.Default_Conversion_Flags["bitm"] = self.Make_Default_Conversion_Flags()
         self.root_window = Bitmap_Converter_Main_Window(self)
@@ -262,8 +264,8 @@ class Bitmap_Converter_Class(HEK_Tag_Library):
                 Backup = self.Default_Conversion_Flags['bitm'][RENAME_OLD]
                 '''depending on the conversion settings we
                 either rename or delete the original files'''
-                Debug_Log_String += self.Make_Tag_Write_Log(Conversion_Report,
-                                                            Backup=Backup)
+                Debug_Log_String += self.Make_Write_Log(Conversion_Report,
+                                                        Backup=Backup)
             except:
                 print("ERROR OCCURRED WHILE TRYING TO WRITE DEBUG LOG AND/OR RENAME TEMP FILES")
                 print(format_exc())

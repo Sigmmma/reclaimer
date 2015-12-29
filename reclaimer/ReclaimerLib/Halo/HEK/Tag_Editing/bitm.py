@@ -1,11 +1,11 @@
 from array import array
 from os.path import splitext
 
-from ...Tag_Constructors.Halo_Constructors.HEK.Field_Types import *
-from ...Tag_Descriptors.Halo_Descriptors.HEK.Objs.bitm import *
+from ..Field_Types import *
+from ..Defs.Objs.bitm import *
 
-from ...resources.Bitmap_Module import Bitmap_Convertor as BC
-from ...resources.P8_Palette import *
+from ReclaimerLib.resources.Bitmap_Module import Bitmap_Convertor as BC
+from ReclaimerLib.resources.P8_Palette import *
 
 
 
@@ -242,34 +242,35 @@ def Convert_Bitmap_Tag(Tag, **kwargs):
                             Texture_Info = Tex_Info)
         
         #build the initial conversion settings list from the above settings
-        Conversion_Settings = {"Swizzler_Mode":Swizzler_Mode,
-                               "One_Bit_Bias":Alpha_Cutoff_Bias,
-                               "Downres_Amount":Downres_Amount,
-                               "Color_Key_Transparency":Color_Key_Transparency,
-                               "Gamma":Gamma, "Palettize":Palettize,
-                               "Generate_Mipmaps":Generate_Mipmaps}
+        Conv_Settings = {"Swizzler_Mode":Swizzler_Mode,
+                         "One_Bit_Bias":Alpha_Cutoff_Bias,
+                         "Downres_Amount":Downres_Amount,
+                         "Color_Key_Transparency":Color_Key_Transparency,
+                         "Gamma":Gamma, "Palettize":Palettize,
+                         "Generate_Mipmaps":Generate_Mipmaps}
 
 
         #add the variable settings into the conversion settings list
-        Conversion_Settings["Target_Format"] = Target_Format
+        Conv_Settings["Target_Format"] = Target_Format
         if Channel_Mapping is not None:
-            Conversion_Settings["Channel_Mapping"] = Channel_Mapping
+            Conv_Settings["Channel_Mapping"] = Channel_Mapping
         if Channel_Merge_Mapping is not None:
-            Conversion_Settings["Channel_Merge_Mapping"] = Channel_Merge_Mapping
+            Conv_Settings["Channel_Merge_Mapping"] = Channel_Merge_Mapping
         if Palette_Picker is not None:
-            Conversion_Settings["Palette_Picker"] = Palette_Picker
+            Conv_Settings["Palette_Picker"] = Palette_Picker
 
-        if Conversion_Settings["Target_Format"] != BC.FORMAT_P8:
-            Conversion_Settings["Palettize"] = False
+        if Conv_Settings["Target_Format"] != BC.FORMAT_P8:
+            Conv_Settings["Palettize"] = False
 
             
         """LOAD THE CONVERSION SETTINGS INTO THE BITMAP CONVERTER"""
-        BM.Load_New_Conversion_Settings(**Conversion_Settings)
+        BM.Load_New_Conversion_Settings(**Conv_Settings)
 
         """RUN THE CONVERSION ROUTINE ON THE BITMAP CONVERTOR"""
         if Processing_Bitmap:
-              Conversion_Successful = BM.Convert_Texture()
-        else: Conversion_Successful = True
+            Status = BM.Convert_Texture()
+        else:
+            Status = True
         
 
         if Export_Format != " ":
@@ -281,7 +282,7 @@ def Convert_Bitmap_Tag(Tag, **kwargs):
 
         """IF THE CONVERSION WAS SUCCESSFUL WE UPDATE THE TAG'S DATA TO THE NEW FORMAT AND
         SWIZZLE MODE.   IF WE WERE ONLY EXTRACTING THE TEXTURE WE DON'T RESAVE THE TAG"""
-        if Conversion_Successful and (Processing_Bitmap or Reprocess):
+        if Status and (Processing_Bitmap or Reprocess):
             Texture_Root = Tag.Tag_Data.Data.Processed_Pixel_Data.Data[i]
             
             if len(BM.Texture_Block) and isinstance(BM.Texture_Block[0], array):
@@ -553,8 +554,8 @@ def Calc_Bitmap_Size(Tag, Bitmap_Index):
 
 
 def Calc_Padding_Size(Tag, Bitmap_Index):
-    '''This function can calculate how many bytes of padding need to
-    be added to a bitmap to properly align it in the texture cache'''
+    '''Calculates how many bytes of padding need to be added
+    to a bitmap to properly align it in the texture cache'''
 
     #first we need to know how many bytes the bitmap data takes up
     Bytes_Count = Calc_Bitmap_Size(Tag, Bitmap_Index)
@@ -590,8 +591,8 @@ def Bitmap_Sanitize(Tag):
         TexInfo = Tex_Infos[i]
         
         #set the flags to the new value
-        Flags.Palletized = Format == BC.FORMAT_P8
-        Flags.Compressed = Format in BC.COMPRESSED_FORMATS
+        Flags.Palletized = (Format == BC.FORMAT_P8)
+        Flags.Compressed = (Format in BC.COMPRESSED_FORMATS)
         
         Tag.Bitmap_Width_Height_Depth(i, (TexInfo["Width"],
                                           TexInfo["Height"],

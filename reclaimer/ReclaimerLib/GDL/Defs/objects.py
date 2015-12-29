@@ -1,6 +1,6 @@
 from supyr_struct.Defs.Tag_Def import Tag_Def
 from supyr_struct.Defs.Common_Structures import *
-from ...Tag_Constructors.GDL_Constructors.Field_Types import *
+from ..Field_Types import *
 from .Objs.objects import Objects_PS2_Tag
 
 def Construct():
@@ -16,38 +16,38 @@ class OBJECTS_PS2_Definition(Tag_Def):
     Tag_Obj = Objects_PS2_Tag
 
     Endian = "<"
-
-    #OPTIONS = {0:{NAME:"Point_List"},
-    #           1:{NAME:"Line_List"},
-    #           2:{NAME:"Triangle_List"},
-    #           3:{NAME:"Triangle_Strip"},
-    #           4:{NAME:"Triangle_Fan"},
-    #           5:{NAME:"Quad_List"},
-    #           6:{NAME:"Quad_Strip"},
-    #           }
-    #OPTIONS = {0:{NAME:"Off", VALUE:0},
-    #           1:{NAME:"YY", VALUE:1},
-    #           2:{NAME:"NN", VALUE:2},
-    #           3:{NAME:"See_All", VALUE:4},
-    #           4:{NAME:"All_Models", VALUE:16},
-    #           5:{NAME:"All_Objs", VALUE:32},
-    #           6:{NAME:"All_Subobjs", VALUE:64},
-    #           7:{NAME:"All_Tris", VALUE:128},
-    #           8:{NAME:"Search_Model", VALUE:512},
-    #           9:{NAME:"Search_Obj", VALUE:1024},
-    #           10:{NAME:"Wait_Count", VALUE:4096},
-    #           11:{NAME:"Show_Sel", VALUE:8192},
-    #           12:{NAME:"Search_Q", VALUE:16384},
-    #           13:{NAME:"Break_Pt", VALUE:32768},
-    #           14:{NAME:"Searching", VALUE:1536},
-    #           15:{NAME:"New_Search", VALUE:1777},
-    #           16:{NAME:"New_Search_HM", VALUE:1761},
-    #           17:{NAME:"New_Select", VALUE:45056},
-    #           18:{NAME:"Show_All", VALUE:36868},
-    #           19:{NAME:"Select_All", VALUE:45296},
-    #           20:{NAME:"Cont_Search", VALUE:61440}
-    #           }
-    
+    '''
+    { 0:{NAME:"Point_List"},
+      1:{NAME:"Line_List"},
+      2:{NAME:"Triangle_List"},
+      3:{NAME:"Triangle_Strip"},
+      4:{NAME:"Triangle_Fan"},
+      5:{NAME:"Quad_List"},
+      6:{NAME:"Quad_Strip"},
+      }
+    { 0:{NAME:"Off", VALUE:0},
+      1:{NAME:"YY", VALUE:1},
+      2:{NAME:"NN", VALUE:2},
+      3:{NAME:"See_All", VALUE:4},
+      4:{NAME:"All_Models", VALUE:16},
+      5:{NAME:"All_Objs", VALUE:32},
+      6:{NAME:"All_Subobjs", VALUE:64},
+      7:{NAME:"All_Tris", VALUE:128},
+      8:{NAME:"Search_Model", VALUE:512},
+      9:{NAME:"Search_Obj", VALUE:1024},
+      10:{NAME:"Wait_Count", VALUE:4096},
+      11:{NAME:"Show_Sel", VALUE:8192},
+      12:{NAME:"Search_Q", VALUE:16384},
+      13:{NAME:"Break_Pt", VALUE:32768},
+      14:{NAME:"Searching", VALUE:1536},
+      15:{NAME:"New_Search", VALUE:1777},
+      16:{NAME:"New_Search_HM", VALUE:1761},
+      17:{NAME:"New_Select", VALUE:45056},
+      18:{NAME:"Show_All", VALUE:36868},
+      19:{NAME:"Select_All", VALUE:45296},
+      20:{NAME:"Cont_Search", VALUE:61440}
+      }
+    '''
     Vertex_8_Block = { TYPE:Struct, SIZE:3, NAME:"Vertex_8",
                        ATTRS:X_Y_Z_Byte
                        }
@@ -112,26 +112,26 @@ class OBJECTS_PS2_Definition(Tag_Def):
                          0:{ NAME:"Non_Lit",   VALUE:0x0 },
                          1:{ NAME:"Fmt_Basic", VALUE:0x0 },
                       
-                         2:{ NAME:"Alpha",     VALUE:0x1 },
-                         3:{ NAME:"V_Normals", VALUE:0x2 },
-                         4:{ NAME:"V_Colors",  VALUE:0x4 },
-                         5:{ NAME:"Mesh",      VALUE:0x8 },
+                         2:{ NAME:"Alpha",     VALUE:0x01 },
+                         3:{ NAME:"V_Normals", VALUE:0x02 },
+                         4:{ NAME:"V_Colors",  VALUE:0x04 },
+                         5:{ NAME:"Mesh",      VALUE:0x08 },
                          6:{ NAME:"TEX2",      VALUE:0x10 },
                          7:{ NAME:"Lmap",      VALUE:0x20 },
                      
-                         8:{ NAME:"Sharp",   VALUE:0x40 },
-                         9:{ NAME:"Blur",    VALUE:0x80 },
+                         8:{  NAME:"Sharp",  VALUE:0x040 },
+                         9:{  NAME:"Blur",   VALUE:0x080 },
                          10:{ NAME:"Chrome", VALUE:0x100 },
                   
                          11:{ NAME:"Error",  VALUE:0x200 },
                          12:{ NAME:"Sort_A", VALUE:0x400 },
                          13:{ NAME:"Sort",   VALUE:0x800 },
                      
-                         14:{ NAME:"Fmt_Mask", VALUE:0xF000 },
-                         15:{ NAME:"Pre_Lit",  VALUE:0x10000 },
-                         16:{ NAME:"Lit_Mask", VALUE:0xF0000 },
-                         17:{ NAME:"Lmap_Lit", VALUE:0x20000 },
-                         18:{ NAME:"Norm_Lit", VALUE:0x30000 },
+                         14:{ NAME:"Fmt_Mask", VALUE:0x00F000 },
+                         15:{ NAME:"Pre_Lit",  VALUE:0x010000 },
+                         16:{ NAME:"Lit_Mask", VALUE:0x0F0000 },
+                         17:{ NAME:"Lmap_Lit", VALUE:0x020000 },
+                         18:{ NAME:"Norm_Lit", VALUE:0x030000 },
                          19:{ NAME:"Dyn_Lit",  VALUE:0x100000 }
                          },
                     
@@ -203,15 +203,15 @@ class OBJECTS_PS2_Definition(Tag_Def):
                      5:{ TYPE:UInt16, OFFSET:6, GUI_NAME:"Log2 of Height"},
                     
                      6:{ TYPE:Bool16, OFFSET:8, GUI_NAME:"Flags",
-                         0:{NAME:"Halfres",   VALUE:0x1},
-                         1:{NAME:"See Alpha", VALUE:0x2},
-                         2:{NAME:"Clamp U",   VALUE:0x4},
-                         3:{NAME:"Clamp V",   VALUE:0x8},
-                         4:{NAME:"Animation", VALUE:0x10},
-                         5:{NAME:"External",   VALUE:0x20},
-                         6:{NAME:"Tex Shift", VALUE:0x40},
-                         7:{NAME:"Has Alpha", VALUE:0x80},
-                         8:{NAME:"INVALID",   VALUE:0x100},
+                         0:{NAME:"Halfres",   VALUE:0x001},
+                         1:{NAME:"See Alpha", VALUE:0x002},
+                         2:{NAME:"Clamp U",   VALUE:0x004},
+                         3:{NAME:"Clamp V",   VALUE:0x008},
+                         4:{NAME:"Animation", VALUE:0x010},
+                         5:{NAME:"External",  VALUE:0x020},
+                         6:{NAME:"Tex Shift", VALUE:0x040},
+                         7:{NAME:"Has Alpha", VALUE:0x080},
+                         8:{NAME:"Invalid",   VALUE:0x100},
                          9:{NAME:"Dual Tex",  VALUE:0x200}
                          },
                         

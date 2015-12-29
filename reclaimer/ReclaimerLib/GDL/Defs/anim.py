@@ -1,6 +1,6 @@
 from supyr_struct.Defs.Tag_Def import Tag_Def
 from supyr_struct.Defs.Common_Structures import *
-from ...Tag_Constructors.GDL_Constructors.Field_Types import *
+from ..Field_Types import *
 from .Objs.anim import Anim_PS2_Tag
 
 def Construct():

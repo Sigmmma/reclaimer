@@ -4,16 +4,20 @@ ReclaimerLib/__pycache__/**
 ReclaimerLib/resources/__pycache__/**
 ReclaimerLib/resources/Bitmap_Module/__pycache__/**
 ReclaimerLib/resources/Bitmap_Module/ext/__pycache__/**
-ReclaimerLib/Tag_Constructors/GDL_Constructors/__pycache__/**
-ReclaimerLib/Tag_Constructors/Halo_Constructors/HEK/__pycache__/**
-ReclaimerLib/Tag_Descriptors/misc/__pycache__/**
-ReclaimerLib/Tag_Descriptors/Halo_Descriptors/HEK/__pycache__/**
-ReclaimerLib/Tag_Descriptors/Halo_Descriptors/HEK/Objs/__pycache__/**
-ReclaimerLib/Tag_Descriptors/GDL_Descriptors/__pycache__/**
-ReclaimerLib/Tag_Descriptors/GDL_Descriptors/Objs/__pycache__/**
-ReclaimerLib/Tag_Handlers/Halo_Programs/__pycache__/**
-ReclaimerLib/Tag_Handlers/Halo_Programs/GUI/__pycache__/**
-ReclaimerLib/Tag_Operations/Halo_Operations/__pycache__/**
+
+ReclaimerLib/Halo/HEK/__pycache__/**
+ReclaimerLib/Halo/HEK/Defs/__pycache__/**
+ReclaimerLib/Halo/HEK/Defs/Objs/__pycache__/**
+ReclaimerLib/Halo/HEK/Programs/__pycache__/**
+ReclaimerLib/Halo/HEK/Programs/GUI/__pycache__/**
+ReclaimerLib/Halo/HEK/Tag_Editing/__pycache__/**
+
+ReclaimerLib/GDL/__pycache__/**
+ReclaimerLib/GDL/Defs/__pycache__/**
+ReclaimerLib/GDL/Defs/Objs/__pycache__/**
+
+ReclaimerLib/misc/__pycache__/**
+ReclaimerLib/misc/Defs/__pycache__/**
 
 data/**
 tags/**
@@ -26,3 +30,4 @@ vorbisenc.dll
 vorbisfile.dll
 vorbis.dll
 ogg.dll
+debug.txt
