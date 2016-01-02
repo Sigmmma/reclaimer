@@ -179,7 +179,7 @@ try:
             try:
                 Chars = self.Loaded_XBE.Tag_Data.Secret_Characters
                 for Character in Chars:
-                    Char_Names.append(Character.Activation_Code)
+                    Char_Names.append(Character.Code)
             except: pass
             return Char_Names
         
@@ -188,7 +188,7 @@ try:
             try:
                 Cheats = self.Loaded_XBE.Tag_Data.Cheats
                 for Cheat in Cheats:
-                    Cheat_Names.append(Cheat.Activation_Code)
+                    Cheat_Names.append(Cheat.Code)
             except: pass
             return Cheat_Names
 
@@ -235,7 +235,7 @@ try:
                 
             Char = self.Loaded_XBE.Tag_Data.Secret_Characters[i]
             self._Reload_Widgets(Menu, Char, Char.DESC)
-            self.Selected_Char.set(Char.Activation_Code)
+            self.Selected_Char.set(Char.Code)
             
         def Reload_Cheat_Window(self, Menu, i=None):
             if i is None:
@@ -243,7 +243,7 @@ try:
                 
             Cheat = self.Loaded_XBE.Tag_Data.Cheats[i]
             Cheat_Flags = Cheat.Flags
-            Cheat_Type = Cheat.Item_Type
+            Cheat_Type = Cheat.Type
                 
             Desc = Cheat.DESC
             
@@ -258,7 +258,7 @@ try:
                 Cheat_Flags.DESC = Desc[3] = self._Cheat_Flags_Desc
 
             self._Reload_Widgets(Menu, Cheat, Desc)
-            self.Selected_Cheat.set(Cheat.Activation_Code)
+            self.Selected_Cheat.set(Cheat.Code)
 
 
         def _Reload_Widgets(self, Parent, Data_Block, Desc):

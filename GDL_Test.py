@@ -10,12 +10,11 @@ try:
                            Write_as_Temp=True, Backup_Old_Tags=False,
                            #Valid_Tag_IDs='xbe',
                            Valid_Tag_IDs='objects.ps2',
-                           Print_Options={'Indent':4, 'Print_Raw':True,
+                           Print_Options={'Indent':4,
                                           'Printout':True, 'Precision':3,
                                           'Show':['Name', 'Children', #'Type',
                                                   'Value',#'Offset', 'Py_ID',
-                                                  'Index', 'Elements',
-                                                  'Size', #'Flags', 'Unique',
+                                                  'Index', 'Size', #'Flags', 'Unique',
                                                   'Tag_Path', 'Bin_Size','Ram_Size',
                                                   #'All'
                                                   ] })
@@ -26,7 +25,7 @@ try:
         if Objs is not None:
             for Tag_Path in Objs:
                 print("Size of: "+Tag_Path+" = ", Objs[Tag_Path].Tag_Data.Bin_Size)
-                Objs[Tag_Path].Print(Show=('Name','Value','Children','Flags','Elements'),
+                Objs[Tag_Path].Print(Show=('Name','Value','Children','Flags','Raw'),
                                      Printout=True)
         input()
 except:

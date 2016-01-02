@@ -1,5 +1,6 @@
 from os.path import splitext
 from .Tag_Obj import *
+from supyr_struct.Field_Types import Void
 
 class SCEX_Tag(Halo_Tag_Obj):
 
@@ -10,7 +11,7 @@ class SCEX_Tag(Halo_Tag_Obj):
         self.Tag_Path = splitext(self.Tag_Path)[0] + self.Tag_Extension
         
         Data = self.Tag_Data.Data
-        del Data.Two_Stage_Maps
+        Data.Two_Stage_Maps.Set_Desc('TYPE', Void)
         Data.Numeric_Shader_ID.Val = 6
         Data.ATTR_OFFS['Extra_Flags'] = 98
         Data.Set_Size(108)
