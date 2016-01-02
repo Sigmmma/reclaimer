@@ -156,7 +156,7 @@ Transparent_Shader_Fade_Mode = {0:{GUI_NAME:"None"},
                                 1:{GUI_NAME:"Fade when Perpendicular"},
                                 2:{GUI_NAME:"Fade when Parallel"}
                                 }
-Transparent_Shader_First_Map_Type = {0:{GUI_NAME:"2D Map"},
+Transparent_Shader_First_Map_Type = {0:{GUI_NAME:"Map 2D"},
                                      1:{GUI_NAME:"Reflection Cube Map"},
                                      2:{GUI_NAME:"Object Centered Cube Map"},
                                      3:{GUI_NAME:"Viewer Centered Cube Map"}
@@ -291,7 +291,7 @@ Material_Type = Com({ TYPE:Enum16, OFFSET:34, GUI_NAME:"Material Type"}, Materia
 #THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS
 #This means it likely doesn't matter, but lets not take that chance
 Numeric_Shader_ID = { TYPE:Enum8, OFFSET:36, GUI_NAME:"Numeric Shader ID", EDITABLE:False ,
-                      0:{NAME:"SHDR", VALUE:-1},#NOT TESTED, Guessed at
+                      0:{NAME:"SHDR", VALUE:255},#NOT TESTED, Guessed at
                       1:{NAME:"SENV", VALUE:3},#Environment
                       2:{NAME:"SOSO", VALUE:4},#Model
                       3:{NAME:"SOTR", VALUE:5},#Transparent Generic
@@ -370,6 +370,6 @@ Chicago_4_Stage_Maps = {TYPE:Struct, SIZE:220, GUI_NAME:"Four Stage Map",
 
 Chicago_2_Stage_Maps = Com({GUI_NAME:"Two Stage Map"}, Chicago_4_Stage_Maps)
 
-Chicago_Extra_Flags = {0:{GUI_NAME:"Don't Fade Active Camouflage"},
+Chicago_Extra_Flags = {0:{GUI_NAME:"Dont Fade Active Camouflage"},
                        1:{GUI_NAME:"Numeric Countdown Timer"}
                        }

@@ -291,7 +291,7 @@ def Convert_Bitmap_Tag(Tag, **kwargs):
                 Texture_Root.Set_Desc('TYPE', UInt8_Array, 'SUB_STRUCT')
 
             #set the data block to the newly converted one
-            Texture_Root.Read(BM.Texture_Block)
+            Texture_Root.Read(Init_Data = BM.Texture_Block)
             #set the flag showing that the bitmap is either swizzled or not swizzled
             Tag.Swizzled(BM.Swizzled, i)
 

@@ -9,6 +9,15 @@ a function which will determine which descriptor to use.
     The Switch doesnt create its own Tag_Block, but instead calls the reader of
     the proper Tag_Block with the same args and kwargs that were provided to it.
 
+    the SELECTOR must be a fully fledged function that accepts arguments
+
+    make switch reader function take care of CARRY_OFF
+
+    make a Simple_Switch Field_Type. 
+    Instead of having to provide a function that handles getting the data from the
+    Raw_Data/Tag_Data and tries to find the matching descriptor, it instead does:
+        Desc.get(Parent.Get_Meta('SELECTOR'), Empty_Block)
+
 make an immutable dictionary class called a "Descriptor"
     Descriptors will require a custom set method such as Replace() which will take
     the changes being given to it and return a copy of itself with the changes
@@ -18,11 +27,20 @@ make an immutable dictionary class called a "Descriptor"
 
 Finish docstrings for modules and update existing ones.
 
-Fix instances where it assumes the parent's DESC is more accurate than the
-block, even if the block has a custom descriptor(such as for switch blocks)
+Move Tag_Obj.py into supyr_struct
+
+Make Bin_Size recursion safe
 
 
 Medium Priority:
+
+Make a Union Field_Type that allows specifying multiple descriptors for how to
+decode/encode the data.
+    The actual data will be stored in a bytearray object under self.Val and is
+    decoded  on the fly to give the intended object.
+    When each attribute is set, only the part of the bytearray that it resides
+    in will be set, meaning if it only takes up the first 2 bytes of a 4 byte union,
+    only the first 2 bytes will be affected, and the last 2 will remain the same
 
 Need to make it so that readers/writers/decoders/encoders have better
 handling of exceptions and give better details regarding the exception.
@@ -32,6 +50,8 @@ handling of exceptions and give better details regarding the exception.
 
 Make wrapper class for reading/writing any memoryview-able object.
     This will allow writing to non-files
+
+    put this in Builder.py
 
 
 Low Priority:

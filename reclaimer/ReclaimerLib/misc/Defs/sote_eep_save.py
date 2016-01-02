@@ -88,7 +88,7 @@ class SotE_EEP_Definition(Tag_Def):
                                               1:{GUI_NAME:"Mono"} }
                                            },
                                        
-                                       6:{ TYPE:Big_Enum, GUI_NAME:"Control Scheme", SIZE:3,
+                                       6:{ TYPE:Enum24, GUI_NAME:"Control Scheme",
                                            0:{GUI_NAME:"Standard",               VALUE:0x00000},
                                            1:{GUI_NAME:"Standard(View Lock)",    VALUE:0x10001},
                                            2:{GUI_NAME:"Traditional",            VALUE:0x20002},
@@ -98,7 +98,7 @@ class SotE_EEP_Definition(Tag_Def):
                                            6:{GUI_NAME:"Strafe",                 VALUE:0x60006},
                                            7:{GUI_NAME:"Strafe(View Lock)",      VALUE:0x70007}
                                            },
-                                       7:{ TYPE:Big_Enum, GUI_NAME:"Button Mapping", SIZE:3,
+                                       7:{ TYPE:Enum24, GUI_NAME:"Button Mapping",
                                            0:{GUI_NAME:"Standard", VALUE:0x000000},
                                            1:{GUI_NAME:"Alternate", VALUE:0x020202}
                                            },
@@ -171,8 +171,8 @@ class SotE_EEP_Definition(Tag_Def):
                         },
                      2:{ TYPE:Struct, GUI_NAME:"Footer",
                          #if this is not b'\x53\x68\x26' then the file wont load
-                         0:{ TYPE:Big_UInt, GUI_NAME:"Magic Constant 2",
-                             EDITABLE:False, SIZE:3, DEFAULT:b'\x53\x68\x26' },
+                         0:{ TYPE:UInt24, GUI_NAME:"Magic Constant 2",
+                             EDITABLE:False, DEFAULT:b'\x53\x68\x26' },
                          
                          #OR-ing this value with the first checksum byte must produce 255, b'\xff'.
                          #If it doesnt then the save is considered corrupt and is erased.
