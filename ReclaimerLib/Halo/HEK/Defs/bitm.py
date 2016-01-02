@@ -143,11 +143,11 @@ class BITM_Definition(Tag_Def):
                               MIN:0.0 , MAX:1.0},
                           6:{ TYPE:Float, OFFSET:16, GUI_NAME:"Bump Height"},#repeats
                           7:{ TYPE:Enum16, OFFSET:20, GUI_NAME:"Sprite Budget Size",
-                              0:{GUI_NAME:"32x32"},
-                              1:{GUI_NAME:"64x64"},
-                              2:{GUI_NAME:"128x128"},
-                              3:{GUI_NAME:"256x256"},
-                              4:{GUI_NAME:"512x512"}
+                              0:{GUI_NAME:"32x32",   NAME:"x32"},
+                              1:{GUI_NAME:"64x64",   NAME:"x64"},
+                              2:{GUI_NAME:"128x128", NAME:"x128"},
+                              3:{GUI_NAME:"256x256", NAME:"x256"},
+                              4:{GUI_NAME:"512x512", NAME:"x512"}
                               },
                           8:{ TYPE:UInt16, OFFSET:22, GUI_NAME:"Sprite Budget Count" },
                           9:{ TYPE:UInt16, OFFSET:24, GUI_NAME:"Color Plate Width"},

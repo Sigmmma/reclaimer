@@ -2,6 +2,7 @@ import os
 
 from traceback import format_exc
 from ..Library import Halo_Library
+from supyr_struct.Field_Types import Void
 
 class Shader_Rectifier_Class(Halo_Library):
     Target_Tag = "schi"
@@ -64,8 +65,8 @@ class Shader_Rectifier_Class(Halo_Library):
                             except:
                                 pass
 
-                        #remove the extra layers
-                        del EL[:]
+                        #void out the extra layers
+                        Tag.Tag_Data.Data.Extra_Layers.Set_Desc('TYPE', Void)
 
                     New_Tag_Path = Tag.Tag_Path.split(self.Tags_Dir)[1]
                     self.Tags[Cls_ID][New_Tag_Path] = Tag
