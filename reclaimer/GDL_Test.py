@@ -6,8 +6,9 @@ try:
 
     if __name__ == '__main__':
         Test = GDL_Library(Debug=3, Allow_Corrupt=True,
-                           Print_Test=False, Save_Test=False,
+                           Print_Test=False, Save_Test=True, Int_Test=False,
                            Write_as_Temp=True, Backup_Old_Tags=False,
+                           Int_Test=False,
                            #Valid_Tag_IDs='xbe',
                            Valid_Tag_IDs='objects.ps2',
                            Print_Options={'Indent':4,

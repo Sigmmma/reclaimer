@@ -10,7 +10,7 @@ Mode = "locate"
 
 
 
-Words_to_Locate = ['Tag_Block']
+Words_to_Locate = ['Tag_Obj']
 Word_Replacements = []
 #Flags = re.IGNORECASE
 

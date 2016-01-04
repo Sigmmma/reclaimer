@@ -42,25 +42,25 @@ class SCEX_Definition(Tag_Def):
                         #Lens Flare
                         9:{ TYPE:Float, OFFSET:52, GUI_NAME:"Lens Flare Spacing"},#world units
                         10:{ TYPE:Struct, OFFSET:56, GUI_NAME:"Lens Flare" ,
-                             ATTRS:Tag_Reference_Structure
+                             INCLUDE:Tag_Reference_Structure
                              },
                         
                         11:{ TYPE:Struct, OFFSET:72, GUI_NAME:"Extra Layers",
-                             ATTRS:Block_Reference_Structure,
+                             INCLUDE:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Extra_Layers_Array",
                                     MAX:4, SIZE:".Block_Count",
                                     SUB_STRUCT:Extra_Layers_Block
                                     }
                              },
                         12:{ TYPE:Struct, OFFSET:84, GUI_NAME:"Four Stage Maps",
-                             ATTRS:Block_Reference_Structure,
+                             INCLUDE:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Four_Stage_Maps_Array",
                                     MAX:4, SIZE:".Block_Count",
                                     SUB_STRUCT:Chicago_4_Stage_Maps
                                     }
                              },
                         13:{ TYPE:Struct, OFFSET:96, GUI_NAME:"Two Stage Maps",
-                             ATTRS:Block_Reference_Structure,
+                             INCLUDE:Block_Reference_Structure,
                              CHILD:{TYPE:Array, NAME:"Two_Stage_Maps_Array",
                                     MAX:2, SIZE:".Block_Count",
                                     SUB_STRUCT:Chicago_2_Stage_Maps

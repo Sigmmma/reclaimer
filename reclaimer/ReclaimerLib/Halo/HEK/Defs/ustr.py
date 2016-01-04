@@ -16,12 +16,12 @@ class USTR_Definition(Tag_Def):
                      0:Combine( {1:{ DEFAULT:"ustr" } }, Tag_Header),                    
                      1:{TYPE:Struct, SIZE:12, GUI_NAME:"Data",
                         0:{ TYPE:Struct, GUI_NAME:"Strings", OFFSET:0,
-                            ATTRS:Block_Reference_Structure,
+                            INCLUDE:Block_Reference_Structure,
                             
                             CHILD:{TYPE:Array, NAME:"Strings_Array",
                                    MAX:32767, SIZE:".Block_Count",
                                    SUB_STRUCT:{ TYPE:Struct, SIZE:20, GUI_NAME:"String",
-                                                ATTRS:Raw_Data_Reference_Structure,
+                                                INCLUDE:Raw_Data_Reference_Structure,
                                                 CHILD:{TYPE:Str_UTF16, NAME:"Raw_String_Data",
                                                        ENDIAN:'<', SIZE:".Byte_Count"}
                                                 }
