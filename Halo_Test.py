@@ -23,10 +23,3 @@ try:
 except:
     print(format_exc())
     input()
-    
-Strings = Test.Tag_Collection['ustr']
-TT = Strings['halo\strings\multiplayer_game_text.unicode_string_list']
-TD = TT.Tag_Data.Data
-
-#TT.Print(Show="All", Printout=True)
-t = TD.Strings

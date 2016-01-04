@@ -19,5 +19,4 @@ class ANIM_PS2_Definition(Tag_Def):
 
     Incomplete = True
 
-    Tag_Structure = { TYPE:Container, GUI_NAME:'GDL Animations Resource',
-                      SIZE:0, ENTRIES:0, POINTER:0 }
+    Tag_Structure = { TYPE:Container, NAME:'GDL_Anim_Resource' }

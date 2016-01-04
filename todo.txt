@@ -1,22 +1,10 @@
-Current speed of OBJECTS.PS2: 45KB/s
+Current speed of OBJECTS.PS2: 41KB/s
 
 High Priority:
-    
-Make a "Switch" Field_Type that allows you to specify
-a function which will determine which descriptor to use.
-    do this by making the Switch have a reader which chooses from a list of
-    possible structures and uses a provided function to decide which one to use.
-    The Switch doesnt create its own Tag_Block, but instead calls the reader of
-    the proper Tag_Block with the same args and kwargs that were provided to it.
-
-    the SELECTOR must be a fully fledged function that accepts arguments
-
-    make switch reader function take care of CARRY_OFF
-
-    make a Simple_Switch Field_Type. 
-    Instead of having to provide a function that handles getting the data from the
-    Raw_Data/Tag_Data and tries to find the matching descriptor, it instead does:
-        Desc.get(Parent.Get_Meta('SELECTOR'), Empty_Block)
+        
+Make a "While_Array" that continues to create structures as long as a condition is true
+    array will not have its size recorded in the structure, and is instead
+    expected to be (at least partially) self syncronizing.
 
 make an immutable dictionary class called a "Descriptor"
     Descriptors will require a custom set method such as Replace() which will take
@@ -27,15 +15,14 @@ make an immutable dictionary class called a "Descriptor"
 
 Finish docstrings for modules and update existing ones.
 
-Move Tag_Obj.py into supyr_struct
 
-Make Bin_Size recursion safe
+
 
 
 Medium Priority:
 
-Make a Union Field_Type that allows specifying multiple descriptors for how to
-decode/encode the data.
+Make a Union Field_Type that allows specifying multiple
+descriptors for how to decode/encode the data.
     The actual data will be stored in a bytearray object under self.Val and is
     decoded  on the fly to give the intended object.
     When each attribute is set, only the part of the bytearray that it resides
@@ -54,15 +41,12 @@ Make wrapper class for reading/writing any memoryview-able object.
     put this in Builder.py
 
 
-Low Priority:
 
-Improve speed of Enum_Block by including a mapping of Value:Index in enumerator
-descriptors under the name VALUE_MAP. This will make it so its not necessary to
-check every option, but will require adjustments to get_desc, set_desc, del_desc
+Low Priority:
 
 Make it possible to call a Field_Type and provide a Name string
 followed by a calling of all the Field_Types of each of its fields.
-    This will return a constructor type object that, when called with
+    This will return a Builder object that, when called with
     the proper arguments, will return a fully constructed Tag_Block.
 
     Make it possible to get/set the descriptor of these constructor objects
@@ -73,13 +57,7 @@ followed by a calling of all the Field_Types of each of its fields.
     keyword arguments like GUI_NAME and POINTER will be at the bottom
 
 
-Speed up library by making special Tag_Blocks for each hierarchy type and
-remove all the checks for Field_Type as they will become unnecessary
-    somehow remove Reader, Writer, Encoder, Decoder, and Size_Calc from
-    the Field_Type class and make a factory function that builds the
-    class with those methods directly set, that way it doesnt have
-    to go through an intermediary function to get the class reference
-
+Make Bin_Size recursion safe
 
 Implement recursive pointer based blocks.
     When writing, pass around a dictionary of which block IDs have already had

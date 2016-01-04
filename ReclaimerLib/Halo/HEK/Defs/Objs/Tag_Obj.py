@@ -1,4 +1,4 @@
-from supyr_struct.Defs.Tag_Obj import *
+from supyr_struct.Tag_Obj import *
 from ...Field_Types import *
 
 

@@ -61,10 +61,10 @@ class SOSO_Definition(Tag_Def):
                             0:{ TYPE:Float, OFFSET:0, GUI_NAME:"Map U-Scale" },
                             1:{ TYPE:Float, OFFSET:4, GUI_NAME:"Map V-Scale" },
                             2:{ TYPE:Struct, OFFSET:8, GUI_NAME:"Diffuse Map",
-                                ATTRS:Tag_Reference_Structure
+                                INCLUDE:Tag_Reference_Structure
                                 },
                             3:{ TYPE:Struct, OFFSET:32, GUI_NAME:"Multipurpose Map",
-                                ATTRS:Tag_Reference_Structure
+                                INCLUDE:Tag_Reference_Structure
                                 },
                              
                             4:Com({ TYPE:Enum16, OFFSET:56, GUI_NAME:"Detail Function"},
@@ -84,7 +84,7 @@ class SOSO_Definition(Tag_Def):
                               
                             6:{ TYPE:Float, OFFSET:60, GUI_NAME:"Detail Map Scale" },
                             7:{ TYPE:Struct, OFFSET:64, GUI_NAME:"Detail Map",
-                                ATTRS:Tag_Reference_Structure
+                                INCLUDE:Tag_Reference_Structure
                                 },
                             8:{ TYPE:Float, OFFSET:80, GUI_NAME:"Detail Map V-Scale" },
                             },
@@ -92,13 +92,13 @@ class SOSO_Definition(Tag_Def):
                         
                         #OS Shader Model Extension
                         8:{ TYPE:Struct, OFFSET:240, GUI_NAME:"OS Shader Model Ext",
-                            ATTRS:Block_Reference_Structure,
+                            INCLUDE:Block_Reference_Structure,
                             CHILD:{TYPE:Array, NAME:"OS_Shader_Model_Ext_Array",
                                    MAX:1, SIZE:".Block_Count",
                                    SUB_STRUCT:{ TYPE:Struct, SIZE:192, GUI_NAME:"Shader Model Ext",
                                                 #Specular Color
                                                 0:{ TYPE:Struct, OFFSET:0, GUI_NAME:"Specular Color Map",
-                                                    ATTRS:Tag_Reference_Structure
+                                                    INCLUDE:Tag_Reference_Structure
                                                     },
                                                 1:{ TYPE:Float, OFFSET:16, GUI_NAME:"Specular Color Coefficient" },
                                                 2:{ TYPE:Float, OFFSET:24, GUI_NAME:"Specular Color Exponent" },
@@ -108,20 +108,20 @@ class SOSO_Definition(Tag_Def):
 
                                                 #Base Normal Map
                                                 4:{ TYPE:Struct, OFFSET:32, GUI_NAME:"Base Normal Map",
-                                                    ATTRS:Tag_Reference_Structure
+                                                    INCLUDE:Tag_Reference_Structure
                                                     },
                                                 5:{ TYPE:Float, OFFSET:48, GUI_NAME:"Base Normal Coefficient" },
 
                                                 #Detail Normal Maps
                                                 6:{ TYPE:Struct, OFFSET:64, GUI_NAME:"Detail Normal 1 Map",
-                                                    ATTRS:Tag_Reference_Structure
+                                                    INCLUDE:Tag_Reference_Structure
                                                     },
                                                 7:{ TYPE:Float, OFFSET:80, GUI_NAME:"Detail Normal 1 Coefficient" },
                                                 8:{ TYPE:Float, OFFSET:84, GUI_NAME:"Detail Normal 1 Scale" },
                                                 9:{ TYPE:Float, OFFSET:88, GUI_NAME:"Detail Normal 1 V-Scale" },
                                                
                                                 10:{ TYPE:Struct, OFFSET:96, GUI_NAME:"Detail Normal 2 Map",
-                                                     ATTRS:Tag_Reference_Structure
+                                                     INCLUDE:Tag_Reference_Structure
                                                      },
                                                 11:{ TYPE:Float, OFFSET:112, GUI_NAME:"Detail Normal 2 Coefficient" },
                                                 12:{ TYPE:Float, OFFSET:116, GUI_NAME:"Detail Normal 2 Scale" },
@@ -144,13 +144,13 @@ class SOSO_Definition(Tag_Def):
                         #Texture Scrolling Animation
                         9:{ TYPE:Struct, OFFSET:252, GUI_NAME:"Texture Scrolling",
                             0:{TYPE:Struct, OFFSET:0, GUI_NAME:"U-Animation",
-                               ATTRS:Anim_Src_Func_Per_Pha_Sca
+                               INCLUDE:Anim_Src_Func_Per_Pha_Sca
                                },
                             1:{TYPE:Struct, OFFSET:16, GUI_NAME:"V-Animation",
-                               ATTRS:Anim_Src_Func_Per_Pha_Sca
+                               INCLUDE:Anim_Src_Func_Per_Pha_Sca
                                },
                             2:{TYPE:Struct, OFFSET:32, GUI_NAME:"Rotation-Animation",
-                               ATTRS:Anim_Src_Func_Per_Pha_Sca
+                               INCLUDE:Anim_Src_Func_Per_Pha_Sca
                                },
                             3:Combine({OFFSET:48, GUI_NAME:"Rot-Animation Center"}, X_Y_Float)
                             },
@@ -166,7 +166,7 @@ class SOSO_Definition(Tag_Def):
                             5:Combine({OFFSET:28, GUI_NAME:"Parallel Tint Color"}, R_G_B_Float),
                              
                             6:{ TYPE:Struct, OFFSET:40, GUI_NAME:"Reflection Cube Map",
-                                ATTRS:Tag_Reference_Structure
+                                INCLUDE:Tag_Reference_Structure
                                 }
                             }
                         }
