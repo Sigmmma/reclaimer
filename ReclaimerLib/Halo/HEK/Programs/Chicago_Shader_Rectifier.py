@@ -84,7 +84,7 @@ class Shader_Rectifier_Class(Halo_Library):
             self.Tags['scex'].clear()
 
 
-        Conversion_Report, Write_Exceptions = self.Write_Tags(False)
+        Conversion_Report,Write_Exceptions = self.Write_Tags(Print_Errors=False)
         Debug_Log_String += Write_Exceptions
         
         #create the debug and take care of renaming and deleting tags
