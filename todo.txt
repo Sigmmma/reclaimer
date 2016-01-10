@@ -1,10 +1,6 @@
 Current speed of OBJECTS.PS2: 41KB/s
 
 High Priority:
-        
-Make a "While_Array" that continues to create structures as long as a condition is true
-    array will not have its size recorded in the structure, and is instead
-    expected to be (at least partially) self syncronizing.
 
 make an immutable dictionary class called a "Descriptor"
     Descriptors will require a custom set method such as Replace() which will take
@@ -15,9 +11,8 @@ make an immutable dictionary class called a "Descriptor"
 
 Finish docstrings for modules and update existing ones.
 
-
-
-
+make gif gfx extension block have image or plaintext as child, but remove header
+and data setup and just make it an extension
 
 Medium Priority:
 
@@ -29,17 +24,21 @@ descriptors for how to decode/encode the data.
     in will be set, meaning if it only takes up the first 2 bytes of a 4 byte union,
     only the first 2 bytes will be affected, and the last 2 will remain the same
 
+    can't do anything about changing the ordering of the bytes because it would
+    be possible to make the largest attribute be a 4 char 32bit string, but have
+    the other entries be endianness reliant things.
+
 Need to make it so that readers/writers/decoders/encoders have better
 handling of exceptions and give better details regarding the exception.
     Do this for the whole library in general where necessary
 
     place try/except around all encoding routines to catch and report errors better
 
-Make wrapper class for reading/writing any memoryview-able object.
-    This will allow writing to non-files
+Move sanitization routines that are specific to certain Field_Types into a separate
+function and add as an attribute to the Field_Type under the name "Sanitizer".
+    The Field_Type.Sanitizer() will get called whenever encountered in a descriptor
 
-    put this in Builder.py
-
+    This will allow the removal of Is_Enum and Is_Bool
 
 
 Low Priority:
@@ -56,7 +55,6 @@ followed by a calling of all the Field_Types of each of its fields.
     will need to go after all the fields have been specified, thus the
     keyword arguments like GUI_NAME and POINTER will be at the bottom
 
-
 Make Bin_Size recursion safe
 
 Implement recursive pointer based blocks.
@@ -72,18 +70,6 @@ Implement recursive pointer based blocks.
     block in the dictionary is used instead of reading it from the file again.
 
     Make it so that Pointer32/64 are set to 0 when their pointed to block DNE
-
-
-Try to make a mutable Tag_Block object that can be used to allow objects to
-have variables other than their structure properties. This approach should
-still use a descriptor so that accessing structure elements is done in the
-same way, code is less bloated, and some other reasons I can't remember atm.
-    THIS CAN BE DONE BY MAKING ONE OF THE SLOTS BE '__dict__'
-
-    Will need to make some modified functions for this block __deepcopy__ and
-    __copy__ so that they also take into account the __dict__ slot.
-    Will also need modified __setattr__, __delattr__, __getitem__, __setitem__,
-    and __delitem__ that each check __dict__ before checking DESC or __slots__
 
 
 
@@ -118,7 +104,6 @@ Incorporate CHANNEL_ORDER into raw packers and unpackers. use it by
 	indexes as the locations to place the unpacked channels into
 
 	not sure how I'm going to incorporate it in non raw formats(DXT)
-
 
 Make setting to use same palette for all mipmaps of a bitmap
 Write palettized mipmap generator.

@@ -63,13 +63,13 @@ class BITM_Tag(Halo_Tag_Obj):
 
     def Bitmap_Type(self, Bitmap_Index=0, New_Value=None):
         if New_Value is None:
-            return self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Type.Val
-        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Type.Val = New_Value
+            return self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Type.Data
+        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Type.Data = New_Value
 
     def Bitmap_Format(self, Bitmap_Index=0, New_Value=None):
         if New_Value is None:
-            return self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Format.Val
-        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Format.Val = New_Value
+            return self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Format.Data
+        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Format.Data = New_Value
 
 
     def Bitmap_Width_Height_Depth(self, Bitmap_Index=0, New_Value=None):
@@ -83,7 +83,7 @@ class BITM_Tag(Halo_Tag_Obj):
     def Bitmap_Flags(self, Bitmap_Index=0, New_Value=None):
         if New_Value is None:
             return self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Flags
-        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Flags.Val = New_Value
+        self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index].Flags.Data = New_Value
         
     def Bitmap_Base_Address(self, Bitmap_Index=0, New_Value=None):
         if New_Value is None:
