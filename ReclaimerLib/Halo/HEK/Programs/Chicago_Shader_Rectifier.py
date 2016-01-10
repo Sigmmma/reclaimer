@@ -53,17 +53,9 @@ class Shader_Rectifier_Class(Halo_Library):
                         
                         #we loop through each extra layer for the debug log
                         for i in range(len(EL)):
-                            #get the 4 character identifier
-                            #for the extra layer's type
-                            Ref_ID = EL[i].Tag_Class.Val
-
                             #add the extra layer's path to the debug log
-                            Debug_Log_String += "\n    " + EL[i].CHILD
-
-                            try:
-                                Debug_Log_String += self.ID_Ext_Map[Ref_ID]
-                            except:
-                                pass
+                            Debug_Log_String += ("\n    " + EL[i].CHILD +
+                                                 EL[i].Tag_Class.Data_Name)
 
                         #void out the extra layers
                         Tag.Tag_Data.Data.Extra_Layers.Set_Desc('TYPE', Void)
