@@ -40,7 +40,7 @@ try:
             Val = Var.get()
             for i in range(Elements['ENTRIES']):
                 if Elements[i]['NAME'] == Val:
-                    Var.Block_Parent[Var.Block_Index].Val = Elements[i]['VALUE']
+                    Var.Block_Parent[Var.Block_Index].Data = Elements[i]['VALUE']
                     return
 
     def Set_Enum(Widget, i):
@@ -56,8 +56,8 @@ try:
         Mask = Flag_Var.Mask
         Inv_Mask = 4294967295-Mask
         
-        Val = Var.Block_Parent[Var.Block_Index].Val
-        Var.Block_Parent[Var.Block_Index].Val = Flag_Var.get()*Mask+(Val&Inv_Mask)
+        Data = Var.Block_Parent[Var.Block_Index].Data
+        Var.Block_Parent[Var.Block_Index].Data = Flag_Var.get()*Mask+(Data&Inv_Mask)
 
 
     class GDL_Editor_Window(Tk):
@@ -247,14 +247,14 @@ try:
                 
             Desc = Cheat.DESC
             
-            if Cheat_Type.Val == 5:
+            if Cheat_Type.Data == 5:
                 Cheat_Flags.DESC = Desc[3] = self._Cheat_Weapon_Flags_Desc
-            elif Cheat_Type.Val == 6:
+            elif Cheat_Type.Data == 6:
                 Cheat_Flags.DESC = Desc[3] = self._Cheat_Armor_Flags_Desc
-            elif Cheat_Type.Val == 9:
+            elif Cheat_Type.Data == 9:
                 Cheat_Flags.DESC = Desc[3] = self._Cheat_Special_Flags_Desc
             else:
-                Cheat_Flags.Val = 0
+                Cheat_Flags.Data = 0
                 Cheat_Flags.DESC = Desc[3] = self._Cheat_Flags_Desc
 
             self._Reload_Widgets(Menu, Cheat, Desc)
@@ -306,7 +306,7 @@ try:
                         
                         for x in range(This_Desc['ENTRIES']):
                             New_Widget.addOption(This_Desc[x]['GUI_NAME'])
-                            if Block_Val.Val == This_Desc[x]['VALUE']:
+                            if Block_Val.Data == This_Desc[x]['VALUE']:
                                 Field_Var.set(This_Desc[x]['GUI_NAME'])
                                 
                         Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Enum(Var)
@@ -333,7 +333,7 @@ try:
                             New_Flag_Button.place(x=0, y=Widget_Height, anchor=NW)
                             New_Flag_Button.Flag_Var = Flag_Var
                             
-                            if Block_Val.Val & Flag_Val:
+                            if Block_Val.Data & Flag_Val:
                                 New_Flag_Button.select()
                             
                             Widget_Height += 16

@@ -8,14 +8,13 @@ try:
         Test = GDL_Library(Debug=3, Allow_Corrupt=True,
                            Print_Test=False, Save_Test=True, Int_Test=False,
                            Write_as_Temp=True, Backup_Old_Tags=False,
-                           Int_Test=False,
                            #Valid_Tag_IDs='xbe',
                            Valid_Tag_IDs='objects.ps2',
                            Print_Options={'Indent':4,
                                           'Printout':True, 'Precision':3,
                                           'Show':['Name', 'Children', #'Type',
-                                                  'Value',#'Offset', 'Py_ID',
-                                                  'Index', 'Size', #'Flags', 'Unique',
+                                                  'Value','Offset',# 'Py_ID',
+                                                  'Index', 'Flags',# 'Size', 'Unique',
                                                   'Tag_Path', 'Bin_Size','Ram_Size',
                                                   #'All'
                                                   ] })
@@ -26,7 +25,7 @@ try:
         if Objs is not None:
             for Tag_Path in Objs:
                 print("Size of: "+Tag_Path+" = ", Objs[Tag_Path].Tag_Data.Bin_Size)
-                Objs[Tag_Path].Print(Show=('Name','Value','Children','Flags','Raw'),
+                Objs[Tag_Path].Print(Show=('Name','Value','Children','Flags', 'Offset', 'Raw'),
                                      Printout=True)
         input()
 except:
