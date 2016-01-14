@@ -5,6 +5,8 @@ def Construct():
 
 class GDL_XBE_Definition(XBE_Def):
 
+    Make_GUI_Names = True
+
     Special_Types = { TYPE:Bool32, NAME:"Flags",
                       0:{NAME:"Levitate", VALUE:1},
                       1:{NAME:"X_Ray", VALUE:2},
@@ -133,7 +135,7 @@ class GDL_XBE_Definition(XBE_Def):
                                         15:{NAME:"Hyena"},
                                         },
                                     2:{ TYPE:Str_Latin1, NAME:"Code", SIZE:7},
-                                    3:{ PAD:1 },
+                                    3:{ TYPE:Pad, SIZE:1 },
                                     3:{ TYPE:Str_Latin1, NAME:"Directory", SIZE:16 },
                                     4:{ TYPE:Bool32,     NAME:"Flags",
                                         0:{NAME:"Disable", VALUE:1}
@@ -145,7 +147,7 @@ class GDL_XBE_Definition(XBE_Def):
                         SUB_STRUCT:{TYPE:Struct, NAME:"Cheat",
                                     0:{ TYPE:Str_Latin1, SIZE:7,
                                         OFFSET:0, NAME:"Code"},
-                                    1:{ PAD:1 },
+                                    1:{ TYPE:Pad, SIZE:1 },
                                     2:{ TYPE:Enum32, NAME:"Type",
                                         0:{NAME:"Gold", VALUE:1},
                                         1:{NAME:"Key", VALUE:2},

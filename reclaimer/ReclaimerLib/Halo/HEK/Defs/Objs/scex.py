@@ -1,8 +1,8 @@
 from os.path import splitext
-from .Tag_Obj import *
+from .Tag import *
 from supyr_struct.Field_Types import Void
 
-class SCEX_Tag(Halo_Tag_Obj):
+class SCEX_Tag(HEK_Tag):
 
     def Convert_to_Other_Chicago(self):    
         '''Call this function to convert a SCEX tag to a SCHI tag'''

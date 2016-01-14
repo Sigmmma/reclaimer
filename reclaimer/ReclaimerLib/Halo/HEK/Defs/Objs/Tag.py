@@ -1,8 +1,7 @@
-from supyr_struct.Tag_Obj import *
 from ...Field_Types import *
+from supyr_struct.Tag import *
 
-
-class Halo_Tag_Obj(Tag_Obj):
+class HEK_Tag(Tag):
     __slots__ = ('Tag_Conversion_Settings',
                  'Library', 'Constructor', 'Definition',
                  'Root_Offset', 'Calc_Pointers',
@@ -14,4 +13,4 @@ class Halo_Tag_Obj(Tag_Obj):
         #this is used by various things to store variables
         #per tag which specify how it is to be changed.
         self.Tag_Conversion_Settings = []
-        Tag_Obj.__init__(self, **kwargs)
+        Tag.__init__(self, **kwargs)

@@ -11,7 +11,7 @@ class SENV_Definition(Tag_Def):
 
     Cls_ID = "senv"
 
-    Tag_Obj = SENV_Tag
+    Tag_Cls = SENV_Tag
 
     Endian = ">"
 

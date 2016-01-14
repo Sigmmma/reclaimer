@@ -1,4 +1,5 @@
 from supyr_struct.Field_Types import *
+from supyr_struct.Tag_Blocks import *
 from supyr_struct.Defs.Constants import *
 from supyr_struct.Re_Wr_De_En import *
 

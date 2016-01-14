@@ -76,13 +76,13 @@ class SotE_EEP_Definition(Tag_Def):
                                               1:{GUI_NAME:"Medium"},
                                               2:{GUI_NAME:"Soft"},
                                               3:{GUI_NAME:"Off"} },
-                                           2:{ PAD:2 },
+                                           2:{ TYPE:Pad, SIZE:2 },
                                            3:{TYPE:Bit_Enum, GUI_NAME:"Music Volume", SIZE:2,
                                               0:{GUI_NAME:"Loud"},
                                               1:{GUI_NAME:"Medium"},
                                               2:{GUI_NAME:"Soft"},
                                               3:{GUI_NAME:"Off"} },
-                                           4:{ PAD:2 },
+                                           4:{ TYPE:Pad, SIZE:2 },
                                            5:{TYPE:Bit_Enum, GUI_NAME:"Sound Panning", SIZE:1,
                                               0:{GUI_NAME:"Stereo"},
                                               1:{GUI_NAME:"Mono"} }
@@ -126,7 +126,7 @@ class SotE_EEP_Definition(Tag_Def):
                                            8:Combine( {GUI_NAME:"Xizors Palace"}, Weapons),
                                            9:Combine( {GUI_NAME:"Skyhook Battle"}, Weapons),
                                            },
-                                       10:{ PAD:1 },
+                                       10:{ TYPE:Pad, SIZE:1 },
                                        11:{ TYPE:Struct, SIZE:20, GUI_NAME:"Completion Times",
                                             #measured in seconds
                                             0:{ TYPE:UInt16, GUI_NAME:"Battle of Hoth" },
@@ -166,7 +166,7 @@ class SotE_EEP_Definition(Tag_Def):
                                        #If it doesnt then the save is considered corrupt and is erased.
                                        #The first checksum byte will be defaulted to 0, and this one to 255.
                                        13:{ TYPE:UInt8, GUI_NAME:"File CRC 2", DEFAULT:255, EDITABLE:False },
-                                       14:{ PAD:1 }
+                                       14:{ TYPE:Pad, SIZE:1 }
                                        }
                         },
                      2:{ TYPE:Struct, GUI_NAME:"Footer",
@@ -178,6 +178,6 @@ class SotE_EEP_Definition(Tag_Def):
                          #If it doesnt then the save is considered corrupt and is erased.
                          #The first checksum byte will be defaulted to 0, and this one to 255.
                          1:{ TYPE:UInt8, GUI_NAME:"EEP CRC 2", DEFAULT:255, EDITABLE:False },
-                         2:{ PAD:14 }
+                         2:{ TYPE:Pad, SIZE:14 }
                          }
                      }

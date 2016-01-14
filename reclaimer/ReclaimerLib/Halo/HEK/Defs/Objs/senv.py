@@ -1,4 +1,4 @@
-from .Tag_Obj import *
+from .Tag import *
 
-class SENV_Tag(Halo_Tag_Obj):
+class SENV_Tag(HEK_Tag):
     pass

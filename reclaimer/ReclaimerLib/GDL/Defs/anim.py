@@ -13,7 +13,7 @@ class ANIM_PS2_Definition(Tag_Def):
     Cls_ID = "anim.ps2"
 
     #The constructor used to build this definitions Tag_Obj
-    Tag_Obj = Anim_PS2_Tag
+    Tag_Cls = Anim_PS2_Tag
 
     Endian = "<"
 

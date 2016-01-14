@@ -10,7 +10,7 @@ class BITM_Definition(Tag_Def):
 
     Cls_ID = "bitm"
 
-    Tag_Obj = BITM_Tag
+    Tag_Cls = BITM_Tag
 
     Endian = ">"
 

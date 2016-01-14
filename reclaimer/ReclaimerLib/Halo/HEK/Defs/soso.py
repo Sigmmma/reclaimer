@@ -11,7 +11,7 @@ class SOSO_Definition(Tag_Def):
 
     Cls_ID = "soso"
     
-    Tag_Obj = SOSO_Tag
+    Tag_Cls = SOSO_Tag
 
     Endian = ">"
 
