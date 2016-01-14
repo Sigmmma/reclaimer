@@ -10,7 +10,7 @@ Mode = "locate"
 
 
 
-Words_to_Locate = ['Get_Value', 'Set_Value', 'Val_Type']
+Words_to_Locate = ['Tag_Obj ', 'Library ', 'PAD']
 Word_Replacements = []
 #Flags = re.IGNORECASE
 

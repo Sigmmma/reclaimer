@@ -1,4 +1,4 @@
-from .Tag_Obj import *
+from .Tag import *
 
-class SOSO_Tag(Halo_Tag_Obj):
+class SOSO_Tag(HEK_Tag):
     pass

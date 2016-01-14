@@ -1,4 +1,4 @@
-from .Tag_Obj import *
+from .Tag import *
 
 #in a bitmap tag this number designates the type
 TYPE_2D = 0
@@ -34,7 +34,7 @@ CUBEMAP_PADDING = 128
 
         
 
-class BITM_Tag(Halo_Tag_Obj):
+class BITM_Tag(HEK_Tag):
     
     def Bitmap_Count(self, New_Value=None):
         if New_Value is None:

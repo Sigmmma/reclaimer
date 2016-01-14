@@ -13,7 +13,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
     Cls_ID = "objects.ps2"
 
     #The constructor used to build this definitions Tag_Obj
-    Tag_Obj = Objects_PS2_Tag
+    Tag_Cls = Objects_PS2_Tag
 
     Endian = "<"
     '''
@@ -275,7 +275,7 @@ class OBJECTS_PS2_Definition(Tag_Def):
                      11:{ TYPE:Pointer32, OFFSET:100, GUI_NAME:"Sub-Objects Pointer"},
                      12:{ TYPE:Pointer32, OFFSET:104, GUI_NAME:"Geometry Pointer"},
                      
-                     13:{ TYPE:UInt32, OFFSET:108, GUI_NAME:"Filesize", NAME:"Obj End"},
+                     13:{ TYPE:UInt32, OFFSET:108, GUI_NAME:"Filesize", NAME:"Obj_End"},
                    
                      14:{ TYPE:UInt32, OFFSET:112, GUI_NAME:"Tex Start"},
                      15:{ TYPE:UInt32, OFFSET:116, GUI_NAME:"Tex End"},

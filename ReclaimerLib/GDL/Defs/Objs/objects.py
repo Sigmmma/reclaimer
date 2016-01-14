@@ -1,6 +1,6 @@
-from .Tag_Obj import *
+from .Tag import *
 
-class Objects_PS2_Tag(GDL_Tag_Obj):
+class Objects_PS2_Tag(GDL_Tag):
     def __init__(self, **kwargs):
         #do shit with this later
-        GDL_Tag_Obj.__init__(self, **kwargs)
+        GDL_Tag.__init__(self, **kwargs)
