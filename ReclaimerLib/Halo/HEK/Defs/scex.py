@@ -11,7 +11,7 @@ class SCEX_Definition(Tag_Def):
 
     Cls_ID = "scex"
 
-    Tag_Obj = SCEX_Tag
+    Tag_Cls = SCEX_Tag
 
     Endian = ">"
 

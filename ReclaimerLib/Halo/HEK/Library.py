@@ -2,11 +2,11 @@ from os.path import basename, normpath
 
 from supyr_struct.Test import Tag_Test_Library
 from .Field_Types import *
-from .Defs.Objs.Tag_Obj import Halo_Tag_Obj
+from .Defs.Objs.Tag import HEK_Tag
 
 
 class Halo_Library(Tag_Test_Library):
-    Default_Tag_Obj   = Halo_Tag_Obj
+    Default_Tag_Cls   = HEK_Tag
     Default_Defs_Path = "ReclaimerLib\\Halo\\HEK\\Defs\\"
     
     Close_Program = False #if set to True the program will close

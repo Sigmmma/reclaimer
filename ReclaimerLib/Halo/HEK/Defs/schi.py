@@ -11,7 +11,7 @@ class SCHI_Definition(Tag_Def):
 
     Cls_ID = "schi"
 
-    Tag_Obj = SCHI_Tag
+    Tag_Cls = SCHI_Tag
 
     Endian = ">"
 

@@ -11,9 +11,6 @@ make an immutable dictionary class called a "Descriptor"
 
 Finish docstrings for modules and update existing ones.
 
-make gif gfx extension block have image or plaintext as child, but remove header
-and data setup and just make it an extension
-
 Medium Priority:
 
 Make a Union Field_Type that allows specifying multiple
