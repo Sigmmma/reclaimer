@@ -1,16 +1,13 @@
 from os.path import basename, normpath
 
 from supyr_struct.Test import Tag_Test_Library
-from .Field_Types import *
+from ..Field_Types import *
 from .Defs.Objs.Tag import HEK_Tag
 
 
 class Halo_Library(Tag_Test_Library):
     Default_Tag_Cls   = HEK_Tag
     Default_Defs_Path = "ReclaimerLib\\Halo\\HEK\\Defs\\"
-    
-    Close_Program = False #if set to True the program will close
-    Main_Delay = 0.03 #determines how often the main loop is run
 
     #used whenever we need to know the extension of a tag based
     #on it's FourCC all 83 Halo 1 tag types are defined below
@@ -21,22 +18,22 @@ class Halo_Library(Tag_Test_Library):
                   'ant!':".antenna",                            #NEED
                   'bipd':".biped",                              #NEED
                   'bitm':".bitmap",
-                  'trak':".camera_track",                       #NEED
-                  'colo':".color_table",                        #NEED
+                  'trak':".camera_track",
+                  'colo':".color_table",
                   'cdmg':".continuous_damage_effect",           #NEED
                   'cont':".contrail",                           #NEED
                   'deca':".decal",                              #NEED
                   'udlg':".dialogue",                           #NEED
                   'dobc':".detail_object_collection",           #NEED
-                  'devi':".device",                             #----
+                  'devi':".device",
                   'ctrl':".device_control",                     #NEED
                   'lifi':".device_light_fixture",               #NEED
                   'mach':".device_machine",                     #NEED
                   'jpt!':".damage_effect",                      #NEED
                   'effe':".effect",                             #NEED
                   'eqip':".equipment",                          #NEED
-                  'flag':".flag",                               #NEED
-                  'fog ':".fog",                                #NEED
+                  'flag':".flag",
+                  'fog ':".fog",
                   'font':".font",                               #NEED
                   'garb':".garbage",                            #NEED
                   'mod2':".gbxmodel",                           #NEED
@@ -45,60 +42,60 @@ class Halo_Library(Tag_Test_Library):
                   'grhi':".grenade_hud_interface",              #NEED
                   'hudg':".hud_globals",                        #NEED
                   'hmt ':".hud_message_text",
-                  'hud#':".hud_number",                         #NEED
-                  'devc':".input_device_defaults",              #NEED
-                  'item':".item",                               #----
-                  'itmc':".item_collection",                    #NEED
+                  'hud#':".hud_number",
+                  'devc':".input_device_defaults",
+                  'item':".item",
+                  'itmc':".item_collection",
                   'lens':".lens_flare",                         #NEED
                   'ligh':".light",                              #NEED
                   'mgs2':".light_volume",                       #NEED
                   'elec':".lightning",                          #NEED
-                  'foot':".material_effects",                   #NEED
+                  'foot':".material_effects",
                   'metr':".meter",
                   'mode':".model",                              #NEED
                   'antr':".model_animations",                   #NEED
                   'coll':".model_collision_geometry",           #NEED
-                  'mply':".multiplayer_scenario_description",   #NEED
+                  'mply':".multiplayer_scenario_description",
                   'obje':".object",                             #----
                   'part':".particle",                           #NEED
                   'pctl':".particle_system",                    #NEED
                   'phys':".physics",                            #NEED
-                  'plac':".placeholder",                        #----
+                  'plac':".placeholder",                        #NEED
                   'pphy':".point_physics",
-                  'ngpr':".preferences_network_game",           #NEED
+                  'ngpr':".preferences_network_game",
                   'proj':".projectile",                         #NEED
                   'scnr':".scenario",                           #NEED
                   'sbsp':".scenario_structure_bsp",             #NEED
                   'scen':".scenery",                            #NEED
                   'snd!':".sound",                              #NEED
-                  'snde':".sound_environment",                  #NEED
+                  'snde':".sound_environment",
                   'lsnd':".sound_looping",                      #NEED
                   'ssce':".sound_scenery",                      #NEED
                   'boom':".spheroid",
-                  'shdr':".shader",                             #----
+                  'shdr':".shader",
                   'schi':".shader_transparent_chicago",
                   'scex':".shader_transparent_chicago_extended",
-                  'sotr':".shader_transparent_generic",
+                  'sotr':".shader_transparent_generic",         #NEED
                   'senv':".shader_environment",
-                  'sgla':".shader_transparent_glass",           #NEED
-                  'smet':".shader_transparent_meter",           #NEED
+                  'sgla':".shader_transparent_glass",
+                  'smet':".shader_transparent_meter",
                   'soso':".shader_model",
-                  'spla':".shader_transparent_plasma",          #NEED
-                  'swat':".shader_transparent_water",           #NEED
+                  'spla':".shader_transparent_plasma",
+                  'swat':".shader_transparent_water",
                   'sky ':".sky",                                #NEED
                   'str#':".string_list",
                   'tagc':".tag_collection",
-                  'Soul':".ui_widget_collection",               #NEED
+                  'Soul':".ui_widget_collection",
                   'DeLa':".ui_widget_definition",               #NEED
                   'ustr':".unicode_string_list",
-                  'unit':".unit",                               #NEED
+                  'unit':".unit",                               #----
                   'unhi':".unit_hud_interface",                 #NEED
                   'vehi':".vehicle",                            #NEED
                   'vcky':".virtual_keyboard",                   #NEED
                   'weap':".weapon",                             #NEED
                   'wphi':".weapon_hud_interface",               #NEED
                   'rain':".weather_particle_system",            #NEED
-                  'wind':".wind"                                #NEED
+                  'wind':".wind"
                   }
 
     Ext_ID_Map = {}

@@ -4,7 +4,7 @@ from traceback import format_exc
 from ..Library import Halo_Library
 from supyr_struct.Field_Types import Void
 
-class Shader_Rectifier_Class(Halo_Library):
+class Shader_Rectifier(Halo_Library):
     Target_Tag = "schi"
     Backup_Tags = False
 
@@ -32,12 +32,10 @@ class Shader_Rectifier_Class(Halo_Library):
         
         '''loop through both chicago and extended chicago tag types'''
         for Cls_ID in self.Tags:
-            
-            Tag_Paths = list(self.Tags[Cls_ID])
 
             '''loop through each tag and remove extra
             layers and log them to a debug file'''
-            for Tag_Path in Tag_Paths:
+            for Tag_Path in sorted(self.Tags[Cls_ID]):
                 Tag = self.Tags[Cls_ID][Tag_Path]
                 try:
 
@@ -54,8 +52,11 @@ class Shader_Rectifier_Class(Halo_Library):
                         #we loop through each extra layer for the debug log
                         for i in range(len(EL)):
                             #add the extra layer's path to the debug log
-                            Debug_Log_String += ("\n    " + EL[i].CHILD +
-                                                 EL[i].Tag_Class.Data_Name)
+                            try:
+                                Ext = '.'+EL[i].Tag_Class.Data_Name
+                            except Exception:
+                                Ext = ''
+                            Debug_Log_String += "\n    " + EL[i].CHILD + Ext
 
                         #void out the extra layers
                         Tag.Tag_Data.Data.Extra_Layers.Set_Desc('TYPE', Void)

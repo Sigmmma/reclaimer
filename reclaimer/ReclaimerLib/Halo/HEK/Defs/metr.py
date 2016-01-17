@@ -1,10 +1,10 @@
-from .Common_Block_Structures import *
+from ...Common_Block_Structures import *
 from supyr_struct.Defs.Tag_Def import Tag_Def
 
 def Construct():
-    return METR_Definition
+    return METR_Def
 
-class METR_Definition(Tag_Def):
+class METR_Def(Tag_Def):
 
     Ext = ".meter"
 
@@ -16,14 +16,14 @@ class METR_Definition(Tag_Def):
                      0:Combine( {1:{ DEFAULT:"metr" } }, Tag_Header),
                      
                      1:{ TYPE:Struct, SIZE:172, GUI_NAME:"Data",
-                         0:{ TYPE:Struct, OFFSET:4, GUI_NAME:"Stencil Bitmap",
-                              INCLUDE:Tag_Reference_Structure
+                         0:{ TYPE:Tag_Index_Ref, OFFSET:4, GUI_NAME:"Stencil Bitmap",
+                              INCLUDE:Tag_Index_Ref_Struct
                              },
-                         1:{ TYPE:Struct, OFFSET:20, GUI_NAME:"Source Bitmap",
-                              INCLUDE:Tag_Reference_Structure
+                         1:{ TYPE:Tag_Index_Ref, OFFSET:20, GUI_NAME:"Source Bitmap",
+                              INCLUDE:Tag_Index_Ref_Struct
                              },
-                         2:{ TYPE:UInt16, OFFSET:36, GUI_NAME:"Stencil Sequence Index" },
-                         3:{ TYPE:UInt16, OFFSET:38, GUI_NAME:"Source Sequence Index" },
+                         2:{ TYPE:SInt16, OFFSET:36, GUI_NAME:"Stencil Sequence Index" },
+                         3:{ TYPE:SInt16, OFFSET:38, GUI_NAME:"Source Sequence Index" },
                          4:{ TYPE:Enum16, OFFSET:60, GUI_NAME:"Interpolate Colors" ,
                               0:{GUI_NAME:"Linearly"},
                               1:{GUI_NAME:"Faster near empty"},
@@ -41,14 +41,14 @@ class METR_Definition(Tag_Def):
                          8:{ TYPE:Float, OFFSET:124, GUI_NAME:"Unmask Distance" },
                          9:{ TYPE:Float, OFFSET:128, GUI_NAME:"Mask Distance" },
                      
-                         10:{ TYPE:UInt8, OFFSET:144, GUI_NAME:"UNKNOWN_1 Width" },
-                         11:{ TYPE:UInt8, OFFSET:146, GUI_NAME:"UNKNOWN_1 Heigth" },
-                         12:{ TYPE:UInt8, OFFSET:148, GUI_NAME:"UNKNOWN_2 Width" },
-                         13:{ TYPE:UInt8, OFFSET:150, GUI_NAME:"UNKNOWN_2 Height" },
+                         10:{ TYPE:UInt8, OFFSET:144, GUI_NAME:"UNKNOWN1 Width" },
+                         11:{ TYPE:UInt8, OFFSET:146, GUI_NAME:"UNKNOWN1 Heigth" },
+                         12:{ TYPE:UInt8, OFFSET:148, GUI_NAME:"UNKNOWN2 Width" },
+                         13:{ TYPE:UInt8, OFFSET:150, GUI_NAME:"UNKNOWN2 Height" },
                      
-                         14:{ TYPE:Struct, OFFSET:152, GUI_NAME:"Pixel Data", EDITABLE:False ,
-                             INCLUDE:Raw_Data_Reference_Structure,
-                             CHILD:{TYPE:Bytearray_Raw, NAME:"Data", SIZE:".Byte_Count"}
+                         14:{ TYPE:Raw_Data_Ref, OFFSET:152, GUI_NAME:"Pixel Data", EDITABLE:False ,
+                             INCLUDE:Raw_Data_Ref_Struct,
+                             CHILD:{TYPE:Bytearray_Raw, NAME:"Data", SIZE:".Count"}
                              }
                          }
                      }

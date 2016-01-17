@@ -1,7 +1,7 @@
 from array import array
 from os.path import splitext
 
-from ..Field_Types import *
+from ...Field_Types import *
 from ..Defs.Objs.bitm import *
 
 from ReclaimerLib.resources.Bitmap_Module import Bitmap_Convertor as BC
@@ -576,7 +576,7 @@ def Calc_Padding_Size(Tag, Bitmap_Index):
 
 def Bitmap_Sanitize(Tag):
     '''after we've edited with the bitmap in whatever ways we did this will
-    #tie up all the loose ends and recalculate all the offsets and stuff'''
+    tie up all the loose ends and recalculate all the offsets and stuff'''
     
     #Prune the original TIFF data from the tag
     Tag.Tag_Data.Data.Compressed_Color_Plate_Data.Data = bytearray()

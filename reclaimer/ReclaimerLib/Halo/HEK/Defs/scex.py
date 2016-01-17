@@ -1,11 +1,11 @@
-from .Common_Block_Structures import *
+from ...Common_Block_Structures import *
 from supyr_struct.Defs.Tag_Def import Tag_Def
 from .Objs.scex import SCEX_Tag
 
 def Construct():
-    return SCEX_Definition
+    return SCEX_Def
 
-class SCEX_Definition(Tag_Def):
+class SCEX_Def(Tag_Def):
 
     Ext = ".shader_transparent_chicago_extended"
 
@@ -41,28 +41,28 @@ class SCEX_Definition(Tag_Def):
                         
                         #Lens Flare
                         9:{ TYPE:Float, OFFSET:52, GUI_NAME:"Lens Flare Spacing"},#world units
-                        10:{ TYPE:Struct, OFFSET:56, GUI_NAME:"Lens Flare" ,
-                             INCLUDE:Tag_Reference_Structure
+                        10:{ TYPE:Tag_Index_Ref, OFFSET:56, GUI_NAME:"Lens Flare" ,
+                             INCLUDE:Tag_Index_Ref_Struct
                              },
                         
-                        11:{ TYPE:Struct, OFFSET:72, GUI_NAME:"Extra Layers",
-                             INCLUDE:Block_Reference_Structure,
+                        11:{ TYPE:Reflexive, OFFSET:72, GUI_NAME:"Extra Layers",
+                             INCLUDE:Reflexive_Struct,
                              CHILD:{TYPE:Array, NAME:"Extra_Layers_Array",
-                                    MAX:4, SIZE:".Block_Count",
+                                    MAX:4, SIZE:".Count",
                                     SUB_STRUCT:Extra_Layers_Block
                                     }
                              },
-                        12:{ TYPE:Struct, OFFSET:84, GUI_NAME:"Four Stage Maps",
-                             INCLUDE:Block_Reference_Structure,
+                        12:{ TYPE:Reflexive, OFFSET:84, GUI_NAME:"Four Stage Maps",
+                             INCLUDE:Reflexive_Struct,
                              CHILD:{TYPE:Array, NAME:"Four_Stage_Maps_Array",
-                                    MAX:4, SIZE:".Block_Count",
+                                    MAX:4, SIZE:".Count",
                                     SUB_STRUCT:Chicago_4_Stage_Maps
                                     }
                              },
-                        13:{ TYPE:Struct, OFFSET:96, GUI_NAME:"Two Stage Maps",
-                             INCLUDE:Block_Reference_Structure,
+                        13:{ TYPE:Reflexive, OFFSET:96, GUI_NAME:"Two Stage Maps",
+                             INCLUDE:Reflexive_Struct,
                              CHILD:{TYPE:Array, NAME:"Two_Stage_Maps_Array",
-                                    MAX:2, SIZE:".Block_Count",
+                                    MAX:2, SIZE:".Count",
                                     SUB_STRUCT:Chicago_2_Stage_Maps
                                     }
                              },

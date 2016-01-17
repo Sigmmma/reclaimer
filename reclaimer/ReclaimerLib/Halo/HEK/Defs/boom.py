@@ -1,10 +1,10 @@
-from .Common_Block_Structures import *
+from ...Common_Block_Structures import *
 from supyr_struct.Defs.Tag_Def import Tag_Def
 
 def Construct():
-    return BOOM_Definition
+    return BOOM_Def
 
-class BOOM_Definition(Tag_Def):
+class BOOM_Def(Tag_Def):
 
     Ext = ".spheroid"
 
