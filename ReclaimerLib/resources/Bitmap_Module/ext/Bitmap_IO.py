@@ -532,9 +532,9 @@ def Load_from_DDS_File(convertor, Extension, Input_Path, **kwargs):
             #check if the texture is a cubemap and get how many faces exist
             if Caps_2&512:
                 TYPE = BC.TYPE_CUBEMAP
-                Sub_Bitmap_Count = ((Caps_2&1024)//1024 + (Caps_2&2048)//2048 +
-                                   (Caps_2&4096)//4096 + (Caps_2&8192)//8192 +
-                                   (Caps_2&16384)//16384 + (Caps_2&32768)//32768)
+                Sub_Bitmap_Count = ((Caps_2&1024)//1024   + (Caps_2&2048)//2048 +
+                                    (Caps_2&4096)//4096   + (Caps_2&8192)//8192 +
+                                    (Caps_2&16384)//16384 + (Caps_2&32768)//32768)
 
             #check if the texture is volumetric
             if Caps_2&2097152 and Depth > 1:

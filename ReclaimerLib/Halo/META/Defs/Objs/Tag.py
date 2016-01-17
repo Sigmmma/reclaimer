@@ -1,7 +1,7 @@
 from ....Field_Types import *
 from supyr_struct.Tag import *
 
-class HEK_Tag(Tag):
+class META_Tag(Tag):
     __slots__ = ('Tag_Conversion_Settings',
                  'Library', 'Constructor', 'Definition',
                  'Root_Offset', 'Calc_Pointers',

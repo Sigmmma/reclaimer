@@ -500,7 +500,7 @@ class Bitmap_Converter_Main_Window(Tk):
                                                            title='Select a folder containing bitmap tags')
             Tags_Dir_Str = Tags_Dir_Str.replace('/', '\\')
             if(len(Tags_Dir_Str)):
-                if Tags_Dir_Str[-1] != '\\':
+                if not Tags_Dir_Str.endswith('\\'):
                     Tags_Dir_Str += "\\"
                 self.Tags_Directory_Field.config(state=NORMAL)
                 self.Tags_Directory_Field.delete(0,END)

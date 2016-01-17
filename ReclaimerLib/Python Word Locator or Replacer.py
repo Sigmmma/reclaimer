@@ -10,7 +10,7 @@ Mode = "locate"
 
 
 
-Words_to_Locate = ['Tag_Obj ', 'Library ', 'PAD']
+Words_to_Locate = ['ATTR_OFFS']
 Word_Replacements = []
 #Flags = re.IGNORECASE
 
