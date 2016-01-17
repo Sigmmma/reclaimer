@@ -1,11 +1,11 @@
-from .Common_Block_Structures import *
+from ...Common_Block_Structures import *
 from supyr_struct.Defs.Tag_Def import Tag_Def
 from .Objs.bitm import BITM_Tag
 
 def Construct():
-    return BITM_Definition
+    return BITM_Def
 
-class BITM_Definition(Tag_Def):
+class BITM_Def(Tag_Def):
     Ext = ".bitmap"
 
     Cls_ID = "bitm"
@@ -37,18 +37,18 @@ class BITM_Definition(Tag_Def):
                        0:{ TYPE:Str_Latin1, OFFSET:0, GUI_NAME:"Sequence Name", SIZE:32 },
                        1:{ TYPE:UInt16, OFFSET:32, GUI_NAME:"First Bitmap Index" },
                        2:{ TYPE:UInt16, OFFSET:34, GUI_NAME:"Bitmap Count" },
-                       3:{ TYPE:Struct, OFFSET:52, GUI_NAME:"Sprites",
-                           INCLUDE:Block_Reference_Structure,
+                       3:{ TYPE:Reflexive, OFFSET:52, GUI_NAME:"Sprites",
+                           INCLUDE:Reflexive_Struct,
                            CHILD:{TYPE:Array,  NAME:"Sprite_Block_Array",
-                                  MAX:64, SIZE:".Block_Count",
+                                  MAX:64, SIZE:".Count",
                                   SUB_STRUCT:Sprites_Desc
                                   }
                            }
                        }
 
     Bitmaps_Desc = { TYPE:Struct, SIZE:48, GUI_NAME:"Bitmap",
-                     0:{ TYPE:Str_Raw_Latin1, OFFSET:0,  GUI_NAME:"BITM Class ID",
-                         EDITABLE:False, DEFAULT:"bitm", SIZE:4 },
+                     0:{ TYPE:UInt32, OFFSET:0,  GUI_NAME:"BITM Cls ID",
+                         EDITABLE:False, DEFAULT:"bitm" },
                      1:{ TYPE:UInt16, OFFSET:4, GUI_NAME:"Width"},
                      2:{ TYPE:UInt16, OFFSET:6, GUI_NAME:"Height"},
                      3:{ TYPE:UInt16, OFFSET:8, GUI_NAME:"Depth"},
@@ -79,13 +79,13 @@ class BITM_Definition(Tag_Def):
                          12:{GUI_NAME:"P8-bump", VALUE:17}
                          },
                      6:{ TYPE:Bool16, OFFSET:14, GUI_NAME:"Flags",
-                         0:{GUI_NAME:"Power of 2 Dim", VALUE:1},
+                         0:{GUI_NAME:"Power of 2 dim", VALUE:1},
                          1:{GUI_NAME:"Compressed", VALUE:2},
                          2:{GUI_NAME:"Palletized", VALUE:4},
                          3:{GUI_NAME:"Swizzled", VALUE:8},
                          4:{GUI_NAME:"Linear", VALUE:16},
                          5:{GUI_NAME:"V16U16", VALUE:32},
-                         6:{GUI_NAME:"Made by Arsenic", VALUE:128}
+                         6:{GUI_NAME:"Made by arsenic", VALUE:128}
                          },
                      7:{TYPE:Struct, OFFSET:16, GUI_NAME:"Registration Point",
                         0:{ TYPE:UInt16, OFFSET:0, GUI_NAME:"X" },
@@ -112,30 +112,30 @@ class BITM_Definition(Tag_Def):
                               1:{GUI_NAME:"Textures 3D"},
                               2:{GUI_NAME:"Cubemaps"},
                               3:{GUI_NAME:"Sprites"},
-                              4:{GUI_NAME:"Interface Bitmaps"}
+                              4:{GUI_NAME:"Interface bitmaps"}
                               },
                           1:{ TYPE:Enum16, OFFSET:2, GUI_NAME:"Format",
                               0:{GUI_NAME:"Color key transparency"},
-                              1:{GUI_NAME:"Explicit Alpha"},
-                              2:{GUI_NAME:"Interpolated Alpha"},
-                              3:{GUI_NAME:"Color 16-Bit"},
-                              4:{GUI_NAME:"Color 32-Bit"},
+                              1:{GUI_NAME:"Explicit alpha"},
+                              2:{GUI_NAME:"Interpolated alpha"},
+                              3:{GUI_NAME:"Color 16bit"},
+                              4:{GUI_NAME:"Color 32bit"},
                               5:{GUI_NAME:"Monochrome"}
                               },
                           2:{ TYPE:Enum16, OFFSET:4, GUI_NAME:"Usage",
-                              0:{GUI_NAME:"Alpha-Blend"},
+                              0:{GUI_NAME:"Alpha-blend"},
                               1:{GUI_NAME:"Default"},
-                              2:{GUI_NAME:"Height Map"},
-                              3:{GUI_NAME:"Detail Map"},
-                              4:{GUI_NAME:"Light Map"},
-                              5:{GUI_NAME:"Vector Map"}
+                              2:{GUI_NAME:"Height map"},
+                              3:{GUI_NAME:"Detail map"},
+                              4:{GUI_NAME:"Light map"},
+                              5:{GUI_NAME:"Vector map"}
                               },
                           3:{ TYPE:Bool16, OFFSET:6, GUI_NAME:"Flags",
-                              0:{GUI_NAME:"Enable Diffusion Dithering"},
-                              1:{GUI_NAME:"Disable Height Map Compression"},
-                              2:{GUI_NAME:"Uniform Sprite Sequences"},
-                              3:{GUI_NAME:"Sprite Bug Fix"},
-                              4:{GUI_NAME:"Processed by Reclaimer"}
+                              0:{GUI_NAME:"Enable diffusion dithering"},
+                              1:{GUI_NAME:"Disable height map compression"},
+                              2:{GUI_NAME:"Uniform sprite sequences"},
+                              3:{GUI_NAME:"Sprite bug fix"},
+                              4:{GUI_NAME:"Processed by reclaimer"}
                               },
                           4:{ TYPE:Float, OFFSET:8, GUI_NAME:"Detail Fade Factor",
                               MIN:0.0 , MAX:1.0},
@@ -152,17 +152,17 @@ class BITM_Definition(Tag_Def):
                           8:{ TYPE:UInt16, OFFSET:22, GUI_NAME:"Sprite Budget Count" },
                           9:{ TYPE:UInt16, OFFSET:24, GUI_NAME:"Color Plate Width"},
                           10:{ TYPE:UInt16, OFFSET:26, GUI_NAME:"Color Plate Height"},
-                          11:{ TYPE:Struct, OFFSET:28, GUI_NAME:"Compressed Color Plate Data",
+                          11:{ TYPE:Raw_Data_Ref, OFFSET:28, GUI_NAME:"Compressed Color Plate Data",
                                EDITABLE:False,
-                               INCLUDE:Raw_Data_Reference_Structure,
+                               INCLUDE:Raw_Data_Ref_Struct,
                                CHILD:{TYPE:Bytearray_Raw, NAME:"Data",
-                                      VISIBLE:False, SIZE:".Byte_Count"}
+                                      VISIBLE:False, SIZE:".Count"}
                                },
-                          12:{ TYPE:Struct, OFFSET:48, GUI_NAME:"Processed Pixel Data",
+                          12:{ TYPE:Raw_Data_Ref, OFFSET:48, GUI_NAME:"Processed Pixel Data",
                                EDITABLE:False,
-                               INCLUDE:Raw_Data_Reference_Structure,
+                               INCLUDE:Raw_Data_Ref_Struct,
                                CHILD:{TYPE:Bytearray_Raw, NAME:"Data",
-                                      VISIBLE:False, SIZE:".Byte_Count"}
+                                      VISIBLE:False, SIZE:".Count"}
                                },
                           13:{ TYPE:Float, OFFSET:68, GUI_NAME:"Blur Filter Size",#[0,10]
                                MIN:0.0 , MAX:10.0},
@@ -176,17 +176,17 @@ class BITM_Definition(Tag_Def):
                                },
                           17:{ TYPE:UInt16, OFFSET:80, GUI_NAME:"Sprite Spacing" },
                          
-                          18:{ TYPE:Struct, OFFSET:84, GUI_NAME:"Sequences",
-                               INCLUDE:Block_Reference_Structure,
+                          18:{ TYPE:Reflexive, OFFSET:84, GUI_NAME:"Sequences",
+                               INCLUDE:Reflexive_Struct,
                                CHILD:{TYPE:Array,   NAME:"Sequence_Block_Array",
-                                      MAX:256, SIZE:".Block_Count",
+                                      MAX:256, SIZE:".Count",
                                       SUB_STRUCT:Sequences_Desc
                                       }
                                },
-                          19:{ TYPE:Struct, OFFSET:96, GUI_NAME:"Bitmaps",
-                               INCLUDE:Block_Reference_Structure,
+                          19:{ TYPE:Reflexive, OFFSET:96, GUI_NAME:"Bitmaps",
+                               INCLUDE:Reflexive_Struct,
                                CHILD:{TYPE:Array, NAME:"Bitmap_Block_Array",
-                                      MAX:32767, SIZE:".Block_Count",
+                                      MAX:32767, SIZE:".Count",
                                       SUB_STRUCT:Bitmaps_Desc
                                       }
                                }

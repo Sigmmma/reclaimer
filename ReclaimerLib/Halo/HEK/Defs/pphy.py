@@ -1,10 +1,10 @@
-from .Common_Block_Structures import *
+from ...Common_Block_Structures import *
 from supyr_struct.Defs.Tag_Def import Tag_Def
 
 def Construct():
-    return PPHY_Definition
+    return PPHY_Def
 
-class PPHY_Definition(Tag_Def):
+class PPHY_Def(Tag_Def):
 
     Ext = ".point_physics"
 
@@ -16,13 +16,13 @@ class PPHY_Definition(Tag_Def):
                      0:Combine( {1:{ DEFAULT:"pphy" } }, Tag_Header),
                      
                      1:{TYPE:Struct, SIZE:64, GUI_NAME:"Data",
-                        0:{ TYPE:Bool16, OFFSET:2, GUI_NAME:"Flags",
-                            0:{GUI_NAME:"Flamethrower Particle Collision"},
-                            1:{GUI_NAME:"Collides with Structures"},
-                            2:{GUI_NAME:"Collides with Water Surface"},
-                            3:{GUI_NAME:"Uses Simple Wind"},
-                            4:{GUI_NAME:"Uses Damped Wind"},
-                            5:{GUI_NAME:"No Gravity"}
+                        0:{ TYPE:Bool32, OFFSET:0, GUI_NAME:"Flags",
+                            0:{GUI_NAME:"Flamethrower particle collision"},
+                            1:{GUI_NAME:"Collides with structures"},
+                            2:{GUI_NAME:"Collides with water surface"},
+                            3:{GUI_NAME:"Uses simple wind"},
+                            4:{GUI_NAME:"Uses damped wind"},
+                            5:{GUI_NAME:"No gravity"}
                             },
                         #these next three are courtesy of Sparky. I had
                         #no idea these existed till I looked in Eschaton

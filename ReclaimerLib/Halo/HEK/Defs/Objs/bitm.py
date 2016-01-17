@@ -38,8 +38,8 @@ class BITM_Tag(HEK_Tag):
     
     def Bitmap_Count(self, New_Value=None):
         if New_Value is None:
-            return(self.Tag_Data.Data.Bitmaps.Block_Count)
-        self.Tag_Data.Data.Bitmaps.Block_Count = New_Value
+            return(self.Tag_Data.Data.Bitmaps.Count)
+        self.Tag_Data.Data.Bitmaps.Count = New_Value
         
     def Bitmap_Width(self, Bitmap_Index=0, New_Value=None):
         if New_Value is None:
@@ -123,12 +123,12 @@ class BITM_Tag(HEK_Tag):
         
     def Processed_by_Reclaimer(self, New_Flag=None):
         if New_Flag is None:
-            return self.Tag_Data.Data.Flags.Processed_by_Reclaimer
-        self.Tag_Data.Data.Flags.Processed_by_Reclaimer = New_Flag
+            return self.Tag_Data.Data.Flags.Processed_by_reclaimer
+        self.Tag_Data.Data.Flags.Processed_by_reclaimer = New_Flag
         
 
     def Is_Power_of_2_Bitmap(self, Bitmap_Index=0):
-        return self.Bitmap_Flags(Bitmap_Index).Power_of_2_Dim
+        return self.Bitmap_Flags(Bitmap_Index).Power_of_2_dim
             
     def Is_Compressed_Bitmap(self, Bitmap_Index=0):
         return self.Bitmap_Flags(Bitmap_Index).Compressed
@@ -141,14 +141,14 @@ class BITM_Tag(HEK_Tag):
 
     def Color_Plate_Data_Bytes_Size(self, New_Value=None):
         if New_Value is None:
-            return(self.Tag_Data.Data.Compressed_Color_Plate_Data.Byte_Count)
-        self.Tag_Data.Data.Compressed_Color_Plate_Data.Byte_Count = New_Value
+            return(self.Tag_Data.Data.Compressed_Color_Plate_Data.Count)
+        self.Tag_Data.Data.Compressed_Color_Plate_Data.Count = New_Value
     
 
     def Pixel_Data_Bytes_Size(self, New_Value=None):
         if New_Value is None:
-            return(self.Tag_Data.Data.Processed_Pixel_Data.Byte_Count)
-        self.Tag_Data.Data.Processed_Pixel_Data.Byte_Count = New_Value
+            return(self.Tag_Data.Data.Processed_Pixel_Data.Count)
+        self.Tag_Data.Data.Processed_Pixel_Data.Count = New_Value
 
 
 
@@ -159,7 +159,7 @@ class BITM_Tag(HEK_Tag):
         for Bitmap_Index in range(self.Bitmap_Count()):
             Bitmap = self.Tag_Data.Data.Bitmaps.Bitmap_Block_Array[Bitmap_Index]
             
-            Bitmap.Flags.Set_To('Made_by_Arsenic', Save_As_Xbox)
+            Bitmap.Flags.Set_To('Made_by_arsenic', Save_As_Xbox)
 
             '''Base_Address is the ONLY discernable difference
             between a bitmap made by arsenic from a PC map, and

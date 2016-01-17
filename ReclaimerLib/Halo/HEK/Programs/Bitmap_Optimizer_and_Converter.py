@@ -10,9 +10,11 @@ from ..Library import Halo_Library
 from ..Tag_Editing.bitm import *
 
 
-class Bitmap_Converter_Class(Halo_Library):
+class Bitmap_Converter(Halo_Library):
 
     Log_Filename = "Bitmap_Converter.log"
+    Close_Program = False #if set to True the program will close
+    Main_Delay = 0.03 #determines how often the main loop is run
     
     def __init__(self, **kwargs):
         Halo_Library.__init__(self, Valid_Tag_IDs="bitm", **kwargs)

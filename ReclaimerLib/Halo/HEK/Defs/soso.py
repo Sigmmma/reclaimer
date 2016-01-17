@@ -1,11 +1,11 @@
-from .Common_Block_Structures import *
+from ...Common_Block_Structures import *
 from supyr_struct.Defs.Tag_Def import Tag_Def
 from .Objs.soso import SOSO_Tag
 
 def Construct():
-    return SOSO_Definition
+    return SOSO_Def
 
-class SOSO_Definition(Tag_Def):
+class SOSO_Def(Tag_Def):
 
     Ext = ".shader_model"
 
@@ -14,6 +14,49 @@ class SOSO_Definition(Tag_Def):
     Tag_Cls = SOSO_Tag
 
     Endian = ">"
+
+    OS_Shader_Model_Ext = { TYPE:Struct, SIZE:192, GUI_NAME:"Shader Model Ext",
+                            #Specular Color
+                            0:{ TYPE:Tag_Index_Ref, OFFSET:0, GUI_NAME:"Specular Color Map",
+                                INCLUDE:Tag_Index_Ref_Struct
+                                },
+                            1:{ TYPE:Float, OFFSET:16, GUI_NAME:"Specular Color Coefficient" },
+                            2:{ TYPE:Float, OFFSET:24, GUI_NAME:"Specular Color Exponent" },
+                            3:{ TYPE:Bool16, OFFSET:28, GUI_NAME:"Flags",
+                                0:{GUI_NAME:"Alpha as exponent mask"}
+                                },
+
+                            #Base Normal Map
+                            4:{ TYPE:Tag_Index_Ref, OFFSET:32, GUI_NAME:"Base Normal Map",
+                                INCLUDE:Tag_Index_Ref_Struct
+                                },
+                            5:{ TYPE:Float, OFFSET:48, GUI_NAME:"Base Normal Coefficient" },
+
+                            #Detail Normal Maps
+                            6:{ TYPE:Tag_Index_Ref, OFFSET:64, GUI_NAME:"Detail Normal 1 Map",
+                                INCLUDE:Tag_Index_Ref_Struct
+                                },
+                            7:{ TYPE:Float, OFFSET:80, GUI_NAME:"Detail Normal 1 Coefficient" },
+                            8:{ TYPE:Float, OFFSET:84, GUI_NAME:"Detail Normal 1 Scale" },
+                            9:{ TYPE:Float, OFFSET:88, GUI_NAME:"Detail Normal 1 V-Scale" },
+                           
+                            10:{ TYPE:Tag_Index_Ref, OFFSET:96, GUI_NAME:"Detail Normal 2 Map",
+                                 INCLUDE:Tag_Index_Ref_Struct
+                                 },
+                            11:{ TYPE:Float, OFFSET:112, GUI_NAME:"Detail Normal 2 Coefficient" },
+                            12:{ TYPE:Float, OFFSET:116, GUI_NAME:"Detail Normal 2 Scale" },
+                            13:{ TYPE:Float, OFFSET:120, GUI_NAME:"Detail Normal 2 V-Scale" },
+                           
+                            #Specular Tint Override
+                            14:{ TYPE:Float, OFFSET:128, GUI_NAME:"Perpendicular Brightness"},#[0,1]
+                            15:Combine({OFFSET:132, GUI_NAME:"Perpendicular Tint Color"}, R_G_B_Float),
+                           
+                            16:{ TYPE:Float, OFFSET:144, GUI_NAME:"Parallel Brightness"},#[0,1]
+                            17:Combine({OFFSET:148, GUI_NAME:"Parallel Tint Color"}, R_G_B_Float),
+                           
+                            18:{ TYPE:Float, OFFSET:168, GUI_NAME:"Specular Lighting Exponent" },
+                            19:{ TYPE:Float, OFFSET:172, GUI_NAME:"Specular Lighting Coefficient" },
+                            }
 
     Tag_Structure = {TYPE:Container, GUI_NAME:"shader_model",
                      0:Combine( {1:{ DEFAULT:"soso" },
@@ -24,18 +67,18 @@ class SOSO_Definition(Tag_Def):
                         #Radiosity Properties
                         0:Radiosity_Block,
                         
-                        #Shader TYPE
+                        #Shader Type
                         1:Material_Type,
                         2:Numeric_Shader_ID,
                         
                         #Model Shader Properties
                         3:{ TYPE:Bool16, OFFSET:40, GUI_NAME:"Flags",
-                            0:{GUI_NAME:"Detail After Reflection"},
-                            1:{GUI_NAME:"Two-Sided"},
-                            2:{GUI_NAME:"Not Alpha-Tested"},
-                            3:{GUI_NAME:"Alpha-Blended Decal"},
-                            4:{GUI_NAME:"True Atmospheric Fog"},
-                            5:{GUI_NAME:"Disable Two-Sided Culling"}
+                            0:{GUI_NAME:"Detail after reflection"},
+                            1:{GUI_NAME:"Two-sided"},
+                            2:{GUI_NAME:"Not alpha-tested"},
+                            3:{GUI_NAME:"Alpha-blended decal"},
+                            4:{GUI_NAME:"True atmospheric fog"},
+                            5:{GUI_NAME:"Disable two-sided culling"}
                             },
                         4:{ TYPE:Float, OFFSET:56, GUI_NAME:"Translucency" },
                         
@@ -46,7 +89,7 @@ class SOSO_Definition(Tag_Def):
                         #Self-Illumination
                         6:{TYPE:Struct, OFFSET:108, GUI_NAME:"Animation",
                            0:{ TYPE:Bool16, OFFSET:0, GUI_NAME:"Flags",
-                               0:{GUI_NAME:"No Random Phase"} },
+                               0:{GUI_NAME:"No random phase"} },
                            1:Com({ TYPE:Enum16, OFFSET:4, GUI_NAME:"Color Source"},
                                  Function_Names),
                            2:Com({ TYPE:Enum16, OFFSET:6, GUI_NAME:"Animation Function"},
@@ -60,11 +103,11 @@ class SOSO_Definition(Tag_Def):
                         7:{ TYPE:Struct, OFFSET:156, GUI_NAME:"Diffuse, Multipurpose, and Detail Maps",
                             0:{ TYPE:Float, OFFSET:0, GUI_NAME:"Map U-Scale" },
                             1:{ TYPE:Float, OFFSET:4, GUI_NAME:"Map V-Scale" },
-                            2:{ TYPE:Struct, OFFSET:8, GUI_NAME:"Diffuse Map",
-                                INCLUDE:Tag_Reference_Structure
+                            2:{ TYPE:Tag_Index_Ref, OFFSET:8, GUI_NAME:"Diffuse Map",
+                                INCLUDE:Tag_Index_Ref_Struct
                                 },
-                            3:{ TYPE:Struct, OFFSET:32, GUI_NAME:"Multipurpose Map",
-                                INCLUDE:Tag_Reference_Structure
+                            3:{ TYPE:Tag_Index_Ref, OFFSET:32, GUI_NAME:"Multipurpose Map",
+                                INCLUDE:Tag_Index_Ref_Struct
                                 },
                              
                             4:Com({ TYPE:Enum16, OFFSET:56, GUI_NAME:"Detail Function"},
@@ -72,71 +115,30 @@ class SOSO_Definition(Tag_Def):
                              
                             5:{ TYPE:Enum16, OFFSET:58, GUI_NAME:"Detail Mask" ,
                                 0:{GUI_NAME:"None"},
-                                1:{GUI_NAME:"Red Inverse"},
+                                1:{GUI_NAME:"Red inverse"},
                                 2:{GUI_NAME:"Red"},
-                                3:{GUI_NAME:"Green Inverse"},
+                                3:{GUI_NAME:"Green inverse"},
                                 4:{GUI_NAME:"Green"},
-                                5:{GUI_NAME:"Blue Inverse"},
+                                5:{GUI_NAME:"Blue inverse"},
                                 6:{GUI_NAME:"Blue"},
-                                7:{GUI_NAME:"Alpha Inverse"},
+                                7:{GUI_NAME:"Alpha inverse"},
                                 8:{GUI_NAME:"Alpha"}
                                 },
                               
                             6:{ TYPE:Float, OFFSET:60, GUI_NAME:"Detail Map Scale" },
-                            7:{ TYPE:Struct, OFFSET:64, GUI_NAME:"Detail Map",
-                                INCLUDE:Tag_Reference_Structure
+                            7:{ TYPE:Tag_Index_Ref, OFFSET:64, GUI_NAME:"Detail Map",
+                                INCLUDE:Tag_Index_Ref_Struct
                                 },
                             8:{ TYPE:Float, OFFSET:80, GUI_NAME:"Detail Map V-Scale" },
                             },
 
                         
                         #OS Shader Model Extension
-                        8:{ TYPE:Struct, OFFSET:240, GUI_NAME:"OS Shader Model Ext",
-                            INCLUDE:Block_Reference_Structure,
+                        8:{ TYPE:Reflexive, OFFSET:240, GUI_NAME:"OS Shader Model Ext",
+                            INCLUDE:Reflexive_Struct,
                             CHILD:{TYPE:Array, NAME:"OS_Shader_Model_Ext_Array",
-                                   MAX:1, SIZE:".Block_Count",
-                                   SUB_STRUCT:{ TYPE:Struct, SIZE:192, GUI_NAME:"Shader Model Ext",
-                                                #Specular Color
-                                                0:{ TYPE:Struct, OFFSET:0, GUI_NAME:"Specular Color Map",
-                                                    INCLUDE:Tag_Reference_Structure
-                                                    },
-                                                1:{ TYPE:Float, OFFSET:16, GUI_NAME:"Specular Color Coefficient" },
-                                                2:{ TYPE:Float, OFFSET:24, GUI_NAME:"Specular Color Exponent" },
-                                                3:{ TYPE:Bool16, OFFSET:28, GUI_NAME:"Flags",
-                                                    0:{GUI_NAME:"Alpha as Exponent Mask"}
-                                                    },
-
-                                                #Base Normal Map
-                                                4:{ TYPE:Struct, OFFSET:32, GUI_NAME:"Base Normal Map",
-                                                    INCLUDE:Tag_Reference_Structure
-                                                    },
-                                                5:{ TYPE:Float, OFFSET:48, GUI_NAME:"Base Normal Coefficient" },
-
-                                                #Detail Normal Maps
-                                                6:{ TYPE:Struct, OFFSET:64, GUI_NAME:"Detail Normal 1 Map",
-                                                    INCLUDE:Tag_Reference_Structure
-                                                    },
-                                                7:{ TYPE:Float, OFFSET:80, GUI_NAME:"Detail Normal 1 Coefficient" },
-                                                8:{ TYPE:Float, OFFSET:84, GUI_NAME:"Detail Normal 1 Scale" },
-                                                9:{ TYPE:Float, OFFSET:88, GUI_NAME:"Detail Normal 1 V-Scale" },
-                                               
-                                                10:{ TYPE:Struct, OFFSET:96, GUI_NAME:"Detail Normal 2 Map",
-                                                     INCLUDE:Tag_Reference_Structure
-                                                     },
-                                                11:{ TYPE:Float, OFFSET:112, GUI_NAME:"Detail Normal 2 Coefficient" },
-                                                12:{ TYPE:Float, OFFSET:116, GUI_NAME:"Detail Normal 2 Scale" },
-                                                13:{ TYPE:Float, OFFSET:120, GUI_NAME:"Detail Normal 2 V-Scale" },
-                                               
-                                                #Specular Tint Override
-                                                14:{ TYPE:Float, OFFSET:128, GUI_NAME:"Perpendicular Brightness"},#[0,1]
-                                                15:Combine({OFFSET:132, GUI_NAME:"Perpendicular Tint Color"}, R_G_B_Float),
-                                               
-                                                16:{ TYPE:Float, OFFSET:144, GUI_NAME:"Parallel Brightness"},#[0,1]
-                                                17:Combine({OFFSET:148, GUI_NAME:"Parallel Tint Color"}, R_G_B_Float),
-                                               
-                                                18:{ TYPE:Float, OFFSET:168, GUI_NAME:"Specular Lighting Exponent" },
-                                                19:{ TYPE:Float, OFFSET:172, GUI_NAME:"Specular Lighting Coefficient" },
-                                                }
+                                   MAX:1, SIZE:".Count",
+                                   SUB_STRUCT:OS_Shader_Model_Ext
                                    }
                             },
 
@@ -165,8 +167,8 @@ class SOSO_Definition(Tag_Def):
                             4:{ TYPE:Float, OFFSET:24, GUI_NAME:"Parallel Brightness"},#[0,1]
                             5:Combine({OFFSET:28, GUI_NAME:"Parallel Tint Color"}, R_G_B_Float),
                              
-                            6:{ TYPE:Struct, OFFSET:40, GUI_NAME:"Reflection Cube Map",
-                                INCLUDE:Tag_Reference_Structure
+                            6:{ TYPE:Tag_Index_Ref, OFFSET:40, GUI_NAME:"Reflection Cube Map",
+                                INCLUDE:Tag_Index_Ref_Struct
                                 }
                             }
                         }
