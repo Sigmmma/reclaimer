@@ -18,7 +18,7 @@ try:
                                                        #'All'
                                                        ] })
         Test.Run_Test()
-except:
+except Exception:
     print(format_exc())
     input()
 

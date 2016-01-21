@@ -9,7 +9,7 @@ try:
         Test = Halo_Library(Print_Test=True, Save_Test=False, Debug=3,
                             Write_as_Temp=False, Backup_Old_Tags=False,
                             Allow_Corrupt=True,
-                            #Valid_Tag_IDs="hud#",
+                            #Valid_Tag_IDs="metr",
                             Print_Options={'Indent':4,
                                            'Printout':True, 'Precision':3,
                                            'Show':['Name', 'Children', 'Type',
@@ -21,6 +21,6 @@ try:
         #cProfile.run('Test.Load_Tags_and_Run()')
         #input()
 
-except:
+except Exception:
     print(format_exc())
     input()

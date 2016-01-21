@@ -10,7 +10,7 @@ Mode = "locate"
 
 
 
-Words_to_Locate = ['ATTR_OFFS']
+Words_to_Locate = ['FL_UTF16_Str_Data']
 Word_Replacements = []
 #Flags = re.IGNORECASE
 

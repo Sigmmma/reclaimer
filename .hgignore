@@ -5,12 +5,20 @@ ReclaimerLib/resources/__pycache__/**
 ReclaimerLib/resources/Bitmap_Module/__pycache__/**
 ReclaimerLib/resources/Bitmap_Module/ext/__pycache__/**
 
+ReclaimerLib/Halo/__pycache__/**
 ReclaimerLib/Halo/HEK/__pycache__/**
 ReclaimerLib/Halo/HEK/Defs/__pycache__/**
 ReclaimerLib/Halo/HEK/Defs/Objs/__pycache__/**
 ReclaimerLib/Halo/HEK/Programs/__pycache__/**
 ReclaimerLib/Halo/HEK/Programs/GUI/__pycache__/**
+ReclaimerLib/Halo/HEK/Programs/Tag_Ripper/__pycache__/**
+ReclaimerLib/Halo/HEK/Programs/Tag_Ripper/all_original_tags/**
+ReclaimerLib/Halo/HEK/Programs/Tag_Ripper/Defs/__pycache__/**
 ReclaimerLib/Halo/HEK/Tag_Editing/__pycache__/**
+
+ReclaimerLib/Halo/META/__pycache__/**
+ReclaimerLib/Halo/META/Defs/__pycache__/**
+ReclaimerLib/Halo/META/Defs/Objs/__pycache__/**
 
 ReclaimerLib/GDL/__pycache__/**
 ReclaimerLib/GDL/Defs/__pycache__/**
@@ -18,9 +26,11 @@ ReclaimerLib/GDL/Defs/Objs/__pycache__/**
 
 ReclaimerLib/misc/__pycache__/**
 ReclaimerLib/misc/Defs/__pycache__/**
+ReclaimerLib/misc/Defs/Objs/__pycache__/**
 
 data/**
 tags/**
+Current_Backup.rar
 supyr_struct.rar
 Supyr_Struct.lnk
 staff deconstructed.max

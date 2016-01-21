@@ -95,15 +95,16 @@ Tag_4CC_ID = { TYPE:Enum32, NAME:"Tag_4CC_ID", DEFAULT:0,
 Tag_Header = { TYPE:Struct, SIZE:64, NAME:"Blam_Header", EDITABLE:False,
                0:{ TYPE:Pad, SIZE:36 },
                1:Tag_4CC_ID,
-               2:{ TYPE:UInt32, GUI_NAME:"Base Address", DEFAULT:0 },
-               3:{ TYPE:UInt32, GUI_NAME:"Header Size", DEFAULT:64 },
+               2:{ TYPE:UInt32, NAME:"Base_Address", DEFAULT:0 },#random
+               3:{ TYPE:UInt32, NAME:"Header_Size",  DEFAULT:64 },
                4:{ TYPE:Pad, SIZE:8 },
                5:{ TYPE:UInt16, NAME:"Version", DEFAULT:1 },
                6:{ TYPE:UInt16, NAME:"Unknown", DEFAULT:255 },
-               7:{ TYPE:Str_Latin1_Enum, GUI_NAME:"Engine ID", SIZE:4,
-                   'DEFAULT':'blam',
+               7:{ TYPE:Enum32, NAME:"Engine_ID",
+                   DEFAULT:'blam',
                    0:{ 'NAME':"Halo 1", 'VALUE':'blam' },
-                   1:{ 'NAME':"Halo 2", 'VALUE':'BLM!' }}
+                   1:{ 'NAME':"Halo 2", 'VALUE':'BLM!' }
+                   }
                }
 
 #Shared Enumerator options
@@ -273,26 +274,26 @@ From_To = { TYPE:Struct,
 
 #This is the structure for all points where a tag references a chunk of raw data
 Raw_Data_Ref_Struct = { TYPE:Raw_Data_Ref, GUI_NAME:'Raw Data Ref', EDITABLE:False,
-                        0:{ TYPE:UInt32, NAME:"Count" },
-                        1:{ TYPE:UInt32, NAME:"Data_Unknown_1" },
-                        2:{ TYPE:UInt32, NAME:"Data_Unknown_2" },
-                        3:{ TYPE:UInt32, NAME:"Data_Unknown_3" },
-                        4:{ TYPE:UInt32, NAME:"Data_Unknown_4" }
+                        0:{ TYPE:SInt32, NAME:"Count" },
+                        1:{ TYPE:SInt32, NAME:"Unknown_1" },#0x00000000 in tags
+                        2:{ TYPE:SInt32, NAME:"Unknown_2" },#random
+                        3:{ TYPE:SInt32, NAME:"Unknown_3" },#random
+                        4:{ TYPE:UInt32, NAME:"ID" },#random
                         }
 
 #This is the structure for all tag reflexives
 Reflexive_Struct = { TYPE:Reflexive, GUI_NAME:'Reflexive', EDITABLE:False,
-                     0:{ TYPE:UInt32, NAME:"Count" },
-                     1:{ TYPE:UInt32, NAME:"ID" },
-                     2:{ TYPE:UInt32, NAME:"Reflexive_ID" }
+                     0:{ TYPE:SInt32, NAME:"Count" },
+                     1:{ TYPE:SInt32, NAME:"ID" },#random
+                     2:{ TYPE:UInt32, NAME:"Reflexive_ID" }#random
                      }
 
 #This is the structure for all points where a tag references another tag
 Tag_Index_Ref_Struct = { TYPE:Tag_Index_Ref, GUI_NAME:'Tag_Index_Ref', EDITABLE:False,
-                         0:Com( {NAME:"Tag_Class"}, Tag_4CC_ID),
-                         1:{ TYPE:UInt32, NAME:"Tag_Path_Pointer" },
-                         2:{ TYPE:UInt32, NAME:"Tag_Path_Length" },
-                         3:{ TYPE:UInt32, NAME:"Tag_ID", DEFAULT:-1},
+                         0:Com( {NAME:"Tag_Class"}, Tag_4CC_ID ),
+                         1:{ TYPE:SInt32, NAME:"Tag_Path_Pointer" },#random
+                         2:{ TYPE:SInt32, NAME:"Tag_Path_Length" },
+                         3:{ TYPE:UInt32, NAME:"Tag_ID", DEFAULT:0xFFFFFFFF },#random
                          CHILD:{TYPE:String_Var_Len, NAME:"Filepath", SIZE:Tag_Ref_Size}
                          }
 
@@ -304,8 +305,8 @@ Material_Type = Com({ TYPE:Enum16, OFFSET:34, GUI_NAME:"Material Type"}, Materia
 
 #THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS
 #This means it likely doesn't matter, but lets not take that chance
-Numeric_Shader_ID = { TYPE:Enum16, GUI_NAME:"Numeric Shader ID",
-                      OFFSET:36, ENDIAN:'<', EDITABLE:False,
+Numeric_Shader_ID = { TYPE:FL_Enum16, GUI_NAME:"Numeric Shader ID",
+                      OFFSET:36, EDITABLE:False,
                       0:{NAME:"shdr", VALUE:0xffff},#NOT TESTED, Guessed at
                       1:{NAME:"senv", VALUE:3},#Environment
                       2:{NAME:"soso", VALUE:4},#Model
@@ -343,8 +344,8 @@ Radiosity_Block = {TYPE:Struct, OFFSET:0, GUI_NAME:"Radiosity Settings",
 
 Extra_Layers_Block = {TYPE:Tag_Index_Ref, GUI_NAME:"Extra Layer",
                       INCLUDE:Tag_Index_Ref_Struct,
-                      0:Com( { TYPE:Str_Latin1_Enum, GUI_NAME:"Tag Class",
-                               SIZE:4}, All_Shader_Enums )
+                      0:Com( { TYPE:UInt32, GUI_NAME:"Tag Class"},
+                               All_Shader_Enums )
                       }
 
 Chicago_4_Stage_Maps = {TYPE:Struct, SIZE:220, GUI_NAME:"Four Stage Map",
@@ -355,9 +356,9 @@ Chicago_4_Stage_Maps = {TYPE:Struct, SIZE:220, GUI_NAME:"Four Stage Map",
                             3:{GUI_NAME:"V-clamped"}
                             },
                         1:Com({TYPE:Enum16, OFFSET:44, GUI_NAME:"Color Function"},
-                              Blend_Functions ),
+                               Blend_Functions ),
                         2:Com({TYPE:Enum16, OFFSET:46, GUI_NAME:"Alpha Function Function"},
-                              Blend_Functions ),
+                               Blend_Functions ),
                         #shader transformations
                         3:{ TYPE:Float, OFFSET:84, GUI_NAME:"Map U-Scale" },
                         4:{ TYPE:Float, OFFSET:88, GUI_NAME:"Map V-Scale" },
