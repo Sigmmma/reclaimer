@@ -8,7 +8,8 @@ try:
     if __name__ == '__main__':
         Test = Halo_Library(Print_Test=True, Save_Test=False, Debug=3,
                             Write_as_Temp=False, Backup_Old_Tags=False,
-                            Valid_Tag_IDs="map", Allow_Corrupt=True,
+                            Valid_Tag_IDs="map",
+                            Allow_Corrupt=True,
                             Print_Options={'Indent':4,
                                            'Printout':True, 'Precision':3,
                                            'Show':['Name', 'Children', 'Type',

@@ -28,6 +28,6 @@ try:
                 Objs[Tag_Path].Print(Show=('Name','Value','Children','Flags', 'Offset', 'Raw'),
                                      Printout=True)
         input()
-except:
+except Exception:
     print(format_exc())
     input()

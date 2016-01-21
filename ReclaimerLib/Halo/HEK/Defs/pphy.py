@@ -26,9 +26,9 @@ class PPHY_Def(Tag_Def):
                             },
                         #these next three are courtesy of Sparky. I had
                         #no idea these existed till I looked in Eschaton
-                        1:{ TYPE:Float, OFFSET:4, GUI_NAME:"Wind Coefficient" },
-                        2:{ TYPE:Float, OFFSET:8, GUI_NAME:"Wind Sine Modifier" },
-                        3:{ TYPE:Float, OFFSET:12, GUI_NAME:"Z Translation Rate" },
+                        1:{ TYPE:FL_Float, OFFSET:4, GUI_NAME:"Wind Coefficient" },
+                        2:{ TYPE:FL_Float, OFFSET:8, GUI_NAME:"Wind Sine Modifier" },
+                        3:{ TYPE:FL_Float, OFFSET:12, GUI_NAME:"Z Translation Rate" },
                         
                         4:{ TYPE:Float, OFFSET:32, GUI_NAME:"Density"},#g/mL
                         5:{ TYPE:Float, OFFSET:36, GUI_NAME:"Air Friction" },

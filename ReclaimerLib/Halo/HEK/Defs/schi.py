@@ -59,7 +59,7 @@ class SCHI_Def(Tag_Def):
                                     SUB_STRUCT:Chicago_4_Stage_Maps
                                     }
                              },
-                        13:Com({ TYPE:Bool16, OFFSET:98, GUI_NAME:"Extra Flags"},
-                               Chicago_Extra_Flags)
+                        13:Com({ TYPE:Bool32, OFFSET:96, GUI_NAME:"Extra Flags"},
+                                 Chicago_Extra_Flags)
                         }
                      }
