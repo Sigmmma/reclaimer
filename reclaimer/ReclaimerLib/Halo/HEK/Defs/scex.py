@@ -66,7 +66,7 @@ class SCEX_Def(Tag_Def):
                                     SUB_STRUCT:Chicago_2_Stage_Maps
                                     }
                              },
-                        14:Com({ TYPE:Bool16, OFFSET:110, GUI_NAME:"Extra Flags"},
+                        14:Com({ TYPE:Bool32, OFFSET:108, GUI_NAME:"Extra Flags"},
                                Chicago_Extra_Flags)
                         }
                      }

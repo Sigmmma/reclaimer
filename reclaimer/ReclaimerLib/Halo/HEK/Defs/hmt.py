@@ -18,8 +18,8 @@ class HMT_Def(Tag_Def):
                      1:{ TYPE:Struct, SIZE:128, GUI_NAME:"Data",
                          0: {TYPE:Raw_Data_Ref, OFFSET:0, GUI_NAME:"String" ,
                              INCLUDE:Raw_Data_Ref_Struct,
-                             CHILD:{TYPE:UTF16_Str_Data, GUI_NAME:"Raw String Data",
-                                    ENDIAN:'<', SIZE:".Count"}
+                             CHILD:{TYPE:FL_UTF16_Str_Data,
+                                    GUI_NAME:"Raw String Data", SIZE:".Count"}
                              },
                          1: {TYPE:Reflexive, OFFSET:20, GUI_NAME:"Message Elements" ,
                              INCLUDE:Reflexive_Struct,

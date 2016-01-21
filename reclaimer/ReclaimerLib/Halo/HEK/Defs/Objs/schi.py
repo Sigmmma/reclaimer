@@ -11,5 +11,5 @@ class SCHI_Tag(HEK_Tag):
         
         Data = self.Tag_Data.Data
         Data.Numeric_Shader_ID.Data = 7
-        Data.ATTR_OFFS[Data.NAME_MAP['Extra_Flags']] = 110
+        Data.ATTR_OFFS[Data.NAME_MAP['Extra_Flags']] = 108
         Data.Set_Size(120)

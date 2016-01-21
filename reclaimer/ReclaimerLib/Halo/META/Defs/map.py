@@ -1,15 +1,24 @@
 from ...Common_Block_Structures import *
 from supyr_struct.Defs.Tag_Def import Tag_Def
-from ...HEK.Defs import bitm, boom, colo, flag, fog, hmt, metr, pphy, scex, \
-     schi, senv, sgla, smet, soso, Soul, spla, str_, swat, tagc, trak, ustr
+from ...HEK.Defs import bitm, boom, colo, devc, devi, flag, fog, foot, hmt,\
+     hud_, item, itmc, metr, mply, ngpr, pphy, scex, schi, senv, sgla, shdr,\
+     smet, snde, soso, Soul, spla, str_, swat, tagc, trak, ustr, wind
 
 Com = Combine
-TAG_INDEX_HEADER_SIZE = 40
+
+#Halo map constants
+PC_TAG_INDEX_HEADER_SIZE   = 40
+XBOX_TAG_INDEX_HEADER_SIZE = 36
+
+XBOX_BSP_MAGIC = 2174377984
+
+XBOX_INDEX_MAGIC = 2151309348
+PC_INDEX_MAGIC   = 1078198312
 
 def Construct():
-    return Map_Definition
+    return Map_Def
 
-class Map_Definition(Tag_Def):
+class Map_Def(Tag_Def):
 
     Ext = ".map"
     
@@ -37,7 +46,7 @@ class Map_Definition(Tag_Def):
         #NEED TO FINISH THIS SO IT CAN SET THE PATH DATA POINTER
         
         if New_Value is None:
-            return TAG_INDEX_HEADER_SIZE + T_Head.Tag_Path_Offset - Magic
+            return PC_TAG_INDEX_HEADER_SIZE + T_Head.Tag_Path_Offset - Magic
         
 
     def Tag_Meta_Data_Pointer(*args, **kwargs):
@@ -56,7 +65,7 @@ class Map_Definition(Tag_Def):
                       I_Head.PARENT.Mapfile_Header.Tag_Index_Offset)
         
         if New_Value is None:
-            return TAG_INDEX_HEADER_SIZE + T_Head.Tag_Offset - Magic
+            return PC_TAG_INDEX_HEADER_SIZE + T_Head.Tag_Offset - Magic
         
 
     def Tag_Meta_Case(*args, **kwargs):
@@ -74,7 +83,7 @@ class Map_Definition(Tag_Def):
         if Magic is None:
             Magic = I_Head.Index_Magic - M_Head.Tag_Index_Offset
 
-        Offset = TAG_INDEX_HEADER_SIZE + T_Head.Tag_Offset - Magic
+        Offset = PC_TAG_INDEX_HEADER_SIZE + T_Head.Tag_Offset - Magic
         
         if Offset <= 0 or Offset >= M_Head.Decompressed_Len:
             return
@@ -93,21 +102,31 @@ class Map_Definition(Tag_Def):
                  CASES:{#FCC('bitm'):bitm.BITM_Def.Tag_Structure[1],
                         FCC('boom'):boom.BOOM_Def.Tag_Structure[1],
                         FCC('colo'):colo.COLO_Def.Tag_Structure[1],
+                        FCC('devc'):devc.DEVC_Def.Tag_Structure[1],
+                        FCC('devi'):devi.DEVI_Def.Tag_Structure[1],
                         FCC('flag'):flag.FLAG_Def.Tag_Structure[1],
                         FCC('fog '):fog.FOG_Def.Tag_Structure[1],
+                        FCC('foot'):foot.FOOT_Def.Tag_Structure[1],
                         #FCC('hmt '):hmt.HMT_Def.Tag_Structure[1],
+                        FCC('hud#'):hud_.HUD_Def.Tag_Structure[1],
+                        FCC('item'):item.ITEM_Def.Tag_Structure[1],
+                        FCC('itmc'):itmc.ITMC_Def.Tag_Structure[1],
                         #FCC('metr'):metr.METR_Def.Tag_Structure[1],
+                        FCC('mply'):mply.MPLY_Def.Tag_Structure[1],
+                        FCC('ngpr'):ngpr.NGPR_Def.Tag_Structure[1],
                         FCC('pphy'):pphy.PPHY_Def.Tag_Structure[1],
                         FCC('scex'):scex.SCEX_Def.Tag_Structure[1],
                         FCC('schi'):schi.SCHI_Def.Tag_Structure[1],
                         FCC('senv'):senv.SENV_Def.Tag_Structure[1],
                         FCC('sgla'):sgla.SGLA_Def.Tag_Structure[1],
+                        FCC('shdr'):shdr.SHDR_Def.Tag_Structure[1],
                         FCC('smet'):smet.SMET_Def.Tag_Structure[1],
+                        FCC('snde'):snde.SNDE_Def.Tag_Structure[1],
                         FCC('soso'):soso.SOSO_Def.Tag_Structure[1],
                         FCC('Soul'):Soul.SOUL_Def.Tag_Structure[1],
                         FCC('spla'):spla.SPLA_Def.Tag_Structure[1],
-                        FCC('swat'):swat.SWAT_Def.Tag_Structure[1],
                         #FCC('str#'):str_.STR_Def.Tag_Structure[1],
+                        FCC('swat'):swat.SWAT_Def.Tag_Structure[1],
                         FCC('tagc'):tagc.TAGC_Def.Tag_Structure[1],
                         FCC('trak'):trak.TRAK_Def.Tag_Structure[1],
                         #FCC('ustr'):ustr.USTR_Def.Tag_Structure[1],
@@ -135,25 +154,34 @@ class Map_Definition(Tag_Def):
                    }
     
     Tag_Structure = { TYPE:Container, NAME:"Halo_Mapfile",
+                      #Apparently the Halo Demo maps have a different
+                      #header as there are 704 bytes #before the header
+                      #that appear to be garbage AND garbage filling
+                      #all the headers null padding.
                       0:{ TYPE:Struct, NAME:"Mapfile_Header",
                           0:{ TYPE:UInt32, NAME:"ID", DEFAULT:'head' },
                           1:{ TYPE:Enum32, NAME:"Version",
                               0:{ NAME:"XBOX", VALUE:5 },
                               1:{ NAME:"Demo", VALUE:6 },
                               2:{ NAME:"PC",   VALUE:7 },
-                              3:{ NAME:"Custom_Edition", VALUE:609 }
+                              3:{ NAME:"CE",   VALUE:609 }
                               },
-                          2:{ TYPE:SInt32, NAME:"Decompressed_Len" },
+                          2:{ TYPE:SInt32,    NAME:"Decompressed_Len" },
                           3:{ TYPE:Bytes_Raw, NAME:"Unknown1", SIZE:4 },
-                          4:{ TYPE:Pointer32, NAME:"Tag_Index_Offset" },
-                          5:{ TYPE:SInt32,    NAME:"Tag_Index_Meta_Len" },
+                          4:{ TYPE:UInt32,    NAME:"Tag_Index_Offset" },
+                          5:{ TYPE:UInt32,    NAME:"Tag_Index_Meta_Len" },
                           6:{ TYPE:Pad, SIZE:8 },
                           7:{ TYPE:Str_Latin1, NAME:"Map_Name",   SIZE:32 },
-                          8:{ TYPE:Str_Latin1, NAME:"Build_Date", SIZE:32 },
-                          9:{ TYPE:Enum32,     NAME:"Map_Type",
-                              0:{ NAME:"SP", GUI_NAME:"Singleplayer",   VALUE:0 },
-                              1:{ NAME:"MP", GUI_NAME:"Multiplayer",    VALUE:1 },
-                              2:{ NAME:"UI", GUI_NAME:"User_Interface", VALUE:2 }
+                          8:{ TYPE:Str_Latin1_Enum, NAME:"Build_Date", SIZE:32,
+                              0:{ NAME:"XBOX", VALUE:"01.10.12.2276" },
+                              1:{ NAME:"Demo", VALUE:"01.00.00.0576" },
+                              2:{ NAME:"PC",   VALUE:"01.00.00.0564" },
+                              3:{ NAME:"CE",   VALUE:"01.00.00.0609" },
+                              },
+                          9:{ TYPE:Enum32, NAME:"Map_Type",
+                              0:{ NAME:"SP", NAME:"Campaign",       VALUE:0 },
+                              1:{ NAME:"MP", NAME:"Multiplayer",    VALUE:1 },
+                              2:{ NAME:"UI", NAME:"User_Interface", VALUE:2 }
                               },
                           10:{ TYPE:Bytes_Raw, NAME:"Unknown2", SIZE:4 },
                           11:{ TYPE:Pad, SIZE:1940 },
@@ -164,7 +192,7 @@ class Map_Definition(Tag_Def):
                           0:{ TYPE:UInt32, NAME:"Index_Magic" },
                           1:{ TYPE:UInt32, NAME:"Base_Magic" },
                           2:{ TYPE:UInt32, NAME:"Map_ID" },
-                          3:{ TYPE:SInt32, NAME:"Tag_Count" },
+                          3:{ TYPE:UInt32, NAME:"Tag_Count" },
                           
                           4:{ TYPE:UInt32, NAME:"Vertex_Object_Count" },
                           5:{ TYPE:UInt32, NAME:"Model_Raw_Data_Offset" },

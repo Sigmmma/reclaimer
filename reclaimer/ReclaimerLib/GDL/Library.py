@@ -6,7 +6,7 @@ from .Defs.Objs.Tag import GDL_Tag
 
 class GDL_Library(Tag_Test_Library):
     Default_Tag_Cls   = GDL_Tag
-    Default_Defs_Path = "ReclaimerLib\\GDL\\Defs\\"
+    Default_Defs_Path = "ReclaimerLib.GDL.Defs"
 
     def Get_Cls_ID(self, Filepath):
         Filepath = Filepath.replace('/', '\\')

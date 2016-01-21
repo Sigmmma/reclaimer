@@ -13,5 +13,5 @@ class SCEX_Tag(HEK_Tag):
         Data = self.Tag_Data.Data
         Data.Two_Stage_Maps.Set_Desc('TYPE', Void)
         Data.Numeric_Shader_ID.Data = 6
-        Data.ATTR_OFFS[Data.NAME_MAP['Extra_Flags']] = 98
+        Data.ATTR_OFFS[Data.NAME_MAP['Extra_Flags']] = 96
         Data.Set_Size(108)

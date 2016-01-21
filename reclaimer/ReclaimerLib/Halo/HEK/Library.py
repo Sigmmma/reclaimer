@@ -7,7 +7,7 @@ from .Defs.Objs.Tag import HEK_Tag
 
 class Halo_Library(Tag_Test_Library):
     Default_Tag_Cls   = HEK_Tag
-    Default_Defs_Path = "ReclaimerLib\\Halo\\HEK\\Defs\\"
+    Default_Defs_Path = "ReclaimerLib.Halo.HEK.Defs"
 
     #used whenever we need to know the extension of a tag based
     #on it's FourCC all 83 Halo 1 tag types are defined below
@@ -135,3 +135,71 @@ class Halo_Library(Tag_Test_Library):
                 return Cls_ID
         except:
             return None
+
+    def _Build_Loc_Cache(self, F_Type, Desc={}):
+        Has_Refs = False
+        Refs = {}
+
+        try:
+            Type = Desc['TYPE']
+        except Exception:
+            Type = None
+        
+        if Type is F_Type:
+            return True, None
+        elif Type is not None:
+            for key in Desc:
+                Has_Sub_Refs, Sub_Refs = self._Build_Loc_Cache(F_Type,Desc[key])
+                if Has_Sub_Refs:
+                    Has_Refs = True
+                    Refs[key] = Sub_Refs
+                    
+        return Has_Refs, Refs
+    
+
+    def _Get_Blocks_By_Paths(self, Paths, Block, Coll, Cond):
+        if Paths is None:
+            if Cond(Block):
+                Coll.append(Block)
+            return
+        
+        elif isinstance(Paths, dict):
+            if 'SUB_STRUCT' in Paths:
+                Paths = Paths['SUB_STRUCT']
+                for i in range(len(Block)):
+                    self._Get_Blocks_By_Paths(Paths, Block[i], Coll, Cond)
+                return
+            
+            for key in Paths:
+                self._Get_Blocks_By_Paths(Paths[key], Block[key], Coll, Cond)
+        else:
+            raise TypeError("Expected 'Paths' to be of type %s or %s, not %s."%
+                            (type(None), type(dict), type(paths)) )
+    
+
+    def Build_Loc_Cache(self, F_Type):
+        '''this builds a cache of paths that will be used
+        to quickly locate specific field types in structures
+        by caching all possible locations of the Field_Type'''
+        Cache = {}
+        
+        for Cls_ID in self.Defs:
+            Def = self.Defs[Cls_ID].Tag_Structure
+
+            Has_Refs, Refs = self._Build_Loc_Cache(F_Type, Def)
+            
+            if Has_Refs:
+                Cache[Cls_ID] = Refs
+
+        return Cache
+
+
+    def Get_Blocks_By_Paths(self, Paths, Block, Cond=None):
+        Coll = []
+        if Cond is None:
+            Cond = lambda x: True
+            
+        if len(Paths):
+            self._Get_Blocks_By_Paths(Paths, Block, Coll, Cond)
+
+        return Coll

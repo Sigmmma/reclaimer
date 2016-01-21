@@ -5,6 +5,6 @@ try:
     if __name__ == '__main__':
         Scanner = HEK_Tag_Scanner()
         Scanner.Load_Tags_and_Run()
-except:
+except Exception:
     print(format_exc())
     input()

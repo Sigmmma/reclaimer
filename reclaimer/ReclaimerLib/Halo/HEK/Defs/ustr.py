@@ -20,10 +20,11 @@ class USTR_Def(Tag_Def):
                             
                             CHILD:{TYPE:Array, NAME:"Strings_Array",
                                    MAX:32767, SIZE:".Count",
-                                   SUB_STRUCT:{ TYPE:Raw_Data_Ref, SIZE:20, GUI_NAME:"String",
+                                   SUB_STRUCT:{ TYPE:Raw_Data_Ref,
+                                                SIZE:20, GUI_NAME:"String",
                                                 INCLUDE:Raw_Data_Ref_Struct,
-                                                CHILD:{TYPE:Str_UTF16, NAME:"Raw_String_Data",
-                                                       ENDIAN:'<', SIZE:".Count"}
+                                                CHILD:{TYPE:FL_Str_UTF16, SIZE:".Count",
+                                                       NAME:"Raw_String_Data" }
                                                 }
                                    }
                             }

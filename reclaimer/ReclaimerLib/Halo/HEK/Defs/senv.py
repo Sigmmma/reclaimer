@@ -80,8 +80,8 @@ class SENV_Def(Tag_Def):
                          19:{ TYPE:Tag_Index_Ref, OFFSET:296, GUI_NAME:"Bump Map" ,
                               INCLUDE:Tag_Index_Ref_Struct
                          },
-                         20:{ TYPE:Float, ENDIAN:"<", OFFSET:312, GUI_NAME:"Bump Map Scale X" },
-                         21:{ TYPE:Float, ENDIAN:"<", OFFSET:316, GUI_NAME:"Bump Map Scale Y" },
+                         20:{ TYPE:FL_Float, OFFSET:312, GUI_NAME:"Bump Map Scale X" },
+                         21:{ TYPE:FL_Float, OFFSET:316, GUI_NAME:"Bump Map Scale Y" },
                          
                          #Texture Animation
                          22:{TYPE:Struct, OFFSET:336, GUI_NAME:"U-Animation",
