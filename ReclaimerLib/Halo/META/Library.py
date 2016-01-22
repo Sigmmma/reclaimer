@@ -5,6 +5,6 @@ from ..Field_Types import *
 from .Defs.Objs.Tag import META_Tag
 
 
-class Halo_Library(Tag_Test_Library):
+class Map_Loader(Tag_Test_Library):
     Default_Tag_Cls   = META_Tag
     Default_Defs_Path = "ReclaimerLib.Halo.META.Defs"
