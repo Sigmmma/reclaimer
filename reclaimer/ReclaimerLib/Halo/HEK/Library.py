@@ -1,6 +1,8 @@
+from hashlib import md5
 from os.path import basename, normpath
 
 from supyr_struct.Test import Tag_Test_Library
+from supyr_struct.Buffer import BytearrayBuffer
 from ..Field_Types import *
 from .Defs.Objs.Tag import HEK_Tag
 
@@ -11,8 +13,8 @@ class Halo_Library(Tag_Test_Library):
 
     #used whenever we need to know the extension of a tag based
     #on it's FourCC all 83 Halo 1 tag types are defined below
-    ID_Ext_Map = {b"\x00\x00\x00\x00":".unknown_tag",
-                  "":".unknown_tag",
+    ID_Ext_Map = {'\x00\x00\x00\x00':'.unknown_tag',
+                  '\xff\xff\xff\xff':'.unknown_tag',
                   'actr':".actor",                              #NEED
                   'actv':".actor_varient",                      #NEED
                   'ant!':".antenna",                            #NEED
@@ -121,20 +123,13 @@ class Halo_Library(Tag_Test_Library):
         else:
             self.Data_Dir = basename(normpath(self.Tags_Dir))
             self.Data_Dir = self.Tags_Dir.split(self.Data_Dir)[0] + "data\\"
-        
 
-    def Get_Cls_ID(self, Filepath):
-        '''It is more reliable to determine a Halo tag
-        based on its 4CC Cls_ID than by file extension'''
-        try:            
-            with open(Filepath, 'r+b') as Tag_File:
-                Tag_File.seek(36)
-                Cls_ID = str(Tag_File.read(4), 'latin-1')
-                
-            if Cls_ID in self.Defs:
-                return Cls_ID
-        except:
-            return None
+        #call the functions to build the Tag_Ref_Cache,
+        #Reflexive_Cache, and Raw_Data_Cache
+        self.Tag_Ref_Cache   = self.Build_Loc_Cache(Tag_Index_Ref)
+        self.Reflexive_Cache = self.Build_Loc_Cache(Reflexive)
+        self.Raw_Data_Cache  = self.Build_Loc_Cache(Raw_Data_Ref)
+    
 
     def _Build_Loc_Cache(self, F_Type, Desc={}):
         Has_Refs = False
@@ -203,3 +198,54 @@ class Halo_Library(Tag_Test_Library):
             self._Get_Blocks_By_Paths(Paths, Block, Coll, Cond)
 
         return Coll
+
+        
+
+    def Get_Cls_ID(self, Filepath):
+        '''It is more reliable to determine a Halo tag
+        based on its 4CC Cls_ID than by file extension'''
+        try:            
+            with open(Filepath, 'r+b') as Tag_File:
+                Tag_File.seek(36)
+                Cls_ID = str(Tag_File.read(4), 'latin-1')
+                
+            if Cls_ID in self.Defs:
+                return Cls_ID
+        except:
+            return None
+
+
+    def Get_Tag_Hash(self, Tag_Data, Tag_Ref_Paths=(),
+                     Reflexive_Paths=(), Raw_Data_Paths=()):
+        Hash_Buffer = BytearrayBuffer()
+
+        #null out the parts of a tag that can screw
+        #with the hash when compared to a tag meta                        
+        for B in self.Get_Blocks_By_Paths(Tag_Ref_Paths, Tag_Data):
+            B.Tag_Path_Pointer = B.Tag_ID = 0
+            
+        for B in self.Get_Blocks_By_Paths(Reflexive_Paths, Tag_Data):
+            B.ID = B.Reflexive_ID = 0
+            
+        for B in self.Get_Blocks_By_Paths(Raw_Data_Paths, Tag_Data):
+            B.Unknown_1 = B.Unknown_2 = B.Unknown_3 = B.ID = 0
+
+        #write the tag data to the hash buffer
+        Tag_Data.Data.TYPE.Writer(Tag_Data.Data, Hash_Buffer, None, 0, 0)
+        
+        return md5(Hash_Buffer)
+        
+
+    def Get_Tag_Not_Exist(self, Block):
+        #if the string is empty, then it doesnt NOT exist, so return False
+        if not Block.Filepath:
+            return False
+        Tag_Path = self.Tags_Dir
+        Tag_Path += Block.Filepath
+        
+        try:
+            Tag_Path += '.'+Block.Tag_Class.Data_Name
+        except Exception:
+            pass
+        
+        return not exists(Tag_Path)

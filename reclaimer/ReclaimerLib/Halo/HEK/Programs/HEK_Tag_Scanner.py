@@ -21,12 +21,6 @@ class HEK_Tag_Scanner(Halo_Library):
     #initialize the class
     def __init__(self, **kwargs):
         Halo_Library.__init__(self, **kwargs)
-
-        #call the functions to build the Tag_Ref_Cache,
-        #Reflexive_Cache, and Raw_Data_Cache
-        self.Tag_Ref_Cache   = self.Build_Loc_Cache(Tag_Index_Ref)
-        self.Reflexive_Cache = self.Build_Loc_Cache(Reflexive)
-        self.Raw_Data_Cache  = self.Build_Loc_Cache(Raw_Data_Ref)
         
         #Create and start the feedback printout thread
         self._Feedback_Thread = threading.Thread(target=self._Feedback)
@@ -47,66 +41,6 @@ class HEK_Tag_Scanner(Halo_Library):
                 if self.Mode in range(1, 3):
                     print(' '*self.Feedback_Indent +
                           self.Current_Tag.split(self.Tags_Dir)[-1])
-
-        
-
-    def Scan_Tags_Dir(self, **kwargs):
-        #this is the string to store the entire debug log
-        Debug_Log_String = ("Debug log for HEK Tag Scanner\n\n\n")
-        
-        '''loop through both chicago and extended chicago tag types'''
-        for Cls_ID in sorted(self.Tag_Ref_Cache.keys()):
-
-            Tag_Ref_Paths = self.Tag_Ref_Cache[Cls_ID]
-            if self.Print_To_Console:
-                print(" "*4+ "Scanning '%s' tags..." % Cls_ID)
-
-            for Tag_Path in sorted(self.Tags[Cls_ID].keys()):
-                Tag = self.Tags[Cls_ID][Tag_Path]
-                self.Current_Tag = Tag_Path
-                
-                try:
-                    Missing = self.Get_Blocks_By_Paths(Tag_Ref_Paths,
-                                                       Tag.Tag_Data,
-                                                       self.Get_Tag_Not_Exist)
-
-                    if len(Missing):
-                        Debug_Log_String += "\n\n%s\n" % Tag_Path
-                        Block_Name = None
-                        
-                        for Block in Missing:
-                            if Block.NAME != Block_Name:
-                                Debug_Log_String += ' '*4 + Block.NAME + '\n'
-                                Block_Name = Block.NAME
-                            try:
-                                Ext = '.'+Block.Tag_Class.Data_Name
-                            except Exception:
-                                Ext = ''
-                            Debug_Log_String += ' '*8 + Block.CHILD + Ext + '\n'
-                            
-                except Exception:
-                    print("ERROR OCCURRED WHILE ATTEMPTING TO SCAN:\n" +
-                          '    ' + Tag.Tag_Path + '\n')
-                    print(format_exc())
-                    continue
-                        
-        
-        return Debug_Log_String
-
-
-    def Get_Tag_Not_Exist(self, Block):
-        #if the string is empty, then it doesnt NOT exist, so return False
-        if not Block.Filepath:
-            return False
-        Tag_Path = self.Tags_Dir
-        Tag_Path += Block.Filepath
-        
-        try:
-            Tag_Path += '.'+Block.Tag_Class.Data_Name
-        except Exception:
-            pass
-        
-        return not exists(Tag_Path)
 
 
     def Load_Tags(self, Paths = None):        
@@ -179,7 +113,7 @@ class HEK_Tag_Scanner(Halo_Library):
         self.Tags = {}
         self.Reset_Tags(Defs.keys())
         
-        print('This program will scan the tags directory and locate\n'
+        input('This program will scan the tags directory and locate\n'
               'tags that reference other tags. A log will be created\n'+
               'in the tags directory and any tag references that\n'+
               'cannot be found in the tags directory will be logged.\n\n'+
@@ -189,7 +123,6 @@ class HEK_Tag_Scanner(Halo_Library):
               
               'Press Enter to begin scanning in:\n'+
               '    %s\n\n' % self.Tags_Dir)
-        input()
         
         #Stream the data from the tags to class
         #constructs so the program can work with them
@@ -211,12 +144,56 @@ class HEK_Tag_Scanner(Halo_Library):
         else:
             #if something went wrong earlier this will notify the user
             self.Mode = 100
-            print('Tags directory is either empty, doesnt '+
+            input('Tags directory is either empty, doesnt '+
                   'exist, or cannot be accessed')
+            raise SystemExit()
         
         self.Mode = 100
-        print('-'*80 + '\nFinished scanning tags directory.\n'+
+        input('-'*80 + '\nFinished scanning tags directory.\n'+
               'Check the tags directory for the log.\n' + '-'*80 +
               '\n\nPress enter to exit.')
-        input()
         raise SystemExit()
+        
+
+    def Scan_Tags_Dir(self, **kwargs):
+        #this is the string to store the entire debug log
+        Debug_Log_String = ("Debug log for HEK Tag Scanner\n\n\n")
+        
+        '''loop through both chicago and extended chicago tag types'''
+        for Cls_ID in sorted(self.Tag_Ref_Cache.keys()):
+
+            Tag_Ref_Paths = self.Tag_Ref_Cache[Cls_ID]
+            if self.Print_To_Console:
+                print(" "*4+ "Scanning '%s' tags..." % Cls_ID)
+
+            for Tag_Path in sorted(self.Tags[Cls_ID].keys()):
+                Tag = self.Tags[Cls_ID][Tag_Path]
+                self.Current_Tag = Tag_Path
+                
+                try:
+                    Missing = self.Get_Blocks_By_Paths(Tag_Ref_Paths,
+                                                       Tag.Tag_Data,
+                                                       self.Get_Tag_Not_Exist)
+
+                    if len(Missing):
+                        Debug_Log_String += "\n\n%s\n" % Tag_Path
+                        Block_Name = None
+                        
+                        for Block in Missing:
+                            if Block.NAME != Block_Name:
+                                Debug_Log_String += ' '*4 + Block.NAME + '\n'
+                                Block_Name = Block.NAME
+                            try:
+                                Ext = '.'+Block.Tag_Class.Data_Name
+                            except Exception:
+                                Ext = ''
+                            Debug_Log_String += ' '*8 + Block.CHILD + Ext + '\n'
+                            
+                except Exception:
+                    print("ERROR OCCURRED WHILE ATTEMPTING TO SCAN:\n" +
+                          '    ' + Tag.Tag_Path + '\n')
+                    print(format_exc())
+                    continue
+                        
+        
+        return Debug_Log_String

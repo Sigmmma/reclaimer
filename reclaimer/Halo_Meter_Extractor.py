@@ -8,6 +8,7 @@ try:
     from ReclaimerLib.Halo.HEK.Library import Halo_Library
     from supyr_struct import Library, Buffer
 
+    #used for loading all meter tags that can be found
     metr_loader = Halo_Library(Valid_Tag_IDs="metr", Print_Test=False)
 
     #replace the raw data struct of the meter image with the organized one
@@ -15,6 +16,7 @@ try:
     metr_loader.Defs['metr'].Tag_Structure[1][14]['CHILD'] = Meter_Image_Struct
     
     tags_dir = metr_loader.Data_Dir
+    #library to build tga images
     tga_maker = Library.Library(Valid_Tag_IDs='tga', Tags_Dir=tags_dir,
                                 Defs_Path='supyr_struct.Defs')
     

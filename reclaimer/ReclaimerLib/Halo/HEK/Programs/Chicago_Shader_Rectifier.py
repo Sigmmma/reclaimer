@@ -88,7 +88,7 @@ class Shader_Rectifier(Halo_Library):
         
 
     def Load_Tags_and_Run(self):
-        print('This program will scan the tags directory and any \n"shader_'+
+        input('This program will scan the tags directory and any \n"shader_'+
               'transprent_chicago_extended" tags that it finds will be \n'+
               'converted to regular chicago shaders to fix blending issues.\n'+
               
@@ -102,7 +102,6 @@ class Shader_Rectifier(Halo_Library):
               'those extra \nlayers, and errors that occurred.\n'+
               '\nPress Enter to begin converting the shaders in:'+
               '\n    %s\n\n' % self.Tags_Dir)
-        input()
         
         #Stream the data from the tags to class
         #constructs so the program can work with them
@@ -116,11 +115,11 @@ class Shader_Rectifier(Halo_Library):
             self.Make_Log_File(Results_Log)
         else:
             #if something went wrong earlier this will notify the user
-            print('Tags directory is either empty, doesnt '+
+            input('Tags directory is either empty, doesnt '+
                   'exist, or cannot be accessed')
+            raise SystemExit()
         
-        print('-'*80 + '\nFinished rectifying shaders.\nCheck the tags '+
+        input('-'*80 + '\nFinished rectifying shaders.\nCheck the tags '+
               'directory for the changelog.\n' + '-'*80 +
               '\n\nPress enter to exit.')
-        input()
     
