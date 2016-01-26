@@ -15,6 +15,24 @@ XBOX_BSP_MAGIC = 2174377984
 XBOX_INDEX_MAGIC = 2151309348
 PC_INDEX_MAGIC   = 1078198312
 
+
+################################################################
+################################################################
+'''-----------------------   Notes   ---------------------------
+    If a tag is located in one of the shared resource maps, the
+    Tag_Offset in Tag_Header will the the index in the resource
+    map that the tag is located in.
+    To determine which resource map the tag is in, it must be
+    done based on the tag class.
+    bitm->bitmaps.map
+    snd!->sounds.map
+    font,hmt ,str#,ustr->loc.map
+
+'''
+################################################################
+################################################################
+
+
 def Construct():
     return Map_Def
 
@@ -35,15 +53,13 @@ class Map_Def(Tag_Def):
             raise KeyError
         
         New_Value = kwargs.get('New_Value')
-        T_Head = Parent.PARENT
         Magic  = kwargs.get('Map_Magic')
+        T_Head = Parent.PARENT
         
         if Magic is None:
-            I_Head = T_Head.PARENT.PARENT
-            Magic  = (I_Head.Index_Magic -
-                      I_Head.PARENT.Mapfile_Header.Tag_Index_Offset)
+            return 0
 
-        #NEED TO FINISH THIS SO IT CAN SET THE PATH DATA POINTER
+        #NEED TO FINISH THIS SO IT CAN SET THE PATH POINTER
         
         if New_Value is None:
             return PC_TAG_INDEX_HEADER_SIZE + T_Head.Tag_Path_Offset - Magic
@@ -56,13 +72,13 @@ class Map_Def(Tag_Def):
             raise KeyError
 
         New_Value = kwargs.get('New_Value')
+        Magic  = kwargs.get('Map_Magic')
         T_Head = Parent.PARENT
-        Magic = kwargs.get('Map_Magic')
         
         if Magic is None:
-            I_Head = T_Head.PARENT.PARENT
-            Magic  = (I_Head.Index_Magic -
-                      I_Head.PARENT.Mapfile_Header.Tag_Index_Offset)
+            return 0
+
+        #NEED TO FINISH THIS SO IT CAN SET THE META POINTER
         
         if New_Value is None:
             return PC_TAG_INDEX_HEADER_SIZE + T_Head.Tag_Offset - Magic
@@ -75,21 +91,32 @@ class Map_Def(Tag_Def):
             raise KeyError
 
         New_Value = kwargs.get('New_Value')
+        Magic  = kwargs.get('Map_Magic')
         T_Head = Parent.PARENT
+        if T_Head.Indexed or Magic is None:
+            return
+        
         I_Head = T_Head.PARENT.PARENT
         M_Head = I_Head.PARENT.Mapfile_Header
-        Magic = kwargs.get('Map_Magic')
         
-        if Magic is None:
-            Magic = I_Head.Index_Magic - M_Head.Tag_Index_Offset
-
         Offset = PC_TAG_INDEX_HEADER_SIZE + T_Head.Tag_Offset - Magic
         
-        if Offset <= 0 or Offset >= M_Head.Decompressed_Len:
-            return
-        else:
-            return T_Head.Tag_Class_1.Data
+        return T_Head.Tag_Class_1.Data
+        
 
+    def Tag_Index_Array_Pointer(*args, **kwargs):
+        Block = kwargs.get('Block')
+        
+        if Block is None:
+            raise KeyError
+
+        New_Value = kwargs.get('New_Value')
+        I_Head = Block.PARENT
+        M_Head = I_Head.PARENT.Mapfile_Header
+        
+        if New_Value is None:
+            return (M_Head.Tag_Index_Offset + PC_TAG_INDEX_HEADER_SIZE +
+                    I_Head.Index_Magic - PC_INDEX_MAGIC)
         
     def FCC(Value):
         return int.from_bytes(bytes(Value, encoding='latin1'), byteorder='big')
@@ -142,12 +169,12 @@ class Map_Def(Tag_Def):
                  }
 
     Tag_Header = { TYPE:Struct, NAME:"Tag_Header",
-                   0:Com({ NAME:"Tag_Class_1" }, Tag_4CC_ID),
-                   1:Com({ NAME:"Tag_Class_2" }, Tag_4CC_ID),
-                   2:Com({ NAME:"Tag_Class_3" }, Tag_4CC_ID),
+                   0:Com({ NAME:"Tag_Class_1" }, Tag_Class),
+                   1:Com({ NAME:"Tag_Class_2" }, Tag_Class),
+                   2:Com({ NAME:"Tag_Class_3" }, Tag_Class),
                    3:{ TYPE:UInt32, NAME:"Tag_ID" },
-                   4:{ TYPE:UInt32, NAME:"Tag_Path_Offset" },
-                   5:{ TYPE:UInt32, NAME:"Tag_Offset" },
+                   4:{ TYPE:SInt32, NAME:"Tag_Path_Offset" },
+                   5:{ TYPE:SInt32, NAME:"Tag_Offset" },
                    6:{ TYPE:UInt32, NAME:"Indexed" },
                    7:{ TYPE:Pad, SIZE:4 },
                    CHILD:Tag_Data
@@ -203,7 +230,8 @@ class Map_Def(Tag_Def):
                           8:{ TYPE:UInt32, NAME:"Model_Raw_Data_Size" },
                           9:{ TYPE:UInt32, NAME:"Tag_Index_Header_Sig", DEFAULT:'tags' },
                           CHILD:{ TYPE:Tag_Index,  NAME:"Tag_Index",
-                                  SIZE:".Tag_Count", SUB_STRUCT:Tag_Header
+                                  SIZE:".Tag_Count", SUB_STRUCT:Tag_Header,
+                                  POINTER:Tag_Index_Array_Pointer
                               }
                           }
                       }
