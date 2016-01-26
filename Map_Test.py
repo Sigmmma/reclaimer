@@ -15,19 +15,21 @@ try:
     start = time()
     
     #Sounds  = Loader.Build_Tag(Filepath=Path+'sounds.map',  Cls_ID="resource")
-    Bitmaps = Loader.Build_Tag(Filepath=Path+'bitmaps.map', Cls_ID="resource")
+    #Bitmaps = Loader.Build_Tag(Filepath=Path+'bitmaps.map', Cls_ID="resource")
     #Strings = Loader.Build_Tag(Filepath=Path+'loc.map',     Cls_ID="resource")
+    Map = Loader.Build_Tag(Filepath=Path+'Smoke Screen\\CE_bloodgulch.map', Cls_ID="map")
 
     #Sounds.Print(Printout=True, Show=['Name','Value','Children','Index','Type'])
-    Bitmaps.Print(Printout=True, Show=['Name','Value','Children','Index','Type'])
+    #Bitmaps.Print(Printout=True, Show=['Name','Value','Children','Index','Type'])
     #Strings.Print(Printout=True, Show=['Name','Value','Children','Index','Type'])
-        
+    Map.Print(Printout=True, Show=['Name','Value','Children','Index','Type'])
+    
     input('-'*80 + '\n'+
           'Finished.\n'+
           'Operation took %s seconds.\n'%(time()-start) +
           '\n'+
           'Press enter to exit.')
 
-except Exception:
+except:
     print(format_exc())
     input()

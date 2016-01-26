@@ -3,17 +3,50 @@ import re
 from traceback import format_exc
 
 curr_dir = os.path.abspath(os.curdir).replace('/', '\\')
-Words_to_Locate = []
-Word_Replacements = []
+Word_Map = {}
 Flags = None
 Mode = "locate"
 
 
+Word_Map = {'Valid_Tag_IDs':'tagids', 'Cls_ID':'tagid', 'Tag_Cls':'tagobj',
+            'Tag_Structure':'descriptor', 'Construct':'construct',
 
-Words_to_Locate = ['FL_UTF16_Str_Data']
-Word_Replacements = []
+            'Tag_Block':'Block', 'Void_Block':'VoidBlock', 'Data_Block':'DataBlock',
+            'List_Block':'ListBlock', 'P_List_Block':'PListBlock',
+            'Bool_Block':'BoolBlock', 'Enum_Block':'EnumBlock',
+            'While_List_Block':'WhileBlock', 'P_While_List_Block':'PWhileBlock',
+           
+            'Field_Types':'fields', 'Tag_Blocks':'blocks',
+            'Constants':'constants', 'Re_Wr_De_En':'re_wr_de_en',
+            'Common_Block_Structures':'common_descriptors',
+            'Common_Structures':'common_descriptors',
+           
+            'Field_Type':'Field', 'Tag_Def':'TagDef',
+            'Library':'TagLibrary', 'Tag_Test_Library':'TestLibrary',
+
+            '_LGI':'list.__getitem__', '_LSI':'list.__setitem__',
+            '_LDI':'list.__delitem__', '_LSO':'list.__sizeof__',
+           
+            '_OSA':'object.__setattr__', '_OGA':'object.__getattribute__',
+            '_ODA':'object.__delattr__', '_OSO':'object.__sizeof__',
+           
+            '_LApp':'list.append', '_LExt':'list.extend', '_LIns':'list.insert',
+           
+            'Read':'read', 'Write':'write', 'Get_Tag':'gettag',
+            '_Bin_Size':'_binsize', 'Bin_Size':'binsize',
+            'Get_Desc':'getdesc', 'Del_Desc':'deldesc', 'Set_Desc':'setdesc',
+            'Ins_Desc':'insdesc', 'Res_Desc':'resdesc', 'Make_Unique':'makeunique',
+            'Get_Neighbor':'getneighbor', 'Get_Meta':'getmeta',
+            'Get_Raw_Data':'getrawdata', 'Validate_Name':'verifyname',
+            'Collect_Pointers':'getpointers', 'Set_Pointers':'setpointers',
+           
+            'Get_Size':'getsize', 'Set_Size':'setsize',
+            'Set':'set', 'Set_To':'set_to', 'Unset':'unset',
+            
+            'Get_Index':'getindex', 'Get_Name':'getname', 'Get_Data':'getdata',
+            'Set_Data':'setdata', 'Data_Name':'dataname'
+            }
 #Flags = re.IGNORECASE
-
 
 #for Name in Words_to_Locate:
 #    Word_Replacements.append(Name.upper())
@@ -24,25 +57,13 @@ input()
 class Python_Word_Locator_Replacer():
 
     def __init__(self, **kwargs):
-        if "Directory" in kwargs and kwargs["Directory"] is not None:
-            self.Directory = str(kwargs["Directory"])
-        else: self.Directory = curr_dir
+        self.Directory = str(kwargs.get("Directory", curr_dir))
+        self.Word_Map = kwargs.get("Word_Map", Word_Map)
+        self.Mode = kwargs.get("Mode", Mode)
+        self.File_Paths = kwargs.get("File_Paths")
         
-        if "File_Paths" in kwargs and hasattr(kwargs["File_Paths"], '__iter__'):
-            self.File_Paths = kwargs["File_Paths"]
-        else: self.Allocate_Files()
-        
-        if "Words_to_Locate" in kwargs and hasattr(kwargs["Words_to_Locate"], '__iter__'):
-            self.Words_to_Locate = kwargs["Words_to_Locate"]
-        else: self.Words_to_Locate = Words_to_Locate
-        
-        if "Word_Replacements" in kwargs and hasattr(kwargs["Word_Replacements"], '__iter__'):
-            self.Word_Replacements = kwargs["Word_Replacements"]
-        else: self.Word_Replacements = Word_Replacements
-
-        if "Mode" in kwargs and kwargs["Mode"] is not None:
-            self.Mode = kwargs["Mode"]
-        else: self.Mode = Mode
+        if self.File_Paths is None:
+            self.Allocate_Files()
 
 
     def Allocate_Files(self):
@@ -70,10 +91,8 @@ class Python_Word_Locator_Replacer():
                     with open(in_path, "r") as in_file, open(out_path, "w") as out_file:
                         modified_string = in_file.read()
                         
-                        for i in range(min(len(self.Words_to_Locate), len(self.Word_Replacements)) ):
-                            old_word = self.Words_to_Locate[i]
-                            new_word = self.Word_Replacements[i]
-                            
+                        for old_word in self.Word_Map:
+                            new_word = self.Word_Map[old_word]
                             modified_string = re.sub(r'\b%s\b' % old_word, new_word, modified_string)
                     
                         out_file.write(modified_string)
@@ -97,10 +116,11 @@ class Python_Word_Locator_Replacer():
                     with open(in_path, "r") as in_file:
                         in_string = in_file.read()
                         
-                        for word in self.Words_to_Locate:
+                        for word in self.Word_Map:
                             if Search_Flags:
-                                  match = re.findall(r'\b%s\b' % word, in_string, Search_Flags)
-                            else: match = re.findall(r'\b%s\b' % word, in_string)
+                                match = re.findall(r'\b%s\b' % word, in_string, Search_Flags)
+                            else:
+                                match = re.findall(r'\b%s\b' % word, in_string)
 
                             if match:
                                 print("    ", len(match), "Occurances of:", word)

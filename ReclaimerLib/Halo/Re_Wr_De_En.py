@@ -2,6 +2,15 @@ from supyr_struct.Re_Wr_De_En import *
 from supyr_struct.Defs.Constants import *
 
 
+PC_TAG_INDEX_HEADER_SIZE   = 40
+XBOX_TAG_INDEX_HEADER_SIZE = 36
+
+XBOX_BSP_MAGIC = 2174377984
+
+XBOX_INDEX_MAGIC = 2151309348
+PC_INDEX_MAGIC   = 1078198312
+
+
 def Calc_Tag_Ref_Size(self, Block, **kwargs):
     '''Used to calculate the size of a tag
     reference string from a given string'''
@@ -55,7 +64,7 @@ def Tag_Index_Reader(self, Desc, Parent=None, Raw_Data=None, Attr_Index=None,
                      Root_Offset=0, Offset=0, **kwargs):
     if Parent is not None:
         M_Head = Parent.PARENT.Mapfile_Header
-        kwargs['Map_Magic'] = Parent.Index_Magic - M_Head.Tag_Index_Offset
+        kwargs['Map_Magic'] = PC_INDEX_MAGIC - M_Head.Tag_Index_Offset
 
     Array_Reader(self, Desc, Parent, Raw_Data, Attr_Index,
                  Root_Offset, Offset, **kwargs)
@@ -65,7 +74,7 @@ def Tag_Index_Writer(self, Parent, Write_Buffer, Attr_Index=None,
                      Root_Offset=0, Offset=0, **kwargs):
     if Parent is not None:
         M_Head = Parent.PARENT.Mapfile_Header
-        kwargs['Map_Magic'] = Parent.Index_Magic - M_Head.Tag_Index_Offset
+        kwargs['Map_Magic'] = PC_INDEX_MAGIC - M_Head.Tag_Index_Offset
         
     Array_Writer(self, Parent, Write_Buffer, Attr_Index,
                  Root_Offset, Offset, **kwargs)

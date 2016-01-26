@@ -38,6 +38,8 @@ set, either name it heuristically or ask the user what to name it.
 MAKE SURE TO REMOVE Compressed_Color_Plate_Data from bitmap tags
 when making their hashes as well as compressed vertices in models and bsp
 
+make sure to null the tag class in tag references that dont exist so that the
+hashes still work with smokescreen protected maps.
 
 
 Finish docstrings for modules and update existing ones.

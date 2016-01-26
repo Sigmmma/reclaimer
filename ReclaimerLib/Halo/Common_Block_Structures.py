@@ -3,98 +3,190 @@ from .Field_Types import *
 
 Com = Combine
 
-#Enumerators for different types of tag references
-Tag_4CC_ID = { TYPE:Enum32, NAME:"Tag_4CC_ID", DEFAULT:0,
-               0:{VALUE:'actr', NAME:"actor"},
-               1:{VALUE:'actv', NAME:"actor_varient"},
-               2:{VALUE:'ant!', NAME:"antenna"},
-               3:{VALUE:'bipd', NAME:"biped"},
-               4:{VALUE:'bitm', NAME:"bitmap"},
-               5:{VALUE:'trak', NAME:"camera_track"},
-               6:{VALUE:'colo', NAME:"color_table"},
-               7:{VALUE:'cdmg', NAME:"continuous_damage_effect"},
-               8:{VALUE:'cont', NAME:"contrail"},
-               9:{VALUE:'deca', NAME:"decal"},
-               10:{VALUE:'udlg', NAME:"dialogue"},
-               11:{VALUE:'dobc', NAME:"detail_object_collection"},
-               12:{VALUE:'devi', NAME:"device"},
-               13:{VALUE:'ctrl', NAME:"device_control"},
-               14:{VALUE:'lifi', NAME:"device_light_fixture"},
-               15:{VALUE:'mach', NAME:"device_machine"},
-               16:{VALUE:'jpt!', NAME:"damage_effect"},
-               17:{VALUE:'effe', NAME:"effect"},
-               18:{VALUE:'eqip', NAME:"equipment"},
-               19:{VALUE:'flag', NAME:"flag"},
-               20:{VALUE:'fog ', NAME:"fog"},
-               21:{VALUE:'font', NAME:"font"},
-               22:{VALUE:'garb', NAME:"garbage"},
-               23:{VALUE:'mod2', NAME:"gbxmodel"},
-               24:{VALUE:'matg', NAME:"globals"},
-               25:{VALUE:'glw!', NAME:"glow"},
-               26:{VALUE:'grhi', NAME:"grenade_hud_interface"},
-               27:{VALUE:'hudg', NAME:"hud_globals"},
-               28:{VALUE:'hmt ', NAME:"hud_message_text"},
-               29:{VALUE:'hud#', NAME:"hud_number"},
-               30:{VALUE:'devc', NAME:"input_device_defaults"},
-               31:{VALUE:'item', NAME:"item"},
-               32:{VALUE:'itmc', NAME:"item_collection"},
-               33:{VALUE:'lens', NAME:"lens_flare"},
-               34:{VALUE:'ligh', NAME:"light"},
-               35:{VALUE:'mgs2', NAME:"light_volume"},
-               36:{VALUE:'elec', NAME:"lightning"},
-               37:{VALUE:'foot', NAME:"material_effects"},
-               38:{VALUE:'metr', NAME:"meter"},
-               39:{VALUE:'mode', NAME:"model"},
-               40:{VALUE:'antr', NAME:"model_animations"},
-               41:{VALUE:'coll', NAME:"model_collision_geometry"},
-               42:{VALUE:'mply', NAME:"multiplayer_scenario_description"},
-               43:{VALUE:'obje', NAME:"object"},
-               44:{VALUE:'part', NAME:"particle"},
-               45:{VALUE:'pctl', NAME:"particle_system"},
-               46:{VALUE:'phys', NAME:"physics"},
-               47:{VALUE:'plac', NAME:"placeholder"},
-               48:{VALUE:'pphy', NAME:"point_physics"},
-               49:{VALUE:'ngpr', NAME:"preferences_network_game"},
-               50:{VALUE:'proj', NAME:"projectile"},
-               51:{VALUE:'scnr', NAME:"scenario"},
-               52:{VALUE:'sbsp', NAME:"scenario_structure_bsp"},
-               53:{VALUE:'scen', NAME:"scenery"},
-               54:{VALUE:'snd!', NAME:"sound"},
-               55:{VALUE:'snde', NAME:"sound_environment"},
-               56:{VALUE:'lsnd', NAME:"sound_looping"},
-               57:{VALUE:'ssce', NAME:"sound_scenery"},
-               58:{VALUE:'boom', NAME:"spheroid"},
-               59:{VALUE:'shdr', NAME:"shader"},
-               60:{VALUE:'schi', NAME:"shader_transparent_chicago"},
-               61:{VALUE:'scex', NAME:"shader_transparent_chicago_extended"},
-               62:{VALUE:'sotr', NAME:"shader_transparent_generic"},
-               63:{VALUE:'senv', NAME:"shader_environment"},
-               64:{VALUE:'sgla', NAME:"shader_transparent_glass"},
-               65:{VALUE:'smet', NAME:"shader_transparent_meter"},
-               66:{VALUE:'soso', NAME:"shader_model"},
-               67:{VALUE:'spla', NAME:"shader_transparent_plasma"},
-               68:{VALUE:'swat', NAME:"shader_transparent_water"},
-               69:{VALUE:'sky ', NAME:"sky"},
-               70:{VALUE:'str#', NAME:"string_list"},
-               71:{VALUE:'tagc', NAME:"tag_collection"},
-               72:{VALUE:'Soul', NAME:"ui_widget_collection"},
-               73:{VALUE:'DeLa', NAME:"ui_widget_definition"},
-               74:{VALUE:'ustr', NAME:"unicode_string_list"},
-               75:{VALUE:'unit', NAME:"unit"},
-               76:{VALUE:'unhi', NAME:"unit_hud_interface"},
-               77:{VALUE:'vehi', NAME:"vehicle"},
-               78:{VALUE:'vcky', NAME:"virtual_keyboard"},
-               79:{VALUE:'weap', NAME:"weapon"},
-               80:{VALUE:'wphi', NAME:"weapon_hud_interface"},
-               81:{VALUE:'rain', NAME:"weather_particle_system"},
-               82:{VALUE:'wind', NAME:"wind"},
 
-               83:{VALUE:0xffffffff, NAME:"None"},
-               }
+All_Valid_Tags = { 0:{VALUE:'actr', NAME:"actor"},
+                   1:{VALUE:'actv', NAME:"actor_varient"},
+                   2:{VALUE:'ant!', NAME:"antenna"},
+                   3:{VALUE:'bipd', NAME:"biped"},
+                   4:{VALUE:'bitm', NAME:"bitmap"},
+                   5:{VALUE:'trak', NAME:"camera_track"},
+                   6:{VALUE:'colo', NAME:"color_table"},
+                   7:{VALUE:'cdmg', NAME:"continuous_damage_effect"},
+                   8:{VALUE:'cont', NAME:"contrail"},
+                   9:{VALUE:'jpt!', NAME:"damage_effect"},
+                   10:{VALUE:'deca', NAME:"decal"},
+                   11:{VALUE:'udlg', NAME:"dialogue"},
+                   12:{VALUE:'dobc', NAME:"detail_object_collection"},
+                   13:{VALUE:'devi', NAME:"device"},
+                   14:{VALUE:'ctrl', NAME:"device_control"},
+                   15:{VALUE:'lifi', NAME:"device_light_fixture"},
+                   16:{VALUE:'mach', NAME:"device_machine"},
+                   17:{VALUE:'effe', NAME:"effect"},
+                   18:{VALUE:'eqip', NAME:"equipment"},
+                   19:{VALUE:'flag', NAME:"flag"},
+                   20:{VALUE:'fog ', NAME:"fog"},
+                   21:{VALUE:'font', NAME:"font"},
+                   22:{VALUE:'garb', NAME:"garbage"},
+                   23:{VALUE:'mod2', NAME:"gbxmodel"},
+                   24:{VALUE:'matg', NAME:"globals"},
+                   25:{VALUE:'glw!', NAME:"glow"},
+                   26:{VALUE:'grhi', NAME:"grenade_hud_interface"},
+                   27:{VALUE:'hudg', NAME:"hud_globals"},
+                   28:{VALUE:'hmt ', NAME:"hud_message_text"},
+                   29:{VALUE:'hud#', NAME:"hud_number"},
+                   30:{VALUE:'devc', NAME:"input_device_defaults"},
+                   31:{VALUE:'item', NAME:"item"},
+                   32:{VALUE:'itmc', NAME:"item_collection"},
+                   33:{VALUE:'lens', NAME:"lens_flare"},
+                   34:{VALUE:'ligh', NAME:"light"},
+                   35:{VALUE:'mgs2', NAME:"light_volume"},
+                   36:{VALUE:'elec', NAME:"lightning"},
+                   37:{VALUE:'foot', NAME:"material_effects"},
+                   38:{VALUE:'metr', NAME:"meter"},
+                   39:{VALUE:'mode', NAME:"model"},
+                   40:{VALUE:'antr', NAME:"model_animations"},
+                   41:{VALUE:'coll', NAME:"model_collision_geometry"},
+                   42:{VALUE:'mply', NAME:"multiplayer_scenario_description"},
+                   43:{VALUE:'obje', NAME:"object"},
+                   44:{VALUE:'part', NAME:"particle"},
+                   45:{VALUE:'pctl', NAME:"particle_system"},
+                   46:{VALUE:'phys', NAME:"physics"},
+                   47:{VALUE:'plac', NAME:"placeholder"},
+                   48:{VALUE:'pphy', NAME:"point_physics"},
+                   49:{VALUE:'ngpr', NAME:"preferences_network_game"},
+                   50:{VALUE:'proj', NAME:"projectile"},
+                   51:{VALUE:'scnr', NAME:"scenario"},
+                   52:{VALUE:'sbsp', NAME:"scenario_structure_bsp"},
+                   53:{VALUE:'scen', NAME:"scenery"},
+                   54:{VALUE:'snd!', NAME:"sound"},
+                   55:{VALUE:'snde', NAME:"sound_environment"},
+                   56:{VALUE:'lsnd', NAME:"sound_looping"},
+                   57:{VALUE:'ssce', NAME:"sound_scenery"},
+                   58:{VALUE:'boom', NAME:"spheroid"},
+                   59:{VALUE:'shdr', NAME:"shader"},
+                   60:{VALUE:'schi', NAME:"shader_transparent_chicago"},
+                   61:{VALUE:'scex', NAME:"shader_transparent_chicago_extended"},
+                   62:{VALUE:'sotr', NAME:"shader_transparent_generic"},
+                   63:{VALUE:'senv', NAME:"shader_environment"},
+                   64:{VALUE:'sgla', NAME:"shader_transparent_glass"},
+                   65:{VALUE:'smet', NAME:"shader_transparent_meter"},
+                   66:{VALUE:'soso', NAME:"shader_model"},
+                   67:{VALUE:'spla', NAME:"shader_transparent_plasma"},
+                   68:{VALUE:'swat', NAME:"shader_transparent_water"},
+                   69:{VALUE:'sky ', NAME:"sky"},
+                   70:{VALUE:'str#', NAME:"string_list"},
+                   71:{VALUE:'tagc', NAME:"tag_collection"},
+                   72:{VALUE:'Soul', NAME:"ui_widget_collection"},
+                   73:{VALUE:'DeLa', NAME:"ui_widget_definition"},
+                   74:{VALUE:'ustr', NAME:"unicode_string_list"},
+                   75:{VALUE:'unit', NAME:"unit"},
+                   76:{VALUE:'unhi', NAME:"unit_hud_interface"},
+                   77:{VALUE:'vehi', NAME:"vehicle"},
+                   78:{VALUE:'vcky', NAME:"virtual_keyboard"},
+                   79:{VALUE:'weap', NAME:"weapon"},
+                   80:{VALUE:'wphi', NAME:"weapon_hud_interface"},
+                   81:{VALUE:'rain', NAME:"weather_particle_system"},
+                   82:{VALUE:'wind', NAME:"wind"},
+
+                   83:{VALUE:0xffffffff, NAME:"None"}
+                   }
+
+
+All_Valid_Attachments = { 0:{VALUE:'cont', NAME:"contrail"},
+                          1:{VALUE:'effe', NAME:"effect"},
+                          2:{VALUE:'ligh', NAME:"light"},
+                          3:{VALUE:'mgs2', NAME:"light_volume"},
+                          4:{VALUE:'pctl', NAME:"particle_system"},
+                          5:{VALUE:'lsnd', NAME:"sound_looping"},
+
+                          6:{VALUE:0xffffffff, NAME:"None"}
+                          }
+
+All_Valid_Effect_Events = { 0:{VALUE:'bipd', NAME:"biped"},
+                            1:{VALUE:'jpt!', NAME:"damage_effect"},
+                            2:{VALUE:'deca', NAME:"decal"},
+                            3:{VALUE:'devi', NAME:"device"},
+                            4:{VALUE:'ctrl', NAME:"device_control"},
+                            5:{VALUE:'lifi', NAME:"device_light_fixture"},
+                            6:{VALUE:'mach', NAME:"device_machine"},
+                            7:{VALUE:'eqip', NAME:"equipment"},
+                            8:{VALUE:'garb', NAME:"garbage"},
+                            9:{VALUE:'item', NAME:"item"},
+                            10:{VALUE:'ligh', NAME:"light"},
+                            11:{VALUE:'obje', NAME:"object"},
+                            12:{VALUE:'pctl', NAME:"particle_system"},
+                            13:{VALUE:'plac', NAME:"placeholder"},
+                            14:{VALUE:'proj', NAME:"projectile"},
+                            15:{VALUE:'scen', NAME:"scenery"},
+                            16:{VALUE:'snd!', NAME:"sound"},
+                            17:{VALUE:'ssce', NAME:"sound_scenery"},
+                            18:{VALUE:'unit', NAME:"unit"},
+                            19:{VALUE:'vehi', NAME:"vehicle"},
+                            20:{VALUE:'weap', NAME:"weapon"},
+                            21:{VALUE:0xffffffff, NAME:"None"}
+                            }
+
+All_Valid_Effects = {0:{VALUE:'snd!',     NAME:"sound"},
+                     1:{VALUE:'effe',     NAME:"effect"},
+                     2:{VALUE:0xffffffff, NAME:"None"}
+                     }
+
+All_Valid_Items = { 0:{VALUE:'eqip', NAME:"equipment"},
+                    1:{VALUE:'garb', NAME:"garbage"},
+                    2:{VALUE:'item', NAME:"item"},
+                    3:{VALUE:'weap', NAME:"weapon"},
+                    4:{VALUE:0xffffffff, NAME:"None"}
+                    }
+
+All_Valid_Objects = { 0:{VALUE:'bipd', NAME:"biped"},
+                      1:{VALUE:'devi', NAME:"device"},
+                      2:{VALUE:'ctrl', NAME:"device_control"},
+                      3:{VALUE:'lifi', NAME:"device_light_fixture"},
+                      4:{VALUE:'mach', NAME:"device_machine"},
+                      5:{VALUE:'eqip', NAME:"equipment"},
+                      6:{VALUE:'obje', NAME:"object"},
+                      7:{VALUE:'proj', NAME:"projectile"},
+                      8:{VALUE:'scen', NAME:"scenery"},
+                      9:{VALUE:'ssce', NAME:"sound_scenery"},
+                      10:{VALUE:'vehi', NAME:"vehicle"},
+                      11:{VALUE:'weap', NAME:"weapon"},
+                      12:{VALUE:0xffffffff, NAME:"None"}
+                      }
+
+
+All_Valid_Shaders = { 0:{VALUE:'shdr', NAME:"shader"},
+                      1:{VALUE:'schi', NAME:"shader_transparent_chicago"},
+                      2:{VALUE:'scex', NAME:"shader_transparent_chicago_extended"},
+                      3:{VALUE:'sotr', NAME:"shader_transparent_generic"},
+                      4:{VALUE:'senv', NAME:"shader_environment"},
+                      5:{VALUE:'sgla', NAME:"shader_transparent_glass"},
+                      6:{VALUE:'smet', NAME:"shader_transparent_meter"},
+                      7:{VALUE:'soso', NAME:"shader_model"},
+                      8:{VALUE:'spla', NAME:"shader_transparent_plasma"},
+                      9:{VALUE:'swat', NAME:"shader_transparent_water"},
+                      10:{VALUE:0xffffffff, NAME:"None"}
+                      }
+
+All_Valid_Units = { 0:{VALUE:'bipd', NAME:"biped"},
+                    1:{VALUE:'unit', NAME:"unit"},
+                    2:{VALUE:'vehi', NAME:"vehicle"}
+                    }
+
+All_Valid_Widgets = { 0:{VALUE:'ant!', NAME:"antenna"},
+                      1:{VALUE:'flag', NAME:"flag"},
+                      2:{VALUE:'glw!', NAME:"glow"},
+                      3:{VALUE:'mgs2', NAME:"light_volume"},
+                      4:{VALUE:'elec', NAME:"lightning"},
+
+                      5:{VALUE:0xffffffff, NAME:"None"}
+                      }
+
+#Enumerators for different types of tag references
+Tag_Class = { TYPE:Enum32, NAME:"Tag_Class", DEFAULT:0xffffffff }
 
 Tag_Header = { TYPE:Struct, SIZE:64, NAME:"Blam_Header", EDITABLE:False,
                0:{ TYPE:Pad, SIZE:36 },
-               1:Tag_4CC_ID,
+               1:Com({}, Tag_Class, All_Valid_Tags),
                2:{ TYPE:UInt32, NAME:"Base_Address", DEFAULT:0 },#random
                3:{ TYPE:UInt32, NAME:"Header_Size",  DEFAULT:64 },
                4:{ TYPE:Pad, SIZE:8 },
@@ -290,13 +382,26 @@ Reflexive_Struct = { TYPE:Reflexive, GUI_NAME:'Reflexive', EDITABLE:False,
 
 #This is the structure for all points where a tag references another tag
 Tag_Index_Ref_Struct = { TYPE:Tag_Index_Ref, GUI_NAME:'Tag_Index_Ref', EDITABLE:False,
-                         0:Com( {NAME:"Tag_Class"}, Tag_4CC_ID ),
+                         0:Com( {}, Tag_Class, All_Valid_Tags),
                          1:{ TYPE:SInt32, NAME:"Tag_Path_Pointer" },#random
                          2:{ TYPE:SInt32, NAME:"Tag_Path_Length" },
                          3:{ TYPE:UInt32, NAME:"Tag_ID", DEFAULT:0xFFFFFFFF },#random
                          CHILD:{TYPE:String_Var_Len, NAME:"Filepath", SIZE:Tag_Ref_Size}
                          }
+                         
+Ref_Struct = Tag_Index_Ref_Struct
 
+Attachment_Ref_Struct   = Com( {0:Com( {}, Tag_Class, All_Valid_Attachments)},   Ref_Struct)
+Effect_Ref_Struct       = Com( {0:Com( {}, Tag_Class, All_Valid_Effects)},       Ref_Struct)
+Effect_Event_Ref_Struct = Com( {0:Com( {}, Tag_Class, All_Valid_Effect_Events)}, Ref_Struct)
+Item_Ref_Struct         = Com( {0:Com( {}, Tag_Class, All_Valid_Items)},         Ref_Struct)
+Object_Ref_Struct       = Com( {0:Com( {}, Tag_Class, All_Valid_Objects)},       Ref_Struct)
+Shader_Ref_Struct       = Com( {0:Com( {}, Tag_Class, All_Valid_Shaders)},       Ref_Struct)
+Unit_Ref_Struct         = Com( {0:Com( {}, Tag_Class, All_Valid_Units)},         Ref_Struct)
+Widget_Ref_Struct       = Com( {0:Com( {}, Tag_Class, All_Valid_Widgets)},       Ref_Struct)
+
+
+del Ref_Struct
 
 
 """Shader Stuff"""
