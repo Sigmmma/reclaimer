@@ -1,25 +1,25 @@
 from traceback import format_exc
 try:
-    from supyr_struct.Test import Tag_Test_Library
+    from supyr_struct.test import TagTestLibrary
     
-    Test = Tag_Test_Library(Debug=3, Print_Test=True, Save_Test=False,
-                            Write_as_Temp=True, Backup_Old_Tags=False,
-                            Valid_Tag_IDs="sote_eep_save",
-                            Defs_Path="ReclaimerLib\\misc\\Defs\\",
+    test = TagTestLibrary(debug=3, print_test=True, save_test=False,
+                            write_as_temp=True, backup=False,
+                            valid_tag_ids="sote_eep_save",
+                            defs_path="reclaimer.misc.defs",
                           
-                            Print_Options={'Indent':4,
-                                           'Printout':True, 'Precision':3,
-                                           'Show':['Name', 'Children', 'Type',
-                                                   'Value', 'Offset',# 'Size',
-                                                   'Index', 'Flags',
-                                                   'Tag_Path', #'Unique', 
-                                                   'Bin_Size', 'Ram_Size',
-                                                   #'All'
+                            print_options={'indent':4,
+                                           'printout':True, 'precision':3,
+                                           'show':['name', 'children', 'field',
+                                                   'value', 'offset',# 'size',
+                                                   'index', 'flags',
+                                                   'tagpath', #'unique', 
+                                                   'binsize', 'ramsize',
+                                                   #'all'
                                                    ] })
-    Test.Run_Test()
+    test.run_test()
 except Exception:
     print(format_exc())
     input()
 
-TT = Test.Tags['tga']['test32.tga']
-TD = TT.Tag_Data
+TT = test.tags['tga']['test32.tga']
+TD = TT.tagdata

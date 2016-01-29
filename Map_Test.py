@@ -1,28 +1,28 @@
 from os.path import dirname
 from traceback import format_exc
 from time import time
-Here = dirname(__file__)
+this_dir = dirname(__file__)
 
 try:
-    from ReclaimerLib.Halo.META.Library import Map_Loader
+    from reclaimer.halo.meta.library import MapLoader
 
-    Path = Here+"\\ReclaimerLib\\Halo\\HEK\\Programs\\Tag_Ripper\\resources\\"
-    Loader = Map_Loader(Debug=1, Allow_Corrupt=True)
+    path = this_dir+"\\reclaimer\\halo\\hek\\programs\\ripper\\resources\\"
+    loader = MapLoader(debug=1, allow_corrupt=True)
     
     input('Press Enter to begin the resource maps in:\n'+
-          '    %s\n\n' % Path)
+          '    %s\n\n' % path)
     
     start = time()
     
-    #Sounds  = Loader.Build_Tag(Filepath=Path+'sounds.map',  Cls_ID="resource")
-    #Bitmaps = Loader.Build_Tag(Filepath=Path+'bitmaps.map', Cls_ID="resource")
-    #Strings = Loader.Build_Tag(Filepath=Path+'loc.map',     Cls_ID="resource")
-    Map = Loader.Build_Tag(Filepath=Path+'Smoke Screen\\CE_bloodgulch.map', Cls_ID="map")
+    #sounds  = loader.build_tag(filepath=path+'sounds.map',  tag_id="resource")
+    #bitmaps = loader.build_tag(filepath=path+'bitmaps.map', tag_id="resource")
+    strings = loader.build_tag(filepath=path+'loc.map',     tag_id="resource")
+    #halomap = loader.build_tag(filepath=path+'Smoke Screen\\CE_bloodgulch.map', tag_id="map")
 
-    #Sounds.Print(Printout=True, Show=['Name','Value','Children','Index','Type'])
-    #Bitmaps.Print(Printout=True, Show=['Name','Value','Children','Index','Type'])
-    #Strings.Print(Printout=True, Show=['Name','Value','Children','Index','Type'])
-    Map.Print(Printout=True, Show=['Name','Value','Children','Index','Type'])
+    #sounds.pprint(printout=True, show=['name','value','children','index','field'])
+    #bitmaps.pprint(printout=True, show=['name','value','children','index','field'])
+    strings.pprint(printout=True, show=['name','value','children','index','field'])
+    #halomap.pprint(printout=True, show=['name','value','children','index','field'])
     
     input('-'*80 + '\n'+
           'Finished.\n'+

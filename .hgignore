@@ -1,33 +1,33 @@
 syntax: glob
 construct/**
-ReclaimerLib/__pycache__/**
-ReclaimerLib/resources/__pycache__/**
-ReclaimerLib/resources/Bitmap_Module/__pycache__/**
-ReclaimerLib/resources/Bitmap_Module/ext/__pycache__/**
+reclaimer/__pycache__/**
+reclaimer/resources/__pycache__/**
+reclaimer/resources/Bitmap_Module/__pycache__/**
+reclaimer/resources/Bitmap_Module/ext/__pycache__/**
 
-ReclaimerLib/Halo/__pycache__/**
-ReclaimerLib/Halo/HEK/__pycache__/**
-ReclaimerLib/Halo/HEK/Defs/__pycache__/**
-ReclaimerLib/Halo/HEK/Defs/Objs/__pycache__/**
-ReclaimerLib/Halo/HEK/Programs/__pycache__/**
-ReclaimerLib/Halo/HEK/Programs/GUI/__pycache__/**
-ReclaimerLib/Halo/HEK/Programs/Tag_Ripper/__pycache__/**
-ReclaimerLib/Halo/HEK/Programs/Tag_Ripper/all_original_tags/**
-ReclaimerLib/Halo/HEK/Programs/Tag_Ripper/Defs/__pycache__/**
-ReclaimerLib/Halo/HEK/Programs/Tag_Ripper/resources/**
-ReclaimerLib/Halo/HEK/Tag_Editing/__pycache__/**
+reclaimer/halo/__pycache__/**
+reclaimer/halo/hek/__pycache__/**
+reclaimer/halo/hek/defs/__pycache__/**
+reclaimer/halo/hek/defs/objs/__pycache__/**
+reclaimer/halo/hek/programs/__pycache__/**
+reclaimer/halo/hek/programs/gui/__pycache__/**
+reclaimer/halo/hek/programs/ripper/__pycache__/**
+reclaimer/halo/hek/programs/ripper/all_original_tags/**
+reclaimer/halo/hek/programs/ripper/defs/__pycache__/**
+reclaimer/halo/hek/programs/ripper/resources/**
+reclaimer/halo/hek/tag_editing/__pycache__/**
 
-ReclaimerLib/Halo/META/__pycache__/**
-ReclaimerLib/Halo/META/Defs/__pycache__/**
-ReclaimerLib/Halo/META/Defs/Objs/__pycache__/**
+reclaimer/halo/meta/__pycache__/**
+reclaimer/halo/meta/defs/__pycache__/**
+reclaimer/halo/meta/defs/objs/__pycache__/**
 
-ReclaimerLib/GDL/__pycache__/**
-ReclaimerLib/GDL/Defs/__pycache__/**
-ReclaimerLib/GDL/Defs/Objs/__pycache__/**
+reclaimer/gdl/__pycache__/**
+reclaimer/gdl/defs/__pycache__/**
+reclaimer/gdl/defs/objs/__pycache__/**
 
-ReclaimerLib/misc/__pycache__/**
-ReclaimerLib/misc/Defs/__pycache__/**
-ReclaimerLib/misc/Defs/Objs/__pycache__/**
+reclaimer/misc/__pycache__/**
+reclaimer/misc/defs/__pycache__/**
+reclaimer/misc/defs/objs/__pycache__/**
 
 data/**
 tags/**
