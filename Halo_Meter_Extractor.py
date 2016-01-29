@@ -1,65 +1,71 @@
 from os.path import splitext
 from traceback import format_exc
 
-print("Press enter to begin extracting meter images.")
-input()
-
 try:
-    from ReclaimerLib.Halo.HEK.Library import Halo_Library
-    from supyr_struct import Library, Buffer
+    from reclaimer.halo.hek.library import HaloLibrary
+    from supyr_struct import library, buffer
 
     #used for loading all meter tags that can be found
-    metr_loader = Halo_Library(Valid_Tag_IDs="metr", Print_Test=False)
+    metr_loader = HaloLibrary(valid_tag_ids="metr", print_test=False)
 
     #replace the raw data struct of the meter image with the organized one
-    Meter_Image_Struct = metr_loader.Defs['metr'].Structures['Meter_Image']
-    metr_loader.Defs['metr'].Tag_Structure[1][14]['CHILD'] = Meter_Image_Struct
+    Meter_Image_Struct = metr_loader.defs['metr'].descriptors['Meter_Image']
+    metr_loader.defs['metr'].descriptor[1][14]['CHILD'] = Meter_Image_Struct
     
-    tags_dir = metr_loader.Data_Dir
+    tagsdir = metr_loader.datadir
     #library to build tga images
-    tga_maker = Library.Library(Valid_Tag_IDs='tga', Tags_Dir=tags_dir,
-                                Defs_Path='supyr_struct.Defs')
+    tga_maker = library.Library(valid_tag_ids='tga', tagsdir=tagsdir,
+                                defs_path='supyr_struct.defs')
     
-    metr_loader.Index_Tags()
-    metr_loader.Load_Tags()
+    print("Press enter to begin extracting meter images.")
+    input()
+
+    metr_loader.index_tags()
+    metr_loader.load_tags()
     
-    for Meter_Path in metr_loader.Tags['metr']:
+    tga_buffer = buffer.BytearrayBuffer()
+    
+    for Meter_Path in metr_loader.tags['metr']:
         try:
-            meter = metr_loader.Tags['metr'][Meter_Path]
-
-            tga_buffer = Buffer.BytearrayBuffer()
-            tgaout     = tga_maker.Build_Tag(Cls_ID='tga')
-            tgaout.Tag_Path = tags_dir+splitext(Meter_Path)[0]+'.tga'
-
-            meterdata = meter.Tag_Data.Data
+            print("Extracting '%s'..."%Meter_Path)
+            #clear the buffer
+            del tga_buffer[:]
+            tga_buffer.seek(0)
             
-            head = tgaout.Tag_Data.Header
+            meter = metr_loader.tags['metr'][Meter_Path]
 
-            head.Image_Type.Format.Data = 2
+            tgaout         = tga_maker.build_tag(tag_id='tga')
+            tgaout.tagpath = tagsdir+splitext(Meter_Path)[0]+'.tga'
+
+            meterdata = meter.tagdata.Data
+            
+            head = tgaout.tagdata.Header
+
+            head.Image_Type.Format.data = 2
             head.Width  = meterdata.Meter_Width
             head.Height = meterdata.Meter_Height
             head.BPP = 32
             head.Image_Descriptor.Alpha_Bit_Count    = 8
-            head.Image_Descriptor.Screen_Origin.Data = 1
+            head.Image_Descriptor.Screen_Origin.data = 1
 
-            tgaout.Tag_Data.Pixel_Data = tga_buffer
-            tga_buffer.seek(4*head.Width*head.Height)
-            tga_buffer.write(b'\x00')
+            tgaout.tagdata.Pixel_Data = tga_buffer
+            #write a solid red color to the image for the background
+            tga_buffer.write(b'\x00\x00\xff\x00'*head.Width*head.Height)
 
             lines = meterdata.Meter_Data.Data
 
+            #write each of the lines to the appropriate location
             for line in lines:
                 tga_buffer.seek( (line.X_Pos + line.Y_Pos*head.Width )*4 )
                 tga_buffer.write(line.Line_Data)
 
-            tgaout.Write(Temp=False, Int_Test=False, Backup=False)
+            tgaout.write(temp=False, int_test=False, backup=False)
         except Exception:
             print(format_exc())
             print("Above exception occurred while trying to extract "+
                   "meter image for:\n    %s\n\n"%Meter_Path)
 
-    print("Extraction finished. Hit enter to exit.")
-    input()
+    input("\nExtraction finished. Hit enter to exit.")
 
 except Exception:
     print(format_exc())
