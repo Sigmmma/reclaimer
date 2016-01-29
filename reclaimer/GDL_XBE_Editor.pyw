@@ -9,7 +9,7 @@ from copy import deepcopy
 curr_dir = os.path.abspath(os.curdir)
 
 try:
-    from ReclaimerLib.GDL.Library import GDL_Library as Const
+    from reclaimer.gdl.library import GdlLibrary
     
     def Validate_and_Set_Str(Var, *args):
         Val = Var.get()
@@ -40,7 +40,7 @@ try:
             Val = Var.get()
             for i in range(Elements['ENTRIES']):
                 if Elements[i]['NAME'] == Val:
-                    Var.Block_Parent[Var.Block_Index].Data = Elements[i]['VALUE']
+                    Var.Block_Parent[Var.Block_Index].data = Elements[i]['VALUE']
                     return
 
     def Set_Enum(Widget, i):
@@ -56,8 +56,8 @@ try:
         Mask = Flag_Var.Mask
         Inv_Mask = 4294967295-Mask
         
-        Data = Var.Block_Parent[Var.Block_Index].Data
-        Var.Block_Parent[Var.Block_Index].Data = Flag_Var.get()*Mask+(Data&Inv_Mask)
+        data = Var.Block_Parent[Var.Block_Index].data
+        Var.Block_Parent[Var.Block_Index].data = Flag_Var.get()*Mask+(data&Inv_Mask)
 
 
     class GDL_Editor_Window(Tk):
@@ -66,7 +66,7 @@ try:
         
         def __init__(self, **options):
             Tk.__init__(self, **options )
-            self.XBE_Const = Const(Valid_Tag_IDs='xbe')
+            self.XBE_Const = GdlLibrary(Valid_Tag_IDs='xbe')
             
             self.title("GDL: XBE Editor V1.5")
             self.geometry("250x655+0+0")
@@ -75,12 +75,12 @@ try:
             self.Selected_Char = StringVar(self)
             self.Selected_Cheat = StringVar(self)
 
-            Structs = self.XBE_Const.Defs['xbe'].Structures
+            Descs = self.XBE_Const.defs['xbe'].descriptors
 
-            self._Cheat_Flags_Desc         = Structs['No_Types']
-            self._Cheat_Weapon_Flags_Desc  = Structs['Weapon_Types']
-            self._Cheat_Armor_Flags_Desc   = Structs['Armor_Types']
-            self._Cheat_Special_Flags_Desc = Structs['Special_Types']
+            self._Cheat_Flags_Desc         = Descs['no_types']
+            self._Cheat_Weapon_Flags_Desc  = Descs['weapon_types']
+            self._Cheat_Armor_Flags_Desc   = Descs['armor_types']
+            self._Cheat_Special_Flags_Desc = Descs['special_types']
 
             #Add the buttons
             self.btn_load = Button(self, text="Load GDL XBE", width=15, command=self.Load_XBE)
@@ -114,52 +114,52 @@ try:
             self.Chars_Export.place(x=175, y=198, anchor=NW)
 
         def _Import_Chars(self):
-            if hasattr(self.Loaded_XBE, 'Tag_Data'):
-                Filepath = filedialog.askopenfilename(initialdir=curr_dir, defaultextension=".gdl_chars",
+            if hasattr(self.Loaded_XBE, 'tagdata'):
+                filepath = filedialog.askopenfilename(initialdir=curr_dir, defaultextension=".gdl_chars",
                                                       filetypes=[("GDL Characters", "*.gdl_chars"),('All','*')],
                                                       title="Import characters from...")
-                if Filepath != "":
+                if filepath != "":
                     try:
-                        self.Loaded_XBE.Tag_Data.Secret_Characters.Read(Filepath=Filepath)
+                        self.Loaded_XBE.tagdata.Secret_Characters.read(filepath=filepath)
                         self._Initialize_Windows()
                     except: print(format_exc())
         
         def _Export_Chars(self):
-            if hasattr(self.Loaded_XBE, 'Tag_Data'):
-                Filepath = filedialog.asksaveasfilename(initialdir=curr_dir, defaultextension=".gdl_chars",
+            if hasattr(self.Loaded_XBE, 'tagdata'):
+                filepath = filedialog.asksaveasfilename(initialdir=curr_dir, defaultextension=".gdl_chars",
                                                         filetypes=[("GDL Characters", "*.gdl_chars"),('All','*')],
                                                         title="Export the current characters to...")
-                if Filepath != "":
-                    try:    self.Loaded_XBE.Tag_Data.Secret_Characters.Write(Filepath=Filepath)
+                if filepath != "":
+                    try:    self.Loaded_XBE.tagdata.Secret_Characters.write(filepath=filepath)
                     except: print(format_exc())
             
         def _Import_Cheats(self):
-            if hasattr(self.Loaded_XBE, 'Tag_Data'):
-                Filepath = filedialog.askopenfilename(initialdir=curr_dir, defaultextension=".gdl_cheats",
+            if hasattr(self.Loaded_XBE, 'tagdata'):
+                filepath = filedialog.askopenfilename(initialdir=curr_dir, defaultextension=".gdl_cheats",
                                                       filetypes=[("GDL Cheats", "*.gdl_cheats"),('All','*')],
                                                       title="Import cheats from...")
-                if Filepath != "":
+                if filepath != "":
                     try:
-                        self.Loaded_XBE.Tag_Data.Cheats.Read(Filepath=Filepath)
+                        self.Loaded_XBE.tagdata.Cheats.read(filepath=filepath)
                         self._Initialize_Windows()
                     except: print(format_exc())
         
         def _Export_Cheats(self):
-            if hasattr(self.Loaded_XBE, 'Tag_Data'):
-                Filepath = filedialog.asksaveasfilename(initialdir=curr_dir, defaultextension=".gdl_cheats",
+            if hasattr(self.Loaded_XBE, 'tagdata'):
+                filepath = filedialog.asksaveasfilename(initialdir=curr_dir, defaultextension=".gdl_cheats",
                                                         filetypes=[("GDL Cheats", "*.gdl_cheats"),('All','*')],
                                                         title="Export the current cheats to...")
-                if Filepath != "":
-                    try:    self.Loaded_XBE.Tag_Data.Cheats.Write(Filepath=Filepath)
+                if filepath != "":
+                    try:    self.Loaded_XBE.tagdata.Cheats.write(filepath=filepath)
                     except: print(format_exc())
         
         def Load_XBE(self):
-            Filepath = filedialog.askopenfilename(initialdir=curr_dir, title="Select Gauntlet's default.xbe")
-            if Filepath != "":
+            filepath = filedialog.askopenfilename(initialdir=curr_dir, title="Select Gauntlet's default.xbe")
+            if filepath != "":
                 try:
-                    XBE = self.XBE_Const.Build_Tag(Tag_ID="xbe", Filepath=Filepath)
-                    if (XBE.Tag_Data.XBE_Image_Header.XBE_Magic != "XBEH" or
-                        XBE.Tag_Data.XBE_Certificate.Title_Name != "Gauntlet Dark Legacy"):
+                    XBE = self.XBE_Const.build_tag(tag_id="xbe", filepath=filepath)
+                    if (XBE.tagdata.XBE_Image_Header.XBE_Magic != "XBEH" or
+                        XBE.tagdata.XBE_Certificate.Title_Name != "Gauntlet Dark Legacy"):
                         raise IOError("The selected file does not appear to be a valid GDL default.xbe")
                     
                     self.Loaded_XBE = XBE
@@ -169,15 +169,15 @@ try:
                     raise IOError("Could not load file. Make sure it is a valid Gauntlet Dark Legacy XBE.")
 
         def Save_XBE(self):
-            if hasattr(self.Loaded_XBE, "Write"):
-                try:    self.Loaded_XBE.Write(Temp=False, Backup=True)
+            if hasattr(self.Loaded_XBE, "write"):
+                try:    self.Loaded_XBE.write(temp=False, backup=True)
                 except: raise IOError("The above error occurred while trying to write XBE file.")
                     
 
         def Get_Char_Names(self):
             Char_Names = []
             try:
-                Chars = self.Loaded_XBE.Tag_Data.Secret_Characters
+                Chars = self.Loaded_XBE.tagdata.Secret_Characters
                 for Character in Chars:
                     Char_Names.append(Character.Code)
             except: pass
@@ -186,7 +186,7 @@ try:
         def Get_Cheat_Names(self):
             Cheat_Names = []
             try:
-                Cheats = self.Loaded_XBE.Tag_Data.Cheats
+                Cheats = self.Loaded_XBE.tagdata.Cheats
                 for Cheat in Cheats:
                     Cheat_Names.append(Cheat.Code)
             except: pass
@@ -233,7 +233,7 @@ try:
             if i is None:
                 i = Menu.Current_Index
                 
-            Char = self.Loaded_XBE.Tag_Data.Secret_Characters[i]
+            Char = self.Loaded_XBE.tagdata.Secret_Characters[i]
             self._Reload_Widgets(Menu, Char, Char.DESC)
             self.Selected_Char.set(Char.Code)
             
@@ -241,27 +241,27 @@ try:
             if i is None:
                 i = Menu.Current_Index
                 
-            Cheat = self.Loaded_XBE.Tag_Data.Cheats[i]
+            Cheat = self.Loaded_XBE.tagdata.Cheats[i]
             Cheat_Flags = Cheat.Flags
             Cheat_Type = Cheat.Type
                 
             Desc = Cheat.DESC
             
-            if Cheat_Type.Data == 5:
+            if Cheat_Type.data == 5:
                 Cheat_Flags.DESC = Desc[3] = self._Cheat_Weapon_Flags_Desc
-            elif Cheat_Type.Data == 6:
+            elif Cheat_Type.data == 6:
                 Cheat_Flags.DESC = Desc[3] = self._Cheat_Armor_Flags_Desc
-            elif Cheat_Type.Data == 9:
+            elif Cheat_Type.data == 9:
                 Cheat_Flags.DESC = Desc[3] = self._Cheat_Special_Flags_Desc
             else:
-                Cheat_Flags.Data = 0
+                Cheat_Flags.data = 0
                 Cheat_Flags.DESC = Desc[3] = self._Cheat_Flags_Desc
 
             self._Reload_Widgets(Menu, Cheat, Desc)
             self.Selected_Cheat.set(Cheat.Code)
 
 
-        def _Reload_Widgets(self, Parent, Data_Block, Desc):
+        def _Reload_Widgets(self, Parent, datablock, Desc):
             i = Parent.Current_Index
             
             Root_X = Parent.winfo_x()
@@ -277,26 +277,26 @@ try:
             Parent.Child_Canvas = Child_Canvas
 
             for i in range(Desc['ENTRIES']):
-                This_Desc = Desc[i]
-                if This_Desc is None:
+                this_desc = Desc[i]
+                if this_desc is None:
                     continue
                 
-                Type = This_Desc['TYPE']
+                field = this_desc['TYPE']
                 Trace_Func = None
 
-                Child_Canvas.create_text(10, Y+3, anchor="nw", text=This_Desc["GUI_NAME"])
+                Child_Canvas.create_text(10, Y+3, anchor="nw", text=this_desc["GUI_NAME"])
 
-                if Type.Is_Data:
+                if field.is_data:
                     Field_Var = StringVar(Child_Canvas)
                     
-                    Field_Var.Block_Parent = Data_Block
-                    Field_Var.Block_Desc   = This_Desc
+                    Field_Var.Block_Parent = datablock
+                    Field_Var.Block_Desc   = this_desc
                     Field_Var.Block_Index  = i
                     Field_Var.Main_Window  = self
                     
-                    Block_Val = Data_Block[i]
+                    Block_Val = datablock[i]
 
-                    if Type.Is_Enum:
+                    if field.is_enum:
                         Widget_Height = 30
                         New_Widget = OptionMenu(Child_Canvas, Field_Var, (), Func=Set_Enum)
                         
@@ -304,13 +304,13 @@ try:
                         New_Widget.config(width=16)
                         New_Widget.Field_Var = Field_Var
                         
-                        for x in range(This_Desc['ENTRIES']):
-                            New_Widget.addOption(This_Desc[x]['GUI_NAME'])
-                            if Block_Val.Data == This_Desc[x]['VALUE']:
-                                Field_Var.set(This_Desc[x]['GUI_NAME'])
+                        for x in range(this_desc['ENTRIES']):
+                            New_Widget.addOption(this_desc[x]['GUI_NAME'])
+                            if Block_Val.data == this_desc[x]['VALUE']:
+                                Field_Var.set(this_desc[x]['GUI_NAME'])
                                 
                         Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Enum(Var)
-                    elif Type.Is_Bool:
+                    elif field.is_bool:
                         Widget_Height = 0
                         New_Widget = Canvas(Child_Canvas, highlightthickness=0,
                                             width=Main_Window.winfo_width(),
@@ -318,10 +318,10 @@ try:
                         New_Widget.place(x=0, y=Root_Y+Y, anchor=NW)
                         New_Widget.Field_Var = Field_Var
                         
-                        for x in range(This_Desc['ENTRIES']):
+                        for x in range(this_desc['ENTRIES']):
                             Flag_Var = IntVar(Child_Canvas)
-                            Flag_Name = This_Desc[x]['GUI_NAME']
-                            Flag_Val = This_Desc[x]['VALUE']
+                            Flag_Name = this_desc[x]['GUI_NAME']
+                            Flag_Val = this_desc[x]['VALUE']
 
                             Flag_Var.Mask = Flag_Val
                             Flag_Var.Field_Var = Field_Var
@@ -333,18 +333,18 @@ try:
                             New_Flag_Button.place(x=0, y=Widget_Height, anchor=NW)
                             New_Flag_Button.Flag_Var = Flag_Var
                             
-                            if Block_Val.Data & Flag_Val:
+                            if Block_Val.data & Flag_Val:
                                 New_Flag_Button.select()
                             
                             Widget_Height += 16
                             New_Widget.config(height=Widget_Height)
                     else:
-                        Field_Var.set(str(Data_Block[i]))
-                        if Type.Is_Str:
-                            Field_Var.Max_Len = This_Desc["SIZE"]-1
+                        Field_Var.set(str(datablock[i]))
+                        if field.is_str:
+                            Field_Var.Max_Len = this_desc["SIZE"]-1
                             Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Str(Var)
                         else:
-                            if issubclass(Type.Py_Type, float):
+                            if issubclass(field.py_type, float):
                                 Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Float(Var)
                             else:
                                 Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Int(Var)

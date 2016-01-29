@@ -2,26 +2,25 @@ from os.path import dirname
 from time import time
 from traceback import format_exc
 
-This_Dir = dirname(__file__)
+thisdir = dirname(__file__)
 
 try:
-    from ReclaimerLib.Halo.HEK.Programs.Tag_Ripper.Hash_Cacher import Hash_Cacher
+    from reclaimer.halo.hek.programs.ripper.hash_cacher import HashCacher
     
-    Cacher = Hash_Cacher()
+    cacher = HashCacher()
     
-    Cache_Name = 'Halo_1_Default'
-    Tags_Dir   = (This_Dir+"\\ReclaimerLib\\Halo\\HEK\\"+
-                           "Programs\\Tag_Ripper\\all_original_tags\\")
-    Cache_Description = ('All the tags that are used in the original Halo 1 '+
+    tagsdir = (thisdir+"\\reclaimer\\halo\\hek\\programs\\ripper\\all_original_tags\\")
+    cache_name = 'Halo_1_Default'
+    cache_description = ('All the tags that are used in the original Halo 1 '+
                          'singleplayer, multiplayer, and ui maps.\n'+
                          'This should always be used, and as the base cache.')
     input('Press Enter to begin scanning in:\n'+
-          '    %s\n\n' % Tags_Dir)
+          '    %s\n\n' % tagsdir)
         
     start = time()
-    Cache = Cacher.Build_Hashcache(Cache_Name, Cache_Description, Tags_Dir)
+    cache = cacher.build_hashcache(cache_name, cache_description, tagsdir)
     
-    Cache.Print(Printout=True)
+    cache.pprint(printout=True)
     input('-'*80 + '\n'+
           'Finished scanning tags directory.'+
           'Operation took %s seconds.\n'%(time()-start) +

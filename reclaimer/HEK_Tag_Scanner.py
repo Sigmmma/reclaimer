@@ -1,9 +1,9 @@
 from traceback import format_exc
 try:
-    from ReclaimerLib.Halo.HEK.Programs.HEK_Tag_Scanner import *
+    from reclaimer.halo.hek.programs.hek_tag_scanner import *
 
-    Scanner = HEK_Tag_Scanner()
-    Scanner.Load_Tags_and_Run()
+    scanner = HekTagScanner()
+    scanner.load_tags_and_run()
 except Exception:
     print(format_exc())
     input()

@@ -2,30 +2,31 @@ import cProfile
 from traceback import format_exc
 from copy import copy
 try:
-    from ReclaimerLib.GDL.Library import GDL_Library
+    from reclaimer.gdl.library import GdlLibrary
 
-    Test = GDL_Library(Debug=3, Allow_Corrupt=True,
-                       Print_Test=False, Save_Test=False, Int_Test=False,
-                       Write_as_Temp=True, Backup_Old_Tags=False,
-                       #Valid_Tag_IDs='xbe',
-                       Valid_Tag_IDs='objects.ps2',
-                       Print_Options={'Indent':4,
-                                      'Printout':True, 'Precision':3,
-                                      'Show':['Name', 'Children', #'Type',
-                                              'Value','Offset',# 'Py_ID',
-                                              'Index', 'Flags',# 'Size', 'Unique',
-                                              'Tag_Path', 'Bin_Size','Ram_Size',
-                                              #'All'
+    test = GdlLibrary(debug=3, allow_corrupt=True,
+                       print_test=False, save_test=False, int_test=False,
+                       write_as_temp=True, backup=False,
+                       #valid_tag_ids='xbe',
+                       valid_tag_ids='objects.ps2',
+                       print_options={'indent':4,
+                                      'printout':True, 'precision':3,
+                                      'show':['name', 'children', #'field',
+                                              'value','offset',# 'py_id',
+                                              'index', 'Flags',# 'size', 'unique',
+                                              'tagpath', 'binsize','ramsize',
+                                              #'all'
                                               ] })
     #Test.Run_Test()
-    cProfile.run('Test.Load_Tags_and_Run()')
-    Objs = Test.Tags.get('objects.ps2')
+    cProfile.run('test.load_tags_and_run()')
+    objs = test.tags.get('objects.ps2')
     input()
-    if Objs is not None:
-        for Tag_Path in Objs:
-            print("Size of: "+Tag_Path+" = ", Objs[Tag_Path].Tag_Data.Bin_Size)
-            Objs[Tag_Path].Print(Show=('Name','Value','Children','Flags', 'Offset', 'Raw'),
-                                 Printout=True)
+    if objs is not None:
+        for tagpath in objs:
+            print("Size of: "+tagpath+" = ", objs[tagpath].tagdata.binsize)
+            objs[tagpath].pprint(show=('name', 'value', 'children',
+                                       'flags', 'offset', 'raw'),#, 'all'),
+                                 printout=True)
     input()
 except Exception:
     print(format_exc())

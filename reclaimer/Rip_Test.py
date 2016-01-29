@@ -1,18 +1,18 @@
 from os.path import dirname
 from traceback import format_exc
 from time import time
-This_Dir = dirname(__file__)
+this_dir = dirname(__file__)
 
 try:
-    from ReclaimerLib.Halo.HEK.Programs.Tag_Ripper.Tag_Ripper import Tag_Ripper
+    from reclaimer.halo.hek.programs.ripper.tag_ripper import TagRipper
 
-    Map_Path = (This_Dir+"\\tags\\precipice.map")
-    Ripper = Tag_Ripper()
+    mappath = (this_dir+"\\tags\\precipice.map")
+    ripper = TagRipper()
     input('Press Enter to begin ripping tags from:\n'+
-          '    %s\n\n' % Map_Path)
+          '    %s\n\n' % mappath)
         
     start = time()
-    Ripper.Rip_Tags(Map_Path)
+    ripper.rip_tags(mappath)
     
     input('-'*80 + '\n'+
           'Finished ripping tags.\n'+
@@ -20,6 +20,6 @@ try:
           '\n'+
           'Press enter to exit.')
 
-except Exception:
+except:
     print(format_exc())
     input()

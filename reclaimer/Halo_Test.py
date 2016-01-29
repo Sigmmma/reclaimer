@@ -3,21 +3,21 @@ from traceback import format_exc
 from time import time
 
 try:
-    from ReclaimerLib.Halo.HEK.Library import Halo_Library
+    from reclaimer.halo.hek.library import HaloLibrary
 
-    Test = Halo_Library(Print_Test=True, Save_Test=False, Debug=3,
-                        Write_as_Temp=False, Backup_Old_Tags=False,
-                        Allow_Corrupt=True,
-                        #Valid_Tag_IDs="metr",
-                        Print_Options={'Indent':4,
-                                       'Printout':True, 'Precision':3,
-                                       'Show':['Name', 'Children', 'Type',
-                                               'Value', 'Offset', 'Size',
-                                               'Index', 'Flags',
-                                               'Tag_Path', #'Unique', 'Py_Type',
-                                               'Bin_Size', 'Ram_Size'] })
-    Test.Run_Test()
-    #cProfile.run('Test.Load_Tags_and_Run()')
+    test = HaloLibrary(print_test=True, save_test=False, debug=3,
+                        write_as_temp=False, backup=False,
+                        allow_corrupt=True,
+                        #valid_tag_ids="metr",
+                        print_options={'indent':4,
+                                       'printout':True, 'precision':3,
+                                       'show':['name', 'children', 'field',
+                                               'value', 'offset', 'size',
+                                               'index', 'flags',# 'py_id',
+                                               'tagpath', #'unique', 'py_type',
+                                               'vinsize', 'ramsize'] })
+    test.run_test()
+    #cProfile.run('test.run_test()')
     #input()
 
 except Exception:

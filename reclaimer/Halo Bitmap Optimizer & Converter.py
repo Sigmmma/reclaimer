@@ -1,8 +1,8 @@
 from traceback import format_exc
 try:
-    from ReclaimerLib.Halo.HEK.Programs.Bitmap_Optimizer_and_Converter import *
+    from reclaimer.halo.hek.programs.bitmap_optimizer_and_converter import *
 
-    Bitmap_Convertor = Bitmap_Converter(Debug = 0)
+    converter = BitmapConverter(debug = 0)
 
 except:
     print(format_exc())
