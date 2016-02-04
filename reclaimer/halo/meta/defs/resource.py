@@ -1,6 +1,6 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
-from ...hek.defs import hmt, str_, ustr, bitm#, snd_, font
+from ...hek.defs import hmt_, str_, ustr, bitm#, snd_, font
 
 com = combine
 
@@ -24,83 +24,82 @@ class ResourceDef(TagDef):
             raise KeyError()
         
         tag = parent.get_tag()
-        case = 'Raw'
+        case = ''
         
-        r_type = tag.tagdata.Type.data_name
+        r_type = tag.tagdata.resource_type.data_name
 
         #This is a really hacky(and easy to break) method of determining
         #whether or not the 
-        if r_type == 'Bitmaps':
+        if r_type == 'bitmaps':
             if not hasattr(tag, 'sub_r_type'):
-                tag.sub_r_type = case = 'Raw'
-            elif tag.sub_r_type == 'Raw':
-                tag.sub_r_type = case = 'Bitmap'
+                tag.sub_r_type = case = ''
+            elif tag.sub_r_type == '':
+                tag.sub_r_type = case = 'bitmap'
             else:
-                tag.sub_r_type = case = 'Raw'
+                tag.sub_r_type = case = ''
         
-        elif r_type == 'Sounds':
+        elif r_type == 'sounds':
             if not hasattr(tag, 'sub_r_type'):
-                tag.sub_r_type = case = 'Sound'
-            elif tag.sub_r_type == 'Raw':
-                tag.sub_r_type = case = 'Sound'
+                tag.sub_r_type = case = 'sound'
+            elif tag.sub_r_type == '':
+                tag.sub_r_type = case = 'sound'
             else:
-                tag.sub_r_type = case = 'Raw'
+                tag.sub_r_type = case = ''
         
         #there is no way to know what type of tag each of the tags in the
         #loc.map is, so rather than guess we just treat them as bytes
         return case
 
 
-    Raw_Data = { TYPE:Container, NAME:"Raw_Data", ALIGN:4,
-                 0:{ TYPE:BytesRaw, NAME:"Raw_Tag_Data", SIZE:'..Size' }
+    raw_data = { TYPE:Container, NAME:"tag_meta", ALIGN:4,
+                 0:{ TYPE:BytesRaw, NAME:"raw_data", SIZE:'..size' }
                  }
 
-    Bitmap_Meta = com({}, bitm.BitmDef.descriptor[1])
+    bitmap_meta = com({}, bitm.BitmDef.descriptor[1])
 
 
     #null out the data types of the raw data references since they dont exist
-    Bitmap_Meta[11][CHILD][TYPE] = Bitmap_Meta[12][CHILD][TYPE] = Void
+    bitmap_meta[11][CHILD][TYPE] = bitmap_meta[12][CHILD][TYPE] = Void
 
 
-    Tag_Data = { TYPE:Switch, NAME:"Tag_Data",
-                 DEFAULT:Raw_Data, POINTER:'.Offset',
+    tag_meta = { TYPE:Switch, NAME:"tag_meta",
+                 DEFAULT:raw_data, POINTER:'.offset',
                  CASE:get_resource_tag_type,
-                 CASES:{'Raw':Raw_Data,
-                        'Bitmap':{ TYPE:Container, NAME:"Tag_Meta",
-                                   0:Bitmap_Meta },
-                        #'Sound':{ TYPE:Container, NAME:"Tag_Meta",
-                        #          0:Sound_Meta }
+                 CASES:{'bitmap':{ TYPE:Container, NAME:"tag_meta",
+                                   0:bitmap_meta },
+                        #'sound':{ TYPE:Container, NAME:"tag_meta",
+                        #          0:sound_meta }
                         }
                  }
 
-    Tag_Header = { TYPE:Struct, NAME:"Tag_Header",
-                   0:{ TYPE:UInt32, NAME:"ID" },
-                   1:{ TYPE:UInt32, NAME:"Size" },
-                   2:{ TYPE:UInt32, NAME:"Offset" },
-                   CHILD:Tag_Data
+    tag_header = { TYPE:Struct, NAME:"tag_header",
+                   0:{ TYPE:UInt32, NAME:"id" },
+                   1:{ TYPE:UInt32, NAME:"size" },
+                   2:{ TYPE:UInt32, NAME:"offset" },
+                   CHILD:tag_meta
                    }
 
-    Tag_Path = { TYPE:CStrLatin1, NAME:"Tag_Path" }
+    tag_path = { TYPE:CStrLatin1, NAME:"tag_path" }
     
     descriptor = { TYPE:Container, NAME:"halo_map_resource",
-                      0:{ TYPE:Enum32,    NAME:"Type",
-                          0:{ NAME:'Bitmaps', VALUE:1 },
-                          1:{ NAME:'Sounds',  VALUE:2 },
-                          2:{ NAME:'Strings', VALUE:3 },
-                          },
-                      1:{ TYPE:Pointer32, NAME:"Tag_Paths_Pointer" },
-                      2:{ TYPE:Pointer32, NAME:"Tag_Headers_Pointer" },
-                      3:{ TYPE:UInt32,    NAME:"Tag_Count" },
-                      4:{ TYPE:Array,     NAME:"Tag_Paths",
-                          SIZE:'.Tag_Count', POINTER:'.Tag_Paths_Pointer',
-                          SUB_STRUCT:Tag_Path,
-                          },
-                      5:{ TYPE:Array,     NAME:"Tag_Headers",
-                          SIZE:'.Tag_Count', POINTER:'.Tag_Headers_Pointer',
-                          SUB_STRUCT:Tag_Header,
-                          },
-                      }
+                   0:{ TYPE:Enum32,    NAME:"resource_type",
+                       0:{ NAME:'bitmaps', VALUE:1 },
+                       1:{ NAME:'sounds',  VALUE:2 },
+                       2:{ NAME:'strings', VALUE:3 },
+                       },
+                   1:{ TYPE:Pointer32, NAME:"tag_paths_pointer" },
+                   2:{ TYPE:Pointer32, NAME:"tag_headers_pointer" },
+                   3:{ TYPE:UInt32,    NAME:"tag_count" },
+                   4:{ TYPE:Array,     NAME:"tag_paths",
+                       SIZE:'.tag_count', POINTER:'.tag_paths_pointer',
+                       SUB_STRUCT:tag_path,
+                       },
+                   5:{ TYPE:Array,     NAME:"tag_headers",
+                       SIZE:'.tag_count', POINTER:'.tag_headers_pointer',
+                       SUB_STRUCT:tag_header,
+                       },
+                   }
 
-    descriptors = {'Tag_Header':Tag_Header,
-                   'Tag_Path':Tag_Path,
-                   'Tag_Data':Tag_Data}
+    descriptors = {'tag_header':tag_header,
+                   'tag_path':tag_path,
+                   'tag_meta':tag_meta}
