@@ -9,7 +9,7 @@ from copy import deepcopy
 curr_dir = os.path.abspath(os.curdir)
 
 try:
-    from reclaimer.gdl.library import GdlLibrary
+    from reclaimer.gdl.handler import GdlHandler
     
     def Validate_and_Set_Str(Var, *args):
         Val = Var.get()
@@ -66,7 +66,7 @@ try:
         
         def __init__(self, **options):
             Tk.__init__(self, **options )
-            self.XBE_Const = GdlLibrary(Valid_Tag_IDs='xbe')
+            self.XBE_Const = GdlHandler(Valid_Tag_IDs='xbe')
             
             self.title("GDL: XBE Editor V1.5")
             self.geometry("250x655+0+0")
@@ -248,14 +248,16 @@ try:
             Desc = Cheat.DESC
             
             if Cheat_Type.data == 5:
-                Cheat_Flags.DESC = Desc[3] = self._Cheat_Weapon_Flags_Desc
+                Cheat_Flags.DESC = self._Cheat_Weapon_Flags_Desc
             elif Cheat_Type.data == 6:
-                Cheat_Flags.DESC = Desc[3] = self._Cheat_Armor_Flags_Desc
+                Cheat_Flags.DESC = self._Cheat_Armor_Flags_Desc
             elif Cheat_Type.data == 9:
-                Cheat_Flags.DESC = Desc[3] = self._Cheat_Special_Flags_Desc
+                Cheat_Flags.DESC = self._Cheat_Special_Flags_Desc
             else:
                 Cheat_Flags.data = 0
-                Cheat_Flags.DESC = Desc[3] = self._Cheat_Flags_Desc
+                Cheat_Flags.DESC = self._Cheat_Flags_Desc
+                
+            dict.__setitem__(Desc, 3, Cheat_Flags.DESC)
 
             self._Reload_Widgets(Menu, Cheat, Desc)
             self.Selected_Cheat.set(Cheat.Code)

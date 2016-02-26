@@ -5,7 +5,7 @@ from .constants import *
 def tag_ref_sizecalc(self, block, **kwargs):
     '''Used to calculate the size of a tag
     reference string from a given string'''
-    block = block.strip(self.str_delimiter)
+    block = block.split(self.str_delimiter)[0]
     if len(block):
         return len(block) + 1
     return 0

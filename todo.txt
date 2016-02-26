@@ -2,44 +2,7 @@ Current speed of OBJECTS.PS2: 41KB/s
 
 High Priority:
 
-make an immutable dictionary class called a "Descriptor"
-    Descriptors will require a custom set method such as Replace() which will take
-    the changes being given to it and return a copy of itself with the changes
-    made. The reason for this is because __setattr__() cant return anything.
-
-    Do the above for __setattr__, __delattr__, __setitem__, and __delitem__
-
-
-When ripping a map with deprotect on, make a "Requires" set and a 
-"Required_By" list for each tag. The Requires set will contain the
-Tag_IDs of all tags that the tag requires to have valid names before
-it is written and the value in the Required_By list will be a list of all
-blocks that point to that Tag_ID.
-
-When scanning through the tags, add each non-null Tag_Index_Ref
-block to the Required_By list of the tag it points to, and add the Tag_ID
-of the tag it points to to the current tag's Requires set. Set each of those
-Tag_Index_Ref blocks Tag_Path_Pointer to 0 and Tag_ID fields to
-0xFFFFFFFF. Set each of the Reflexive blocks ID and Reflexive_ID to 0
-as well as the same kind of fields in Raw_Data_Ref.
-
-When done, write the meta data of all the tags whose Tag_IDs have an empty 
-Requires set to a BytearrayBuffer(not including the tag header), and make 
-a hash of the buffer. Use this hash to find the name of the tag in the Hash_Cache
-and, if it fails, name it heuristically. Replace the Tag_Path string of all blocks
-that depend on it with the new name and(in a separate series of lists) remove
-the name from lists that say "some_tag" depends on that tag.
-
-Check each tag to see which ones have an empty Requires set and run the
-above paragraph of steps on it. Repeat this process until all tags have
-been written. If there is a point where no tags have an empty Requires
-set, either name it heuristically or ask the user what to name it.
-
-MAKE SURE TO REMOVE Compressed_Color_Plate_Data from bitmap tags
-when making their hashes as well as compressed vertices in models and bsp
-
-make sure to null the tag class in tag references that dont exist so that the
-hashes still work with smokescreen protected maps.
+Move TagDef sanitization routines into Descriptor
 
 
 Finish docstrings for modules and update existing ones.
@@ -103,9 +66,9 @@ Implement recursive pointer based blocks.
 
 
 
-############
-HALO RELATED
-############
+##################
+## HALO RELATED ##
+##################
 
 Make descriptor for weapon hud tag
 Make descriptor for unit hud tag
@@ -119,9 +82,44 @@ to the bitmap convertor with settings specifying how to convert them.
 *shader_model requires multipurpose maps to have their channels swapped
 (this also means change the channel usage enum in the shader_model
 
-############
-HALO RELATED
-############
+
+## MAP RIPPING ##
+When ripping a map with deprotect on, make a "Requires" set and a 
+"Required_By" list for each tag. The Requires set will contain the
+Tag_IDs of all tags that the tag requires to have valid names before
+it is written and the value in the Required_By list will be a list of all
+blocks that point to that Tag_ID.
+
+When scanning through the tags, add each non-null Tag_Index_Ref
+block to the Required_By list of the tag it points to, and add the Tag_ID
+of the tag it points to to the current tag's Requires set. Set each of those
+Tag_Index_Ref blocks Tag_Path_Pointer to 0 and Tag_ID fields to
+0xFFFFFFFF. Set each of the Reflexive blocks ID and Reflexive_ID to 0
+as well as the same kind of fields in Raw_Data_Ref.
+
+When done, write the meta data of all the tags whose Tag_IDs have an empty 
+Requires set to a BytearrayBuffer(not including the tag header), and make 
+a hash of the buffer. Use this hash to find the name of the tag in the Hash_Cache
+and, if it fails, name it heuristically. Replace the Tag_Path string of all blocks
+that depend on it with the new name and(in a separate series of lists) remove
+the name from lists that say "some_tag" depends on that tag.
+
+Check each tag to see which ones have an empty Requires set and run the
+above paragraph of steps on it. Repeat this process until all tags have
+been written. If there is a point where no tags have an empty Requires
+set, either name it heuristically or ask the user what to name it.
+
+MAKE SURE TO REMOVE Compressed_Color_Plate_Data from bitmap tags
+when making their hashes as well as compressed vertices in models and bsp
+
+make sure to null the tag class in tag references that dont exist so that the
+hashes still work with smokescreen protected maps.
+## MAP RIPPING ##
+
+
+##################
+## HALO RELATED ##
+##################
 
 
 

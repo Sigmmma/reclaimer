@@ -34,11 +34,11 @@ def Get_Will_be_Processed(tag, Bitmap_Conversion_Flags):
 '''ENTER A DESCRIPTION FOR THIS CLASS WHEN I HAVE TIME'''
 class Bitmap_Converter_Main_Window(Tk):
 
-    def __init__(self, library, **options):
+    def __init__(self, handler, **options):
         Tk.__init__(self, **options )
         
         '''THE PROGRAM MUST BE CLASS WITH VARIABLES SUCH AS TAG_COLLECTION'''
-        self.library = library
+        self.handler = handler
 
         self.title("Halo Bitmap Optimizer & Converter")
         self.geometry("745x405+0+0")
@@ -137,7 +137,7 @@ class Bitmap_Converter_Main_Window(Tk):
         #Create the TAGS DIRECTORY box
         self.Tags_Directory_Field = Entry(self, textvariable=self.TK_Tags_Directory)
         self.Tags_Directory_Field.place(x=18, y=24, anchor=NW)
-        self.Tags_Directory_Field.insert(INSERT, self.library.tagsdir)
+        self.Tags_Directory_Field.insert(INSERT, self.handler.tagsdir)
         self.Tags_Directory_Field.config(width=57, state=DISABLED)
 
         #Add the buttons
@@ -411,10 +411,10 @@ class Bitmap_Converter_Main_Window(Tk):
 
         
         self.Disable_Settings_Window_Buttons()
-        self.tag_list_window = Bitmap_Converter_List_Window(library, self)
+        self.tag_list_window = Bitmap_Converter_List_Window(handler, self)
         self.help_window = Bitmap_Converter_Help_Window(self)
         
-        self.tag_data_canvas = Bitmap_Converter_Data_Window(library, self)
+        self.tag_data_canvas = Bitmap_Converter_Data_Window(handler, self)
         self.tag_data_canvas.place(x=495, y=2, anchor=NW)
 
         self.Child_Windows = (self.tag_list_window,)
@@ -449,7 +449,7 @@ class Bitmap_Converter_Main_Window(Tk):
     def _Window_Docking_Daemon(self):
         '''AFTER THE WINDOW IS CREATED THIS FUNCTION WILL
         LOOP CONTINUOUSLY DOCK MOVEMENT OF CHILD WINDOWS'''
-        while not self.library.close_program:
+        while not self.handler.close_program:
             #we don't want it to run too often or it'll be laggy
             sleep(self.Window_Docking_Interval)
             
@@ -461,33 +461,33 @@ class Bitmap_Converter_Main_Window(Tk):
     def _Main_Window_Update(self):
         '''AFTER THE WINDOW IS CREATED THIS FUNCTION WILL
         LOOP CONTINUOUSLY AND UPDATE ALL INFO IT'''
-        while not self.library.close_program:
+        while not self.handler.close_program:
             #we don't want it to run too often or it'll be laggy
             sleep(self.Window_Update_Interval)
                 
             #if the program is being told to display new, literal text
             if self.Display_New_Text:
                 if not(self.Window_Updating):
-                    self.after(0, (lambda:(self.Update_Bitmap_Converter_Main_Window(self.library.current_tag))))
+                    self.after(0, (lambda:(self.Update_Bitmap_Converter_Main_Window(self.handler.current_tag))))
                     self.Display_New_Text = False
             else:
                 if self.Proceed_with_Conversion:
                     if self.tags_indexed:
                         if self.tags_loaded:
-                            if (self.library.Default_Conversion_Flags["bitm"][READ_ONLY]):
+                            if (self.handler.Default_Conversion_Flags["bitm"][READ_ONLY]):
                                 update_string = "Compiling detailed list of all tags: "
                             else:
-                                update_string = "Processing tag: " + self.library.current_tag
+                                update_string = "Processing tag: " + self.handler.current_tag
                         else:
                             if self.tags_indexed:
-                                update_string = "tags indexed... Loading: " + self.library.current_tag
-                                self.Total_Bitmaps = self.library.tags_indexed
-                                self.Remaining_Bitmaps = self.library.tags_loaded
+                                update_string = "tags indexed... Loading: " + self.handler.current_tag
+                                self.Total_Bitmaps = self.handler.tags_indexed
+                                self.Remaining_Bitmaps = self.handler.tags_loaded
                             else:
                                 update_string = ""
                     else:
-                        update_string = "Searching for bitmap tags... Currently looking at: " + self.library.current_tag
-                        self.Total_Bitmaps = self.library.tags_indexed
+                        update_string = "Searching for bitmap tags... Currently looking at: " + self.handler.current_tag
+                        self.Total_Bitmaps = self.handler.tags_indexed
 
                     if not(self.Window_Updating):
                         self.after(0, (lambda:(self.Update_Bitmap_Converter_Main_Window(update_string))))
@@ -497,7 +497,7 @@ class Bitmap_Converter_Main_Window(Tk):
     #This function is to make the window to browse for the tags folder
     def Make_Bitmap_Converter_Browse(self):
         if not(self.Proceed_with_Conversion):
-            Tags_Dir_Str = tkinter.filedialog.askdirectory(initialdir=self.library.tagsdir,
+            Tags_Dir_Str = tkinter.filedialog.askdirectory(initialdir=self.handler.tagsdir,
                                                            title='Select a folder containing bitmap tags')
             Tags_Dir_Str = Tags_Dir_Str.replace('/', '\\')
             if(len(Tags_Dir_Str)):
@@ -506,8 +506,8 @@ class Bitmap_Converter_Main_Window(Tk):
                 self.Tags_Directory_Field.config(state=NORMAL)
                 self.Tags_Directory_Field.delete(0,END)
                 self.Tags_Directory_Field.insert(0,Tags_Dir_Str)
-                self.library.tagsdir = self.Tags_Directory_Field.get()
-                self.library.datadir = self.library.tagsdir.split(basename(normpath(self.library.tagsdir)))[0] + "data"
+                self.handler.tagsdir = self.Tags_Directory_Field.get()
+                self.handler.datadir = self.handler.tagsdir.split(basename(normpath(self.handler.tagsdir)))[0] + "data"
                 self.Tags_Directory_Field.config(state=DISABLED)
 
 
@@ -525,14 +525,14 @@ class Bitmap_Converter_Main_Window(Tk):
             
     def Close_Main_Window(self):
         self.Proceed_with_Conversion = False
-        self.library.close_program = True
+        self.handler.close_program = True
         self.destroy()
 
 
     #this function applies the xbox and swizzle conversion flags to all bitmaps
     def Save_All_Tags_as(self):
         if self.tags_loaded:
-            Bitmap_Collection = self.library.tags["bitm"]
+            Bitmap_Collection = self.handler.tags["bitm"]
             
             for Index in range(len(self.tag_list_window.Displayed_Tag_Index_Mapping)):
                 tagpath = self.tag_list_window.Displayed_Tag_Index_Mapping[Index]
@@ -575,7 +575,7 @@ class Bitmap_Converter_Main_Window(Tk):
     #These function disables all buttons when starting a scan
     def Run_Pressed(self):
         if self.Proceed_with_Conversion:
-            if self.tags_loaded and not(self.library.Default_Conversion_Flags["bitm"][READ_ONLY]):
+            if self.tags_loaded and not(self.handler.Default_Conversion_Flags["bitm"][READ_ONLY]):
                 self.Cancel_Conversion()
         else:
             if not(self.Conversion_Cancelled):
@@ -586,7 +586,7 @@ class Bitmap_Converter_Main_Window(Tk):
                 self.Disable_Settings_Window_Buttons()
                 
                 if self.tags_loaded:
-                    if self.library.Default_Conversion_Flags["bitm"][READ_ONLY]:
+                    if self.handler.Default_Conversion_Flags["bitm"][READ_ONLY]:
                         self.btn_start.config(text="Logging")
                     else:
                         self.btn_start.config(text="Cancel")
@@ -608,7 +608,7 @@ class Bitmap_Converter_Main_Window(Tk):
 
     #These function enables all buttons when a conversion finishes
     def Finish_Conversion(self):
-        self.library.reset_tags()
+        self.handler.reset_tags()
         self.tags_indexed = False
         self.tags_loaded = False
         self.Proceed_with_Conversion = False
@@ -624,7 +624,7 @@ class Bitmap_Converter_Main_Window(Tk):
 
     #These function enables all buttons when a conversion is cancelled
     def Cancel_Conversion(self):
-        self.library.current_tag = "Cancelling conversion... Please wait..."
+        self.handler.current_tag = "Cancelling conversion... Please wait..."
         self.btn_start.config(text="Wait...")
         self.Display_New_Text = True
         self.Proceed_with_Conversion = False
@@ -679,10 +679,10 @@ class Bitmap_Converter_Main_Window(Tk):
     #this function selects the proper buttons based on what tag has been selected
     #if multiple tags have been selected this function is skipped
     def Select_Proper_Settings_Window_Settings(self):
-        Bitmap_Collection = self.library.tags["bitm"]
+        Bitmap_Collection = self.handler.tags["bitm"]
         Widget_List = []
 
-        tag = self.library.tags["bitm"][self.tag_list_window.Selected_Tags[0]]
+        tag = self.handler.tags["bitm"][self.tag_list_window.Selected_Tags[0]]
         Conversion_Flags = tag.Tag_Conversion_Settings
         
         if tag.Bitmap_Count() != 0 and tag.Bitmap_Format() == 14:
@@ -798,18 +798,18 @@ class Bitmap_Converter_Main_Window(Tk):
 
 
     def Set_Dont_Reprocess_Tags_Variable(self):
-        self.library.Default_Conversion_Flags["bitm"][DONT_REPROCESS] = self.TK_Dont_Reprocess_Tags.get()
+        self.handler.Default_Conversion_Flags["bitm"][DONT_REPROCESS] = self.TK_Dont_Reprocess_Tags.get()
         self._Set_Selection_Color(range(len(self.tag_list_window.Displayed_Tag_Index_Mapping)))
         
     def Set_Backup_Old_Tags_Variable(self):
-        self.library.Default_Conversion_Flags["bitm"][RENAME_OLD] = self.TK_Backup_Edited_Tags.get()
+        self.handler.Default_Conversion_Flags["bitm"][RENAME_OLD] = self.TK_Backup_Edited_Tags.get()
         
     def Set_Read_Only_Variable(self):
-        self.library.Default_Conversion_Flags["bitm"][READ_ONLY] = self.TK_Read_Only.get()
+        self.handler.Default_Conversion_Flags["bitm"][READ_ONLY] = self.TK_Read_Only.get()
         self._Set_Selection_Color(range(len(self.tag_list_window.Displayed_Tag_Index_Mapping)))
         
     def Set_Write_Debug_Log_Variable(self):
-        self.library.Default_Conversion_Flags["bitm"][WRITE_LOG] = self.TK_Write_Debug_Log.get()
+        self.handler.Default_Conversion_Flags["bitm"][WRITE_LOG] = self.TK_Write_Debug_Log.get()
         
     def Set_Platform_to_Save_as_Variable(self):
         self._Set_Selection_Flag(PLATFORM, self.TK_Platform_to_Save_as, bool)
@@ -857,7 +857,7 @@ class Bitmap_Converter_Main_Window(Tk):
 
     def _Set_Selection_Flag(self, Flag_Name, Window_Var, Type=None):
         for tagpath in self.tag_list_window.Selected_Tags:
-            Flags = self.library.tags["bitm"][tagpath].Tag_Conversion_Settings
+            Flags = self.handler.tags["bitm"][tagpath].Tag_Conversion_Settings
             if Type:
                 Flags[Flag_Name] = Type(Window_Var.get())
             else:
@@ -874,11 +874,11 @@ class Bitmap_Converter_Main_Window(Tk):
 
 class Bitmap_Converter_Data_Window(Canvas):
 
-    def __init__(self, library, parent, **options):
+    def __init__(self, handler, parent, **options):
         options.update({"width":250, "height":155, "highlightthickness":0})
         Canvas.__init__(self, parent, **options )
         
-        self.library = library
+        self.handler = handler
         self.parent  = parent
 
         self.TK_Selected_Bitmap_Index = StringVar(self)
@@ -946,12 +946,12 @@ class Bitmap_Converter_Data_Window(Canvas):
                     
     #when called this function will update the info in the tag data box to show the single tag that is selected
     def Display_Selected_Bitmap(self):
-        library   = self.library
+        handler   = self.handler
         selection = self.parent.tag_list_window.Tag_List_Listbox.curselection()
         #only run if just 1 bitmap is selected
         if len(selection) == 1:
             tagpath = self.parent.tag_list_window.Displayed_Tag_Index_Mapping[int(selection[0])]
-            tag = library.tags["bitm"][tagpath]
+            tag = handler.tags["bitm"][tagpath]
             
             #only run if the tag contains bitmaps
             Bitmap_Count = tag.Bitmap_Count()
@@ -1008,11 +1008,11 @@ class Bitmap_Converter_Data_Window(Canvas):
 '''ENTER A DESCRIPTION FOR THIS CLASS WHEN I HAVE TIME'''
 class Bitmap_Converter_List_Window(Toplevel):
 
-    def __init__(self, library, parent, **options):
+    def __init__(self, handler, parent, **options):
         Toplevel.__init__(self, parent, **options )
         
         '''THE PROGRAM MUST BE CLASS WITH VARIABLES SUCH AS TAG_COLLECTION'''
-        self.library = library
+        self.handler = handler
         self.parent = parent
 
         #used to determine if it is safe to try to populate the taglist window
@@ -1128,9 +1128,9 @@ class Bitmap_Converter_List_Window(Toplevel):
 
     def Build_Tag_Sort_Mappings(self):
         #we want to build the different sort lists for the displaying of the tags
-        for tagpath in self.library.tags["bitm"]:
+        for tagpath in self.handler.tags["bitm"]:
             #only run if the bitmap contains bitmaps
-            tag = self.library.tags["bitm"][tagpath]
+            tag = self.handler.tags["bitm"][tagpath]
                 
             b_type   = tag.Bitmap_Type()
             b_format = tag.Bitmap_Format()
@@ -1213,7 +1213,7 @@ class Bitmap_Converter_List_Window(Toplevel):
             Display_Map    = self.Displayed_Tag_Index_Mapping
             By_Type_Format = self.Bitmaps_Indexed_By_Type_and_Format
 
-            bitmaps = self.library.tags["bitm"]
+            bitmaps = self.handler.tags["bitm"]
             if sortby == 0:#sorting by path
                 for tagpath in sorted(bitmaps.keys()):
                     tag = bitmaps[tagpath]
@@ -1266,7 +1266,7 @@ class Bitmap_Converter_List_Window(Toplevel):
                 tagpath = self.Displayed_Tag_Index_Mapping[Index]
                 
                 self.Tag_List_Listbox.insert(END,tagpath)
-                tag = self.library.tags["bitm"][tagpath]
+                tag = self.handler.tags["bitm"][tagpath]
 
                 self.Set_Listbox_Entry_Color(END, tagpath)
                 
@@ -1291,15 +1291,15 @@ class Bitmap_Converter_List_Window(Toplevel):
         
 
     def Set_Listbox_Entry_Color(self, Listbox_Index, tagpath):
-        if Get_Will_be_Processed(self.library.tags["bitm"][tagpath],
-                                 self.library.Default_Conversion_Flags["bitm"]):
+        if Get_Will_be_Processed(self.handler.tags["bitm"][tagpath],
+                                 self.handler.Default_Conversion_Flags["bitm"]):
             self.Tag_List_Listbox.itemconfig(Listbox_Index, bg='dark green', fg='white')
         else:
             self.Tag_List_Listbox.itemconfig(Listbox_Index, bg='white', fg='black')
             
 
     #these next functions are used for scrolling both tag list boxes at once.
-    #they need to be in this class since they use the inherited library
+    #they need to be in this class since they use the inherited handler
     #reference to know where the listbox and scrollbar objects are
     def _Scroll_Both_List_Boxes(self, *args):
         self.Tag_List_Listbox.yview(*args)

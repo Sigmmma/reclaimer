@@ -59,7 +59,8 @@ class GdlXbeDef(XbeDef):
                     19:{NAME:"Antideath", VALUE:524288}
                     }
     '''
-    #these are for when the library can handle displaying structs
+    #these are for when the program can handle displaying
+    #structs and the library can handle union fields
     weapon_types = { TYPE:BitStruct, SIZE:4, NAME:"Flags",
                      0:{TYPE:BitEnum, NAME:"Weapon_Type", SIZE:4,
                         0:{NAME:"Normal"},
@@ -134,11 +135,11 @@ class GdlXbeDef(XbeDef):
                                         14:{NAME:"Medusa"},
                                         15:{NAME:"Hyena"},
                                         },
-                                    2:{ TYPE:StrLatin1, NAME:"Code", SIZE:7},
+                                    2:{ TYPE:StrLatin1,  NAME:"Code", SIZE:7 },
                                     3:{ TYPE:Pad, SIZE:1 },
-                                    3:{ TYPE:StrLatin1, NAME:"Directory", SIZE:16 },
+                                    3:{ TYPE:StrLatin1,  NAME:"Directory", SIZE:16 },
                                     4:{ TYPE:Bool32,     NAME:"Flags",
-                                        0:{NAME:"Disable", VALUE:1}
+                                        0:{NAME:"Disable", VALUE:1 }
                                         }
                                     }
                         },
@@ -158,7 +159,7 @@ class GdlXbeDef(XbeDef):
                                         4:{NAME:"Armor",   VALUE:6},
                                         5:{NAME:"Special", VALUE:9}
                                         },
-                                    3:{ TYPE:Float, NAME:"Add" },
+                                    3:{ TYPE:Float,  NAME:"Add" },
                                     4:{ TYPE:Bool32, NAME:"Flags" }
                                     }
                          }

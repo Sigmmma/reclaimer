@@ -4,19 +4,19 @@ from traceback import format_exc
 
 from ..hek_tag_scanner import HekTagScanner
 from ....fields import TagIndexRef, Reflexive, RawDataRef
-from supyr_struct.library import Library
+from supyr_struct.handler import Handler
 from supyr_struct.tag import Tag
 
 
 valid_path_chars = " ()-_%s%s" % (digits, ascii_letters)
 
 
-class HashCacher(Library):
+class HashCacher(Handler):
     default_defs_path = "reclaimer.halo.hek.programs.ripper.defs"
     
     #initialize the class
     def __init__(self, **kwargs):
-        Library.__init__(self, **kwargs)
+        Handler.__init__(self, **kwargs)
         self.tagsdir = dirname(__file__)+"\\hash_caches\\"
         
         self.tag_lib = HekTagScanner()
@@ -28,9 +28,9 @@ class HashCacher(Library):
         self.main_hashmap = {}
 
     '''this will significantly speed up indexing tags since the default
-    Library.get_tag_id method doesnt open each file and try to read
+    Handler.get_tag_id method doesnt open each file and try to read
     the 4CC Tag_Cls from the header, but just matches file extensions'''
-    get_tag_id = Library.get_tag_id
+    get_tag_id = Handler.get_tag_id
 
 
     def build_hashcache(self, cache_name, description, tagsdir, subdir=''):
