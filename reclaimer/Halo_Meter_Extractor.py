@@ -2,19 +2,22 @@ from os.path import splitext
 from traceback import format_exc
 
 try:
-    from reclaimer.halo.hek.library import HaloLibrary
-    from supyr_struct import library, buffer
+    from reclaimer.halo.hek.handler import HaloHandler
+    from supyr_struct import handler, buffer
 
     #used for loading all meter tags that can be found
-    metr_loader = HaloLibrary(valid_tag_ids="metr", print_test=False)
+    metr_loader = HaloHandler(valid_tag_ids="metr", print_test=False)
+
+    metrdef = metr_loader.defs['metr']
 
     #replace the raw data struct of the meter image with the organized one
-    Meter_Image_Struct = metr_loader.defs['metr'].descriptors['Meter_Image']
-    metr_loader.defs['metr'].descriptor[1][14]['CHILD'] = Meter_Image_Struct
+    Meter_Image_Struct = metrdef.descriptors['Meter_Image']
+    #override the immutability of the frozendict
+    dict.__setitem__(metrdef.descriptor[1][14], 'CHILD', Meter_Image_Struct)
     
     tagsdir = metr_loader.datadir
-    #library to build tga images
-    tga_maker = library.Library(valid_tag_ids='tga', tagsdir=tagsdir,
+    #handler to build tga images
+    tga_maker = handler.Handler(valid_tag_ids='tga', tagsdir=tagsdir,
                                 defs_path='supyr_struct.defs')
     
     print("Press enter to begin extracting meter images.")

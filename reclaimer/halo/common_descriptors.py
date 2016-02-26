@@ -133,6 +133,10 @@ All_Valid_Effects = {0:{VALUE:'snd!',     NAME:"sound"},
                      2:{VALUE:0xffffffff, NAME:"None"}
                      }
 
+All_Valid_Sounds = {0:{VALUE:'snd!',     NAME:"sound"},
+                    1:{VALUE:0xffffffff, NAME:"None"}
+                    }
+
 All_Valid_Items = { 0:{VALUE:'eqip', NAME:"equipment"},
                     1:{VALUE:'garb', NAME:"garbage"},
                     2:{VALUE:'item', NAME:"item"},
@@ -383,7 +387,7 @@ Reflexive_Struct = { TYPE:Reflexive, GUI_NAME:'Reflexive', EDITABLE:False,
                      }
 
 #This is the structure for all points where a tag references another tag
-Tag_Index_Ref_Struct = { TYPE:TagIndexRef, GUI_NAME:'TagIndexRef', EDITABLE:False,
+Tag_Index_Ref_Struct = { TYPE:TagIndexRef, GUI_NAME:'Tag Index Ref', EDITABLE:False,
                          0:com( {}, Tag_Class, All_Valid_Tags),
                          1:{ TYPE:SInt32, NAME:"Tag_Path_Pointer" },#random
                          2:{ TYPE:SInt32, NAME:"Tag_Path_Length" },
@@ -396,6 +400,7 @@ del Ref_Struct[0]
 
 Attachment_Ref_Struct   = com( {0:com( {}, Tag_Class, All_Valid_Attachments)},   Ref_Struct)
 Effect_Ref_Struct       = com( {0:com( {}, Tag_Class, All_Valid_Effects)},       Ref_Struct)
+Sound_Ref_Struct        = com( {0:com( {}, Tag_Class, All_Valid_Sounds)},        Ref_Struct)
 Effect_Event_Ref_Struct = com( {0:com( {}, Tag_Class, All_Valid_Effect_Events)}, Ref_Struct)
 Item_Ref_Struct         = com( {0:com( {}, Tag_Class, All_Valid_Items)},         Ref_Struct)
 Object_Ref_Struct       = com( {0:com( {}, Tag_Class, All_Valid_Objects)},       Ref_Struct)

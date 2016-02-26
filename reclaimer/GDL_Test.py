@@ -2,9 +2,9 @@ import cProfile
 from traceback import format_exc
 from copy import copy
 try:
-    from reclaimer.gdl.library import GdlLibrary
+    from reclaimer.gdl.handler import GdlHandler
 
-    test = GdlLibrary(debug=3, allow_corrupt=True,
+    test = GdlHandler(debug=3, allow_corrupt=True,
                        print_test=False, save_test=False, int_test=False,
                        write_as_temp=True, backup=False,
                        #valid_tag_ids='xbe',
@@ -13,7 +13,7 @@ try:
                                       'printout':True, 'precision':3,
                                       'show':['name', 'children', #'field',
                                               'value','offset',# 'py_id',
-                                              'index', 'Flags',# 'size', 'unique',
+                                              'index', 'flags',# 'size', 'unique',
                                               'tagpath', 'binsize','ramsize',
                                               #'all'
                                               ] })
@@ -25,7 +25,8 @@ try:
         for tagpath in objs:
             print("Size of: "+tagpath+" = ", objs[tagpath].tagdata.binsize)
             objs[tagpath].pprint(show=('name', 'value', 'children',
-                                       'flags', 'offset', 'raw'),#, 'all'),
+                                       'flags', 'trueonly', 'offset',
+                                       'raw'),#, 'all'),
                                  printout=True)
     input()
 except Exception:

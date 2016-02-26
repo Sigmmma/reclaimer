@@ -3,7 +3,7 @@ from supyr_struct.tag import *
 
 class MetaTag(Tag):
     __slots__ = ('Tag_Conversion_Settings',
-                 'library', 'constructor', 'definition',
+                 'handler', 'constructor', 'definition',
                  'root_offset', 'calc_pointers',
                  'tagsourcepath', 'tagpath', 'tagdata')
     

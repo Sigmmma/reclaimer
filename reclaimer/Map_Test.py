@@ -4,9 +4,9 @@ from time import time
 this_dir = dirname(__file__)
 
 try:
-    from reclaimer.halo.meta.library import MapLoader
+    from reclaimer.halo.meta.handler import MapLoader
 
-    path = this_dir+"\\reclaimer\\halo\\hek\\programs\\ripper\\resources\\"
+    path   = this_dir+"\\reclaimer\\halo\\hek\\programs\\ripper\\resources\\"
     loader = MapLoader(debug=1, allow_corrupt=True)
     
     input('Press Enter to begin the resource maps in:\n'+

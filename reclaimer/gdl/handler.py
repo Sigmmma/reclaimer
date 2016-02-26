@@ -1,10 +1,10 @@
 from os.path import splitext
 
-from supyr_struct.test import TagTestLibrary
+from supyr_struct.test import TagTestHandler
 from .fields import *
 from .defs.objs.tag import GdlTag
 
-class GdlLibrary(TagTestLibrary):
+class GdlHandler(TagTestHandler):
     default_tag_cls   = GdlTag
     default_defs_path = "reclaimer.gdl.defs"
 

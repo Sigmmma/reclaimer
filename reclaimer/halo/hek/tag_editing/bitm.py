@@ -324,8 +324,12 @@ def Convert_Bitmap_Tag(tag, **kwargs):
         Add_Bitmap_Padding(tag, Save_As_Xbox)
         
         """FINISH BY RESAVING THE TAG"""
-        Save_Status = tag.write()
-        Conversion_Report[tagpath] = Save_Status
+        try:
+            Save_Status = tag.write()
+            Conversion_Report[tagpath] = True
+        except Exception:
+            print(format_exc())
+            Conversion_Report[tagpath] = False
         return Save_Status
     else:
         if Export_Format == " ":
@@ -344,8 +348,8 @@ def Parse_Bitmap_Blocks(tag):
     Pixel_Data = tag.tagdata.Data.Processed_Pixel_Data
     Raw_Bitmap_Data = Pixel_Data.Data
 
-    tagsdir = tag.library.tagsdir
-    datadir = tag.library.datadir
+    tagsdir = tag.handler.tagsdir
+    datadir = tag.handler.datadir
     
     #this is the block that will hold all of the bitmap blocks
     Root_Texture_Block = ListBlock(tag.definition.descriptors['Pixel_Root_Desc'])

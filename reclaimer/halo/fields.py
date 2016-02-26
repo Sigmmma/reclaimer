@@ -5,69 +5,38 @@ from supyr_struct.blocks import *
 from .field_methods import *
 
 
-tmp = {'str':True, 'default':'', 'delimited':True,
-       'reader':data_reader, 'writer':data_writer,
-       'decoder':decode_raw_string, 'encoder':encode_string}
-com = combine
-
 '''These are varients of the standard Fields that have been
 slightly modified based on how Halo needs to utilize them.'''
-StringVarLen = Field(**com({'name':"HaloRefStr", 'size':1, 
-                            'decoder':decode_string, 'enc':'latin-1',
-                            'encoder':encode_tag_ref_str,
-                            'sizecalc':tag_ref_sizecalc}, tmp))
+StringVarLen   = Field(base=StrLatin1, name="HaloRefStr",
+                       encoder=encode_tag_ref_str, sizecalc=tag_ref_sizecalc)
+FlUTF16StrData = Field(base=StrUtf16.little, name="UTF16StrData", endian='=',
+                       decoder=decode_raw_string,  sizecalc=utf_sizecalc )
+FlStrUTF16     = Field(base=StrUtf16.little, name="StrUTF16", endian='=',
+                       decoder=decode_string,      sizecalc=delim_utf_sizecalc )
 
-FlUTF16StrData = Field(**com({'name':"UTF16StrData", 'size':2,
-                              'sizecalc':utf_sizecalc, 'enc':"utf_16_le"},tmp))
-FlStrUTF16 = Field(**com({'name':"StrUTF16", 'size':2, 'decoder':decode_string,
-                          'sizecalc':delim_utf_sizecalc,'enc':"utf_16_le"},tmp))
+#forces little endian integers and float
+FlUInt16 = Field(base=UInt16.little, name="FlUInt16", endian='=')
+FlUInt32 = Field(base=UInt32.little, name="FlUInt32", endian='=')
 
-tmp = {'data':True, 'sizecalc':def_sizecalc,
-       'size':2, 'min':0, 'max':2**16-1, 'enc':"<H", "endian":'<',
-       'reader':f_s_data_reader, 'writer':data_writer,
-       'decoder':decode_numeric, 'encoder':encode_numeric}
+FlEnum16 = Field(base=Enum16.little, name="FlEnum16", endian='=')
+FlEnum32 = Field(base=Enum32.little, name="FlEnum32", endian='=')
 
-FlUInt16 = Field(**com({"name":"FlUInt16", 'default':0 }, tmp))
-FlEnum16 = Field(**com({"name":"FlEnum16", 'enum':True,
-                        'py_type':EnumBlock, 'data_type':int}, tmp))
-FlBool16 = Field(**com({"name":"FlBool16", 'bool':True,
-                        'py_type':BoolBlock, 'data_type':int}, tmp))
+FlBool16 = Field(base=Bool16.little, name="FlBool16", endian='=')
+FlBool32 = Field(base=Bool32.little, name="FlBool32", endian='=')
 
-tmp['size'], tmp['max'], tmp['enc'] = 4, 2**32-1, "<I"
-FlUInt32 = Field(**com({"name":"FlUInt32", 'default':0 }, tmp))
-FlEnum32 = Field(**com({"name":"FlEnum32", 'enum':True,
-                        'py_type':EnumBlock, 'data_type':int}, tmp))
-FlBool32 = Field(**com({"name":"FlBool32", 'bool':True,
-                        'py_type':BoolBlock, 'data_type':int}, tmp))
+FlSInt16 = Field(base=SInt16.little, name="FlSInt16", endian='=')
+FlSInt32 = Field(base=SInt32.little, name="FlSInt32", endian='=')
 
-tmp["default"] = 0
-FlSInt16 = Field(**com({"name":"FlSInt16", "size":2, "enc":"<h",
-                        'min':-32768, 'max':32767 }, tmp))
-FlSInt32 = Field(**com({"name":"FlSInt32", "size":4, "enc":"<i",
-                        'min':-2147483648, 'max':2147483647 }, tmp))
-
-tmp["default"] = 0.0
-FlFloat = Field(**com({"name":"FlFloat", "size":4, "enc":"<f",
-                       "max":unpack('>f',b'\x7f\x7f\xff\xff'),
-                       "min":unpack('>f',b'\xff\x7f\xff\xff') }, tmp))
+FlFloat = Field(base=Float.little, name="FlFloat", endian='=')
 
 '''These Fields exist to easily identify where in a tag
 that raw data refs, reflexives, and tag references exist.'''
-RawDataRef = Field(name="RawDataRef", struct=True,
-                   endian='=', py_type=ListBlock,
-                   reader=struct_reader, writer=struct_writer)
-
-Reflexive = Field(name="Reflexive", struct=True, endian='=',
-                  py_type=ListBlock,
-                  reader=struct_reader, writer=struct_writer)
-
-TagIndexRef = Field(name="TagIndexRef", struct=True, endian='=',
-                    py_type=ListBlock,
-                    reader=struct_reader, writer=struct_writer)
+RawDataRef  = Field(base=Struct, name="RawDataRef")
+Reflexive   = Field(base=Struct, name="Reflexive")
+TagIndexRef = Field(base=Struct, name="TagIndexRef")
 
 #the Tag_Index is the array that stores all the tag string paths and
 #meta datas in a map file. This Field exists so the Map_Magic
 #can be easily supplied through the keyword argument "Map_Magic"
-TagIndex = Field(name="TagIndex", array=True, endian='=',
-                 py_type=ListBlock,
+TagIndex = Field(base=Array, name="TagIndex",
                  reader=tag_index_reader, writer=tag_index_writer)

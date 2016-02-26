@@ -4,10 +4,10 @@ import threading
 from time import time
 from traceback import format_exc
 
-from ..library import HaloLibrary
-from supyr_struct.library import Library
+from ..handler import HaloHandler
+from supyr_struct.handler import Handler
 
-class HekTagScanner(HaloLibrary):
+class HekTagScanner(HaloHandler):
     log_filename = "HEK_Tag_Scanner.log"
     print_to_console = False
 
@@ -17,7 +17,7 @@ class HekTagScanner(HaloLibrary):
     
     #initialize the class
     def __init__(self, **kwargs):
-        HaloLibrary.__init__(self, **kwargs)
+        HaloHandler.__init__(self, **kwargs)
         
         #Create and start the feedback printout thread
         self._feedback_thread = threading.Thread(target=self._feedback)
@@ -26,9 +26,9 @@ class HekTagScanner(HaloLibrary):
 
 
     '''this will significantly speed up indexing tags since the default
-    Library.get_tag_id method doesnt open each file and try to read
+    Handler.get_tag_id method doesnt open each file and try to read
     the 4CC Tag_Cls from the header, but just matches file extensions'''
-    get_tag_id = Library.get_tag_id
+    get_tag_id = Handler.get_tag_id
 
     def _feedback(self):
         start = time()

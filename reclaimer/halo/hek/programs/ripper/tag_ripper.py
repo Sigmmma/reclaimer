@@ -4,7 +4,7 @@ from supyr_struct.fields import Field
 from supyr_struct.blocks import VoidBlock
 
 from .hash_cacher import HashCacher
-from ....meta.library import MapLoader
+from ....meta.handler import MapLoader
 
 class TagRipper(MapLoader):
 
