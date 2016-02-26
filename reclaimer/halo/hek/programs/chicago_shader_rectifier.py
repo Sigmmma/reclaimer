@@ -1,10 +1,10 @@
 import os
 
 from traceback import format_exc
-from ..library import HaloLibrary
+from ..handler import HaloHandler
 from supyr_struct.fields import Void
 
-class ShaderRectifier(HaloLibrary):
+class ShaderRectifier(HaloHandler):
     target_id = "schi"
     backup_Tags = False
 
@@ -17,7 +17,7 @@ class ShaderRectifier(HaloLibrary):
         if "backup" in kwargs:
             self.backup = kwargs["backup"]
         kwargs["valid_tag_ids"] = ("schi","scex")
-        HaloLibrary.__init__(self, **kwargs)
+        HaloHandler.__init__(self, **kwargs)
 
 
     #This is used to convert extended chicago tags
@@ -28,6 +28,28 @@ class ShaderRectifier(HaloLibrary):
                   "Removed extra layers from:\n\n")
 
         target_def = self.get_def(self.target_id)
+
+        if self.target_id == 'schi':
+            data_desc = self.get_def('scex').descriptor[1]#Data index = 1
+            
+            #scex extra flags index = 14
+            attr_offs = list(data_desc['ATTR_OFFS']); attr_offs[14] = 96
+            
+            dict.__setitem__(data_desc[11], 'TYPE', Void)#void the extra layers
+            dict.__setitem__(data_desc[13], 'TYPE', Void)#void the 2-stage maps
+            dict.__setitem__(data_desc, 'ATTR_OFFS', attr_offs)#replace offsets
+            dict.__setitem__(data_desc, 'SIZE',     108)#change the struct size
+            
+        elif self.target_id == 'scex':
+            data_desc = self.get_def('schi').descriptor[1]#Data index = 1
+            
+            #schi extra flags index = 13
+            attr_offs = list(data_desc['ATTR_OFFS']); attr_offs[13] = 108
+            
+            dict.__setitem__(data_desc[11], 'TYPE', Void)#void the extra layers
+            dict.__setitem__(data_desc, 'ATTR_OFFS', attr_offs)#replace offsets
+            dict.__setitem__(data_desc, 'SIZE',     120)#change the struct size
+
         
         '''loop through both chicago and extended chicago tag types'''
         for tag_id in self.tags:
@@ -39,10 +61,10 @@ class ShaderRectifier(HaloLibrary):
                 try:
 
                     '''CONVERT THE TAG'''
-                    if tag_id == 'schi' and self.target_id == 'scex':                    
+                    if tag_id == 'schi' and self.target_id == 'scex':
                         tag.convert_to_scex()
                         del self.tags[tag_id][tagpath]
-                    elif tag_id == 'scex' and self.target_id == 'schi':                    
+                    elif tag_id == 'scex' and self.target_id == 'schi':
                         tag.convert_to_schi()
                         del self.tags[tag_id][tagpath]
 
@@ -59,9 +81,6 @@ class ShaderRectifier(HaloLibrary):
                             except Exception:
                                 ext = ''
                             logstr += "\n    " + layer.CHILD + ext
-
-                        #void out the extra layers
-                        tag.tagdata.Data.Extra_Layers.set_desc('TYPE', Void)
 
                     new_tag_path = tag.tagpath.split(self.tagsdir)[1]
                     self.tags[tag_id][new_tag_path] = tag
