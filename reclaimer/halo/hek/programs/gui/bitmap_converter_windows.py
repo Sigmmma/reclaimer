@@ -1045,8 +1045,8 @@ class Bitmap_Converter_List_Window(Toplevel):
         self.tag_list_menubar = Menu(self)
         tag_list_menubar = self.tag_list_menubar
         
-        tag_list_menubar.add_command(label="Sort by Path", command=lambda:(self.Sort_Displayed_Tags_By(0, True)) )
-        tag_list_menubar.add_command(label="Sort by Type", command=lambda:(self.Sort_Displayed_Tags_By(2, True)) )
+        tag_list_menubar.add_command(label="Sort by Path",   command=lambda:(self.Sort_Displayed_Tags_By(0, True)) )
+        tag_list_menubar.add_command(label="Sort by Type",   command=lambda:(self.Sort_Displayed_Tags_By(2, True)) )
         tag_list_menubar.add_command(label="Sort by Format", command=lambda:(self.Sort_Displayed_Tags_By(4, True)) )
         tag_list_menubar.add_command(label="Sort by Pixel Data Bytes", command=lambda:(self.Sort_Displayed_Tags_By(6, True)) )
         
