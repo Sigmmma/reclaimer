@@ -4,6 +4,8 @@ High Priority:
 
 Move TagDef sanitization routines into Descriptor
 
+replace instances of tag_cls with tagcls. make sure tagcls isnt already used
+
 
 Finish docstrings for modules and update existing ones.
 
@@ -31,7 +33,6 @@ Move sanitization routines that are specific to certain Field_Types into a separ
 function and add as an attribute to the Field_Type under the name "Sanitizer".
     The Field_Type.Sanitizer() will get called whenever encountered in a descriptor
 
-    This will allow the removal of Is_Enum and Is_Bool
 
 
 Low Priority:
