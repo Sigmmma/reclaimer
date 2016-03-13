@@ -66,7 +66,7 @@ try:
         
         def __init__(self, **options):
             Tk.__init__(self, **options )
-            self.XBE_Const = GdlHandler(Valid_Tag_IDs='xbe')
+            self.XBE_Const = GdlHandler(valid_tag_ids='xbe')
             
             self.title("GDL: XBE Editor V1.5")
             self.geometry("250x655+0+0")
