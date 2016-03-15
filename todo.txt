@@ -4,10 +4,14 @@ High Priority:
 
 Move TagDef sanitization routines into Descriptor
 
-replace instances of tag_cls with tagcls. make sure tagcls isnt already used
-
+Replace instances of tag_cls with tagcls. make sure tagcls isnt already used
 
 Finish docstrings for modules and update existing ones.
+
+If a tag_def is reimported, it'll raise errors because it'll try
+to edit the now immutable descriptors. find a fix for this.
+
+Make it so that a definitions folder must be located in the same module as __main__
 
 Medium Priority:
 
@@ -32,7 +36,6 @@ handling of exceptions and give better details regarding the exception.
 Move sanitization routines that are specific to certain Field_Types into a separate
 function and add as an attribute to the Field_Type under the name "Sanitizer".
     The Field_Type.Sanitizer() will get called whenever encountered in a descriptor
-
 
 
 Low Priority:
