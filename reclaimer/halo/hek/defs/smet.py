@@ -6,7 +6,7 @@ def get():
 
 class SmetDef(TagDef):
 
-    ext = ".shader_meter"
+    ext = ".shader_transparent_meter"
 
     tag_id = "smet"
 
