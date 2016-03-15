@@ -12,7 +12,7 @@ class AnimPs2Def(TagDef):
 
     tag_id = "anim.ps2"
 
-    #The constructor used to build this definitions Tag_Obj
+    #The constructor used to build this definitions tag_obj
     tag_cls = AnimPs2Tag
 
     endian = "<"

@@ -223,5 +223,6 @@ class MapDef(TagDef):
     descriptors = {}
     
     for key in Tag_Meta[CASES]:
-        descriptors[key] = Tag_Meta[CASES][key]
+        #need to make a copy of this, or it screws up the original
+        descriptors[key] = dict(Tag_Meta[CASES][key])
         descriptors[key][POINTER] = Tag_Meta[POINTER]
