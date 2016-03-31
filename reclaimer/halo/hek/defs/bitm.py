@@ -8,7 +8,7 @@ def get():
 class BitmDef(TagDef):
     ext = ".bitmap"
 
-    tag_id = "bitm"
+    def_id = "bitm"
 
     tag_cls = BitmTag
 
@@ -16,7 +16,7 @@ class BitmDef(TagDef):
 
     Pixel_Root_Desc = { TYPE:Array, NAME:'Pixel_Root_Desc', SIZE:0,
                         SUB_STRUCT:{ TYPE:Array, NAME:'Bitmap_Pixels', SIZE:0,
-                                     SUB_STRUCT:{ TYPE:BytearrayRaw, NAME:'Pixels' }
+                                     SUB_STRUCT:{ TYPE:BytearrayRaw, NAME:'Pixels', SIZE:0 }
                                      }
                         }
     
@@ -192,4 +192,4 @@ class BitmDef(TagDef):
                      }
 
 
-    descriptors = {'Pixel_Root_Desc':Pixel_Root_Desc}
+    subdefs = {'Pixel_Root_Desc':Pixel_Root_Desc}

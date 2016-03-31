@@ -8,7 +8,7 @@ class ShdrDef(TagDef):
 
     ext = ".shader"
 
-    tag_id = "shdr"
+    def_id = "shdr"
 
     endian = ">"
 

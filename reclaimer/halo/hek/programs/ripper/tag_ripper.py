@@ -18,30 +18,30 @@ class TagRipper(MapLoader):
         #each type of tag to speed up writing tags
         self.tag_headers = {}
         
-        for tag_id in sorted(self.tag_lib.defs):
-            h_desc = self.tag_lib.defs[tag_id].descriptor[0]
+        for def_id in sorted(self.tag_lib.defs):
+            h_desc = self.tag_lib.defs[def_id].descriptor[0]
             
             h_block = [None]
             h_desc['TYPE'].reader(h_desc, h_block, attr_index=0)
             b_buffer = h_block[0].write(buffer=BytearrayBuffer(),
                                         calc_pointers=False)
             
-            self.tag_headers[tag_id] = bytes(b_buffer)
+            self.tag_headers[def_id] = bytes(b_buffer)
 
         #load all the hash caches we have
         self.hash_cacher.load_all_hashmaps()
 
         #create a mapping to map tag class id's to their string representation
-        self.tag_id_int_name_map = {}
+        self.def_id_int_name_map = {}
 
         for val in self.tag_lib.id_ext_map:
             key = int.from_bytes(bytes(val, encoding='latin1'), byteorder='big')
-            self.tag_id_int_name_map[key] = val
+            self.def_id_int_name_map[key] = val
 
 
     def rip_tags(self, mappath):
         print('Loading map...')
-        halomap = self.build_tag(filepath=mappath, tag_id='map')
+        halomap = self.build_tag(filepath=mappath, def_id='map')
         tag_array = halomap.tagdata.Tag_Index_Header.Tag_Index
 
         hashmap = self.hash_cacher.main_hashmap
@@ -52,7 +52,7 @@ class TagRipper(MapLoader):
         raw_data_cache  = self.tag_lib.raw_data_cache
 
         get_blocks = self.tag_lib.get_blocks_by_paths
-        tag_id_map = self.tag_id_int_name_map
+        def_id_map = self.def_id_int_name_map
 
         #change the endianness of the library since we're now
         #going to treat all the meta data as if they were tags
@@ -61,27 +61,27 @@ class TagRipper(MapLoader):
         print('Checking tags against hashmap...')
 
         for tag_header in tag_array:
-            tag_id = tag_id_map[tag_header.Tag_Class_1.data]
+            def_id = def_id_map[tag_header.Tag_Class_1.data]
 
             tagmeta = tag_header.Tag_Data.Tag_Meta
 
             if isinstance(tagmeta, VoidBlock):
                 '''The tag meta data doesnt actually exist,
                 so see if it's one of these tag types.'''
-                if tag_id == 'bitm':
+                if def_id == 'bitm':
                     #this is a bitmap tag, so check the bitmaps.map
                     #name cache for the name of this bitmap
                     tagpath = None
-                elif tag_id == 'snd!':
+                elif def_id == 'snd!':
                     #this is a sound tag, so check the sounds.map
                     #name cache for the name of this sound
                     tagpath = None
                 else:
                     continue
             else:
-                tag_ref_paths   = tag_ref_cache.get(tag_id)
-                reflexive_paths = reflexive_cache.get(tag_id)
-                raw_data_paths  = raw_data_cache.get(tag_id)
+                tag_ref_paths   = tag_ref_cache.get(def_id)
+                reflexive_paths = reflexive_cache.get(def_id)
+                raw_data_paths  = raw_data_cache.get(def_id)
                 
                 #null out the parts of a tag that can screw
                 #with the hash when compared to a tag meta
@@ -105,7 +105,7 @@ class TagRipper(MapLoader):
 
                 #need to do some extra stuff for certain tags with fields
                 #that are normally zeroed out as tags, but arent as meta
-                if tag_id == 'pphy':
+                if def_id == 'pphy':
                     tagmeta.Wind_Coefficient = 0
                     tagmeta.Wind_Sine_Modifier = 0
                     tagmeta.Z_Translation_Rate = 0
@@ -123,4 +123,4 @@ class TagRipper(MapLoader):
             if tagpath is not None:
                 print('HIT: %s'%tagpath)
             #else:
-            #    print('MISS: %s'%tag_id)
+            #    print('MISS: %s'%def_id)

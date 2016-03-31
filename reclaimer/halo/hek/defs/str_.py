@@ -8,7 +8,7 @@ class Str_Def(TagDef):
 
     ext = ".string_list"
 
-    tag_id = "str#"
+    def_id = "str#"
 
     endian = ">"
 

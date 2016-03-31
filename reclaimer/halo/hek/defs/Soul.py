@@ -8,7 +8,7 @@ class SoulDef(TagDef):
 
     ext = ".ui_widget_collection"
 
-    tag_id = "Soul"
+    def_id = "Soul"
 
     endian = ">"
 

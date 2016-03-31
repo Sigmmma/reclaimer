@@ -8,7 +8,7 @@ class MetrDef(TagDef):
 
     ext = ".meter"
 
-    tag_id = "metr"
+    def_id = "metr"
 
     endian = ">"
 
@@ -93,4 +93,4 @@ class MetrDef(TagDef):
                          }
                      }
 
-    descriptors = {"Meter_Image":Meter_Image}
+    subdefs = {"Meter_Image":Meter_Image}

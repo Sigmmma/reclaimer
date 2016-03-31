@@ -9,7 +9,7 @@ class ScexDef(TagDef):
 
     ext = ".shader_transparent_chicago_extended"
 
-    tag_id = "scex"
+    def_id = "scex"
 
     tag_cls = ScexTag
 

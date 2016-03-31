@@ -8,15 +8,18 @@ class GdlHandler(TagTestHandler):
     default_tag_cls   = GdlTag
     default_defs_path = "reclaimer.gdl.defs"
 
-    def get_tag_id(self, filepath):
+    def get_def_id(self, filepath):
         filepath = filepath.replace('/', '\\')
         try:
-            tag_id = filepath.split('\\')[-1].lower()
+            def_id = filepath.split('\\')[-1].lower()
         except:
-            tag_id = ''
-        
-        if splitext(tag_id)[-1].lower() == '.xbe':
-            tag_id = 'xbe'
+            def_id = ''
             
-        if tag_id in self.defs:
-            return tag_id
+        def_id, ext = splitext(def_id)
+        def_id, ext = def_id.lower(), ext.lower()
+        
+        if ext == '.xbe':
+            def_id = 'xbe'
+            
+        if def_id in self.defs:
+            return def_id
