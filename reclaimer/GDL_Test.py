@@ -7,8 +7,8 @@ try:
     test = GdlHandler(debug=3, allow_corrupt=True,
                        print_test=False, save_test=False, int_test=False,
                        write_as_temp=True, backup=False,
-                       #valid_tag_ids='xbe',
-                       valid_tag_ids='objects.ps2',
+                       #valid_def_ids='xbe',
+                       valid_def_ids='objects',
                        print_options={'indent':4,
                                       'printout':True, 'precision':3,
                                       'show':['name', 'children', #'field',
@@ -19,7 +19,7 @@ try:
                                               ] })
     #Test.Run_Test()
     cProfile.run('test.load_tags_and_run()')
-    objs = test.tags.get('objects.ps2')
+    objs = test.tags.get('objects')
     input()
     if objs is not None:
         for tagpath in objs:

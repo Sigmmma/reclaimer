@@ -8,7 +8,7 @@ class SndeDef(TagDef):
 
     ext = ".sound_environment"
 
-    tag_id = "snde"
+    def_id = "snde"
 
     endian = ">"
 

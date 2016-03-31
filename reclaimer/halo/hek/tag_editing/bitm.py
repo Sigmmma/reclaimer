@@ -352,7 +352,7 @@ def Parse_Bitmap_Blocks(tag):
     datadir = tag.handler.datadir
     
     #this is the block that will hold all of the bitmap blocks
-    Root_Texture_Block = ListBlock(tag.definition.descriptors['Pixel_Root_Desc'])
+    Root_Texture_Block = tag.definition.subdefs['Pixel_Root_Desc'].build()
     
     #Read the pixel data blocks for each bitmap
     for i in range(tag.Bitmap_Count()):

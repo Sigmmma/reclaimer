@@ -16,7 +16,7 @@ class ShaderRectifier(HaloHandler):
             self.target_id = kwargs["target_id"]
         if "backup" in kwargs:
             self.backup = kwargs["backup"]
-        kwargs["valid_tag_ids"] = ("schi","scex")
+        kwargs["valid_def_ids"] = ("schi","scex")
         HaloHandler.__init__(self, **kwargs)
 
 
@@ -52,21 +52,21 @@ class ShaderRectifier(HaloHandler):
 
         
         '''loop through both chicago and extended chicago tag types'''
-        for tag_id in self.tags:
+        for def_id in self.tags:
 
             '''loop through each tag and remove extra
             layers and log them to a debug file'''
-            for tagpath in sorted(self.tags[tag_id]):
-                tag = self.tags[tag_id][tagpath]
+            for tagpath in sorted(self.tags[def_id]):
+                tag = self.tags[def_id][tagpath]
                 try:
 
                     '''CONVERT THE TAG'''
-                    if tag_id == 'schi' and self.target_id == 'scex':
+                    if def_id == 'schi' and self.target_id == 'scex':
                         tag.convert_to_scex()
-                        del self.tags[tag_id][tagpath]
-                    elif tag_id == 'scex' and self.target_id == 'schi':
+                        del self.tags[def_id][tagpath]
+                    elif def_id == 'scex' and self.target_id == 'schi':
                         tag.convert_to_schi()
-                        del self.tags[tag_id][tagpath]
+                        del self.tags[def_id][tagpath]
 
                     '''REMOVE THE EXTRA LAYERS FROM THE TAG'''
                     el = tag.tagdata.Data.Extra_Layers.Extra_Layers_Array
@@ -83,7 +83,7 @@ class ShaderRectifier(HaloHandler):
                             logstr += "\n    " + layer.CHILD + ext
 
                     new_tag_path = tag.tagpath.split(self.tagsdir)[1]
-                    self.tags[tag_id][new_tag_path] = tag
+                    self.tags[def_id][new_tag_path] = tag
                     tag.definition = target_def
                 except:
                     print("ERROR OCCURRED WHILE ATTEMPTING TO CONVERT:\n" +

@@ -55,7 +55,7 @@ class HaloHandler(TagTestHandler):
                   'foot':".material_effects",
                   'metr':".meter",
                   'mode':".model",                              #NEED
-                  'antr':".model_animations",                   #NEED
+                  'antr':".model_animations",
                   'coll':".model_collision_geometry",           #NEED
                   'mply':".multiplayer_scenario_description",
                   'obje':".object",                             #----
@@ -115,8 +115,8 @@ class HaloHandler(TagTestHandler):
             self.Default_Conversion_Flags = kwargs["Default_Conversion_Flags"]
         else:
             self.Default_Conversion_Flags = {}
-            for tag_id in self.tags:
-                self.Default_Conversion_Flags[tag_id] = {}
+            for def_id in self.tags:
+                self.Default_Conversion_Flags[def_id] = {}
         
         if "datadir" in kwargs:
             self.datadir = kwargs["datadir"]
@@ -178,13 +178,13 @@ class HaloHandler(TagTestHandler):
         by caching all possible locations of the Field_Type'''
         cache = {}
         
-        for tag_id in self.defs:
-            definition = self.defs[tag_id].descriptor
+        for def_id in self.defs:
+            definition = self.defs[def_id].descriptor
 
             hasrefs, refs = self._build_loc_cache(f_type, definition)
             
             if hasrefs:
-                cache[tag_id] = refs
+                cache[def_id] = refs
 
         return cache
 
@@ -201,16 +201,16 @@ class HaloHandler(TagTestHandler):
 
         
 
-    def get_tag_id(self, filepath):
+    def get_def_id(self, filepath):
         '''It is more reliable to determine a Halo tag
-        based on its 4CC tag_id than by file extension'''
-        try:            
+        based on its 4CC def_id than by file extension'''
+        try:
             with open(filepath, 'r+b') as tagfile:
                 tagfile.seek(36)
-                tag_id = str(tagfile.read(4), 'latin-1')
+                def_id = str(tagfile.read(4), 'latin-1')
                 
-            if tag_id in self.defs:
-                return tag_id
+            if def_id in self.defs:
+                return def_id
         except:
             return None
 

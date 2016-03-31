@@ -8,7 +8,7 @@ class ColoDef(TagDef):
 
     ext = ".color_table"
 
-    tag_id = "colo"
+    def_id = "colo"
 
     endian = ">"
 

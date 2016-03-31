@@ -8,7 +8,7 @@ class SwatDef(TagDef):
 
     ext = ".shader_transparent_water"
 
-    tag_id = "swat"
+    def_id = "swat"
 
     endian = ">"
 

@@ -8,7 +8,7 @@ class WindDef(TagDef):
 
     ext = ".wind"
 
-    tag_id = "wind"
+    def_id = "wind"
 
     endian = ">"
 

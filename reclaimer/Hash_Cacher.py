@@ -19,13 +19,14 @@ try:
         
     start = time()
     cache = cacher.build_hashcache(cache_name, cache_description, tagsdir)
-    
-    cache.pprint(printout=True)
+
     input('-'*80 + '\n'+
           'Finished scanning tags directory.'+
           'Operation took %s seconds.\n'%(time()-start) +
           '\n'+
-          'Press enter to exit.')
+          'Hit enter to print the constructed hashcache.\n'+
+          'You may now exit this program at any time.')
+    cache.pprint(printout=True)
 except Exception:
     print(format_exc())
     input()

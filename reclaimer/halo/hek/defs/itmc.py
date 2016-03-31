@@ -8,7 +8,7 @@ class ItmcDef(TagDef):
 
     ext = ".item_collection"
 
-    tag_id = "itmc"
+    def_id = "itmc"
 
     endian = ">"
                              

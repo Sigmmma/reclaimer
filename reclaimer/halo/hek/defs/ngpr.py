@@ -8,7 +8,7 @@ class NgprDef(TagDef):
 
     ext = ".preferences_network_game"
 
-    tag_id = "ngpr"
+    def_id = "ngpr"
 
     endian = ">"
 

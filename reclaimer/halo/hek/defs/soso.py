@@ -9,7 +9,7 @@ class SosoDef(TagDef):
 
     ext = ".shader_model"
 
-    tag_id = "soso"
+    def_id = "soso"
     
     tag_cls = SosoTag
 

@@ -8,7 +8,7 @@ class AntrDef(TagDef):
 
     ext = ".model_animations"
 
-    tag_id = "antr"
+    def_id = "antr"
 
     endian = ">"
 
@@ -330,7 +330,7 @@ class AntrDef(TagDef):
                    0:com( {1:{ DEFAULT:"antr" },
                            5:{ DEFAULT:4} }, Tag_Header),
                    
-                   1:{TYPE:Struct, SIZE:128, GUI_NAME:"data",
+                   1:{TYPE:Struct, SIZE:128, GUI_NAME:"Data",
                       0:{ TYPE:Reflexive, NAME:"objects",
                            INCLUDE:Reflexive_Struct,
                            CHILD:{ TYPE:Array, NAME:"objects_array", MAX:4, 

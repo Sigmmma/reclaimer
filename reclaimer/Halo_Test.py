@@ -8,7 +8,7 @@ try:
     test = HaloHandler(print_test=True, save_test=False, debug=3,
                         write_as_temp=False, backup=False,
                         allow_corrupt=True,
-                        #valid_tag_ids="senv",
+                        #valid_def_ids="senv",
                         print_options={'indent':4,
                                        'printout':True, 'precision':3,
                                        'show':['name', 'children', 'field',

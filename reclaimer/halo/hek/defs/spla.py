@@ -8,7 +8,7 @@ class SplaDef(TagDef):
 
     ext = ".shader_transparent_plasma"
 
-    tag_id = "spla"
+    def_id = "spla"
 
     endian = ">"
 

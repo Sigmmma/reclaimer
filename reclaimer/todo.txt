@@ -1,56 +1,46 @@
-Current speed of OBJECTS.PS2: 41KB/s
+Current speed of OBJECTS.PS2: 40KB/s
 
 High Priority:
-
-Move TagDef sanitization routines into Descriptor
 
 Replace instances of tag_cls with tagcls. make sure tagcls isnt already used
 
 Finish docstrings for modules and update existing ones.
 
-If a tag_def is reimported, it'll raise errors because it'll try
-to edit the now immutable descriptors. find a fix for this.
-
 Make it so that a definitions folder must be located in the same module as __main__
 
 Medium Priority:
 
-Make a Union Field_Type that allows specifying multiple
-descriptors for how to decode/encode the data.
+Make a Union Field and a UnionBlock that allows specifying
+multiple descriptors for how to decode/encode the data.
     The actual data will be stored in a bytearray object under self.Val and is
     decoded  on the fly to give the intended object.
     When each attribute is set, only the part of the bytearray that it resides
     in will be set, meaning if it only takes up the first 2 bytes of a 4 byte union,
     only the first 2 bytes will be affected, and the last 2 will remain the same
 
-    can't do anything about changing the ordering of the bytes because it would
+    Can't do anything about changing the ordering of the bytes because it would
     be possible to make the largest attribute be a 4 char 32bit string, but have
     the other entries be endianness reliant things.
+
+Make a Wrapper Field and a WrapperBlock that allows wrapping a block(s) in another
+block which has methods for reading and editing the data of the inner block(s).
+    An example would be a wrapper that treats an int as a utc timestamp
+    or a different wrapper that treats a float as a utc timestamp.
+
+    Another would be a wrapper for ip addressing that treats a series of 4 bytes
+    either 4 unsigned 8-bit ints, or a string in the format "AAA.BBB.CCC.DDD"
 
 Need to make it so that readers/writers/decoders/encoders have better
 handling of exceptions and give better details regarding the exception.
     Do this for the whole library in general where necessary
 
-    place try/except around all encoding routines to catch and report errors better
+    Place try/except around all encoding routines to catch and report errors better
 
-Move sanitization routines that are specific to certain Field_Types into a separate
-function and add as an attribute to the Field_Type under the name "Sanitizer".
+Make sanitization function an attribute in the Field_Type under the name "Sanitizer".
     The Field_Type.Sanitizer() will get called whenever encountered in a descriptor
 
 
 Low Priority:
-
-Make it possible to call a Field_Type and provide a Name string
-followed by a calling of all the Field_Types of each of its fields.
-    This will return a Builder object that, when called with
-    the proper arguments, will return a fully constructed Tag_Block.
-
-    Make it possible to get/set the descriptor of these constructor objects
-
-    This will be a good alternative for those who don't want to use the
-    JSON style dict definition method, though all of the keyword arguments
-    will need to go after all the fields have been specified, thus the
-    keyword arguments like GUI_NAME and POINTER will be at the bottom
 
 Make Bin_Size recursion safe
 
@@ -119,6 +109,60 @@ when making their hashes as well as compressed vertices in models and bsp
 make sure to null the tag class in tag references that dont exist so that the
 hashes still work with smokescreen protected maps.
 ## MAP RIPPING ##
+
+
+Remaining tagdefs:
+    'actr':".actor"
+    'actv':".actor_varient"
+    'ant!':".antenna"
+    'bipd':".biped"
+    'cdmg':".continuous_damage_effect"
+    'cont':".contrail"
+    'deca':".decal"
+    'udlg':".dialogue"
+    'dobc':".detail_object_collection"
+    'ctrl':".device_control"
+    'lifi':".device_light_fixture"
+    'mach':".device_machine"
+    'jpt!':".damage_effect"
+    'effe':".effect"
+    'eqip':".equipment"
+    'font':".font"
+    'garb':".garbage"
+    'mod2':".gbxmodel"
+    'matg':".globals"
+    'glw!':".glow"
+    'grhi':".grenade_hud_interface"
+    'hudg':".hud_globals"
+    'lens':".lens_flare"
+    'ligh':".light"
+    'mgs2':".light_volume"
+    'elec':".lightning"
+    'mode':".model"
+    'coll':".model_collision_geometry"
+    'obje':".object"
+    'part':".particle"
+    'pctl':".particle_system"
+    'phys':".physics"
+    'plac':".placeholder"
+    'proj':".projectile"
+    'scnr':".scenario"
+    'sbsp':".scenario_structure_bsp"
+    'scen':".scenery"
+    'snd!':".sound"
+    'lsnd':".sound_looping"
+    'ssce':".sound_scenery"
+    'sotr':".shader_transparent_generic"
+    'sky ':".sky"
+    'DeLa':".ui_widget_definition"
+    'unit':".unit"
+    'unhi':".unit_hud_interface"
+    'vehi':".vehicle"
+    'vcky':".virtual_keyboard"
+    'weap':".weapon"
+    'wphi':".weapon_hud_interface"
+    'rain':".weather_particle_system"
+
 
 
 ##################

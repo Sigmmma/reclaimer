@@ -8,7 +8,7 @@ class SglaDef(TagDef):
 
     ext = ".shader_glass"
 
-    tag_id = "sgla"
+    def_id = "sgla"
 
     endian = ">"
 

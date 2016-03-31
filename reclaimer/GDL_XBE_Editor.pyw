@@ -66,7 +66,7 @@ try:
         
         def __init__(self, **options):
             Tk.__init__(self, **options )
-            self.XBE_Const = GdlHandler(valid_tag_ids='xbe')
+            self.XBE_Const = GdlHandler(valid_def_ids='xbe')
             
             self.title("GDL: XBE Editor V1.5")
             self.geometry("250x655+0+0")
@@ -75,12 +75,12 @@ try:
             self.Selected_Char = StringVar(self)
             self.Selected_Cheat = StringVar(self)
 
-            Descs = self.XBE_Const.defs['xbe'].descriptors
+            subdefs = self.XBE_Const.defs['xbe'].subdefs
 
-            self._Cheat_Flags_Desc         = Descs['no_types']
-            self._Cheat_Weapon_Flags_Desc  = Descs['weapon_types']
-            self._Cheat_Armor_Flags_Desc   = Descs['armor_types']
-            self._Cheat_Special_Flags_Desc = Descs['special_types']
+            self._Cheat_Flags_Desc         = subdefs['no_types'].descriptor
+            self._Cheat_Weapon_Flags_Desc  = subdefs['weapon_types'].descriptor
+            self._Cheat_Armor_Flags_Desc   = subdefs['armor_types'].descriptor
+            self._Cheat_Special_Flags_Desc = subdefs['special_types'].descriptor
 
             #Add the buttons
             self.btn_load = Button(self, text="Load GDL XBE", width=15, command=self.Load_XBE)
@@ -157,9 +157,9 @@ try:
             filepath = filedialog.askopenfilename(initialdir=curr_dir, title="Select Gauntlet's default.xbe")
             if filepath != "":
                 try:
-                    XBE = self.XBE_Const.build_tag(tag_id="xbe", filepath=filepath)
-                    if (XBE.tagdata.XBE_Image_Header.XBE_Magic != "XBEH" or
-                        XBE.tagdata.XBE_Certificate.Title_Name != "Gauntlet Dark Legacy"):
+                    XBE = self.XBE_Const.build_tag(def_id="xbe", filepath=filepath)
+                    if (XBE.tagdata.xbe_image_header.xbe_magic != "XBEH" or
+                        XBE.tagdata.xbe_certificate.title_name != "Gauntlet Dark Legacy"):
                         raise IOError("The selected file does not appear to be a valid GDL default.xbe")
                     
                     self.Loaded_XBE = XBE

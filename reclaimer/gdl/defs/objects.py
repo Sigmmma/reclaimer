@@ -10,7 +10,7 @@ class ObjectsPs2Def(TagDef):
     
     ext = ".ps2"
     
-    tag_id = "objects.ps2"
+    def_id = "objects"
 
     #The constructor used to build this definitions Tag_Obj
     tag_cls = ObjectsPs2Tag

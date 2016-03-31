@@ -58,11 +58,11 @@ class GdlXbeDef(XbeDef):
                 
                     19:{NAME:"Antideath", VALUE:524288}
                     }
-    '''
+    
     #these are for when the program can handle displaying
     #structs and the library can handle union fields
     weapon_types = { TYPE:BitStruct, SIZE:4, NAME:"Flags",
-                     0:{TYPE:BitEnum, NAME:"Weapon_Type", SIZE:4,
+                     0:{TYPE:BitUEnum, NAME:"Weapon_Type", SIZE:4,
                         0:{NAME:"Normal"},
                         1:{NAME:"Fire"},
                         2:{NAME:"Elec"},
@@ -83,7 +83,6 @@ class GdlXbeDef(XbeDef):
                         10:{NAME:"Reflect", VALUE:2097152}
                         }
                      }
-    '''
     
     weapon_types = { TYPE:Bool32, NAME:"Flags",
                      0:{NAME:"Knockback", VALUE:16},
@@ -102,70 +101,70 @@ class GdlXbeDef(XbeDef):
 
 
 
-    descriptor = {TYPE:Container, NAME:"Gauntlet_Dark_Legacy_XBE",
-                     0:XbeDef.XBE_Image_Header,
-                     1:XbeDef.XBE_Certificate,
-                     2:XbeDef.XBE_Sec_Headers,
-                     3:XbeDef.XBE_Lib_Ver_Headers,
-                     4:{TYPE:Array, NAME:"Secret_Characters", SIZE:27, POINTER:1135088,
-                        SUB_STRUCT:{TYPE:Struct, SIZE:36, NAME:"Character",                         
-                                    0:{ TYPE:Enum32, NAME:"Color",
-                                        0:{NAME:"Yellow"},
-                                        1:{NAME:"Blue"},
-                                        2:{NAME:"Red"},
-                                        3:{NAME:"Green"}
-                                        },
-                                    
-                                    1:{ TYPE:Enum32, NAME:"Type",
-                                        0:{NAME:"Warrior"},
-                                        1:{NAME:"Valkyrie"},
-                                        2:{NAME:"Wizard"},
-                                        3:{NAME:"Archer"},
-                                        4:{NAME:"Dwarf"},
-                                        5:{NAME:"Knight"},
-                                        6:{NAME:"Sorceress"},
-                                        7:{NAME:"Jester"},
-                                     
-                                        8:{NAME:"Minotaur"},
-                                        9:{NAME:"Falconess"},
-                                        10:{NAME:"Jackal"},
-                                        11:{NAME:"Tigress"},
-                                        12:{NAME:"Ogre"},
-                                        13:{NAME:"Unicorn"},
-                                        14:{NAME:"Medusa"},
-                                        15:{NAME:"Hyena"},
-                                        },
-                                    2:{ TYPE:StrLatin1,  NAME:"Code", SIZE:7 },
-                                    3:{ TYPE:Pad, SIZE:1 },
-                                    3:{ TYPE:StrLatin1,  NAME:"Directory", SIZE:16 },
-                                    4:{ TYPE:Bool32,     NAME:"Flags",
-                                        0:{NAME:"Disable", VALUE:1 }
-                                        }
-                                    }
-                        },
-                     
-                     5:{TYPE:Array, NAME:"Cheats", SIZE:18, POINTER:1136064,
-                        SUB_STRUCT:{TYPE:Struct, NAME:"Cheat",
-                                    0:{ TYPE:StrLatin1, SIZE:7,
-                                        OFFSET:0, NAME:"Code"},
-                                    1:{ TYPE:Pad, SIZE:1 },
-                                    2:{ TYPE:Enum32, NAME:"Type",
-                                        0:{NAME:"Gold", VALUE:1},
-                                        1:{NAME:"Key", VALUE:2},
-                                        2:{NAME:"Potion", VALUE:4},
+    descriptor = { TYPE:Container, NAME:"Gauntlet_Dark_Legacy_XBE",
+                   0:XbeDef.xbe_image_header,
+                   1:XbeDef.xbe_certificate,
+                   2:XbeDef.xbe_sec_headers,
+                   3:XbeDef.xbe_lib_ver_headers,
+                   4:{TYPE:Array, NAME:"Secret_Characters", SIZE:27, POINTER:1135088,
+                      SUB_STRUCT:{TYPE:Struct, SIZE:36, NAME:"Character",                         
+                                  0:{ TYPE:Enum32, NAME:"Color",
+                                      0:{NAME:"Yellow"},
+                                      1:{NAME:"Blue"},
+                                      2:{NAME:"Red"},
+                                      3:{NAME:"Green"}
+                                      },
+                                  
+                                  1:{ TYPE:Enum32, NAME:"Type",
+                                      0:{NAME:"Warrior"},
+                                      1:{NAME:"Valkyrie"},
+                                      2:{NAME:"Wizard"},
+                                      3:{NAME:"Archer"},
+                                      4:{NAME:"Dwarf"},
+                                      5:{NAME:"Knight"},
+                                      6:{NAME:"Sorceress"},
+                                      7:{NAME:"Jester"},
+                                   
+                                      8:{NAME:"Minotaur"},
+                                      9:{NAME:"Falconess"},
+                                      10:{NAME:"Jackal"},
+                                      11:{NAME:"Tigress"},
+                                      12:{NAME:"Ogre"},
+                                      13:{NAME:"Unicorn"},
+                                      14:{NAME:"Medusa"},
+                                      15:{NAME:"Hyena"},
+                                      },
+                                  2:{ TYPE:StrLatin1,  NAME:"Code", SIZE:7 },
+                                  3:{ TYPE:Pad, SIZE:1 },
+                                  4:{ TYPE:StrLatin1,  NAME:"Directory", SIZE:16 },
+                                  5:{ TYPE:Bool32,     NAME:"Flags",
+                                      0:{NAME:"Disable", VALUE:1 }
+                                      }
+                                  }
+                      },
+                   
+                   5:{TYPE:Array, NAME:"Cheats", SIZE:18, POINTER:1136064,
+                      SUB_STRUCT:{TYPE:Struct, NAME:"Cheat",
+                                  0:{ TYPE:StrLatin1, SIZE:7,
+                                      OFFSET:0, NAME:"Code"},
+                                  1:{ TYPE:Pad, SIZE:1 },
+                                  2:{ TYPE:Enum32, NAME:"Type",
+                                      0:{NAME:"Gold",   VALUE:1},
+                                      1:{NAME:"Key",    VALUE:2},
+                                      2:{NAME:"Potion", VALUE:4},
 
-                                        #these 3 utilize the below flags
-                                        3:{NAME:"Weapon",  VALUE:5},
-                                        4:{NAME:"Armor",   VALUE:6},
-                                        5:{NAME:"Special", VALUE:9}
-                                        },
-                                    3:{ TYPE:Float,  NAME:"Add" },
-                                    4:{ TYPE:Bool32, NAME:"Flags" }
-                                    }
-                         }
-                     }
+                                      #these 3 utilize the below flags
+                                      3:{NAME:"Weapon",  VALUE:5},
+                                      4:{NAME:"Armor",   VALUE:6},
+                                      5:{NAME:"Special", VALUE:9}
+                                      },
+                                  3:{ TYPE:Float,  NAME:"Add" },
+                                  4:{ TYPE:Bool32, NAME:"Flags" }
+                                  }
+                       }
+                   }
 
-    descriptors = {'weapon_types':weapon_types,
-                   'special_types':special_types,
-                   'armor_types':armor_types,
-                   'no_types':{ TYPE:Bool32, NAME:"Flags" }}
+    subdefs = { 'weapon_types':weapon_types,
+                'special_types':special_types,
+                'armor_types':armor_types,
+                'no_types':{ TYPE:Bool32, NAME:"Flags" }}

@@ -7,7 +7,7 @@ class HashCacheDef(TagDef):
 
     ext = ".hashcache"
     
-    tag_id = "hashcache"
+    def_id = "hashcache"
     
     endian = "<"
 

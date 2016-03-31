@@ -8,7 +8,7 @@ class MplyDef(TagDef):
 
     ext = ".multiplayer_scenario_description"
 
-    tag_id = "mply"
+    def_id = "mply"
 
     endian = ">"
 

@@ -9,15 +9,15 @@ try:
     path   = this_dir+"\\reclaimer\\halo\\hek\\programs\\ripper\\resources\\"
     loader = MapLoader(debug=1, allow_corrupt=True)
     
-    input('Press Enter to begin the resource maps in:\n'+
+    input('Press Enter to begin loading resource maps in:\n'+
           '    %s\n\n' % path)
     
     start = time()
     
-    #sounds  = loader.build_tag(filepath=path+'sounds.map',  tag_id="resource")
-    #bitmaps = loader.build_tag(filepath=path+'bitmaps.map', tag_id="resource")
-    strings = loader.build_tag(filepath=path+'loc.map',     tag_id="resource")
-    #halomap = loader.build_tag(filepath=path+'Smoke Screen\\CE_bloodgulch.map', tag_id="map")
+    #sounds  = loader.build_tag(filepath=path+'sounds.map',  def_id="resource")
+    #bitmaps = loader.build_tag(filepath=path+'bitmaps.map', def_id="resource")
+    strings = loader.build_tag(filepath=path+'loc.map',     def_id="resource")
+    #halomap = loader.build_tag(filepath=path+'Smoke Screen\\CE_bloodgulch.map', def_id="map")
 
     #sounds.pprint(printout=True, show=['name','value','children','index','field'])
     #bitmaps.pprint(printout=True, show=['name','value','children','index','field'])

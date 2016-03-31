@@ -9,7 +9,7 @@ class SoteEepDef(TagDef):
     
     ext = ".eep"
     
-    tag_id = "sote_eep_save"
+    def_id = "sote_eep_save"
 
     endian = ">"
     
@@ -57,19 +57,19 @@ class SoteEepDef(TagDef):
                          1:{ GUI_NAME:"Overlay Displays Off", VALUE:0x10 },
                          2:{ GUI_NAME:"Seeker Camera Off", VALUE:0x100 },
                         },
-                     1:{TYPE:BitEnum, GUI_NAME:"SFX Volume", SIZE:2,
+                     1:{TYPE:BitUEnum, GUI_NAME:"SFX Volume", SIZE:2,
                         0:{GUI_NAME:"Loud"},
                         1:{GUI_NAME:"Medium"},
                         2:{GUI_NAME:"Soft"},
                         3:{GUI_NAME:"Off"} },
                      2:{ TYPE:Pad, SIZE:2 },
-                     3:{TYPE:BitEnum, GUI_NAME:"Music Volume", SIZE:2,
+                     3:{TYPE:BitUEnum, GUI_NAME:"Music Volume", SIZE:2,
                         0:{GUI_NAME:"Loud"},
                         1:{GUI_NAME:"Medium"},
                         2:{GUI_NAME:"Soft"},
                         3:{GUI_NAME:"Off"} },
                      4:{ TYPE:Pad, SIZE:2 },
-                     5:{TYPE:BitEnum, GUI_NAME:"Sound Panning", SIZE:1,
+                     5:{TYPE:BitUEnum, GUI_NAME:"Sound Panning", SIZE:1,
                         0:{GUI_NAME:"Stereo"},
                         1:{GUI_NAME:"Mono"} }
                      },
@@ -156,31 +156,27 @@ class SoteEepDef(TagDef):
                  }
     
     descriptor = { TYPE:Container, GUI_NAME:"SotE EEP Save File",
-                      0:{TYPE:Struct, NAME:"Header",
-                         0:{ TYPE:UInt8,  GUI_NAME:"EEP CRC 1", EDITABLE:False},
-                         #if this is not b'\xFF\x53\x68\x26' then the file wont load
-                         1:{ TYPE:UInt32, GUI_NAME:"Magic Constant 1",
-                             EDITABLE:False, DEFAULT:b'\xFF\x53\x68\x26'},
-                         2:{ TYPE:Enum8,  GUI_NAME:"File just beaten",
-                             0:{NAME:"No File"},
-                             1:{NAME:"File 1"},
-                             2:{NAME:"File 2"},
-                             3:{NAME:"File 3"},
-                             4:{NAME:"File 4"}
-                             }
-                         },
-                     1:{TYPE:Array, GUI_NAME:"Save Files", SIZE:4, MIN:4, MAX:4,
-                        SUB_STRUCT:Save_File
-                        },
-                     2:{ TYPE:Struct, GUI_NAME:"Footer",
-                         #if this is not b'\x53\x68\x26' then the file wont load
-                         0:{ TYPE:UInt24, GUI_NAME:"Magic Constant 2",
-                             EDITABLE:False, DEFAULT:b'\x53\x68\x26' },
-                         
-                         #OR-ing this value with the first checksum byte must produce 255, b'\xff'.
-                         #If it doesnt then the save is considered corrupt and is erased.
-                         #The first checksum byte will be defaulted to 0, and this one to 255.
-                         1:{ TYPE:UInt8, GUI_NAME:"EEP CRC 2", DEFAULT:255, EDITABLE:False },
-                         2:{ TYPE:Pad, SIZE:14 }
-                         }
-                     }
+                   0:{ TYPE:UInt8,  GUI_NAME:"EEP CRC 1", EDITABLE:False},
+                   #if this is not b'\xFF\x53\x68\x26' then the file wont load
+                   1:{ TYPE:BytesRaw, GUI_NAME:"Unknown Magic 1",
+                       EDITABLE:False, SIZE:4, DEFAULT:b'\xFF\x53\x68\x26'},
+                   2:{ TYPE:Enum8,  GUI_NAME:"File just beaten",
+                       0:{NAME:"No File"},
+                       1:{NAME:"File 1"},
+                       2:{NAME:"File 2"},
+                       3:{NAME:"File 3"},
+                       4:{NAME:"File 4"}
+                       },
+                  3:{ TYPE:Array, GUI_NAME:"Save Files", SIZE:4, MIN:4, MAX:4,
+                      SUB_STRUCT:Save_File
+                      },
+                  #if this is not b'\x53\x68\x26' then the file wont load
+                  4:{ TYPE:BytesRaw, GUI_NAME:"Unknown Magic 2",
+                      EDITABLE:False, SIZE:3, DEFAULT:b'\x53\x68\x26' },
+                 
+                  #OR-ing this value with the first checksum byte must produce 255, b'\xff'.
+                  #If it doesnt then the save is considered corrupt and is erased.
+                  #The first checksum byte will be defaulted to 0, and this one to 255.
+                  5:{ TYPE:UInt8, GUI_NAME:"EEP CRC 2", DEFAULT:255, EDITABLE:False },
+                  6:{ TYPE:Pad, SIZE:14 }
+                  }

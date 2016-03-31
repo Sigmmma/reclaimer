@@ -11,7 +11,7 @@ class ResourceDef(TagDef):
 
     ext = ".map"
     
-    tag_id = "resource"
+    def_id = "resource"
     
     endian = "<"
 
@@ -81,8 +81,8 @@ class ResourceDef(TagDef):
 
     tag_path = { TYPE:CStrLatin1, NAME:"tag_path" }
     
-    descriptor = { TYPE:Container, NAME:"halo_map_resource",
-                   0:{ TYPE:Enum32,    NAME:"resource_type",
+    descriptor = { TYPE:Container,  NAME:"halo_map_resource",
+                   0:{ TYPE:Enum32, NAME:"resource_type",
                        0:{ NAME:'bitmaps', VALUE:1 },
                        1:{ NAME:'sounds',  VALUE:2 },
                        2:{ NAME:'strings', VALUE:3 },
@@ -100,6 +100,6 @@ class ResourceDef(TagDef):
                        },
                    }
 
-    descriptors = {'tag_header':tag_header,
-                   'tag_path':tag_path,
-                   'tag_meta':tag_meta}
+    subdefs = {'tag_header':tag_header,
+               'tag_path':tag_path,
+               'tag_meta':tag_meta}

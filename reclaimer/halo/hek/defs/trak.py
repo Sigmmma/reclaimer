@@ -8,7 +8,7 @@ class TrakDef(TagDef):
 
     ext = ".camera_track"
 
-    tag_id = "trak"
+    def_id = "trak"
 
     endian = ">"
 

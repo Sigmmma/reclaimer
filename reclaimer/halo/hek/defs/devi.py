@@ -8,7 +8,7 @@ class DeviDef(TagDef):
 
     ext = ".device"
 
-    tag_id = "devi"
+    def_id = "devi"
 
     endian = ">"
 

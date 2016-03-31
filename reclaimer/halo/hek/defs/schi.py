@@ -9,7 +9,7 @@ class SchiDef(TagDef):
 
     ext = ".shader_transparent_chicago"
 
-    tag_id = "schi"
+    def_id = "schi"
 
     tag_cls = SchiTag
 

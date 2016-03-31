@@ -8,7 +8,7 @@ class FlagDef(TagDef):
 
     ext = ".flag"
 
-    tag_id = "flag"
+    def_id = "flag"
 
     endian = ">"
 

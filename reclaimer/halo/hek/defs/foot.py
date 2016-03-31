@@ -8,7 +8,7 @@ class FootDef(TagDef):
 
     ext = ".material_effects"
 
-    tag_id = "foot"
+    def_id = "foot"
 
     endian = ">"
 

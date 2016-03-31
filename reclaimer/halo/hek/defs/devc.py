@@ -8,7 +8,7 @@ class DevcDef(TagDef):
 
     ext = ".input_device_defaults"
 
-    tag_id = "devc"
+    def_id = "devc"
 
     endian = ">"
 

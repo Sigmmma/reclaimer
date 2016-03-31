@@ -8,7 +8,7 @@ class UstrDef(TagDef):
 
     ext = ".unicode_string_list"
 
-    tag_id = "ustr"
+    def_id = "ustr"
 
     endian = ">"
 

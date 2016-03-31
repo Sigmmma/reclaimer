@@ -8,7 +8,7 @@ class ItemDef(TagDef):
 
     ext = ".item"
 
-    tag_id = "item"
+    def_id = "item"
 
     endian = ">"
 

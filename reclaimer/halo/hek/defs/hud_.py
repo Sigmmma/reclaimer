@@ -8,7 +8,7 @@ class Hud_Def(TagDef):
 
     ext = ".hud_number"
 
-    tag_id = "hud#"
+    def_id = "hud#"
 
     endian = ">"
 

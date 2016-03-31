@@ -8,7 +8,7 @@ class TagcDef(TagDef):
 
     ext = ".tag_collection"
 
-    tag_id = "tagc"
+    def_id = "tagc"
 
     endian = ">"
 

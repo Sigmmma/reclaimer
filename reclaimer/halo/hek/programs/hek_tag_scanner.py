@@ -26,9 +26,9 @@ class HekTagScanner(HaloHandler):
 
 
     '''this will significantly speed up indexing tags since the default
-    Handler.get_tag_id method doesnt open each file and try to read
+    Handler.get_def_id method doesnt open each file and try to read
     the 4CC Tag_Cls from the header, but just matches file extensions'''
-    get_tag_id = Handler.get_tag_id
+    get_def_id = Handler.get_def_id
 
     def _feedback(self):
         start = time()
@@ -48,15 +48,15 @@ class HekTagScanner(HaloHandler):
         new_tag   = None
         build_tag = self.build_tag      
 
-        #Loop over each tag_id in the tag paths to load in sorted order
-        for tag_id in sorted(tags):
-            tag_coll = tags.get(tag_id)
+        #Loop over each def_id in the tag paths to load in sorted order
+        for def_id in sorted(tags):
+            tag_coll = tags.get(def_id)
 
             if not isinstance(tag_coll, dict):
-                tag_coll = tags[tag_id] = {}
+                tag_coll = tags[def_id] = {}
             
             #Loop through each tagpath in Coll in sorted order
-            for tagpath in sorted(tags[tag_id]):
+            for tagpath in sorted(tags[def_id]):
                 
                 #only load the tag if it isnt already loaded
                 if tag_coll.get(tagpath) is None:
@@ -98,11 +98,11 @@ class HekTagScanner(HaloHandler):
         defs = {}
 
         #remove tags from the definitions which never have tag refs in them
-        for tag_id in sorted(self.defs.keys()):
+        for def_id in sorted(self.defs.keys()):
             
             #if the key exists in self.tag_ref_cache, copy the def
-            if tag_id in self.tag_ref_cache:
-                defs[tag_id] = self.defs[tag_id]
+            if def_id in self.tag_ref_cache:
+                defs[def_id] = self.defs[def_id]
 
         #replace self.defs with the new defs and erase
         #self.tags and replace it with a fresh one
@@ -157,14 +157,14 @@ class HekTagScanner(HaloHandler):
         logstr = ("Debug log for HEK Tag Scanner\n\n\n")
         
         '''loop through both chicago and extended chicago tag types'''
-        for tag_id in sorted(self.tag_ref_cache.keys()):
+        for def_id in sorted(self.tag_ref_cache.keys()):
 
-            tag_ref_paths = self.tag_ref_cache[tag_id]
+            tag_ref_paths = self.tag_ref_cache[def_id]
             if self.print_to_console:
-                print(" "*4+ "Scanning '%s' tags..." % tag_id)
+                print(" "*4+ "Scanning '%s' tags..." % def_id)
 
-            for tagpath in sorted(self.tags[tag_id].keys()):
-                tag = self.tags[tag_id][tagpath]
+            for tagpath in sorted(self.tags[def_id].keys()):
+                tag = self.tags[def_id][tagpath]
                 self.current_tag = tagpath
                 
                 try:

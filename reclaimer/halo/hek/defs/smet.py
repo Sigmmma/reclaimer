@@ -8,7 +8,7 @@ class SmetDef(TagDef):
 
     ext = ".shader_transparent_meter"
 
-    tag_id = "smet"
+    def_id = "smet"
 
     endian = ">"
 
