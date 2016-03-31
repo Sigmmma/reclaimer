@@ -8,7 +8,7 @@ class Hmt_Def(TagDef):
 
     ext = ".hud_message_text"
 
-    tag_id = "hmt "
+    def_id = "hmt "
 
     endian = ">"
 

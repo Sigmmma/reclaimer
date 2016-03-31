@@ -8,7 +8,7 @@ class Fog_Def(TagDef):
 
     ext = ".fog"
 
-    tag_id = "fog "
+    def_id = "fog "
 
     endian = ">"
 

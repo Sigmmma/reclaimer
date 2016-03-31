@@ -6,18 +6,18 @@ try:
     from supyr_struct import handler, buffer
 
     #used for loading all meter tags that can be found
-    metr_loader = HaloHandler(valid_tag_ids="metr", print_test=False)
+    metr_loader = HaloHandler(valid_def_ids="metr", print_test=False)
 
     metrdef = metr_loader.defs['metr']
 
     #replace the raw data struct of the meter image with the organized one
-    Meter_Image_Struct = metrdef.descriptors['Meter_Image']
+    Meter_Image_Struct = metrdef.subdefs['Meter_Image'].descriptor
     #override the immutability of the frozendict
     dict.__setitem__(metrdef.descriptor[1][14], 'CHILD', Meter_Image_Struct)
     
     tagsdir = metr_loader.datadir
     #handler to build tga images
-    tga_maker = handler.Handler(valid_tag_ids='tga', tagsdir=tagsdir,
+    tga_maker = handler.Handler(valid_def_ids='tga', tagsdir=tagsdir,
                                 defs_path='supyr_struct.defs')
     
     print("Press enter to begin extracting meter images.")
@@ -37,29 +37,29 @@ try:
             
             meter = metr_loader.tags['metr'][Meter_Path]
 
-            tgaout         = tga_maker.build_tag(tag_id='tga')
+            tgaout         = tga_maker.build_tag(def_id='tga')
             tgaout.tagpath = tagsdir+splitext(Meter_Path)[0]+'.tga'
 
             meterdata = meter.tagdata.Data
             
-            head = tgaout.tagdata.Header
+            head = tgaout.tagdata.header
 
-            head.Image_Type.Format.data = 2
-            head.Width  = meterdata.Meter_Width
-            head.Height = meterdata.Meter_Height
-            head.BPP = 32
-            head.Image_Descriptor.Alpha_Bit_Count    = 8
-            head.Image_Descriptor.Screen_Origin.data = 1
+            head.image_type.format.set_data("unmapped_rgb")
+            head.width  = meterdata.Meter_Width
+            head.height = meterdata.Meter_Height
+            head.bpp = 32
+            head.image_descriptor.alpha_bit_count    = 8
+            head.image_descriptor.screen_origin.set_data("upper_left")
 
-            tgaout.tagdata.Pixel_Data = tga_buffer
+            tgaout.tagdata.pixel_data = tga_buffer
             #write a solid red color to the image for the background
-            tga_buffer.write(b'\x00\x00\xff\x00'*head.Width*head.Height)
+            tga_buffer.write(b'\x00\x00\xff\x00'*head.width*head.height)
 
             lines = meterdata.Meter_Data.Data
 
             #write each of the lines to the appropriate location
             for line in lines:
-                tga_buffer.seek( (line.X_Pos + line.Y_Pos*head.Width )*4 )
+                tga_buffer.seek( (line.X_Pos + line.Y_Pos*head.width )*4 )
                 tga_buffer.write(line.Line_Data)
 
             tgaout.write(temp=False, int_test=False, backup=False)

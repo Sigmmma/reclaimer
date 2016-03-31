@@ -28,9 +28,9 @@ class HashCacher(Handler):
         self.main_hashmap = {}
 
     '''this will significantly speed up indexing tags since the default
-    Handler.get_tag_id method doesnt open each file and try to read
+    Handler.get_def_id method doesnt open each file and try to read
     the 4CC Tag_Cls from the header, but just matches file extensions'''
-    get_tag_id = Handler.get_tag_id
+    get_def_id = Handler.get_def_id
 
 
     def build_hashcache(self, cache_name, description, tagsdir, subdir=''):
@@ -50,17 +50,17 @@ class HashCacher(Handler):
             tagsdir = tag_lib.tagsdir
             tags    = tag_lib.tags
             
-            for tag_id in sorted(tags):
+            for def_id in sorted(tags):
                 if tag_lib.print_to_console:
                     tag_lib.print_to_console = False
-                    print(" "*4+ "Hashing '%s' tags..." % tag_id)
+                    print(" "*4+ "Hashing '%s' tags..." % def_id)
                     tag_lib.print_to_console = True
                     
-                tag_ref_paths   = tag_lib.tag_ref_cache.get(tag_id, ())
-                reflexive_paths = tag_lib.reflexive_cache.get(tag_id, ())
-                raw_data_paths  = tag_lib.raw_data_cache.get(tag_id, ())
+                tag_ref_paths   = tag_lib.tag_ref_cache.get(def_id, ())
+                reflexive_paths = tag_lib.reflexive_cache.get(def_id, ())
+                raw_data_paths  = tag_lib.raw_data_cache.get(def_id, ())
 
-                tag_coll = tags[tag_id]
+                tag_coll = tags[def_id]
                 
                 for tagpath in sorted(tag_coll):
                     try:
@@ -76,7 +76,7 @@ class HashCacher(Handler):
                         '''need to do some extra stuff for certain
                         tags with fields that are normally zeroed
                         out as tags, but arent as meta'''
-                        if tag_id == 'pphy':
+                        if def_id == 'pphy':
                             Data = tagdata.Data
                             Data.Wind_Coefficient = 0
                             Data.Wind_Sine_Modifier = 0
@@ -110,7 +110,7 @@ class HashCacher(Handler):
             print('Building hashcache...')
             cache = self.hashmap_to_hashcache(hashmap, cache_name, description)
             
-            print('Writing hashcache...')
+            print('Writing  hashcache...')
             cache.write(temp=False, backup=False, int_test=False)
             
             return cache
@@ -126,12 +126,12 @@ class HashCacher(Handler):
         
         tag     = tag_lib.build_tag(filepath=tag_lib.tagsdir + tagpath)
         tagdata = tag.tagdata
-        tag_id  = tag.tag_id      
+        def_id  = tag.def_id      
 
         hash_buffer = tag_lib.get_tag_hash(tagdata,
-                                           tag_lib.tag_ref_cache[tag_id],
-                                           tag_lib.reflexive_cache[tag_id],
-                                           tag_lib.raw_data_cache[tag_id])
+                                           tag_lib.tag_ref_cache[def_id],
+                                           tag_lib.reflexive_cache[def_id],
+                                           tag_lib.raw_data_cache[def_id])
         taghash = hash_buffer.digest()
         #hash buffer to help conserve ram
         del hash_buffer
@@ -150,7 +150,7 @@ class HashCacher(Handler):
 
     def hashmap_to_hashcache(self, hashmap, cache_name="untitled",
                              cache_description='<no description>'):
-        cache = self.build_tag(tag_id='hashcache')
+        cache = self.build_tag(def_id='hashcache')
         
         cache.tagdata.header.hashsize   = self.hashsize
         cache.tagdata.header.hashmethod = self.hashmethod

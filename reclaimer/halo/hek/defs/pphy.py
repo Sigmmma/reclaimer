@@ -8,7 +8,7 @@ class PphyDef(TagDef):
 
     ext = ".point_physics"
 
-    tag_id = "pphy"
+    def_id = "pphy"
 
     endian = ">"
 

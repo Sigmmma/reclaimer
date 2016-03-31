@@ -8,7 +8,7 @@ class BoomDef(TagDef):
 
     ext = ".spheroid"
 
-    tag_id = "boom"
+    def_id = "boom"
 
     endian = ">"
 

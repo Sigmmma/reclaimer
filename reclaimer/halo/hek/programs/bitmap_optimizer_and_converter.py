@@ -17,7 +17,7 @@ class BitmapConverter(HaloHandler):
     main_delay = 0.03 #determines how often the main loop is run
     
     def __init__(self, **kwargs):
-        HaloHandler.__init__(self, valid_tag_ids="bitm", **kwargs)
+        HaloHandler.__init__(self, valid_def_ids="bitm", **kwargs)
         
         self.Default_Conversion_Flags["bitm"] = self.Make_Default_Flags()
         self.root_window = Bitmap_Converter_Main_Window(self)

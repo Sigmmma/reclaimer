@@ -28,7 +28,7 @@ class MapDef(TagDef):
 
     ext = ".map"
     
-    tag_id = "map"
+    def_id = "map"
     
     endian = "<"
 
@@ -220,9 +220,9 @@ class MapDef(TagDef):
                       }
 
 
-    descriptors = {}
+    subdefs = {}
     
     for key in Tag_Meta[CASES]:
         #need to make a copy of this, or it screws up the original
-        descriptors[key] = dict(Tag_Meta[CASES][key])
-        descriptors[key][POINTER] = Tag_Meta[POINTER]
+        subdefs[key] = dict(Tag_Meta[CASES][key])
+        subdefs[key][POINTER] = Tag_Meta[POINTER]

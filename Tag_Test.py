@@ -3,19 +3,19 @@ try:
     from supyr_struct.test import TagTestHandler
     
     test = TagTestHandler(debug=3, print_test=True, save_test=False,
-                            write_as_temp=True, backup=False,
-                            valid_tag_ids="sote_eep_save",
-                            defs_path="reclaimer.misc.defs",
+                          write_as_temp=True, backup=False,
+                          valid_def_ids="sote_eep_save",
+                          defs_path="reclaimer.misc.defs",
                           
-                            print_options={'indent':4,
-                                           'printout':True, 'precision':3,
-                                           'show':['name', 'children', 'field',
-                                                   'value', 'offset',# 'size',
-                                                   'index', 'flags',
-                                                   'tagpath', #'unique', 
-                                                   'binsize', 'ramsize',
-                                                   #'all'
-                                                   ] })
+                          print_options={'indent':4,
+                                         'printout':True, 'precision':3,
+                                         'show':['name', 'children', 'field',
+                                                 'value', 'offset',# 'size',
+                                                 'index', 'flags',
+                                                 'tagpath', #'unique', 
+                                                 'binsize', 'ramsize',
+                                                 #'all'
+                                                 ] })
     test.run_test()
 except Exception:
     print(format_exc())
