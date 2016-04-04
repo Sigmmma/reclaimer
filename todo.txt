@@ -6,6 +6,8 @@ Replace instances of tag_cls with tagcls. make sure tagcls isnt already used
 
 Finish docstrings for modules and update existing ones.
 
+Look into making big and little endian Bitstructs
+
 Make it so that a definitions folder must be located in the same module as __main__
 
 Medium Priority:

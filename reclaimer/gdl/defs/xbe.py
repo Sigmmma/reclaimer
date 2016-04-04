@@ -3,7 +3,11 @@ from supyr_struct.defs.executables.xbe import *
 def get():
     return GdlXbeDef
 
-class GdlXbeDef(XbeDef):
+class GdlXbeDef(TagDef):
+
+    def_id = 'xbe'
+
+    ext = '.xbe'
 
     make_gui_names = True
 
@@ -102,10 +106,10 @@ class GdlXbeDef(XbeDef):
 
 
     descriptor = { TYPE:Container, NAME:"Gauntlet_Dark_Legacy_XBE",
-                   0:XbeDef.xbe_image_header,
-                   1:XbeDef.xbe_certificate,
-                   2:XbeDef.xbe_sec_headers,
-                   3:XbeDef.xbe_lib_ver_headers,
+                   0:xbe_image_header,
+                   1:xbe_certificate,
+                   2:xbe_sec_headers,
+                   3:xbe_lib_ver_headers,
                    4:{TYPE:Array, NAME:"Secret_Characters", SIZE:27, POINTER:1135088,
                       SUB_STRUCT:{TYPE:Struct, SIZE:36, NAME:"Character",                         
                                   0:{ TYPE:Enum32, NAME:"Color",
