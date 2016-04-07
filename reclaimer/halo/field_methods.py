@@ -10,7 +10,8 @@ def tag_ref_sizecalc(self, block, **kwargs):
         return len(block) + 1
     return 0
 
-def tag_ref_size(new_value=None, *args, **kwargs):
+def tag_ref_size(block=None, parent=None, attr_index=None,
+                 raw_data=None, new_value=None, *args, **kwargs):
     '''Used to retrieve or set the byte size of a Halo tag
     reference string. If the string is empty, the actual amount
     of bytes it takes up is zero, otherwise it is (1+length) bytes.
@@ -25,11 +26,11 @@ def tag_ref_size(new_value=None, *args, **kwargs):
     
     if new_value is not None:
         if new_value <= 1:
-            kwargs["parent"].Tag_Path_Length = 0
+            parent.Tag_Path_Length = 0
         else:
-            kwargs["parent"].Tag_Path_Length = new_value - 1
+            parent.Tag_Path_Length = new_value - 1
     else:
-        strlen = kwargs["parent"].Tag_Path_Length
+        strlen = parent.Tag_Path_Length
         if strlen:
             return strlen + 1
         return strlen

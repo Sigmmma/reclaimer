@@ -11,7 +11,7 @@ class GdlXbeDef(TagDef):
 
     make_gui_names = True
 
-    special_types = { TYPE:Bool32, NAME:"Flags",
+    special_types = { TYPE:LBool32, NAME:"Flags",
                       0:{NAME:"Levitate", VALUE:1},
                       1:{NAME:"X_Ray", VALUE:2},
                       2:{NAME:"Invisible", VALUE:4},
@@ -36,7 +36,7 @@ class GdlXbeDef(TagDef):
                       21:{NAME:"Turbo", VALUE:524288}
                    }
     
-    armor_types = { TYPE:Bool32, NAME:"Flags",
+    armor_types = { TYPE:LBool32, NAME:"Flags",
                     0:{NAME:"Resist_Fire", VALUE:1},
                     1:{NAME:"Resist_Elec", VALUE:2},
                     2:{NAME:"Resist_Light", VALUE:4},
@@ -65,7 +65,7 @@ class GdlXbeDef(TagDef):
     
     #these are for when the program can handle displaying
     #structs and the library can handle union fields
-    weapon_types = { TYPE:BitStruct, SIZE:4, NAME:"Flags",
+    weapon_types = { TYPE:LBitStruct, SIZE:4, NAME:"Flags",
                      0:{TYPE:BitUEnum, NAME:"Weapon_Type", SIZE:4,
                         0:{NAME:"Normal"},
                         1:{NAME:"Fire"},
@@ -88,7 +88,7 @@ class GdlXbeDef(TagDef):
                         }
                      }
     
-    weapon_types = { TYPE:Bool32, NAME:"Flags",
+    weapon_types = { TYPE:LBool32, NAME:"Flags",
                      0:{NAME:"Knockback", VALUE:16},
                      1:{NAME:"Knockdown", VALUE:32},
                      2:{NAME:"Whirlwind", VALUE:65536},
@@ -112,14 +112,14 @@ class GdlXbeDef(TagDef):
                    3:xbe_lib_ver_headers,
                    4:{TYPE:Array, NAME:"Secret_Characters", SIZE:27, POINTER:1135088,
                       SUB_STRUCT:{TYPE:Struct, SIZE:36, NAME:"Character",                         
-                                  0:{ TYPE:Enum32, NAME:"Color",
+                                  0:{ TYPE:LUEnum32, NAME:"Color",
                                       0:{NAME:"Yellow"},
                                       1:{NAME:"Blue"},
                                       2:{NAME:"Red"},
                                       3:{NAME:"Green"}
                                       },
                                   
-                                  1:{ TYPE:Enum32, NAME:"Type",
+                                  1:{ TYPE:LUEnum32, NAME:"Type",
                                       0:{NAME:"Warrior"},
                                       1:{NAME:"Valkyrie"},
                                       2:{NAME:"Wizard"},
@@ -141,7 +141,7 @@ class GdlXbeDef(TagDef):
                                   2:{ TYPE:StrLatin1,  NAME:"Code", SIZE:7 },
                                   3:{ TYPE:Pad, SIZE:1 },
                                   4:{ TYPE:StrLatin1,  NAME:"Directory", SIZE:16 },
-                                  5:{ TYPE:Bool32,     NAME:"Flags",
+                                  5:{ TYPE:LBool32,    NAME:"Flags",
                                       0:{NAME:"Disable", VALUE:1 }
                                       }
                                   }
@@ -152,7 +152,7 @@ class GdlXbeDef(TagDef):
                                   0:{ TYPE:StrLatin1, SIZE:7,
                                       OFFSET:0, NAME:"Code"},
                                   1:{ TYPE:Pad, SIZE:1 },
-                                  2:{ TYPE:Enum32, NAME:"Type",
+                                  2:{ TYPE:LUEnum32, NAME:"Type",
                                       0:{NAME:"Gold",   VALUE:1},
                                       1:{NAME:"Key",    VALUE:2},
                                       2:{NAME:"Potion", VALUE:4},
@@ -162,8 +162,8 @@ class GdlXbeDef(TagDef):
                                       4:{NAME:"Armor",   VALUE:6},
                                       5:{NAME:"Special", VALUE:9}
                                       },
-                                  3:{ TYPE:Float,  NAME:"Add" },
-                                  4:{ TYPE:Bool32, NAME:"Flags" }
+                                  3:{ TYPE:LFloat,  NAME:"Add" },
+                                  4:{ TYPE:LBool32, NAME:"Flags" }
                                   }
                        }
                    }
