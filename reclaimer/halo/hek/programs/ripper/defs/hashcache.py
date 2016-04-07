@@ -1,42 +1,35 @@
 from supyr_struct.defs.tag_def import *
 
-def get():
-    return HashCacheDef
+def get(): return hash_cache_def
 
-class HashCacheDef(TagDef):
+hash_cache_header = Struct("header",
+    LUInt32("id",      DEFAULT='hsah'),
+    LUInt32("version", DEFAULT=2),
 
-    ext = ".hashcache"
-    
-    def_id = "hashcache"
-    
-    endian = "<"
+    LUInt32("hashcount"),
+    LUInt16("hashsize"),
+    LUInt16("namelen"),
+    LUInt32("descriptionlen"),
 
-    hash_desc = { TYPE:Container, NAME:"hash",
-                  0:{ TYPE:BytesRaw,   NAME:"hash",
-                      SIZE:"...header.hashsize" },
-                  1:{ TYPE:CStrLatin1, NAME:"value" }
-                  }
-    
-    descriptor = { TYPE:Container, NAME:"hashcache",
-                      0:{ TYPE:Struct, NAME:"header", SIZE:128,
-                          0:{ TYPE:UInt32, NAME:"id",      DEFAULT:'hsah' },
-                          1:{ TYPE:UInt32, NAME:"version", DEFAULT:2 },
+    Pad(76), #ROOM FOR ADDITIONAL DATA
+
+    StrLatin1("hashmethod", SIZE=32),
+    SIZE=128
+    )
                           
-                          2:{ TYPE:UInt32, NAME:"hashcount" },
-                          3:{ TYPE:UInt16, NAME:"hashsize" },
-                          4:{ TYPE:UInt16, NAME:"namelen" },
-                          5:{ TYPE:UInt32, NAME:"descriptionlen" },
+hash_desc = Container("hash",
+    BytesRaw("hash", SIZE="...header.hashsize"),
+    CStrLatin1("value")
+    )
 
-                          #ROOM FOR ADDITIONAL DATA
-                          
-                          6:{ TYPE:StrLatin1, NAME:"hashmethod",
-                              OFFSET:96, SIZE:32 }
-                          },
-                      1:{ TYPE:StrUtf8, NAME:"cache_name",
-                          SIZE:".header.namelen" },
-                      2:{ TYPE:StrUtf8, NAME:"cache_description",
-                          SIZE:".header.descriptionlen" },
-                      3:{ TYPE:Array, NAME:"cache",
-                          SIZE:".header.hashcount",
-                          SUB_STRUCT:hash_desc }
-                      }
+hash_cache_def = TagDef(
+    hash_cache_header,
+    StrUtf8("cache_name",        SIZE=".header.namelen"),
+    StrUtf8("cache_description", SIZE=".header.descriptionlen"),
+    Array("cache",               SIZE=".header.hashcount",
+          SUB_STRUCT=hash_desc),
+    
+    NAME="hashcache",
+    
+    ext=".hashcache", def_id="hashcache"
+    )

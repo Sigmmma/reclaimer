@@ -34,15 +34,12 @@ class MapDef(TagDef):
 
     sani_warn = False
 
-    def tag_path_pointer(*args, **kwargs):
-        parent = kwargs.get('parent')
-        
+    def tag_path_pointer(block=None, parent=None, attr_index=None,
+                         raw_data=None, new_value=None, *args, **kwargs):
         if parent is None:
             raise KeyError
         
-        new_value = kwargs.get('new_value')
         t_head    = parent.PARENT
-        
         m_head = t_head.PARENT.PARENT.PARENT.Mapfile_Header
         magic = PC_INDEX_MAGIC - m_head.Tag_Index_Offset
 
@@ -52,15 +49,12 @@ class MapDef(TagDef):
             return PC_TAG_INDEX_HEADER_SIZE + t_head.Tag_Path_Offset - magic
         
 
-    def tag_meta_data_pointer(*args, **kwargs):
-        parent = kwargs.get('parent')
-        
+    def tag_meta_data_pointer(block=None, parent=None, attr_index=None,
+                              raw_data=None, new_value=None, *args, **kwargs):
         if parent is None:
             raise KeyError
 
-        new_value = kwargs.get('new_value')
         t_head    = parent.PARENT
-        
         m_head = t_head.PARENT.PARENT.PARENT.Mapfile_Header
         magic = PC_INDEX_MAGIC - m_head.Tag_Index_Offset
         #NEED TO FINISH THIS SO IT CAN SET THE META POINTER
@@ -69,13 +63,11 @@ class MapDef(TagDef):
             return PC_TAG_INDEX_HEADER_SIZE + t_head.Tag_Offset - magic
         
 
-    def tag_meta_case(*args, **kwargs):
-        parent = kwargs.get('parent')
-        
+    def tag_meta_case(block=None, parent=None, attr_index=None,
+                      raw_data=None, new_value=None, *args, **kwargs):
         if parent is None:
             raise KeyError
-
-        new_value = kwargs.get('new_value')
+        
         t_head    = parent.PARENT
         if t_head.Indexed:
             return
@@ -87,13 +79,10 @@ class MapDef(TagDef):
         return t_head.Tag_Class_1.data
         
 
-    def tag_index_array_pointer(*args, **kwargs):
-        block = kwargs.get('block')
-        
+    def tag_index_array_pointer(block=None, parent=None, attr_index=None,
+                                raw_data=None, new_value=None, *args, **kwargs):
         if block is None:
             raise KeyError
-
-        new_value = kwargs.get('new_value')
         i_head    = block.PARENT
         m_head    = i_head.PARENT.Mapfile_Header
         
@@ -102,6 +91,8 @@ class MapDef(TagDef):
                     i_head.Index_Magic - PC_INDEX_MAGIC)
         
     def fcc(value):
+        ''''''
+        #wont let me be, or let me be me, so let me see.....
         return int.from_bytes(bytes(value, encoding='latin1'), byteorder='big')
         
 

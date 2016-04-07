@@ -1,14 +1,15 @@
 from supyr_struct.fields import *
 
 
-def sub_objects_size(newsize=None, *args, **kwargs):
-    if newsize is not None:
-        if newsize <= 1:
-            kwargs["block"].PARENT.PARENT.Sub_Objects_Count = 0
+def sub_objects_size(block=None, parent=None, attr_index=None,
+                     raw_data=None, new_value=None, *args, **kwargs):
+    if new_value is not None:
+        if new_value <= 1:
+            block.PARENT.PARENT.Sub_Objects_Count = 0
         else:
-            kwargs["block"].PARENT.PARENT.Sub_Objects_Count = newsize - 1
+            block.PARENT.PARENT.Sub_Objects_Count = new_value - 1
     else:
-        block_count = kwargs["block"].PARENT.PARENT.Sub_Objects_Count - 1
+        block_count = block.PARENT.PARENT.Sub_Objects_Count - 1
         if block_count < 0:
             return 0
         return block_count
