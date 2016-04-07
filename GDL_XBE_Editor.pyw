@@ -10,6 +10,7 @@ curr_dir = os.path.abspath(os.curdir)
 
 try:
     from reclaimer.gdl.handler import GdlHandler
+    from supyr_struct.defs.executables.xbe import XBE_HEADER_MAGIC
     
     def Validate_and_Set_Str(Var, *args):
         Val = Var.get()
@@ -158,10 +159,10 @@ try:
             if filepath != "":
                 try:
                     XBE = self.XBE_Const.build_tag(def_id="xbe", filepath=filepath)
-                    if (XBE.tagdata.xbe_image_header.xbe_magic != "XBEH" or
+                    if (XBE.tagdata.xbe_image_header.xbe_magic != XBE_HEADER_MAGIC or
                         XBE.tagdata.xbe_certificate.title_name != "Gauntlet Dark Legacy"):
                         raise IOError("The selected file does not appear to be a valid GDL default.xbe")
-                    
+
                     self.Loaded_XBE = XBE
                     
                     self._Initialize_Windows()

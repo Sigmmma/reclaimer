@@ -6,17 +6,8 @@ from .objs.anim import AnimPs2Tag
 def get():
     return AnimPs2Def
 
-class AnimPs2Def(TagDef):
-    
-    ext = ".ps2"
-
-    def_id = "anim"
-
-    #The constructor used to build this definitions tag_obj
-    tag_cls = AnimPs2Tag
-
-    endian = "<"
-
-    incomplete = True
-
-    descriptor = { TYPE:Container, NAME:'GDL_Anim_Resource' }
+AnimPs2Def = TagDef( NAME='GDL_Anim_Resource',
+                     
+                     ext=".ps2", def_id="anim",
+                     tag_cls=AnimPs2Tag, incomplete=True
+                     )
