@@ -5,7 +5,7 @@ class HekTag(Tag):
     __slots__ = ('Tag_Conversion_Settings',
                  'library', 'definition',
                  'root_offset', 'calc_pointers',
-                 'tagsourcepath', 'tagpath', 'tagdata')
+                 'sourcepath', 'filepath', 'data')
     
     def __init__(self, **kwargs):
         calc_pointers = False

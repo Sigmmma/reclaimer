@@ -74,8 +74,8 @@ class BitmapConverter(HaloHandler):
                     def_flags = self.Default_Conversion_Flags['bitm']
 
                     #we need to build the list of conversion flags for each tag.
-                    for tagpath in tags:
-                        tags[tagpath].Tag_Conversion_Settings = list(def_flags)
+                    for filepath in tags:
+                        tags[filepath].Tag_Conversion_Settings = list(def_flags)
                         
                     self.Initialize_Window_Variables()
                 else:
@@ -101,8 +101,8 @@ class BitmapConverter(HaloHandler):
                     logstr = self.Process_Bitmap_tags()
                 
                 #to keep from bloating the RAM, we delete all loaded bitmap tags
-                for tagpath in tuple(self.tags['bitm']):
-                    del self.tags['bitm'][tagpath]
+                for filepath in tuple(self.tags['bitm']):
+                    del self.tags['bitm'][filepath]
                 gc.collect()
 
                 #since we are done with the conversion we write the debug log and change the window variables
@@ -172,10 +172,10 @@ class BitmapConverter(HaloHandler):
 
         #for the conversion variables we want to return
         #a count on how many bitmaps are of what type
-        for tagpath in self.tags['bitm']:
+        for filepath in self.tags['bitm']:
 
             #only run if the bitmap contains bitmaps
-            tag = self.tags['bitm'][tagpath]
+            tag = self.tags['bitm'][filepath]
             if tag.Bitmap_Count() and tag.Is_Power_of_2_Bitmap():
                 
                 b_type = tag.Bitmap_Type()
@@ -190,16 +190,16 @@ class BitmapConverter(HaloHandler):
                 rw.Total_Pixel_Data_to_Process += tag.Pixel_Data_Bytes_Size()
             else:
                 if tag.Bitmap_Count():
-                    print("Non power-of-2 bitmap found.\n%s\n\n"%tag.tagpath)
+                    print("Non power-of-2 bitmap found.\n%s\n\n"%tag.filepath)
                 else:
-                    print("Bitmap with no bitmap data found.\n%s\n\n"%tag.tagpath)
-                tags_to_remove.append(tagpath)
+                    print("Bitmap with no bitmap data found.\n%s\n\n"%tag.filepath)
+                tags_to_remove.append(filepath)
                 rw.Bad_Bitmaps += 1
                 
             rw.Total_Bitmaps += 1
 
-        for tagpath in tags_to_remove:
-            del self.tags['bitm'][tagpath]
+        for filepath in tags_to_remove:
+            del self.tags['bitm'][filepath]
         del tags_to_remove
             
         rw.tag_list_window.Build_Tag_Sort_Mappings()
@@ -235,27 +235,27 @@ class BitmapConverter(HaloHandler):
         Conversion_Report = {'bitm':{}}
 
         #loop through each tag
-        for tagpath in sorted(self.tags['bitm']):
-            tag = self.tags['bitm'][tagpath]
+        for filepath in sorted(self.tags['bitm']):
+            tag = self.tags['bitm'][filepath]
             
             if rw is not None and rw.Conversion_Cancelled:
                 break
             
-            self.current_tag = tagpath
+            self.current_tag = filepath
 
             #this may change after the below function so we get it before that happens
             tagsize = tag.Pixel_Data_Bytes_Size()
             if Get_Will_be_Processed(tag, def_flags):
                 """DO THE CONVERSION NOW"""
                 try:
-                    Convert_Bitmap_Tag(tag, Root_Window=rw, tagpath=tagpath,
+                    Convert_Bitmap_Tag(tag, Root_Window=rw, filepath=filepath,
                                        Conversion_Report=Conversion_Report['bitm'], 
                                        Reprocess=not(def_flags[DONT_REPROCESS]))
                 except:
                     print(format_exc())
-                    Conversion_Report['bitm'][tagpath] = False
+                    Conversion_Report['bitm'][filepath] = False
             else:
-                Conversion_Report['bitm'][tagpath] = None
+                Conversion_Report['bitm'][filepath] = None
             rw.Remaining_Pixel_Data_to_Process -= tagsize
             rw.Remaining_Bitmaps -= 1
 
@@ -325,13 +325,13 @@ class BitmapConverter(HaloHandler):
 
 
         #loop through each tag and create a string that details each bitmap in it
-        for tagpath in self.tags['bitm']:
-            tag = self.tags['bitm'][tagpath]
-            filesize = (getsize(tag.tagpath)-tag.Color_Plate_Data_Bytes_Size())//1024
+        for filepath in self.tags['bitm']:
+            tag = self.tags['bitm'][filepath]
+            filesize = (getsize(tag.filepath)-tag.Color_Plate_Data_Bytes_Size())//1024
             tagstrs  = tag_info_strs[tag.Bitmap_Type()][tag.Bitmap_Format()]
             
             #this is the string that holds the data pertaining to this tag
-            tagstr = ("\n"+" "*16+tagpath+" "*8+"Compiled tag size = %sKB\n" %
+            tagstr = ("\n"+" "*16+filepath+" "*8+"Compiled tag size = %sKB\n" %
                       {True:"less than 1", False:str(filesize)}[filesize <= 0])
 
             for i in range(tag.Bitmap_Count()):

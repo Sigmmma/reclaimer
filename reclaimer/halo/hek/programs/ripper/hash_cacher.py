@@ -62,27 +62,27 @@ class HashCacher(Handler):
 
                 tag_coll = tags[def_id]
                 
-                for tagpath in sorted(tag_coll):
+                for filepath in sorted(tag_coll):
                     try:
                         #if this tag isnt located in the sub
                         #directory being scanned, then skip it
-                        if not tagpath.startswith(subdir):
+                        if not filepath.startswith(subdir):
                             continue
                             
-                        tag_lib.current_tag = tagpath
-                        tag = tag_lib.build_tag(filepath=tagsdir+tagpath)
-                        tagdata = tag.tagdata
+                        tag_lib.current_tag = filepath
+                        tag = tag_lib.build_tag(filepath=tagsdir+filepath)
+                        data = tag.data
                         
                         '''need to do some extra stuff for certain
                         tags with fields that are normally zeroed
                         out as tags, but arent as meta'''
                         if def_id == 'pphy':
-                            Data = tagdata.Data
+                            Data = data.Data
                             Data.Wind_Coefficient = 0
                             Data.Wind_Sine_Modifier = 0
                             Data.Z_Translation_Rate = 0
 
-                        hash_buffer = tag_lib.get_tag_hash(tagdata,
+                        hash_buffer = tag_lib.get_tag_hash(data,
                                                            tag_ref_paths,
                                                            reflexive_paths,
                                                            raw_data_paths)
@@ -94,13 +94,13 @@ class HashCacher(Handler):
                                    "    hash:%s\n"+
                                    "    Path(existing): '%s'\n"+
                                    "    Path(colliding):'%s'\n")
-                                  % (taghash, hashmap[taghash], tagpath) )
+                                  % (taghash, hashmap[taghash], filepath) )
                             tag_lib.print_to_console = True
                         else:
-                            hashmap[taghash] = tagpath
+                            hashmap[taghash] = filepath
                             
                         #delete the tag and hash buffer to help conserve ram
-                        del tag_coll[tagpath]
+                        del tag_coll[filepath]
                         del hash_buffer
                         
                     except Exception:
@@ -121,14 +121,14 @@ class HashCacher(Handler):
         tag_lib.mode = 100
 
 
-    def add_tag_to_hashmap(self, tagpath, hashmap):
+    def add_tag_to_hashmap(self, filepath, hashmap):
         tag_lib  = self.tag_lib
         
-        tag     = tag_lib.build_tag(filepath=tag_lib.tagsdir + tagpath)
-        tagdata = tag.tagdata
+        tag     = tag_lib.build_tag(filepath=tag_lib.tagsdir + filepath)
+        data = tag.data
         def_id  = tag.def_id      
 
-        hash_buffer = tag_lib.get_tag_hash(tagdata,
+        hash_buffer = tag_lib.get_tag_hash(data,
                                            tag_lib.tag_ref_cache[def_id],
                                            tag_lib.reflexive_cache[def_id],
                                            tag_lib.raw_data_cache[def_id])
@@ -141,9 +141,9 @@ class HashCacher(Handler):
                    "    hash:%s\n"+
                    "    path(existing): '%s'\n"+
                    "    path(colliding):'%s'\n")
-                  % (taghash, hashmap[taghash], tagpath) )
+                  % (taghash, hashmap[taghash], filepath) )
         else:
-            hashmap[taghash] = tagpath
+            hashmap[taghash] = filepath
         
         return taghash
 
@@ -152,17 +152,17 @@ class HashCacher(Handler):
                              cache_description='<no description>'):
         cache = self.build_tag(def_id='hashcache')
         
-        cache.tagdata.header.hashsize   = self.hashsize
-        cache.tagdata.header.hashmethod = self.hashmethod
-        cache.tagdata.cache_name        = str(cache_name)
-        cache.tagdata.cache_description = str(cache_description)
+        cache.data.header.hashsize   = self.hashsize
+        cache.data.header.hashmethod = self.hashmethod
+        cache.data.cache_name        = str(cache_name)
+        cache.data.cache_description = str(cache_description)
 
         cache_name = ''.join(c for c in cache_name if c in valid_path_chars)
         if not cache_name:
             cache_name = "untitled"
-        cache.tagpath = self.tagsdir + cache_name + ".hashcache"
+        cache.filepath = self.tagsdir + cache_name + ".hashcache"
         
-        cache_array = cache.tagdata.cache
+        cache_array = cache.data.cache
         cache_array.extend(len(hashmap))
         
         i = 0
@@ -176,7 +176,7 @@ class HashCacher(Handler):
 
     def hashcache_to_hashmap(self, hashcache):
         hashmap = {}
-        cache_array = hashcache.tagdata.cache
+        cache_array = hashcache.data.cache
         
         for mapping in cache_array:
             hashmap[mapping.hash] = mapping.value
@@ -206,7 +206,7 @@ class HashCacher(Handler):
                     hashmap[taghash] = new_hashes[taghash]
                     
         elif isinstance(new_hashes, Tag):
-            new_hashes = new_hashes.tagdata.cache
+            new_hashes = new_hashes.data.cache
             
             if overwrite:
                 for mapping in new_hashes:

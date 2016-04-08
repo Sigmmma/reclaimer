@@ -11,7 +11,7 @@ def tag_ref_sizecalc(self, block, **kwargs):
     return 0
 
 def tag_ref_size(block=None, parent=None, attr_index=None,
-                 raw_data=None, new_value=None, *args, **kwargs):
+                 rawdata=None, new_value=None, *args, **kwargs):
     '''Used to retrieve or set the byte size of a Halo tag
     reference string. If the string is empty, the actual amount
     of bytes it takes up is zero, otherwise it is (1+length) bytes.
@@ -52,21 +52,21 @@ def decode_raw_string(self, rawbytes, parent=None, attr_index=None):
 
 
 
-def tag_index_reader(self, desc, parent=None, raw_data=None, attr_index=None,
+def tag_index_reader(self, desc, parent=None, rawdata=None, attr_index=None,
                      root_offset=0, offset=0, **kwargs):
     if parent is not None:
         m_head = parent.PARENT.Mapfile_Header
         kwargs['magic'] = PC_INDEX_MAGIC - m_head.Tag_Index_Offset
 
-    array_reader(self, desc, parent, raw_data, attr_index,
+    array_reader(self, desc, parent, rawdata, attr_index,
                  root_offset, offset, **kwargs)
 
 
-def tag_index_writer(self, parent, write_buffer, attr_index=None,
+def tag_index_writer(self, parent, writebuffer, attr_index=None,
                      root_offset=0, offset=0, **kwargs):
     if parent is not None:
         m_head = parent.PARENT.Mapfile_Header
         kwargs['magic'] = PC_INDEX_MAGIC - m_head.Tag_Index_Offset
         
-    array_writer(self, parent, write_buffer, attr_index,
+    array_writer(self, parent, writebuffer, attr_index,
                  root_offset, offset, **kwargs)

@@ -1,32 +1,32 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
+
+color = Struct("color",
+    StrLatin1('name', SIZE=32),
+    Struct("color", INCLUDE=A_R_G_B_Float),
+    SIZE=48,
+    )
+
+colo_body = Struct("Data",
+    Reflexive("colors",
+        INCLUDE=Reflexive_Struct,
+        CHILD=Array("colors_array",
+            MAX=512, SIZE=".Count",
+            SUB_STRUCT=color,
+            )
+        ),
+    SIZE=12
+    )
+
 def get():
-    return ColoDef
+    return colo_def
 
-class ColoDef(TagDef):
-
-    ext = ".color_table"
-
-    def_id = "colo"
-
-    endian = ">"
-
-    Color = { TYPE:Struct, SIZE:48, GUI_NAME:"Color",
-              0:{ TYPE:StrLatin1, NAME:'Name', SIZE:32 },
-              1:com({NAME:"Color"}, A_R_G_B_Float),
-              }
-
-    descriptor = {TYPE:Container, GUI_NAME:"color_table",
-                     0:com( {1:{ DEFAULT:"colo" }}, Tag_Header),
-                     
-                     1:{ TYPE:Struct, SIZE:12, GUI_NAME:"Data",
-                         0:{ TYPE:Reflexive, GUI_NAME:"Colors",
-                              INCLUDE:Reflexive_Struct,
-                              CHILD:{ TYPE:Array, NAME:"Colors_Array",
-                                      MAX:512, SIZE:".Count",
-                                      SUB_STRUCT:Color
-                                      }
-                             }
-                        }
-                     }
+colo_def = TagDef(
+    com( {1:{DEFAULT:"colo" }}, Tag_Header),
+    colo_body,
+    
+    NAME="color_table",
+    
+    ext=".color_table", def_id="colo", endian=">"
+    )

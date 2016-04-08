@@ -9,25 +9,30 @@ from .field_methods import *
 slightly modified based on how Halo needs to utilize them.'''
 StringVarLen   = Field(base=StrLatin1, name="HaloRefStr",
                        encoder=encode_tag_ref_str, sizecalc=tag_ref_sizecalc)
-FlUTF16StrData = Field(base=StrUtf16.little, name="UTF16StrData", endian='=',
-                       decoder=decode_raw_string,  sizecalc=utf_sizecalc )
-FlStrUTF16     = Field(base=StrUtf16.little, name="StrUTF16", endian='=',
-                       decoder=decode_string,      sizecalc=delim_utf_sizecalc )
+FlUTF16StrData = Field(base=StrUtf16, name="UTF16StrData",
+                       enc=StrUtf16.little.enc, decoder=decode_raw_string,
+                       sizecalc=utf_sizecalc )
+FlStrUTF16     = Field(base=StrUtf16, name="StrUTF16",
+                       enc=StrUtf16.little.enc, decoder=decode_string,
+                       sizecalc=delim_utf_sizecalc )
 
 #forces little endian integers and float
-FlUInt16 = Field(base=UInt16.little, name="FlUInt16", endian='=')
-FlUInt32 = Field(base=UInt32.little, name="FlUInt32", endian='=')
+FlUInt16 = Field(base=UInt16.little, name="FlUInt16", enc=UInt16.little.enc)
+FlUInt32 = Field(base=UInt32.little, name="FlUInt32", enc=UInt32.little.enc)
 
-FlEnum16 = Field(base=Enum16.little, name="FlEnum16", endian='=')
-FlEnum32 = Field(base=Enum32.little, name="FlEnum32", endian='=')
+FlUEnum16 = Field(base=UEnum16.little, name="FlUEnum16", enc=UEnum16.little.enc)
+FlUEnum32 = Field(base=UEnum32.little, name="FlUEnum32", enc=UEnum32.little.enc)
 
-FlBool16 = Field(base=Bool16.little, name="FlBool16", endian='=')
-FlBool32 = Field(base=Bool32.little, name="FlBool32", endian='=')
+FlBool16 = Field(base=Bool16.little, name="FlBool16", enc=Bool16.little.enc)
+FlBool32 = Field(base=Bool32.little, name="FlBool32", enc=Bool32.little.enc)
 
-FlSInt16 = Field(base=SInt16.little, name="FlSInt16", endian='=')
-FlSInt32 = Field(base=SInt32.little, name="FlSInt32", endian='=')
+FlSInt16 = Field(base=SInt16.little, name="FlSInt16", enc=SInt16.little.enc)
+FlSInt32 = Field(base=SInt32.little, name="FlSInt32", enc=SInt32.little.enc)
 
-FlFloat = Field(base=Float.little, name="FlFloat", endian='=')
+FlSEnum16 = Field(base=SEnum16.little, name="FlSEnum16", enc=SEnum16.little.enc)
+FlSEnum32 = Field(base=SEnum32.little, name="FlSEnum32", enc=SEnum32.little.enc)
+
+FlFloat = Field(base=Float.little, name="FlFloat", enc=Float.little.enc)
 
 '''These Fields exist to easily identify where in a tag
 that raw data refs, reflexives, and tag references exist.'''

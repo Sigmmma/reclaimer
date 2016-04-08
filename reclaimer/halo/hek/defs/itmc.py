@@ -1,38 +1,35 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
+                  
+permutation = Struct("permutation",
+    Pad(32),
+    BFloat("weight"),
+    TagIndexRef("item", INCLUDE=Tag_Index_Ref_Struct),
+    SIZE=84,
+    )
+
+itmc_body = Struct("Data",
+    Reflexive("item permutations",
+        INCLUDE=Reflexive_Struct,
+        CHILD=Array("permutations array",
+            SIZE=".Count", MAX=32,
+            SUB_STRUCT=permutation
+            ),
+        ),
+    BSInt16("spawn time"),
+    SIZE=92,
+    )
+
 
 def get():
-    return ItmcDef
+    return itmc_def
 
-class ItmcDef(TagDef):
-
-    ext = ".item_collection"
-
-    def_id = "itmc"
-
-    endian = ">"
-                             
-    Permutation = { TYPE:Struct, SIZE:84, NAME:"Permutation",
-                    0:{ TYPE:Pad, SIZE:32 },
-                    1:{ TYPE:Float, NAME:"Weight" },
-                    2:{ TYPE:TagIndexRef, NAME:"Item",
-                        INCLUDE:Tag_Index_Ref_Struct,
-                        }
-                    }
-
-    descriptor = {TYPE:Container, GUI_NAME:"item_collection",
-                     0:com( {1:{ DEFAULT:"itmc" },
-                                 5:{ DEFAULT:0 } }, Tag_Header),
-                     
-                     1:{ TYPE:Struct, SIZE:92, GUI_NAME:"Data",
-                         0:{ TYPE:Reflexive, GUI_NAME:"Item Permutations",
-                             INCLUDE:Reflexive_Struct,
-                             
-                             CHILD:{ TYPE:Array, GUI_NAME:"Permutations Array",
-                                     SIZE:".Count", MAX:32,
-                                     SUB_STRUCT:Permutation
-                                     }
-                             },
-                         1:{ TYPE:SInt16, NAME:"Spawn Time" }
-                         }
-                     }
+itmc_def = TagDef(
+    com( {1:{DEFAULT:"itmc" },
+          5:{DEFAULT:0}}, Tag_Header),
+    itmc_body,
+    
+    NAME="item_collection",
+    
+    ext=".item_collection", def_id="itmc", endian=">"
+    )

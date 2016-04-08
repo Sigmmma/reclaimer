@@ -535,10 +535,10 @@ class Bitmap_Converter_Main_Window(Tk):
             Bitmap_Collection = self.handler.tags["bitm"]
             
             for Index in range(len(self.tag_list_window.Displayed_Tag_Index_Mapping)):
-                tagpath = self.tag_list_window.Displayed_Tag_Index_Mapping[Index]
-                Bitmap_Collection[tagpath].Tag_Conversion_Settings[PLATFORM] = self.save_all_tags_as
-                Bitmap_Collection[tagpath].Tag_Conversion_Settings[SWIZZLED] = self.save_all_tags_as
-                self.tag_list_window.Set_Listbox_Entry_Color(Index, tagpath)
+                filepath = self.tag_list_window.Displayed_Tag_Index_Mapping[Index]
+                Bitmap_Collection[filepath].Tag_Conversion_Settings[PLATFORM] = self.save_all_tags_as
+                Bitmap_Collection[filepath].Tag_Conversion_Settings[SWIZZLED] = self.save_all_tags_as
+                self.tag_list_window.Set_Listbox_Entry_Color(Index, filepath)
               
             if self.save_all_tags_as:
                 self.menubar.entryconfig(2, label="Toggle All tags to PC Format")
@@ -856,8 +856,8 @@ class Bitmap_Converter_Main_Window(Tk):
         self._Set_Selection_Color()
 
     def _Set_Selection_Flag(self, Flag_Name, Window_Var, Type=None):
-        for tagpath in self.tag_list_window.Selected_Tags:
-            Flags = self.handler.tags["bitm"][tagpath].Tag_Conversion_Settings
+        for filepath in self.tag_list_window.Selected_Tags:
+            Flags = self.handler.tags["bitm"][filepath].Tag_Conversion_Settings
             if Type:
                 Flags[Flag_Name] = Type(Window_Var.get())
             else:
@@ -867,8 +867,8 @@ class Bitmap_Converter_Main_Window(Tk):
         if Indexes is None:
             Indexes = self.tag_list_window.Tag_List_Listbox.curselection()
         for Index in Indexes:
-            tagpath = self.tag_list_window.Displayed_Tag_Index_Mapping[int(Index)]
-            self.tag_list_window.Set_Listbox_Entry_Color(Index, tagpath)
+            filepath = self.tag_list_window.Displayed_Tag_Index_Mapping[int(Index)]
+            self.tag_list_window.Set_Listbox_Entry_Color(Index, filepath)
 
 
 
@@ -950,8 +950,8 @@ class Bitmap_Converter_Data_Window(Canvas):
         selection = self.parent.tag_list_window.Tag_List_Listbox.curselection()
         #only run if just 1 bitmap is selected
         if len(selection) == 1:
-            tagpath = self.parent.tag_list_window.Displayed_Tag_Index_Mapping[int(selection[0])]
-            tag = handler.tags["bitm"][tagpath]
+            filepath = self.parent.tag_list_window.Displayed_Tag_Index_Mapping[int(selection[0])]
+            tag = handler.tags["bitm"][filepath]
             
             #only run if the tag contains bitmaps
             Bitmap_Count = tag.Bitmap_Count()
@@ -1128,9 +1128,9 @@ class Bitmap_Converter_List_Window(Toplevel):
 
     def Build_Tag_Sort_Mappings(self):
         #we want to build the different sort lists for the displaying of the tags
-        for tagpath in self.handler.tags["bitm"]:
+        for filepath in self.handler.tags["bitm"]:
             #only run if the bitmap contains bitmaps
-            tag = self.handler.tags["bitm"][tagpath]
+            tag = self.handler.tags["bitm"][filepath]
                 
             b_type   = tag.Bitmap_Type()
             b_format = tag.Bitmap_Format()
@@ -1141,8 +1141,8 @@ class Bitmap_Converter_List_Window(Toplevel):
             if not pixel_bytesize in self.Bitmaps_Indexed_By_Size:
                 self.Bitmaps_Indexed_By_Size[pixel_bytesize] = []
 
-            self.Bitmaps_Indexed_By_Type_and_Format[b_type][b_format].append(tagpath)
-            self.Bitmaps_Indexed_By_Size[pixel_bytesize].append(tagpath)
+            self.Bitmaps_Indexed_By_Type_and_Format[b_type][b_format].append(filepath)
+            self.Bitmaps_Indexed_By_Size[pixel_bytesize].append(filepath)
 
 
     def Set_Selected_Tags_List(self, event=None):
@@ -1168,10 +1168,10 @@ class Bitmap_Converter_List_Window(Toplevel):
             self.Tag_List_Listbox.selection_clear(first=0, last=len(self.Displayed_Tag_Index_Mapping))
             
             for Index in range(len(self.Displayed_Tag_Index_Mapping)):
-                tagpath = self.Displayed_Tag_Index_Mapping[Index]
+                filepath = self.Displayed_Tag_Index_Mapping[Index]
                 
                 #if the index wasn't selected we select it
-                if tagpath not in self.Selected_Tags:
+                if filepath not in self.Selected_Tags:
                     self.Tag_List_Listbox.selection_set(Index)
             self.Set_Selected_Tags_List()
 
@@ -1215,12 +1215,12 @@ class Bitmap_Converter_List_Window(Toplevel):
 
             bitmaps = self.handler.tags["bitm"]
             if sortby == 0:#sorting by path
-                for tagpath in sorted(bitmaps.keys()):
-                    tag = bitmaps[tagpath]
+                for filepath in sorted(bitmaps.keys()):
+                    tag = bitmaps[filepath]
                     #only run if the bitmap contains bitmaps
                     if tag.Bitmap_Count()!= 0:
                         if Formats_Shown[tag.Bitmap_Format()] and Types_Shown[tag.Bitmap_Type()]:
-                            Display_Map.append(tagpath)
+                            Display_Map.append(filepath)
                             
             elif sortby == 2:#sorting by type
                 for Type in range(4):#loop through each format
@@ -1239,11 +1239,11 @@ class Bitmap_Converter_List_Window(Toplevel):
             else:#sorting by size
                 Byte_Sizes_in_Order = sorted(self.Bitmaps_Indexed_By_Size)
                 for tagsize in Byte_Sizes_in_Order:
-                    for tagpath in self.Bitmaps_Indexed_By_Size[tagsize]:     
-                        tag = bitmaps[tagpath]
+                    for filepath in self.Bitmaps_Indexed_By_Size[tagsize]:     
+                        tag = bitmaps[filepath]
                         
                         if Formats_Shown[tag.Bitmap_Format()] and Types_Shown[tag.Bitmap_Type()]:
-                            Display_Map.append(tagpath)
+                            Display_Map.append(filepath)
                     
             self.tag_list_sort_type = sortby
             if not(self.tag_list_sort_reversed) and Enable_Reverse:
@@ -1263,12 +1263,12 @@ class Bitmap_Converter_List_Window(Toplevel):
             #used to keep track of which index we are creating
             Current_Tag_List_Index = 0
             for Index in range(len(self.Displayed_Tag_Index_Mapping)):
-                tagpath = self.Displayed_Tag_Index_Mapping[Index]
+                filepath = self.Displayed_Tag_Index_Mapping[Index]
                 
-                self.Tag_List_Listbox.insert(END,tagpath)
-                tag = self.handler.tags["bitm"][tagpath]
+                self.Tag_List_Listbox.insert(END,filepath)
+                tag = self.handler.tags["bitm"][filepath]
 
-                self.Set_Listbox_Entry_Color(END, tagpath)
+                self.Set_Listbox_Entry_Color(END, filepath)
                 
                 Current_Tag_List_Index += 1
 
@@ -1290,8 +1290,8 @@ class Bitmap_Converter_List_Window(Toplevel):
             self.populating_tag_window = False
         
 
-    def Set_Listbox_Entry_Color(self, Listbox_Index, tagpath):
-        if Get_Will_be_Processed(self.handler.tags["bitm"][tagpath],
+    def Set_Listbox_Entry_Color(self, Listbox_Index, filepath):
+        if Get_Will_be_Processed(self.handler.tags["bitm"][filepath],
                                  self.handler.Default_Conversion_Flags["bitm"]):
             self.Tag_List_Listbox.itemconfig(Listbox_Index, bg='dark green', fg='white')
         else:

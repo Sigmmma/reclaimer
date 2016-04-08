@@ -2,7 +2,7 @@ from supyr_struct.fields import *
 
 
 def sub_objects_size(block=None, parent=None, attr_index=None,
-                     raw_data=None, new_value=None, *args, **kwargs):
+                     rawdata=None, new_value=None, *args, **kwargs):
     if new_value is not None:
         if new_value <= 1:
             block.PARENT.PARENT.Sub_Objects_Count = 0

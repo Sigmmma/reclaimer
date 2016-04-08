@@ -1,33 +1,33 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
+string_data_struct = RawDataRef("string",
+    INCLUDE=Raw_Data_Ref_Struct,
+    CHILD=StrLatin1("raw_string_data", SIZE=".Count"),
+    SIZE=20
+    )
+
+str__body = Struct("Data",
+    Reflexive("strings",
+        INCLUDE=Reflexive_Struct,
+
+        CHILD=Array("strings array",
+            MAX=32767, SIZE=".Count",
+            SUB_STRUCT=string_data_struct
+            )
+        ),
+    SIZE=12,
+    )
+
+
 def get():
-    return Str_Def
+    return str__def
 
-class Str_Def(TagDef):
-
-    ext = ".string_list"
-
-    def_id = "str#"
-
-    endian = ">"
-
-    string_data_struct = { TYPE:RawDataRef, SIZE:20, GUI_NAME:"String",
-                           INCLUDE:Raw_Data_Ref_Struct,
-                           CHILD:{TYPE:StrLatin1, NAME:"Raw_String_Data",
-                                  SIZE:".Count"}
-                           }
+str__def = TagDef(
+    com( {1:{DEFAULT:"str#" }}, Tag_Header),
+    str__body,
     
-    descriptor = {TYPE:Container, GUI_NAME:"string_list",
-                     0:com( {1:{ DEFAULT:"str#" } }, Tag_Header),                    
-                     1:{TYPE:Struct, SIZE:12, GUI_NAME:"Data",
-                        0:{ TYPE:Reflexive, GUI_NAME:"Strings", OFFSET:0,
-                            INCLUDE:Reflexive_Struct,
-                            
-                            CHILD:{TYPE:Array, NAME:"Strings_Array",
-                                   MAX:32767, SIZE:".Count",
-                                   SUB_STRUCT:string_data_struct
-                                   }
-                            }
-                        }
-                     }
+    NAME="string_list",
+    
+    ext=".string_list", def_id="str#", endian=">"
+    )
