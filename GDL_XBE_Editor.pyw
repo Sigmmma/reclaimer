@@ -115,43 +115,43 @@ try:
             self.Chars_Export.place(x=175, y=198, anchor=NW)
 
         def _Import_Chars(self):
-            if hasattr(self.Loaded_XBE, 'tagdata'):
+            if hasattr(self.Loaded_XBE, 'data'):
                 filepath = filedialog.askopenfilename(initialdir=curr_dir, defaultextension=".gdl_chars",
                                                       filetypes=[("GDL Characters", "*.gdl_chars"),('All','*')],
                                                       title="Import characters from...")
                 if filepath != "":
                     try:
-                        self.Loaded_XBE.tagdata.Secret_Characters.read(filepath=filepath)
+                        self.Loaded_XBEdata.Secret_Characters.read(filepath=filepath)
                         self._Initialize_Windows()
                     except: print(format_exc())
         
         def _Export_Chars(self):
-            if hasattr(self.Loaded_XBE, 'tagdata'):
+            if hasattr(self.Loaded_XBE, 'data'):
                 filepath = filedialog.asksaveasfilename(initialdir=curr_dir, defaultextension=".gdl_chars",
                                                         filetypes=[("GDL Characters", "*.gdl_chars"),('All','*')],
                                                         title="Export the current characters to...")
                 if filepath != "":
-                    try:    self.Loaded_XBE.tagdata.Secret_Characters.write(filepath=filepath)
+                    try:    self.Loaded_XBE.data.Secret_Characters.write(filepath=filepath)
                     except: print(format_exc())
             
         def _Import_Cheats(self):
-            if hasattr(self.Loaded_XBE, 'tagdata'):
+            if hasattr(self.Loaded_XBE, 'data'):
                 filepath = filedialog.askopenfilename(initialdir=curr_dir, defaultextension=".gdl_cheats",
                                                       filetypes=[("GDL Cheats", "*.gdl_cheats"),('All','*')],
                                                       title="Import cheats from...")
                 if filepath != "":
                     try:
-                        self.Loaded_XBE.tagdata.Cheats.read(filepath=filepath)
+                        self.Loaded_XBE.data.Cheats.read(filepath=filepath)
                         self._Initialize_Windows()
                     except: print(format_exc())
         
         def _Export_Cheats(self):
-            if hasattr(self.Loaded_XBE, 'tagdata'):
+            if hasattr(self.Loaded_XBE, 'data'):
                 filepath = filedialog.asksaveasfilename(initialdir=curr_dir, defaultextension=".gdl_cheats",
                                                         filetypes=[("GDL Cheats", "*.gdl_cheats"),('All','*')],
                                                         title="Export the current cheats to...")
                 if filepath != "":
-                    try:    self.Loaded_XBE.tagdata.Cheats.write(filepath=filepath)
+                    try:    self.Loaded_XBE.data.Cheats.write(filepath=filepath)
                     except: print(format_exc())
         
         def Load_XBE(self):
@@ -159,8 +159,8 @@ try:
             if filepath != "":
                 try:
                     XBE = self.XBE_Const.build_tag(def_id="xbe", filepath=filepath)
-                    if (XBE.tagdata.xbe_image_header.xbe_magic != XBE_HEADER_MAGIC or
-                        XBE.tagdata.xbe_certificate.title_name != "Gauntlet Dark Legacy"):
+                    if (XBE.data.xbe_image_header.xbe_magic != XBE_HEADER_MAGIC or
+                        XBE.data.xbe_certificate.title_name != "Gauntlet Dark Legacy"):
                         raise IOError("The selected file does not appear to be a valid GDL default.xbe")
 
                     self.Loaded_XBE = XBE
@@ -178,7 +178,7 @@ try:
         def Get_Char_Names(self):
             Char_Names = []
             try:
-                Chars = self.Loaded_XBE.tagdata.Secret_Characters
+                Chars = self.Loaded_XBE.data.Secret_Characters
                 for Character in Chars:
                     Char_Names.append(Character.Code)
             except: pass
@@ -187,7 +187,7 @@ try:
         def Get_Cheat_Names(self):
             Cheat_Names = []
             try:
-                Cheats = self.Loaded_XBE.tagdata.Cheats
+                Cheats = self.Loaded_XBE.data.Cheats
                 for Cheat in Cheats:
                     Cheat_Names.append(Cheat.Code)
             except: pass
@@ -234,7 +234,7 @@ try:
             if i is None:
                 i = Menu.Current_Index
                 
-            Char = self.Loaded_XBE.tagdata.Secret_Characters[i]
+            Char = self.Loaded_XBE.data.Secret_Characters[i]
             self._Reload_Widgets(Menu, Char, Char.DESC)
             self.Selected_Char.set(Char.Code)
             
@@ -242,7 +242,7 @@ try:
             if i is None:
                 i = Menu.Current_Index
                 
-            Cheat = self.Loaded_XBE.tagdata.Cheats[i]
+            Cheat = self.Loaded_XBE.data.Cheats[i]
             Cheat_Flags = Cheat.Flags
             Cheat_Type = Cheat.Type
                 

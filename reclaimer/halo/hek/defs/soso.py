@@ -60,7 +60,7 @@ class SosoDef(TagDef):
 
     descriptor = {TYPE:Container, GUI_NAME:"shader_model",
                      0:com( {1:{ DEFAULT:"soso" },
-                                 5:{ DEFAULT:2 }
+                             5:{ DEFAULT:2 }
                                  }, Tag_Header),
                      
                      1:{TYPE:Struct, SIZE:440, GUI_NAME:"Data",

@@ -1,6 +1,8 @@
 from os.path import splitext
 from traceback import format_exc
 
+RED_FILL = b'\x00\x00\xff\x00'
+
 try:
     from reclaimer.halo.hek.handler import HaloHandler
     from supyr_struct import handler, buffer
@@ -11,9 +13,10 @@ try:
     metrdef = metr_loader.defs['metr']
 
     #replace the raw data struct of the meter image with the organized one
-    Meter_Image_Struct = metrdef.subdefs['Meter_Image'].descriptor
+    meter_image_struct = metrdef.subdefs['meter_image'].descriptor
+    
     #override the immutability of the frozendict
-    dict.__setitem__(metrdef.descriptor[1][14], 'CHILD', Meter_Image_Struct)
+    dict.__setitem__(metrdef.descriptor[1][14], 'CHILD', meter_image_struct)
     
     tagsdir = metr_loader.datadir
     #handler to build tga images
@@ -28,45 +31,44 @@ try:
     
     tga_buffer = buffer.BytearrayBuffer()
     
-    for Meter_Path in metr_loader.tags['metr']:
+    for meter_path in metr_loader.tags['metr']:
         try:
-            print("Extracting '%s'..."%Meter_Path)
+            print("Extracting '%s'..."%meter_path)
             #clear the buffer
             del tga_buffer[:]
             tga_buffer.seek(0)
             
-            meter = metr_loader.tags['metr'][Meter_Path]
+            meter = metr_loader.tags['metr'][meter_path]
 
-            tgaout         = tga_maker.build_tag(def_id='tga')
-            tgaout.tagpath = tagsdir+splitext(Meter_Path)[0]+'.tga'
+            tgaout          = tga_maker.build_tag(def_id='tga')
+            tgaout.filepath = tagsdir+splitext(meter_path)[0]+'.tga'
 
-            meterdata = meter.tagdata.Data
+            meterdata = meter.data.Data
+            tgaheader = tgaout.data.header
             
-            head = tgaout.tagdata.header
+            tgaheader.image_type.format.set_data("unmapped_rgb")
+            tgaheader.width  = meterdata.width
+            tgaheader.height = meterdata.height
+            tgaheader.bpp = 32
+            tgaheader.image_descriptor.alpha_bit_count    = 8
+            tgaheader.image_descriptor.screen_origin.set_data("upper_left")
 
-            head.image_type.format.set_data("unmapped_rgb")
-            head.width  = meterdata.Meter_Width
-            head.height = meterdata.Meter_Height
-            head.bpp = 32
-            head.image_descriptor.alpha_bit_count    = 8
-            head.image_descriptor.screen_origin.set_data("upper_left")
-
-            tgaout.tagdata.pixel_data = tga_buffer
+            tgaout.data.pixel_data = tga_buffer
             #write a solid red color to the image for the background
-            tga_buffer.write(b'\x00\x00\xff\x00'*head.width*head.height)
+            tga_buffer.write(RED_FILL * tgaheader.width * tgaheader.height)
 
-            lines = meterdata.Meter_Data.Data
+            lines = meterdata.meter_data.data
 
             #write each of the lines to the appropriate location
             for line in lines:
-                tga_buffer.seek( (line.X_Pos + line.Y_Pos*head.width )*4 )
-                tga_buffer.write(line.Line_Data)
-
+                tga_buffer.seek( (line.x_pos + line.y_pos*tgaheader.width )*4 )
+                tga_buffer.write(line.line_data)
+                
             tgaout.write(temp=False, int_test=False, backup=False)
         except Exception:
             print(format_exc())
             print("Above exception occurred while trying to extract "+
-                  "meter image for:\n    %s\n\n"%Meter_Path)
+                  "meter image for:\n    %s\n\n"%meter_path)
 
     input("\nExtraction finished. Hit enter to exit.")
 

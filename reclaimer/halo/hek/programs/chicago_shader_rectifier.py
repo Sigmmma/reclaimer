@@ -56,22 +56,22 @@ class ShaderRectifier(HaloHandler):
 
             '''loop through each tag and remove extra
             layers and log them to a debug file'''
-            for tagpath in sorted(self.tags[def_id]):
-                tag = self.tags[def_id][tagpath]
+            for filepath in sorted(self.tags[def_id]):
+                tag = self.tags[def_id][filepath]
                 try:
 
                     '''CONVERT THE TAG'''
                     if def_id == 'schi' and self.target_id == 'scex':
                         tag.convert_to_scex()
-                        del self.tags[def_id][tagpath]
+                        del self.tags[def_id][filepath]
                     elif def_id == 'scex' and self.target_id == 'schi':
                         tag.convert_to_schi()
-                        del self.tags[def_id][tagpath]
+                        del self.tags[def_id][filepath]
 
                     '''REMOVE THE EXTRA LAYERS FROM THE TAG'''
-                    el = tag.tagdata.Data.Extra_Layers.Extra_Layers_Array
+                    el = tag.data.Data.Extra_Layers.Extra_Layers_Array
                     if len(el):
-                        logstr += "\n"+tag.tagpath +"\nExtra Layers:"
+                        logstr += "\n"+tag.filepath +"\nExtra Layers:"
                         
                         #we loop through each extra layer for the debug log
                         for layer in el:
@@ -82,12 +82,12 @@ class ShaderRectifier(HaloHandler):
                                 ext = ''
                             logstr += "\n    " + layer.CHILD + ext
 
-                    new_tag_path = tag.tagpath.split(self.tagsdir)[1]
+                    new_tag_path = tag.filepath.split(self.tagsdir)[1]
                     self.tags[def_id][new_tag_path] = tag
                     tag.definition = target_def
                 except:
                     print("ERROR OCCURRED WHILE ATTEMPTING TO CONVERT:\n" +
-                          '    ' + tag.tagpath + '\n')
+                          '    ' + tag.filepath + '\n')
                     print(format_exc())
         #swap the tags around in the tag collection
         if self.target_id == 'scex':
