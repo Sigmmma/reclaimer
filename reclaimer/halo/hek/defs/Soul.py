@@ -1,30 +1,29 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
+soul_body = Struct("Data",
+    Reflexive("ui widget definitions",
+        INCLUDE=Reflexive_Struct,
+
+        CHILD=Array("ui widget definitions array",
+            SIZE=".Count", MAX=32,
+            SUB_STRUCT=TagIndexRef("ui widget definition",
+                INCLUDE=Tag_Index_Ref_Struct,
+                )
+            )
+        ),
+    SIZE=12,
+    )
+
+
 def get():
-    return SoulDef
+    return soul_def
 
-class SoulDef(TagDef):
-
-    ext = ".ui_widget_collection"
-
-    def_id = "Soul"
-
-    endian = ">"
-
-    descriptor = {TYPE:Container, GUI_NAME:"ui_widget_collection",
-                     0:com( {1:{ DEFAULT:"Soul" } }, Tag_Header),
-                     1:{ TYPE:Struct, SIZE:12, GUI_NAME:"Data",
-                         0:{ TYPE:Reflexive, GUI_NAME:"UI Widget Definitions",
-                             INCLUDE:Reflexive_Struct,
-                             
-                             CHILD:{TYPE:Array, GUI_NAME:"UI Widget Definitions",
-                                    SIZE:".Count", MAX:32,
-                                    SUB_STRUCT:{ TYPE:TagIndexRef, SIZE:16,
-                                                 GUI_NAME:"UI Widget Definition",
-                                                 INCLUDE:Tag_Index_Ref_Struct,
-                                                 }
-                                    }
-                             }
-                         }
-                     }
+soul_def = TagDef(
+    com( {1:{DEFAULT:"Soul" }}, Tag_Header),
+    soul_body,#lol Megaman X4
+    
+    NAME="ui_widget_collection",
+    
+    ext=".ui_widget_collection", def_id="Soul", endian=">"
+    )

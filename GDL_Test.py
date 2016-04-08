@@ -22,12 +22,12 @@ try:
     objs = test.tags.get('objects')
     input()
     if objs is not None:
-        for tagpath in objs:
-            print("Size of: "+tagpath+" = ", objs[tagpath].tagdata.binsize)
-            objs[tagpath].pprint(show=('name', 'value', 'children',
-                                       'flags', 'trueonly', 'offset',
-                                       'raw'),#, 'all'),
-                                 printout=True)
+        for filepath in objs:
+            print("Size of: "+filepath+" = ", objs[filepath].data.binsize)
+            objs[filepath].pprint(show=('name', 'value', 'children',
+                                        'flags', 'trueonly', 'offset',
+                                        'raw'),#, 'all'),
+                                  printout=True)
     input()
 except Exception:
     print(format_exc())

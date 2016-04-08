@@ -55,34 +55,34 @@ class HekTagScanner(HaloHandler):
             if not isinstance(tag_coll, dict):
                 tag_coll = tags[def_id] = {}
             
-            #Loop through each tagpath in Coll in sorted order
-            for tagpath in sorted(tags[def_id]):
+            #Loop through each filepath in Coll in sorted order
+            for filepath in sorted(tags[def_id]):
                 
                 #only load the tag if it isnt already loaded
-                if tag_coll.get(tagpath) is None:
-                    self.current_tag = tagpath
+                if tag_coll.get(filepath) is None:
+                    self.current_tag = filepath
                         
                     '''incrementing tags_loaded and decrementing tags_indexed
                     in this loop is done for reporting the loading progress'''
                     
                     try:
-                        new_tag = build_tag(filepath = directory+tagpath,
+                        new_tag = build_tag(filepath = directory+filepath,
                                             allow_corrupt = allow)
-                        tag_coll[tagpath] = new_tag
+                        tag_coll[filepath] = new_tag
                         self.tags_loaded += 1
                     except (OSError, MemoryError) as e:
                         print(format_exc())
                         print('Not enough accessable memory to continue '+
                               'loading tags. Ran out while opening\\reading:'+
                               ('\n    %s\n    Remaining unloaded tags will ' +
-                               'be de-indexed and skipped\n') % tagpath)
-                        del tag_coll[tagpath]
+                               'be de-indexed and skipped\n') % filepath)
+                        del tag_coll[filepath]
                         self.clear_unloaded_tags()
                         return
                     except Exception:
                         print('Error encountered while opening\\reading:'+
-                              '\n    %s\n    Tag may be corrupt\n' % tagpath )
-                        del tag_coll[tagpath]
+                              '\n    %s\n    Tag may be corrupt\n' % filepath )
+                        del tag_coll[filepath]
                     self.tags_indexed -= 1
 
         #recount how many tags are loaded/indexed
@@ -163,16 +163,16 @@ class HekTagScanner(HaloHandler):
             if self.print_to_console:
                 print(" "*4+ "Scanning '%s' tags..." % def_id)
 
-            for tagpath in sorted(self.tags[def_id].keys()):
-                tag = self.tags[def_id][tagpath]
-                self.current_tag = tagpath
+            for filepath in sorted(self.tags[def_id].keys()):
+                tag = self.tags[def_id][filepath]
+                self.current_tag = filepath
                 
                 try:
-                    missed = self.get_blocks_by_paths(tag_ref_paths,tag.tagdata,
+                    missed = self.get_blocks_by_paths(tag_ref_paths,tag.data,
                                                       self.get_tag_not_exist)
 
                     if len(missed):
-                        logstr += "\n\n%s\n" % tagpath
+                        logstr += "\n\n%s\n" % filepath
                         block_name = None
                         
                         for block in missed:
@@ -187,7 +187,7 @@ class HekTagScanner(HaloHandler):
                             
                 except Exception:
                     print("ERROR OCCURRED WHILE ATTEMPTING TO SCAN:\n" +
-                          '    ' + tag.tagpath + '\n')
+                          '    ' + tag.filepath + '\n')
                     print(format_exc())
                     continue
                         

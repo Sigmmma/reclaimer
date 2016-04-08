@@ -1,39 +1,32 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
+
+scenario_description = Struct("scenario description",
+    TagIndexRef("descriptive bitmap", INCLUDE=Tag_Index_Ref_Struct),
+    TagIndexRef("displayed map name", INCLUDE=Tag_Index_Ref_Struct),
+    StrLatin1("scenario tag directory path", SIZE=32),
+    SIZE=68
+    )
+
+mply_body = Struct("Data",
+    Reflexive("multiplayer scenario descriptions",
+        INCLUDE=Reflexive_Struct,
+        CHILD=Array("scenario descriptions array", MAX=32,
+            SIZE=".Count", SUB_STRUCT=scenario_description ),
+        ),
+    SIZE=12,
+    )
+
+
 def get():
-    return MplyDef
+    return mply_def
 
-class MplyDef(TagDef):
-
-    ext = ".multiplayer_scenario_description"
-
-    def_id = "mply"
-
-    endian = ">"
-
-    Scenario_Description = { TYPE:Struct, SIZE:68, NAME:"Scenario Description",
-                             0:{ TYPE:TagIndexRef, GUI_NAME:"Descriptive Bitmap",
-                                 INCLUDE:Tag_Index_Ref_Struct,
-                                 },
-                             1:{ TYPE:TagIndexRef, GUI_NAME:"Displayed Map Name",
-                                 INCLUDE:Tag_Index_Ref_Struct,
-                                 },
-                             2:{ TYPE:StrLatin1, GUI_NAME:"Scenario Tag Directory Path",
-                                 SIZE:32 }
-                             }
-
-    descriptor = {TYPE:Container, GUI_NAME:"multiplayer_scenario_description",
-                     0:com( {1:{ DEFAULT:"mply" } }, Tag_Header),
-                     
-                     1:{ TYPE:Struct, SIZE:12, GUI_NAME:"Data",
-                         0:{ TYPE:Reflexive, GUI_NAME:"Multiplayer Scenario Descriptions",
-                             INCLUDE:Reflexive_Struct,
-                             
-                             CHILD:{TYPE:Array, GUI_NAME:"Scenario Descriptions Array",
-                                    SIZE:".Count", MAX:32,
-                                    SUB_STRUCT:Scenario_Description
-                                    }
-                             }
-                         }
-                     }
+mply_def = TagDef(
+    com( {1:{DEFAULT:"mply" }}, Tag_Header),
+    mply_body,
+    
+    NAME="multiplayer_scenario_description",
+    
+    ext=".multiplayer_scenario_description", def_id="mply", endian=">"
+    )

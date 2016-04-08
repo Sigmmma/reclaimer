@@ -215,23 +215,23 @@ class HaloHandler(TagTestHandler):
             return None
 
 
-    def get_tag_hash(self, tagdata, tag_ref_paths=(),
+    def get_tag_hash(self, data, tag_ref_paths=(),
                      reflexive_paths=(), raw_data_paths=()):
         hash_buffer = BytearrayBuffer()
 
         #null out the parts of a tag that can screw
         #with the hash when compared to a tag meta                        
-        for B in self.get_blocks_by_paths(tag_ref_paths, tagdata):
+        for B in self.get_blocks_by_paths(tag_ref_paths, data):
             B.Tag_Path_Pointer = B.Tag_ID = 0
             
-        for B in self.get_blocks_by_paths(reflexive_paths, tagdata):
+        for B in self.get_blocks_by_paths(reflexive_paths, data):
             B.ID = B.Reflexive_ID = 0
             
-        for B in self.get_blocks_by_paths(raw_data_paths, tagdata):
+        for B in self.get_blocks_by_paths(raw_data_paths, data):
             B.Unknown_1 = B.Unknown_2 = B.Unknown_3 = B.ID = 0
 
         #write the tag data to the hash buffer
-        tagdata.Data.TYPE.writer(tagdata.Data, hash_buffer, None, 0, 0)
+        data.Data.TYPE.writer(data.Data, hash_buffer, None, 0, 0)
         
         return md5(hash_buffer)
         
@@ -240,12 +240,12 @@ class HaloHandler(TagTestHandler):
         #if the string is empty, then it doesnt NOT exist, so return False
         if not block.Filepath:
             return False
-        tagpath = self.tagsdir
-        tagpath += block.Filepath
+        filepath = self.tagsdir
+        filepath += block.Filepath
         
         try:
-            tagpath += '.'+block.Tag_Class.data_name
+            filepath += '.'+block.Tag_Class.data_name
         except Exception:
             pass
         
-        return not exists(tagpath)
+        return not exists(filepath)

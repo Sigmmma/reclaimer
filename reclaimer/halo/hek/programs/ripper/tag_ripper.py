@@ -42,7 +42,7 @@ class TagRipper(MapLoader):
     def rip_tags(self, mappath):
         print('Loading map...')
         halomap = self.build_tag(filepath=mappath, def_id='map')
-        tag_array = halomap.tagdata.Tag_Index_Header.Tag_Index
+        tag_array = halomap.data.Tag_Index_Header.Tag_Index
 
         hashmap = self.hash_cacher.main_hashmap
         hash_buffer = BytearrayBuffer()
@@ -71,11 +71,11 @@ class TagRipper(MapLoader):
                 if def_id == 'bitm':
                     #this is a bitmap tag, so check the bitmaps.map
                     #name cache for the name of this bitmap
-                    tagpath = None
+                    filepath = None
                 elif def_id == 'snd!':
                     #this is a sound tag, so check the sounds.map
                     #name cache for the name of this sound
-                    tagpath = None
+                    filepath = None
                 else:
                     continue
             else:
@@ -115,12 +115,12 @@ class TagRipper(MapLoader):
 
                 #get the tag data's hash and try to match it to a path
                 taghash = md5(hash_buffer).digest()
-                tagpath = hashmap.get(taghash)
+                filepath = hashmap.get(taghash)
 
                 del hash_buffer[:]
                 hash_buffer.seek(0)
 
-            if tagpath is not None:
-                print('HIT: %s'%tagpath)
+            if filepath is not None:
+                print('HIT: %s'%filepath)
             #else:
             #    print('MISS: %s'%def_id)
