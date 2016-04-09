@@ -24,7 +24,7 @@ def get():
     return snde_def
 
 snde_def = TagDef(
-    com( {1:{DEFAULT:"snde" }}, Tag_Header),
+    blam_header('snde'),
     snde_body,
     
     NAME="sound_environment",

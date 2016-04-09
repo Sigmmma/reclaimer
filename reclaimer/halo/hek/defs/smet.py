@@ -48,7 +48,7 @@ def get():
     return smet_def
 
 smet_def = TagDef(
-    com( {1:{DEFAULT:"smet" }}, Tag_Header),
+    blam_header('smet'),
     smet_body,
     
     NAME="shader_meter",

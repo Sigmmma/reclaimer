@@ -6,6 +6,30 @@ from .constants import *
 com = combine
 
 
+def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, **desc):
+    '''This function serves to macro the creation of a reflexive'''
+    return Reflexive(name,
+        INCLUDE=Reflexive_Struct,
+        CHILD=Array(name+" array",
+            SIZE=".Count", MAX=max_count,
+            SUB_STRUCT=substruct
+            ),
+        SIZE=12
+        )
+
+def rawdata_ref(name, field=BytearrayRaw):
+    '''This function serves to macro the creation of a rawdata reference'''
+    return RawDataRef(name,
+        EDITABLE=False, INCLUDE=Raw_Data_Ref_Struct,
+        CHILD=field("data", VISIBLE=False, SIZE=".Count")
+        )
+
+def blam_header(tagid, version=1):
+    '''This function serves to macro the creation of a tag header'''
+    return com( {1:{DEFAULT:tagid },
+                 5:{DEFAULT:version}}, Tag_Header)
+
+
 All_Valid_Tags = BUEnum32("Tag_Class",
     ("actor",          'actr'),
     ("actor_varient",  'actv'),
@@ -217,17 +241,17 @@ All_Valid_Widgets = BUEnum32("Tag_Class",
 
 
 #The header present at the start of every tag
-Tag_Header = Struct("Blam_Header",
+Tag_Header = Struct("Blam Header",
     Pad(36),
     All_Valid_Tags,
-    LUInt32("Base_Address", DEFAULT=0),#random
-    LUInt32("Header_Size",  DEFAULT=64),
+    LUInt32("Base Address", DEFAULT=0),#random
+    LUInt32("Header Size",  DEFAULT=64),
     Pad(8),
     LUInt16("Version", DEFAULT=1),
     LUInt16("Unknown", DEFAULT=255),
-    LUEnum32("Engine_ID",
-        ("Halo 1", 'blam'),
-        ("Halo 2", 'BLM!'),
+    LUEnum32("Engine ID",
+        ("halo 1", 'blam'),
+        ("halo 2", 'BLM!'),
         DEFAULT='blam'),
     EDITABLE=False, SIZE=64
     )
@@ -427,9 +451,9 @@ From_To = Struct('',
 #This is the structure for all points where a tag references a chunk of raw data
 Raw_Data_Ref_Struct = RawDataRef('Raw Data Ref', 
     BSInt32("Count"),
-    BSInt32("Unknown_1"),#0x00000000 in tags
-    BSInt32("Unknown_2"),#random
-    BSInt32("Unknown_3"),#random
+    BSInt32("Unknown 1"),#0x00000000 in tags
+    BSInt32("Unknown 2"),#random
+    BSInt32("Unknown 3"),#random
     BUInt32("ID"),#random
     EDITABLE=False,
     )
@@ -438,16 +462,16 @@ Raw_Data_Ref_Struct = RawDataRef('Raw Data Ref',
 Reflexive_Struct = Reflexive('Reflexive',
     BSInt32("Count"),
     BSInt32("ID"),#random
-    BUInt32("Reflexive_ID"),#random
+    BUInt32("Reflexive ID"),#random
     EDITABLE=False,
     )
 
 #This is the structure for all points where a tag references another tag
 Tag_Index_Ref_Struct = TagIndexRef('Tag Index Ref',
     All_Valid_Tags,
-    BSInt32("Tag_Path_Pointer"),#random
-    BSInt32("Tag_Path_Length"),
-    BUInt32("Tag_ID", DEFAULT=0xFFFFFFFF),#random
+    BSInt32("Tag Path Pointer"),#random
+    BSInt32("Tag Path Length"),
+    BUInt32("Tag ID", DEFAULT=0xFFFFFFFF),#random
                                    
     CHILD=StringVarLen("Filepath", SIZE=tag_ref_size),
     EDITABLE=False,

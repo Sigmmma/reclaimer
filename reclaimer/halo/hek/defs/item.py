@@ -39,8 +39,7 @@ def get():
     return item_def
 
 item_def = TagDef(
-    com( {1:{DEFAULT:"item" },
-          5:{DEFAULT:2}}, Tag_Header),
+    blam_header('item', 2),
     item_body,
     
     NAME="item",

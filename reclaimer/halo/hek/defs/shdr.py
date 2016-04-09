@@ -18,7 +18,7 @@ def get():
     return shdr_def
 
 shdr_def = TagDef(
-    com( {1:{DEFAULT:"shdr" }}, Tag_Header),
+    blam_header('shdr'),
     shader_body,
     
     NAME="shader",

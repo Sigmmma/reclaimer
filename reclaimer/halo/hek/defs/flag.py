@@ -36,13 +36,7 @@ flag_body = Struct("Data",
     BFloat("wind noise"),
     Pad(8),
     TagIndexRef("blue flag shader", INCLUDE=Tag_Index_Ref_Struct),
-
-    Reflexive("attachment points",
-        INCLUDE=Reflexive_Struct,
-
-        CHILD=Array("attachment points array", MAX=4,
-            SIZE=".Count", SUB_STRUCT=attachment_point ),
-        ),
+    reflexive("attachment points", attachment_point, 4),
     SIZE=96,
     )
 
@@ -52,7 +46,7 @@ def get():
     return flag_def
 
 flag_def = TagDef(
-    com( {1:{DEFAULT:"flag" }}, Tag_Header),
+    blam_header('flag'),
     flag_body,
     
     NAME="flag",

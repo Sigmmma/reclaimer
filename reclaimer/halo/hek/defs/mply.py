@@ -23,7 +23,7 @@ def get():
     return mply_def
 
 mply_def = TagDef(
-    com( {1:{DEFAULT:"mply" }}, Tag_Header),
+    blam_header('mply'),
     mply_body,
     
     NAME="multiplayer_scenario_description",

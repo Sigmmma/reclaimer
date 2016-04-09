@@ -16,21 +16,9 @@ message = Struct("message",
     )
 
 hmt__body = Struct("Data",
-    RawDataRef("string",
-        INCLUDE=Raw_Data_Ref_Struct,
-        CHILD=FlUTF16StrData("raw string data", SIZE=".Count")
-        ),
-    Reflexive("message elements",
-        INCLUDE=Reflexive_Struct,
-        CHILD=Array("message elements array",
-            SIZE=".Count", SUB_STRUCT=message_element
-            ),
-        ),
-    Reflexive("messages" ,
-        INCLUDE=Reflexive_Struct,
-        CHILD=Array("messages array",
-            SIZE=".Count", SUB_STRUCT=message)
-        ),
+    rawdata_ref("string", FlUTF16StrData),
+    reflexive("message elements", message_element),
+    reflexive("messages", message),
     SIZE=128,
     )
 
@@ -39,7 +27,7 @@ def get():
     return hmt__def
 
 hmt__def = TagDef(
-    com( {1:{DEFAULT:"hmt " }}, Tag_Header),
+    blam_header('hmt '),
     hmt__body,
     
     NAME="hud_message_text",

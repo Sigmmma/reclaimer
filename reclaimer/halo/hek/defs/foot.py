@@ -8,21 +8,12 @@ material = Struct("material",
     )
                          
 effect = Struct("effect",
-    Reflexive("materials",
-        INCLUDE=Reflexive_Struct,
-        CHILD=Array("materials array", MAX=33,
-            SIZE=".Count", SUB_STRUCT=material)
-        ),
+    reflexive("materials", material, 33),
     SIZE=28,
     )
 
 foot_body = Struct("Data",
-    Reflexive("effects",
-        INCLUDE=Reflexive_Struct,
-
-        CHILD=Array("effects array", MAX=13,
-            SIZE=".Count", SUB_STRUCT=effect )
-        ),
+    reflexive("effects", effect, 13),
     SIZE=140,
     )
 
@@ -32,7 +23,7 @@ def get():
     return foot_def
 
 foot_def = TagDef(
-    com( {1:{DEFAULT:"foot" }}, Tag_Header),
+    blam_header('foot'),
     foot_body,
     
     NAME="material_effects",

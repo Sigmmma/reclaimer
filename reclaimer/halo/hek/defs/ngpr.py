@@ -21,8 +21,7 @@ def get():
     return ngpr_def
 
 ngpr_def = TagDef(
-    com( {1:{DEFAULT:"ngpr" },
-          5:{DEFAULT:2}}, Tag_Header),
+    blam_header('ngpr', 2),
     ngpr_body,
     
     NAME="preferences_network_game",

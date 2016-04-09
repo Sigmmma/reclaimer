@@ -1,16 +1,10 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-tagc_body = Struct("Data",
-    Reflexive("tag references",
-        INCLUDE=Reflexive_Struct,
+tag_reference = TagIndexRef("tag", SIZE=16, INCLUDE=Tag_Index_Ref_Struct)
 
-        CHILD=Array("tag references array",
-            SIZE=".Count", MAX=200,
-            SUB_STRUCT=TagIndexRef("tag",
-                SIZE=16, INCLUDE=Tag_Index_Ref_Struct)
-            ),
-        ),
+tagc_body = Struct("Data",
+    reflexive("tag references", tag_reference, 200),
     SIZE=12,
     )
 
@@ -19,7 +13,7 @@ def get():
     return tagc_def
 
 tagc_def = TagDef(
-    com( {1:{DEFAULT:"tagc" }}, Tag_Header),
+    blam_header('tagc'),
     tagc_body,
     
     NAME="tag_collection",

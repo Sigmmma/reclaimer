@@ -53,7 +53,7 @@ def get():
     return spla_def
 
 spla_def = TagDef(
-    com( {1:{DEFAULT:"spla" }}, Tag_Header),
+    blam_header('spla'),
     spla_body,
     
     NAME="shader_transparent_plasma",

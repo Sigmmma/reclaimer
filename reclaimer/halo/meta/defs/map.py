@@ -82,7 +82,7 @@ def fcc(value):
 
        
 
-tag_meta = Switch("tag_meta",
+tag_meta = Switch("tag meta",
     CASE=tag_meta_case,
     #THESE WILL NEED TO BE MODIFIED SINCE
     #RAW DATA ISN'T INSIDE IT ANYMORE
@@ -123,18 +123,18 @@ tag_meta = Switch("tag_meta",
     )
 
 
-tag_data = Container("tag_data",
-    CStrLatin1("tag_path", POINTER=tag_path_pointer),
+tag_data = Container("tag data",
+    CStrLatin1("tag path", POINTER=tag_path_pointer),
     tag_meta,
     )
 
-tag_header = Struct("tag_header",
-    Struct("tag_class_1", INCLUDE=All_Valid_Tags),
-    Struct("tag_class_2", INCLUDE=All_Valid_Tags),
-    Struct("tag_class_3", INCLUDE=All_Valid_Tags),
-    LUInt32("tag_id"),
-    LSInt32("tag_path_offset"),
-    LSInt32("tag_offset"),
+tag_header = Struct("tag header",
+    Struct("tag class 1", INCLUDE=All_Valid_Tags),
+    Struct("tag class 2", INCLUDE=All_Valid_Tags),
+    Struct("tag class 3", INCLUDE=All_Valid_Tags),
+    LUInt32("tag id"),
+    LSInt32("tag path offset"),
+    LSInt32("tag offset"),
     LUInt32("indexed"),
     Pad(4),
     CHILD=tag_data,
@@ -144,24 +144,24 @@ map_header = Struct("map_header",
     LUInt32("id", DEFAULT='head'),
     LSEnum32("version",
         ("xbox", 5, 'xbox'),
-        ("demo", 6, 'pC demo'),
+        ("demo", 6, 'pc demo'),
         ("pc",   7, 'pc full'),
         ("ce", 609, 'custom edition'),
         ),
-    LSInt32("decompressed_len"),
+    LSInt32("decompressed len"),
     BytesRaw("unknown1", SIZE=4),
-    LUInt32("tag_index_offset"),
-    LUInt32("tag_index_meta_len"),
+    LUInt32("tag index offset"),
+    LUInt32("tag index meta len"),
     Pad(8),
-    StrLatin1("map_name", SIZE=32),
-    StrLatin1Enum("Build_Date",
+    StrLatin1("map name", SIZE=32),
+    StrLatin1Enum("build date",
         ("xbox", "01.10.12.2276"),
         ("demo", "01.00.00.0576"),
         ("pc",   "01.00.00.0564"),
         ("ce",   "01.00.00.0609"),
         SIZE=32,
         ),
-    LUEnum32("map_type",
+    LUEnum32("map type",
         ("sp", 0, "campaign"),
         ("mp", 1, "multiplayer"),
         ("ui", 2, "user interface"),
@@ -175,25 +175,25 @@ map_header = Struct("map_header",
 #header as there are 704 bytes #before the header
 #that appear to be garbage AND garbage filling
 #all the headers null padding.
-tag_index_header = Struct("tag_index_header",
-    LUInt32("index_magic"),
-    LUInt32("base_magic"),
-    LUInt32("map_id"),
-    LUInt32("tag_count"),
+tag_index_header = Struct("tag index header",
+    LUInt32("index magic"),
+    LUInt32("base magic"),
+    LUInt32("map id"),
+    LUInt32("tag count"),
 
-    LUInt32("vertex_object_count"),
-    LUInt32("model_raw_data_offset"),
+    LUInt32("vertex object count"),
+    LUInt32("model raw data offset"),
 
-    LUInt32("indices_object_count"),
-    LUInt32("indices_offset"),
+    LUInt32("indices object count"),
+    LUInt32("indices offset"),
 
-    LUInt32("model_raw_data_size"),
-    LUInt32("tag_sig", DEFAULT='tags'),
+    LUInt32("model raw data size"),
+    LUInt32("tag sig", DEFAULT='tags'),
 
     POINTER='.mapfile_header.tag_index_offset'
     )
 
-tag_index = TagIndex("tag_index",
+tag_index = TagIndex("tag index",
     SIZE=".tag_index_header.tag_count",
     SUB_STRUCT=tag_header,
     POINTER=tag_index_array_pointer
@@ -210,7 +210,7 @@ map_def = TagDef(
     tag_index_header,
     tag_index,
     
-    NAME="halo_mapfile",
+    NAME="halo mapfile",
     
     ext=".map", def_id="map", endian="<", sani_warn=False
     )

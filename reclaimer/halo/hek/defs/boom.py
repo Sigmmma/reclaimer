@@ -5,7 +5,7 @@ def get():
     return boom_def
 
 boom_def = TagDef(
-    com( {1:{DEFAULT:"boom" }}, Tag_Header),
+    blam_header('boom'),
     Struct('Data',
         #this is just a guess. This could just as easily
         #be 4 bytes of padding. effing useless tag type
