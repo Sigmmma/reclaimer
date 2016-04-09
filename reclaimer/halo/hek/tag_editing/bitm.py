@@ -93,13 +93,13 @@ def Process_Bitmap_Tag(tag):
              (Flags[MONO_SWAP] == False or Format!= FORMAT_A8Y8) and
              (tag.Swizzled() == Flags[SWIZZLED] or
               Format_Name_List[Format] in BC.DDS_FORMATS) ):
-            return(False)
+            return False
     return True
 
 
 def Extracting_Texture(tag):
     '''determines if a texture extraction is to take place'''
-    return(tag.Tag_Conversion_Settings[EXTRACT_TO] != " ")
+    return tag.Tag_Conversion_Settings[EXTRACT_TO] != " "
 
 
 def Convert_Bitmap_Tag(tag, **kwargs):
@@ -170,7 +170,7 @@ def Convert_Bitmap_Tag(tag, **kwargs):
         Target_Format = New_Format
 
         #get the texture block to be loaded
-        Tex_Block = list(tag.tagdata.Data.Processed_Pixel_Data.Data[i])
+        Tex_Block = list(tag.tagdata.Data.processed_pixel_data.data[i])
         Tex_Info = Tex_Infos[i]
 
         """MAKE SOME CHECKS TO FIGURE OUT WHICH FORMAT WE ARE
@@ -279,13 +279,13 @@ def Convert_Bitmap_Tag(tag, **kwargs):
             Path = BM.Filepath
             if tag.Bitmap_Count() > 1:
                 Path += ("_"+str(i))
-            BM.Save_to_File(Output_Path = Path, Ext = Export_Format)
+            BM.Save_to_File(Output_Path=Path, Ext=Export_Format)
                 
 
         """IF THE CONVERSION WAS SUCCESSFUL WE UPDATE THE TAG'S DATA TO THE NEW FORMAT AND
         SWIZZLE MODE.   IF WE WERE ONLY EXTRACTING THE TEXTURE WE DON'T RESAVE THE TAG"""
         if Status and (Processing_Bitmap or Reprocess):
-            Texture_Root = tag.tagdata.Data.Processed_Pixel_Data.Data[i]
+            Texture_Root = tag.tagdata.Data.processed_pixel_data.data[i]
             
             if len(BM.Texture_Block) and isinstance(BM.Texture_Block[0], array):
                 #change the type of data for the bitmap
@@ -345,14 +345,14 @@ def Parse_Bitmap_Blocks(tag):
     '''converts the raw pixel data into arrays of pixel
     data and replaces the raw data in the tag with them'''
     
-    Pixel_Data = tag.tagdata.Data.Processed_Pixel_Data
-    Raw_Bitmap_Data = Pixel_Data.Data
+    Pixel_Data = tag.tagdata.Data.processed_pixel_data
+    Raw_Bitmap_Data = Pixel_Data.data
 
     tagsdir = tag.handler.tagsdir
     datadir = tag.handler.datadir
     
     #this is the block that will hold all of the bitmap blocks
-    Root_Texture_Block = tag.definition.subdefs['Pixel_Root_Desc'].build()
+    Root_Texture_Block = tag.definition.subdefs['pixel_root'].build()
     
     #Read the pixel data blocks for each bitmap
     for i in range(tag.Bitmap_Count()):
@@ -492,7 +492,7 @@ def Add_Bitmap_Padding(tag, Save_As_Xbox):
         if tag.Bitmap_Type(i) == TYPE_CUBEMAP:
             Sub_Bitmap_Count = 6
             
-        Pixel_Data_Block = tag.tagdata.Data.Processed_Pixel_Data.Data[i]
+        Pixel_Data_Block = tag.tagdata.Data.processed_pixel_data.data[i]
 
         """BECAUSE THESE OFFSETS ARE THE BEGINNING OF THE PIXEL
         DATA WE ADD THE NUMBER OF BYTES OF PIXEL DATA BEFORE
@@ -599,8 +599,8 @@ def Bitmap_Sanitize(tag):
         TexInfo = Tex_Infos[i]
         
         #set the flags to the new value
-        Flags.Palletized = (Format == BC.FORMAT_P8)
-        Flags.Compressed = (Format in BC.COMPRESSED_FORMATS)
+        Flags.palletized = (Format == BC.FORMAT_P8)
+        Flags.compressed = (Format in BC.COMPRESSED_FORMATS)
         
         tag.Bitmap_Width_Height_Depth(i, (TexInfo["Width"],
                                           TexInfo["Height"],
