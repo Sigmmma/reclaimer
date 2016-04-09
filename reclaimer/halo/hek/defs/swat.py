@@ -53,13 +53,7 @@ swat_body = Struct("Data",
     BFloat("ripple mipmap detail bias"),
 
     Pad(64),
-    Reflexive("ripples",
-        INCLUDE=Reflexive_Struct,
-        CHILD=Array("ripples array",
-            MAX=4, SIZE=".Count",
-            SUB_STRUCT=ripple
-            )
-        ),
+    reflexive("ripples", ripple, 4),
     SIZE=320,
     )
 
@@ -67,8 +61,7 @@ def get():
     return swat_def
 
 swat_def = TagDef(
-    com( {1:{DEFAULT:"swat" },
-          5:{DEFAULT:2}}, Tag_Header),
+    blam_header('swat', 2),
     swat_body,
     
     NAME="shader_transparent_water",

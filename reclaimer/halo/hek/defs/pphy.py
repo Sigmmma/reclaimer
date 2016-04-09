@@ -29,7 +29,7 @@ def get():
     return pphy_def
 
 pphy_def = TagDef(
-    com( {1:{DEFAULT:"pphy" }}, Tag_Header),
+    blam_header('pphy'),
     pphy_body,
     
     NAME="point_physics",

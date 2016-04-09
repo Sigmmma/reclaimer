@@ -64,12 +64,7 @@ meter_body = Struct("Data",
     FlUInt16("width"),
     FlUInt16("height"),
 
-    RawDataRef("meter data",
-      INCLUDE=Raw_Data_Ref_Struct,
-      CHILD=BytearrayRaw("data", SIZE=".Count"),
-      #CHILD:meter_image,
-      EDITABLE=False
-      ),
+    rawdata_ref("meter data"),
     SIZE=172,
     )
 
@@ -77,7 +72,7 @@ def get():
     return metr_def
 
 metr_def = TagDef(
-    com( {1:{DEFAULT:"metr" }}, Tag_Header),
+    blam_header('metr'),
     meter_body,
     
     NAME="meter",

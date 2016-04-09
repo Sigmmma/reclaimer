@@ -10,13 +10,7 @@ control_point = Struct("control point",
 
 trak_body = Struct("Data",
     Pad(4),
-    Reflexive("control points",
-        INCLUDE=Reflexive_Struct,
-        CHILD=Array("control points array",
-            MAX=16, SIZE=".Count",
-            SUB_STRUCT=control_point,
-            ),
-        ),
+    reflexive("control points", control_point, 16),
     SIZE=48,
     )
 
@@ -25,8 +19,7 @@ def get():
     return trak_def
 
 trak_def = TagDef(
-    com( {1:{DEFAULT:"trak" },
-          5:{DEFAULT:2}}, Tag_Header),
+    blam_header('trak', 2),
     trak_body,
     
     NAME="camera_track",
