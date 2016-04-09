@@ -1,82 +1,71 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
+sgla_body = Struct("Data",
+    #Radiosity Properties
+    Radiosity_Block,
+
+    #Shader Type
+    Material_Type,
+    Numeric_Shader_ID,
+
+    Pad(2),
+    #Environment Shader Properties
+    BBool16("glass shader flags",
+        "alpha tested",
+        "decal",
+        "two-sided",
+        "bump map is specular mask",
+        ),
+
+    Pad(42),
+    #Background Tint Properties
+    Struct("background tint color", INCLUDE=R_G_B_Float),
+    BFloat("background tint map scale"),
+    TagIndexRef("background tint map", INCLUDE=Tag_Index_Ref_Struct),
+
+    Pad(22),
+    #Reflection Properties
+    BSEnum16("reflection type",
+        "bumped Cubemap",
+        "flat Cubemap",
+        "dynamic Mirror",
+        ),
+    BFloat("perpendicular brightness"),#[0,1]
+    Struct("perpendicular tint color", INCLUDE=R_G_B_Float),
+    BFloat("parallel brightness"),#[0,1]
+    Struct("parallel tint color",      INCLUDE=R_G_B_Float),
+    TagIndexRef("reflection map", INCLUDE=Tag_Index_Ref_Struct),
+
+    BFloat("bump map scale"),
+    TagIndexRef("bump map", INCLUDE=Tag_Index_Ref_Struct),
+
+    Pad(132),
+    #Diffuse Properties
+    BFloat("diffuse map scale"),
+    TagIndexRef("diffuse map", INCLUDE=Tag_Index_Ref_Struct),
+    BFloat("diffuse detail map scale"),
+    TagIndexRef("diffuse detail map", INCLUDE=Tag_Index_Ref_Struct),
+
+    Pad(32),
+    #Specular Properties
+    BFloat("specular map scale"),
+    TagIndexRef("specular map", INCLUDE=Tag_Index_Ref_Struct),
+    BFloat("specular detail map scale"),
+    TagIndexRef("specular detail map", INCLUDE=Tag_Index_Ref_Struct),
+
+    SIZE=480,
+    )
+
+
 def get():
-    return SglaDef
+    return sgla_def
 
-class SglaDef(TagDef):
-
-    ext = ".shader_glass"
-
-    def_id = "sgla"
-
-    endian = ">"
-
-    descriptor = {TYPE:Container, GUI_NAME:"shader_glass",
-                     0:com( {1:{ DEFAULT:"sgla" }}, Tag_Header),
-                     
-                     1:{ TYPE:Struct, SIZE:480, GUI_NAME:"Data",
-                         #Radiosity Properties
-                         0:Radiosity_Block,
-                            
-                         #Shader Type
-                         1:Material_Type,
-                         2:Numeric_Shader_ID,
-                        
-                         #Environment Shader Properties
-                         3:{ TYPE:Bool16, OFFSET:40, GUI_NAME:"Glass Shader Flags" ,
-                             0:{GUI_NAME:"Alpha tested"},
-                             1:{GUI_NAME:"Decal"},
-                             2:{GUI_NAME:"Two-sided"},
-                             3:{GUI_NAME:"Bump map is specular mask"}
-                             },
-
-                         #Background Tint Properties
-                         4:com({OFFSET:84, GUI_NAME:"Background Tint Color"}, R_G_B_Float),
-                         5:{ TYPE:Float, OFFSET:96, GUI_NAME:"Background Tint Map Scale" },
-                         6:{ TYPE:TagIndexRef, OFFSET:100, GUI_NAME:"Background Tint Map",
-                             INCLUDE:Tag_Index_Ref_Struct
-                             },
-                         
-                         #Reflection Properties
-                         7:{ TYPE:Enum16, OFFSET:138, GUI_NAME:"Reflection Type" ,
-                             0:{GUI_NAME:"Bumped Cubemap"},
-                             1:{GUI_NAME:"Flat Cubemap"},
-                             2:{GUI_NAME:"Dynamic Mirror"}
-                             },
-                         
-                         8:{ TYPE:Float, OFFSET:140, GUI_NAME:"Perpendicular Brightness"},#[0,1]
-                         9:com({OFFSET:144, GUI_NAME:"Perpendicular Tint Color"}, R_G_B_Float),
-                         10:{ TYPE:Float, OFFSET:156, GUI_NAME:"Parallel Brightness"},#[0,1]
-                         11:com({OFFSET:160,GUI_NAME:"Parallel Tint Color"}, R_G_B_Float),
-                         
-                         12:{ TYPE:TagIndexRef, OFFSET:172, GUI_NAME:"Reflection Map",
-                              INCLUDE:Tag_Index_Ref_Struct
-                              },
-                         
-                         13:{ TYPE:Float, OFFSET:188, GUI_NAME:"Bump Map Scale" },
-                         14:{ TYPE:TagIndexRef, OFFSET:192, GUI_NAME:"Bump Map" ,
-                              INCLUDE:Tag_Index_Ref_Struct
-                              },
-                         
-                         #Diffuse Properties
-                         15:{ TYPE:Float, OFFSET:340, GUI_NAME:"Diffuse Map Scale" },
-                         16:{ TYPE:TagIndexRef, OFFSET:344, GUI_NAME:"Diffuse Map",
-                              INCLUDE:Tag_Index_Ref_Struct
-                              },
-                         17:{ TYPE:Float, OFFSET:360, GUI_NAME:"Diffuse Detail Map Scale" },
-                         18:{ TYPE:TagIndexRef, OFFSET:364, GUI_NAME:"Diffuse Detail Map" ,
-                              INCLUDE:Tag_Index_Ref_Struct
-                              },
-                         
-                         #Specular Properties
-                         19:{ TYPE:Float, OFFSET:412, GUI_NAME:"Specular Map Scale" },
-                         20:{ TYPE:TagIndexRef, OFFSET:416, GUI_NAME:"Specular Map",
-                              INCLUDE:Tag_Index_Ref_Struct
-                              },
-                         21:{ TYPE:Float, OFFSET:432, GUI_NAME:"Specular Detail Map Scale" },
-                         22:{ TYPE:TagIndexRef, OFFSET:436, GUI_NAME:"Specular Detail Map" ,
-                              INCLUDE:Tag_Index_Ref_Struct
-                              },
-                         }
-                     }
+sgla_def = TagDef(
+    com( {1:{DEFAULT:"sgla" }}, Tag_Header),
+    sgla_body,
+    
+    NAME="shader_glass",
+    
+    ext=".shader_glass", def_id="sgla", endian=">"
+    )

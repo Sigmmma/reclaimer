@@ -45,10 +45,10 @@ raw_meta_data = Container("tag_meta",
     ALIGN=4
     )
 
-bitmap_meta = Struct('meta_data', INCLUDE=bitm.BitmDef.descriptor[1])
-
-#null out the data types of the raw data references since they dont exist
-bitmap_meta[11][CHILD][TYPE] = bitmap_meta[12][CHILD][TYPE] = Void
+#replace raw data references with padding since they dont exist
+bitmap_meta = dict(bitm.bitm_def.descriptor[1])
+bitmap_meta[11] = Void(bitmap_meta[11][NAME])
+bitmap_meta[12] = Void(bitmap_meta[12][NAME])
 
 
 tag_meta = Switch("tag_meta",

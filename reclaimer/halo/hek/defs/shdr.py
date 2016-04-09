@@ -7,7 +7,9 @@ shader_body = Struct("Data",
 
     #Shader Type
     Material_Type,
-    Numeric_Shader_ID,
+    FlSEnum16("numeric shader id", DEFAULT=-1,
+              INCLUDE=Numeric_Shader_ID),
+    Pad(2),
     SIZE=40, 
     )
 

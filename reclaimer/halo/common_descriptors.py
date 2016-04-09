@@ -91,7 +91,7 @@ All_Valid_Tags = BUEnum32("Tag_Class",
     ("weather_particle_system", 'rain'),
     ("wind",                 'wind'),
 
-    ("None", 0xffffffff),
+    ("none", 0xffffffff),
     DEFAULT=0xffffffff,
     )
 
@@ -104,7 +104,7 @@ All_Valid_Attachments = BUEnum32("Tag_Class",
     ("particle_system", 'pctl'),
     ("sound_looping",   'lsnd'),
 
-    ("None", 0xffffffff),
+    ("none", 0xffffffff),
     DEFAULT=0xffffffff,
     )
 
@@ -131,7 +131,7 @@ All_Valid_Effect_Events = BUEnum32("Tag_Class",
     ("vehicle",         'vehi'),
     ("weapon",          'weap'),
 
-    ("None", 0xffffffff),
+    ("none", 0xffffffff),
     DEFAULT=0xffffffff,
     )
 
@@ -139,14 +139,14 @@ All_Valid_Effects = BUEnum32("Tag_Class",
     ("sound",  'snd!'),
     ("effect", 'effe'),
 
-    ("None", 0xffffffff),
+    ("none", 0xffffffff),
     DEFAULT=0xffffffff,
     )
 
 All_Valid_Sounds = BUEnum32("Tag_Class",
     ("sound", 'snd!'),
 
-    ("None", 0xffffffff),
+    ("none", 0xffffffff),
     DEFAULT=0xffffffff,
     )
 
@@ -156,7 +156,7 @@ All_Valid_Items = BUEnum32("Tag_Class",
     ("item",      'item'),
     ("weapon",    'weap'),
 
-    ("None", 0xffffffff),
+    ("none", 0xffffffff),
     DEFAULT=0xffffffff,
     )
 
@@ -174,7 +174,7 @@ All_Valid_Objects = BUEnum32("Tag_Class",
     ("vehicle",        'vehi'),
     ("weapon",         'weap'),
 
-    ("None", 0xffffffff),
+    ("none", 0xffffffff),
     DEFAULT=0xffffffff,
     )
 
@@ -191,7 +191,7 @@ All_Valid_Shaders = BUEnum32("Tag_Class",
     ("shader_transparent_plasma",  'spla'),
     ("shader_transparent_water",   'swat'),
 
-    ("None", 0xffffffff),
+    ("none", 0xffffffff),
     DEFAULT=0xffffffff,
     )
 
@@ -200,7 +200,7 @@ All_Valid_Units = BUEnum32("Tag_Class",
     ("unit",    'unit'),
     ("vehicle", 'vehi'),
 
-    ("None", 0xffffffff),
+    ("none", 0xffffffff),
     DEFAULT=0xffffffff,
     )
 
@@ -211,7 +211,7 @@ All_Valid_Widgets = BUEnum32("Tag_Class",
     ("light_volume", 'mgs2'),
     ("lightning",    'elec'),
 
-    ("None", 0xffffffff),
+    ("none", 0xffffffff),
     DEFAULT=0xffffffff,
     )
 
@@ -288,12 +288,23 @@ Transparent_Shader_Fade_Mode = (
     "fade when parallel",
     )
 Transparent_Shader_First_Map_Type = (
-    "map 2D",
+    "map 2d",
     "reflection cube map",
     "object centered cube map",
     "viewer centered cube map",
     )
 
+Detail_Mask = (
+    "none",
+    "red inverse",
+    "red",
+    "green inverse",
+    "green",
+    "blue inverse",
+    "blue",
+    "alpha inverse",
+    "alpha"
+    )
 
 #Shared Functions
 
@@ -351,21 +362,21 @@ Framebuffer_Blend_Modes = (
     "alpha-multiply add",
     )
 Function_Names = (
-    "None",
+    "none",
     "A",
     "B",
     "C",
     "D",
     )
 Function_Inputs = (
-    "None",
+    "none",
     "A in",
     "B in",
     "C in",
     "D in",
     )
 Function_Outputs = (
-    "None",
+    "none",
     "A out",
     "B out",
     "C out",
@@ -393,7 +404,12 @@ Anim_Func_Per_Pha = Struct('',
     BFloat("period"),#seconds
     BFloat("phase"),#seconds
     )
-
+Anim_Func_Per_Sca = Struct('',
+    BSEnum16("function", *Animation_Functions),
+    Pad(2),
+    BFloat("period"),#seconds
+    BFloat("scale"),#base map repeats
+    )
 Anim_Src_Func_Per_Pha_Sca = Struct('',
     BSEnum16("source", *Function_Outputs),
     BSEnum16("function", *Animation_Functions),
@@ -440,19 +456,18 @@ Tag_Index_Ref_Struct = TagIndexRef('Tag Index Ref',
 Ref_Struct = copy(Tag_Index_Ref_Struct)
 del Ref_Struct[0]
 
-Attachment_Ref_Struct   = com( dict(All_Valid_Attachments),   Ref_Struct)
-Effect_Ref_Struct       = com( dict(All_Valid_Effects),       Ref_Struct)
-Sound_Ref_Struct        = com( dict(All_Valid_Sounds),        Ref_Struct)
-Effect_Event_Ref_Struct = com( dict(All_Valid_Effect_Events), Ref_Struct)
-Item_Ref_Struct         = com( dict(All_Valid_Items),         Ref_Struct)
-Object_Ref_Struct       = com( dict(All_Valid_Objects),       Ref_Struct)
-Shader_Ref_Struct       = com( dict(All_Valid_Shaders),       Ref_Struct)
-Unit_Ref_Struct         = com( dict(All_Valid_Units),         Ref_Struct)
-Widget_Ref_Struct       = com( dict(All_Valid_Widgets),       Ref_Struct)
-Shader_Ref_Struct       = com( dict(All_Shader_Enums),        Ref_Struct)
+Attachment_Ref_Struct   = com( {0:All_Valid_Attachments},   Ref_Struct)
+Effect_Ref_Struct       = com( {0:All_Valid_Effects},       Ref_Struct)
+Sound_Ref_Struct        = com( {0:All_Valid_Sounds},        Ref_Struct)
+Effect_Event_Ref_Struct = com( {0:All_Valid_Effect_Events}, Ref_Struct)
+Item_Ref_Struct         = com( {0:All_Valid_Items},         Ref_Struct)
+Object_Ref_Struct       = com( {0:All_Valid_Objects},       Ref_Struct)
+Shader_Ref_Struct       = com( {0:All_Valid_Shaders},       Ref_Struct)
+Unit_Ref_Struct         = com( {0:All_Valid_Units},         Ref_Struct)
+Widget_Ref_Struct       = com( {0:All_Valid_Widgets},       Ref_Struct)
+Shader_Ref_Struct       = com( {0:All_Valid_Shaders},        Ref_Struct)
 
 del Ref_Struct
-
 
 """Shader Stuff"""
 
@@ -491,15 +506,15 @@ Radiosity_Block = Struct("radiosity settings",
         ),
     BFloat("radiosity light power"),
     Struct("radiosity light color", INCLUDE=R_G_B_Float),
-    Struct("radiosity tint color", INCLUDE=R_G_B_Float),
+    Struct("radiosity tint color",  INCLUDE=R_G_B_Float),
     )
 
 
 #Transparent Shader Stuff
 
-Extra_Layers_Block = TagIndexRef("Extra Layer", INCLUDE=Shader_Ref_Struct)
+Extra_Layers_Block = TagIndexRef("extra layer", INCLUDE=Shader_Ref_Struct)
 
-Chicago_4_Stage_Maps = Struct("Four Stage Map",
+Chicago_4_Stage_Maps = Struct("four stage map",
     BBool16("flags" ,
         "unfiltered",
         "alpha replicate",
@@ -509,29 +524,29 @@ Chicago_4_Stage_Maps = Struct("Four Stage Map",
     Pad(42),
     BSEnum16("color function", *Blend_Functions),
     BSEnum16("alpha function", *Blend_Functions),
-    Pad(38),
+    Pad(36),
     #shader transformations
-    BFloat("map u-Scale"),
-    BFloat("map v-Scale"),
-    BFloat("map u-Offset"),
-    BFloat("map v-Offset"),
+    BFloat("map u-scale"),
+    BFloat("map v-scale"),
+    BFloat("map u-offset"),
+    BFloat("map v-offset"),
     BFloat("map rotation"),#degrees
     BFloat("map bias"),#[0,1]
-    TagIndexRef("Bitmap", INCLUDE=Tag_Index_Ref_Struct),
+    TagIndexRef("bitmap", INCLUDE=Tag_Index_Ref_Struct),
                               
     Pad(40),
                               
     #shader animations
-    Struct("u-Animation", *Anim_Src_Func_Per_Pha_Sca),
-    Struct("v-Animation", *Anim_Src_Func_Per_Pha_Sca),
-    Struct("rotation-animation", *Anim_Src_Func_Per_Pha_Sca),
+    Struct("u-animation", INCLUDE=Anim_Src_Func_Per_Pha_Sca),
+    Struct("v-animation", INCLUDE=Anim_Src_Func_Per_Pha_Sca),
+    Struct("rotation-animation", INCLUDE=Anim_Src_Func_Per_Pha_Sca),
 
     Struct("rotation center", INCLUDE=X_Y_Float),
     SIZE=220,
     )
 
 
-Chicago_2_Stage_Maps = Struct("Two Stage Map", INCLUDE=Chicago_4_Stage_Maps)
+Chicago_2_Stage_Maps = Struct("two stage map", INCLUDE=Chicago_4_Stage_Maps)
 
 Chicago_Extra_Flags = (
     "dont fade active camouflage",

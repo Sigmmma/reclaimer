@@ -14,7 +14,7 @@ try:
                                       'show':['name', 'children', #'field',
                                               'value','offset',# 'py_id',
                                               'index', 'flags',# 'size', 'unique',
-                                              'tagpath', 'binsize','ramsize',
+                                              'filepath', 'binsize','ramsize',
                                               #'all'
                                               ] })
     #Test.Run_Test()

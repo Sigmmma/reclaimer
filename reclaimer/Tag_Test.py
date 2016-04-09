@@ -12,7 +12,7 @@ try:
                                          'show':['name', 'children', 'field',
                                                  'value', 'offset',# 'size',
                                                  'index', 'flags',
-                                                 'tagpath', #'unique', 
+                                                 'filepath', #'unique', 
                                                  'binsize', 'ramsize',
                                                  #'all'
                                                  ] })
