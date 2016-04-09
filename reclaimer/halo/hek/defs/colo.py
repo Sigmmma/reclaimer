@@ -9,13 +9,7 @@ color = Struct("color",
     )
 
 colo_body = Struct("Data",
-    Reflexive("colors",
-        INCLUDE=Reflexive_Struct,
-        CHILD=Array("colors_array",
-            MAX=512, SIZE=".Count",
-            SUB_STRUCT=color,
-            )
-        ),
+    reflexive("colors", color, 512),
     SIZE=12
     )
 
@@ -23,7 +17,7 @@ def get():
     return colo_def
 
 colo_def = TagDef(
-    com( {1:{DEFAULT:"colo" }}, Tag_Header),
+    blam_header('colo'),
     colo_body,
     
     NAME="color_table",

@@ -26,17 +26,8 @@ schi_body = Struct("Data",
     #Lens Flare
     BFloat("lens flare spacing"),#world units
     TagIndexRef("lens flare", INCLUDE=Tag_Index_Ref_Struct),
-
-    Reflexive("extra layers", INCLUDE=Reflexive_Struct,
-        CHILD=Array("extra layers array",
-            MAX=4, SIZE=".Count",
-            SUB_STRUCT=Extra_Layers_Block ),
-        ),
-    Reflexive("maps", INCLUDE=Reflexive_Struct,
-        CHILD=Array("maps array",
-            MAX=4, SIZE=".Count",
-            SUB_STRUCT=Chicago_4_Stage_Maps ),
-        ),
+    reflexive("extra layers", Extra_Layers_Block, 4),
+    reflexive("maps", Chicago_4_Stage_Maps, 4),
     BBool32("extra flags", *Chicago_Extra_Flags),
     SIZE=108,
     )
@@ -46,7 +37,7 @@ def get():
     return schi_def
 
 schi_def = TagDef(
-    com( {1:{DEFAULT:"schi" }}, Tag_Header),
+    blam_header('schi'),
     schi_body,
     
     NAME="shader_transparent_chicago",

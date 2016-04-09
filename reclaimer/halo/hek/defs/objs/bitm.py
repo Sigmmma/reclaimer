@@ -36,44 +36,44 @@ CUBEMAP_PADDING = 128
 
 class BitmTag(HekTag):
     
-    def bitmap_count(self, new_value=None):
+    def Bitmap_Count(self, new_value=None):
         if new_value is None:
             return self.data.Data.bitmaps.Count
         self.data.Data.bitmaps.Count = new_value
         
     def Bitmap_Width(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmap_block_array[b_index].width
-        self.data.Data.bitmaps.bitmap_block_array[b_index].width = new_value
+            return self.data.Data.bitmaps.bitmaps_array[b_index].width
+        self.data.Data.bitmaps.bitmaps_array[b_index].width = new_value
 
     def Bitmap_Height(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmap_block_array[b_index].height
-        self.data.Data.bitmaps.bitmap_block_array[b_index].height = new_value
+            return self.data.Data.bitmaps.bitmaps_array[b_index].height
+        self.data.Data.bitmaps.bitmaps_array[b_index].height = new_value
 
     def Bitmap_Depth(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmap_block_array[b_index].depth
-        self.data.Data.bitmaps.bitmap_block_array[b_index].depth = new_value
+            return self.data.Data.bitmaps.bitmaps_array[b_index].depth
+        self.data.Data.bitmaps.bitmaps_array[b_index].depth = new_value
 
     def Bitmap_Mipmaps_Count(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmap_block_array[b_index].Mipmaps
-        self.data.Data.bitmaps.bitmap_block_array[b_index].Mipmaps = new_value
+            return self.data.Data.bitmaps.bitmaps_array[b_index].Mipmaps
+        self.data.Data.bitmaps.bitmaps_array[b_index].Mipmaps = new_value
 
     def Bitmap_Type(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmap_block_array[b_index].type.data
-        self.data.Data.bitmaps.bitmap_block_array[b_index].type.data = new_value
+            return self.data.Data.bitmaps.bitmaps_array[b_index].type.data
+        self.data.Data.bitmaps.bitmaps_array[b_index].type.data = new_value
 
     def Bitmap_Format(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmap_block_array[b_index].format.data
-        self.data.Data.bitmaps.bitmap_block_array[b_index].format.data = new_value
+            return self.data.Data.bitmaps.bitmaps_array[b_index].format.data
+        self.data.Data.bitmaps.bitmaps_array[b_index].format.data = new_value
 
 
     def Bitmap_Width_Height_Depth(self, b_index=0, new_value=None):
-        bitmap = self.data.Data.bitmaps.bitmap_block_array[b_index]
+        bitmap = self.data.Data.bitmaps.bitmaps_array[b_index]
         if new_value is None:
             return(bitmap.width, bitmap.height, bitmap.depth)
         bitmap.width, bitmap.height, bitmap.depth = (new_value[0],
@@ -82,35 +82,35 @@ class BitmTag(HekTag):
 
     def Bitmap_Flags(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmap_block_array[b_index].flags
-        self.data.Data.bitmaps.bitmap_block_array[b_index].flags = new_value
+            return self.data.Data.bitmaps.bitmaps_array[b_index].flags
+        self.data.Data.bitmaps.bitmaps_array[b_index].flags = new_value
         
     def bitmap_base_address(self, b_index=0, new_value=None):
         if new_value is None:
-            return(self.data.Data.bitmaps.bitmap_block_array[b_index].base_address)
-        self.data.Data.bitmaps.bitmap_block_array[b_index].base_address = new_value
+            return(self.data.Data.bitmaps.bitmaps_array[b_index].base_address)
+        self.data.Data.bitmaps.bitmaps_array[b_index].base_address = new_value
 
     def Bitmap_Data_Offset(self, b_index=0, new_value=None):
         if new_value is None:
-            return(self.data.Data.bitmaps.bitmap_block_array[b_index].pixels_offset)
-        self.data.Data.bitmaps.bitmap_block_array[b_index].pixels_offset = new_value
+            return(self.data.Data.bitmaps.bitmaps_array[b_index].pixels_offset)
+        self.data.Data.bitmaps.bitmaps_array[b_index].pixels_offset = new_value
 
 
 
     def Registration_Point_X(self, b_index=0, new_value=None):
-        Reg_Point = self.data.Data.bitmaps.bitmap_block_array[b_index].registration_point
+        Reg_Point = self.data.Data.bitmaps.bitmaps_array[b_index].registration_point
         if new_value is None:
             return(Reg_Point.x)
         Reg_Point.x = new_value
 
     def Registration_Point_Y(self, b_index=0, new_value=None):
-        Reg_Point = self.data.Data.bitmaps.bitmap_block_array[b_index].registration_point
+        Reg_Point = self.data.Data.bitmaps.bitmaps_array[b_index].registration_point
         if new_value is None:
             return(Reg_Point.y)
         Reg_Point.y = new_value
 
     def Registration_Point_XY(self, b_index=0, new_value=None):
-        Reg_Point = self.data.Data.bitmaps.bitmap_block_array[b_index].registration_point
+        Reg_Point = self.data.Data.bitmaps.bitmaps_array[b_index].registration_point
         if new_value is None:
             return(Reg_Point.x, Reg_Point.y)
         Reg_Point.x, Reg_Point.y = new_value[0], new_value[1]
@@ -156,8 +156,8 @@ class BitmTag(HekTag):
     def Set_Platform(self, saveasxbox):
         '''changes different things to set the platform to either PC or Xbox'''
         #Read each of the bitmap blocks
-        for b_index in range(self.bitmap_count()):
-            bitmap = self.data.Data.bitmaps.bitmap_block_array[b_index]
+        for b_index in range(self.Bitmap_Count()):
+            bitmap = self.data.Data.bitmaps.bitmaps_array[b_index]
             
             bitmap.flags.set_to('made_by_arsenic', saveasxbox)
 
@@ -201,7 +201,7 @@ class BitmTag(HekTag):
         Raw_Bitmap_Data = self.data.Data.processed_pixel_data.Data
 
         #Loop over each of the bitmap blocks
-        for b_index in range(self.bitmap_count()):
+        for b_index in range(self.Bitmap_Count()):
             
             if self.Bitmap_Type(b_index) == TYPE_CUBEMAP:
                 mipmap_count = self.Bitmap_Mipmaps_Count(b_index) + 1

@@ -63,7 +63,7 @@ def get():
     return fog__def
 
 fog__def = TagDef(
-    com( {1:{DEFAULT:"fog " }}, Tag_Header),
+    blam_header('fog '),
     fog__body,
     
     NAME="fog",

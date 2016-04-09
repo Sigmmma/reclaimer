@@ -40,7 +40,7 @@ def get():
     return devi_def
 
 devi_def = TagDef(
-    com( {1:{DEFAULT:"devi" }}, Tag_Header),
+    blam_header('devi'),
     devi_body,
     
     NAME="device",

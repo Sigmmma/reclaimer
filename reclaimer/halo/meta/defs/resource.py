@@ -40,8 +40,8 @@ def get_resource_tag_type(block=None, parent=None, attr_index=None,
     return case
 
 
-raw_meta_data = Container("tag_meta", 
-    BytesRaw("raw_tag_meta", SIZE='..size'),
+raw_meta_data = Container("tag meta", 
+    BytesRaw("raw tag meta", SIZE='..size'),
     ALIGN=4
     )
 
@@ -51,46 +51,46 @@ bitmap_meta[11] = Void(bitmap_meta[11][NAME])
 bitmap_meta[12] = Void(bitmap_meta[12][NAME])
 
 
-tag_meta = Switch("tag_meta",
+tag_meta = Switch("tag meta",
     DEFAULT=raw_meta_data, POINTER='.offset',
     CASE=get_resource_tag_type,
-    CASES={'bitmap':Container("meta_data",
+    CASES={'bitmap':Container("meta data",
                bitmap_meta),
            #'sound':Container("meta_data",
            #    sound_meta)
            }
     )
 
-tag_header = Struct("tag_header",
+tag_header = Struct("tag header",
     LUInt32("id"),
     LUInt32("size"),
     LUInt32("offset"),
     CHILD=tag_meta
     )
 
-tag_path = CStrLatin1("tag_path")
+tag_path = CStrLatin1("tag path")
 
 
 resource_def = TagDef(
-    LUEnum32("resource_type",
+    LUEnum32("resource type",
         ('bitmaps', 1),
         ('sounds',  2),
         ('strings', 3)
         ),
-    LPointer32("tag_paths_pointer"),
-    LPointer32("tag_headers_pointer"),
-    LUInt32("tag_count"),
-    Array("tag_paths",
+    LPointer32("tag paths pointer"),
+    LPointer32("tag headers pointer"),
+    LUInt32("tag count"),
+    Array("tag paths",
         SIZE='.tag_count',
         POINTER='.tag_paths_pointer',
         SUB_STRUCT=tag_path,
         ),
-    Array("tag_headers",
+    Array("tag headers",
         SIZE='.tag_count',
         POINTER='.tag_headers_pointer',
         SUB_STRUCT=tag_header,
         ),
     
-    NAME="halo_map_resource",
+    NAME="halo map resource",
     ext=".map", def_id="resource", endian="<", align=ALIGN_AUTO
     )

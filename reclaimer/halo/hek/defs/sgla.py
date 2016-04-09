@@ -62,7 +62,7 @@ def get():
     return sgla_def
 
 sgla_def = TagDef(
-    com( {1:{DEFAULT:"sgla" }}, Tag_Header),
+    blam_header('sgla'),
     sgla_body,
     
     NAME="shader_glass",

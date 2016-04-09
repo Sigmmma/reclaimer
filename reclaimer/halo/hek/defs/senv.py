@@ -124,8 +124,7 @@ def get():
     return senv_def
 
 senv_def = TagDef(
-    com( {1:{DEFAULT:"senv" },
-          5:{DEFAULT:2}}, Tag_Header),
+    blam_header('senv', 2),
     senv_body,
     
     NAME="shader_environment",

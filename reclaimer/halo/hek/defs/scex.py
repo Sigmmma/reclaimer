@@ -26,23 +26,9 @@ scex_body = Struct("Data",
     #Lens Flare
     BFloat("lens flare spacing"),#world units
     TagIndexRef("lens flare", INCLUDE=Tag_Index_Ref_Struct),
-
-    Reflexive("extra layers", INCLUDE=Reflexive_Struct,
-        CHILD=Array("extra layers array",
-            MAX=4, SIZE=".Count",
-            SUB_STRUCT=Extra_Layers_Block ),
-        ),
-
-    Reflexive("four stage maps", INCLUDE=Reflexive_Struct,
-        CHILD=Array("four stage maps array",
-            MAX=4, SIZE=".Count",
-            SUB_STRUCT=Chicago_4_Stage_Maps ),
-        ),
-    Reflexive("two stage maps", INCLUDE=Reflexive_Struct,
-        CHILD=Array("two stage maps array",
-            MAX=2, SIZE=".Count",
-            SUB_STRUCT=Chicago_2_Stage_Maps ),
-        ),
+    reflexive("extra layers", Extra_Layers_Block, 4),
+    reflexive("four stage maps", Chicago_4_Stage_Maps, 4),
+    reflexive("two stage maps", Chicago_2_Stage_Maps, 2),
     BBool32("extra flags", *Chicago_Extra_Flags),
     SIZE=120,
     )
@@ -52,7 +38,7 @@ def get():
     return scex_def
 
 scex_def = TagDef(
-    com( {1:{DEFAULT:"scex" }}, Tag_Header),
+    blam_header('scex'),
     scex_body,
     
     NAME="shader_transparent_chicago_extended",

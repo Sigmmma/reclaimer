@@ -17,7 +17,7 @@ def get():
     return wind_def
 
 wind_def = TagDef(
-    com( {1:{DEFAULT:"wind" }}, Tag_Header),
+    blam_header('wind'),
     wind_body,
     
     NAME="wind",

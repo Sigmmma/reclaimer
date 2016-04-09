@@ -103,13 +103,7 @@ soso_body = Struct("Data",
         ),
     
     #OS Shader Model Extension
-    Reflexive("os shader model ext",
-        INCLUDE=Reflexive_Struct,
-        CHILD=Array("os shader model ext array",
-            MAX=1, SIZE=".Count",
-            SUB_STRUCT=os_soso_ext
-            )
-        ),
+    reflexive("os shader model ext", os_soso_ext, 1),
         
     #Texture Scrolling Animation
     Struct("texture scrolling",
@@ -140,8 +134,7 @@ def get():
     return soso_def
 
 soso_def = TagDef(
-    com( {1:{DEFAULT:"soso"},
-          5:{DEFAULT:2}}, Tag_Header),
+    blam_header('soso', 2),
     soso_body,
     
     NAME="shader_model",

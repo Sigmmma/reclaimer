@@ -19,7 +19,7 @@ def get():
     return hud__def
 
 hud__def = TagDef(
-    com( {1:{DEFAULT:"hud#" }}, Tag_Header),
+    blam_header('hud#'),
     hud__body,
     
     NAME="hud_number",
