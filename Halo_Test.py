@@ -12,9 +12,9 @@ try:
                         print_options={'indent':4,
                                        'printout':True, 'precision':3,
                                        'show':['name', 'children', 'field',
-                                               'value',# 'size', 'offset', 
+                                               'value', 'offset',# 'size', 
                                                'index',# 'flags', 'py_id',
-                                               'tagpath', #'unique', 'py_type',
+                                               'filepath', #'unique', 'py_type',
                                                'binsize', 'ramsize'] })
     test.run_test()
     #cProfile.run('test.run_test()')

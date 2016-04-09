@@ -6,16 +6,13 @@ from supyr_struct.fields import Void
 
 class ShaderRectifier(HaloHandler):
     target_id = "schi"
-    backup_Tags = False
-
+    backup   = False
     log_filename = "Chicago_Shader_Rectifier.log"
     
     #initialize the class
     def __init__(self, **kwargs):
-        if "target_id" in kwargs:
-            self.target_id = kwargs["target_id"]
-        if "backup" in kwargs:
-            self.backup = kwargs["backup"]
+        self.target_id = kwargs.get("target_id", self.target_id)
+        self.backup    = kwargs.get("backup", self.backup)
         kwargs["valid_def_ids"] = ("schi","scex")
         HaloHandler.__init__(self, **kwargs)
 
@@ -29,12 +26,14 @@ class ShaderRectifier(HaloHandler):
 
         target_def = self.get_def(self.target_id)
 
+        ################################################################
+        '''WARNING: THIS NEXT STEP WILL TOTALLY EFF UP THE DEFINITIONS!!
+        DONT LOAD ANY schi OR scex TAGS AFTER CALLING convert_shaders'''
+        ################################################################
         if self.target_id == 'schi':
             data_desc = self.get_def('scex').descriptor[1]#Data index = 1
-            
             #scex extra flags index = 14
             attr_offs = list(data_desc['ATTR_OFFS']); attr_offs[14] = 96
-            
             dict.__setitem__(data_desc[11], 'TYPE', Void)#void the extra layers
             dict.__setitem__(data_desc[13], 'TYPE', Void)#void the 2-stage maps
             dict.__setitem__(data_desc, 'ATTR_OFFS', attr_offs)#replace offsets
@@ -42,10 +41,8 @@ class ShaderRectifier(HaloHandler):
             
         elif self.target_id == 'scex':
             data_desc = self.get_def('schi').descriptor[1]#Data index = 1
-            
             #schi extra flags index = 13
             attr_offs = list(data_desc['ATTR_OFFS']); attr_offs[13] = 108
-            
             dict.__setitem__(data_desc[11], 'TYPE', Void)#void the extra layers
             dict.__setitem__(data_desc, 'ATTR_OFFS', attr_offs)#replace offsets
             dict.__setitem__(data_desc, 'SIZE',     120)#change the struct size
@@ -69,7 +66,7 @@ class ShaderRectifier(HaloHandler):
                         del self.tags[def_id][filepath]
 
                     '''REMOVE THE EXTRA LAYERS FROM THE TAG'''
-                    el = tag.data.Data.Extra_Layers.Extra_Layers_Array
+                    el = tag.data.Data.extra_layers.extra_layers_array
                     if len(el):
                         logstr += "\n"+tag.filepath +"\nExtra Layers:"
                         
@@ -98,7 +95,8 @@ class ShaderRectifier(HaloHandler):
             self.tags['scex'].clear()
 
 
-        report, write_exceptions = self.write_tags(print_errors=False)
+        report, write_exceptions = self.write_tags(print_errors=False,
+                                                   backup=self.backup)
         logstr += write_exceptions
         
         #create the debug and take care of renaming and deleting tags
