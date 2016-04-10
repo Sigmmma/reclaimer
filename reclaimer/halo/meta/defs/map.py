@@ -12,9 +12,9 @@ from ...hek.defs import bitm, boom, colo, devc, devi, flag, fog_, foot, hmt_,\
     map that the tag is located in and indexed will be 1.
     To determine which resource map the tag is in, it must be
     done based on the tag class.
-    bitm->bitmaps.map
-    snd!->sounds.map
-    font,hmt ,str#,ustr->loc.map
+    bitm- > bitmaps.map
+    snd! -> sounds.map
+    font, hmt , str#, ustr -> loc.map
 
 '''
 ################################################################
@@ -75,49 +75,46 @@ def tag_index_array_pointer(block=None, parent=None, attr_index=None,
         return (m_head.tag_index_offset + PC_TAG_INDEX_HEADER_SIZE +
                 i_head.index_magic - PC_INDEX_MAGIC)
     
-def fcc(value):
-    '''Converts a string of 4 characters into an int'''
-    #the fcc wont let me be, or let me be me, so let me see.....
-    return int.from_bytes(bytes(value, encoding='latin1'), byteorder='big')
-
+def map_fcc(value):
+    return fcc(value, 'big')
        
 
 tag_meta = Switch("tag meta",
     CASE=tag_meta_case,
     #THESE WILL NEED TO BE MODIFIED SINCE
     #RAW DATA ISN'T INSIDE IT ANYMORE
-    CASES={#fcc('bitm'):bitm.bitm_def.descriptor[1],
-        fcc('boom'):boom.boom_def.descriptor[1],
-        fcc('colo'):colo.colo_def.descriptor[1],
-        fcc('devc'):devc.devc_def.descriptor[1],
-        fcc('devi'):devi.devi_def.descriptor[1],
-        fcc('flag'):flag.flag_def.descriptor[1],
-        fcc('fog '):fog_.fog__def.descriptor[1],
-        fcc('foot'):foot.foot_def.descriptor[1],
-        #fcc('hmt '):hmt_.hmt__def.descriptor[1],
-        fcc('hud#'):hud_.hud__def.descriptor[1],
-        fcc('item'):item.item_def.descriptor[1],
-        fcc('itmc'):itmc.itmc_def.descriptor[1],
-        #fcc('metr'):metr.metr_def.descriptor[1],
-        fcc('mply'):mply.mply_def.descriptor[1],
-        fcc('ngpr'):ngpr.ngpr_def.descriptor[1],
-        fcc('pphy'):pphy.pphy_def.descriptor[1],
-        fcc('scex'):scex.scex_def.descriptor[1],
-        fcc('schi'):schi.schi_def.descriptor[1],
-        fcc('senv'):senv.senv_def.descriptor[1],
-        fcc('sgla'):sgla.sgla_def.descriptor[1],
-        fcc('shdr'):shdr.shdr_def.descriptor[1],
-        fcc('smet'):smet.smet_def.descriptor[1],
-        fcc('snde'):snde.snde_def.descriptor[1],
-        fcc('soso'):soso.soso_def.descriptor[1],
-        fcc('Soul'):Soul.soul_def.descriptor[1],
-        fcc('spla'):spla.spla_def.descriptor[1],
-        #fcc('str#'):str_.str__def.descriptor[1],
-        fcc('swat'):swat.swat_def.descriptor[1],
-        fcc('tagc'):tagc.tagc_def.descriptor[1],
-        fcc('trak'):trak.trak_def.descriptor[1],
-        #fcc('ustr'):ustr.ustr_def.descriptor[1],
-        fcc('wind'):wind.wind_def.descriptor[1],
+    CASES={#map_fcc('bitm'):bitm.bitm_def.descriptor[1],
+        map_fcc('boom'):boom.boom_def.descriptor[1],
+        map_fcc('colo'):colo.colo_def.descriptor[1],
+        map_fcc('devc'):devc.devc_def.descriptor[1],
+        map_fcc('devi'):devi.devi_def.descriptor[1],
+        map_fcc('flag'):flag.flag_def.descriptor[1],
+        map_fcc('fog '):fog_.fog__def.descriptor[1],
+        map_fcc('foot'):foot.foot_def.descriptor[1],
+        #map_fcc('hmt '):hmt_.hmt__def.descriptor[1],
+        map_fcc('hud#'):hud_.hud__def.descriptor[1],
+        map_fcc('item'):item.item_def.descriptor[1],
+        map_fcc('itmc'):itmc.itmc_def.descriptor[1],
+        #map_fcc('metr'):metr.metr_def.descriptor[1],
+        map_fcc('mply'):mply.mply_def.descriptor[1],
+        map_fcc('ngpr'):ngpr.ngpr_def.descriptor[1],
+        map_fcc('pphy'):pphy.pphy_def.descriptor[1],
+        map_fcc('scex'):scex.scex_def.descriptor[1],
+        map_fcc('schi'):schi.schi_def.descriptor[1],
+        map_fcc('senv'):senv.senv_def.descriptor[1],
+        map_fcc('sgla'):sgla.sgla_def.descriptor[1],
+        map_fcc('shdr'):shdr.shdr_def.descriptor[1],
+        map_fcc('smet'):smet.smet_def.descriptor[1],
+        map_fcc('snde'):snde.snde_def.descriptor[1],
+        map_fcc('soso'):soso.soso_def.descriptor[1],
+        map_fcc('Soul'):Soul.soul_def.descriptor[1],
+        map_fcc('spla'):spla.spla_def.descriptor[1],
+        #map_fcc('str#'):str_.str__def.descriptor[1],
+        map_fcc('swat'):swat.swat_def.descriptor[1],
+        map_fcc('tagc'):tagc.tagc_def.descriptor[1],
+        map_fcc('trak'):trak.trak_def.descriptor[1],
+        #map_fcc('ustr'):ustr.ustr_def.descriptor[1],
+        map_fcc('wind'):wind.wind_def.descriptor[1],
         },
     POINTER=tag_meta_data_pointer,
     )
