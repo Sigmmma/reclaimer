@@ -36,7 +36,8 @@ def lump_array_reader(self, desc, parent=None, rawdata=None, attr_index=None,
     
     if attr_index is not None and desc.get('POINTER') is not None:
         offset = new_block.get_meta('POINTER', **kwargs)
-
+        
+    list.__delitem__(new_block, slice(None, None, None))
     for i in range(new_block.get_size()):
         #need to append a new entry to the block
         list.append(new_block, None)

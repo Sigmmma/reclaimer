@@ -91,28 +91,24 @@ font_array = Lump('fonts',
     SUB_STRUCT=font, **lump_kw
     )
 string_offsets = Lump('string offsets',
-    SUB_STRUCT=LUInt32('offset'),
-    **oe_offs_lump_kw
+    SUB_STRUCT=LUInt32('offset'), **oe_offs_lump_kw
     )
 string_message_array = Lump('string messages',
     SUB_STRUCT=string_message, **lump_kw
     )
 list_offsets   = Lump('list offsets',
-    SUB_STRUCT=LUInt32('offset'),
-    **oe_offs_lump_kw
+    SUB_STRUCT=LUInt32('offset'), **oe_offs_lump_kw
     )
 string_list_array = Lump('string lists',
     SUB_STRUCT=string_list, **lump_kw
     )
 #These offsets point to the start of each string list defs name in the DEFS lump
 list_def_offsets   = Lump('list def offsets',
-    SUB_STRUCT=LUInt32('offset'),
-    **lump_kw
+    SUB_STRUCT=LUInt32('offset'), **lump_kw
     )
 #These offsets point to the start of each string defs name in the DEFS lump
 string_def_offsets = Lump('string def offsets',
-    SUB_STRUCT=LUInt32('offset'),
-    **lump_kw
+    SUB_STRUCT=LUInt32('offset'), **lump_kw
     )
 
 
