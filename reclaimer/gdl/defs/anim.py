@@ -4,9 +4,9 @@ from ..fields import *
 from .objs.anim import AnimPs2Tag
 
 def get():
-    return AnimPs2Def
+    return anim_ps2_def
 
-AnimPs2Def = TagDef( NAME='GDL_Anim_Resource',
+anim_ps2_def = TagDef( NAME='gdl anim resource',
                      
                      ext=".ps2", def_id="anim",
                      tag_cls=AnimPs2Tag, incomplete=True
