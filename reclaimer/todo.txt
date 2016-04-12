@@ -4,7 +4,14 @@ High Priority:
 
 Finish docstrings for modules and update existing ones.
 
-Make it so that a definitions folder must be located in the same module as __main__
+Need to make it so that readers/writers/decoders/encoders have better
+handling of exceptions and give better details regarding the exception.
+    Do this for the whole library in general where necessary
+
+    Place try/except around all encoding routines to catch and report errors better
+
+Make sanitization function an attribute in the Field_Type under the name "Sanitizer".
+    The Field_Type.Sanitizer() will get called whenever encountered in a descriptor
 
 Medium Priority:
 
@@ -28,15 +35,6 @@ block which has methods for reading and editing the data of the inner block(s).
     Another would be a wrapper for ip addressing that treats a series of 4 bytes
     either 4 unsigned 8-bit ints, or a string in the format "AAA.BBB.CCC.DDD"
 
-Need to make it so that readers/writers/decoders/encoders have better
-handling of exceptions and give better details regarding the exception.
-    Do this for the whole library in general where necessary
-
-    Place try/except around all encoding routines to catch and report errors better
-
-Make sanitization function an attribute in the Field_Type under the name "Sanitizer".
-    The Field_Type.Sanitizer() will get called whenever encountered in a descriptor
-
 
 Low Priority:
 
@@ -55,6 +53,8 @@ Implement recursive pointer based blocks.
     block in the dictionary is used instead of reading it from the file again.
 
     Make it so that Pointer32/64 are set to 0 when their pointed to block DNE
+
+Make it so that a definitions folder must be located in the same module as __main__
 
 
 

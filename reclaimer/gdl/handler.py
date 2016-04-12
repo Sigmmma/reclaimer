@@ -18,8 +18,8 @@ class GdlHandler(TagTestHandler):
         def_id, ext = splitext(def_id)
         def_id, ext = def_id.lower(), ext.lower()
         
-        if ext == '.xbe':
-            def_id = 'xbe'
+        if ext in ('.xbe','.rom'):
+            def_id = ext[1:]
             
         if def_id in self.defs:
             return def_id
