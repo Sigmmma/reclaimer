@@ -4,12 +4,23 @@ from .fields import *
 def lump_fcc(value):
     return fcc(value, 'big')
 
+def find_index(parent, block):
+    '''Need a custom function that checks the id of a
+    block to find which index it's in. list.index()
+    decides on a match by content rather than id().'''
+    block_id = id(block)
+    for i in range(len(parent)):
+        if id(list.__getitem__(parent, i)) == block_id:
+            return i
+    return None
+    
+
 def get_lump_type(block=None, parent=None, attr_index=None,
                   rawdata=None, new_value=None, *args, **kwargs):
     if block and parent is None:
         parent = block.PARENT
     if attr_index is None:
-        attr_index = parent.index(block)
+        attr_index = find_index(parent, block)
     if parent is None or attr_index is None:
         raise KeyError
     return parent.get_tag().data.lump_headers[attr_index].lump_id.data_name
@@ -19,10 +30,7 @@ def lump_size(block=None, parent=None, attr_index=None,
     if block and parent is None:
         parent = block.PARENT
     if attr_index is None:
-        try:
-            attr_index = parent.index(block)
-        except ValueError:
-            return 0
+        attr_index = find_index(parent, block)
     if parent is None or attr_index is None:
         return 0
     header = parent.get_tag().data.lump_headers[attr_index]
@@ -35,10 +43,7 @@ def lump_pointer(block=None, parent=None, attr_index=None,
     if block and parent is None:
         parent = block.PARENT
     if attr_index is None:
-        try:
-            attr_index = parent.index(block)
-        except ValueError:
-            return 0
+        attr_index = find_index(parent, block)
     if parent is None or attr_index is None:
         return 0
     header = parent.get_tag().data.lump_headers[attr_index]
@@ -91,7 +96,7 @@ lump_header = Struct('lump header',
         ),
     LPointer32('lump array pointer'),
     LUInt32('lump array length'),
-    LUInt32('unknown'),
+    LUInt32('lump array length2'),
     )
 
 lump_headers = Array('lump headers',
