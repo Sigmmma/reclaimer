@@ -14,10 +14,11 @@ item_type = LUEnum32('type',
     ('ten armor', 7),
     ('ten magic', 8),
 
-    ('reflect shield', 9),
-    ('phoenix',       10),
-    ('rapid fire',    11),
-    ('three way shot',    12),
+    ('reflect shield',  9),
+    ('phoenix',        10),
+    ('rapid fire',     11),
+    ('three way shot', 12),
+    ('five way shot',  34),
 
     ('hammer',        13),
     ('elec shield',   14),
@@ -26,6 +27,9 @@ item_type = LUEnum32('type',
     ('food',     17),
     ('levitate', 18),
     ('growth',   19),
+    ('growth2',  4),
+    ('speed', 28),
+    ('enemy shrink', 29),
 
     ('fire amulet',  20),
     ('elec amulet',  21),
@@ -40,6 +44,7 @@ item_type = LUEnum32('type',
 
     ('invisibility', 30),
     ('invulnerable', 31),
+    ('gold invulnerable', 16),
     ('x-ray',    32),
     ('gas mask', 33),
 
@@ -47,12 +52,8 @@ item_type = LUEnum32('type',
     ('hand-of-death', 36),
     ('health vampire', 37),
     ('mikey dummy', 38),
-
-    ('unknown1', 4),
-    ('unknown2', 16),
-    ('unknown3', 28),
-    ('unknown4', 29),
-    ('unknown5', 34),
+    #the next 20 items after 38 act like exit,
+    #so im assuming all other values do as well
     )
 
 item = Struct('item',

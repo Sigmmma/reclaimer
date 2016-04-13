@@ -59,10 +59,12 @@ oe_offs_lump_kw = {SIZE:get_oe_offs_lump_size, POINTER:lump_pointer}
 #############################
 
 string_message = Struct('string message',
-    #These define which strings(specified by TOFF)
-    #are grouped into sets. For example, all of one
-    #boss's hints are in one STRS block. "first"
-    #specifies which TOFF the grouping starts at
+    #These define which strings(specified by TOFF) are grouped into messages.
+
+    #For example, all of a single boss's hints are in one STRS block.
+
+    #"first" specifies which string the grouping starts at.
+
     #Font is the numerical ID of the font to use
     #which should match a FONT block "fontid"
     LSInt32('num',   GUI_NAME='number of strings'),
@@ -73,6 +75,13 @@ string_message = Struct('string message',
     )
 
 string_list = Struct('string list',
+    #These define which string offsets are grouped together into lists.
+
+    #For example, all of the rune hints are in one
+    #string list, all of the boss hints are in another,
+    #list, and all of the general hints are in another.
+
+    #"first" specifies which string offset the list starts at.
     LSInt32('num',   GUI_NAME='number of strings'),
     LSInt32('first', GUI_NAME='first string index'),
     )
@@ -91,23 +100,50 @@ font_array = Lump('fonts',
     SUB_STRUCT=font, **lump_kw
     )
 string_offsets = Lump('string offsets',
+    #An array of UInt32 offsets to the null
+    #terminated strings within the TEXT lump
     SUB_STRUCT=LUInt32('offset'), **oe_offs_lump_kw
     )
 string_message_array = Lump('string messages',
     SUB_STRUCT=string_message, **lump_kw
     )
 list_offsets   = Lump('list offsets',
+    #These are less like offsets, and more of an ordering.
+    #This is a list how the string messages should be ordered.
+
+    #For example, the first 13 offsets in HINTS_E.ROM are:
+    #11, 7, 1, 0, 4, 3, 2, 5, 6, 8, 9, 10, and 11
+    #Using this to reorder the first 13 string lists
+    #gives the string lists in this ordering:
+
+    #NOBOSSHINT
+    #LICHHINTS
+    #DRAGONHINTS
+    #CHIMERAHINTS
+    #PLAGUEHINTS
+    #DRIDERHINTS
+    #DJINNHINTS
+    #YETIHINTS
+    #WRAITHHINTS
+    #SKORNE1HINTS
+    #SKORNE2HINTS
+    #GARMHINTS
+    #NOBOSSHINT
+
+    #which is the order that the boss hints would be given ingame
     SUB_STRUCT=LUInt32('offset'), **oe_offs_lump_kw
     )
 string_list_array = Lump('string lists',
     SUB_STRUCT=string_list, **lump_kw
     )
-#These offsets point to the start of each string list defs name in the DEFS lump
 list_def_offsets   = Lump('list def offsets',
+    #These offsets point to the start of each
+    #string list defs name in the DEFS lump
     SUB_STRUCT=LUInt32('offset'), **lump_kw
     )
-#These offsets point to the start of each string defs name in the DEFS lump
 string_def_offsets = Lump('string def offsets',
+    #These offsets point to the start of each
+    #string defs name in the DEFS lump
     SUB_STRUCT=LUInt32('offset'), **lump_kw
     )
 
