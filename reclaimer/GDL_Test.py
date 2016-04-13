@@ -25,8 +25,8 @@ try:
     if objs is not None:
         for filepath in objs:
             print("Size of: "+filepath+" = ", objs[filepath].data.binsize)
-            objs[filepath].pprint(show=('name', 'value', 'children',
-                                        'flags', 'field', 'offset',
+            objs[filepath].pprint(show=('name', 'value', 'children', 'index',
+                                        'flags', 'field', 'offset', 'size',
                                         'raw'),#, 'all'),
                                   printout=True)
     input()
