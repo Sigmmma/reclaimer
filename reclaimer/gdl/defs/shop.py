@@ -2,7 +2,7 @@ from supyr_struct.defs.tag_def import TagDef
 from ..common_descriptors import *
 from ..fields import *
 
-def get(): return shop_wad_def
+def get(): return shop_def
 
 item_type = LUEnum32('type',
     ('exit',   0),
@@ -69,7 +69,7 @@ item_array = Lump('items',
     SUB_STRUCT=item, SIZE=lump_size, POINTER=lump_pointer
     )
 
-shop_wad_def = TagDef(
+shop_def = TagDef(
     rom_header,
     lump_headers,
 
