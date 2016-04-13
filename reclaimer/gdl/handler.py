@@ -19,7 +19,12 @@ class GdlHandler(TagTestHandler):
         def_id, ext = def_id.lower(), ext.lower()
         
         if ext in ('.xbe','.rom'):
-            def_id = ext[1:]
-            
+            return ext[1:]
+        elif ext == '.wad':
+            if def_id in 'jacjesknimedminogrsortigunivalwarwiz':
+                return 'pdata'
+            elif def_id in ('battlecastledesertdreamforesthell'+
+                            'icemountsecretskytempletesttowertown'):
+                return 'wdata'
         if def_id in self.defs:
             return def_id
