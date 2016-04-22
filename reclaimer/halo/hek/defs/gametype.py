@@ -1,171 +1,309 @@
 '''
-    adapted from source file located here
+    Adapted from source files located here
     https://github.com/Halogen002/Flare-Qt
+
+    My thanks go to Halogen002 for providing me with
+    the information I needed to write this definition.
+    I extended it to include xbox gametypes as well
 '''
 
-typedef uint16_t unichar;
+from ...common_descriptors import *
+from supyr_struct.defs.tag_def import TagDef
+from .objs.gametype import GametypeTag
 
-typedef struct HaloVehicleSpawn {
-    unsigned int type : 4;
-    unsigned int warthogs : 3;
-    unsigned int ghosts : 3;
-    unsigned int scorpions : 3;
-    unsigned int rocket_warthogs : 3;
-    unsigned int banshees : 3;
-    unsigned int gun_turrets : 3;
-    unsigned int padding : 10;
-} HaloVehicleSpawn;
+def get(): return gametype_def
 
-typedef struct HaloPlayerSetting {
-    unsigned int playerOnRadar : 1;
-    unsigned int friendOnHud : 1;
-    unsigned int infiniteGrenades : 1;
-    unsigned int shieldsDisabled : 1;
-    unsigned int invisible : 1;
-    unsigned int weaponsGeneric : 1;
-    unsigned int hideEnemiesFromRadar : 1;
-    unsigned int padding : 25;
-} HaloPlayerSetting;
+def is_xbox_gametype(block=None, parent=None, attr_index=None,
+                     rawdata=None, new_value=None, *args, **kwargs):
+    if parent is None:
+        parent = block.PARENT
+    return parent.get_tag().is_xbox
 
-typedef struct HaloGametypeBase {
-    unichar name[24]; #0 - null terminated
-    int32_t gametype; #0x30 - 1 = CTF, 2 = Slayer, 3 = Oddball, 4 = King, 5 = Race
-    int32_t team_play; #0x34 - 0/1
-    HaloPlayerSetting player_settings;   #0x38 - BITMASK: 0 = players on radar, 1 = friends on hud, 2 = infinite grenades, 3 = shields disabled, 4 = invisible, 5 = weapons generic, 6 don't show enemies on radar
-    int32_t objective_indicator; #0x3C - 0 = motion tracker, 1 = NAV point, 2 = none
-    int32_t odd_man_out; #0x40 - 0/1
-    int32_t respawn_time_growth; #0x44 - ticks
-    int32_t respawn_time; #0x48 - ticks - 0 or less is "instant" (3 seconds), respawning caps at 300 seconds
-    int32_t respawn_suicide_penalty; #0x4C - ticks
-    int32_t lives; #0x50 - 0 = unlimited
-    float health; #0x54 - can be anywhere from 50% to 400%
-    int32_t score_limit; #0x58 - CTF = flags, Slayer = kills, King = minutes, Oddball = points/minutes, Race = laps
-    int32_t weapon_type; #0x5C - 0 = default, 1 = pistols, 2 = rifles, 3 = plasma rifles, 4 = sniper, 5 = no sniper, 6 = rocket launchers, 7 = shotguns, 8 = short range, 9 = human, 10 = covenant, 11 = classic, 12 = heavy weapons
+##################################################
+'''Shared enumerators, booleans, and bitstructs'''
+##################################################
 
-    #VEHICLES
-    HaloVehicleSpawn vehicle_red; #0x60
-    HaloVehicleSpawn vehicle_blue; #0x64
-    #__________TTTBBBRRRSSSGGGWWWoooo - Vehicles are stored as a bitmask (each letter is a bit); oooo = mode (0 = default, 1 = none, 2 = warthogs, 3 = ghosts, 4 = scorpions, 5 = rocket warthogs, 6 = banshees, 7 = gun turrets, 8 = custom); WWW = warthog count; GGG = ghost count; SSS = scorpion count; RRR = rocket warthog count; BBB = banshee count; TTT = gun turret count. Maximum 7.
+enum_off_on = LUEnum32('',
+    'off',
+    'on',
+    )
+#why is is that two of the slayer specific booleans reverse the truthyness?
+enum_on_off = LUEnum32('',
+    'on',
+    'off',
+    )
 
-    int32_t vehicle_respawn_time; #0x68 - ticks
-    int32_t friendly_fire; #0x6C - 0 = off, 1 = on, 2 = shields, 3 = explosions
-    int32_t respawn_betrayal_penalty; #0x70 - ticks
-    int32_t auto_team_balance; #0x74 - 0/1
-    int32_t time_limit; #0x78 - ticks
-} HaloGametypeBase;
+speed_with_ball = LUEnum32('speed with ball',
+    'slow',
+    'normal',
+    'fast',
+    )
 
-typedef struct HaloGametypeEnd {
-    uint32_t crc32; #0x98
-    char ce_padding[0x3C]; #0x9C
-    uint32_t crc32_ce; #0xD8
-    char padding[0x1F24]; #0xDC
-} HaloGametypeEnd;
+trait_with_ball = LUEnum32('trait with ball',
+    'none',
+    'invisible',
+    'extra damage',
+    'damage resistance',
+    )
 
-typedef struct HaloGametypeCTF {
-    HaloGametypeBase base; #0x0
-    char assault; #0x7C - 0/1
-    char unknown; #0x7D
-    char flag_must_reset; #0x7E - 0/1
-    char flag_must_be_at_home; #0x7F - 0/1
-    int32_t single_flag_time; #0x80 - ticks
-    int32_t padding[5]; #0x84
-    HaloGametypeEnd end; #0x98
-} HaloGametypeCTF;
+trait_without_ball = LUEnum32('trait without ball',
+    'none',
+    'invisible',
+    'extra damage',
+    'damage resistance',
+    )
 
-typedef struct HaloGametypeSlayer {
-    HaloGametypeBase base; #0x0
-    char death_bonus; #0x7C - 0/1
-    char kill_penalty; #0x7D - 0/1
-    char kill_in_order; #0x7E - 0/1
-    char nothing; #0x7F - 0/1
-    int32_t padding[6]; #0x80
-    HaloGametypeEnd end; #0x98
-} HaloGametypeSlayer;
+ball_type = LUEnum32('ball type',
+    'normal',
+    'reverse tag',
+    'juggernaut',
+    )
 
-typedef struct HaloGametypeKing {
-    HaloGametypeBase base; #0x0
-    char moving_hill; #0x7C - 0/1
-    char nothing[3]; #0x7D
-    int32_t padding[6]; #0x80
-    HaloGametypeEnd end; #0x98
-} HaloGametypeKing;
+race_order = UEnum8('order',
+    'normal',
+    'any order',
+    'rally',
+    )
 
-typedef struct HaloGametypeOddball {
-    HaloGametypeBase base; #0x0
-    char random_ball; #0x7C
-    char nothing[3]; #0x7D
-    int32_t speed_with_ball; #0x80 - 0 = slow, 1 = normal, 2 = fast
-    int32_t trait_with_ball; #0x84 - 0 = none, 1 = invisible, 2 = extra damage, 3 = damage resistance
-    int32_t trait_without_ball; #0x88 - 0 = none, 1 = invisible, 2 = extra damage, 3 = damage resistance
-    int32_t ball_type; #0x8C - 0 = normal, 1 = reverse tag, 2 = juggernaut
-    int32_t ball_count; #0x90
-    int32_t padding; #0x94
-    HaloGametypeEnd end; #0x98
-} HaloGametypeOddball;
+race_points_used = LUEnum32('points used',
+    'minimum',
+    'maximum',
+    'sum'
+    )
 
-typedef struct HaloGametypeRace {
-    HaloGametypeBase base; #0x0
-    char order; #0x7C
-    char nothing[3]; #0x7D
-    int32_t pointsUsed; #0x80 - 0 = minimum, 1 = maximum, 2 = sum
-    int32_t padding[5]; #0x84
-    HaloGametypeEnd end; #0x98
-} HaloGametypeRace;
+vehicle_spawn = LBitStruct("vehicle spawn",
+    BitUEnum('vehicle type',
+        'default',
+        'none',
+        'warthogs',
+        'ghosts',
+        'scorpions',
+        'rocket warthogs',
+        'banshees',
+        'gun turrets',
+        'custom',
+        SIZE=4,
+        ),
+    BitUInt('warthogs',  SIZE=3),
+    BitUInt('ghosts',    SIZE=3),
+    BitUInt('scorpions', SIZE=3),
+    BitUInt('rocket warthogs', SIZE=3),
+    BitUInt('banshees',  SIZE=3),
+    BitUInt('gun turrets', SIZE=3),
+    SIZE=4,
+    )
 
-typedef struct HaloGametype {
-    HaloGametypeBase base; #0x0
-    char settings[4]; #0x7C
-    int32_t moresettings[6]; #0x80
-    HaloGametypeEnd end; #0x98
-} HaloGametype;
+player_setting = LBool32("player setting",
+    'radar enabled',
+    'friend on hud',
+    'infinite grenades',
+    'shields disabled',
+    'invisible',
+    'generic weapons',
+    'enemies not on radar',
+    )
 
-typedef enum HaloGametypeType {
-    GAMETYPE_CTF = 1,
-    GAMETYPE_SLAYER = 2,
-    GAMETYPE_ODDBALL = 3,
-    GAMETYPE_KING = 4,
-    GAMETYPE_RACE = 5
-} HaloGametypeType;
+game_type = LUEnum32('game type',
+    ('ctf', 1),
+    ('slayer', 2),
+    ('oddball', 3),
+    ('king', 4),
+    ('race', 5),
+    )
 
-typedef enum {
-    VEHICLE_DEFAULT = 0,
-    VEHICLE_NONE = 1,
-    VEHICLE_WARTHOGS = 2,
-    VEHICLE_GHOSTS = 3,
-    VEHICLE_SCORPIONS = 4,
-    VEHICLE_ROCKET_WARTHOGS = 5,
-    VEHICLE_BANSHEES = 6,
-    VEHICLE_GUN_TURRETS = 7,
-    VEHICLE_CUSTOM = 8
-} HaloVehicleType;
+objective_indicator = LUEnum32('objective indicator',
+    'motion tracker',
+    'nav point',
+    'none',
+    )
+
+weapon_type = LUEnum32('weapon type',
+    'default',
+    'pistols',
+    'rifles',
+    'plasma rifles',
+    'sniper',
+    'no sniper',
+    'rocket launchers',
+    'shotguns',
+    'short range',
+    'human',
+    'covenant',
+    'classic',
+    'heavy weapons',
+    )
+
+friendly_fire = LUEnum32('friendly fire',
+    'off',
+    'on',
+    'shields',
+    'explosions',
+    )
+
+vehicle_type = LUEnum32('vehicle type',
+    'all',
+    'none',
+    'warthog',
+    'ghost',
+    'scorpion',
+    )
+
+##################################################
+'''Structs for each of the different game types'''
+##################################################
+
+ctf_settings = Struct('ctf settings',
+    UEnum8('assault', INCLUDE=enum_off_on),
+    UInt8('unknown'),
+    UEnum8('flag must reset', INCLUDE=enum_off_on),
+    UEnum8('flag must be at home', INCLUDE=enum_off_on),
+    LUInt32('single_flag_time'),# ticks
+    SIZE=28,
+    )
+
+slayer_settings = Struct('slayer settings',
+    UEnum8('death bonus',   INCLUDE=enum_on_off),
+    UEnum8('kill penalty',  INCLUDE=enum_on_off),
+    UEnum8('kill in order', INCLUDE=enum_off_on),
+    SIZE=28,
+    )
+
+oddball_settings = Struct('oddball settings',
+    UEnum8('random ball', INCLUDE=enum_off_on),
+    Pad(3),
+    speed_with_ball,
+    trait_with_ball,
+    trait_without_ball,
+    ball_type,
+    LUInt32('ball_count'),
+    SIZE=28,
+    )
+
+king_settings = Struct('king settings',
+    UEnum8('moving hill', INCLUDE=enum_off_on),
+    SIZE=28,
+    )
+
+race_settings = Struct('race settings',
+    race_order,
+    Pad(3),
+    race_points_used,
+    SIZE=28,
+    )
+
+unknown_settings = Struct('unknown settings',
+    BytesRaw('settings', SIZE=4),
+    BytesRaw('more settings', SIZE=24),
+    SIZE=28,
+    )
 
 
-uint32_t calculateGametypeChecksum(const void *gametype) {
-    return 0xFFFFFFFF - crc32(0,gametype,0x98);
-}
+xbox_gametype_header = Struct("gametype header",
+    LStrUtf16('name', SIZE=24),
+    game_type,
+    LUEnum32('teamplay', INCLUDE=enum_off_on),
+    player_setting,
+    objective_indicator,
+    LUEnum32('odd man out', INCLUDE=enum_off_on),
 
-uint32_t calculateCEGametypeChecksum(const void *gametype) {
-    return 0xFFFFFFFF - crc32(0,gametype,0xD8);
-}
+    LUInt32('respawn time growth'), #ticks
+    LUInt32('respawn time'),
+    #   ticks - 0 or less is "instant" (3 seconds)
+    #   respawning caps at 300 seconds
+    LUInt32('respawn suicide penalty'), #ticks
+    LUInt32('lives'), #0 = unlimited
+    LFloat('health', MIN=0.5, MAX=4.0),
+    LUInt32('score limit'),
+    #   ctf     = flags
+    #   slayer  = kills
+    #   king    = minutes
+    #   oddball = points/minutes
+    #   race    = laps
+    weapon_type,
+    vehicle_type,
+    SIZE=76,
+    )
 
-void convertCEGametypeToPC(void *gametype) {
-    memcpy(gametype + 0x7C,gametype+0x9C,0x18);
-    memset(gametype + 0x9C,0,0x18);
-    memcpy(gametype + 0x94,gametype+0xD4,0x08);
-    memset(gametype + 0xD4,0,0x08);
-}
 
-void convertPCGametypeToCE(void *gametype) {
-    memcpy(gametype + 0xD4,gametype+0x94,0x08);
-    memset(gametype + 0x94,0,0x08);
-    memcpy(gametype + 0x9C,gametype+0x7C,0x18);
-    memset(gametype + 0x7C,0,0x18);
-}
+pc_gametype_header = Struct("gametype header",
+    LStrUtf16('name', SIZE=48),
+    game_type,
+    LUEnum32('teamplay', INCLUDE=enum_off_on),
+    player_setting,
+    objective_indicator,
+    LUEnum32('odd man out', INCLUDE=enum_off_on),
 
-void convertPCGametypeToHybrid(void *gametype) {
-    memcpy(gametype + 0xD4,gametype + 0x94,0x08);
-    memcpy(gametype + 0x9C,gametype + 0x7C,0x18);
-}
+    LUInt32('respawn time growth'), #ticks
+    LUInt32('respawn time'),
+    #   ticks - 0 or less is "instant" (3 seconds)
+    #   respawning caps at 300 seconds
+    LUInt32('respawn suicide penalty'), #ticks
+    LUInt32('lives'), #0 = unlimited
+    LFloat('health', MIN=0.5, MAX=4.0),
+    LUInt32('score limit'),
+    #   ctf     = flags
+    #   slayer  = kills
+    #   king    = minutes
+    #   oddball = points/minutes
+    #   race    = laps
+    weapon_type,
 
-#LOOK HERE FOR CRC32 CODE
-#https://github.com/Halogen002/Flare-Qt/blob/master/crc32.c
+    LBitStruct('red vehicles',  INCLUDE=vehicle_spawn),
+    LBitStruct('blue vehicles', INCLUDE=vehicle_spawn),
+
+    LUInt32('vehicle respawn time'), #ticks
+    friendly_fire,
+    LUInt32('respawn betrayal penalty'), #ticks
+    LUEnum32('auto team balance', INCLUDE=enum_off_on),
+    LUInt32('time limit'), #ticks
+    SIZE=124,
+    )
+
+xbox_gametype_footer = Container('gametype footer',
+    BytesRaw('padding', SIZE=408),
+    )
+
+pc_gametype_footer = Struct('gametype footer',
+    LUInt32('crc 32'),
+    #its possible to make a gametype platform independent by keeping
+    #a copy of the settings here as well in a bytearray buffer
+    BytearrayRaw('hybrid settings', SIZE=28),
+    Pad(32),
+    LUInt32('crc 32 ce'),
+    Pad(7972),
+    )
+
+
+header_switch = Switch('gametype header',
+    DEFAULT=pc_gametype_header,
+    CASE=is_xbox_gametype,
+    CASES={True:xbox_gametype_header},
+    )
+
+settings_switch = Switch('gametype settings',
+    DEFAULT=unknown_settings,
+    CASE='.gametype_header.game_type.data_name',
+    CASES={ 'ctf':ctf_settings,
+            'slayer':slayer_settings ,
+            'oddball':oddball_settings,
+            'king':king_settings,
+            'race':race_settings,
+        },
+    )
+
+footer_switch = Switch('gametype footer',
+    DEFAULT=pc_gametype_footer,
+    CASE=is_xbox_gametype,
+    CASES={True:xbox_gametype_footer},
+    )
+
+
+gametype_def = TagDef(
+    header_switch,
+    settings_switch,
+    footer_switch,
+    
+    NAME='halo gametype',
+    
+    def_id='gametype', ext='.lst', endian='<', tag_cls = GametypeTag,
+    )
