@@ -2,8 +2,7 @@ from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.bitm import BitmTag
 
-def get():
-    return BitmDef
+def get(): return bitm_def
 
 pixel_root = Array('pixel root',
     SUB_STRUCT=Array('bitmap pixels',
@@ -158,6 +157,6 @@ bitm_def = TagDef(
     
     NAME="bitmap",
     
-    ext=".bitmap", def_id="bitm", endian=">",
+    ext=".bitmap", def_id="bitm", endian=">", tag_cls = BitmTag,
     subdefs = {'pixel_root':pixel_root}
     )

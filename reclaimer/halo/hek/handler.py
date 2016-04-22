@@ -1,5 +1,5 @@
 from hashlib import md5
-from os.path import basename, exists, normpath
+from os.path import basename, exists, normpath, splitext
 
 from supyr_struct.test import TagTestHandler
 from supyr_struct.buffer import BytearrayBuffer
@@ -11,105 +11,100 @@ class HaloHandler(TagTestHandler):
     default_tag_cls   = HekTag
     default_defs_path = "reclaimer.halo.hek.defs"
 
-    #used whenever we need to know the extension of a tag based
-    #on it's FourCC all 83 Halo 1 tag types are defined below
-    id_ext_map = {'\x00\x00\x00\x00':'.unknown_tag',
-                  '\xff\xff\xff\xff':'.unknown_tag',
-                  'actr':".actor",                              #NEED
-                  'actv':".actor_varient",                      #NEED
-                  'ant!':".antenna",                            #NEED
-                  'bipd':".biped",                              #NEED
-                  'bitm':".bitmap",
-                  'trak':".camera_track",
-                  'colo':".color_table",
-                  'cdmg':".continuous_damage_effect",           #NEED
-                  'cont':".contrail",                           #NEED
-                  'deca':".decal",                              #NEED
-                  'udlg':".dialogue",                           #NEED
-                  'dobc':".detail_object_collection",           #NEED
-                  'devi':".device",
-                  'ctrl':".device_control",                     #NEED
-                  'lifi':".device_light_fixture",               #NEED
-                  'mach':".device_machine",                     #NEED
-                  'jpt!':".damage_effect",                      #NEED
-                  'effe':".effect",                             #NEED
-                  'eqip':".equipment",                          #NEED
-                  'flag':".flag",
-                  'fog ':".fog",
-                  'font':".font",                               #NEED
-                  'garb':".garbage",                            #NEED
-                  'mod2':".gbxmodel",                           #NEED
-                  'matg':".globals",                            #NEED
-                  'glw!':".glow",                               #NEED
-                  'grhi':".grenade_hud_interface",              #NEED
-                  'hudg':".hud_globals",                        #NEED
-                  'hmt ':".hud_message_text",
-                  'hud#':".hud_number",
-                  'devc':".input_device_defaults",
-                  'item':".item",
-                  'itmc':".item_collection",
-                  'lens':".lens_flare",                         #NEED
-                  'ligh':".light",                              #NEED
-                  'mgs2':".light_volume",                       #NEED
-                  'elec':".lightning",                          #NEED
-                  'foot':".material_effects",
-                  'metr':".meter",
-                  'mode':".model",                              #NEED
-                  'antr':".model_animations",
-                  'coll':".model_collision_geometry",           #NEED
-                  'mply':".multiplayer_scenario_description",
-                  'obje':".object",                             #----
-                  'part':".particle",                           #NEED
-                  'pctl':".particle_system",                    #NEED
-                  'phys':".physics",                            #NEED
-                  'plac':".placeholder",                        #NEED
-                  'pphy':".point_physics",
-                  'ngpr':".preferences_network_game",
-                  'proj':".projectile",                         #NEED
-                  'scnr':".scenario",                           #NEED
-                  'sbsp':".scenario_structure_bsp",             #NEED
-                  'scen':".scenery",                            #NEED
-                  'snd!':".sound",                              #NEED
-                  'snde':".sound_environment",
-                  'lsnd':".sound_looping",                      #NEED
-                  'ssce':".sound_scenery",                      #NEED
-                  'boom':".spheroid",
-                  'shdr':".shader",
-                  'schi':".shader_transparent_chicago",
-                  'scex':".shader_transparent_chicago_extended",
-                  'sotr':".shader_transparent_generic",         #NEED
-                  'senv':".shader_environment",
-                  'sgla':".shader_transparent_glass",
-                  'smet':".shader_transparent_meter",
-                  'soso':".shader_model",
-                  'spla':".shader_transparent_plasma",
-                  'swat':".shader_transparent_water",
-                  'sky ':".sky",                                #NEED
-                  'str#':".string_list",
-                  'tagc':".tag_collection",
-                  'Soul':".ui_widget_collection",
-                  'DeLa':".ui_widget_definition",               #NEED
-                  'ustr':".unicode_string_list",
-                  'unit':".unit",                               #----
-                  'unhi':".unit_hud_interface",                 #NEED
-                  'vehi':".vehicle",                            #NEED
-                  'vcky':".virtual_keyboard",                   #NEED
-                  'weap':".weapon",                             #NEED
-                  'wphi':".weapon_hud_interface",               #NEED
-                  'rain':".weather_particle_system",            #NEED
-                  'wind':".wind"
-                  }
-
-    ext_id_map = {}
-
-    for key in id_ext_map.keys():
-        ext_id_map[id_ext_map[key]] = key
+    '''
+    'actr':".actor",                              #NEED
+    'actv':".actor_varient",                      #NEED
+    'ant!':".antenna",                            #NEED
+    'bipd':".biped",                              #NEED
+    'bitm':".bitmap",
+    'trak':".camera_track",
+    'colo':".color_table",
+    'cdmg':".continuous_damage_effect",           #NEED
+    'cont':".contrail",                           #NEED
+    'deca':".decal",                              #NEED
+    'udlg':".dialogue",                           #NEED
+    'dobc':".detail_object_collection",           #NEED
+    'devi':".device",
+    'ctrl':".device_control",                     #NEED
+    'lifi':".device_light_fixture",               #NEED
+    'mach':".device_machine",                     #NEED
+    'jpt!':".damage_effect",                      #NEED
+    'effe':".effect",                             #NEED
+    'eqip':".equipment",                          #NEED
+    'flag':".flag",
+    'fog ':".fog",
+    'font':".font",                               #NEED
+    'garb':".garbage",                            #NEED
+    'mod2':".gbxmodel",                           #NEED
+    'matg':".globals",                            #NEED
+    'glw!':".glow",                               #NEED
+    'grhi':".grenade_hud_interface",              #NEED
+    'hudg':".hud_globals",                        #NEED
+    'hmt ':".hud_message_text",
+    'hud#':".hud_number",
+    'devc':".input_device_defaults",
+    'item':".item",
+    'itmc':".item_collection",
+    'lens':".lens_flare",                         #NEED
+    'ligh':".light",                              #NEED
+    'mgs2':".light_volume",                       #NEED
+    'elec':".lightning",                          #NEED
+    'foot':".material_effects",
+    'metr':".meter",
+    'mode':".model",                              #NEED
+    'antr':".model_animations",
+    'coll':".model_collision_geometry",           #NEED
+    'mply':".multiplayer_scenario_description",
+    'obje':".object",                             #----
+    'part':".particle",                           #NEED
+    'pctl':".particle_system",                    #NEED
+    'phys':".physics",                            #NEED
+    'plac':".placeholder",                        #NEED
+    'pphy':".point_physics",
+    'ngpr':".preferences_network_game",
+    'proj':".projectile",                         #NEED
+    'scnr':".scenario",                           #NEED
+    'sbsp':".scenario_structure_bsp",             #NEED
+    'scen':".scenery",                            #NEED
+    'snd!':".sound",                              #NEED
+    'snde':".sound_environment",
+    'lsnd':".sound_looping",                      #NEED
+    'ssce':".sound_scenery",                      #NEED
+    'boom':".spheroid",
+    'shdr':".shader",
+    'schi':".shader_transparent_chicago",
+    'scex':".shader_transparent_chicago_extended",
+    'sotr':".shader_transparent_generic",         #NEED
+    'senv':".shader_environment",
+    'sgla':".shader_transparent_glass",
+    'smet':".shader_transparent_meter",
+    'soso':".shader_model",
+    'spla':".shader_transparent_plasma",
+    'swat':".shader_transparent_water",
+    'sky ':".sky",                                #NEED
+    'str#':".string_list",
+    'tagc':".tag_collection",
+    'Soul':".ui_widget_collection",
+    'DeLa':".ui_widget_definition",               #NEED
+    'ustr':".unicode_string_list",
+    'unit':".unit",                               #----
+    'unhi':".unit_hud_interface",                 #NEED
+    'vehi':".vehicle",                            #NEED
+    'vcky':".virtual_keyboard",                   #NEED
+    'weap':".weapon",                             #NEED
+    'wphi':".weapon_hud_interface",               #NEED
+    'rain':".weather_particle_system",            #NEED
+    'wind':".wind"
+    '''
 
     def __init__(self, *args, **kwargs):
         TagTestHandler.__init__(self, *args, **kwargs)
 
         #remove the autogenerated ID_Ext_Map to use the above one
-        del self.__dict__['id_ext_map']
+        #del self.__dict__['id_ext_map']
+        self.ext_id_map = {}
+        for key in self.id_ext_map.keys():
+            self.ext_id_map[self.id_ext_map[key]] = key
             
         if "Default_Conversion_Flags" in kwargs:
             self.Default_Conversion_Flags = kwargs["Default_Conversion_Flags"]
@@ -202,6 +197,14 @@ class HaloHandler(TagTestHandler):
         
 
     def get_def_id(self, filepath):
+        if not filepath.startswith('.') and '.' in filepath:
+            ext = splitext(filepath)[-1].lower()
+        else:
+            ext = filepath.lower()
+
+        if ext in self.ext_id_map:
+            return self.ext_id_map[ext]
+
         '''It is more reliable to determine a Halo tag
         based on its 4CC def_id than by file extension'''
         try:

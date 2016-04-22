@@ -10,6 +10,13 @@ handling of exceptions and give better details regarding the exception.
 
     Place try/except around all encoding routines to catch and report errors better
 
+    Make it so when an error is first raised, a special exception type is raised with
+    an appended message saying which block the exception occurred while trying to read.
+        The error text can be like:
+            "Exception occurred while trying to read '%s'" % b_desc.get(NAME)
+        and for every reader outside of it an additonal string will be appended to
+        the error saying " in '%s'" % b_desc.get(NAME)
+
 Make sanitization function an attribute in the Field_Type under the name "Sanitizer".
     The Field_Type.Sanitizer() will get called whenever encountered in a descriptor
 
