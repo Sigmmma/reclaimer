@@ -4,7 +4,7 @@ from .objs.soso import SosoTag
 
 os_soso_ext = Struct("shader model extension",
     #Specular Color
-    TagIndexRef("specular color map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("specular color map", valid_bitmaps),
     BFloat("specular color coefficient"),
     Pad(4),
     BFloat("specular color exponent"),
@@ -14,18 +14,18 @@ os_soso_ext = Struct("shader model extension",
                      
     Pad(2),
     #Base Normal Map
-    TagIndexRef("base normal map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("base normal map", valid_bitmaps),
     BFloat("base normal coefficient"),
 
     Pad(12),
     #Detail Normal Maps
-    TagIndexRef("detail normal 1 map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("detail normal 1 map", valid_bitmaps),
     BFloat("detail normal 1 coefficient"),
     BFloat("detail normal 1 scale"),
     BFloat("detail normal 1 v-scale"),
 
     Pad(4),
-    TagIndexRef("detail normal 2 map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("detail normal 2 map", valid_bitmaps),
     BFloat("detail normal 2 coefficient"),
     BFloat("detail normal 2 scale"),
     BFloat("detail normal 2 v-scale"),
@@ -88,17 +88,17 @@ soso_body = Struct("Data",
     Struct("maps",
         BFloat("map u-scale"),
         BFloat("map v-scale"),
-        TagIndexRef("diffuse map", INCLUDE=Tag_Index_Ref_Struct),
+        dependency("diffuse map", valid_bitmaps),
            
         Pad(8),
-        TagIndexRef("multipurpose map", INCLUDE=Tag_Index_Ref_Struct),
+        dependency("multipurpose map", valid_bitmaps),
 
         Pad(8),
         BSEnum16("detail function", *Detail_Map_Functions),
         BSEnum16("detail mask",     *Detail_Mask),
            
         BFloat("detail map scale"),
-        TagIndexRef("detail map", INCLUDE=Tag_Index_Ref_Struct),
+        dependency("detail map", valid_bitmaps),
         BFloat("detail map v-scale"),
         ),
     
@@ -124,7 +124,7 @@ soso_body = Struct("Data",
         BFloat("parallel brightness"),#[0,1]
         Struct("parallel tint color",      INCLUDE=R_G_B_Float),
 
-        TagIndexRef("reflection cube map map", INCLUDE=Tag_Index_Ref_Struct),
+        dependency("reflection cube map map", valid_bitmaps),
         ),
     SIZE=440,
     )

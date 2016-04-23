@@ -25,7 +25,7 @@ schi_body = Struct("Data",
 
     #Lens Flare
     BFloat("lens flare spacing"),#world units
-    TagIndexRef("lens flare", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("lens flare"),
     reflexive("extra layers", Extra_Layers_Block, 4),
     reflexive("maps", Chicago_4_Stage_Maps, 4),
     BBool32("extra flags", *Chicago_Extra_Flags),

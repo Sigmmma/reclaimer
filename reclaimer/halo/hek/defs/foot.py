@@ -2,8 +2,8 @@ from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
 material = Struct("material",
-    TagIndexRef("effect", INCLUDE=Tag_Index_Ref_Struct),
-    TagIndexRef("sound",  INCLUDE=Tag_Index_Ref_Struct),
+    dependency("effect"),
+    dependency("sound", valid_sounds),
     SIZE=48,
     )
                          

@@ -37,14 +37,14 @@ spla_body = Struct("Data",
     BFloat("primary animation period"),
     Struct("primary animation direction", INCLUDE=I_J_K_Float),
     BFloat("primary noise map scale"),
-    TagIndexRef("primary noise map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("primary noise map", valid_bitmaps),
 
     Pad(36),
     #Secondary Noise Map
     BFloat("secondary animation period"),
     Struct("secondary animation direction", INCLUDE=I_J_K_Float),
     BFloat("secondary noise map scale"),
-    TagIndexRef("secondary noise map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("secondary noise map", valid_bitmaps),
     SIZE=332,
     )
 
