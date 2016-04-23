@@ -138,7 +138,7 @@ tag_header = Struct("tag header",
     )
 
 map_header = Struct("map_header",
-    LUInt32("id", DEFAULT='head'),
+    LUInt32("head", DEFAULT='head'),
     LSEnum32("version",
         ("xbox", 5, 'xbox'),
         ("demo", 6, 'pc demo'),
@@ -163,9 +163,9 @@ map_header = Struct("map_header",
         ("mp", 1, "multiplayer"),
         ("ui", 2, "user interface"),
         ),
-    BytesRaw("unknown2", SIZE=4),
+    LUInt32("crc32"),
     Pad(1940),
-    LUInt32("footer", DEFAULT='foot'),
+    LUInt32("foot", DEFAULT='foot'),
     )
 
 #Apparently the Halo Demo maps have a different

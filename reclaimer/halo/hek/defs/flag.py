@@ -1,6 +1,7 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
+def get(): return flag_def
 
 attachment_point = Struct("attachment point",
     BSInt16("height to next attachment"),
@@ -30,20 +31,15 @@ flag_body = Struct("Data",
     BFloat("cell width"),
     BFloat("cell height"),
 
-    TagIndexRef("red flag shader", INCLUDE=Tag_Index_Ref_Struct),
-    TagIndexRef("physics",         INCLUDE=Tag_Index_Ref_Struct),
+    dependency("red flag shader", valid_shaders),
+    dependency("physics", valid_point_physics),
 
     BFloat("wind noise"),
     Pad(8),
-    TagIndexRef("blue flag shader", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("blue flag shader", valid_shaders),
     reflexive("attachment points", attachment_point, 4),
     SIZE=96,
     )
-
-
-
-def get():
-    return flag_def
 
 flag_def = TagDef(
     blam_header('flag'),

@@ -11,20 +11,32 @@ class GdlHandler(TagTestHandler):
     def get_def_id(self, filepath):
         filepath = filepath.replace('/', '\\')
         try:
-            def_id = filepath.split('\\')[-1].lower()
+            filename = filepath.split('\\')[-1].lower()
         except:
-            def_id = ''
+            filename = ''
             
-        def_id, ext = splitext(def_id)
-        def_id, ext = def_id.lower(), ext.lower()
+        filename, ext = splitext(filename)
+        filename, ext = filename.lower(), ext.lower()
         
         if ext in ('.xbe','.rom'):
             return ext[1:]
         elif ext == '.wad':
-            if def_id in 'jacjesknimedminogrsortigunivalwarwiz':
+            if filename in ('jac','jes','kni','med','min','ogr',
+                            'sor','tig','uni','val','war','wiz'):
                 return 'pdata'
-            elif def_id in ('battlecastledesertdreamforesthell'+
-                            'icemountsecretskytempletesttowertown'):
+            elif filename in ('battle','castle','desert','dream',
+                              'forest','hell','ice','mount','secret',
+                              'sky','temple','test','tower','town'):
                 return 'wdata'
-        if def_id in self.defs:
-            return def_id
+            elif filename in ('lich','dragon','pboss', 'chimera',
+                              'gar_eagl','gar_lion','gar_serp',
+                              'drider','djinn','yeti','wraith',
+                              'skorne1','skorne2','garm',
+                              'general','golem','golemf', 'golemi'):
+                return 'critter'
+        elif filename in self.defs:
+            return filename
+        elif ext in self.id_ext_map.values():
+            for def_id in self.id_ext_map:
+                if self.id_ext_map[def_id].lower() == ext:
+                    return def_id

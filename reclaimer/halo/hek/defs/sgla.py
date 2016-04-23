@@ -22,7 +22,7 @@ sgla_body = Struct("Data",
     #Background Tint Properties
     Struct("background tint color", INCLUDE=R_G_B_Float),
     BFloat("background tint map scale"),
-    TagIndexRef("background tint map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("background tint map", valid_bitmaps),
 
     Pad(22),
     #Reflection Properties
@@ -34,25 +34,25 @@ sgla_body = Struct("Data",
     BFloat("perpendicular brightness"),#[0,1]
     Struct("perpendicular tint color", INCLUDE=R_G_B_Float),
     BFloat("parallel brightness"),#[0,1]
-    Struct("parallel tint color",      INCLUDE=R_G_B_Float),
-    TagIndexRef("reflection map", INCLUDE=Tag_Index_Ref_Struct),
+    Struct("parallel tint color", INCLUDE=R_G_B_Float),
+    dependency("reflection map", valid_bitmaps),
 
     BFloat("bump map scale"),
-    TagIndexRef("bump map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("bump map", valid_bitmaps),
 
     Pad(132),
     #Diffuse Properties
     BFloat("diffuse map scale"),
-    TagIndexRef("diffuse map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("diffuse map", valid_bitmaps),
     BFloat("diffuse detail map scale"),
-    TagIndexRef("diffuse detail map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("diffuse detail map", valid_bitmaps),
 
     Pad(32),
     #Specular Properties
     BFloat("specular map scale"),
-    TagIndexRef("specular map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("specular map", valid_bitmaps),
     BFloat("specular detail map scale"),
-    TagIndexRef("specular detail map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("specular detail map", valid_bitmaps),
 
     SIZE=480,
     )
