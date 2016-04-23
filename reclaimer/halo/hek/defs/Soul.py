@@ -1,12 +1,10 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-ui_widget_def = TagIndexRef("ui widget definition",
-    INCLUDE=Tag_Index_Ref_Struct,
-    )
+ui_widget_def = dependency("ui widget definition")
 
 soul_body = Struct("Data",
-    reflexive("ui widget definitions",  ui_widget_def, 32),
+    reflexive("ui widget definitions", ui_widget_def, 32),
     SIZE=12,
     )
 

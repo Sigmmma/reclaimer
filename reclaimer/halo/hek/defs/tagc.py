@@ -1,7 +1,7 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-tag_reference = TagIndexRef("tag", SIZE=16, INCLUDE=Tag_Index_Ref_Struct)
+tag_reference = dependency("tag")
 
 tagc_body = Struct("Data",
     reflexive("tag references", tag_reference, 200),

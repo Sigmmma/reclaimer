@@ -42,7 +42,7 @@ fog__body = Struct("Data",
     BFloat("zoom multiplier"),
     Pad(8),
     BFloat("map scale"),
-    TagIndexRef("fog map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("fog map"),
 
     #Screen Layer Animation
     BFloat("animation period"),
@@ -54,8 +54,8 @@ fog__body = Struct("Data",
 
     Pad(8),
     #Sound
-    TagIndexRef("background sound",  INCLUDE=Tag_Index_Ref_Struct),
-    TagIndexRef("sound environment", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("background sound"),
+    dependency("sound environment"),
     SIZE=396,
     )
 

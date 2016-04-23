@@ -20,7 +20,7 @@ smet_body = Struct("Data",
         "unfiltered"
         ),
     Pad(34),
-    TagIndexRef("meter map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("meter map", valid_bitmaps),
     Pad(32),
 
     #Colors

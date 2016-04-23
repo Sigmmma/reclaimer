@@ -26,36 +26,36 @@ senv_body = Struct("Data",
 
     #Lens Flare
     BFloat("lens flare spacing"),#world units
-    TagIndexRef("lens flare", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("lens flare"),
     Pad(44),
 
     #Diffuse Properties
-    BBool16("diffuse flags" ,
+    BBool16("diffuse flags",
         "rescale detail maps",
         "rescale bump maps",
         ),
     Pad(26),
-    TagIndexRef("base map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("base map", valid_bitmaps),
                    
     Pad(24),
-    BSEnum16(   "detail map function", *Detail_Map_Functions),
+    BSEnum16(  "detail map function", *Detail_Map_Functions),
     Pad(2),
-    BFloat(     "primary detail map scale"),
-    TagIndexRef("primary detail map",   INCLUDE=Tag_Index_Ref_Struct),
-    BFloat(     "secondary detail map scale"),
-    TagIndexRef("secondary detail map", INCLUDE=Tag_Index_Ref_Struct),
+    BFloat(    "primary detail map scale"),
+    dependency("primary detail map", valid_bitmaps),
+    BFloat(    "secondary detail map scale"),
+    dependency("secondary detail map", valid_bitmaps),
     Pad(24),
-    BSEnum16(   "micro detail map function", *Detail_Map_Functions),
+    BSEnum16(  "micro detail map function", *Detail_Map_Functions),
     Pad(2),
-    BFloat(     "micro detail map scale"),
-    TagIndexRef("micro detail map",     INCLUDE=Tag_Index_Ref_Struct),
+    BFloat(    "micro detail map scale"),
+    dependency("micro detail map", valid_bitmaps),
                    
     Struct("material color", INCLUDE=R_G_B_Float),
 
     Pad(12),
     #Bump Properties
     BFloat("bump map scale"),
-    TagIndexRef("bump map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("bump map", valid_bitmaps),
     FlFloat("bump map scale x"),
     FlFloat("bump map scale y"),
 
@@ -82,7 +82,7 @@ senv_body = Struct("Data",
 
     Pad(24),
     BFloat("illumination map scale"),
-    TagIndexRef("illumination map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("illumination map", valid_bitmaps),
 
     Pad(24),
     #Specular Properties
@@ -115,7 +115,7 @@ senv_body = Struct("Data",
     BFloat("parallel brightness"),#[0,1]
 
     Pad(40),
-    TagIndexRef("reflection cube map", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("reflection cube map", valid_bitmaps),
     SIZE=836,
     )
 

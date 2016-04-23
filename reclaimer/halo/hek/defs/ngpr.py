@@ -8,10 +8,10 @@ ngpr_body = Struct("Data",
     Struct("primary color",   INCLUDE=R_G_B_Float),
     Struct("secondary color", INCLUDE=R_G_B_Float),
 
-    TagIndexRef("pattern", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("pattern", valid_bitmaps),
     BSInt16("pattern bitmap index"),
     Pad(2),
-    TagIndexRef("decal",  INCLUDE=Tag_Index_Ref_Struct),
+    dependency("decal", valid_bitmaps),
     BSInt16("decal bitmap index"),
     SIZE=896
     )

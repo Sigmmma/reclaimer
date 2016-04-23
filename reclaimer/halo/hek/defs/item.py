@@ -23,14 +23,14 @@ item_body = Struct("Data",
 
     Pad(164),
 
-    TagIndexRef("material effects", INCLUDE=Tag_Index_Ref_Struct),
-    TagIndexRef("collision sound",  INCLUDE=Tag_Index_Ref_Struct),
+    dependency("material effects"),
+    dependency("collision sound"),
 
     Pad(120),
 
     Struct("detonation delay", INCLUDE=From_To),
-    TagIndexRef("detonating effect", INCLUDE=Tag_Index_Ref_Struct),
-    TagIndexRef("detonation effect", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("detonating effect"),
+    dependency("detonation effect"),
     SIZE=396,
     )
 

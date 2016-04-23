@@ -182,7 +182,7 @@ fp_animation_desc = Struct("fp animation",
     )
 
 sound_reference_desc = Struct("sound reference", 
-    Struct('sound', INCLUDE=Sound_Ref_Struct),
+    dependency('sound', valid_sounds),
     SIZE=20,
     )
 

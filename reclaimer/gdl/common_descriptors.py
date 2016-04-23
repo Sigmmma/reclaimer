@@ -51,6 +51,60 @@ def lump_pointer(block=None, parent=None, attr_index=None,
         return header.lump_array_pointer
     header.lump_array_pointer = new_value
 
+#############################
+'''individual lump structs'''
+#############################
+
+effect = Struct('effect',
+    LBool32('flags'),
+    LSInt32('next fx index'),
+    LSInt32('fx index'),
+    LSInt32('snd index'),
+    StrLatin1('fx desc', SIZE=16),
+    StrLatin1('snd desc', SIZE=16),
+    LSInt16('zmod'),
+    LSInt16('alpha mod'),
+    Struct('offset', INCLUDE=X_Y_Z_Float),
+    LFloat('max len'),
+    LFloat('radius'),
+    LFloat('scale'),
+    Struct('color',
+           UInt8('b'),
+           UInt8('g'),
+           UInt8('r'),
+           UInt8('a'),
+           ),
+    SIZE=80,
+    )
+
+damage = Struct('damage',
+    LSInt16('type'),
+    LBool16('flags'),
+    LSEnum32('damage type'),
+    LFloat('hit rad'),
+    LFloat('radius'),
+    LFloat('min rad'),
+    LFloat('delay'),
+    LFloat('min time'),
+    LFloat('max time'),
+    LFloat('angle'),
+    LFloat('arc'),
+    LFloat('pitch'),
+    Struct('offset', INCLUDE=X_Y_Z_Float),
+    LFloat('amount'),
+    LFloat('speed min'),
+    LFloat('speed max'),
+    LFloat('weight'),
+    LSInt16('fx index'),
+    LSInt16('hit fx index'),
+    LSInt16('loop fx index'),
+    LSInt16('next'),
+    LSInt16('start frame'),
+    LSInt16('end frame'),
+    LSInt16('help index'),
+    LSInt16('dummy'),
+    )
+
 
 #############################
 '''main wad header structs'''
@@ -63,36 +117,46 @@ rom_header = Struct('rom header',
 
 lump_header = Struct('lump header',
     LUEnum32('lump id',
-        #TEXT wad lump values
-        ('FONT', lump_fcc('FONT'), 'font' ),
-        ('TEXT', lump_fcc('TEXT'), 'string text'),
-        ('DEFS', lump_fcc('DEFS'), 'def names text'),
+        #text wad lump values
+        ('font', lump_fcc('FONT'), 'font' ),
+        ('text', lump_fcc('TEXT'), 'string text'),
+        ('defs', lump_fcc('DEFS'), 'def names text'),
 
-        ('TOFF', lump_fcc('TOFF'), 'string offsets'),
-        ('LOFF', lump_fcc('LOFF'), 'list offsets'),
-        ('SDEF', lump_fcc('SDEF'), 'string def offsets'),
-        ('LDEF', lump_fcc('LDEF'), 'list def offsets'),
+        ('toff', lump_fcc('TOFF'), 'string offsets'),
+        ('loff', lump_fcc('LOFF'), 'list offsets'),
+        ('sdef', lump_fcc('SDEF'), 'string def offsets'),
+        ('ldef', lump_fcc('LDEF'), 'list def offsets'),
 
-        ('LIST', lump_fcc('LIST'), 'string list'),
-        ('STRS', lump_fcc('STRS'), 'string message'),
+        ('list', lump_fcc('LIST'), 'string list'),
+        ('strs', lump_fcc('STRS'), 'string message'),
         
-        #PDATA wad lump values
-        ('SFXX', lump_fcc('SFXX'), 'player sound fx'),
-        ('DAMG', lump_fcc('DAMG'), 'player attack damage'),
-        ('PDAT', lump_fcc('PDAT'), 'player character data'),
+        #pdata and critter wad lump values
+        ('sfxx', lump_fcc('SFXX'), 'sound/visual fx'),
+        ('damg', lump_fcc('DAMG'), 'attack damage'),
              
-        #WDATA wad lump values
-        ('ENMY', lump_fcc('ENMY'), 'enemy type'),
-        ('BCAM', lump_fcc('BCAM'), 'boss camera'),
-        ('CAMS', lump_fcc('CAMS'), 'cameras'),
-        ('SNDS', lump_fcc('SNDS'), 'sounds'),
-        ('AUDS', lump_fcc('AUDS'), 'audio streams'),
-        ('MAPS', lump_fcc('MAPS'), 'maps?'),
-        ('LEVL', lump_fcc('LEVL'), 'level details'),
-        ('WRLD', lump_fcc('WRLD'), 'world description'),
+        #critter wad lump values
+        ('desc', lump_fcc('DESC'), '????'),
+        ('adda', lump_fcc('ADDA'), '????'),
+        ('node', lump_fcc('NODE'), '????'),
+        ('move', lump_fcc('MOVE'), '????'),
+        ('ptrn', lump_fcc('PTRN'), '????'),
+        ('type', lump_fcc('TYPE'), '????'),
              
-        #SHPDATA wad lump values
-        ('ITEM', lump_fcc('ITEM'), 'shop items'),
+        #pdata wad lump values
+        ('pdat', lump_fcc('PDAT'), 'player character data'),
+             
+        #wdata wad lump values
+        ('enmy', lump_fcc('ENMY'), 'enemy type'),
+        ('bcam', lump_fcc('BCAM'), 'boss camera'),
+        ('cams', lump_fcc('CAMS'), 'cameras'),
+        ('snds', lump_fcc('SNDS'), 'sounds'),
+        ('auds', lump_fcc('AUDS'), 'audio streams'),
+        ('maps', lump_fcc('MAPS'), 'maps'),
+        ('levl', lump_fcc('LEVL'), 'level details'),
+        ('wrld', lump_fcc('WRLD'), 'world description'),
+             
+        #shpdata wad lump values
+        ('item', lump_fcc('ITEM'), 'shop items'),
         ),
     LPointer32('lump array pointer'),
     LUInt32('lump array length'),

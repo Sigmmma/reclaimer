@@ -175,7 +175,7 @@ oddball_settings = Struct('oddball settings',
     trait_with_ball,
     trait_without_ball,
     ball_type,
-    LUInt32('ball_count'),
+    LUInt32('ball_count', MIN=1, MAX=16),
     SIZE=28,
     )
 
@@ -213,7 +213,7 @@ xbox_gametype_header = Struct("gametype header",
     LUInt32('respawn suicide penalty'), #ticks
     LUInt32('lives'), #0 = unlimited
     LFloat('health', MIN=0.5, MAX=4.0),
-    LUInt32('score limit'),
+    LUInt32('score limit', MIN=1),
     #   ctf     = flags
     #   slayer  = kills
     #   king    = minutes
@@ -240,7 +240,7 @@ pc_gametype_header = Struct("gametype header",
     LUInt32('respawn suicide penalty'), #ticks
     LUInt32('lives'), #0 = unlimited
     LFloat('health', MIN=0.5, MAX=4.0),
-    LUInt32('score limit'),
+    LUInt32('score limit', MIN=1),
     #   ctf     = flags
     #   slayer  = kills
     #   king    = minutes

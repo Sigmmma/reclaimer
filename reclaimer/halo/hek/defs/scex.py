@@ -25,7 +25,7 @@ scex_body = Struct("Data",
 
     #Lens Flare
     BFloat("lens flare spacing"),#world units
-    TagIndexRef("lens flare", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("lens flare"),
     reflexive("extra layers", Extra_Layers_Block, 4),
     reflexive("four stage maps", Chicago_4_Stage_Maps, 4),
     reflexive("two stage maps", Chicago_2_Stage_Maps, 2),

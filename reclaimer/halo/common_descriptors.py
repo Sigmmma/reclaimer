@@ -5,32 +5,12 @@ from .constants import *
 
 com = combine
 
+def tag_class(name, *args):
+    args = list(args)
+    args.append(("none", 0xffffffff))
+    return BUEnum32(name, *args, DEFAULT=0xffffffff)
 
-def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, **desc):
-    '''This function serves to macro the creation of a reflexive'''
-    return Reflexive(name,
-        INCLUDE=Reflexive_Struct,
-        CHILD=Array(name+" array",
-            SIZE=".Count", MAX=max_count,
-            SUB_STRUCT=substruct
-            ),
-        SIZE=12
-        )
-
-def rawdata_ref(name, field=BytearrayRaw):
-    '''This function serves to macro the creation of a rawdata reference'''
-    return RawDataRef(name,
-        EDITABLE=False, INCLUDE=Raw_Data_Ref_Struct,
-        CHILD=field("data", VISIBLE=False, SIZE=".Count")
-        )
-
-def blam_header(tagid, version=1):
-    '''This function serves to macro the creation of a tag header'''
-    return com( {1:{DEFAULT:tagid },
-                 5:{DEFAULT:version}}, Tag_Header)
-
-
-All_Valid_Tags = BUEnum32("Tag_Class",
+valid_tags = tag_class("Tag_Class",
     ("actor",          'actr'),
     ("actor_varient",  'actv'),
     ("antenna",        'ant!'),
@@ -114,25 +94,19 @@ All_Valid_Tags = BUEnum32("Tag_Class",
     ("weapon_hud_interface", 'wphi'),
     ("weather_particle_system", 'rain'),
     ("wind",                 'wind'),
-
-    ("none", 0xffffffff),
-    DEFAULT=0xffffffff,
     )
 
 
-All_Valid_Attachments = BUEnum32("Tag_Class",
+valid_attachments = tag_class("Tag_Class",
     ("contrail",        'cont'),
     ("effect",          'effe'),
     ("light",           'ligh'),
     ("light_volume",    'mgs2'),
     ("particle_system", 'pctl'),
     ("sound_looping",   'lsnd'),
-
-    ("none", 0xffffffff),
-    DEFAULT=0xffffffff,
     )
 
-All_Valid_Effect_Events = BUEnum32("Tag_Class",
+valid_effect_events = tag_class("Tag_Class",
     ("biped",           'bipd'),
     ("damage_effect",   'jpt!'),
     ("decal",           'deca'),
@@ -154,37 +128,37 @@ All_Valid_Effect_Events = BUEnum32("Tag_Class",
     ("unit",            'unit'),
     ("vehicle",         'vehi'),
     ("weapon",          'weap'),
-
-    ("none", 0xffffffff),
-    DEFAULT=0xffffffff,
     )
 
-All_Valid_Effects = BUEnum32("Tag_Class",
+valid_strings = tag_class("Tag_Class",
+    ("unicode_string_list",  'ustr'),
+    ("string_list",          'str#'),
+    )
+
+valid_effects = tag_class("Tag_Class",
     ("sound",  'snd!'),
     ("effect", 'effe'),
-
-    ("none", 0xffffffff),
-    DEFAULT=0xffffffff,
     )
 
-All_Valid_Sounds = BUEnum32("Tag_Class",
-    ("sound", 'snd!'),
-
-    ("none", 0xffffffff),
-    DEFAULT=0xffffffff,
+valid_point_physics = tag_class("Tag_Class", ("point_physics", 'pphy') )
+valid_bitmaps = tag_class("Tag_Class", ("bitmap", 'bitm') )
+valid_sounds  = tag_class("Tag_Class", ("sound", 'snd!') )
+valid_physics = tag_class("Tag_Class", ("physics", 'phys') )
+valid_model_animations = tag_class("Tag_Class",
+    ("model_animations", 'antr')
+    )
+valid_model_collision_geometry = tag_class("Tag_Class",
+    ("model_collision_geometry", 'coll')
     )
 
-All_Valid_Items = BUEnum32("Tag_Class",
+valid_items = tag_class("Tag_Class",
     ("equipment", 'eqip'),
     ("garbage",   'gar'),
     ("item",      'item'),
     ("weapon",    'weap'),
-
-    ("none", 0xffffffff),
-    DEFAULT=0xffffffff,
     )
 
-All_Valid_Objects = BUEnum32("Tag_Class",
+valid_objects = tag_class("Tag_Class",
     ("biped",          'bipd'),
     ("device",         'devi'),
     ("device_control", 'ctrl'),
@@ -197,13 +171,10 @@ All_Valid_Objects = BUEnum32("Tag_Class",
     ("sound_scenery",  'ssce'),
     ("vehicle",        'vehi'),
     ("weapon",         'weap'),
-
-    ("none", 0xffffffff),
-    DEFAULT=0xffffffff,
     )
 
 
-All_Valid_Shaders = BUEnum32("Tag_Class",
+valid_shaders = tag_class("Tag_Class",
     ("shader",                     'shdr'),
     ("shader_transparent_chicago", 'schi'),
     ("shader_transparent_chicago_extended", 'scex'),
@@ -214,36 +185,27 @@ All_Valid_Shaders = BUEnum32("Tag_Class",
     ("shader_model",               'soso'),
     ("shader_transparent_plasma",  'spla'),
     ("shader_transparent_water",   'swat'),
-
-    ("none", 0xffffffff),
-    DEFAULT=0xffffffff,
     )
 
-All_Valid_Units = BUEnum32("Tag_Class",
+valid_units = tag_class("Tag_Class",
     ("biped",   'bipd'),
     ("unit",    'unit'),
     ("vehicle", 'vehi'),
-
-    ("none", 0xffffffff),
-    DEFAULT=0xffffffff,
     )
 
-All_Valid_Widgets = BUEnum32("Tag_Class",
+valid_widgets = tag_class("Tag_Class",
     ("antenna",      'ant!'),
     ("flag",         'flag'),
     ("glow",         'glw!'),
     ("light_volume", 'mgs2'),
     ("lightning",    'elec'),
-
-    ("none", 0xffffffff),
-    DEFAULT=0xffffffff,
     )
 
 
 #The header present at the start of every tag
 Tag_Header = Struct("Blam Header",
     Pad(36),
-    All_Valid_Tags,
+    valid_tags,
     LUInt32("Base Address", DEFAULT=0),#random
     LUInt32("Header Size",  DEFAULT=64),
     Pad(8),
@@ -448,6 +410,43 @@ From_To = Struct('',
     )
 
 
+
+def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, **desc):
+    '''This function serves to macro the creation of a reflexive'''
+    return Reflexive(name,
+        INCLUDE=Reflexive_Struct,
+        CHILD=Array(name+" array",
+            SIZE=".Count", MAX=max_count,
+            SUB_STRUCT=substruct
+            ),
+        SIZE=12
+        )
+
+def rawdata_ref(name, field=BytearrayRaw):
+    '''This function serves to macro the creation of a rawdata reference'''
+    return RawDataRef(name,
+        EDITABLE=False, INCLUDE=Raw_Data_Ref_Struct,
+        CHILD=field("data", VISIBLE=False, SIZE=".Count")
+        )
+
+def dependency(name='tag ref', valid_ids=valid_tags):
+    '''This function serves to macro the creation of a tag dependency'''
+    return TagIndexRef(name,
+        valid_ids,
+        BSInt32("Tag Path Pointer"),#random
+        BSInt32("Tag Path Length"),
+        BUInt32("Tag ID", DEFAULT=0xFFFFFFFF),#random
+                                       
+        CHILD=StringVarLen("Filepath", SIZE=tag_ref_size),
+        EDITABLE=False,
+        )
+
+def blam_header(tagid, version=1):
+    '''This function serves to macro the creation of a tag header'''
+    return com( {1:{DEFAULT:tagid },
+                 5:{DEFAULT:version}}, Tag_Header)
+
+
 #This is the structure for all points where a tag references a chunk of raw data
 Raw_Data_Ref_Struct = RawDataRef('Raw Data Ref', 
     BSInt32("Count"),
@@ -467,31 +466,7 @@ Reflexive_Struct = Reflexive('Reflexive',
     )
 
 #This is the structure for all points where a tag references another tag
-Tag_Index_Ref_Struct = TagIndexRef('Tag Index Ref',
-    All_Valid_Tags,
-    BSInt32("Tag Path Pointer"),#random
-    BSInt32("Tag Path Length"),
-    BUInt32("Tag ID", DEFAULT=0xFFFFFFFF),#random
-                                   
-    CHILD=StringVarLen("Filepath", SIZE=tag_ref_size),
-    EDITABLE=False,
-    )
-                         
-Ref_Struct = copy(Tag_Index_Ref_Struct)
-del Ref_Struct[0]
-
-Attachment_Ref_Struct   = com( {0:All_Valid_Attachments},   Ref_Struct)
-Effect_Ref_Struct       = com( {0:All_Valid_Effects},       Ref_Struct)
-Sound_Ref_Struct        = com( {0:All_Valid_Sounds},        Ref_Struct)
-Effect_Event_Ref_Struct = com( {0:All_Valid_Effect_Events}, Ref_Struct)
-Item_Ref_Struct         = com( {0:All_Valid_Items},         Ref_Struct)
-Object_Ref_Struct       = com( {0:All_Valid_Objects},       Ref_Struct)
-Shader_Ref_Struct       = com( {0:All_Valid_Shaders},       Ref_Struct)
-Unit_Ref_Struct         = com( {0:All_Valid_Units},         Ref_Struct)
-Widget_Ref_Struct       = com( {0:All_Valid_Widgets},       Ref_Struct)
-Shader_Ref_Struct       = com( {0:All_Valid_Shaders},        Ref_Struct)
-
-del Ref_Struct
+Tag_Index_Ref_Struct = dependency()
 
 """Shader Stuff"""
 
@@ -536,7 +511,7 @@ Radiosity_Block = Struct("radiosity settings",
 
 #Transparent Shader Stuff
 
-Extra_Layers_Block = TagIndexRef("extra layer", INCLUDE=Shader_Ref_Struct)
+Extra_Layers_Block = dependency("extra layer", valid_shaders)
 
 Chicago_4_Stage_Maps = Struct("four stage map",
     BBool16("flags" ,
@@ -556,7 +531,7 @@ Chicago_4_Stage_Maps = Struct("four stage map",
     BFloat("map v-offset"),
     BFloat("map rotation"),#degrees
     BFloat("map bias"),#[0,1]
-    TagIndexRef("bitmap", INCLUDE=Tag_Index_Ref_Struct),
+    dependency("bitmap", valid_bitmaps),
                               
     Pad(40),
                               
