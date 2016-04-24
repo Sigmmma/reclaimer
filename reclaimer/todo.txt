@@ -20,8 +20,6 @@ handling of exceptions and give better details regarding the exception.
 Make sanitization function an attribute in the Field_Type under the name "Sanitizer".
     The Field_Type.Sanitizer() will get called whenever encountered in a descriptor
 
-need to make it so that certain things don't need to have their size specified when being written
-    an example is BytesRaw or BytearrayRaw
 
 Medium Priority:
 

@@ -121,7 +121,7 @@ try:
                                                       title="Import characters from...")
                 if filepath != "":
                     try:
-                        self.Loaded_XBEdata.Secret_Characters.read(filepath=filepath)
+                        self.Loaded_XBEdata.secret_characters.read(filepath=filepath)
                         self._Initialize_Windows()
                     except: print(format_exc())
         
@@ -131,27 +131,27 @@ try:
                                                         filetypes=[("GDL Characters", "*.gdl_chars"),('All','*')],
                                                         title="Export the current characters to...")
                 if filepath != "":
-                    try:    self.Loaded_XBE.data.Secret_Characters.write(filepath=filepath)
+                    try:    self.Loaded_XBE.data.secret_characters.write(filepath=filepath)
                     except: print(format_exc())
             
         def _Import_Cheats(self):
             if hasattr(self.Loaded_XBE, 'data'):
                 filepath = filedialog.askopenfilename(initialdir=curr_dir, defaultextension=".gdl_cheats",
-                                                      filetypes=[("GDL Cheats", "*.gdl_cheats"),('All','*')],
+                                                      filetypes=[("GDL cheats", "*.gdl_cheats"),('All','*')],
                                                       title="Import cheats from...")
                 if filepath != "":
                     try:
-                        self.Loaded_XBE.data.Cheats.read(filepath=filepath)
+                        self.Loaded_XBE.data.cheats.read(filepath=filepath)
                         self._Initialize_Windows()
                     except: print(format_exc())
         
         def _Export_Cheats(self):
             if hasattr(self.Loaded_XBE, 'data'):
                 filepath = filedialog.asksaveasfilename(initialdir=curr_dir, defaultextension=".gdl_cheats",
-                                                        filetypes=[("GDL Cheats", "*.gdl_cheats"),('All','*')],
+                                                        filetypes=[("GDL cheats", "*.gdl_cheats"),('All','*')],
                                                         title="Export the current cheats to...")
                 if filepath != "":
-                    try:    self.Loaded_XBE.data.Cheats.write(filepath=filepath)
+                    try:    self.Loaded_XBE.data.cheats.write(filepath=filepath)
                     except: print(format_exc())
         
         def Load_XBE(self):
@@ -178,34 +178,34 @@ try:
         def Get_Char_Names(self):
             Char_Names = []
             try:
-                Chars = self.Loaded_XBE.data.Secret_Characters
+                Chars = self.Loaded_XBE.data.secret_characters
                 for Character in Chars:
-                    Char_Names.append(Character.Code)
+                    Char_Names.append(Character.code)
             except: pass
             return Char_Names
         
         def Get_Cheat_Names(self):
             Cheat_Names = []
             try:
-                Cheats = self.Loaded_XBE.data.Cheats
-                for Cheat in Cheats:
-                    Cheat_Names.append(Cheat.Code)
+                cheats = self.Loaded_XBE.data.cheats
+                for cheat in cheats:
+                    Cheat_Names.append(cheat.code)
             except: pass
             return Cheat_Names
 
 
         def Reset_Rollout_Options(self):
             Char = self.Menu_Chars
-            Cheat = self.Menu_Cheats
+            cheat = self.Menu_Cheats
 
             Curr_Char = Char.Current_Index
-            Curr_Cheat = Cheat.Current_Index
+            Curr_Cheat = cheat.Current_Index
             
             Char['menu'].delete(0, 'end')
-            Cheat['menu'].delete(0, 'end')
+            cheat['menu'].delete(0, 'end')
 
             Char.Num_Entries = 0
-            Cheat.Num_Entries = 0
+            cheat.Num_Entries = 0
             
             Char_Names = self.Get_Char_Names()
             Cheat_Names = self.Get_Cheat_Names()
@@ -214,7 +214,7 @@ try:
                 Char.addOption(Name)
             
             for Name in Cheat_Names:
-                Cheat.addOption(Name)
+                cheat.addOption(Name)
 
             self.Selected_Char.set(Char_Names[Curr_Char])
             self.Selected_Cheat.set(Cheat_Names[Curr_Cheat])
@@ -234,19 +234,19 @@ try:
             if i is None:
                 i = Menu.Current_Index
                 
-            Char = self.Loaded_XBE.data.Secret_Characters[i]
+            Char = self.Loaded_XBE.data.secret_characters[i]
             self._Reload_Widgets(Menu, Char, Char.DESC)
-            self.Selected_Char.set(Char.Code)
+            self.Selected_Char.set(Char.code)
             
         def Reload_Cheat_Window(self, Menu, i=None):
             if i is None:
                 i = Menu.Current_Index
                 
-            Cheat = self.Loaded_XBE.data.Cheats[i]
-            Cheat_Flags = Cheat.Flags
-            Cheat_Type = Cheat.Type
+            cheat = self.Loaded_XBE.data.cheats[i]
+            Cheat_Flags = cheat.flags
+            Cheat_Type = cheat.type
                 
-            Desc = Cheat.DESC
+            Desc = cheat.DESC
             
             if Cheat_Type.data == 5:
                 Cheat_Flags.DESC = self._Cheat_Weapon_Flags_Desc
@@ -260,8 +260,8 @@ try:
                 
             dict.__setitem__(Desc, 3, Cheat_Flags.DESC)
 
-            self._Reload_Widgets(Menu, Cheat, Desc)
-            self.Selected_Cheat.set(Cheat.Code)
+            self._Reload_Widgets(Menu, cheat, Desc)
+            self.Selected_Cheat.set(cheat.code)
 
 
         def _Reload_Widgets(self, Parent, datablock, Desc):

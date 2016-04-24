@@ -1,6 +1,7 @@
 from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.defs.common_descriptors import *
 from ..fields import *
+from . import xbe
 
 def get(): return gdl_savemeta_def
 
@@ -10,6 +11,11 @@ def levels_bool(name, count):
         bools.append('level %s unlocked'%(i+2))
     bools.append('realm beaten')
     return Bool8(name, *bools)
+
+special_flags = xbe.special_types
+armor_flags   = xbe.armor_types
+weapon_flags  = xbe.weapon_types_bitstruct
+no_flags = LBool32('flags')
 
 p_attrs = Struct('character attrs',
     SInt32('exp', GUI_NAME='experience'),
@@ -32,9 +38,25 @@ p_stats = Struct('character stats',
 
 p_powerup = Struct('character powerup',
     Float('time left'),
-    SEnum32('type'),#need these enums
+    SEnum32('type',
+        "none",
+        Pad(4),
+        "weapon",
+        "armor",
+        "speed",
+        "magic",
+        "special",
+        ),
     Float('attribute add'),
-    Bool32('special flags'),#need these flags
+    Switch('special flags',
+        SIZE=4, DEFAULT=no_flags,
+        CASE='.type.data_name',
+        CASES={'none':no_flags,
+               'armor':armor_flags,
+               'weapon':weapon_flags,
+               'special':special_flags,
+               }
+        ),
     )
 
 p_stuff = Container('character stuff',
@@ -118,7 +140,8 @@ p_stuff = Container('character stuff',
         LSInt16('feathers'),
         LSInt16('claws'),
         ),
-    Pad(2),
+    Pad(2),#the shell3d.pdb lied about this padding. it tried to say
+    #       that it's after the crystals, not before it. it isn't.
     Struct('crystals',
         LSInt16('town'),
         LSInt16('mountain'),
@@ -133,6 +156,7 @@ p_stuff = Container('character stuff',
     Array('powerups', SUB_STRUCT=p_powerup, SIZE=32),
     UInt8Array('powerup states', SIZE=32),
     )
+
 
 p_waves = Struct('levels',
     Pad(1),
@@ -195,8 +219,8 @@ gdl_savemeta_def = TagDef(
     UInt16('level total'),
     
     Array('character attributes', SUB_STRUCT=p_attrs, SIZE=16),
-    Array('character stats', SUB_STRUCT=p_stats, SIZE=16),
-    Array('character stuff', SUB_STRUCT=p_stuff, SIZE=16),
+    Array('character stats',  SUB_STRUCT=p_stats, SIZE=16),
+    Array('character stuff',  SUB_STRUCT=p_stuff, SIZE=16),
     Array('character levels', SUB_STRUCT=p_waves, SIZE=16),
     
     UEnum8('control scheme',

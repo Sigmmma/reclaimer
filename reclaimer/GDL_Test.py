@@ -27,7 +27,7 @@ try:
             print("Size of: "+filepath+" = ", objs[filepath].data.binsize)
             objs[filepath].pprint(show=('name', 'value', 'children', 'index',
                                         'flags', 'field', 'offset', 'size',
-                                        'raw'),#, 'all'),
+                                        'trueonly'),#, 'all'),
                                   printout=True)
     input()
 except Exception:
