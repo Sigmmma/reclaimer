@@ -36,7 +36,7 @@ def tag_ref_size(block=None, parent=None, attr_index=None,
         return strlen
 
 
-def encode_tag_ref_str(self, block, desc, parent, attr_index):
+def encode_tag_ref_str(self, block, parent, attr_index):
     """This function is the same as encode_string, except that
     when a halo reference string has zero length, the string doesnt
     actually exist. It's not just a delimiter character, the string
