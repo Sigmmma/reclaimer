@@ -19,8 +19,9 @@ PC_CRC32_OFF = 0xD8
 
 class GametypeTag(HekTag):
 
-    is_xbox = False
-    
+    is_xbox    = False
+    is_powerpc = False
+
     def calc_crc32(self, buffer=None, offset=-1):
         '''Returns the crc32 checksum of the data in 'buffer' up
         to the 'offset' specified. If offset is not specified, the
@@ -30,9 +31,9 @@ class GametypeTag(HekTag):
             buffer = self.data.write(buffer=BytearrayBuffer())
         return 0xFFFFFFFF - (binascii.crc32(buffer[:offset]) & 0xFFFFFFFF)
 
-    def validate_checksum(self, buffer=None, offset=-1):
+    def validate_checksum(self, buffer=None, offset=-1, end='<'):
         '''Returns True if the checksum of the gametype is valid'''
-        checksum = unpack('<I', buffer[offset:offset+4])[0]
+        checksum = unpack(end+'I', buffer[offset:offset+4])[0]
         return self.calc_crc32(buffer, offset) == checksum
 
     def read(self, **kwargs):
@@ -44,33 +45,54 @@ class GametypeTag(HekTag):
         kwargs['rawdata'] = rawdata
         if 'filepath' in kwargs:
             del kwargs['filepath']
-            
+
         is_ce = self.validate_checksum(rawdata, CE_CRC32_OFF)
         is_pc = self.validate_checksum(rawdata, PC_CRC32_OFF)
+        #if the checksum doesnt check out for either PC or CE,
+        #see if the big endian version of the checksum checks out
+        if not(is_ce or is_pc):
+            if self.validate_checksum(rawdata, PC_CRC32_OFF, '>'):
+                #turns out the gametype is big endian, who woulda thought?
+                self.is_powerpc = is_pc = True
 
         self.is_xbox = not(is_ce or is_pc)
-        
+
         #if the gametype isnt a valid PC gametype, make it a hybrid of both
         if is_ce and not is_pc:
             #copy the checksum to the PC Halo specific location
             rawdata[0x94:0x9C] = rawdata[0xD4:0xDC]
             #copy the gametype settings to the PC Halo specific location
             rawdata[0x7C:0x94] = rawdata[0x9C:0xB4]
-        
-        return HekTag.read(self, **kwargs)
-        
+
+        try:
+            if self.is_powerpc:
+                Field.force_big()
+            result = HekTag.read(self, **kwargs)
+        finally:
+            if self.is_powerpc:
+                Field.force_normal()
+        return result
+
     def write(self, **kwargs):
         '''Writes this tag to the set path like normal, but makes
         sure to calculate and set the checksums before doing so.
         Checksums are only valid for PC and CE gametypes, so for
         xbox gametypes this function is the same as Tag.write'''
-        if not self.is_xbox:
-            footer = self.data.gametype_footer
-            footer.crc_32 = self.calc_crc32(None, CE_CRC32_OFF)
-            
-            footer.hybrid_settings = BytearrayBuffer()
-            self.data.gametype_settings.write(buffer=footer.hybrid_settings)
-            
-            footer.crc_32_ce = self.calc_crc32(None, PC_CRC32_OFF)
-        
-        return HekTag.write(self, **kwargs)
+        try:
+            result = None
+            if self.is_powerpc:
+                Field.force_big()
+            if not self.is_xbox:
+                footer = self.data.gametype_footer
+                footer.crc_32 = self.calc_crc32(None, CE_CRC32_OFF)
+
+                footer.hybrid_settings = BytearrayBuffer()
+                self.data.gametype_settings.write(buffer=footer.hybrid_settings)
+
+                footer.crc_32_ce = self.calc_crc32(None, PC_CRC32_OFF)
+            result = HekTag.write(self, **kwargs)
+        finally:
+            if self.is_powerpc:
+                Field.force_normal()
+
+        return result

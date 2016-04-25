@@ -260,7 +260,7 @@ pc_gametype_header = Struct("gametype header",
     )
 
 xbox_gametype_footer = Container('gametype footer',
-    BytesRaw('padding', SIZE=408),
+    Pad(408),
     )
 
 pc_gametype_footer = Struct('gametype footer',
