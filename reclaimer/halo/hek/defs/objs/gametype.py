@@ -11,14 +11,21 @@ import binascii
 
 from struct import unpack
 
-from .tag import *
+from .....misc.defs.objs.xboxsave import *
 from supyr_struct.buffer import BytearrayBuffer
 
 CE_CRC32_OFF = 0x98
 PC_CRC32_OFF = 0xD8
 
-class GametypeTag(HekTag):
+HALO_SIGKEY =  (b'\x1F\x71\xDE\x93\xD5\x2A\xAD\xB1'+
+                b'\x94\x46\xD7\x49\x4F\x73\x11\x58')
 
+class GametypeTag(XboxSaveTag):
+    
+    sigkey     = HALO_SIGKEY
+    data_start = 0
+    data_end   = 104
+    
     is_xbox    = False
     is_powerpc = False
 
@@ -67,22 +74,31 @@ class GametypeTag(HekTag):
         try:
             if self.is_powerpc:
                 Field.force_big()
-            result = HekTag.read(self, **kwargs)
+            result = XboxSaveTag.read(self, **kwargs)
         finally:
             if self.is_powerpc:
                 Field.force_normal()
         return result
 
+    def xbox_sign(self, rawdata=None, authkey=None):
+        if rawdata is None:
+            rawdata = self.data.write(buffer=BytearrayBuffer())[:self.data_end]
+            
+        hmac_sig = self.calc_hmac_sig(rawdata, authkey)
+        self.data.gametype_footer.hmac_sig = hmac_sig
+
     def write(self, **kwargs):
         '''Writes this tag to the set path like normal, but makes
-        sure to calculate and set the checksums before doing so.
-        Checksums are only valid for PC and CE gametypes, so for
-        xbox gametypes this function is the same as Tag.write'''
+        sure to calculate and set the checksums before doing so.'''
         try:
             result = None
             if self.is_powerpc:
                 Field.force_big()
-            if not self.is_xbox:
+            if self.is_xbox:
+                #calculate the xbox checksum
+                self.xbox_sign()
+            else:
+                #calculate the pc/ce checksum
                 footer = self.data.gametype_footer
                 footer.crc_32 = self.calc_crc32(None, CE_CRC32_OFF)
 
@@ -90,7 +106,7 @@ class GametypeTag(HekTag):
                 self.data.gametype_settings.write(buffer=footer.hybrid_settings)
 
                 footer.crc_32_ce = self.calc_crc32(None, PC_CRC32_OFF)
-            result = HekTag.write(self, **kwargs)
+            result = XboxSaveTag.write(self, **kwargs)
         finally:
             if self.is_powerpc:
                 Field.force_normal()
