@@ -260,7 +260,9 @@ pc_gametype_header = Struct("gametype header",
     )
 
 xbox_gametype_footer = Container('gametype footer',
-    Pad(408),
+    #20 byte hmac sha1 digest of the save file
+    BytesRaw('hmac_sig', SIZE=20),
+    Pad(388),
     )
 
 pc_gametype_footer = Struct('gametype footer',
