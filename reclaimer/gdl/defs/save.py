@@ -1,3 +1,5 @@
+from array import array
+
 from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.defs.common_descriptors import *
 from ..fields import *
@@ -13,18 +15,56 @@ def levels_bool(name, count):
     bools.append('realm beaten')
     return Bool8(name, *bools)
 
+help_disp_default = array('B', [0]*256)
+for i in (0,1,2,6,7,8,11,15,16,17,20,21,22,27,28,32,35,37,
+          41,42,44,45,48,51,53,58,60,61,67,82,83,87,88,92,
+          102,110,111,113,125,126,130,132,134,135,137):
+    help_disp_default[i] = 0x11
+
 special_flags = xbe.special_types
 armor_flags   = xbe.armor_types
 weapon_flags  = xbe.weapon_types_bitstruct
 no_flags = LBool32('flags')
 
+runes = (
+    'blue 1',
+    'blue 2',
+    'blue 3',
+    'red 1',
+    'red 2',
+    'red 3',
+    'yellow 1',
+    'yellow 2',
+    'yellow 3',
+    'green 1',
+    'green 2',
+    'green 3',
+    'final rune',
+    )
+
+legend_items = (
+    Pad(1),
+    'scimitar',
+    'ice axe',
+    'lamp',
+    'bellows',
+    'savior',
+    Pad(1),
+    'book',
+    Pad(1),
+    'parchment',
+    'lantern',
+    'javelin',
+    )
+
 p_attrs = Struct('character attrs',
     SInt32('exp', GUI_NAME='experience'),
     Float('health'),
-    Float('strength added'),
+    Float('fight added'),
     Float('armor added'),
     Float('magic added'),
     Float('speed added'),
+    SIZE=24,
     )
 
 p_stats = Struct('character stats',
@@ -34,7 +74,8 @@ p_stats = Struct('character stats',
     SInt32('bosses killed'),
     SInt32('generators destroyed'),
     SInt32('gold found'),
-    Float('total playtime'),
+    Float('total playtime'),#counted in frames
+    SIZE=28,
     )
 
 p_powerup = Struct('character powerup',
@@ -58,85 +99,41 @@ p_powerup = Struct('character powerup',
                'special':special_flags,
                }
         ),
+    SIZE=16,
     )
 
 p_stuff = Container('character stuff',
     SInt16('potions'),
     SInt16('keys'),
     Bool16('shards',
-        #this part is not likely 100% accurate. most of it feels like it is tho
-        ('lich shard',1<<1),
-        ('dragon shard',1<<2),
-           
-        ('chimera shard',1<<3),
-        ('plague shard',1<<4),
-        ('drider shard',1<<5),
-           
-        ('djinn shard',1<<6),
-        ('yeti shard',1<<7),
-        ('wraith shard',1<<8),
-        ('unknown1',1<<9),
-        ('unknown2',1<<10),
+        Pad(1),
+        'lich shard',
+        'dragon shard',
+        'chimera shard',
+        'plague shard',
+        'drider shard',
+        'djinn shard',
+        'yeti shard',
+        'wraith shard',
+        #'unknown1',
+        #'unknown2',
         ),
-    Bool16('runes',
-        #this is completely accurate I believe
-        'blue 1',
-        'blue 2',
-        'blue 3',
-        'red 1',
-        'red 2',
-        'red 3',
-        'yellow 1',
-        'yellow 2',
-        'yellow 3',
-        'green 1',
-        'green 2',
-        'green 3',
-        'final rune',
-        ),
-    Bool16('legend items',
-        #the only one I know is accurate is the parchment
-        ('unknown1',1<<1),
-        ('unknown2',1<<2),
-        ('unknown3',1<<3),
-
-        ('unknown4',1<<7),
-        ('unknown5',1<<8),
-        ('parchment',1<<9),
-        ('unknown6',1<<10),
-        ('unknown7',1<<11),
-        #('book',1<<),
-        #('scimitar',1<<),
-        #('javelin',1<<),
-        #('bellows',1<<),
-        #('lamp',1<<),
-        #('lantern',1<<),
-        #('soul savior',1<<),
-           
-        #[ mask:0x1,   unknown0,  False ]
-        #[ mask:0x2,   unknown1,  True ]
-        #[ mask:0x4,   unknown2,  True ]
-        #[ mask:0x8,   unknown3,  True ]
-        #[ mask:0x10,  unknown4,  False ]
-        #[ mask:0x20,  unknown5,  False ]
-        #[ mask:0x40,  unknown6,  False ]
-        #[ mask:0x80,  unknown7,  True ]
-        #[ mask:0x100, unknown8,  False ]
-        #[ mask:0x200, parchment, True ]
-        #[ mask:0x400, unknown10, True ]
-        #[ mask:0x800, unknown11, True ]
-        #only missing soul savior and toxic bellows
-        ),
+    Bool16('runes', *runes),
+    Bool16('legend items', *legend_items),
     SInt16('powerup count'),
 
-    UInt16('rune attempt1'),
-    UInt16('rune attempt2'),
-    UInt16('legend attempt1'),
-    UInt16('legend attempt2'),
-    UInt16('boss attempt1'),
-    UInt16('boss attempt2'),
+    Bool16('rune attempts sp', *runes),
+    Bool16('rune attempts mp', *runes),
+    Bool16('legend attempts sp', *legend_items),
+    Bool16('legend attempts mp', *legend_items),
+    #boss_attempts 1 and 2 are always 0 it seems, so rather
+    #than have them editable, lets just treat them as padding
+    #UInt16('boss attempts 1'),
+    #UInt16('boss attempts 2'),
+    Pad(4),
 
     Struct('gargoyle items',
+        # a value of -1 means all that the max amount have been collected
         LSInt16('fangs'),
         LSInt16('feathers'),
         LSInt16('claws'),
@@ -144,6 +141,7 @@ p_stuff = Container('character stuff',
     Pad(2),#the shell3d.pdb lied about this padding. it tried to say
     #       that it's after the crystals, not before it. it isn't.
     Struct('crystals',
+        # a value of -1 means all that the max amount have been collected
         LSInt16('town'),
         LSInt16('mountain'),
         LSInt16('castle'),
@@ -156,6 +154,7 @@ p_stuff = Container('character stuff',
     UInt32('gold'),
     Array('powerups', SUB_STRUCT=p_powerup, SIZE=32),
     UInt8Array('powerup states', SIZE=32),
+    SIZE=596,
     )
 
 
@@ -164,24 +163,23 @@ p_waves = Struct('levels',
     levels_bool('castle realm',6),
     levels_bool('mountain realm',6),
     levels_bool('desert realm',5),
-    levels_bool('forest realm',5),#not sure
-    levels_bool('temple',2),#not sure
-    levels_bool('underworld',2),#not sure
-    levels_bool('town realm',5),#not sure
-    levels_bool('battlefields',3),#not sure
+    levels_bool('forest realm',5),
+    levels_bool('temple',2),
+    levels_bool('underworld',2),
+    levels_bool('town realm',5),
+    levels_bool('battlefields',3),
     levels_bool('ice realm',5),
     levels_bool('dream realm',6),
-    levels_bool('sky realm',5),#not sure
-    #this next one seems to be wrong, but I'm leavign it here for tweaking
-    Bool8('barriers down',
-        'sky',
-        'dream',
-        'castle',
-        'town',
-        'ice',
-        'desert',
-        'forest',
-        'mountain',
+    levels_bool('sky realm',5),
+    Bool8('unknown',
+        'unknown1',
+        'unknown2',
+        'unknown3',
+        'unknown4',
+        'unknown5',
+        'unknown6',
+        'unknown7',
+        'unknown8',
         ),
     Pad(1),
     )
@@ -189,7 +187,7 @@ p_waves = Struct('levels',
 gdl_savemeta_def = TagDef(
     BytesRaw('hmac_sig', SIZE=20),
     Container('save data',
-        StrLatin1('name', SIZE=7),
+        StrLatin1('name', SIZE=7, DEFAULT='PLAYER'),
         Pad(1),
         SEnum16('last alt type',
             "warrior", "valkyrie", "wizard",    "archer",
@@ -220,7 +218,7 @@ gdl_savemeta_def = TagDef(
             ),
         UInt16('level total'),
         
-        Array('character attributes', SUB_STRUCT=p_attrs, SIZE=16),
+        Array('character attrs', SUB_STRUCT=p_attrs, SIZE=16),
         Array('character stats',  SUB_STRUCT=p_stats, SIZE=16),
         Array('character stuff',  SUB_STRUCT=p_stuff, SIZE=16),
         Array('character levels', SUB_STRUCT=p_waves, SIZE=16),
@@ -236,16 +234,26 @@ gdl_savemeta_def = TagDef(
             "light",
             "medium",
             "maximum",
+            DEFAULT=2,
             ),
         UEnum8('auto-attack',
             "off",
             "on",
+            DEFAULT=1,
             ),
         UEnum8('auto-aim',
             "off",
             "on",
+            DEFAULT=1,
             ),
-        UInt8Array('help disp', SIZE=256),
+        #The only values that seem to be in the help_disp
+        #array are either 0x00, 0x10, or 0x11.
+        #
+        #These might be enumerators designating the display
+        #status of each help hint text(invisible, visible, seen)
+        #
+        #New files have 
+        UInt8Array('help disp', SIZE=256, DEFAULT=help_disp_default),
         ),
     
     NAME='gdl game save',
