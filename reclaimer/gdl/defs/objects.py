@@ -5,6 +5,10 @@ from .objs.objects import ObjectsPs2Tag
 
 def get(): return objects_ps2_def
 
+#########################################################
+'''FOR TEXTURES.PS2, RED AND BLUE CHANNELS ARE SWAPPED'''
+#########################################################
+
 '''
 ( ("Point_List"),
   ("Line_List"),
