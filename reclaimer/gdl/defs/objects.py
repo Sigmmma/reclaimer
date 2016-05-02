@@ -5,85 +5,256 @@ from .objs.objects import ObjectsPs2Tag
 
 def get(): return objects_ps2_def
 
+def get_uv32_size(block=None, parent=None, attr_index=None,
+                   rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//8
+    return parent.length*8
+
+def get_uv16_size(block=None, parent=None, attr_index=None,
+                   rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//4
+    return parent.length*4
+
+def get_uv8_size(block=None, parent=None, attr_index=None,
+                   rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//2
+    return parent.length*2
+
+def get_vert32_size(block=None, parent=None, attr_index=None,
+                    rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//12
+    return parent.length*12
+
+def get_vert16_size(block=None, parent=None, attr_index=None,
+                    rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//6
+    return parent.length*6
+
+def get_vert8_size(block=None, parent=None, attr_index=None,
+                   rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//3
+    return parent.length*3
+
+def get_primitive_type(block=None, parent=None, attr_index=None,
+                       rawdata=None, new_value=None, *args, **kwargs):
+    if rawdata is not None:
+        if rawdata.peek(4)[3] not in (0,20,23,45,96,100,101,102,104,105,106,108,111):
+            print(rawdata.peek(4)[3], rawdata.tell())
+    
+        return rawdata.peek(4)[3]
+
+def has_next_primitive(block=None, parent=None, attr_index=None,
+                       rawdata=None, new_value=None, *args, **kwargs):
+    if rawdata is not None:
+        if parent is None:
+            parent = block.PARENT
+        terminated = len(parent) != 0 and parent[-1].sentinel == 0
+        return rawdata.peek(4)[3] != 96 and not terminated
+        return rawdata.peek(4)[3] != 96
+
+
+get_vnorm16_size = get_uv8_size
+
 #########################################################
 '''FOR TEXTURES.PS2, RED AND BLUE CHANNELS ARE SWAPPED'''
 #########################################################
 
-'''
-( ("Point_List"),
-  ("Line_List"),
-  ("Triangle_List"),
-  ("Triangle_Strip"),
-  ("Triangle_Fan"),
-  ("Quad_List"),
-  ("Quad_Strip"),
-)
-( ("Off",               0),
-  ("YY",                1),
-  ("NN",                2),
-  ("See_All",           4),
-  ("All_Models",       16),
-  ("All_Objs",         32),
-  ("All_Subobjs",      64),
-  ("All_Tris",        128),
-  ("Search_Model",    512),
-  ("Search_Obj",     1024),
-  ("Wait_Count",     4096),
-  ("Show_Sel",       8192),
-  ("Search_Q",      16384),
-  ("Break_Pt",      32768),
-  ("Searching",      1536),
-  ("New_Search",     1777),
-  ("New_Search_HM",  1761),
-  ("New_Select",    45056),
-  ("Show_All",      36868),
-  ("Select_All",    45296),
-  ("Cont_Search",   61440)
-  )
-'''
-vertex_8_block  = Struct("vertex_8",  INCLUDE=X_Y_Z_Byte)
-vertex_16_block = Struct("vertex_16", INCLUDE=X_Y_Z_Short)
+primitive_types = (
+    ("terminator", 0),
+    ("multi_polyinst", 20),
+    ("polyinst_link",  23),
+    #("float2d",   45),
+    ("subobject", 96),
+    ("uv32",     100),
+    ("uv16",     101),
+    ("uv8",      102),
+    ("vert32",   104),
+    ("vert16",   105),
+    ("vert8",    106),
+    ("polyinst", 108),
+    ("vnorm16",  111),
+    )
 
-uv_8_block  = Struct("uv_8",  INCLUDE=U_V_Byte)
-uv_16_block = Struct("uv_16", INCLUDE=U_V_Short)
+'''The last vertex is always set to X=0, Y=0, Z=0.
+This must be to signal that the strip has ended.'''
 
 #figure out how the normals are compressed
 #they are probably either 5,5,5, 5,6,5, 6,5,5, or 5,5,6
-v_normal_16_block = LBitStruct("v_normal_16", INCLUDE=Compressed_Normal_16)
 
-    
-'''When the type is Subobject, the Count is how ever many
-vertices all its primitives contain(minus the zeroed ones)'''
+unknown_primitive = Container("unknown primitive",
+    BytesRaw("unknown", SIZE=3, DEFAULT=b'\x00\x00\x00'),
+    UInt8("sentinel"),
+    ALIGN=4,
+    )
 
-'''When the type is Vertex, the last vertex is always set to
-X=0, Y=0, Z=0. This must be to signal that the strip has ended.'''
-primitive = Struct("primitive",
-    UInt8("unknown0", DEFAULT=4),
-    UInt8("unknown1"),
-    UInt8("count"),
-    UEnum8("type",
-        ("none",        0),
-        ("unknown",     20),
-        ("point 2d f",  45),
-        ("sub-object",   96),
-        ("uv 16",       101),#just a guess
-        ("uv 8",        102),
-        ("vert 16",   105),
-        ("vert 8",    106),
-        ("vnorm 16", 111),
-        ),
-    #CHILD=Array("primitive_array", SIZE='.count', SUB_STRUCT={} ),
-    ALIGN=4
+terminator = Struct("terminator",
+    Pad(3),
+    UInt8("sentinel"),
+    ALIGN=4,
+    )
+
+multi_polyinst = Struct("multi polyinst",
+    Pad(3),
+    UInt8("sentinel", DEFAULT=20),
+    ALIGN=4,
+    )
+
+polyinst_link = Struct("polyinst link",
+    Pad(3),
+    UInt8("sentinel", DEFAULT=23),
+    ALIGN=4,
+    )
+
+#float_2d = Container("float 2d",
+#    Pad(3),#BytesRaw("unknown0", SIZE=3, DEFAULT=b'\x00\x00\x00'),
+#    UInt8("sentinel", DEFAULT=45),
+#    Float("x"),
+#    Float("y"),
+#    ALIGN=4,
+#    )
+
+uv_32bit = Container("uv 32bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=100),
+    UInt32Array('data', SIZE=get_uv32_size),
+    ALIGN=4,
+    )
+
+uv_16bit = Container("uv 16bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=101),
+    UInt16Array('data', SIZE=get_uv16_size),
+    ALIGN=4,
+    )
+
+uv_8bit = Container("uv 8bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=102),
+    UInt8Array('data', SIZE=get_uv8_size),
+    ALIGN=4,
+    )
+
+vert_32bit = Container("vert 32bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=104),
+    SInt32Array('data', SIZE=get_vert32_size),
+    ALIGN=4,
+    )
+
+vert_16bit = Container("vert 16bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=105),
+    SInt16Array('data', SIZE=get_vert16_size),
+    ALIGN=4,
+    )
+
+vert_8bit = Container("vert 8bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=106),
+    SInt8Array('data', SIZE=get_vert8_size),
+    ALIGN=4,
+    )
+
+vnorm_16bit = Container("vnorm 16bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x02\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=111),
+    UInt16Array('data', SIZE=get_vnorm16_size),
+    ALIGN=4,
+    )
+
+#polyinstance = Container("polyinstance",
+#    BytesRaw("unknown", SIZE=3, DEFAULT=b'\x00\x80\x01'),
+#    UInt8("sentinel", DEFAULT=108),
+#    UInt32('vert count'),
+#    ALIGN=4,
+#    )
+
+polyinstance = Struct("polyinstance",
+    BytesRaw("unknown", SIZE=12,
+        DEFAULT=(b'\x00\x80\x01\x6C'+
+            b'\x00\x00\x00\x00'+
+            b'\x00\x00\x00\x2D')
+            ),
+    UInt8("sentinel", OFFSET=3, DEFAULT=108),
+    UInt32('vert count', OFFSET=4),
+    Pad(4),
+    Float("vert_scale"),
+    Float("uv_scale"),
+    ALIGN=4,
+    )
+
+primitive_switch = Switch('primitive',
+    DEFAULT=unknown_primitive,
+    CASE=get_primitive_type,
+    CASES={ 0:terminator,
+            20:multi_polyinst,
+            23:polyinst_link,
+            #45:float_2d,
+            100:uv_32bit,
+            101:uv_16bit,
+            102:uv_8bit,
+            104:vert_32bit,
+            105:vert_16bit,
+            106:vert_8bit,
+            108:polyinstance,
+            111:vnorm_16bit,
+            },
+    ALIGN=4,
+    )
+
+primitives = WhileArray('primitives',
+    CASE=has_next_primitive,
+    SUB_STRUCT=primitive_switch,
+    ALIGN=4,
+    )
+
+#The gdl model parser seems like it may be 8-byte aligned.
+#The only GOOD reason I can think of for them to do this
+#is so it can always expect a sub_object_model struct to
+#be aligned to the current position of the parser.
+
+sub_object_model = Container("sub-object model",
+    LUInt16("vert count"),
+    UInt8("unknown0"),
+    UEnum8("type", *primitive_types),
+    UInt32('unknown1'),
+    ALIGN=8,
+    CHILD=primitives,
     )
 
 #sub-objects are for things where you may have multiple textures on one mesh.
 #in that case each subobject would have one texture.
 sub_object_block = Struct("sub-object",
     LUInt16("qwc"),
-    LUInt16("texture index"),
-    LUInt16("lm index"),
+    LUInt16("tex index"),
+    LUInt16("lm index"),#seems to always be 0
     LSInt16("lod k")
-    ) 
+    )
 
 object_block = Struct("object",
     LFloat("inv rad"),
@@ -113,7 +284,7 @@ object_block = Struct("object",
         ("lmap_lit", 0x020000),
         ("norm_lit", 0x030000),
         ("dyn_lit",  0x100000)
-    ),
+        ),
 
     LSInt32('sub-objects count'),
     Struct("sub-object 0", INCLUDE=sub_object_block),
@@ -134,10 +305,12 @@ object_block = Struct("object",
     SIZE=64,
     
     CHILD=Container("data",
-        Array("sub-objects", SIZE=sub_objects_size,
-              SUB_STRUCT=sub_object_block, POINTER="..sub_objects_pointer"),
-        Array("sub-object models", SIZE="..sub_objects_count",
-              SUB_STRUCT=primitive, POINTER="..sub_object_models_pointer")
+        Array("sub-objects",
+              SIZE=sub_objects_size, SUB_STRUCT=sub_object_block,
+              POINTER="..sub_objects_pointer"),
+        Array("sub-object models",
+              SIZE="..sub_objects_count", SUB_STRUCT=sub_object_model,
+              POINTER="..sub_object_models_pointer"),
         )
     )
 
@@ -156,13 +329,14 @@ bitmap_block = Struct("bitmap",
         ("XBGR_1555", 1),
         ("ABGR_8888", 2),
         ("XBGR_8888", 3),
+        #all these below formats are palettized
         ("ABGR_1555_IDX_4", 16),
         ("XBGR_1555_IDX_4", 17),
         ("ABGR_8888_IDX_4", 34),
         ("XBGR_8888_IDX_4", 35),
         ("ABGR_1555_IDX_8", 48),
         ("XBGR_1555_IDX_8", 49),
-        ("IDXA_88",         56),
+        #("IDXA_88",         56), #i have no idea how this format works
         ("ABGR_8888_IDX_8", 66),
         ("XBGR_8888_IDX_8", 67),
         ("A_8_IDX_8", 130),
@@ -171,6 +345,8 @@ bitmap_block = Struct("bitmap",
         ("I_4_IDX_4", 147)
         ),
     SInt8("lod k"),
+    #mipmap_count does not include the largest size.
+    #this means a texture without mipmaps will have a mipmap_count of 0
     UInt8("mipmap count"),
 
     #Width-64 == int(ceil(width/64))
@@ -178,7 +354,7 @@ bitmap_block = Struct("bitmap",
     LUInt16("log2 of width"),
     LUInt16("log2 of height"),
 
-    LBool16("Flags",
+    LBool16("flags",
         ("halfres",   0x001),
         ("see alpha", 0x002),
         ("clamp u",   0x004),
@@ -195,7 +371,7 @@ bitmap_block = Struct("bitmap",
 
     #pointer to the texture in the BITMAPS.ps2
     #where the pixel texture data is located
-    LPointer32("tex base"),
+    LPointer32("tex pointer"),
 
     LUInt16("tex palette count"),
     LUInt16("tex shift index"),
@@ -223,7 +399,6 @@ bitmap_block = Struct("bitmap",
 
     LUInt16Array("vram address", SIZE=4),
     LUInt16Array("clut address", SIZE=4),
-    Pad(0),
 
     SIZE=64
     #To animate a series of bitmaps, take the first bitmap and lets call it "base".
@@ -269,7 +444,7 @@ objects_header = Struct('header',
 object_def = Struct("object def",
     StrRawLatin1("name", SIZE=16),
     LFloat("bnd rad", GUI_NAME="bounding radius"),
-    LSInt16("index"),
+    LSInt16("obj index"),
     LSInt16("n frames"),
     SIZE=24
     )
@@ -277,7 +452,7 @@ object_def = Struct("object def",
 bitmap_def = Struct("bitmap def",
     StrRawLatin1("name", SIZE=16),
     Pad(14),
-    LUInt16("index"),
+    LUInt16("tex index"),
     LUInt16("width"),
     LUInt16("height"),
     SIZE=36

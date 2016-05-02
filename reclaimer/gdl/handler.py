@@ -20,6 +20,8 @@ class GdlHandler(TagTestHandler):
         
         if ext in ('.xbe','.rom'):
             return ext[1:]
+        elif ext == '.ps2':
+            return filename
         elif ext == '.wad':
             if filename in ('jac','jes','kni','med','min','ogr',
                             'sor','tig','uni','val','war','wiz'):
