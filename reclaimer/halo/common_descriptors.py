@@ -411,9 +411,9 @@ From_To = Struct('',
 
 
 
-def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, **desc):
+def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     '''This function serves to macro the creation of a reflexive'''
-    return Reflexive(name,
+    desc.update(
         INCLUDE=Reflexive_Struct,
         CHILD=Array(name+" array",
             SIZE=".Count", MAX=max_count,
@@ -421,6 +421,14 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, **desc):
             ),
         SIZE=12
         )
+    if names:
+        name_map = {}
+        for i in range(len(names)):
+            name_map[names[i]] = i
+            
+        desc[CHILD][NAME_MAP] = name_map
+        
+    return Reflexive(name, **desc)
 
 def rawdata_ref(name, field=BytearrayRaw):
     '''This function serves to macro the creation of a rawdata reference'''

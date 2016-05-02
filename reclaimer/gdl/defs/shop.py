@@ -63,6 +63,7 @@ item = Struct('item',
     item_type,
     LUInt32('price'),
     LUInt32('amount'),
+    SIZE=80,
     )
 
 item_array = Lump('items',

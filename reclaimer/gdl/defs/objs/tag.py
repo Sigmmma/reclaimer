@@ -1,4 +1,4 @@
-from supyr_struct.tag import Tag
+from supyr_struct.tag import *
 from supyr_struct.fields import *
 
 
