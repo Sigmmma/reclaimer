@@ -161,7 +161,10 @@ device_desc = Struct("device",
     #animations are as follows:
     #0 == position
     #1 == power
-    reflexive("animations", anim_enum_desc, 2),
+    reflexive("animations", anim_enum_desc, 2,
+              'position',
+              'power',
+              ),
     SIZE=96,
     )
 
