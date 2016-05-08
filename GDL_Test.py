@@ -14,7 +14,7 @@ try:
                                       'printout':True, 'precision':3,
                                       'show':['name', 'children', 'field',
                                               'value',#'offset',# 'py_id',
-                                              'index', #'flags', 'size',# 'unique',
+                                              'index', 'size',#'flags', # 'unique',
                                               'filepath', 'binsize','ramsize',
                                               'trueonly', 'raw'
                                               #'all'

@@ -176,10 +176,11 @@ GdlXbeDef = TagDef(
     Array("cheats",
         SIZE=18, POINTER=1136064,
         SUB_STRUCT=cheat),
-    
-    NAME="Gauntlet Dark Legacy XBE",
 
-    def_id='xbe', ext='.xbe', make_gui_names=True, endian='<',
+    NAME="Gauntlet Dark Legacy XBE",
+    
+
+    def_id='xbe', ext='.xbe', make_gui_names=True, incomplete=True, endian='<',
     subdefs = { 'weapon_types':weapon_types,
                 'special_types':special_types,
                 'armor_types':armor_types,
