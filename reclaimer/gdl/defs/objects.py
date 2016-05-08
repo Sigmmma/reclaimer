@@ -5,254 +5,40 @@ from .objs.objects import ObjectsPs2Tag
 
 def get(): return objects_ps2_def
 
-def get_uv32_size(block=None, parent=None, attr_index=None,
+def get_qword_size(block=None, parent=None, attr_index=None,
                    rawdata=None, new_value=None, *args, **kwargs):
     if block and parent is None:
         parent = block.PARENT
     if new_value is not None:
-        parent.length = new_value//8
-    return parent.length*8
-
-def get_uv16_size(block=None, parent=None, attr_index=None,
-                   rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.length = new_value//4
-    return parent.length*4
-
-def get_uv8_size(block=None, parent=None, attr_index=None,
-                   rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.length = new_value//2
-    return parent.length*2
-
-def get_vert32_size(block=None, parent=None, attr_index=None,
-                    rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.length = new_value//12
-    return parent.length*12
-
-def get_vert16_size(block=None, parent=None, attr_index=None,
-                    rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.length = new_value//6
-    return parent.length*6
-
-def get_vert8_size(block=None, parent=None, attr_index=None,
-                   rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.length = new_value//3
-    return parent.length*3
-
-def get_primitive_type(block=None, parent=None, attr_index=None,
-                       rawdata=None, new_value=None, *args, **kwargs):
-    if rawdata is not None:
-        if rawdata.peek(4)[3] not in (0,20,23,45,96,100,101,102,104,105,106,108,111):
-            print(rawdata.peek(4)[3], rawdata.tell())
-    
-        return rawdata.peek(4)[3]
-
-def has_next_primitive(block=None, parent=None, attr_index=None,
-                       rawdata=None, new_value=None, *args, **kwargs):
-    if rawdata is not None:
-        if parent is None:
-            parent = block.PARENT
-        terminated = len(parent) != 0 and parent[-1].sentinel == 0
-        return rawdata.peek(4)[3] != 96 and not terminated
-        return rawdata.peek(4)[3] != 96
-
-
-get_vnorm16_size = get_uv8_size
+        parent.qword_count = (new_value-8)//16
+    return parent.qword_count*16+8
 
 #########################################################
 '''FOR TEXTURES.PS2, RED AND BLUE CHANNELS ARE SWAPPED'''
 #########################################################
 
-primitive_types = (
-    ("terminator", 0),
-    ("multi_polyinst", 20),
-    ("polyinst_link",  23),
-    #("float2d",   45),
-    ("subobject", 96),
-    ("uv32",     100),
-    ("uv16",     101),
-    ("uv8",      102),
-    ("vert32",   104),
-    ("vert16",   105),
-    ("vert8",    106),
-    ("polyinst", 108),
-    ("vnorm16",  111),
-    )
-
 '''The last vertex is always set to X=0, Y=0, Z=0.
 This must be to signal that the strip has ended.'''
 
-#figure out how the normals are compressed
-#they are probably either 5,5,5, 5,6,5, 6,5,5, or 5,5,6
+#normals are compressed as 1555 with the most significant bit
+#reserved to mean whether or not the face should be created.
 
-unknown_primitive = Container("unknown primitive",
-    BytesRaw("unknown", SIZE=3, DEFAULT=b'\x00\x00\x00'),
-    UInt8("sentinel"),
-    ALIGN=4,
-    )
-
-terminator = Struct("terminator",
-    Pad(3),
-    UInt8("sentinel"),
-    ALIGN=4,
-    )
-
-multi_polyinst = Struct("multi polyinst",
-    Pad(3),
-    UInt8("sentinel", DEFAULT=20),
-    ALIGN=4,
-    )
-
-polyinst_link = Struct("polyinst link",
-    Pad(3),
-    UInt8("sentinel", DEFAULT=23),
-    ALIGN=4,
-    )
-
-#float_2d = Container("float 2d",
-#    Pad(3),#BytesRaw("unknown0", SIZE=3, DEFAULT=b'\x00\x00\x00'),
-#    UInt8("sentinel", DEFAULT=45),
-#    Float("x"),
-#    Float("y"),
-#    ALIGN=4,
-#    )
-
-uv_32bit = Container("uv 32bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=100),
-    UInt32Array('data', SIZE=get_uv32_size),
-    ALIGN=4,
-    )
-
-uv_16bit = Container("uv 16bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=101),
-    UInt16Array('data', SIZE=get_uv16_size),
-    ALIGN=4,
-    )
-
-uv_8bit = Container("uv 8bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=102),
-    UInt8Array('data', SIZE=get_uv8_size),
-    ALIGN=4,
-    )
-
-vert_32bit = Container("vert 32bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=104),
-    SInt32Array('data', SIZE=get_vert32_size),
-    ALIGN=4,
-    )
-
-vert_16bit = Container("vert 16bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=105),
-    SInt16Array('data', SIZE=get_vert16_size),
-    ALIGN=4,
-    )
-
-vert_8bit = Container("vert 8bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=106),
-    SInt8Array('data', SIZE=get_vert8_size),
-    ALIGN=4,
-    )
-
-vnorm_16bit = Container("vnorm 16bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x02\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=111),
-    UInt16Array('data', SIZE=get_vnorm16_size),
-    ALIGN=4,
-    )
-
-#polyinstance = Container("polyinstance",
-#    BytesRaw("unknown", SIZE=3, DEFAULT=b'\x00\x80\x01'),
-#    UInt8("sentinel", DEFAULT=108),
-#    UInt32('vert count'),
-#    ALIGN=4,
-#    )
-
-polyinstance = Struct("polyinstance",
-    BytesRaw("unknown", SIZE=12,
-        DEFAULT=(b'\x00\x80\x01\x6C'+
-            b'\x00\x00\x00\x00'+
-            b'\x00\x00\x00\x2D')
-            ),
-    UInt8("sentinel", OFFSET=3, DEFAULT=108),
-    UInt32('vert count', OFFSET=4),
-    Pad(4),
-    Float("vert_scale"),
-    Float("uv_scale"),
-    ALIGN=4,
-    )
-
-primitive_switch = Switch('primitive',
-    DEFAULT=unknown_primitive,
-    CASE=get_primitive_type,
-    CASES={ 0:terminator,
-            20:multi_polyinst,
-            23:polyinst_link,
-            #45:float_2d,
-            100:uv_32bit,
-            101:uv_16bit,
-            102:uv_8bit,
-            104:vert_32bit,
-            105:vert_16bit,
-            106:vert_8bit,
-            108:polyinstance,
-            111:vnorm_16bit,
-            },
-    ALIGN=4,
-    )
-
-primitives = WhileArray('primitives',
-    CASE=has_next_primitive,
-    SUB_STRUCT=primitive_switch,
-    ALIGN=4,
-    )
-
-#The gdl model parser seems like it may be 8-byte aligned.
-#The only GOOD reason I can think of for them to do this
-#is so it can always expect a sub_object_model struct to
-#be aligned to the current position of the parser.
 
 sub_object_model = Container("sub-object model",
-    LUInt16("vert count"),
-    UInt8("unknown0"),
-    UEnum8("type", *primitive_types),
-    UInt32('unknown1'),
-    ALIGN=8,
-    CHILD=primitives,
+    LUInt16("qword count"),
+    BytesRaw("unknown", SIZE=6, DEFAULT=b'\x00\x60\x00\x00\x00\x00'),
+
+    BytesRaw('data', SIZE=get_qword_size),
+
+    ALIGN=4,
     )
 
-#sub-objects are for things where you may have multiple textures on one mesh.
-#in that case each subobject would have one texture.
+#Multiple sub-objects are for things where you may have multiple
+#textures on one mesh. In that case each subobject would have one texture.
 sub_object_block = Struct("sub-object",
-    LUInt16("qwc"),
+    LUInt16("qw count", "quadword count"),
     LUInt16("tex index"),
-    LUInt16("lm index"),#seems to always be 0
+    LUInt16("lm index", GUI_NAME="light map index"),
     LSInt16("lod k")
     )
 
@@ -275,14 +61,14 @@ object_block = Struct("object",
         ("chrome", 0x100),
 
         ("error",  0x200),
-        ("sort_a", 0x400),
+        {NAME:"sort_a", VALUE:0x400, DEFAULT:True},
         ("sort",   0x800),
 
         ("fmt_mask", 0x00F000),
-        ("pre_lit",  0x010000),
-        ("lit_mask", 0x0F0000),
-        ("lmap_lit", 0x020000),
-        ("norm_lit", 0x030000),
+        {NAME:"pre_lit",  VALUE:0x010000, DEFAULT:True},
+        {NAME:"lit_mask", VALUE:0x0F0000, DEFAULT:True},
+        {NAME:"lmap_lit", VALUE:0x020000, DEFAULT:True},
+        {NAME:"norm_lit", VALUE:0x030000, DEFAULT:True},
         ("dyn_lit",  0x100000)
         ),
 
@@ -294,8 +80,8 @@ object_block = Struct("object",
 
     #the number of unique verts in the object.
     #probably number of verts before compiling
-    LSInt32("vert count"),
-    LSInt32("tri count"),
+    LSInt32("vert count"),#exactly the number of unique verts
+    LSInt32("tri count"),#exactly the number of unique triangles
     LSInt32("id num"),
 
     #pointer to the obj def that this model uses
@@ -433,7 +219,7 @@ objects_header = Struct('header',
 
     LUInt32("tex bits"),
 
-    LUInt16("lm tex First"),
+    LUInt16("lm tex first"),
     LUInt16("lm tex num"),
     LUInt32("tex info"),
     Pad(28),
@@ -485,3 +271,231 @@ objects_ps2_def = TagDef(
     NAME="gdl objects resource",
     ext=".ps2", def_id="objects", tag_cls=ObjectsPs2Tag
     )
+
+######################################################################
+'''All these structure defintions are only being kept for illustrating
+the hierarchy of the quad-word chunks and what is stored in them.'''
+######################################################################
+'''
+def get_uv32_size(block=None, parent=None, attr_index=None,
+                   rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//8
+    return parent.length*8
+
+def get_uv16_size(block=None, parent=None, attr_index=None,
+                   rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//4
+    return parent.length*4
+
+def get_uv8_size(block=None, parent=None, attr_index=None,
+                   rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//2
+    return parent.length*2
+
+def get_vert32_size(block=None, parent=None, attr_index=None,
+                    rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//12
+    return parent.length*12
+
+def get_vert16_size(block=None, parent=None, attr_index=None,
+                    rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//6
+    return parent.length*6
+
+def get_vert8_size(block=None, parent=None, attr_index=None,
+                   rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.length = new_value//3
+    return parent.length*3
+
+def get_stream_type(block=None, parent=None, attr_index=None,
+                    rawdata=None, new_value=None, *args, **kwargs):
+    if rawdata is not None:
+        pad = (STREAM_ALIGN-(rawdata.tell()%STREAM_ALIGN))%STREAM_ALIGN
+        if rawdata.peek(4)[3] not in known_streams:
+            print('UNKNOWN DATA STREAM')
+            try:
+                if parent is None:
+                    parent = block.PARENT
+                print(rawdata.peek(4)[3], rawdata.tell(),
+                      parent.get_tag().filepath)
+            except:
+                print(rawdata.peek(4)[3], rawdata.tell())
+            print()
+        return rawdata.peek(4+pad)[-1]
+
+def has_next_stream(block=None, parent=None, attr_index=None,
+                    rawdata=None, new_value=None, *args, **kwargs):
+    if rawdata is not None:
+        pad = (STREAM_ALIGN-(rawdata.tell()%STREAM_ALIGN))%STREAM_ALIGN
+        return rawdata.peek(4+pad)[-1] not in (0, 96)
+
+def is_pad_stream(block=None, parent=None, attr_index=None,
+                  rawdata=None, new_value=None, *args, **kwargs):
+    if rawdata is not None:
+        pad = (STREAM_ALIGN-(rawdata.tell()%STREAM_ALIGN))%STREAM_ALIGN
+        return rawdata.peek(4+pad)[-1] == 0
+
+get_vnorm16_size = get_uv8_size
+
+unknown_stream = Container("unknown stream",
+    BytesRaw("unknown", SIZE=3, DEFAULT=b'\x00\x00\x00'),
+    UInt8("sentinel"),
+    ALIGN=4,
+    )
+
+pad_stream = Container("pad stream",
+    UInt32("sentinel"),
+    ALIGN=4,
+    )
+
+link_start = Struct("link start",
+    Pad(3),
+    UInt8("sentinel", DEFAULT=20),
+    ALIGN=4,
+    )
+
+strip_link = Struct("strip link",
+    Pad(3),
+    UInt8("sentinel", DEFAULT=23),
+    ALIGN=4,
+    )
+
+uv_32bit = Container("uv 32bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=100),
+    UInt32Array('data', SIZE=get_uv32_size),
+    ALIGN=4,
+    )
+
+uv_16bit = Container("uv 16bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=101),
+    UInt16Array('data', SIZE=get_uv16_size),
+    ALIGN=4,
+    )
+
+uv_8bit = Container("uv 8bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=102),
+    UInt8Array('data', SIZE=get_uv8_size),
+    ALIGN=4,
+    )
+
+vert_32bit = Container("vert 32bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=104),
+    SInt32Array('data', SIZE=get_vert32_size),
+    ALIGN=4,
+    )
+
+vert_16bit = Container("vert 16bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=105),
+    SInt16Array('data', SIZE=get_vert16_size),
+    ALIGN=4,
+    )
+
+vert_8bit = Container("vert 8bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=106),
+    SInt8Array('data', SIZE=get_vert8_size),
+    ALIGN=4,
+    )
+
+vnorm_16bit = Container("vnorm 16bit",
+    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x02\x80'),
+    UInt8("length"),
+    UInt8("sentinel", DEFAULT=111),
+    UInt16Array('data', SIZE=get_vnorm16_size),
+    ALIGN=4,
+    )
+
+stream_switch = Switch('data stream',
+    DEFAULT=unknown_stream,
+    CASE=get_stream_type,
+    CASES={ 20:link_start,
+            23:strip_link,
+            100:uv_32bit,
+            101:uv_16bit,
+            102:uv_8bit,
+            104:vert_32bit,
+            105:vert_16bit,
+            106:vert_8bit,
+            #108:tri_strip
+            109:vert_color_abgr,
+            111:vnorm_16bit,
+            },
+    ALIGN=4,
+    )
+
+tri_strip = Container("tri strip",
+    BytesRaw("unknown", SIZE=3, DEFAULT=b'\x00\x80\x01'),
+    UInt8("sentinel", DEFAULT=108),
+    UInt32('vert count'),
+    BytesRaw("unknown", SIZE=4, DEFAULT=b'\x00\x00\x00\x2D'),
+    Float("face_dir"),# 1.0 == faces are clockwise
+    #                  -1.0 == faces are counter-clockwise
+    #                  No solid idea why they decided to use a float for this.
+    #                  Maybe they use it for scaling vertex normals.
+    Float("uv_scale"),
+                   
+    #verts, norms, uvs
+    Switch('verts',   INCLUDE=stream_switch),
+    Switch('norms',   INCLUDE=stream_switch),
+    Switch('uvs',     INCLUDE=stream_switch),
+
+    ALIGN=4,
+    SIZE=20,
+    )
+
+tri_strip_switch = Switch('tri strip',
+    DEFAULT=unknown_stream,
+    CASE=get_stream_type,
+    CASES={ 20:link_start,
+            23:strip_link,
+            108:tri_strip },
+    ALIGN=4,
+    )
+
+sub_object_model = Container("sub-object model",
+    LUInt16("qword count"),
+    BytesRaw("unknown", SIZE=6, DEFAULT=b'\x00\x60\x00\x00\x00\x00'),
+
+    ModelStream('data steams',
+        CASE=has_next_stream,
+        SUB_STRUCT=tri_strip_switch,
+        ALIGN=4),
+
+    WhileArray('pad steams',
+        CASE=is_pad_stream,
+        SUB_STRUCT=pad_stream,
+        ALIGN=4),
+
+    ALIGN=4,
+    )
+
+'''
