@@ -2,6 +2,9 @@ Current speed of OBJECTS.PS2: 40KB/s
 
 High Priority:
 
+calculate bnd_rad for an object by the distance to the furthest away vertex
+
+
 Finish docstrings for modules and update existing ones.
 
 Need to make it so that readers/writers/decoders/encoders have better
