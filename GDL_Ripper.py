@@ -13,15 +13,15 @@ try:
                 '  a     == animations\n\n'+
                 '  i     == individual models\n'+
                 '  ow    == overwrite\n'+
-                '  mips  == mipmaps\n'+
+                '  mip   == mipmaps\n'+
                 '  alpha == alpha palette\n>>> ').lower().split(' ')
-    cmd = set(c for c in ('i','m','a','d','t','o',
+    cmd = set(c for c in ('i','m','a','d','t','ow',
                           'mips','alpha') if c in inp)
     
     while not cmd:
         inp = input('Type in extraction operators:\n>>> ').lower().split(' ')
-        cmd = set(c for c in ('i','m','a','d','t','o',
-                              'mips','alpha') if c in inp)
+        cmd = set(c for c in ('i','m','a','d','t','ow',
+                              'mip','alpha') if c in inp)
 
     print('Loading tags. Please wait...')
     
@@ -37,7 +37,7 @@ try:
                                                anim='a' in cmd,
                                                individual='i' in cmd,
                                                overwrite='ow' in cmd,
-                                               mips='mips' in cmd,
+                                               mips='mip' in cmd,
                                                alpha_pal='alpha' in cmd)
         del test.tags['objects'][filepath]
         
