@@ -5,14 +5,6 @@ from .objs.objects import ObjectsPs2Tag
 
 def get(): return objects_ps2_def
 
-def get_qword_size(block=None, parent=None, attr_index=None,
-                   rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.qword_count = (new_value-8)//16
-    return parent.qword_count*16+8
-
 #########################################################
 '''FOR TEXTURES.PS2, RED AND BLUE CHANNELS ARE SWAPPED'''
 #########################################################
@@ -23,12 +15,11 @@ This must be to signal that the strip has ended.'''
 #normals are compressed as 1555 with the most significant bit
 #reserved to mean whether or not the face should be created.
 
-
 sub_object_model = Container("sub-object model",
     LUInt16("qword count"),
     BytesRaw("unknown", SIZE=6, DEFAULT=b'\x00\x60\x00\x00\x00\x00'),
 
-    BytesRaw('data', SIZE=get_qword_size),
+    BytesRaw('data', SIZE=qword_size),
 
     ALIGN=4,
     )
@@ -36,18 +27,17 @@ sub_object_model = Container("sub-object model",
 #Multiple sub-objects are for things where you may have multiple
 #textures on one mesh. In that case each subobject would have one texture.
 sub_object_block = Struct("sub-object",
-    LUInt16("qw count", "quadword count"),
-    LUInt16("tex index"),
-    LUInt16("lm index", GUI_NAME="light map index"),
-    LSInt16("lod k")
+    LUInt16("qword count", GUI_NAME="quadword count"),
+    LUInt16("tex index",   GUI_NAME="texture index"),
+    LUInt16("lm index",    GUI_NAME="light map index"),
+    LSInt16("lod k",       GUI_NAME="lod coefficient")
     )
 
 object_block = Struct("object",
     LFloat("inv rad"),
     LFloat("bnd rad"),
     Bool32("flags",
-        ("non_lit",   0x0),
-        ("fmt_basic", 0x0),
+        ("non_lit_fmt_basic", 0x0),
 
         ("alpha",     0x01),
         ("v_normals", 0x02),
@@ -64,12 +54,10 @@ object_block = Struct("object",
         {NAME:"sort_a", VALUE:0x400, DEFAULT:True},
         ("sort",   0x800),
 
-        ("fmt_mask", 0x00F000),
         {NAME:"pre_lit",  VALUE:0x010000, DEFAULT:True},
-        {NAME:"lit_mask", VALUE:0x0F0000, DEFAULT:True},
         {NAME:"lmap_lit", VALUE:0x020000, DEFAULT:True},
         {NAME:"norm_lit", VALUE:0x030000, DEFAULT:True},
-        ("dyn_lit",  0x100000)
+        {NAME:"dyn_lit",  VALUE:0x100000, DEFAULT:False},
         ),
 
     LSInt32('sub-objects count'),
@@ -150,7 +138,7 @@ bitmap_block = Struct("bitmap",
         ("tex shift", 0x040),
         ("has alpha", 0x080),
         ("invalid",   0x100),
-        ("dual tex",  0x200)
+        ("dual tex",  0x200),
         ),
 
     LUInt16("tex palette index"),
@@ -165,10 +153,23 @@ bitmap_block = Struct("bitmap",
     #the number of bitmaps after the current
     #one that are included in the animation
     #animated textures can have different formats for each frame
+    #Animating a series of bitmaps:
+    #    Take the first bitmap and lets call it "base".
+    #    Now make a bitmap_def block aiming to base.
+    #    Create another bitmap block to act as the main object
+    #    (so multiple, different, animations can exist).
+    #    In the anim.ps2 create a texture animation aiming
+    #    to the main sequence and aim the start of the animation
+    #    to the base sequence.
     LUInt16("frame count"),
 
     LUInt16("width"),
     LUInt16("height"),
+
+    ############################################################
+    #Everything past this point doesn't seem to matter.
+    #It can all be zeroed out without any visible ingame impact.
+    ############################################################
 
     #related to resolution as a texture with half the
     #size of another texture has this int halved as well
@@ -187,11 +188,6 @@ bitmap_block = Struct("bitmap",
     LUInt16Array("clut address", SIZE=4),
 
     SIZE=64
-    #To animate a series of bitmaps, take the first bitmap and lets call it "base".
-    #    In the chain and make a sequence block aiming to base. Create another bitmap
-    #    block to act as the main object (so multiple, different, animations can exist).
-    #    In the anim.ps2 create a texture animation aiming to the main sequence
-    #    and aim the start of the animation to the base sequence.
     )
 
 objects_header = Struct('header',
@@ -271,231 +267,3 @@ objects_ps2_def = TagDef(
     NAME="gdl objects resource",
     ext=".ps2", def_id="objects", tag_cls=ObjectsPs2Tag
     )
-
-######################################################################
-'''All these structure defintions are only being kept for illustrating
-the hierarchy of the quad-word chunks and what is stored in them.'''
-######################################################################
-'''
-def get_uv32_size(block=None, parent=None, attr_index=None,
-                   rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.length = new_value//8
-    return parent.length*8
-
-def get_uv16_size(block=None, parent=None, attr_index=None,
-                   rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.length = new_value//4
-    return parent.length*4
-
-def get_uv8_size(block=None, parent=None, attr_index=None,
-                   rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.length = new_value//2
-    return parent.length*2
-
-def get_vert32_size(block=None, parent=None, attr_index=None,
-                    rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.length = new_value//12
-    return parent.length*12
-
-def get_vert16_size(block=None, parent=None, attr_index=None,
-                    rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.length = new_value//6
-    return parent.length*6
-
-def get_vert8_size(block=None, parent=None, attr_index=None,
-                   rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.PARENT
-    if new_value is not None:
-        parent.length = new_value//3
-    return parent.length*3
-
-def get_stream_type(block=None, parent=None, attr_index=None,
-                    rawdata=None, new_value=None, *args, **kwargs):
-    if rawdata is not None:
-        pad = (STREAM_ALIGN-(rawdata.tell()%STREAM_ALIGN))%STREAM_ALIGN
-        if rawdata.peek(4)[3] not in known_streams:
-            print('UNKNOWN DATA STREAM')
-            try:
-                if parent is None:
-                    parent = block.PARENT
-                print(rawdata.peek(4)[3], rawdata.tell(),
-                      parent.get_tag().filepath)
-            except:
-                print(rawdata.peek(4)[3], rawdata.tell())
-            print()
-        return rawdata.peek(4+pad)[-1]
-
-def has_next_stream(block=None, parent=None, attr_index=None,
-                    rawdata=None, new_value=None, *args, **kwargs):
-    if rawdata is not None:
-        pad = (STREAM_ALIGN-(rawdata.tell()%STREAM_ALIGN))%STREAM_ALIGN
-        return rawdata.peek(4+pad)[-1] not in (0, 96)
-
-def is_pad_stream(block=None, parent=None, attr_index=None,
-                  rawdata=None, new_value=None, *args, **kwargs):
-    if rawdata is not None:
-        pad = (STREAM_ALIGN-(rawdata.tell()%STREAM_ALIGN))%STREAM_ALIGN
-        return rawdata.peek(4+pad)[-1] == 0
-
-get_vnorm16_size = get_uv8_size
-
-unknown_stream = Container("unknown stream",
-    BytesRaw("unknown", SIZE=3, DEFAULT=b'\x00\x00\x00'),
-    UInt8("sentinel"),
-    ALIGN=4,
-    )
-
-pad_stream = Container("pad stream",
-    UInt32("sentinel"),
-    ALIGN=4,
-    )
-
-link_start = Struct("link start",
-    Pad(3),
-    UInt8("sentinel", DEFAULT=20),
-    ALIGN=4,
-    )
-
-strip_link = Struct("strip link",
-    Pad(3),
-    UInt8("sentinel", DEFAULT=23),
-    ALIGN=4,
-    )
-
-uv_32bit = Container("uv 32bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=100),
-    UInt32Array('data', SIZE=get_uv32_size),
-    ALIGN=4,
-    )
-
-uv_16bit = Container("uv 16bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=101),
-    UInt16Array('data', SIZE=get_uv16_size),
-    ALIGN=4,
-    )
-
-uv_8bit = Container("uv 8bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x04\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=102),
-    UInt8Array('data', SIZE=get_uv8_size),
-    ALIGN=4,
-    )
-
-vert_32bit = Container("vert 32bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=104),
-    SInt32Array('data', SIZE=get_vert32_size),
-    ALIGN=4,
-    )
-
-vert_16bit = Container("vert 16bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=105),
-    SInt16Array('data', SIZE=get_vert16_size),
-    ALIGN=4,
-    )
-
-vert_8bit = Container("vert 8bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x01\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=106),
-    SInt8Array('data', SIZE=get_vert8_size),
-    ALIGN=4,
-    )
-
-vnorm_16bit = Container("vnorm 16bit",
-    BytesRaw("unknown", SIZE=2, DEFAULT=b'\x02\x80'),
-    UInt8("length"),
-    UInt8("sentinel", DEFAULT=111),
-    UInt16Array('data', SIZE=get_vnorm16_size),
-    ALIGN=4,
-    )
-
-stream_switch = Switch('data stream',
-    DEFAULT=unknown_stream,
-    CASE=get_stream_type,
-    CASES={ 20:link_start,
-            23:strip_link,
-            100:uv_32bit,
-            101:uv_16bit,
-            102:uv_8bit,
-            104:vert_32bit,
-            105:vert_16bit,
-            106:vert_8bit,
-            #108:tri_strip
-            109:vert_color_abgr,
-            111:vnorm_16bit,
-            },
-    ALIGN=4,
-    )
-
-tri_strip = Container("tri strip",
-    BytesRaw("unknown", SIZE=3, DEFAULT=b'\x00\x80\x01'),
-    UInt8("sentinel", DEFAULT=108),
-    UInt32('vert count'),
-    BytesRaw("unknown", SIZE=4, DEFAULT=b'\x00\x00\x00\x2D'),
-    Float("face_dir"),# 1.0 == faces are clockwise
-    #                  -1.0 == faces are counter-clockwise
-    #                  No solid idea why they decided to use a float for this.
-    #                  Maybe they use it for scaling vertex normals.
-    Float("uv_scale"),
-                   
-    #verts, norms, uvs
-    Switch('verts',   INCLUDE=stream_switch),
-    Switch('norms',   INCLUDE=stream_switch),
-    Switch('uvs',     INCLUDE=stream_switch),
-
-    ALIGN=4,
-    SIZE=20,
-    )
-
-tri_strip_switch = Switch('tri strip',
-    DEFAULT=unknown_stream,
-    CASE=get_stream_type,
-    CASES={ 20:link_start,
-            23:strip_link,
-            108:tri_strip },
-    ALIGN=4,
-    )
-
-sub_object_model = Container("sub-object model",
-    LUInt16("qword count"),
-    BytesRaw("unknown", SIZE=6, DEFAULT=b'\x00\x60\x00\x00\x00\x00'),
-
-    ModelStream('data steams',
-        CASE=has_next_stream,
-        SUB_STRUCT=tri_strip_switch,
-        ALIGN=4),
-
-    WhileArray('pad steams',
-        CASE=is_pad_stream,
-        SUB_STRUCT=pad_stream,
-        ALIGN=4),
-
-    ALIGN=4,
-    )
-
-'''

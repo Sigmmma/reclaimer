@@ -16,7 +16,7 @@ try:
                                               'value',#'offset',# 'py_id',
                                               'index', 'size',#'flags', # 'unique',
                                               'filepath', 'binsize','ramsize',
-                                              'trueonly', 'raw'
+                                              'trueonly',# 'raw'
                                               #'all'
                                               ] })
     test.run_test()

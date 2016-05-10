@@ -15,6 +15,15 @@ def sub_objects_size(block=None, parent=None, attr_index=None,
         return block_count
 
 
+def qword_size(block=None, parent=None, attr_index=None,
+               rawdata=None, new_value=None, *args, **kwargs):
+    if block and parent is None:
+        parent = block.PARENT
+    if new_value is not None:
+        parent.qword_count = (new_value-8)//16
+    return parent.qword_count*16+8
+
+
 #NEED A PARSER SPECIFICALLY FOR THE GDL OBJECTS BLOCK.
 #IF THE POINTER FOR THE SUB-OBJECTS DATA IS 0 THEN THE
 #PRIMITIVES BLOCK DOESNT EXIST.
