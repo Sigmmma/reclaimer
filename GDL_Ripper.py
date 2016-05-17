@@ -4,24 +4,34 @@ from copy import copy
 try:
     from reclaimer.gdl.handler import GdlHandler
 
+    commands = ('i','g','o','a','d','t','ow','mips','alpha','all')
+    all_cmd = set(commands)
+    all_cmd.remove('ow')
+    all_cmd.remove('all')
+
     test = GdlHandler(debug=3, valid_def_ids='objects', print_test=False)
     inp = ''
     inp = input('Type in extraction operators:\n\n'+
                 '  d     == defs\n'+
                 '  t     == textures\n'+
-                '  m     == models\n'+
-                '  a     == animations\n\n'+
+                '  g     == g3d models\n'+
+                '  o     == obj models\n'+
+                '  a     == animations\n'+
+                '  all   == everything\n\n'+
+                
                 '  i     == individual models\n'+
                 '  ow    == overwrite\n'+
-                '  mip   == mipmaps\n'+
+                '  mips  == mipmaps\n'+
                 '  alpha == alpha palette\n>>> ').lower().split(' ')
-    cmd = set(c for c in ('i','m','a','d','t','ow',
-                          'mips','alpha') if c in inp)
+    cmd = set(c for c in commands if c in inp)
+    if 'all' in cmd:
+        cmd.update(all_cmd)
     
     while not cmd:
         inp = input('Type in extraction operators:\n>>> ').lower().split(' ')
-        cmd = set(c for c in ('i','m','a','d','t','ow',
-                              'mip','alpha') if c in inp)
+        cmd = set(c for c in commands if c in inp)
+        if 'all' in cmd:
+            cmd.update(all_cmd)
 
     print('Loading tags. Please wait...')
     
@@ -31,13 +41,14 @@ try:
     
     for filepath in sorted(test.tags['objects']):
         print('extracting:', filepath)
-        test.tags['objects'][filepath].extract(defs='d' in cmd,
-                                               mod='m' in cmd,
+        test.tags['objects'][filepath].extract_data(defs='d' in cmd,
+                                               g3d='g' in cmd,
+                                               obj='o' in cmd,
                                                tex='t' in cmd,
                                                anim='a' in cmd,
                                                individual='i' in cmd,
                                                overwrite='ow' in cmd,
-                                               mips='mip' in cmd,
+                                               mips='mips' in cmd,
                                                alpha_pal='alpha' in cmd)
         del test.tags['objects'][filepath]
         
