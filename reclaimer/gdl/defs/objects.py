@@ -16,7 +16,7 @@ This must be to signal that the strip has ended.'''
 #reserved to mean whether or not the face should be created.
 
 sub_object_model = Container("sub-object model",
-    LUInt16("qword count"),
+    UInt16("qword count"),
     BytesRaw("unknown", SIZE=6, DEFAULT=b'\x00\x60\x00\x00\x00\x00'),
 
     BytesRaw('data', SIZE=qword_size),
@@ -27,15 +27,25 @@ sub_object_model = Container("sub-object model",
 #Multiple sub-objects are for things where you may have multiple
 #textures on one mesh. In that case each subobject would have one texture.
 sub_object_block = Struct("sub-object",
-    LUInt16("qword count", GUI_NAME="quadword count"),
-    LUInt16("tex index",   GUI_NAME="texture index"),
-    LUInt16("lm index",    GUI_NAME="light map index"),
-    LSInt16("lod k",       GUI_NAME="lod coefficient")
+    #number of 16 byte chunks that the subobject model consists of.
+    UInt16("qword count", GUI_NAME="quadword count"),
+
+    #tex_index is simply the texture index that the subobject uses.
+    UInt16("tex index",   GUI_NAME="texture index"),
+
+    #Not sure about lm_index. Might be the texture index of the
+    #greyscale lightmap that the object uses for the luminance.
+    UInt16("lm index",    GUI_NAME="light map index"),
+
+    #Not sure how the lod_k works, but it is 0 for empty objects.
+    #Maybe the higher it is, the smaller the model must be to disappear.
+    #Value is definitely signed. Don't know why though
+    SInt16("lod k",       GUI_NAME="lod coefficient")
     )
 
 object_block = Struct("object",
-    LFloat("inv rad"),
-    LFloat("bnd rad"),
+    Float("inv rad"),
+    Float("bnd rad"),
     Bool32("flags",
         ("non_lit_fmt_basic", 0x0),
 
@@ -60,21 +70,21 @@ object_block = Struct("object",
         {NAME:"dyn_lit",  VALUE:0x100000, DEFAULT:False},
         ),
 
-    LSInt32('sub-objects count'),
+    SInt32('sub-objects count'),
     Struct("sub-object 0", INCLUDE=sub_object_block),
 
-    LPointer32('sub-objects pointer'),
-    LPointer32('sub-object models pointer'),
+    Pointer32('sub-objects pointer'),
+    Pointer32('sub-object models pointer'),
 
     #the number of unique verts in the object.
     #probably number of verts before compiling
-    LSInt32("vert count"),#exactly the number of unique verts
-    LSInt32("tri count"),#exactly the number of unique triangles
-    LSInt32("id num"),
+    SInt32("vert count"),#exactly the number of unique verts
+    SInt32("tri count"),#exactly the number of unique triangles
+    SInt32("id num"),
 
     #pointer to the obj def that this model uses
-    LPointer32("obj def"),
-    Pad(16),
+    #doesnt seem to be used, so ignore it
+    #LPointer32("obj def"),
 
     SIZE=64,
     
@@ -123,12 +133,12 @@ bitmap_block = Struct("bitmap",
     #this means a texture without mipmaps will have a mipmap_count of 0
     UInt8("mipmap count"),
 
-    #Width-64 == int(ceil(width/64))
+    #Width-64 == (width+63)//64
     UInt8("width-64"),
-    LUInt16("log2 of width"),
-    LUInt16("log2 of height"),
+    UInt16("log2 of width"),
+    UInt16("log2 of height"),
 
-    LBool16("flags",
+    Bool16("flags",
         ("halfres",   0x001),
         ("see alpha", 0x002),
         ("clamp u",   0x004),
@@ -141,14 +151,14 @@ bitmap_block = Struct("bitmap",
         ("dual tex",  0x200),
         ),
 
-    LUInt16("tex palette index"),
+    UInt16("tex palette index"),
 
     #pointer to the texture in the BITMAPS.ps2
     #where the pixel texture data is located
-    LPointer32("tex pointer"),
+    Pointer32("tex pointer"),
 
-    LUInt16("tex palette count"),
-    LUInt16("tex shift index"),
+    UInt16("tex palette count"),
+    UInt16("tex shift index"),
 
     #the number of bitmaps after the current
     #one that are included in the animation
@@ -161,31 +171,32 @@ bitmap_block = Struct("bitmap",
     #    In the anim.ps2 create a texture animation aiming
     #    to the main sequence and aim the start of the animation
     #    to the base sequence.
-    LUInt16("frame count"),
+    UInt16("frame count"),
 
-    LUInt16("width"),
-    LUInt16("height"),
+    UInt16("width"),
+    UInt16("height"),
+
+    #related to resolution as a texture with half the
+    #size of another texture has this int halved as well
+    #not sure if this one matters or not
+    UInt16("size"),
 
     ############################################################
     #Everything past this point doesn't seem to matter.
     #It can all be zeroed out without any visible ingame impact.
     ############################################################
 
-    #related to resolution as a texture with half the
-    #size of another texture has this int halved as well
-    LUInt16("size"),
-
     #points to the bitmap def that this bitmap uses
     #this seems to be the same pointer for each texture in
     #an animation, except for ones of a different format
-    LPointer32("bitmap def"),
+    #LPointer32("bitmap def"),
 
-    LUInt32Array("tex 0", SIZE=8),
-    LUInt32Array("mip tbp 1", SIZE=8),
-    LUInt32Array("mip tbp 2", SIZE=8),
+    #LUInt32Array("tex 0", SIZE=8),
+    #LUInt32Array("mip tbp 1", SIZE=8),
+    #LUInt32Array("mip tbp 2", SIZE=8),
 
-    LUInt16Array("vram address", SIZE=4),
-    LUInt16Array("clut address", SIZE=4),
+    #LUInt16Array("vram address", SIZE=4),
+    #LUInt16Array("clut address", SIZE=4),
 
     SIZE=64
     )
@@ -193,31 +204,31 @@ bitmap_block = Struct("bitmap",
 objects_header = Struct('header',
     StrRawLatin1("dir name",   SIZE=32),
     StrRawLatin1("model name", SIZE=32),
-    LUInt32("version", DEFAULT=0x0D000BF0),
+    UInt32("version", DEFAULT=0xF00B000D),
 
-    LUInt32("objects count"),
-    LUInt32("bitmaps count"),
-    LUInt32("object defs count"),
-    LUInt32("bitmap defs count"),
+    UInt32("objects count"),
+    UInt32("bitmaps count"),
+    UInt32("object defs count"),
+    UInt32("bitmap defs count"),
 
-    LPointer32("objects pointer"),
-    LPointer32("bitmaps pointer"),
-    LPointer32("object defs pointer"),
-    LPointer32("bitmap defs pointer"),
+    Pointer32("objects pointer"),
+    Pointer32("bitmaps pointer"),
+    Pointer32("object defs pointer"),
+    Pointer32("bitmap defs pointer"),
 
-    LPointer32("sub-objects pointer"),
-    LPointer32("geometry pointer"),
+    Pointer32("sub-objects pointer"),
+    Pointer32("geometry pointer"),
 
-    LUInt32("obj end"),
+    UInt32("obj end"),
 
-    LUInt32("tex start"),
-    LUInt32("tex end"),
+    UInt32("tex start"),
+    UInt32("tex end"),
+    
+    UInt32("tex bits"),
 
-    LUInt32("tex bits"),
-
-    LUInt16("lm tex first"),
-    LUInt16("lm tex num"),
-    LUInt32("tex info"),
+    UInt16("lm tex first"),
+    UInt16("lm tex num"),
+    UInt32("tex info"),
     Pad(28),
     SIZE=160
     )
@@ -225,18 +236,18 @@ objects_header = Struct('header',
 
 object_def = Struct("object def",
     StrRawLatin1("name", SIZE=16),
-    LFloat("bnd rad", GUI_NAME="bounding radius"),
-    LSInt16("obj index"),
-    LSInt16("n frames"),
+    Float("bnd rad", GUI_NAME="bounding radius"),
+    SInt16("obj index"),
+    SInt16("frames"),
     SIZE=24
     )
    
 bitmap_def = Struct("bitmap def",
     StrRawLatin1("name", SIZE=16),
     Pad(14),
-    LUInt16("tex index"),
-    LUInt16("width"),
-    LUInt16("height"),
+    UInt16("tex index"),
+    UInt16("width"),
+    UInt16("height"),
     SIZE=36
     )
 
@@ -264,6 +275,6 @@ objects_ps2_def = TagDef(
         SUB_STRUCT=bitmap_def
         ),
     
-    NAME="gdl objects resource",
+    NAME="gdl objects resource", endian="<",
     ext=".ps2", def_id="objects", tag_cls=ObjectsPs2Tag
     )
