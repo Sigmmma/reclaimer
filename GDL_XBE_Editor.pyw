@@ -121,7 +121,7 @@ try:
                                                       title="Import characters from...")
                 if filepath != "":
                     try:
-                        self.Loaded_XBEdata.secret_characters.read(filepath=filepath)
+                        self.Loaded_XBE.data.secret_characters.read(filepath=filepath)
                         self._Initialize_Windows()
                     except: print(format_exc())
         

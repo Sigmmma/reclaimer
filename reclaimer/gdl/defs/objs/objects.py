@@ -1,13 +1,17 @@
 from array import array
-from math import log
+from math import log, sqrt
 from mmap import mmap
-from struct import unpack
+from struct import pack, unpack
 from sys import byteorder as BYTEORDER
 from traceback import format_exc
+
+from xml.etree.ElementTree import ElementTree as etree
 
 from .tag import *
 from ...fields import *
 from supyr_struct.defs.block_def import BlockDef
+
+MONOCHROME_FORMATS = set(("A_4_IDX_4", "I_4_IDX_4", "A_8_IDX_8", "I_8_IDX_8"))
 
 PALETTE_PACK_CHARS = {
     "ABGR_1555_IDX_4":'H',
@@ -88,6 +92,9 @@ BLOCK_SIZES[109] = 8
 BLOCK_SIZES[111] = 2
 
 UNPACK_CHARS = ['B']*256
+#UNPACK_CHARS[100] = 'i'
+#UNPACK_CHARS[101] = 'h'
+#UNPACK_CHARS[102] = 'b'
 UNPACK_CHARS[100] = 'I'
 UNPACK_CHARS[101] = 'H'
 UNPACK_CHARS[102] = 'B'
@@ -100,18 +107,20 @@ UNPACK_CHARS[109] = 'h'
 UNPACK_CHARS[111] = 'H'
 
 #i dont imagine there ever being a use for even a 1024 texture
-VALID_DIMS = set([1,2,4,8,16,32,64,128,256,512,1024,2048,4096])
+VALID_DIMS = set([1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768])
 
-BYTEORDER = '>'
 if BYTEORDER == 'little':
     BYTEORDER = '<'
+else:
+    BYTEORDER = '>'
 
 #alpha is always the 4th byte, or most significant
 GDL_CHANNELS = "RGBA"
 TGA_CHANNELS = "BGRA"
 
-EMPTY_PALETTE = array('B', [])
-DEF_ALPA_PAL  = b'\x80'*256
+EMPTY_PALETTE  = array('B', [])
+DEF_ALPA_PAL   = b'\x80'*256
+MONO_DOWNSCALE = bytes([(i+1)//17 for i in range(256)])
 
 
 ###################
@@ -139,6 +148,7 @@ MIP_FILENAME       = pathdiv+'%s_%s.tga'
 DATA_FOLDERNAME = pathdiv+'data'
 ANIM_FOLDERNAME = pathdiv+'anim'
 MOD_FOLDERNAME  = pathdiv+'mod'
+OBJ_FOLDERNAME  = pathdiv+'obj'
 TEX_FOLDERNAME  = pathdiv+'tex'
 MIP_ALPHA_FOLDERNAME = pathdiv+'misc'
 
@@ -146,16 +156,16 @@ MIP_ALPHA_FOLDERNAME = pathdiv+'misc'
 '''These are just used for parsing models exported by a maxscript exporter.'''
 ##############################################################################
 g3d_sub_object_struct = Container('g3d sub-object',
-    LUInt16("qword count", GUI_NAME="quadword count"),
-    LUInt16("tex index",   GUI_NAME="texture index"),
-    LUInt16("lm index",    GUI_NAME="light map index"),
-    LSInt16("lod k",       GUI_NAME="lod coefficient"),
+    UInt16("qword count", GUI_NAME="quadword count"),
+    UInt16("tex index",   GUI_NAME="texture index"),
+    UInt16("lm index",    GUI_NAME="light map index"),
+    SInt16("lod k",       GUI_NAME="lod coefficient"),
     
-    BytesRaw('data', SIZE=qword_size),
+    BytesRaw('data', SIZE=qword_size), ALIGN=4,
     )
 
 g3d_model_def = BlockDef(
-    UInt32('bnd rad'),
+    Float('bnd rad'),
     UInt32('vert count'),
     UInt32('tri count'),
                       
@@ -165,8 +175,9 @@ g3d_model_def = BlockDef(
         SIZE='.g3d_sub_object_count',
         SUB_STRUCT=g3d_sub_object_struct
         ),
-    NAME="g3d model",
+    NAME="g3d model", endian='<',
     )
+
 
 class ObjectsPs2Tag(GdlTag):
     palettes = None
@@ -174,17 +185,15 @@ class ObjectsPs2Tag(GdlTag):
     palette_swizzled = True
     palette_order    = GDL_CHANNELS
 
-    def extract(self, defs=True, mod=False, tex=False,
-                anim=False, individual=False, overwrite=False,
-                mips=False, alpha_pal=True):
+    def extract_data(self, defs=True, g3d=False, obj=False, tex=False,
+                     anim=False, individual=False, overwrite=False,
+                     mips=False, alpha_pal=True):
         ''''''
         extract_folder = dirname(self.filepath) + DATA_FOLDERNAME
-        mod_folder  = extract_folder + '\\obj mod'
+        mod_folder  = extract_folder + MOD_FOLDERNAME
+        obj_folder  = extract_folder + MOD_FOLDERNAME + OBJ_FOLDERNAME
         tex_folder  = extract_folder + TEX_FOLDERNAME
         anim_folder = extract_folder + ANIM_FOLDERNAME
-        
-        bitmaps = self.data.bitmaps
-        textures = self.textures
 
         if defs:
             self.export_defs(extract_folder, overwrite)
@@ -197,8 +206,11 @@ class ObjectsPs2Tag(GdlTag):
         if anim:
             self.export_animations(anim_folder, overwrite)
 
-        if mod:
-            self.export_models(mod_folder, individual, overwrite)
+        if g3d:
+            self.export_g3d_models(mod_folder, overwrite)
+            
+        if obj:
+            self.export_obj_models(obj_folder, individual, overwrite)
                 
 
 
@@ -212,8 +224,17 @@ class ObjectsPs2Tag(GdlTag):
             
         with open(extract_folder + DEFS_XML_FILENAME, 'w') as df:
             df.write('<?xml version="1.0"?>\n'+
-                     '# gauntlet dark legacy model and texture defs\n\n'+
-                     '<%s>\n'%OBJECTS_PS2_TAG)
+                     '<!--gauntlet dark legacy model and texture defs\n\n'+
+                     'Valid texture formats are as follows:\n'+
+                     '  ABGR_1555_IDX_4, XBGR_1555_IDX_4\n'+
+                     '  ABGR_8888_IDX_4, XBGR_8888_IDX_4\n'+
+                     '  ABGR_1555_IDX_8, XBGR_1555_IDX_8\n'+
+                     '  ABGR_8888_IDX_8, XBGR_8888_IDX_8\n'+
+                     '  A_4_IDX_4, I_4_IDX_4\n'+
+                     '  A_8_IDX_8, I_8_IDX_8\n'+
+                     '  ABGR_1555, XBGR_1555\n'+
+                     '  ABGR_8888, XBGR_8888\n'+
+                     '-->\n<%s>\n'%OBJECTS_PS2_TAG)
 
             objects = self.data.objects
             bitmaps = self.data.bitmaps
@@ -227,16 +248,16 @@ class ObjectsPs2Tag(GdlTag):
             for i in range(len(objects)):
                 obj = objects[i]
                 f = obj.flags
-                df.write((idnt+'<%s inv_rad="%s" bnd_rad="%s"># %s\n')%
-                                (OBJ_TAG, obj.inv_rad, obj.bnd_rad, i))
-                for attr in ('alpha', 'lmap',
+                df.write((idnt+'<%s inv_rad="%s" id_num="%s"> %s\n')%
+                                (OBJ_TAG, obj.inv_rad, obj.id_num, i))
+                for attr in ('alpha', 'v_normals', 'v_colors',
+                             'mesh', 'tex2', 'lmap',
                              'sharp', 'blur', 'chrome',
                              'error', 'sort_a', 'sort',
                              'pre_lit', 'lmap_lit', 'norm_lit', 'dyn_lit'):
                     if not f.__getattr__(attr):
                         continue
                     df.write(idnt*2+ '<set_flag name="%s"/>\n' % attr)
-
                 df.write(idnt+'</%s>\n'%OBJ_TAG)
             df.write('</%s>\n'%OBJS_TAG)
 
@@ -245,7 +266,7 @@ class ObjectsPs2Tag(GdlTag):
             for i in range(len(bitmaps)):
                 b = bitmaps[i]
                 f = b.flags
-                df.write(idnt + '<%s format="%s"># %s\n' %
+                df.write(idnt + '<%s format="%s"> %s\n' %
                              (TEX_TAG, b.format.data_name, i))
                 for attr in ('halfres', 'see_alpha', 'clamp_u', 'clamp_v',
                              'animation', 'external', 'tex_shift',
@@ -254,16 +275,14 @@ class ObjectsPs2Tag(GdlTag):
                         continue
                     df.write(idnt*2+ '<set_flag name="%s"/>\n' % attr)
 
-                if not(f.external or f.animation) :
+                if not(f.external or f.animation or b.frame_count) :
                     df.write(idnt+'</tex>\n')
                     continue
-                for attr in ('lod_k', 'mipmap_count', 'width_64',
-                             'log2_of_width', 'log2_of_height',
+                for attr in ('lod_k', 'mipmap_count',
                              'tex_palette_index', 'tex_palette_count',
                              'tex_shift_index', 'frame_count',
-                             'width', 'height', 'size', 'tex_0'):
-                    df.write(idnt*2+
-                                    '<attr name="%s" value="%s"/>\n' %
+                             'width', 'height'):
+                    df.write(idnt*2+ '<attr name="%s" value="%s"/>\n' %
                                     (attr, b.__getattr__(attr)) )
                 df.write(idnt+'</%s>\n'%TEX_TAG)
             df.write('</%s>\n'%TEXS_TAG)
@@ -273,8 +292,8 @@ class ObjectsPs2Tag(GdlTag):
             for i in range(len(object_defs)):
                 od = object_defs[i]
                 df.write((idnt+'<%s obj_index="%s" frames="%s" '+
-                          'name="%s" /># %s\n') % (OBJ_DEF_TAG,
-                          od.obj_index, od.n_frames, od.name, i))
+                          'name="%s" /> %s\n') % (OBJ_DEF_TAG,
+                          od.obj_index, od.frames, od.name, i))
             df.write('</%s>\n'%OBJ_DEFS_TAG)
 
             #write the texture definition data
@@ -282,24 +301,84 @@ class ObjectsPs2Tag(GdlTag):
             for i in range(len(bitmap_defs)):
                 bd = bitmap_defs[i]
                 df.write((idnt+'<%s tex_index="%s" width="%s" '+
-                          'height="%s" name="%s"/># %s\n') % (TEX_DEF_TAG,
+                          'height="%s" name="%s"/> %s\n') % (TEX_DEF_TAG,
                           bd.tex_index, bd.width, bd.height, bd.name, i))
             df.write('</%s>\n'%TEX_DEFS_TAG)
-
-        df.write('</%s>\n'%OBJECTS_PS2_TAG)
-        df.close()
+            df.write('</%s>\n'%OBJECTS_PS2_TAG)
 
 
     def export_animations(self, anim_folder=ANIM_FOLDERNAME, overwrite=False):
         ''''''
         pass
+    
+    def export_g3d_models(self, mod_folder=MOD_FOLDERNAME, overwrite=False):
+        ''''''
+        objects = self.data.objects
+        object_defs = self.data.object_defs
+        
+        if not exists(mod_folder):
+            makedirs(mod_folder)
+        
+        mod_filename = mod_folder+'\\%s.g3d'
 
+        #make a list of the indexes of each object
+        object_names = list(range(len(objects)))
 
-    def export_models(self, mod_folder='obj mod',
-                      individual=False, overwrite=False):
+        #replace the indexes with names if there is a name for each
+        for object_def in object_defs:
+            if object_def.name:
+                object_names[object_def.obj_index] = object_def.name
+            
+        #loop over each object
+        for i in range(len(object_names)):
+            filename = mod_filename % object_names[i]
+            if exists(filename) and not overwrite:
+                continue
+            
+            curr_obj = objects[i]
+            subobj_header  = curr_obj.sub_object_0
+            subobj_headers = curr_obj.data.sub_objects
+            subobj_models  = curr_obj.data.sub_object_models
+            
+            try:
+                if subobj_header.qword_count == 0 and len(subobj_models) == 0:
+                    continue
+                #open the g3d model and write the data
+                with open(filename, 'w+b') as g3d_file:
+                    #write the header information
+                    g3d_file.write(pack('<f', curr_obj.bnd_rad)+
+                                   pack('<I', curr_obj.vert_count)+
+                                   pack('<I', curr_obj.tri_count)+
+                                   pack('<I', len(subobj_models)))
+                
+                    #loop over each subobject
+                    for j in range(len(subobj_models)):
+                        #always make sure the blocks are 4 byte aligned
+                        g3d_file.seek((4-(g3d_file.tell()%4))%4, 1)
+                        
+                        if j:
+                            subobj_header = subobj_headers[j-1]
+
+                        #write the subobject header
+                        g3d_file.write(pack('<H', subobj_header.qword_count-1)+
+                                       pack('<H', subobj_header.tex_index)+
+                                       pack('<H', subobj_header.lm_index)+
+                                       pack('<h', subobj_header.lod_k))
+
+                        #write the model data
+                        g3d_file.write(subobj_models[j].data)
+            except:
+                print(format_exc())
+                print('The above error occurred while trying to '+
+                      'export the g3d model of object %s'%i)
+                    
+
+    def export_obj_models(self, mod_folder=OBJ_FOLDERNAME,
+                          individual=False, overwrite=False):
         ''''''
         obj_num = strip_num = ''
         objects = self.data.objects
+        object_defs = self.data.object_defs
         
         if not exists(mod_folder):
             makedirs(mod_folder)
@@ -316,9 +395,17 @@ class ObjectsPs2Tag(GdlTag):
         byteorder    = BYTEORDER
         block_sizes  = BLOCK_SIZES
         unpack_chars = UNPACK_CHARS
+        
+        #make a list of the indexes of each object
+        object_names = list(range(len(objects)))
+
+        #replace the indexes with names if there is a name for each
+        for object_def in object_defs:
+            if object_def.name:
+                object_names[object_def.obj_index] = object_def.name
             
         #loop over each object
-        for i in range(len(objects)):
+        for i in range(len(object_names)):
             curr_obj = objects[i]
 
             #if the object is empty, skip it
@@ -326,14 +413,15 @@ class ObjectsPs2Tag(GdlTag):
                 continue
             
             if individual:
-                if exists(mod_folder+'\\%s.obj'%i) and not overwrite:
+                filename = mod_folder+'\\%s.obj'%object_names[i]
+                if exists(filename) and not overwrite:
                     continue
-                obj_file = open(mod_folder+'\\%s.obj'%i, 'w')
-                obj_file.write('# Gauntlet Dark Legacy 3d model\n'+
-                               '#     Written by Moses\n\n')
+                obj_file = open(filename, 'w')
+                obj_file.write('#Gauntlet Dark Legacy 3d model\n'+
+                               '#    Written by Moses\n\n')
                 start_v = 1
 
-            tex_index = curr_obj.sub_object_0.tex_index
+            subobj_head = curr_obj.sub_object_0
             
             try:
                 #loop over each subobject
@@ -355,11 +443,14 @@ class ObjectsPs2Tag(GdlTag):
                     stream_len = len(stream)
                     b = 0
                     
-                    if j:
-                        tex_index = curr_obj.data.sub_objects[j-1].tex_index
+                    if j: subobj_head = curr_obj.data.sub_objects[j-1]
+                    
+                    tex_index = subobj_head.tex_index
 
                     obj_file.write('\n')
-                    obj_file.write('# object %s_%s\n'%(i,j))
+                    obj_file.write('#object %s_%s\n'%(i,j))
+                    obj_file.write('#$lm_index %s\n'%subobj_head.lm_index)
+                    obj_file.write('#$lod_k %s\n'%subobj_head.lod_k)
 
                     #scan over all the data in the stream
                     while b < stream_len:
@@ -408,33 +499,38 @@ class ObjectsPs2Tag(GdlTag):
                             #not sure what they are exactly
                             '''16 bit unknown coordinates'''
                             for k in range(0, len(data), 4):
-                                unknown += ('#unknown %s %s %s %s\n'%
+                                unknown += ('#lightmap %s %s %s %s\n'%
                                             (data[k],   data[k+1],
                                              data[k+2], data[k+3]))
                         elif sen == 102 or (sen == 101 or sen == 100):
                             '''8/16/32 bit uv coordinates'''
                             for k in range(0, len(data), 2):
-                                uvs += 'vt %s %s\n' % (data[k]*uv_scale/128,
-                                                       data[k+1]*uv_scale/128)
+                                uvs += 'vt %s %s\n'%(data[k]/127,
+                                                     data[k+1]/127
+                                                     )
+                            #for k in range(0, len(data), 2):
+                            #    uvs += 'vt %s %s\n' % (data[k]*uv_scale/128,
+                            #                           data[k+1]*uv_scale/128)
                         elif sen == 111:
                             '''16 bit compressed vertex normals'''
                             dont_draw = [0]*len(data)
                             
                             for k in range(len(data)):
                                 norm = data[k]
-                                xn = ((norm&31)-15)/15
-                                yn = (((norm>>5)&31)-15)/15
-                                zn = (((norm>>10)&31)-15)/15
+                                xn = ((norm&31)/15)-1
+                                yn = (((norm>>5)&31)/15)-1
+                                zn = (((norm>>10)&31)/15)-1
+                                
+                                mag = sqrt(xn*xn+yn*yn+zn*zn)
                                 
                                 #dont need much precision on these
-                                normals += 'vn %s %s %s\n' % (str(xn)[:7],
-                                                              str(yn)[:7],
-                                                              str(zn)[:7])
+                                normals += 'vn %s %s %s\n' % (str(xn/mag)[:7],
+                                                              str(yn/mag)[:7],
+                                                              str(zn/mag)[:7])
                                 
                                 #the last bit determines if a face is to be
                                 #drawn or not. 0 means draw, 1 means dont draw
-                                if norm&32768:
-                                    dont_draw[k] = 1
+                                dont_draw[k] = norm&32768
                             #make sure the first 2 are removed since they
                             #are always 1 and triangle strips are always
                             #made of 2 more verts than there are triangles
@@ -516,25 +612,42 @@ class ObjectsPs2Tag(GdlTag):
         so transparency can be edited for palettized images.'''
         palettes = self.palettes
         textures = self.textures
-        bitmaps  = self.data.bitmaps
+        bitmaps      = self.data.bitmaps
+        bitmap_defs  = self.data.bitmap_defs
         
         mipcount = 1
+        monochrome_formats = MONOCHROME_FORMATS
         
-        for i in range(len(textures)):
+        #make a list of the indexes of each object
+        bitmap_names = list(range(len(bitmaps)))
+
+        #replace the indexes with names if there is a name for each
+        for bitmap_def in bitmap_defs:
+            if bitmap_def.name:
+                bitmap_names[bitmap_def.tex_index] = bitmap_def.name
+        
+        for i in range(len(bitmap_names)):
             bitmap   = bitmaps[i]
             palette  = palettes[i]
             mipmaps  = textures[i]
+
+            filename = bitmap_names[i]
+            flags = bitmap.flags
             
-            if bitmap.frame_count or bitmap.flags.external or mipmaps is None:
+            if (bitmap.frame_count or flags.animation or
+                flags.external or mipmaps is None):
                 continue
             
             format_name  = bitmap.format.data_name
+            
+            palette_size = PALETTE_SIZES.get(format_name, 0)
+            pixel_size   = PIXEL_SIZES.get(format_name, 0)
+            alpha_size   = ALPHA_SIZES.get(format_name, 0)
 
-            if format_name == "<UNNAMED>":
+            if format_name == "<INVALID>":
                 print("INVALID FORMAT: index==%s, format==%s, filepath==%s"%
                       (i, bitmap.format.data, self.filepath))
                 continue
-            
 
             #create the bytes to go into the header
             if palette:
@@ -544,14 +657,21 @@ class ObjectsPs2Tag(GdlTag):
                 color_map_depth  = int.to_bytes(8*palette_size, 1, 'little')
                 bpp = b'\x08'
                 image_desc = b'\x20'
+            elif format_name in monochrome_formats:
+                has_color_map = b'\x00'
+                image_type    = b'\x03'
+                color_map_length = b'\x00\x00'
+                color_map_depth  = b'\x00'
+                bpp = b'\x08'
+                image_desc = b'\x20'
+                palette = EMPTY_PALETTE
             else:
                 has_color_map = b'\x00'
                 image_type    = b'\x02'
-                color_map_length = b'\x00'
+                color_map_length = b'\x00\x00'
                 color_map_depth  = b'\x00'
                 bpp        = int.to_bytes(pixel_size, 1, 'little')
                 image_desc = int.to_bytes(alpha_size+32, 1, 'little')
-
                 palette = EMPTY_PALETTE
 
             #if extracting all mipmaps, make sure the loop range is all
@@ -560,8 +680,8 @@ class ObjectsPs2Tag(GdlTag):
 
             #if extracting the alpha palette, do so
             if palette_size and alpha_pal and (overwrite or
-                            not exists(misc_folder + ALPHA_PAL_FILENAME%i)):
-                with open(misc_folder + ALPHA_PAL_FILENAME%i, 'w+b') as pf:
+                        not exists(misc_folder + ALPHA_PAL_FILENAME%filename)):
+                with open(misc_folder+ALPHA_PAL_FILENAME%filename,'w+b') as pf:
                     #write the palette header with WxH as 16x16
                     pf.write(b'\x00\x00\x03'+b'\x00'*9+
                              b'\x10\x00\x10\x00\x08\x20')
@@ -588,38 +708,45 @@ class ObjectsPs2Tag(GdlTag):
 
             for mip in range(mipcount):
                 if mip == 0:
-                    tgapath = tex_folder + TEXTURE_FILENAME%i
+                    tgapath = tex_folder + TEXTURE_FILENAME%filename
                 else:
-                    tgapath = misc_folder + MIP_FILENAME %(i,mip)
+                    tgapath = misc_folder + MIP_FILENAME %(filename,mip)
                     
-                if not overwrite and exists(tgapath):
-                    continue
+                if overwrite or not exists(tgapath):
+                    with open(tgapath,'w+b') as tga_file:
+                        #set whether or not the image has a color map
+                        tga_file.write(b'\x00' + has_color_map + image_type +
+                                       b'\x00'*2 + color_map_length +
+                                       color_map_depth + b'\x00'*4 +
+                                       int.to_bytes(width, 2, 'little') +
+                                       int.to_bytes(height, 2, 'little') +
+                                       bpp + image_desc)
 
-                with open(tgapath,'w+b') as tga_file:
-                    #set whether or not the image has a color map
-                    tga_file.write(b'\x00' + has_color_map + image_type +
-                                   b'\x00'*2 + color_map_length +
-                                   color_map_depth + b'\x00'*4 +
-                                   int.to_bytes(width, 2, 'little') +
-                                   int.to_bytes(height, 2, 'little') +
-                                   bpp + image_desc)
+                        tga_file.write(palette)
+                        if pixel_size == 4:
+                            pix = mipmaps[mip]
+                            '''This looks complicated, but all it does is
+                            create a list as long as the number of pixels,
+                            then goes through all the pixel indexings.
+                            If the index is even, the lower 4 bits are
+                            masked off, if the index is odd, the upper 4
+                            bits are shifted down by 4. This basically
+                            splits the pixels in half and stores one to
+                            each index, instead of two in one.
+                            Photoshop cant handle 4-bit color indexing.
 
-                    tga_file.write(palette)
-                    if pixel_size == 4:
-                        pix = mipmaps[mip]
-                        '''This looks complicated, but all it does is
-                        create a list as long as the number of pixels,
-                        then goes through all the pixel indexings.
-                        If the index is even, the lower 4 bits are
-                        masked off, if the index is odd, the upper 4
-                        bits are shifted down by 4. This basically
-                        splits the pixels in half and stores one to
-                        each index, instead of two in one.
-                        Photoshop cant handle 4-bit color indexing.'''
-                        tga_file.write(array('B',[pix[j//2]>>4*(j%2)&15
-                                             for j in range(width*height)]))
-                    else:
-                        tga_file.write(mipmaps[mip])
+                            The two different routines are because
+                            monochrome formats dont use a palette, so
+                            they need to be scaled to the 0-255 range.'''
+                            if format_name in monochrome_formats:
+                                tga_file.write(array('B',
+                                                 [17*((pix[j//2]>>4*(j%2))&15)
+                                                 for j in range(width*height)]))
+                            else:
+                                tga_file.write(array('B',[pix[j//2]>>4*(j%2)&15
+                                                 for j in range(width*height)]))
+                        else:
+                            tga_file.write(mipmaps[mip])
 
                 width  = (width+1)//2
                 height = (height+1)//2
@@ -632,7 +759,9 @@ class ObjectsPs2Tag(GdlTag):
         
         if data_folder is None:
             data_folder = dirname(self.filepath) + DATA_FOLDERNAME
-        
+        elif not self.filepath:
+            self.filepath = dirname(data_folder+'OBJECTS.PS2')
+
         if not exists(data_folder):
             raise IOError(("data_folder '%s' does not exist. "+
                            "Cannot import data.")% data_folder)
@@ -648,8 +777,6 @@ class ObjectsPs2Tag(GdlTag):
             self.import_mod(mod_path)
 
         if exists(tex_path) and tex:
-            if self.textures is None or self.palettes is None:
-                self.load_textures()
             self.import_tex(tex_path)
 
         if exists(anim_path) and anim:
@@ -694,6 +821,7 @@ class ObjectsPs2Tag(GdlTag):
                 with open(mod_filepaths[i], 'rb') as f:
                     g3d_model = g3d_model_def.build(rawdata=f.read())
             except Exception:
+                print(format_exc())
                 print("Could not load object model %s"%i)
                 continue
 
@@ -722,7 +850,7 @@ class ObjectsPs2Tag(GdlTag):
                 else:
                     subobj = subobjs[j-1]
                     
-                subobj_model = subobj_model[j]
+                subobj_model = subobj_models[j]
                 g3d_subobj   = g3d_subobjs[j]
 
                 #update the header
@@ -748,8 +876,14 @@ class ObjectsPs2Tag(GdlTag):
         bitmaps = self.data.bitmaps
         bitmap_defs = self.data.bitmap_defs
 
+        if self.textures is None or self.palettes is None:
+            self.load_textures()
+
         palettes = self.palettes
         textures = self.textures
+
+        del palettes[:]
+        del textures[:]
 
         #populate the palettes and textures with empty slots
         palettes.extend([None]*(len(bitmaps)-len(palettes)))
@@ -795,7 +929,7 @@ class ObjectsPs2Tag(GdlTag):
         for i in range(len(bitmaps)):
             filepath = tex_filepath % i
             if exists(filepath):
-                mip = 0
+                mip = 1
                 
                 flags = bitmaps[i].flags
                 if flags.external or flags.animation:
@@ -818,6 +952,8 @@ class ObjectsPs2Tag(GdlTag):
         for i in tex_filepaths:
             bitmap = bitmaps[i]
 
+            a_filename = a_pal_filepaths[i]
+
             format_name  = bitmap.format.data_name
             
             palette_size = PALETTE_SIZES.get(format_name, 0)
@@ -830,7 +966,7 @@ class ObjectsPs2Tag(GdlTag):
             '''try to get the alpha palette if the bitmap is palettized'''
             if palette_size:
                 try:
-                    with open(a_pal_filepaths[i], 'rb') as f:
+                    with open(a_filename, 'rb') as f:
                         alpha_data = f.read()
                         
                     width  = unpack('<H', alpha_data[12:14])[0]
@@ -858,25 +994,30 @@ class ObjectsPs2Tag(GdlTag):
                         alpha_data, a_palette = a_palette, b''
                         for x in range((height-1)*width, -1, -1*width):
                             a_palette += alpha_data[x:x+width]
-                except IOError:
+                    #pad the palette up to 256 entries
+                    a_palette += b'\x00'*(256-len(a_palette))
+                except (IOError, TypeError):
                     #file doesnt exist or cant be opened.
                     a_palette = DEF_ALPA_PAL
                 except Exception:
                     print(format_exc())
+                    print('Could not load alpha palette of '+
+                          'bitmap %s\n'%a_filename)
                     continue
-
 
             '''read in the main texture data'''
             try:
-                with open(tex_filepaths[i][0], 'rb') as f:
+                filename = tex_filepaths[i][0]
+                with open(filename, 'rb') as f:
                     tga_data = f.read()
 
+                has_palette = tga_data[1]
                 cm_length = unpack('<H', tga_data[5:7])[0]
                 cm_depth  = tga_data[7]
 
                 width  = unpack('<H', tga_data[12:14])[0]
                 height = unpack('<H', tga_data[14:16])[0]
-                bpp    = tga_data[17]
+                bpp    = tga_data[16]
 
                 #treat 15bit as 16bit
                 if cm_depth == 15: cm_depth = 16
@@ -884,7 +1025,7 @@ class ObjectsPs2Tag(GdlTag):
 
                 pal_start = tga_data[0]+18
                 pal_end   = pal_start + cm_length*cm_depth//8
-                pix_end   = width*height*bpp//8
+                pix_end   = pal_end + width*height*bpp//8
 
                 if tga_data[2]&8:
                     raise TypeError('Cannot use rle tga images for mipmaps.')
@@ -894,7 +1035,7 @@ class ObjectsPs2Tag(GdlTag):
 
                 #read the pixels
                 pixels = tga_data[pal_end:pix_end]
-
+                
                 #if the image origin doesnt start in the upper left
                 #corner, we need to reassemble the image upside down
                 if not tga_data[17]&32:
@@ -904,7 +1045,7 @@ class ObjectsPs2Tag(GdlTag):
                         pixels += pix_data[x:x+stride]
 
                 '''figure out how to handle the palette'''
-                if tga_data[1]:                    
+                if has_palette:                    
                     if not palette_size:
                         raise TypeError('Tga image is palettized, but '+
                                         'the tag says it should not be.')
@@ -921,45 +1062,54 @@ class ObjectsPs2Tag(GdlTag):
                     palette = array(pal_pack_char, b'\x00'*256*palette_size)
 
                     #merge the alpha palette into the palette
-                    if palette_size == 16:
+                    if palette_size == 2:
                         '''since photoshop doesnt let you save palettes
                         as 16bit, we will convert 24 and 32bit palettes
                         to 16bit if the tag says it should be 16bit'''
                         if cm_depth == 16:
-                            for j in range(len(palette)):
+                            for j in range(len(base_palette)//2):
                                 palette[j] = (base_palette[j*2]+
                                               ((base_palette[j*2+1]&127)<<8)+
                                                32768*bool(a_palette[j>>1]))
                         elif cm_depth == 24:
-                            for j in range(len(palette)):
+                            for j in range(len(base_palette)//3):
                                 palette[j] = ( (base_palette[j*3]>>3)+
                                               ((base_palette[j*3+1]>>3)<<5)+
                                               ((base_palette[j*3+2]>>3)<<10)+
                                                32768*bool(a_palette[j>>1]))
                         elif cm_depth == 32:
-                            for j in range(len(palette)):
+                            for j in range(len(base_palette)//4):
                                 palette[j] = ( (base_palette[j*4]>>3)+
                                               ((base_palette[j*4+1]>>3)<<5)+
                                               ((base_palette[j*4+2]>>3)<<10)+
                                                32768*bool(a_palette[j>>1]))
                     elif cm_depth == 24:
-                        for j in range(len(palette)):
+                        for j in range(len(base_palette)//3):
                             palette[j] = (base_palette[j*3]+
                                           (base_palette[j*3+1]<<8)+
                                           (base_palette[j*3+2]<<16)+
                                           (a_palette[j]<<24))
                     elif cm_depth == 32:
-                        for j in range(len(palette)):
+                        for j in range(len(base_palette)//4):
                             palette[j] = (base_palette[j*4]+
                                           (base_palette[j*4+1]<<8)+
                                           (base_palette[j*4+2]<<16)+
                                           (a_palette[j]<<24))
                     else:
                         raise TypeError('Invalid color map depth.')
+                else:
+                    palette = b''
 
-                    '''if the pixel size is 4, need to see if we can
-                    compress the palette down to 16 colors or less'''
-                    if pixel_size == 4:
+                '''if the pixel size is 4, need to see if we can
+                compress the pixels down to 16 indexes or less'''
+                if pixel_size == 4:
+                    new_pix = bytearray(b'\x00'*(len(pixels)//2))
+
+                    #if the image isnt monochrome(it has a palette)
+                    if palette_size:
+                        if not has_palette:
+                            raise TypeError('Tga image is not palettized, '+
+                                            'but the tag says it should be.')
                         #make a list of each of the unique indexing values
                         idx_map = list(set(pixels))
                         idx_256_to_16 = [0]*256
@@ -972,7 +1122,6 @@ class ObjectsPs2Tag(GdlTag):
                         #make a new palette of 16 colors
                         new_pal = array(palette.typecode,
                                         b'\x00'*16*palette_size)
-                        new_pix = bytearray(pixels)
 
                         #make the new palette so it that
                         #contains the 16(or less) used colors
@@ -983,21 +1132,21 @@ class ObjectsPs2Tag(GdlTag):
                         #value to which of the 16 possible palette choices
                         for j in range(len(idx_map)):
                             idx_256_to_16[idx_map[j]] = j
+                    else:
+                        #the image is monochrome
+                        new_pal = None
+                        idx_256_to_16 = MONO_DOWNSCALE
 
-                        #iterate over the pixels and build a new pixel array
-                        #by mapping the old palette indexes to the new ones
-                        for j in range(len(pixels)//2):
-                            new_pix[j] = (idx_256_to_16[pixels[j*2]]+
-                                          (idx_256_to_16[pixels[j*2+1]]<<4))
+                    #iterate over the pixels and build a new pixel array
+                    #by mapping the old palette indexes to the new ones
+                    for j in range(len(pixels)//2):
+                        new_pix[j] = (idx_256_to_16[pixels[j*2]]+
+                                      (idx_256_to_16[pixels[j*2+1]]<<4))
 
-                        #rename the new palette and pixels
-                        palette = new_pal
-                        pixels  = new_pix
-
-                    #store the imported palette to the palettes list
-                    palettes[i] = palette
-
-                elif palette_size:
+                    #rename the new palette and pixels
+                    palette = new_pal
+                    pixels  = new_pix
+                elif palette_size and not has_palette:
                     raise TypeError('Tga image is not palettized, '+
                                     'but the tag says it should be.')
                 elif pixel_size == 32 and bpp == 24:
@@ -1007,7 +1156,7 @@ class ObjectsPs2Tag(GdlTag):
                                         (pixels[i+2]<<16)
                                     for i in range(0,len(pixels),3)])
                 elif pixel_size != bpp:
-                    raise TypeError('Tga image is not the bit depth'+
+                    raise TypeError('Tga image is not the bit depth '+
                                     'that the tag says it should be.')
                 else:
                     #convert the pixels into an array of the right typecode
@@ -1015,8 +1164,12 @@ class ObjectsPs2Tag(GdlTag):
 
                 #store the imported pixels to the pixels list
                 textures[i][0] = pixels
+                #store the imported palette to the palettes list
+                palettes[i] = palette
             except Exception:
                 print(format_exc())
+                print('Above error occurred while importing '+
+                      'bitmap %s\n'%filename)
                 continue
 
             '''update the texture information in the bitmap block'''
@@ -1038,9 +1191,10 @@ class ObjectsPs2Tag(GdlTag):
                     with open(tex_filepaths[i][mip], 'rb') as f:
                         mip_data = f.read()
 
+                    has_palette = mip_data[1]
                     cm_length = unpack('<H', mip_data[5:7])[0]
                     cm_depth = mip_data[7]
-                    bpp = mip_data[17]
+                    bpp = mip_data[16]
 
                     #treat 15bit as 16bit
                     if cm_depth == 15: cm_depth = 16
@@ -1048,7 +1202,7 @@ class ObjectsPs2Tag(GdlTag):
 
                     pal_start = mip_data[0]+18
                     pal_end = pal_start + cm_length*cm_depth//8
-                    pix_end = width*height*bpp//8
+                    pix_end = pal_end + width*height*bpp//8
 
                     if width != unpack('<H', mip_data[12:14])[0]:
                         raise TypeError('Mip width is not what it should be')
@@ -1067,7 +1221,7 @@ class ObjectsPs2Tag(GdlTag):
                             pixels += pix_data[x:x+stride]
 
                     '''figure out how to handle the palette'''
-                    if mip_data[1]:
+                    if has_palette:
                         if not palette_size:
                             raise TypeError('Mipmap image is palettized, but '+
                                             'the tag says it should not be.')
@@ -1083,6 +1237,8 @@ class ObjectsPs2Tag(GdlTag):
                                             (pixels[i+1]<<8)+
                                             (pixels[i+2]<<16)
                                         for i in range(0,len(pixels),3)])
+                    elif pixel_size == 4 and bpp == 8:
+                        pass#monochrome formats
                     elif pixel_size != bpp:
                         raise TypeError('Mipmap image is not the bit depth'+
                                         'that the tag says it should be.')
@@ -1092,7 +1248,8 @@ class ObjectsPs2Tag(GdlTag):
 
                     #if the pixel size is 4, we need to rebuild the indexing
                     if pixel_size == 4:
-                        if len(list(set(pixels))) > 16:
+                        #if the image isnt monochrome(it has a palette)
+                        if palette_size and len(list(set(pixels))) > 16:
                             raise TypeError('Mipmap palette uses more than '+
                                             '16 colors, but the tag says '+
                                             'that it should be <= 16.')
@@ -1110,6 +1267,8 @@ class ObjectsPs2Tag(GdlTag):
                     mipmap_count += 1
             except Exception:
                 print(format_exc())
+                print('Above error occurred while importing '+
+                      'bitmap %s mipmap %s'%(i, mip))
 
             bitmap.mipmap_count = mipmap_count
 
@@ -1122,14 +1281,144 @@ class ObjectsPs2Tag(GdlTag):
 
 
     def import_xml(self, xml_path):
-        ''''''
+        '''Imports information describing the objects,
+        bitmaps, and their definitions from an xml file.
+
+        Deletes all structs in the objects, bitmaps,
+        object_defs, and bitmap_defs arrays and rebuilds
+        them with the imported data.'''
         objects = self.data.objects
         bitmaps = self.data.bitmaps
         object_defs = self.data.object_defs
         bitmap_defs = self.data.bitmap_defs
-        
-        with open(xml_path, 'rb') as f:
-            xml_data = f.read()
+
+        xml_data = etree()
+        try:
+            xml_root = xml_data.parse(xml_path)
+        except:
+            print(format_exc(),'\n')
+            print('Could not load defs.xml')
+            return
+
+        xml_objs = xml_root.find('objs')
+        xml_texs = xml_root.find('texs')
+        xml_obj_defs = xml_root.find('obj_defs')
+        xml_tex_defs = xml_root.find('tex_defs')
+
+        #clear the arrays
+        del objects[:]
+        del bitmaps[:]
+        del object_defs[:]
+        del bitmap_defs[:]
+
+        dir_name = dirname(self.filepath.replace('/', '\\'))
+        try:
+            dir_name = dir_name.split(self.handler.tagsdir)[-1]
+        except AttributeError:
+            pass
+        self.data.header.dir_name = dir_name[-31:]
+
+        if xml_objs:
+            #resize the objects array with the right number of structs
+            objects.extend(len(xml_objs))
+            for i in range(len(xml_objs)):
+                xml_obj = xml_objs[i]
+                obj = objects[i]
+                flags = obj.flags
+
+                #default the flags to unset and set the inv_rad
+                flags.data = 0
+
+                #set all the flags the xml says to
+                try:
+                    for flag_set in xml_obj:
+                        flags.set(flag_set.attrib['name'])
+                    obj.inv_rad = float(xml_obj.attrib.get('inv_rad', obj.inv_rad))
+                    obj.id_num = int(xml_obj.attrib.get('id_num', obj.id_num))
+                except Exception:
+                    print(format_exc())
+                    print('Error occurred while setting flags in object %s'%i)
+
+        if xml_texs:
+            #resize the bitmaps array with the right number of structs
+            bitmaps.extend(len(xml_texs))
+            for i in range(len(xml_texs)):
+                xml_tex = xml_texs[i]
+                bitm = bitmaps[i]
+                flags = bitm.flags
+
+                xml_flags = xml_tex.findall('set_flag')
+                attrs = xml_tex.findall('attr')
+
+                #set the flags to zero
+                flags.data = 0
+
+                #set all the flags the xml says to
+                try:
+                    for flag_set in xml_flags:
+                        flags.set(flag_set.attrib['name'])
+                except Exception:
+                    print(format_exc())
+                    print('Error occurred while setting flags in bitmap %s'%i)
+
+                #set all the attributes the xml defines
+                try:
+                    bitm.format.set_data(xml_tex.attrib['format'])
+
+                    for attr in attrs:
+                        name  = attr.attrib.get('name')
+                        value = attr.attrib.get('value')
+                        if name and value is not None:
+                            bitm.__setattr__(name, int(value))
+                except Exception:
+                    print(format_exc())
+                    print('Error occurred while importing data '+
+                          'from xml in bitmap %s'%i)
+
+                '''set up the miscellaneous variables'''
+                #add 1 to make sure we dont try to do log(0, 2)
+                bitm.log2_of_width  = int(log(bitm.width+1, 2))
+                bitm.log2_of_height = int(log(bitm.height+1, 2))
+                bitm.width_64  = (bitm.width+63)//64
+
+        if xml_obj_defs:
+            #resize the object_defs array with the right number of structs
+            object_defs.extend(len(xml_obj_defs))
+            for i in range(len(xml_obj_defs)):
+                xml_obj_def = xml_obj_defs[i]
+                o_def = object_defs[i]
+
+                attrs = xml_obj_def.attrib
+
+                #set all the attributes the xml defines
+                try:
+                    o_def.obj_index = int(attrs.get('obj_index',o_def.obj_index))
+                    o_def.frames = int(attrs.get('frames', o_def.frames))
+                    o_def.name = attrs.get('name', o_def.name)
+                except Exception:
+                    print(format_exc())
+                    print('Error occurred while importing data '+
+                          'from xml in object_def %s'%i)
+
+        if xml_tex_defs:
+            #resize the bitmap_defs array with the right number of structs
+            bitmap_defs.extend(len(xml_tex_defs))
+            for i in range(len(xml_tex_defs)):
+                xml_tex_def = xml_tex_defs[i]
+                b_def = bitmap_defs[i]
+
+                attrs = xml_tex_def.attrib
+
+                #set all the attributes the xml defines
+                try:
+                    b_def.tex_index = int(attrs.get('tex_index', b_def.tex_index))
+                    b_def.width  = int(attrs.get('width', b_def.width))
+                    b_def.height = int(attrs.get('height', b_def.height))
+                    b_def.name   = attrs.get('name', b_def.name)
+                except Exception:
+                    print(format_exc())
+                    print('Error occurred while importing data '+
+                          'from xml in bitmap_def %s'%i)
 
 
     def swap_color_channels(self, indexes=None):
@@ -1172,7 +1461,7 @@ class ObjectsPs2Tag(GdlTag):
                     for i in range(len(pal)):
                         col = pal[i]
                         pal[i] = (col&33760)+(((col>>10)+(col<<10))&31775)
-                else:
+                elif palette_size == 4:
                     #palette colors are 32 bit R8G8B8A8
                     for i in range(len(pal)):
                         col = pal[i]
@@ -1186,12 +1475,16 @@ class ObjectsPs2Tag(GdlTag):
                 if pixel_size == 16:
                     #pixels are 16 bit R5G5B5A1
                     for tex in texs:
+                        if tex is None:
+                            continue
                         for i in range(len(tex)):
                             pix = tex[i]
                             tex[i] = (pix&33760)+(((pix>>10)+(pix<<10))&31775)
-                else:
+                elif pixel_size == 32:
                     #pixels are 32 bit R8G8B8A8
                     for tex in texs:
+                        if tex is None:
+                            continue
                         for i in range(len(tex)):
                             pix = tex[i]
                             tex[i] = (pix&0xFF00FF00)+(((pix>>16)+
@@ -1236,13 +1529,13 @@ class ObjectsPs2Tag(GdlTag):
         byteorder = BYTEORDER
 
         textures_filepath = self.textures_filepath
-        textures = self.textures = [None]*len(bitmaps)
+        textures = self.textures = [[None] for i in range(len(bitmaps))]
         palettes = self.palettes = [None]*len(bitmaps)
+
         try:
             with open(textures_filepath, 'r+b') as f:
                 rawdata = mmap(f.fileno(), 0)
         except Exception:
-            self.palettes = self.textures = None
             return
         
         for i in range(len(bitmaps)):
@@ -1276,13 +1569,13 @@ class ObjectsPs2Tag(GdlTag):
                 width  = (width+1)//2
                 height = (height+1)//2
                 #if the system is big endian we need to byteswap the data
-                if byteorder == ">": textures[i].byteswap()
+                if byteorder == ">": textures[i][mip].byteswap()
 
 
     @property
     def textures_filepath(self):
         ''''''
-        return dirname(self.filepath) + '\\textures.ps2'
+        return dirname(self.filepath) + '\\TEXTURES.PS2'
 
 
     def write(self, **kwargs):
@@ -1296,33 +1589,42 @@ class ObjectsPs2Tag(GdlTag):
             curr_pointer = 0
 
             assert (len(bitmaps) == len(palettes) and
-                    len(bitmaps) == len(textures))
+                    len(bitmaps) == len(textures)), ('bitmaps array length '+
+                      'does not match the length of the palettes or textures.')
             
             #set the pointers for the texture data
-            for i in range(len(bitmaps)):
-                if bitmaps[i].frame_count or bitmaps[i].flags.external:
+            for i in range(len(bitmaps)):                    
+                if bitmaps[i].flags.external:
                     continue
                 
                 #set the tex_pointer to the current pointer location
                 bitmaps[i].tex_pointer = curr_pointer
                 
-                palette = palettes[i]
-                if palette:
-                    if isinstance(palette, (bytes, bytearray)):
-                        curr_pointer += len(palette)
-                    elif isinstance(palette, array):
-                        curr_pointer += len(palette)*palette.itemsize
+                if not bitmaps[i].frame_count:
+                    palette = palettes[i]
+                    if palette:
+                        if isinstance(palette, (bytes, bytearray)):
+                            curr_pointer += len(palette)
+                        elif isinstance(palette, array):
+                            curr_pointer += len(palette)*palette.itemsize
 
-                for rawdata in textures[i]:
-                    if isinstance(rawdata, (bytes, bytearray)):
-                        curr_pointer += len(rawdata)
-                    elif isinstance(rawdata, array):
-                        curr_pointer += len(rawdata)*rawdata.itemsize
+                    for rawdata in textures[i]:
+                        if isinstance(rawdata, (bytes, bytearray)):
+                            curr_pointer += len(rawdata)
+                        elif isinstance(rawdata, array):
+                            curr_pointer += len(rawdata)*rawdata.itemsize
 
-                '''since i dont know what the alignment requirements are on
-                the texture data, i'm gonna assume everything needs to be
-                4-byte aligned, since that will take care of all cases.'''
-                curr_pointer += 4-(curr_pointer%4)
+                    '''since i dont know what the alignment requirements are on
+                    the texture data, i'm gonna assume everything needs to be
+                    16-byte aligned, since that will take care of all cases.'''
+                    curr_pointer += (16-(curr_pointer%16))%16
+
+        #set the header pointers and file length
+        d = self.data
+        header = d.header
+        header.obj_end = header.tex_bits = d.binsize
+        subobj_pointer = header.bitmap_defs_pointer + d.bitmap_defs.binsize
+        header.sub_objects_pointer = header.geometry_pointer = subobj_pointer
 
         #write the tag data to its file
         return_val = GdlTag.write(self, **kwargs)
@@ -1350,12 +1652,11 @@ class ObjectsPs2Tag(GdlTag):
                     
                     if palettes[i]:
                         f.write(palettes[i])
-                    
+
                     for rawdata in textures[i]:
                         f.write(rawdata)
                         
             if not bool(kwargs.get('temp',True)):
-                self.rename_backup_and_temp(self, filepath,
-                                            backuppath, temppath,
+                self.rename_backup_and_temp(filepath, backuppath, temppath,
                                             bool(kwargs.get('backup',True)))
         return return_val
