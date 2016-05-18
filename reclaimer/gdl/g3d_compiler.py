@@ -7,7 +7,7 @@ from .stripify import Stripifier
 
 STRIP_START = b'\x00\x00\x00\x14'
 STRIP_LINK  = b'\x00\x00\x00\x17'
-MAX_STRIP_LEN = 255 - 1 - 2#UInt8_Max - (final null vert) - (first 2 verts)
+MAX_STRIP_LEN = 255 - 1#UInt8_Max - (final null vert)
 DEFAULT_TEX = 0
 DEFAULT_LOD_K = -90
 DEFAULT_LM_INDEX = 0
@@ -17,6 +17,8 @@ class G3dCompiler():
 
     def __init__(self, *args, **kwargs):        
         self.stripifier = Stripifier()
+        self.stripifier.max_strip_len = MAX_STRIP_LEN
+        self.stripifier.degen_link = False
 
         #set up the instance variables
         self.import_obj()        
@@ -155,14 +157,17 @@ class G3dCompiler():
             strips = all_strips[tex_index]
             degens = all_degens[tex_index]
             
-            d_draw    = all_dont_draws[tex_index] = []
-            vert_maxs = all_vert_maxs[tex_index]  = []
-            uv_maxs   = all_uv_maxs[tex_index]    = []
+            dont_draws = all_dont_draws[tex_index] = []
+            vert_maxs  = all_vert_maxs[tex_index]  = []
+            uv_maxs    = all_uv_maxs[tex_index]    = []
 
             #loop over each strip
             for i in range(len(strips)):
                 strip = strips[i]
                 degen = degens[i]
+                
+                #first 2 are never rendered cause theres not 3 verts yet. duh
+                d_draw = [1,1]+[0]*(len(strip)-2)
 
                 vert_max = uv_max = 0
                 #calcualte the vert and uv maxs
@@ -176,8 +181,7 @@ class G3dCompiler():
                 vert_maxs.append(vert_max)
                 uv_maxs.append(uv_max)
 
-                #first 2 are never rendered cause theres not 3 verts yet. duh
-                d_draw.append( (1,1)+(0,)*(len(strip)-2) )
+                dont_draws.append(d_draw)
 
                 #flag all degen tris as not drawn
                 for d in degen:
