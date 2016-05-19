@@ -24,7 +24,7 @@ try:
             self.compiler = G3dCompiler()
             
             self.title("GDL Resourcer V1.0")
-            self.geometry("280x80+0+0")
+            self.geometry("280x78+0+0")
             self.resizable(0, 0)
             
             self.data_folderpath = StringVar(self)
@@ -44,11 +44,12 @@ try:
 
             #place the widgets
             self.folder_field.place(x=5, y=4, anchor=NW)
-            self.btn_select.place(x=10, y=25, anchor=NW)
-            self.btn_compile_g3d.place(x=140, y=25, anchor=NW)
             
-            self.btn_compile.place(x=34, y=50, anchor=NW)
-            self.btn_decompile.place(x=140, y=50, anchor=NW)
+            self.btn_select.place(x=9, y=25, anchor=NW)
+            self.btn_compile_g3d.place(x=141, y=25, anchor=NW)
+            
+            self.btn_compile.place(x=33, y=50, anchor=NW)
+            self.btn_decompile.place(x=141, y=50, anchor=NW)
 
             
         def select_folder(self):

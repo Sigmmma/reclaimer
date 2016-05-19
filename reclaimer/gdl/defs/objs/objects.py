@@ -92,9 +92,6 @@ BLOCK_SIZES[109] = 8
 BLOCK_SIZES[111] = 2
 
 UNPACK_CHARS = ['B']*256
-#UNPACK_CHARS[100] = 'i'
-#UNPACK_CHARS[101] = 'h'
-#UNPACK_CHARS[102] = 'b'
 UNPACK_CHARS[100] = 'I'
 UNPACK_CHARS[101] = 'H'
 UNPACK_CHARS[102] = 'B'
@@ -120,6 +117,8 @@ TGA_CHANNELS = "BGRA"
 
 EMPTY_PALETTE  = array('B', [])
 DEF_ALPA_PAL   = b'\x80'*256
+DEF_LOD_K = -90
+DEF_SIZE  = 32
 MONO_DOWNSCALE = bytes([(i+1)//17 for i in range(256)])
 
 
@@ -274,14 +273,14 @@ class ObjectsPs2Tag(GdlTag):
                     if not f.__getattr__(attr):
                         continue
                     df.write(idnt*2+ '<set_flag name="%s"/>\n' % attr)
-
+                    
                 if not(f.external or f.animation or b.frame_count) :
                     df.write(idnt+'</tex>\n')
                     continue
                 for attr in ('lod_k', 'mipmap_count',
                              'tex_palette_index', 'tex_palette_count',
                              'tex_shift_index', 'frame_count',
-                             'width', 'height'):
+                             'width', 'height', 'tex_0'):
                     df.write(idnt*2+ '<attr name="%s" value="%s"/>\n' %
                                     (attr, b.__getattr__(attr)) )
                 df.write(idnt+'</%s>\n'%TEX_TAG)
@@ -350,7 +349,6 @@ class ObjectsPs2Tag(GdlTag):
                                    pack('<I', curr_obj.vert_count)+
                                    pack('<I', curr_obj.tri_count)+
                                    pack('<I', len(subobj_models)))
-                
                     #loop over each subobject
                     for j in range(len(subobj_models)):
                         #always make sure the blocks are 4 byte aligned
@@ -466,7 +464,6 @@ class ObjectsPs2Tag(GdlTag):
                         elif sen == 45:
                             '''face directions and uv scale'''
                             face_dirs.append(unpack('f', stream[b:b+4])[0])
-                            uv_scale = unpack('f', stream[b+4:b+8])[0]
                             b += 8
                             continue
                         elif sen == 23 or sen == 20 or sen == 0:
@@ -506,11 +503,7 @@ class ObjectsPs2Tag(GdlTag):
                             '''8/16/32 bit uv coordinates'''
                             for k in range(0, len(data), 2):
                                 uvs += 'vt %s %s\n'%(data[k]/127,
-                                                     data[k+1]/127
-                                                     )
-                            #for k in range(0, len(data), 2):
-                            #    uvs += 'vt %s %s\n' % (data[k]*uv_scale/128,
-                            #                           data[k+1]*uv_scale/128)
+                                                     1-(data[k+1]/127))
                         elif sen == 111:
                             '''16 bit compressed vertex normals'''
                             dont_draw = [0]*len(data)
@@ -521,7 +514,7 @@ class ObjectsPs2Tag(GdlTag):
                                 yn = (((norm>>5)&31)/15)-1
                                 zn = (((norm>>10)&31)/15)-1
                                 
-                                mag = sqrt(xn*xn+yn*yn+zn*zn)
+                                mag = sqrt(xn*xn+yn*yn+zn*zn)+0.00001
                                 
                                 #dont need much precision on these
                                 normals += 'vn %s %s %s\n' % (str(xn/mag)[:7],
@@ -1352,6 +1345,8 @@ class ObjectsPs2Tag(GdlTag):
 
                 #set the flags to zero
                 flags.data = 0
+                bitm.lod_k = DEF_LOD_K
+                bitm.size = DEF_SIZE
 
                 #set all the flags the xml says to
                 try:
@@ -1369,7 +1364,7 @@ class ObjectsPs2Tag(GdlTag):
                         name  = attr.attrib.get('name')
                         value = attr.attrib.get('value')
                         if name and value is not None:
-                            bitm.__setattr__(name, int(value))
+                            bitm.__setattr__(name, eval(value))
                 except Exception:
                     print(format_exc())
                     print('Error occurred while importing data '+
@@ -1523,7 +1518,7 @@ class ObjectsPs2Tag(GdlTag):
                     palette[j], palette[j+8] = palette[j+8], palette[j]
     
     
-    def load_textures(self, **kwargs):
+    def load_textures(self):
         ''''''
         bitmaps = self.data.bitmaps
         byteorder = BYTEORDER
@@ -1570,6 +1565,63 @@ class ObjectsPs2Tag(GdlTag):
                 height = (height+1)//2
                 #if the system is big endian we need to byteswap the data
                 if byteorder == ">": textures[i][mip].byteswap()
+    
+
+    def set_pointers(self, offset=0):
+        ''''''
+        header = self.data.header
+        objs = self.data.objects
+        
+        offset = offset+160#size of the header is 160 bytes
+        
+        obj_count = header.objects_count
+        tex_count = header.bitmaps_count
+        obj_def_count = header.object_defs_count
+        tex_def_count = header.bitmap_defs_count
+
+        #set the object and bitmap arrays pointers
+        header.objects_pointer = offset
+        offset += obj_count*64
+        header.bitmaps_pointer = offset
+        offset += tex_count*64
+
+        #loop over all objects and set the pointers of their subobjects
+        header.sub_objects_pointer = offset
+        for obj in objs:
+            sub_obj_count = obj.sub_objects_count
+
+            #null out the subobjects pointer if none exist
+            if sub_obj_count < 2:
+                obj.sub_objects_pointer = 0
+            else:
+                obj.sub_objects_pointer = offset
+                offset += (sub_obj_count-1)*8
+        
+        #align the offset to a qword boundary
+        offset += (16-(offset%16))%16
+            
+        #loop over all objects and set the pointers of their geometry data
+        header.geometry_pointer = offset
+        for obj in objs:
+            #align the offset to a qword boundary
+            offset += (16-(offset%16))%16
+        
+            sub_obj_count = obj.sub_objects_count
+            obj.sub_object_models_pointer = offset
+
+            data = obj.data.sub_object_models
+            #increment the offset by the size of the model data
+            for model in data:
+                offset += 16*(model.qword_count + 1)
+        
+        #set the object_def and bitmap_def arrays pointers
+        header.object_defs_pointer = offset
+        offset += obj_def_count*24
+        header.bitmap_defs_pointer = offset
+        offset += tex_def_count*36
+
+        #set the file length
+        header.obj_end = header.tex_bits = offset
 
 
     @property
@@ -1618,13 +1670,6 @@ class ObjectsPs2Tag(GdlTag):
                     the texture data, i'm gonna assume everything needs to be
                     16-byte aligned, since that will take care of all cases.'''
                     curr_pointer += (16-(curr_pointer%16))%16
-
-        #set the header pointers and file length
-        d = self.data
-        header = d.header
-        header.obj_end = header.tex_bits = d.binsize
-        subobj_pointer = header.bitmap_defs_pointer + d.bitmap_defs.binsize
-        header.sub_objects_pointer = header.geometry_pointer = subobj_pointer
 
         #write the tag data to its file
         return_val = GdlTag.write(self, **kwargs)

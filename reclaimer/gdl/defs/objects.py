@@ -181,17 +181,12 @@ bitmap_block = Struct("bitmap",
     #not sure if this one matters or not
     UInt16("size"),
 
-    ############################################################
-    #Everything past this point doesn't seem to matter.
-    #It can all be zeroed out without any visible ingame impact.
-    ############################################################
-
     #points to the bitmap def that this bitmap uses
     #this seems to be the same pointer for each texture in
     #an animation, except for ones of a different format
-    #LPointer32("bitmap def"),
+    Pad(4),#LPointer32("bitmap def"),
 
-    #LUInt32Array("tex 0", SIZE=8),
+    LUInt32Array("tex 0", SIZE=8),
     #LUInt32Array("mip tbp 1", SIZE=8),
     #LUInt32Array("mip tbp 2", SIZE=8),
 
@@ -243,8 +238,8 @@ object_def = Struct("object def",
     )
    
 bitmap_def = Struct("bitmap def",
-    StrRawLatin1("name", SIZE=16),
-    Pad(14),
+    StrRawLatin1("name", SIZE=20),
+    Pad(10),
     UInt16("tex index"),
     UInt16("width"),
     UInt16("height"),

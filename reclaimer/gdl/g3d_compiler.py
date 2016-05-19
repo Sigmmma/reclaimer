@@ -7,11 +7,12 @@ from .stripify import Stripifier
 
 STRIP_START = b'\x00\x00\x00\x14'
 STRIP_LINK  = b'\x00\x00\x00\x17'
-MAX_STRIP_LEN = 255 - 1#UInt8_Max - (final null vert)
+MAX_STRIP_LEN = 190 - 1#UInt8_Max - (final null vert)
 DEFAULT_TEX = 0
 DEFAULT_LOD_K = -90
 DEFAULT_LM_INDEX = 0
 
+#I know that a strip can be at least 190 verts long(null vert included)
 
 class G3dCompiler():
 
@@ -44,6 +45,7 @@ class G3dCompiler():
         
         self.all_dont_draws = {}
         self.all_vert_maxs  = {}
+        self.all_uv_shifts  = {}
         self.all_uv_maxs    = {}
 
         self.bnd_rad = bnd_rad_square = 0.0
@@ -89,7 +91,7 @@ class G3dCompiler():
                     tris = all_tris[tex_index]
                 elif line[0:2] == 'vt':
                     line = line[2:].strip(' ').split(' ')
-                    uvs.append([int(127*(1-float(line[0]))),
+                    uvs.append([int(127*float(line[0])),
                                 int(127*(1-float(line[1])))])
                 elif line[0:2] == 'vn':
                     line = line[2:].strip(' ').split(' ')
@@ -149,7 +151,8 @@ class G3dCompiler():
         
         all_dont_draws = self.all_dont_draws = {}
         all_vert_maxs  = self.all_vert_maxs = {}
-        all_uv_maxs    = self.all_uv_maxs = {}
+        all_uv_maxs    = self.all_uv_maxs   = {}
+        all_uv_shifts  = self.all_uv_shifts = {}
         
         '''calculate the max vert and uv sizes for each strip
         and calculate the dont_draws from the all_degens lists'''
@@ -160,6 +163,7 @@ class G3dCompiler():
             dont_draws = all_dont_draws[tex_index] = []
             vert_maxs  = all_vert_maxs[tex_index]  = []
             uv_maxs    = all_uv_maxs[tex_index]    = []
+            uv_shifts  = all_uv_shifts[tex_index]  = []
 
             #loop over each strip
             for i in range(len(strips)):
@@ -169,17 +173,25 @@ class G3dCompiler():
                 #first 2 are never rendered cause theres not 3 verts yet. duh
                 d_draw = [1,1]+[0]*(len(strip)-2)
 
-                vert_max = uv_max = 0
+                vert_max = uv_max = uv_shift = 0
                 #calcualte the vert and uv maxs
                 for v_i in strip:
                     #get the largest vert and uv values
                     vert_max = max(verts[vert_data[v_i][0]]+
                                    [vert_max, -min(verts[vert_data[v_i][0]])])
-                    uv_max = max(uvs[vert_data[v_i][1]]+
-                                 [uv_max, -min(uvs[vert_data[v_i][1]])])
+                    uv_max = max(uvs[vert_data[v_i][1]]+[uv_max])
+
+                    
+                    tmp_shift = min(uvs[vert_data[v_i][1]])
+                    if tmp_shift >= 0:
+                        continue
+
+                    #tmp_shift is expected to be negative, so subtract to add
+                    uv_shift = max(((127-tmp_shift)//128)*128, uv_shift)
                 
                 vert_maxs.append(vert_max)
-                uv_maxs.append(uv_max)
+                uv_maxs.append(uv_max+uv_shift)
+                uv_shifts.append(uv_shift)
 
                 dont_draws.append(d_draw)
 
@@ -201,6 +213,7 @@ class G3dCompiler():
         all_dont_draws = self.all_dont_draws
         all_vert_maxs  = self.all_vert_maxs
         all_uv_maxs    = self.all_uv_maxs
+        all_uv_shifts  = self.all_uv_shifts 
         
         vert_data  = stripifier.vert_data
         
@@ -239,6 +252,7 @@ class G3dCompiler():
                 dont_draws = all_dont_draws[tex_index]
                 vert_maxs  = all_vert_maxs[tex_index]
                 uv_maxs    = all_uv_maxs[tex_index]
+                uv_shifts  = all_uv_shifts[tex_index]
                 
                 '''write the model data'''
                 for strip_num in range(len(strips)):
@@ -249,6 +263,7 @@ class G3dCompiler():
                     d_draws  = dont_draws[strip_num]
                     vert_max = vert_maxs[strip_num]
                     uv_max   = uv_maxs[strip_num]
+                    uv_shift = uv_shifts[strip_num]
 
                     #if the face is reversed, set that
                     if face_dirs[strip_num]:
@@ -260,7 +275,7 @@ class G3dCompiler():
                     #write the tristrip header
                     buffer.write(b'\x00\x80\x01\x6C'+pack('<I',len(strip))+
                                  b'\x00\x00\x00\x2D'+ pack('<f',face_dir)+
-                                 b'\x00\x00\x80\x3F')#set the uv scale to 1.0
+                                 b'\x00\x00\x80\x3F')
 
                     '''write the vert data'''
                     if vert_max <= 127:
@@ -310,17 +325,20 @@ class G3dCompiler():
                         buffer.write(b'\x04\xC0'+pack('B',len(strip))+b'\x66')
                         for i in strip:
                             uv = uvs[vert_data[i][1]]
-                            buffer.write(pack('b',uv[0])+ pack('b',uv[1]))
+                            buffer.write(pack('B',uv[0]+uv_shift)+
+                                         pack('B',uv[1]+uv_shift))
                     elif uv_max <= 32767:
                         buffer.write(b'\x04\xC0'+pack('B',len(strip))+b'\x65')
                         for i in strip:
                             uv = uvs[vert_data[i][1]]
-                            buffer.write(pack('<h',uv[0])+ pack('<h',uv[1]))
+                            buffer.write(pack('<H',uv[0]+uv_shift)+
+                                         pack('<H',uv[1]+uv_shift))
                     else:
                         buffer.write(b'\x04\xC0'+pack('B',len(strip))+b'\x64')
                         for i in strip:
                             uv = uvs[vert_data[i][1]]
-                            buffer.write(pack('<i',uv[0])+ pack('<i',uv[1]))
+                            buffer.write(pack('<I',uv[0]+uv_shift)+
+                                         pack('<I',uv[1]+uv_shift))
 
                     #make sure the data is 4 byte aligned
                     buffer.write(b'\x00'*((4-(len(buffer)%4))%4) )
