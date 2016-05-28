@@ -61,7 +61,7 @@ object_block = Struct("object",
         ("chrome", 0x100),
 
         ("error",  0x200),
-        {NAME:"sort_a", VALUE:0x400, DEFAULT:True},
+        ("sort_a", 0x400),
         ("sort",   0x800),
 
         {NAME:"pre_lit",  VALUE:0x010000, DEFAULT:True},
@@ -238,8 +238,7 @@ object_def = Struct("object def",
     )
    
 bitmap_def = Struct("bitmap def",
-    StrRawLatin1("name", SIZE=20),
-    Pad(10),
+    StrRawLatin1("name", SIZE=30),
     UInt16("tex index"),
     UInt16("width"),
     UInt16("height"),

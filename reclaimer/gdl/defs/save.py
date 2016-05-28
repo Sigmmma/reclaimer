@@ -21,6 +21,18 @@ for i in (0,1,2,6,7,8,11,15,16,17,20,21,22,27,28,32,35,37,
           102,110,111,113,125,126,130,132,134,135,137):
     help_disp_default[i] = 0x11
 
+char_names = (
+    "warrior",  "valkyrie",  "wizard",    "archer",
+    "dwarf",    "knight",    "sorceress", "jester",
+    "minotaur", "falconess", "jackal",    "tigress",
+    "ogre",     "unicorn",   "medusa",    "hyena")
+
+def make_name_map(suffix=''):
+    name_map = {}
+    for i in range(len(char_names)):
+        name_map[char_names[i]+suffix] = i
+    return name_map
+
 special_flags = xbe.special_types
 armor_flags   = xbe.armor_types
 weapon_flags  = xbe.weapon_types_bitstruct
@@ -218,10 +230,14 @@ gdl_savemeta_def = TagDef(
             ),
         UInt16('level total'),
         
-        Array('character attrs', SUB_STRUCT=p_attrs, SIZE=16),
-        Array('character stats',  SUB_STRUCT=p_stats, SIZE=16),
-        Array('character stuff',  SUB_STRUCT=p_stuff, SIZE=16),
-        Array('character levels', SUB_STRUCT=p_waves, SIZE=16),
+        Array('character attrs',  SUB_STRUCT=p_attrs,
+            SIZE=16, NAME_MAP=make_name_map('_attrs')),
+        Array('character stats',  SUB_STRUCT=p_stats,
+            SIZE=16, NAME_MAP=make_name_map('_stats')),
+        Array('character stuff',  SUB_STRUCT=p_stuff,
+            SIZE=16, NAME_MAP=make_name_map('_stuff')),
+        Array('character levels', SUB_STRUCT=p_waves,
+            SIZE=16, NAME_MAP=make_name_map('_levels')),
         
         UEnum8('control scheme',
             "ps2",

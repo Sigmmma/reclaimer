@@ -17,7 +17,7 @@ def is_xbox_gametype(block=None, parent=None, attr_index=None,
                      rawdata=None, new_value=None, *args, **kwargs):
     if parent is None:
         parent = block.PARENT
-    return parent.get_tag().is_xbox
+    return parent.tag.is_xbox
 
 ##################################################
 '''Shared enumerators, booleans, and bitstructs'''
