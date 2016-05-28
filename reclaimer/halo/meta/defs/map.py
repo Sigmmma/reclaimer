@@ -126,9 +126,9 @@ tag_data = Container("tag data",
     )
 
 tag_header = Struct("tag header",
-    Struct("tag class 1", INCLUDE=All_Valid_Tags),
-    Struct("tag class 2", INCLUDE=All_Valid_Tags),
-    Struct("tag class 3", INCLUDE=All_Valid_Tags),
+    Struct("tag class 1", INCLUDE=valid_tags),
+    Struct("tag class 2", INCLUDE=valid_tags),
+    Struct("tag class 3", INCLUDE=valid_tags),
     LUInt32("tag id"),
     LSInt32("tag path offset"),
     LSInt32("tag offset"),

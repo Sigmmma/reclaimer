@@ -23,7 +23,7 @@ def get_lump_type(block=None, parent=None, attr_index=None,
         attr_index = find_index(parent, block)
     if parent is None or attr_index is None:
         raise KeyError
-    return parent.get_tag().data.lump_headers[attr_index].lump_id.data_name
+    return parent.tag.data.lump_headers[attr_index].lump_id.data_name
 
 def lump_size(block=None, parent=None, attr_index=None,
               rawdata=None, new_value=None, *args, **kwargs):
@@ -33,7 +33,7 @@ def lump_size(block=None, parent=None, attr_index=None,
         attr_index = find_index(parent, block)
     if parent is None or attr_index is None:
         return 0
-    header = parent.get_tag().data.lump_headers[attr_index]
+    header = parent.tag.data.lump_headers[attr_index]
     if new_value is None:
         return header.lump_array_length
     header.lump_array_length = new_value
@@ -46,7 +46,7 @@ def lump_pointer(block=None, parent=None, attr_index=None,
         attr_index = find_index(parent, block)
     if parent is None or attr_index is None:
         return 0
-    header = parent.get_tag().data.lump_headers[attr_index]
+    header = parent.tag.data.lump_headers[attr_index]
     if new_value is None:
         return header.lump_array_pointer
     header.lump_array_pointer = new_value

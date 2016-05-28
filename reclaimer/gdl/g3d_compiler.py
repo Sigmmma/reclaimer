@@ -102,6 +102,8 @@ class G3dCompiler():
                     mag = sqrt(norm[0]*norm[0]+
                                norm[1]*norm[1]+
                                norm[2]*norm[2])
+                    if mag == 0:
+                        continue
                     norm[0] = int(15.5*(norm[0]/mag+1))
                     norm[1] = int(15.5*(norm[1]/mag+1))
                     norm[2] = int(15.5*(norm[2]/mag+1))

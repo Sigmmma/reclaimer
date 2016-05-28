@@ -2,24 +2,7 @@ Current speed of OBJECTS.PS2: 40KB/s
 
 High Priority:
 
-
 Finish docstrings for modules and update existing ones.
-
-Need to make it so that readers/writers/decoders/encoders have better
-handling of exceptions and give better details regarding the exception.
-    Do this for the whole library in general where necessary
-
-    Place try/except around all encoding routines to catch and report errors better
-
-    Make it so when an error is first raised, a special exception type is raised with
-    an appended message saying which block the exception occurred while trying to read.
-        The error text can be like:
-            "Exception occurred while trying to read '%s'" % b_desc.get(NAME)
-        and for every reader outside of it an additonal string will be appended to
-        the error saying " in '%s'" % b_desc.get(NAME)
-
-Make sanitization function an attribute in the Field_Type under the name "Sanitizer".
-    The Field_Type.Sanitizer() will get called whenever encountered in a descriptor
 
 
 Medium Priority:
@@ -36,6 +19,13 @@ multiple descriptors for how to decode/encode the data.
     be possible to make the largest attribute be a 4 char 32bit string, but have
     the other entries be endianness reliant things.
 
+    MAYBE DO THIS BY MAKING IT SO ONCE YOU ACCESS ONE OF THE POSSIBLE ATTRIBUTES, IT
+    DECODES IT INTO A BLOCK AND SAVES A REFERENCE TO THE BLOCK IN THE UNION BLOCK.
+    WHEN ANOTHER ATTRIBUTE IS ACCESSED, THE DATA FROM THE CURRENTLY LOADED BLOCK IS
+    WRITTEN TO THE BUFFER AND IS DELETED. A NEW BLOCK IS CREATED FROM THE SELECTED
+    ATTRIBUTE AND IS PLACED IN THE UNION BLOCK AS THE CURRENT ATTRIBUTE.
+
+
 Make a Wrapper Field and a WrapperBlock that allows wrapping a block(s) in another
 block which has methods for reading and editing the data of the inner block(s).
     An example would be a wrapper that treats an int as a utc timestamp
@@ -43,6 +33,8 @@ block which has methods for reading and editing the data of the inner block(s).
 
     Another would be a wrapper for ip addressing that treats a series of 4 bytes
     either 4 unsigned 8-bit ints, or a string in the format "AAA.BBB.CCC.DDD"
+
+WRAPPER AND UNION MAY BE ABLE TO BE THE SAME THING
 
 
 Low Priority:
@@ -196,7 +188,7 @@ Write palettized mipmap generator.
 
 
 
-GNUerilla Ideas:
+OranguTag Ideas:
 
 create "UNITS" and make it accept an object which defines a 
 way to display the data(bytes, KB, MB, degrees, radians, etc).

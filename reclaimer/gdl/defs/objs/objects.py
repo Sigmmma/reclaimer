@@ -117,9 +117,12 @@ TGA_CHANNELS = "BGRA"
 
 EMPTY_PALETTE  = array('B', [])
 DEF_ALPA_PAL   = b'\x80'*256
+EMPTY_ALPA_PAL = b'\x00'*256
 DEF_LOD_K = -90
 DEF_SIZE  = 32
 MONO_DOWNSCALE = bytes([(i+1)//17 for i in range(256)])
+#default flags to be set on a new object model
+DEF_OBJ_FLAGS = 0x2 + 0x8 + 0x010000 + 0x020000 + 0x030000
 
 
 ###################
@@ -224,6 +227,20 @@ class ObjectsPs2Tag(GdlTag):
         with open(extract_folder + DEFS_XML_FILENAME, 'w') as df:
             df.write('<?xml version="1.0"?>\n'+
                      '<!--gauntlet dark legacy model and texture defs\n\n'+
+                     'Valid object flags are as follows:\n'+
+                     '  alpha\n'+
+                     '  v_normals,   v_colors\n'+
+                     '  mesh,  tex2, lmap\n'+
+                     '  sharp, blur, chrome\n'+
+                     '  error, sort, sort_a\n'+
+                     '  pre_lit,     lmap_lit\n'+
+                     '  norm_lit,    dyn_lit\n\n'+
+                     'Valid bitmap flags are as follows:\n'+
+                     '  halfres,   see_alpha\n'+
+                     '  clamp_u,   clamp_v\n'+
+                     '  animation, external\n'+
+                     '  tex_shift, has_alpha\n'+
+                     '  invalid,   dual_tex\n\n'+
                      'Valid texture formats are as follows:\n'+
                      '  ABGR_1555_IDX_4, XBGR_1555_IDX_4\n'+
                      '  ABGR_8888_IDX_4, XBGR_8888_IDX_4\n'+
@@ -232,8 +249,13 @@ class ObjectsPs2Tag(GdlTag):
                      '  A_4_IDX_4, I_4_IDX_4\n'+
                      '  A_8_IDX_8, I_8_IDX_8\n'+
                      '  ABGR_1555, XBGR_1555\n'+
-                     '  ABGR_8888, XBGR_8888\n'+
-                     '-->\n<%s>\n'%OBJECTS_PS2_TAG)
+                     '  ABGR_8888, XBGR_8888\n\n'+
+                     'Valid object_def attributes are as follows:\n'+
+                     '  obj_index, frames, name\n\n'+
+                     'Valid bitmap_def attributes are as follows:\n'+
+                     '  tex_index, width, height, name\n\n'+
+                     "specify a flags state with set_flag or unset_flag"
+                     '-->\n<%s>\n'%OBJECTS_PS2_TAG)                          
 
             objects = self.data.objects
             bitmaps = self.data.bitmaps
@@ -249,14 +271,17 @@ class ObjectsPs2Tag(GdlTag):
                 f = obj.flags
                 df.write((idnt+'<%s inv_rad="%s" id_num="%s"> %s\n')%
                                 (OBJ_TAG, obj.inv_rad, obj.id_num, i))
-                for attr in ('alpha', 'v_normals', 'v_colors',
-                             'mesh', 'tex2', 'lmap',
+                for attr in ('alpha', 'v_colors', 'tex2', 'lmap',
                              'sharp', 'blur', 'chrome',
-                             'error', 'sort_a', 'sort',
-                             'pre_lit', 'lmap_lit', 'norm_lit', 'dyn_lit'):
+                             'sort_a', 'sort', 'error', 'dyn_lit'):
                     if not f.__getattr__(attr):
                         continue
                     df.write(idnt*2+ '<set_flag name="%s"/>\n' % attr)
+                for attr in ('v_normals', 'mesh',
+                             'pre_lit', 'lmap_lit', 'norm_lit'):
+                    if f.__getattr__(attr):
+                        continue
+                    df.write(idnt*2+ '<unset_flag name="%s"/>\n' % attr)
                 df.write(idnt+'</%s>\n'%OBJ_TAG)
             df.write('</%s>\n'%OBJS_TAG)
 
@@ -790,6 +815,7 @@ class ObjectsPs2Tag(GdlTag):
         
         #holds all the model filepaths indexed by their object index
         mod_filepaths = {}
+        mod_filenames = {}
 
         mod_filepath = mod_path+'\\%s.g3d'
 
@@ -798,6 +824,7 @@ class ObjectsPs2Tag(GdlTag):
             filepath = mod_filepath % obj_def.name
             if exists(filepath):
                 mod_filepaths[obj_def.obj_index] = filepath
+                mod_filenames[obj_def.obj_index] = obj_def.name
 
         #try to locate all models by the index of the model
         for i in range(len(objects)):
@@ -853,6 +880,7 @@ class ObjectsPs2Tag(GdlTag):
                 subobj.lod_k       = g3d_subobj.lod_k
 
                 if subobj.tex_index > bitmap_count:
+                    i = mod_filenames.get(i, i)
                     print(('subobject %s in object %s uses texture number %s'+
                            ' which does not exist.')%(j,i,subobj.tex_index))
 
@@ -955,6 +983,7 @@ class ObjectsPs2Tag(GdlTag):
             pix_pack_char = PIXEL_PACK_CHARS.get(format_name, 'B')
 
             mipmap_count = 0
+            def_pal = False
 
             '''try to get the alpha palette if the bitmap is palettized'''
             if palette_size:
@@ -992,6 +1021,7 @@ class ObjectsPs2Tag(GdlTag):
                 except (IOError, TypeError):
                     #file doesnt exist or cant be opened.
                     a_palette = DEF_ALPA_PAL
+                    def_pal = True
                 except Exception:
                     print(format_exc())
                     print('Could not load alpha palette of '+
@@ -1042,7 +1072,7 @@ class ObjectsPs2Tag(GdlTag):
                     if not palette_size:
                         raise TypeError('Tga image is palettized, but '+
                                         'the tag says it should not be.')
-                    if palette_size == 32 and cm_depth not in (24,32):
+                    if palette_size == 4 and cm_depth not in (24,32):
                         raise TypeError('Tga image is not the bit depth'+
                                         'that the tag says it should be.')
 
@@ -1053,6 +1083,29 @@ class ObjectsPs2Tag(GdlTag):
                     #start off with an empty palette so we can
                     #make sure the palette contains 256 colors
                     palette = array(pal_pack_char, b'\x00'*256*palette_size)
+                    
+                    if def_pal:
+                        '''If the default palette was provided, build the
+                        alpha palette from the image data(if possible)'''
+                        
+                        n_a_palette = bytearray([255]*256)
+                        if cm_depth == 16:
+                            for j in range(len(base_palette)//2):
+                                n_a_palette[j] = 256*bool(base_palette[j+1]>>7)
+                        elif cm_depth == 24:
+                            '''A 24-bit image is being compressed down to 16bit.
+                            Assume all colors but the first one are fully
+                            opaque and the first one is fully transparent.
+                            That is how photoshop deals with saving TGA files
+                            "with transparency"; making color 0 transparent.'''
+                            n_a_palette[0] = 0
+                        elif cm_depth == 32:
+                            for j in range(len(base_palette)//4):
+                                n_a_palette[j] = base_palette[j*4+3]
+
+                        #make sure the alpha palette isn't an empty blank one
+                        if n_a_palette != EMPTY_ALPA_PAL:
+                            a_palette = n_a_palette
 
                     #merge the alpha palette into the palette
                     if palette_size == 2:
@@ -1063,19 +1116,19 @@ class ObjectsPs2Tag(GdlTag):
                             for j in range(len(base_palette)//2):
                                 palette[j] = (base_palette[j*2]+
                                               ((base_palette[j*2+1]&127)<<8)+
-                                               32768*bool(a_palette[j>>1]))
+                                               32768*bool(a_palette[j]>>7))
                         elif cm_depth == 24:
                             for j in range(len(base_palette)//3):
                                 palette[j] = ( (base_palette[j*3]>>3)+
                                               ((base_palette[j*3+1]>>3)<<5)+
                                               ((base_palette[j*3+2]>>3)<<10)+
-                                               32768*bool(a_palette[j>>1]))
+                                               32768*bool(a_palette[j]>>7))
                         elif cm_depth == 32:
                             for j in range(len(base_palette)//4):
                                 palette[j] = ( (base_palette[j*4]>>3)+
                                               ((base_palette[j*4+1]>>3)<<5)+
                                               ((base_palette[j*4+2]>>3)<<10)+
-                                               32768*bool(a_palette[j>>1]))
+                                               32768*bool(a_palette[j]>>7))
                     elif cm_depth == 24:
                         for j in range(len(base_palette)//3):
                             palette[j] = (base_palette[j*3]+
@@ -1320,12 +1373,15 @@ class ObjectsPs2Tag(GdlTag):
                 flags = obj.flags
 
                 #default the flags to unset and set the inv_rad
-                flags.data = 0
+                flags.data = DEF_OBJ_FLAGS
 
                 #set all the flags the xml says to
                 try:
-                    for flag_set in xml_obj:
-                        flags.set(flag_set.attrib['name'])
+                    for flag in xml_obj:
+                        if flag.tag == 'set_flag':
+                            flags.set(flag.attrib['name'])
+                        elif flag.tag == 'unset_flag':
+                            flags.unset(flag.attrib['name'])
                     obj.inv_rad = float(xml_obj.attrib.get('inv_rad', obj.inv_rad))
                     obj.id_num = int(xml_obj.attrib.get('id_num', obj.id_num))
                 except Exception:

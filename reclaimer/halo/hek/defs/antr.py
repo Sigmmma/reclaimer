@@ -68,7 +68,20 @@ unit_weapon_desc = Struct("weapon",
     #47 == feeding
     #48-50 == leap-start/airborne/melee
     #51-54 == zapping, unused, unused, unused
-    reflexive("animations", anim_enum_desc, 55),
+    reflexive("animations", anim_enum_desc, 55,
+        'idle','gesture','turn-left','turn-right',
+        'dive-front','dive-back','dive-left','dive-right',
+        'move-front','move-back','move-left','move-right',
+        'slide-front','slide-back','slide-left','slide-right',
+        'airborne','land-soft','land-hard','unused0','throw-grenade',
+        'disarm','drop','ready','put-away','aim-still','aim-move',
+        'surprise-front','surprise-back','berserk',
+        'evade-left','evade-right','signal-move','signal-attack','warn',
+        'stunned-front','stunned-back','stunned-left','stunned-right',
+        'melee','celebrate','panic','melee-airborne','flaming',
+        'resurrect-front','resurrect-back','melee-continuous',
+        'feeding','leap-start','leap-airborne','leap-melee',
+        'zapping','unused1','unused2','unused3'),
     reflexive("ik points", ik_point_desc, 4),
     reflexive("weapon types", weapon_types_desc, 10),
     SIZE=188,
@@ -105,7 +118,14 @@ unit_desc = Struct("unit",
     #25 == flying-left
     #26 == flying-right
     #27-29 == opening, closing, hovering
-    reflexive("animations", anim_enum_desc, 30),
+    reflexive("animations", anim_enum_desc, 30,
+        'airborne-dead','landing-dead',
+        'acc-front-back','acc-left-right','acc-up-down',
+        'push','twist','enter','exit','look','talk','emotions','unused0',
+        'user0','user1','user2','user3','user4',
+        'user5','user6','user7','user8','user9',
+        'flying-front','flying-back','flying-left','flying-right',
+        'opening','closing','hovering'),
     reflexive("ik points", ik_point_desc, 4),
     reflexive("weapon types", unit_weapon_desc, 16),
     SIZE=100,
@@ -119,7 +139,10 @@ weapons_desc = Struct("weapons",
     #5-6  == chamber-1, chamber-2
     #7-8  == charged-1, charged-2
     #9-10 == fire-1, fire-2
-    reflexive("animations", anim_enum_desc, 11),
+    reflexive("animations", anim_enum_desc, 11,
+        'idle','ready','put-away',
+        'reload-1','reload-2','chamber-1','chamber-2',
+        'charged-1','charged-2','fire-1','fire-2'),
     SIZE=28,
     )
 
@@ -151,7 +174,9 @@ vehicle_desc = Struct("vehicle desc",
     #2-3 == throttle, velocity
     #4-5 == braking,  ground-speed
     #6-7 == occupied, unoccupied
-    reflexive("animations", anim_enum_desc, 8),
+    reflexive("animations", anim_enum_desc, 8,
+        'steering','roll','throttle','velocity',
+        'braking','ground-speed','occupied','unoccupied'),
     reflexive("suspension animations", suspension_desc, 8),
     SIZE=116,
     )
@@ -162,9 +187,7 @@ device_desc = Struct("device",
     #0 == position
     #1 == power
     reflexive("animations", anim_enum_desc, 2,
-              'position',
-              'power',
-              ),
+              'position','power'),
     SIZE=96,
     )
 
@@ -180,7 +203,14 @@ fp_animation_desc = Struct("fp animation",
     #18-19 == misfire-1/2
     #20-22 == throw-overheated, overheating, overheating-again
     #23-27 == enter, exit-empty, exit-full, o-h-exit, o-h-s-enter
-    reflexive("animations", anim_enum_desc, 28),
+    reflexive("animations", anim_enum_desc, 28,
+        'idle','posing','fire-1',
+        'moving','overlays', 'light-off','light-on',
+        'reload-empty','reload-full', 'overheated','ready','put-away',
+        'overcharged','melee','fire-2','overcharged-jitter',
+        'throw-grenade','ammunition', 'misfire-1','misfire-2',
+        'throw-overheated','overheating', 'overheating-again',
+        'enter','exit-empty','exit-full','o-h-exit','o-h-s-enter'),
     SIZE=28,
     )
 

@@ -17,7 +17,7 @@ def get_text_lump_size(block=None, parent=None, attr_index=None,
         return 0
     if new_value is not None:
         return
-    lump_headers = parent.get_tag().data.lump_headers
+    lump_headers = parent.tag.data.lump_headers
     start = end = lump_headers[attr_index].lump_array_pointer
     
     try:
@@ -40,7 +40,7 @@ def get_oe_offs_lump_size(block=None, parent=None, attr_index=None,
         return 0
     if new_value is not None:
         return
-    lump_headers = parent.get_tag().data.lump_headers
+    lump_headers = parent.tag.data.lump_headers
     start = end = lump_headers[attr_index].lump_array_pointer
     
     try:
