@@ -295,7 +295,7 @@ def Convert_Bitmap_Tag(tag, **kwargs):
                 Texture_Root.set_desc('TYPE', UInt8Array, 'SUB_STRUCT')
 
             #set the data block to the newly converted one
-            Texture_Root.read(init_data = BM.Texture_Block)
+            Texture_Root.build(init_data = BM.Texture_Block)
             #set the flag showing that the bitmap
             #is either swizzled or not swizzled
             tag.Swizzled(BM.Swizzled, i)
@@ -325,7 +325,7 @@ def Convert_Bitmap_Tag(tag, **kwargs):
         
         """FINISH BY RESAVING THE TAG"""
         try:
-            Save_Status = tag.write()
+            Save_Status = tag.serialize()
             Conversion_Report[tagpath] = True
         except Exception:
             print(format_exc())

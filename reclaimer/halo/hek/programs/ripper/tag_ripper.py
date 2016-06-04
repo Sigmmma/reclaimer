@@ -23,8 +23,8 @@ class TagRipper(MapLoader):
             
             h_block = [None]
             h_desc['TYPE'].reader(h_desc, h_block, attr_index=0)
-            b_buffer = h_block[0].write(buffer=BytearrayBuffer(),
-                                        calc_pointers=False)
+            b_buffer = h_block[0].serialize(buffer=BytearrayBuffer(),
+                                            calc_pointers=False)
             
             self.tag_headers[def_id] = bytes(b_buffer)
 

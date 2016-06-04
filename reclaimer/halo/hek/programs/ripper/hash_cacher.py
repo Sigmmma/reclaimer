@@ -111,7 +111,7 @@ class HashCacher(Handler):
             cache = self.hashmap_to_hashcache(hashmap, cache_name, description)
             
             print('Writing  hashcache...')
-            cache.write(temp=False, backup=False, int_test=False)
+            cache.serialize(temp=False, backup=False, int_test=False)
             
             return cache
         except:

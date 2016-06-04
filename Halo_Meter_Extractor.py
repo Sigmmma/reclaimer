@@ -64,7 +64,7 @@ try:
                 tga_buffer.seek( (line.x_pos + line.y_pos*tgaheader.width )*4 )
                 tga_buffer.write(line.line_data)
                 
-            tgaout.write(temp=False, int_test=False, backup=False)
+            tgaout.serialize(temp=False, int_test=False, backup=False)
         except Exception:
             print(format_exc())
             print("Above exception occurred while trying to extract "+
