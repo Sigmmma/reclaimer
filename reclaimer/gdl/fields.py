@@ -24,13 +24,6 @@ def qword_size(block=None, parent=None, attr_index=None,
     return parent.qword_count*16+8
 
 
-#NEED A PARSER SPECIFICALLY FOR THE GDL OBJECTS BLOCK.
-#IF THE POINTER FOR THE SUB-OBJECTS DATA IS 0 THEN THE
-#PRIMITIVES BLOCK DOESNT EXIST.
-
-#ALSO NEED READER FOR PRIMITIVES BLOCK SINCE THE TYPE
-#OF PRIMITIVE DETERMINES THE STRUCTURE.
-
 def lump_array_reader(self, desc, parent=None, rawdata=None, attr_index=None,
                       root_offset=0, offset=0, **kwargs):
     if attr_index is None and parent is not None:

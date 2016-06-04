@@ -2,39 +2,25 @@ Current speed of OBJECTS.PS2: 40KB/s
 
 High Priority:
 
+Clean up instances where kwargs and args exist,
+    but they are not used and should not exist.
+
 Finish docstrings for modules and update existing ones.
 
+Merge Handler and TagTestHandler into one class. Probably put this class in test.py
 
 Medium Priority:
 
-Make a Union Field and a UnionBlock that allows specifying
-multiple descriptors for how to decode/encode the data.
-    The actual data will be stored in a bytearray object under self.Val and is
-    decoded  on the fly to give the intended object.
-    When each attribute is set, only the part of the bytearray that it resides
-    in will be set, meaning if it only takes up the first 2 bytes of a 4 byte union,
-    only the first 2 bytes will be affected, and the last 2 will remain the same
+Make a Union Field and a UnionBlock that allows specifying multiple descriptors.
+    BLOCKS THAT MAKE UP A UNION BLOCK CANNOT HAVE CHILDREN OR BE POINTERED
 
-    Can't do anything about changing the ordering of the bytes because it would
-    be possible to make the largest attribute be a 4 char 32bit string, but have
-    the other entries be endianness reliant things.
+    Unions cannot be used inside a Bitstruct or have bitbased members
 
-    MAYBE DO THIS BY MAKING IT SO ONCE YOU ACCESS ONE OF THE POSSIBLE ATTRIBUTES, IT
-    DECODES IT INTO A BLOCK AND SAVES A REFERENCE TO THE BLOCK IN THE UNION BLOCK.
-    WHEN ANOTHER ATTRIBUTE IS ACCESSED, THE DATA FROM THE CURRENTLY LOADED BLOCK IS
-    WRITTEN TO THE BUFFER AND IS DELETED. A NEW BLOCK IS CREATED FROM THE SELECTED
-    ATTRIBUTE AND IS PLACED IN THE UNION BLOCK AS THE CURRENT ATTRIBUTE.
+    Need to make union_reader, union_writer, and sanitizer_union functions
 
-
-Make a Wrapper Field and a WrapperBlock that allows wrapping a block(s) in another
-block which has methods for reading and editing the data of the inner block(s).
-    An example would be a wrapper that treats an int as a utc timestamp
-    or a different wrapper that treats a float as a utc timestamp.
-
-    Another would be a wrapper for ip addressing that treats a series of 4 bytes
-    either 4 unsigned 8-bit ints, or a string in the format "AAA.BBB.CCC.DDD"
-
-WRAPPER AND UNION MAY BE ABLE TO BE THE SAME THING
+    Make it so unions can have an initial u_index set based on a CASE, like a switch
+        Make it so when a state is set active(and u_index is NOT being set to None),
+        the CASE is used to set some data in the tag which specifies the state.        
 
 
 Low Priority:

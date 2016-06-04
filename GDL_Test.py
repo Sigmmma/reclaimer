@@ -4,7 +4,7 @@ from copy import copy
 try:
     from reclaimer.gdl.handler import GdlHandler
 
-    valid_id='save'
+    valid_id='rom'
    
     test = GdlHandler(debug=3, allow_corrupt=True,
                        print_test=True, save_test=False, int_test=False,
@@ -19,18 +19,9 @@ try:
                                               'trueonly', 'raw'
                                               #'all'
                                               ] })
-    test.run_test()
-    #cProfile.run('test.load_tags_and_run()')
+    test.prompt_test()
+    #cProfile.run('test.prompt_test()')
     #objs = test.tags.get(valid_id)
-    input()
-    if objs is not None:
-        for filepath in objs:
-            objs[filepath].extract()
-            print("Size of: "+filepath+" = ", objs[filepath].data.binsize)
-            objs[filepath].pprint(show=('name', 'value', 'children', 'index',
-                                        'flags', 'field', 'offset', 'size',
-                                        'trueonly'),#, 'all'),
-                                  printout=True)
     input()
 except Exception:
     print(format_exc())

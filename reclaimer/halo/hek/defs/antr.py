@@ -24,7 +24,10 @@ ik_point_desc = Struct("ik point",
 weapon_types_desc = Struct("weapon types",
     StrLatin1("label", SIZE=32),
     Pad(16),
-    reflexive("animations", anim_enum_desc, 10),
+    reflexive("animations", anim_enum_desc, 10,
+        'reload-1','reload-2','chamber-1','chamber-2',
+        'fire-1','fire-2','charged-1','charged-2',
+        'melee','overheat'),
     SIZE=60,
     )
 

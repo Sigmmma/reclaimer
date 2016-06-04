@@ -95,7 +95,8 @@ class G3dCompiler():
                                 int(127*(1-float(line[1])))])
                 elif line[0:2] == 'vn':
                     line = line[2:].strip(' ').split(' ')
-                    norms.append([float(line[0]),
+                    #x-axis is reversed
+                    norms.append([-float(line[0]),
                                   float(line[1]),
                                   float(line[2])])
                     norm = norms[-1]
@@ -104,6 +105,7 @@ class G3dCompiler():
                                norm[2]*norm[2])
                     if mag == 0:
                         continue
+                    
                     norm[0] = int(15.5*(norm[0]/mag+1))
                     norm[1] = int(15.5*(norm[1]/mag+1))
                     norm[2] = int(15.5*(norm[2]/mag+1))
@@ -116,7 +118,8 @@ class G3dCompiler():
                     if norm[2] < 0: norm[2] = 0
                 elif line[0] == 'v':
                     line = line[1:].strip(' ').split(' ')
-                    verts.append([int(0.5+float(line[0])),
+                    #x-axis is reversed
+                    verts.append([-int(0.5+float(line[0])),
                                   int(0.5+float(line[1])),
                                   int(0.5+float(line[2]))])
                     v = verts[-1]
@@ -268,10 +271,14 @@ class G3dCompiler():
                     uv_shift = uv_shifts[strip_num]
 
                     #if the face is reversed, set that
+                    '''The face_dir will be reversed since the model
+                    is being mirrored over the x-axis. This is because
+                    This will forcibly reverse the x-axis to fix the
+                    fact that the game engine seems to be left handed.'''
                     if face_dirs[strip_num]:
-                        face_dir = -1.0
-                    else:
                         face_dir = 1.0
+                    else:
+                        face_dir = -1.0
                     
 
                     #write the tristrip header

@@ -48,7 +48,7 @@ class XboxSaveTag(Tag):
 
     def xbox_sign(self, rawdata=None, authkey=None):
         if rawdata is None:
-            rawdata = self.data.write(buffer=BytearrayBuffer())
+            rawdata = self.data.serialize(buffer=BytearrayBuffer())
             if self.data_end != 0:
                 rawdata = rawdata[self.data_start:self.data_end]
             else:
@@ -56,6 +56,6 @@ class XboxSaveTag(Tag):
         hmac_sig = self.calc_hmac_sig(rawdata, authkey)
         self.data.hmac_sig = hmac_sig
 
-    def write(self, **kwargs):
+    def serialize(self, **kwargs):
         self.xbox_sign()
-        return Tag.write(self, **kwargs)
+        return Tag.serialize(self, **kwargs)

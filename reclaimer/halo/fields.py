@@ -7,14 +7,14 @@ from .field_methods import *
 
 '''These are varients of the standard Fields that have been
 slightly modified based on how Halo needs to utilize them.'''
-StringVarLen   = Field(base=StrLatin1, name="HaloRefStr",
-                       encoder=encode_tag_ref_str, sizecalc=tag_ref_sizecalc)
+StringVarLen = Field(base=StrLatin1, name="HaloRefStr",
+                     encoder=encode_tag_ref_str, sizecalc=tag_ref_sizecalc)
 FlUTF16StrData = Field(base=StrUtf16, name="UTF16StrData",
                        enc=StrUtf16.little.enc, decoder=decode_raw_string,
                        sizecalc=utf_sizecalc )
-FlStrUTF16     = Field(base=StrUtf16, name="StrUTF16",
-                       enc=StrUtf16.little.enc, decoder=decode_string,
-                       sizecalc=delim_utf_sizecalc )
+FlStrUTF16 = Field(base=StrUtf16, name="StrUTF16",
+                   enc=StrUtf16.little.enc, decoder=decode_string,
+                   sizecalc=delim_utf_sizecalc )
 
 #forces little endian integers and float
 FlUInt16 = Field(base=UInt16.little, name="FlUInt16", enc=UInt16.little.enc)
