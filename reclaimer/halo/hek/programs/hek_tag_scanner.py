@@ -91,7 +91,7 @@ class HekTagScanner(HaloHandler):
         return self.tags_loaded
         
 
-    def load_tags_and_run(self):
+    def run_test(self):
         self.print_to_console = True
 
         #make a new defs dict

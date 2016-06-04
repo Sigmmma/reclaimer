@@ -16,7 +16,7 @@ try:
                                                  'binsize', 'ramsize',
                                                  #'all'
                                                  ] })
-    test.run_test()
+    test.prompt_test()
 except Exception:
     print(format_exc())
     input()

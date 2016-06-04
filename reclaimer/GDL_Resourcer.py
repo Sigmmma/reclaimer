@@ -68,7 +68,7 @@ try:
                     objects_tag = self.handler.build_tag(def_id='objects')
                     objects_tag.filepath = folderpath+'\\OBJECTS.PS2'
                     objects_tag.import_data()
-                    objects_tag.write(temp=False)
+                    objects_tag.serialize(temp=False)
                     print('----------Finished----------')
                 except Exception:
                     print(format_exc())
@@ -137,7 +137,7 @@ try:
                 try:
                     print('---------Decompiling--------')
                     objects_tag = self.handler.build_tag(filepath=
-                                                    folderpath+'\\OBJECTS.PS2')
+                        folderpath+'\\OBJECTS.PS2')
                     objects_tag.extract_data(1,1,1,1,1,1,0,1,1)
                     print('----------Finished----------')
                 except Exception:

@@ -29,11 +29,10 @@ def tag_ref_size(block=None, parent=None, attr_index=None,
             parent.Tag_Path_Length = 0
         else:
             parent.Tag_Path_Length = new_value - 1
-    else:
-        strlen = parent.Tag_Path_Length
-        if strlen:
-            return strlen + 1
-        return strlen
+        return
+    strlen = parent.Tag_Path_Length
+    strlen += 1*bool(strlen)
+    return strlen
 
 
 def encode_tag_ref_str(self, block, parent, attr_index):

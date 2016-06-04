@@ -35,7 +35,7 @@ try:
 
     print('Loading tags. Please wait...')
     
-    test.load_tags_and_run()
+    test.run_test()
     
     input('Hit enter when ready to rip.')
     

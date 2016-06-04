@@ -1,14 +1,15 @@
 from copy import copy
+
 from supyr_struct.defs.common_descriptors import *
+from supyr_struct.defs.block_def import BlockDef
 from .fields import *
 from .constants import *
 
 com = combine
 
 def tag_class(name, *args):
-    args = list(args)
-    args.append(("none", 0xffffffff))
-    return BUEnum32(name, *args, DEFAULT=0xffffffff)
+    return BUEnum32(name, *(tuple(args) + (("none", 0xffffffff),) ),
+                    DEFAULT=0xffffffff)
 
 valid_tags = tag_class("Tag_Class",
     ("actor",          'actr'),
@@ -131,8 +132,8 @@ valid_effect_events = tag_class("Tag_Class",
     )
 
 valid_strings = tag_class("Tag_Class",
-    ("unicode_string_list",  'ustr'),
-    ("string_list",          'str#'),
+    ("unicode_string_list", 'ustr'),
+    ("string_list",         'str#'),
     )
 
 valid_effects = tag_class("Tag_Class",
@@ -424,7 +425,8 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     if names:
         name_map = {}
         for i in range(len(names)):
-            name_map[names[i]] = i
+            e_name = BlockDef.str_to_name(None, names[i])
+            name_map[e_name] = i
             
         desc[CHILD][NAME_MAP] = name_map
         
@@ -434,8 +436,7 @@ def rawdata_ref(name, field=BytearrayRaw):
     '''This function serves to macro the creation of a rawdata reference'''
     return RawDataRef(name,
         EDITABLE=False, INCLUDE=Raw_Data_Ref_Struct,
-        CHILD=field("data", VISIBLE=False, SIZE=".Count")
-        )
+        CHILD=field("data", VISIBLE=False, SIZE=".Count") )
 
 def dependency(name='tag ref', valid_ids=valid_tags):
     '''This function serves to macro the creation of a tag dependency'''

@@ -105,7 +105,7 @@ class ShaderRectifier(HaloHandler):
         return logstr
         
 
-    def load_tags_and_run(self):
+    def run_test(self):
         input('This program will scan the tags directory and any \n"shader_'+
               'transprent_chicago_extended" tags that it finds will be \n'+
               'converted to regular chicago shaders to fix blending issues.\n'+

@@ -474,6 +474,7 @@ class ObjectsPs2Tag(GdlTag):
                     obj_file.write('#object %s_%s\n'%(i,j))
                     obj_file.write('#$lm_index %s\n'%subobj_head.lm_index)
                     obj_file.write('#$lod_k %s\n'%subobj_head.lod_k)
+                    obj_file.write('usemtl %s\n'%tex_index)
 
                     #scan over all the data in the stream
                     while b < stream_len:
@@ -512,7 +513,8 @@ class ObjectsPs2Tag(GdlTag):
                             '''8/16/32 bit vertex coordinates'''
                             #make sure to ignore the last vertex
                             for k in range(0, len(data)-3, 3):
-                                verts += 'v %s %s %s\n' % (data[k],
+                                #x-axis is reversed
+                                verts += 'v %s %s %s\n' % (-data[k],
                                                            data[k+1],
                                                            data[k+2])
                             strip_count += 1
@@ -521,7 +523,7 @@ class ObjectsPs2Tag(GdlTag):
                             #not sure what they are exactly
                             '''16 bit unknown coordinates'''
                             for k in range(0, len(data), 4):
-                                unknown += ('#lightmap %s %s %s %s\n'%
+                                unknown += ('#lm %s %s %s %s\n'%
                                             (data[k],   data[k+1],
                                              data[k+2], data[k+3]))
                         elif sen == 102 or (sen == 101 or sen == 100):
@@ -542,7 +544,8 @@ class ObjectsPs2Tag(GdlTag):
                                 mag = sqrt(xn*xn+yn*yn+zn*zn)+0.00001
                                 
                                 #dont need much precision on these
-                                normals += 'vn %s %s %s\n' % (str(xn/mag)[:7],
+                                #x-axis is reversed
+                                normals += 'vn %s %s %s\n' % (str(-xn/mag)[:7],
                                                               str(yn/mag)[:7],
                                                               str(zn/mag)[:7])
                                 
@@ -569,15 +572,14 @@ class ObjectsPs2Tag(GdlTag):
                         obj_file.write(unknown+'\n')
                     
                     obj_file.write('g %s_%s\n'%(i, j))
-                    obj_file.write('usemtl %s\n'%tex_index)
                     
                     #generate the faces
                     for k in range(strip_count):
                         dont_draw = faces_drawn[k]
                         if face_dirs[k] == -1.0:
-                            face_dir = 0
-                        else:
                             face_dir = 1
+                        else:
+                            face_dir = 0
                         
                         for f in range(len(dont_draw)):
                             #determine if the face is not supposed to be drawn
@@ -1686,7 +1688,7 @@ class ObjectsPs2Tag(GdlTag):
         return dirname(self.filepath) + '\\TEXTURES.PS2'
 
 
-    def write(self, **kwargs):
+    def serialize(self, **kwargs):
         ''''''
         filepath = self.textures_filepath
         textures = self.textures
@@ -1727,8 +1729,8 @@ class ObjectsPs2Tag(GdlTag):
                     16-byte aligned, since that will take care of all cases.'''
                     curr_pointer += (16-(curr_pointer%16))%16
 
-        #write the tag data to its file
-        return_val = GdlTag.write(self, **kwargs)
+        #serialize the tag data to its file
+        return_val = GdlTag.serialize(self, **kwargs)
 
         if palettes and textures:
             temppath   = filepath + ".temp"
@@ -1742,7 +1744,7 @@ class ObjectsPs2Tag(GdlTag):
             if self.palette_order != GDL_CHANNELS:
                 self.swap_color_channels()
 
-            #open the textures.ps2 file and write the texture data into it
+            #open the textures.ps2 file and serialize the texture data into it
             with open(temppath, 'w+b') as f:
                 palette = palettes[i]
                 for i in range(len(bitmaps)):
