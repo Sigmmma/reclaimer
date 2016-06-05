@@ -2,8 +2,8 @@ syntax: glob
 construct/**
 reclaimer/__pycache__/**
 reclaimer/resources/__pycache__/**
-reclaimer/resources/Bitmap_Module/__pycache__/**
-reclaimer/resources/Bitmap_Module/ext/__pycache__/**
+reclaimer/resources/bitmap_module/__pycache__/**
+reclaimer/resources/bitmap_module/ext/__pycache__/**
 
 reclaimer/halo/__pycache__/**
 reclaimer/halo/hek/__pycache__/**
