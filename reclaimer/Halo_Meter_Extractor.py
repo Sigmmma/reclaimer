@@ -5,7 +5,8 @@ RED_FILL = b'\x00\x00\xff\x00'
 
 try:
     from reclaimer.halo.hek.handler import HaloHandler
-    from supyr_struct import handler, buffer
+    from supyr_struct import buffer
+    from supyr_struct.editor import handler
 
     #used for loading all meter tags that can be found
     metr_loader = HaloHandler(valid_def_ids="metr", print_test=False)

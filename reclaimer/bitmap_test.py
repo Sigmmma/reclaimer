@@ -1,22 +1,23 @@
 import os, time
-Curr_Dir = os.path.abspath(os.curdir)
+curr_dir = os.path.abspath(os.curdir)
 start = time.time()
 
 from traceback import format_exc
 try:
-    from ReclaimerLib.resources.Bitmap_Module import Bitmap_Convertor as BC
+    from reclaimer.resources.bitmap_module import bitmap_convertor as bc
 
-    Bitmap_Test = BC.Bitmap_Manipulator()
-    #Bitmap_Test.Set_Deep_Color_Mode(True)
-    #for Format in sorted(BC.VALID_FORMATS):
-    #    BC.Print_Format(Format)
+    bitmap_test = bc.BitmapManipulator()
+    #bitmap_test.set_deep_color_mode(True)
+    #for f in sorted(bc.VALID_FORMATS):
+    #    bc.print_format(f)
     
-    Bitmap_Test.Load_from_File(Input_Path = Curr_Dir + "\\data\\Test.dds")
-    Bitmap_Test.Load_New_Conversion_Settings(Target_Format=BC.FORMAT_R8G8B8)
-    Bitmap_Test.Print_Info(1,1,1,0,0)
+    bitmap_test.load_from_file(input_path = curr_dir + "\\data\\Test.tga")
+    bitmap_test.load_new_conversion_settings(target_format=bc.FORMAT_R8G8B8)
+    bitmap_test.print_info(1,1,1,0,0)
     print('Press "Enter" to continue conversion'); input()
-    Bitmap_Test.Convert_Texture()
-    Bitmap_Test.Save_to_File(Output_Path = Curr_Dir + "\\data\\Test.tga")
+    start = time.time()
+    bitmap_test.convert_texture()
+    bitmap_test.save_to_file(output_path = curr_dir + "\\data\\Test.dds")
 except:
     print(format_exc())
 

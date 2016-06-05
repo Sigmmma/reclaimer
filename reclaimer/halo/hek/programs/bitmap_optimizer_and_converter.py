@@ -19,13 +19,13 @@ class BitmapConverter(HaloHandler):
     def __init__(self, **kwargs):
         HaloHandler.__init__(self, valid_def_ids="bitm", **kwargs)
         
-        self.Default_Conversion_Flags["bitm"] = self.Make_Default_Flags()
-        self.root_window = Bitmap_Converter_Main_Window(self)
+        self.default_conversion_flags["bitm"] = self.make_default_flags()
+        self.root_window = BitmapConverterMainWindow(self)
 
         #Create and start the tag scanning and editing thread
-        self.Conversion_Main_Thread = Thread(target=self.Conversion_Main)
-        self.Conversion_Main_Thread.daemon = True
-        self.Conversion_Main_Thread.start()
+        self.conversion_main_thread = Thread(target=self.conversion_main)
+        self.conversion_main_thread.daemon = True
+        self.conversion_main_thread.start()
         
         #loop the main window
         self.root_window.mainloop()
@@ -33,105 +33,109 @@ class BitmapConverter(HaloHandler):
         
     #the main loop for continuous function handeling
     #add all continuous, non-self-looping, periodic functions here
-    def _Main_Loop(self):
+    def _main_loop(self):
         while not hasattr(self, "root_window"):
             pass
         
         while not self.close_program:
             #we don't want it to run too often or it'll be laggy
             sleep(self.main_delay)
-            self.root_window.Total_Bitmaps = (len(self.tags["bitm"]) -
-                                              self.root_window.Bad_Bitmaps)
+            self.root_window.total_bitmaps = (len(self.tags["bitm"]) -
+                                              self.root_window.bad_bitmaps)
             
             #If the program is being told to close then close
             if self.close_program:
                 raise SystemExit(0)
             
 
-    def Conversion_Main(self):
+    def conversion_main(self):
         rw = self.root_window
         while True:
             #we don't want it to run too often or it'll be laggy
             sleep(self.main_delay)
 
-            #if the tags havent been loaded and we are telling the program to continue with conversion
-            if (not rw.tags_loaded) and rw.Proceed_with_Conversion:
+            #if the tags havent been loaded and we are
+            #telling the program to continue with conversion
+            if (not rw.tags_loaded) and rw.proceed_with_conversion:
                 #reset the status variables
-                rw.Total_Pixel_Data_to_Process     = 0
-                rw.Remaining_Pixel_Data_to_Process = 0
-                rw.Bitmaps_Found_2D = rw.Bitmaps_Found_3D = rw.Cubemaps_Found = 0
-                rw.Elapsed_Time  = rw.Estimated_Time_Remaining = 0.0
-                rw.Total_Bitmaps = rw.Remaining_Bitmaps = rw.Bad_Bitmaps = 0
-                rw.Scan_Start_Time = time()
+                rw.total_pixel_data_to_process     = 0
+                rw.remaining_pixel_data_to_process = 0
+                rw.bitmaps_found_2d = rw.bitmaps_found_3d = rw.cubemaps_found=0
+                rw.elapsed_time  = rw.estimated_time_remaining = 0.0
+                rw.total_bitmaps = rw.remaining_bitmaps = rw.bad_bitmaps = 0
+                rw.scan_start_time = time()
 
                 if self.index_tags():
-                    rw.tags_Indexed = True
+                    rw.tags_indexed = True
 
                     self.load_tags()
                     
                     rw.tags_loaded = True
                     tags = self.tags['bitm']
-                    def_flags = self.Default_Conversion_Flags['bitm']
+                    def_flags = self.default_conversion_flags['bitm']
 
-                    #we need to build the list of conversion flags for each tag.
+                    #we need to build the list of conversion flags for each tag
                     for filepath in tags:
-                        tags[filepath].Tag_Conversion_Settings = list(def_flags)
+                        tags[filepath].tag_conversion_settings = list(def_flags)
                         
-                    self.Initialize_Window_Variables()
+                    self.initialize_window_variables()
                 else:
                     self.current_tag = "No tags found in selected directory."
-                    rw.Finish_Conversion()
+                    rw.finish_conversion()
                     
                 
-            elif rw.tags_loaded and rw.Proceed_with_Conversion:
+            elif rw.tags_loaded and rw.proceed_with_conversion:
                 #reset the status variables
-                rw.Elapsed_Time = rw.Estimated_Time_Remaining = 0.0
-                rw.Scan_Start_Time = time()
-                rw.Remaining_Pixel_Data_to_Process = rw.Total_Pixel_Data_to_Process
-                rw.Remaining_Bitmaps = rw.Total_Bitmaps
+                rw.elapsed_time = rw.estimated_time_remaining = 0.0
+                rw.scan_start_time = time()
+                rw.remaining_pixel_data_to_process = rw.total_pixel_data_to_process
+                rw.remaining_bitmaps = rw.total_bitmaps
                 
                 #are we just scanning the folder or are we doing shiz
-                if (self.Default_Conversion_Flags["bitm"][READ_ONLY]):
+                if (self.default_conversion_flags["bitm"][READ_ONLY]):
                     #used below for writing the results of the scan
-                    logstr = self.Make_Log_of_All_Bitmaps()
+                    logstr = self.make_log_of_all_bitmaps()
                     self.current_tag = ("Detailed log of all bitmaps "+
                                         "created successfully.")
                 else:
                     """SPLIT OFF INTO THE MAIN PROCESSING ROUTINE"""
-                    logstr = self.Process_Bitmap_tags()
+                    logstr = self.process_bitmap_tags()
                 
                 #to keep from bloating the RAM, we delete all loaded bitmap tags
                 for filepath in tuple(self.tags['bitm']):
                     del self.tags['bitm'][filepath]
                 gc.collect()
 
-                #since we are done with the conversion we write the debug log and change the window variables
-                if not rw.Conversion_Cancelled:
-                    if (self.Default_Conversion_Flags["bitm"]
+                #since we are done with the conversion we write
+                #the debug log and change the window variables
+                if not rw.conversion_cancelled:
+                    if (self.default_conversion_flags["bitm"]
                         [WRITE_LOG] and not self.debug >= 1):
                         self.make_log_file(logstr) #save the debug log to a file
                     else:
-                        #if we are debugging we don't want to clutter the folder with lots of logs, so we just print it
+                        #if we are debugging we don't want to clutter
+                        #the folder with lots of logs, so we just print it
                         print(logstr)
 
-                    rw.Finish_Conversion()
-            else:
-                pass
+                    rw.finish_conversion()
 
 
     #run the list update function on the main thread
-    def Create_Initial_Tag_List(self):
-        self.root_window.tag_list_window.Sort_Displayed_Tags_By(0)
+    def create_initial_tag_list(self):
+        self.root_window.tag_list_window.sort_displayed_tags_by(0)
 
 
 
-    def Make_Default_Flags(self):
+    def make_default_flags(self):
         '''
-        If no settings have been defined specifically for a tag then the flags below will be used
+        If no settings have been defined specifically
+        for a tag then the flags below will be used
         
-        the first 4 conversion flags are global conversion flags and aren't assigned on a per-tag basis
+        the first 4 conversion flags are global conversion
+        flags and aren't assigned on a per-tag basis
 
-          DONT REPROCESS: Don't process bitmap tags if they have "Processed by Reclaimer" checked
+          DONT REPROCESS: Don't process bitmap tags if they have
+                          "Processed by Reclaimer" checked
           RENAME OLD: Rename old tags instead of deleting them
           READ ONLY: compiles a list of all bitmaps and what their types, 
                     sizes, etc are instead of converting in any way
@@ -144,29 +148,33 @@ class BitmapConverter(HaloHandler):
                       1 = swap for xbox,  2= swap for pc
           CUTOFF BIAS: when reducing a channel to 1 bit, values above
                        this are snapped to 1 and below it are snapped to 0
-          P8 MODE: P8-Bump Conversion Mode (True = Average Bias Mode, False = Auto Bias Mode)
-          MONO KEEP: Channel to keep when converting to A8 or Y8 (True = Alpha, False = Intensity)
+          P8 MODE: P8-Bump Conversion Mode (True = Average Bias Mode,
+                                            False = Auto Bias Mode)
+          MONO KEEP: Channel to keep when converting to A8 or Y8
+                     (True = Alpha, False = Intensity)
           MONO SWAP: Swap Alpha and Intensity (Only for A8Y8)
           CK TRANS: Preserve Color Key transparency  (A transparent pixel
                          in DXT1 has black for it's Red, Green, and Blue)
           MIP GEN: Generate mipmaps if a texture doesn't have them down to 1x1
-          GAMMA: The gamma exponent to use when downressing a bitmap by merging pixels
-          NEW FORMAT: -1=unchanged, 0=A8, 1=Y8, 2=AY8, 3=A8Y8, 6=R5G6B5 8=A1R5G5B5, 
-                       9=A4R4G4B4, 14=DXT1, 15=DXT3, 16=DXT5, 17=P8/A8R8G8B8/X8R8G8B8
+          GAMMA: The gamma exponent to use when downressing
+                 a bitmap by merging pixels
+          NEW FORMAT: -1=unchanged, 0=A8, 1=Y8, 2=AY8, 3=A8Y8,
+                       6=R5G6B5 8=A1R5G5B5, 9=A4R4G4B4, 14=DXT1,
+                       15=DXT3, 16=DXT5, 17=P8/A8R8G8B8/X8R8G8B8
         '''
         
-        Bitmap_Conversion_Flags = [True, True, False, True, False, False,
-                                   '0', 0, '127', False, False, False,
-                                   False, FORMAT_NONE, False, 1.0, " "]
+        flags = [True, True, False, True, False, False,
+                 '0', 0, '127', False, False, False,
+                 False, FORMAT_NONE, False, 1.0, " "]
 
-        return Bitmap_Conversion_Flags
+        return flags
 
 
-    def Initialize_Window_Variables(self):
+    def initialize_window_variables(self):
         rw = self.root_window
-        rw.Bitmaps_Found_2D  = rw.Bitmaps_Found_3D = 0
-        rw.Cubemaps_Found    = rw.Total_Bitmaps    = 0
-        rw.Remaining_Bitmaps = rw.Bad_Bitmaps      = 0
+        rw.bitmaps_found_2d  = rw.bitmaps_found_3d = 0
+        rw.cubemaps_found    = rw.total_bitmaps    = 0
+        rw.remaining_bitmaps = rw.bad_bitmaps      = 0
         
         tags_to_remove = []
 
@@ -176,37 +184,38 @@ class BitmapConverter(HaloHandler):
 
             #only run if the bitmap contains bitmaps
             tag = self.tags['bitm'][filepath]
-            if tag.Bitmap_Count() and tag.Is_Power_of_2_Bitmap():
+            if tag.bitmap_count() and tag.is_power_of_2_bitmap():
                 
-                b_type = tag.Bitmap_Type()
-                b_format = tag.Bitmap_Format()
+                b_type = tag.bitmap_type()
+                b_format = tag.bitmap_format()
                 if b_type == 2:
-                    rw.Cubemaps_Found += 1
+                    rw.cubemaps_found += 1
                 elif b_type == 1:
-                    rw.Bitmaps_Found_3D += 1
+                    rw.bitmaps_found_3d += 1
                 else:
-                    rw.Bitmaps_Found_2D += 1
+                    rw.bitmaps_found_2d += 1
                 
-                rw.Total_Pixel_Data_to_Process += tag.Pixel_Data_Bytes_Size()
+                rw.total_pixel_data_to_process += tag.pixel_data_bytes_size()
             else:
-                if tag.Bitmap_Count():
+                if tag.bitmap_count():
                     print("Non power-of-2 bitmap found.\n%s\n\n"%tag.filepath)
                 else:
-                    print("Bitmap with no bitmap data found.\n%s\n\n"%tag.filepath)
+                    print("Bitmap with no bitmap data found.\n%s\n\n"%
+                          tag.filepath)
                 tags_to_remove.append(filepath)
-                rw.Bad_Bitmaps += 1
+                rw.bad_bitmaps += 1
                 
-            rw.Total_Bitmaps += 1
+            rw.total_bitmaps += 1
 
         for filepath in tags_to_remove:
             del self.tags['bitm'][filepath]
         del tags_to_remove
             
-        rw.tag_list_window.Build_Tag_Sort_Mappings()
+        rw.tag_list_window.build_tag_sort_mappings()
         
         #set the status variables
-        rw.Remaining_Pixel_Data_to_Process = rw.Total_Pixel_Data_to_Process
-        rw.Remaining_Bitmaps = len(self.tags['bitm']) - rw.Bad_Bitmaps
+        rw.remaining_pixel_data_to_process = rw.total_pixel_data_to_process
+        rw.remaining_bitmaps = len(self.tags['bitm']) - rw.bad_bitmaps
         
         self.current_tag = ("Tags loaded... Please select tags in the "+
                             "tags list window and specify\nthe conversion "+
@@ -215,65 +224,65 @@ class BitmapConverter(HaloHandler):
         
         #set up the hack to allow the tag list to
         #be displayed instantly on loading a tagset
-        rw.after(0, self.Create_Initial_Tag_List)
-        rw.Finish_Scanning()
+        rw.after(0, self.create_initial_tag_list)
+        rw.finish_scanning()
 
 
 
-    #this function is called by the Conversion_Main and will loop through all the
-    #tags in the collection and process them however each tag's conversion flags say to.
-    def Process_Bitmap_tags(self):
-        
+    #this function is called by the conversion_main and
+    #will loop through all the tags in the collection and
+    #process them however each tag's conversion flags say to.
+    def process_bitmap_tags(self):
+        rw = None
         if hasattr(self, "root_window"):
             rw = self.root_window
-        else:
-            rw = None
         
         #used below for debug writing
         logstr = "Debug log for Halo Bitmap Converter\n"
-        def_flags = self.Default_Conversion_Flags['bitm']
-        Conversion_Report = {'bitm':{}}
+        def_flags = self.default_conversion_flags['bitm']
+        conversion_report = {'bitm':{}}
 
         #loop through each tag
         for filepath in sorted(self.tags['bitm']):
             tag = self.tags['bitm'][filepath]
             
-            if rw is not None and rw.Conversion_Cancelled:
+            if rw is not None and rw.conversion_cancelled:
                 break
             
             self.current_tag = filepath
 
-            #this may change after the below function so we get it before that happens
-            tagsize = tag.Pixel_Data_Bytes_Size()
-            if Get_Will_be_Processed(tag, def_flags):
+            #this may change after the below function
+            #so we get it before that happens
+            tagsize = tag.pixel_data_bytes_size()
+            if get_will_be_processed(tag, def_flags):
                 """DO THE CONVERSION NOW"""
                 try:
-                    Convert_Bitmap_Tag(tag, Root_Window=rw, filepath=filepath,
-                                       Conversion_Report=Conversion_Report['bitm'], 
-                                       Reprocess=not(def_flags[DONT_REPROCESS]))
+                    convert_bitmap_tag(tag, root_window=rw, filepath=filepath,
+                                   conversion_report=conversion_report['bitm'], 
+                                   reprocess=not(def_flags[DONT_REPROCESS]))
                 except:
                     print(format_exc())
-                    Conversion_Report['bitm'][filepath] = False
+                    conversion_report['bitm'][filepath] = False
             else:
-                Conversion_Report['bitm'][filepath] = None
-            rw.Remaining_Pixel_Data_to_Process -= tagsize
-            rw.Remaining_Bitmaps -= 1
+                conversion_report['bitm'][filepath] = None
+            rw.remaining_pixel_data_to_process -= tagsize
+            rw.remaining_bitmaps -= 1
 
 
-        if rw is not None and rw.Conversion_Cancelled:
+        if rw is not None and rw.conversion_cancelled:
             self.current_tag = "Conversion cancelled."
             
-            rw.Display_New_Text = True
+            rw.display_new_text = True
             rw.btn_start.config(text="Convert")
-            rw.Enable_Global_Settings()
-            rw.Conversion_Cancelled = False
+            rw.enable_global_settings()
+            rw.conversion_cancelled = False
             logstr += "Conversion Cancelled."
         else:
             try:
-                backup = self.Default_Conversion_Flags['bitm'][RENAME_OLD]
+                backup = self.default_conversion_flags['bitm'][RENAME_OLD]
                 '''depending on the conversion settings we
                 either rename or delete the original files'''
-                logstr += self.make_write_log(Conversion_Report, backup=backup)
+                logstr += self.make_write_log(conversion_report, backup=backup)
             except:
                 print("ERROR OCCURRED WHILE TRYING TO WRITE "+
                       "DEBUG LOG AND/OR RENAME TEMP FILES")
@@ -286,7 +295,7 @@ class BitmapConverter(HaloHandler):
 
 
     #used when doing a read-only scan of a tagset to figure out what's what
-    def Make_Log_of_All_Bitmaps(self):
+    def make_log_of_all_bitmaps(self):
         logstr = ("CE-XBOX Bitmap Converter: tagset scan results\n\n\n"+
                   "These are the bitmaps located in the tags folder "+
                   "organized by type and then by format.\n\n")
@@ -298,9 +307,9 @@ class BitmapConverter(HaloHandler):
         tag_counts = [0, 0, 0]
 
         formatted_strs = {}
-        tag_header_strs = ["\n\n2D Textures:\nCount = ",
-                           "\n\n3D Textures:\nCount = ",
-                           "\n\nCubemaps:\nCount = "]
+        tag_header_strs = ["\n\n2D Textures:\n    Count = ",
+                           "\n\n3D Textures:\n    Count = ",
+                           "\n\nCubemaps:\n    Count = "]
         format_names = ["A8", "Y8", "AY8", "A8Y8", '', '',
                         "R5G6B5", '', "A1R5G6B5", "A4R4G4B4",
                         "X8R8G8B8", "A8R8G8B8", '', '', "DXT1",
@@ -319,25 +328,27 @@ class BitmapConverter(HaloHandler):
 
             #and add the formats to each of these new dicts
             for b_format in valid_formats:
-                formatted_strs[b_type][b_format] = ("\n\n" + " "*8 + "%s Format" %
+                formatted_strs[b_type][b_format] = ("\n\n"+" "*4+"%s Format" %
                                                     format_names[b_format])
                 tag_info_strs[b_type][b_format] = {}
 
 
-        #loop through each tag and create a string that details each bitmap in it
+        #loop through each tag and create a
+        #string that details each bitmap in it
         for filepath in self.tags['bitm']:
             tag = self.tags['bitm'][filepath]
-            filesize = (getsize(tag.filepath)-tag.Color_Plate_Data_Bytes_Size())//1024
-            tagstrs  = tag_info_strs[tag.Bitmap_Type()][tag.Bitmap_Format()]
+            filesize = (getsize(tag.filepath)-
+                        tag.color_plate_data_bytes_size())//1024
+            tagstrs  = tag_info_strs[tag.bitmap_type()][tag.bitmap_format()]
             
             #this is the string that holds the data pertaining to this tag
-            tagstr = ("\n"+" "*16+filepath+" "*8+"Compiled tag size = %sKB\n" %
+            tagstr = ("\n"+" "*8+filepath+" "*8+"Compiled tag size = %sKB\n" %
                       {True:"less than 1", False:str(filesize)}[filesize <= 0])
 
-            for i in range(tag.Bitmap_Count()):
-                tagstr += (" "*24 + base_str %
-                           (i, tag.Bitmap_Width(i), tag.Bitmap_Height(i),
-                            tag.Bitmap_Depth(i), tag.Bitmap_Mipmaps_Count(i)) )
+            for i in range(tag.bitmap_count()):
+                tagstr += (" "*12 + base_str %
+                           (i, tag.bitmap_width(i), tag.bitmap_height(i),
+                            tag.bitmap_depth(i), tag.bitmap_mipmaps_count(i)) )
 
             #check if the strings list exists in the spot with 
             if filesize in tagstrs:
@@ -350,13 +361,14 @@ class BitmapConverter(HaloHandler):
         #to the appropriate b_format string under the appropriate b_type
         for b_type in (0, 1, 2):
             for b_format in valid_formats:
-                for b_size in reversed(sorted( tag_info_strs[b_type][b_format] )):
+                for b_size in reversed(sorted(tag_info_strs[b_type][b_format])):
                     for tagstr in tag_info_strs[b_type][b_format][b_size]:
                         tag_counts[b_type] += 1
                         formatted_strs[b_type][b_format] += tagstr
 
 
-        #concate all the strings to the debug log in order of b_type and b_format
+        #concate all the strings to the
+        #log in order of b_type and b_format
         for b_type in (0, 1, 2):
             logstr += (tag_header_strs[b_type] + str(tag_counts[b_type]) +
                        "\n" + ''.join(formatted_strs[b_type]))

@@ -9,7 +9,7 @@ try:
     test = GdlHandler(debug=3, allow_corrupt=True,
                        print_test=True, save_test=False, int_test=False,
                        write_as_temp=True, backup=False,
-                       valid_def_ids=valid_id,
+                       #valid_def_ids=valid_id,
                        print_options={'indent':4,
                                       'printout':True, 'precision':3,
                                       'show':['name', 'children', 'field',

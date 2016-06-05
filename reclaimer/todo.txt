@@ -7,7 +7,7 @@ Clean up instances where kwargs and args exist,
 
 Finish docstrings for modules and update existing ones.
 
-Merge Handler and TagTestHandler into one class. Probably put this class in test.py
+MAKE SURE BITMAP CONVERTER WORKS
 
 Medium Priority:
 

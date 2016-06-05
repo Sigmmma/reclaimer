@@ -1,66 +1,65 @@
 #these are just constants to illustrate what's going on
-X_Scl_Idx = 0
-Y_Scl_Idx = 1
-X_Pos_Idx = 1
-Y_Pos_Idx = 2
+x_pos_idx = 1
+y_pos_idx = 2
 
 
 #this function will allow the supplied child windows to move with the supplied parent window
-def Dock_Window_Movement(Parent_Window, Child_Windows):
-
-    Parent_Window.Window_Docking_Updating = True
+def dock_window_movement(parent_window, child_windows):
+    parent_window.window_docking_updating = True
     
-    #the .geometry() returns the dimensions as a string that looks like "WidthxHeight+PosX+PosY"
-    #an example would be "200x200+50+50". Because of that we need to split them apart at the x and +
-    Root_Dimensions = Parent_Window.geometry().split('+')
+    #the .geometry() returns the dimensions as a string that looks like
+    #"widthxheight+posx+posy". an example would be "200x200+50+50".
+    #Because of that we need to split them apart at the x and +
+    root_dim = parent_window.geometry().split('+')
     
     #we want to move the child windows with the main, but keep their relative position to the main
-    if ((int(Root_Dimensions[X_Pos_Idx]) != Parent_Window.Previous_Pos_X) or
-        (int(Root_Dimensions[Y_Pos_Idx]) != Parent_Window.Previous_Pos_Y)):
+    if ((int(root_dim[x_pos_idx]) != parent_window.prev_pos_x) or
+        (int(root_dim[y_pos_idx]) != parent_window.prev_pos_y)):
         
         #get the amount that the main window has been moved
-        root_x_shift = (int(Root_Dimensions[X_Pos_Idx]) - Parent_Window.Previous_Pos_X)
-        root_y_shift = (int(Root_Dimensions[Y_Pos_Idx]) - Parent_Window.Previous_Pos_Y)
+        root_x_shift = (int(root_dim[x_pos_idx]) - parent_window.prev_pos_x)
+        root_y_shift = (int(root_dim[y_pos_idx]) - parent_window.prev_pos_y)
 
         #set the new parent window's location
-        Parent_Window.Previous_Pos_X = int(Root_Dimensions[X_Pos_Idx])
-        Parent_Window.Previous_Pos_Y = int(Root_Dimensions[Y_Pos_Idx])
+        parent_window.prev_pos_x = int(root_dim[x_pos_idx])
+        parent_window.prev_pos_y = int(root_dim[y_pos_idx])
 
-        if Parent_Window.docking_state:
+        if parent_window.docking_state:
             
             #move each of the child windows with the parent
-            for Child_Window in Child_Windows:
+            for child_window in child_windows:
 
                 '''MAYBE ADD ABILITY TO SCALE CHILD WINDOWS WITH PARENT'''
                 
-                Child_Dimensions = Child_Window.geometry().split('+')
+                child_dim = child_window.geometry().split('+')
                 
-                Child_Window.Previous_Pos_X = int(Child_Dimensions[X_Pos_Idx])
-                Child_Window.Previous_Pos_Y = int(Child_Dimensions[Y_Pos_Idx])
+                child_window.prev_pos_x = int(child_dim[x_pos_idx])
+                child_window.prev_pos_y = int(child_dim[y_pos_idx])
                 
-                Child_Dimensions = (Child_Dimensions[0]+"+"+
-                                    str(root_x_shift + Child_Window.Previous_Pos_X)+"+"+
-                                    str(root_y_shift + Child_Window.Previous_Pos_Y) )
+                child_dim = (child_dim[0]+"+"+
+                             str(root_x_shift + child_window.prev_pos_x)+"+"+
+                             str(root_y_shift + child_window.prev_pos_y) )
                 
-                Child_Window.geometry(Child_Dimensions)
+                child_window.geometry(child_dim)
 
-    Parent_Window.Window_Docking_Updating = False
+    parent_window.window_docking_updating = False
 
 
 
-#this function will make the supplied child windows minimize and maximize with the parent window and vice versa
-def Minimize_Maximize_Children_with_Parent(Parent_Window, Child_Windows, New_State):
-    if not Parent_Window.Mini_Maxi_State_Changing:
-        Parent_Window.Mini_Maxi_State_Changing = True
+def mini_maxi_with_parent(parent_window, child_windows, new_state):
+    '''this function will make the supplied child windows
+    minimize and maximize with the parent window and vice versa'''
+    if not parent_window.mini_maxi_state_changing:
+        parent_window.mini_maxi_state_changing = True
 
-        if New_State == "MAX":
-            Parent_Window.wm_state('normal')
-            for Window in Child_Windows:
-                Window.wm_state('normal')
+        if new_state == "MAX":
+            parent_window.wm_state('normal')
+            for window in child_windows:
+                window.wm_state('normal')
         else:
-            Parent_Window.wm_state('iconic')
-            for Window in Child_Windows:
-                Window.wm_state('iconic')
+            parent_window.wm_state('iconic')
+            for window in child_windows:
+                window.wm_state('iconic')
             
-        Parent_Window.Mini_Maxi_State_Changing = False
+        parent_window.mini_maxi_state_changing = False
         
