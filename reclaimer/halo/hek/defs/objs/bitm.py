@@ -36,43 +36,43 @@ CUBEMAP_PADDING = 128
 
 class BitmTag(HekTag):
     
-    def Bitmap_Count(self, new_value=None):
+    def bitmap_count(self, new_value=None):
         if new_value is None:
             return self.data.Data.bitmaps.Count
         self.data.Data.bitmaps.Count = new_value
         
-    def Bitmap_Width(self, b_index=0, new_value=None):
+    def bitmap_width(self, b_index=0, new_value=None):
         if new_value is None:
             return self.data.Data.bitmaps.bitmaps_array[b_index].width
         self.data.Data.bitmaps.bitmaps_array[b_index].width = new_value
 
-    def Bitmap_Height(self, b_index=0, new_value=None):
+    def bitmap_height(self, b_index=0, new_value=None):
         if new_value is None:
             return self.data.Data.bitmaps.bitmaps_array[b_index].height
         self.data.Data.bitmaps.bitmaps_array[b_index].height = new_value
 
-    def Bitmap_Depth(self, b_index=0, new_value=None):
+    def bitmap_depth(self, b_index=0, new_value=None):
         if new_value is None:
             return self.data.Data.bitmaps.bitmaps_array[b_index].depth
         self.data.Data.bitmaps.bitmaps_array[b_index].depth = new_value
 
-    def Bitmap_Mipmaps_Count(self, b_index=0, new_value=None):
+    def bitmap_mipmaps_count(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmaps_array[b_index].Mipmaps
-        self.data.Data.bitmaps.bitmaps_array[b_index].Mipmaps = new_value
+            return self.data.Data.bitmaps.bitmaps_array[b_index].mipmaps
+        self.data.Data.bitmaps.bitmaps_array[b_index].mipmaps = new_value
 
-    def Bitmap_Type(self, b_index=0, new_value=None):
+    def bitmap_type(self, b_index=0, new_value=None):
         if new_value is None:
             return self.data.Data.bitmaps.bitmaps_array[b_index].type.data
         self.data.Data.bitmaps.bitmaps_array[b_index].type.data = new_value
 
-    def Bitmap_Format(self, b_index=0, new_value=None):
+    def bitmap_format(self, b_index=0, new_value=None):
         if new_value is None:
             return self.data.Data.bitmaps.bitmaps_array[b_index].format.data
         self.data.Data.bitmaps.bitmaps_array[b_index].format.data = new_value
 
 
-    def Bitmap_Width_Height_Depth(self, b_index=0, new_value=None):
+    def bitmap_width_height_depth(self, b_index=0, new_value=None):
         bitmap = self.data.Data.bitmaps.bitmaps_array[b_index]
         if new_value is None:
             return(bitmap.width, bitmap.height, bitmap.depth)
@@ -80,7 +80,7 @@ class BitmTag(HekTag):
                                                      new_value[1],
                                                      new_value[2])
 
-    def Bitmap_Flags(self, b_index=0, new_value=None):
+    def bitmap_flags(self, b_index=0, new_value=None):
         if new_value is None:
             return self.data.Data.bitmaps.bitmaps_array[b_index].flags
         self.data.Data.bitmaps.bitmaps_array[b_index].flags = new_value
@@ -90,62 +90,66 @@ class BitmTag(HekTag):
             return(self.data.Data.bitmaps.bitmaps_array[b_index].base_address)
         self.data.Data.bitmaps.bitmaps_array[b_index].base_address = new_value
 
-    def Bitmap_Data_Offset(self, b_index=0, new_value=None):
+    def bitmap_data_offset(self, b_index=0, new_value=None):
         if new_value is None:
-            return(self.data.Data.bitmaps.bitmaps_array[b_index].pixels_offset)
+            return(self.data.Data.bitmaps.\
+                   bitmaps_array[b_index].pixels_offset)
         self.data.Data.bitmaps.bitmaps_array[b_index].pixels_offset = new_value
 
 
 
-    def Registration_Point_X(self, b_index=0, new_value=None):
-        Reg_Point = self.data.Data.bitmaps.bitmaps_array[b_index].registration_point
+    def registration_point_x(self, b_index=0, new_value=None):
+        reg_point = self.data.Data.bitmaps.\
+                    bitmaps_array[b_index].registration_point
         if new_value is None:
-            return(Reg_Point.x)
-        Reg_Point.x = new_value
+            return(reg_point.x)
+        reg_point.x = new_value
 
-    def Registration_Point_Y(self, b_index=0, new_value=None):
-        Reg_Point = self.data.Data.bitmaps.bitmaps_array[b_index].registration_point
+    def registration_point_y(self, b_index=0, new_value=None):
+        reg_point = self.data.Data.bitmaps.\
+                    bitmaps_array[b_index].registration_point
         if new_value is None:
-            return(Reg_Point.y)
-        Reg_Point.y = new_value
+            return(reg_point.y)
+        reg_point.y = new_value
 
-    def Registration_Point_XY(self, b_index=0, new_value=None):
-        Reg_Point = self.data.Data.bitmaps.bitmaps_array[b_index].registration_point
+    def registration_point_xy(self, b_index=0, new_value=None):
+        reg_point = self.data.Data.bitmaps.\
+                    bitmaps_array[b_index].registration_point
         if new_value is None:
-            return(Reg_Point.x, Reg_Point.y)
-        Reg_Point.x, Reg_Point.y = new_value[0], new_value[1]
+            return(reg_point.x, reg_point.y)
+        reg_point.x, reg_point.y = new_value[0], new_value[1]
 
 
     @property
-    def Is_Xbox_Bitmap(self):
+    def is_xbox_bitmap(self):
         #we only need to check the first bitmap
         return self.bitmap_base_address() == 1073751810
         
-    def Processed_by_Reclaimer(self, new_flag=None):
+    def processed_by_reclaimer(self, new_flag=None):
         if new_flag is None:
             return self.data.Data.flags.processed_by_reclaimer
         self.data.Data.flags.processed_by_reclaimer = new_flag
         
 
-    def Is_Power_of_2_Bitmap(self, b_index=0):
-        return self.Bitmap_Flags(b_index).power_of_2_dim
+    def is_power_of_2_bitmap(self, b_index=0):
+        return self.bitmap_flags(b_index).power_of_2_dim
             
-    def Is_Compressed_Bitmap(self, b_index=0):
-        return self.Bitmap_Flags(b_index).compressed
+    def is_compressed_bitmap(self, b_index=0):
+        return self.bitmap_flags(b_index).compressed
         
     def swizzled(self, new_flag=None, b_index = 0):
         if new_flag is None:
-            return self.Bitmap_Flags(b_index).swizzled
-        self.Bitmap_Flags(b_index).swizzled = new_flag
+            return self.bitmap_flags(b_index).swizzled
+        self.bitmap_flags(b_index).swizzled = new_flag
     
 
-    def Color_Plate_Data_Bytes_Size(self, new_value=None):
+    def color_plate_data_bytes_size(self, new_value=None):
         if new_value is None:
             return(self.data.Data.compressed_color_plate_data.Count)
         self.data.Data.compressed_color_plate_data.Count = new_value
     
 
-    def Pixel_Data_Bytes_Size(self, new_value=None):
+    def pixel_data_bytes_size(self, new_value=None):
         if new_value is None:
             return self.data.Data.processed_pixel_data.Count
         self.data.Data.processed_pixel_data.Count = new_value
@@ -153,10 +157,10 @@ class BitmTag(HekTag):
 
 
 
-    def Set_Platform(self, saveasxbox):
+    def set_platform(self, saveasxbox):
         '''changes different things to set the platform to either PC or Xbox'''
         #Read each of the bitmap blocks
-        for b_index in range(self.Bitmap_Count()):
+        for b_index in range(self.bitmap_count()):
             bitmap = self.data.Data.bitmaps.bitmaps_array[b_index]
             
             bitmap.flags.set_to('made_by_arsenic', saveasxbox)
@@ -177,7 +181,8 @@ class BitmTag(HekTag):
             #if Xbox, reset these structure variable's all to 0
             #since xbox doesn't like them being non-zero
             Data = self.data.Data
-            for block in (Data.compressed_color_plate_data, Data.processed_pixel_data):
+            for block in (Data.compressed_color_plate_data,
+                          Data.processed_pixel_data):
                 for i in (1,2,3):
                     block[i] = 0
                     
@@ -185,11 +190,12 @@ class BitmTag(HekTag):
                 for i in (1,2):
                     block[i] = 0
                     
-            #swap the order of the cubemap faces and mipmaps if saving to xbox format
-            self.Change_Sub_Bitmap_Ordering(saveasxbox)
+            #swap the order of the cubemap faces
+            #and mipmaps if saving to xbox format
+            self.change_sub_bitmap_ordering(saveasxbox)
 
 
-    def Change_Sub_Bitmap_Ordering(self, saveasxbox):
+    def change_sub_bitmap_ordering(self, saveasxbox):
         '''Used to change the mipmap and cube face ordering.
         On pc all highest resolution faces are first, then
         the next highest resolution mipmap set. On xbox it's
@@ -198,23 +204,23 @@ class BitmTag(HekTag):
         DO NOT UNDER ANY CIRCUMSTANCES CALL THIS FUNCTION
         IF PADDING HAS ALREADY BEEN ADDED TO A BITMAP'''
 
-        Raw_Bitmap_Data = self.data.Data.processed_pixel_data.Data
+        raw_bitmap_data = self.data.Data.processed_pixel_data.data
 
         #Loop over each of the bitmap blocks
-        for b_index in range(self.Bitmap_Count()):
+        for b_index in range(self.bitmap_count()):
             
-            if self.Bitmap_Type(b_index) == TYPE_CUBEMAP:
-                mipmap_count = self.Bitmap_Mipmaps_Count(b_index) + 1
-                Tex_Block = Raw_Bitmap_Data[b_index]
+            if self.bitmap_type(b_index) == TYPE_CUBEMAP:
+                mipmap_count = self.bitmap_mipmaps_count(b_index) + 1
+                tex_block = raw_bitmap_data[b_index]
         
-                if isinstance(Tex_Block[0], array):
+                if isinstance(tex_block[0], array):
                     #change the type of data for the bitmap pixels
                     #to ANY array block. All Py_Array Tag_Types use
                     #the same writer, thus any Py_Array Tag_Type will work
-                    Tex_Block.set_desc('TYPE', UInt8Array, 'SUB_STRUCT')
+                    tex_block.set_desc('TYPE', UInt8Array, 'SUB_STRUCT')
 
                 #this will be used to copy values from
-                Template = Tex_Block.__copy__()
+                template = tex_block.__copy__()
 
                 #this is used to keep track of which index
                 #we're placing the new pixel array into
@@ -229,8 +235,8 @@ class BitmTag(HekTag):
                         '''get the block we want from the original
                         layout and place it in its new position'''
                         if saveasxbox:#True = Xbox, False = PC
-                            Tex_Block[i] = Template[mip + face]
+                            tex_block[i] = template[mip + face]
                         else:
-                            Tex_Block[mip + face] = Template[i]
+                            tex_block[mip + face] = template[i]
                         i += 1
                     
