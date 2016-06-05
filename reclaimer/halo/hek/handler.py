@@ -106,12 +106,12 @@ class HaloHandler(TagTestHandler):
         for key in self.id_ext_map.keys():
             self.ext_id_map[self.id_ext_map[key]] = key
             
-        if "Default_Conversion_Flags" in kwargs:
-            self.Default_Conversion_Flags = kwargs["Default_Conversion_Flags"]
+        if "default_conversion_flags" in kwargs:
+            self.default_conversion_flags = kwargs["default_conversion_flags"]
         else:
-            self.Default_Conversion_Flags = {}
+            self.default_conversion_flags = {}
             for def_id in self.tags:
-                self.Default_Conversion_Flags[def_id] = {}
+                self.default_conversion_flags[def_id] = {}
         
         if "datadir" in kwargs:
             self.datadir = kwargs["datadir"]

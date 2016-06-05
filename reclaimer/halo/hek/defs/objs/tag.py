@@ -2,7 +2,7 @@ from ....fields import *
 from supyr_struct.tag import *
 
 class HekTag(Tag):
-    __slots__ = ('Tag_Conversion_Settings',
+    __slots__ = ('tag_conversion_settings',
                  'library', 'definition',
                  'root_offset', 'calc_pointers',
                  'sourcepath', 'filepath', 'data')
@@ -12,5 +12,5 @@ class HekTag(Tag):
         
         #this is used by various things to store variables
         #per tag which specify how it is to be changed.
-        self.Tag_Conversion_Settings = []
+        self.tag_conversion_settings = []
         Tag.__init__(self, **kwargs)

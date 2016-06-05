@@ -66,7 +66,7 @@ try:
                 try:
                     print('----------Compiling---------')
                     objects_tag = self.handler.build_tag(def_id='objects')
-                    objects_tag.filepath = folderpath+'\\OBJECTS.PS2'
+                    objects_tag.filepath = folderpath+'\\objects.ps2'
                     objects_tag.import_data()
                     objects_tag.serialize(temp=False)
                     print('----------Finished----------')
