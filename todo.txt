@@ -7,8 +7,6 @@ Clean up instances where kwargs and args exist,
 
 Finish docstrings for modules and update existing ones.
 
-MAKE SURE BITMAP CONVERTER WORKS
-
 make init_data work better for all blocks
 
 Medium Priority:
