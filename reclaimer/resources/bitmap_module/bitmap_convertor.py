@@ -161,19 +161,18 @@ class BitmapManipulator():
     def load_new_texture(self, **kwargs):
         
         try:
-            if "texture_block" not in kwargs:
+            texture_block = self.texture_block = kwargs.get("texture_block")
+            texture_info = self.texture_info = kwargs.get("texture_info")
+            
+            if texture_block is None:
                 print("ERROR: NO BITMAP BLOCK SUPPLIED.\n",
                       "CANNOT LOAD BITMAP WITHOUT A SUPPLIED BITMAP BLOCK")
-                self.texture_block = None
                 return
-            else: texture_block = kwargs["texture_block"]
             
-            if "texture_info" not in kwargs:
+            if texture_info is None:
                 print("ERROR: BITMAP BLOCK SUPPLIED HAS NO TEXTURE INFO.\n",
                       "CANNOT LOAD BITMAP WITHOUT A DESCRIPTION OF THE BITMAP")
-                self.texture_block = None
                 return
-            else: texture_info = kwargs["texture_info"]
             
             if "format" not in texture_info:
                 print("ERROR: THE SUPPLIED BITMAP'S INFO BLOCK HAS NO FORMAT ENTRY!\n",
@@ -191,44 +190,24 @@ class BitmapManipulator():
             if isinstance(texture_block, array):
                 texture_block = [texture_block]
             
-            #initialize the optional bitmap DESCRIPTION variables
-            self.depth = 1
-            self.sub_bitmap_count = 1
-            self.mipmap_count = 0
-            self.swizzled = False
-            self.filepath = None
+            #initialize the optional bitmap description variables
             self.palette = None
-            self.palettized_unpacker = None
-            self.palettized_packer = None
-            self.palette_unpacker = None
-            self.palette_packer = None
-            self.indexing_unpacker = None
-            self.indexing_packer = None
             self.indexing_size = DEFAULT_INDEXING_SIZE
             
             
             #get the bitmap's info from the texture block's info dictionary
-            self.width = texture_info["width"]
-            self.height = texture_info["height"]
+            self.width = texture_info.get("width", 1)
+            self.height = texture_info.get("height", 1)
+            self.depth = texture_info.get("depth", 1)
             self.format = texture_info["format"]
-            self.texture_type = TYPE_2D
-            self.packed = self.palette_packed = True
-            self.channel_order = C_ORDER_DEFAULT
             
-            if "depth" in texture_info:
-                self.depth = texture_info["depth"]
+            self.swizzled = texture_info.get("swizzled", False)
+            self.mipmap_count = texture_info.get("mipmap_count", 0)
+            self.sub_bitmap_count = texture_info.get("sub_bitmap_count", 1)
+            self.filepath = texture_info.get("filepath", None)
             
-            if "swizzled" in texture_info:
-                self.swizzled = texture_info["swizzled"]
-            
-            if "sub_bitmap_count" in texture_info and texture_info["sub_bitmap_count"] > 0:
-                self.sub_bitmap_count = texture_info["sub_bitmap_count"]
-            
-            if "mipmap_count" in texture_info:
-                self.mipmap_count = texture_info["mipmap_count"]
-            
-            if "packed" in texture_info:
-                self.packed = texture_info["packed"]
+            self.packed = texture_info.get("packed", True)
+            self.palette_packed = texture_info.get("palette_packed", True)
 
             if "deswizzler" in texture_info:
                 if swizzler is not None:
@@ -237,19 +216,14 @@ class BitmapManipulator():
                 else:
                     print("ERROR: SWIZZLER MODULE NOT LOADED. "+
                           "CANNOT SWIZZLE/UNSWIZZLE WITHOUT SWIZZLER.")
-            else:
-                if swizzler is not None:
-                    self.deswizzler = swizzler.Swizzler(texture_converter=self,
-                                                        mask_type="DEFAULT")
+            elif swizzler is not None:
+                self.deswizzler = swizzler.Swizzler(texture_converter=self,
+                                                    mask_type="DEFAULT")
 
-            if "texture_type" in texture_info:
-                self.texture_type = texture_info["texture_type"]
+            self.texture_type = texture_info.get("texture_type", TYPE_2D)
+            self.channel_order = texture_info.get("channel_order",
+                                                  C_ORDER_DEFAULT)
                 
-            if "channel_order" in texture_info:
-                self.channel_order = texture_info["channel_order"]
-                
-            if "filepath" in texture_info:
-                self.filepath = texture_info["filepath"]
                 
             if "palette" in texture_info and texture_info["palette"] is not None:
                 if "indexing_size" in texture_info and texture_info["indexing_size"] not in (0, None):
@@ -263,30 +237,18 @@ class BitmapManipulator():
                     print("ERROR: PALETTE WAS SUPPLIED, BUT BIT-SIZE OF INDEXING WAS NOT.")
                     return
 
-            if "palettized_unpacker" in texture_info:
-                  self.palettized_unpacker = texture_info["palettized_unpacker"]
-            else: self.palettized_unpacker = self._unpack_palettized
-
-            if "palettized_packer" in texture_info:
-                  self.palettized_packer = texture_info["palettized_packer"]
-            else: self.palettized_packer = self._pack_palettized
-
-            if "palette_unpacker" in texture_info:
-                  self.palette_unpacker = texture_info["palette_unpacker"]
-            else: self.palette_unpacker = self._unpack_palette
-
-            if "indexing_unpacker" in texture_info:
-                  self.indexing_unpacker = texture_info["indexing_unpacker"]
-            else: self.indexing_unpacker = self._unpack_indexing
-
-            if "palette_packer" in texture_info:
-                  self.palette_packer = texture_info["palette_packer"]
-            else: self.palette_packer = self._pack_palette
-
-            if "indexing_packer" in texture_info:
-                  self.indexing_packer = texture_info["indexing_packer"]
-            else: self.indexing_packer = self._pack_indexing
-
+            self.palettized_packer = texture_info.get("palettized_packer",
+                                                      self._pack_palettized)
+            self.palettized_unpacker = texture_info.get("palettized_unpacker",
+                                                        self._unpack_palettized)
+            self.palette_packer = texture_info.get("palette_packer",
+                                                     self._pack_palette)
+            self.palette_unpacker = texture_info.get("palette_unpacker",
+                                                     self._unpack_palette)
+            self.indexing_packer = texture_info.get("indexing_packer",
+                                                      self._pack_indexing)
+            self.indexing_unpacker = texture_info.get("indexing_unpacker",
+                                                      self._unpack_indexing)
 
             #we may have been provided with conversion settings at the same time we were given the texture
             self.load_new_conversion_settings(**kwargs)
@@ -707,8 +669,9 @@ class BitmapManipulator():
         else:
             self.channel_merge_mapping = None
 
-        #because the merge mapping will reference index -1 it will be the last index.
-        #because we are appending an additional divisor of 256 it will be erased when packed
+        #because the merge mapping will reference index -1 it will
+        #be the last index. because we are appending an additional
+        #divisor of 256 it will be erased when packed
         if self.channel_merge_mapping is not None and -1 in self.channel_merge_mapping:
             self.channel_merge_divisors.append(CHANNEL_ERASE_DIVISOR)
 
@@ -718,15 +681,12 @@ class BitmapManipulator():
         try:
             """saves the loaded bitmap to a file"""
             
-            if "output_path" in kwargs:
-                output_path = kwargs["output_path"]
-                del(kwargs["output_path"])
-            else:
-                if self.filepath is None:
-                    print("BITMAP SAVE ERROR: MISSING OUTPUT PATH.")
-                    return
-                else:
-                    output_path = self.filepath
+            kwargs['output_path'] = output_path = kwargs.get('output_path',
+                                                             self.filepath)
+            
+            if kwargs['output_path'] is None:
+                print("BITMAP SAVE ERROR: MISSING OUTPUT PATH.")
+                return
             
             if self.texture_block is None:
                 print("BITMAP SAVE ERROR: NO TEXTURE LOADED.")
@@ -735,22 +695,20 @@ class BitmapManipulator():
             if bitmap_io is None:
                 print("BITMAP SAVE ERROR: BITMAP IO MODULE NOT LOADED.")
                 return
-
+            
+            ext = kwargs.get('ext').lower()
             #if the extension isnt provided in the
             #kwargs we try to get it from the filepath
-            if "ext" in kwargs:
-                format_ext = kwargs["ext"]
-            else:
-                splitpath = path.splitext(output_path)
+            if ext is None:
+                splitpath = output_path.splitext(output_path)
                 output_path = splitpath[0]
-                format_ext = splitpath[1][1:]
+                kwargs['ext'] = ext = splitpath[1][1:].lower()
 
-            if format_ext.lower() not in bitmap_io.file_writers:
+            if ext not in bitmap_io.file_writers:
                 print("BITMAP SAVE ERROR: UNKNOWN BITMAP FILE "+
-                      "EXPORT FORMAT: ", format_ext.lower())
+                      "EXPORT FORMAT: ", ext.lower())
                 return
-            bitmap_io.file_writers[format_ext.lower()](self, format_ext,
-                                                       output_path, **kwargs)
+            bitmap_io.file_writers[ext](self, **kwargs)
         except:
             print("ERROR OCCURRED WHILE TRYING TO SAVE BITMAP TO FILE.")
             print(format_exc())
@@ -759,37 +717,31 @@ class BitmapManipulator():
     def load_from_file(self, **kwargs):
         try:
             """loads the current bitmap from a file"""
+            kwargs['input_path'] = input_path = kwargs.get('input_path',
+                                                           self.filepath)
             
-            if "input_path" in kwargs:
-                input_path = kwargs["input_path"]
-                del kwargs["input_path"]
-            else:
-                if self.filepath is None:
-                    print("BITMAP LOAD ERROR: MISSING INPUT PATH.")
-                    return
-                else:
-                    input_path = self.filepath
+            if kwargs['input_path'] is None:
+                print("BITMAP LOAD ERROR: MISSING INPUT PATH.")
+                return
                     
             if bitmap_io is None:
                 print("BITMAP LOAD ERROR: BITMAP IO MODULE NOT LOADED.")
                 return
 
+            ext = kwargs.get('ext').lower()
             #if the extension isnt provided in the
             #kwargs we try to get it from the filepath
-            if "ext" in kwargs:
-                format_ext = kwargs["ext"]
-            else:
-                splitpath = path.splitext(input_path)
+            if ext is None:
+                splitpath = input_path.splitext(input_path)
                 input_path = splitpath[0]
-                format_ext = splitpath[1][1:]
+                kwargs['ext'] = ext = splitpath[1][1:].lower()
             
-            if format_ext.lower() not in bitmap_io.file_readers:
+            if ext not in bitmap_io.file_readers:
                 print("BITMAP LOAD ERROR: UNKNOWN BITMAP FILE "+
-                      "IMPORT FORMAT: ", format_ext.lower())
+                      "IMPORT FORMAT: ", ext)
                 return
             
-            bitmap_io.file_readers[format_ext.lower()](self, format_ext,
-                                                       input_path, **kwargs)
+            bitmap_io.file_readers[ext](self, *kwargs)
         except:
             print("ERROR OCCURRED WHILE TRYING TO LOAD BITMAP FROM FILE.")
             print(format_exc())

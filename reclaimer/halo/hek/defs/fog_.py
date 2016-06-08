@@ -1,7 +1,7 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-fog__body = Struct("Data",
+fog__body = Struct("tagdata",
     #fog flags
     BBool32("fog flags",
         "is water",
@@ -30,8 +30,8 @@ fog__body = Struct("Data",
         ),
     BUInt16("layer count"),
 
-    Struct("distance gradient", INCLUDE=From_To),
-    Struct("density gradient",  INCLUDE=From_To),
+    Struct("distance gradient", INCLUDE=from_to),
+    Struct("density gradient",  INCLUDE=from_to),
 
     BFloat("start distance from fog plane"),
     Pad(5),
@@ -47,8 +47,8 @@ fog__body = Struct("Data",
     #Screen Layer Animation
     BFloat("animation period"),
     Pad(4),
-    Struct("wind velocity", INCLUDE=From_To),
-    Struct("wind period",   INCLUDE=From_To),
+    Struct("wind velocity", INCLUDE=from_to),
+    Struct("wind period",   INCLUDE=from_to),
     BFloat("wind acceleration weight"),
     BFloat("wind perpendicular weight"),
 

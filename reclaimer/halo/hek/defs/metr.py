@@ -33,7 +33,7 @@ meter_image = WhileArray("data",
     )
 
 
-meter_body = Struct("Data",
+meter_body = Struct("tagdata",
     Pad(4),
     dependency("stencil bitmap", valid_bitmaps),
     dependency("source bitmap",  valid_bitmaps),

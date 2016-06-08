@@ -1,7 +1,7 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-item_body = Struct("Data",
+item_body = Struct("tagdata",
     Pad(2),
     BBool16("flags",
         "always maintains z up",
@@ -16,10 +16,10 @@ item_body = Struct("Data",
 
     Pad(18),
 
-    BSEnum16("A in", *Device_Functions),
-    BSEnum16("B in", *Device_Functions),
-    BSEnum16("C in", *Device_Functions),
-    BSEnum16("D in", *Device_Functions),
+    BSEnum16("A in", *device_functions),
+    BSEnum16("B in", *device_functions),
+    BSEnum16("C in", *device_functions),
+    BSEnum16("D in", *device_functions),
 
     Pad(164),
 
@@ -28,7 +28,7 @@ item_body = Struct("Data",
 
     Pad(120),
 
-    Struct("detonation delay", INCLUDE=From_To),
+    Struct("detonation delay", INCLUDE=from_to),
     dependency("detonating effect"),
     dependency("detonation effect"),
     SIZE=396,

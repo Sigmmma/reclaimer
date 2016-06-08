@@ -9,7 +9,7 @@ attachment_point = Struct("attachment point",
     StrLatin1("marker name", SIZE=32),
     )
 
-flag_body = Struct("Data",
+flag_body = Struct("tagdata",
     Pad(4),
     BSEnum16("trailing edge shape",
         "flat",

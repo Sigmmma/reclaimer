@@ -42,7 +42,7 @@ class TagRipper(MapLoader):
     def rip_tags(self, mappath):
         print('Loading map...')
         halomap = self.build_tag(filepath=mappath, def_id='map')
-        tag_array = halomap.data.Tag_Index_Header.Tag_Index
+        tag_array = halomap.data.tag_index_header.tag_index
 
         hashmap = self.hash_cacher.main_hashmap
         hash_buffer = BytearrayBuffer()
@@ -61,9 +61,9 @@ class TagRipper(MapLoader):
         print('Checking tags against hashmap...')
 
         for tag_header in tag_array:
-            def_id = def_id_map[tag_header.Tag_Class_1.data]
+            def_id = def_id_map[tag_header.tag_class_1.data]
 
-            tagmeta = tag_header.Tag_Data.Tag_Meta
+            tagmeta = tag_header.tag_data.tag_meta
 
             if isinstance(tagmeta, VoidBlock):
                 '''The tag meta data doesnt actually exist,
@@ -91,17 +91,17 @@ class TagRipper(MapLoader):
                     continue
                     tag_ref_blocks = get_blocks(tag_ref_paths[1], tagmeta)
                     for B in tag_ref_blocks:
-                        B.Tag_Path_Pointer = B.Tag_ID = 0
+                        B.tag_path_pointer = B.tag_id = 0
                     
                 if reflexive_paths:
                     reflexive_blocks = get_blocks(reflexive_paths[1], tagmeta)
                     for B in reflexive_blocks:
-                        B.ID = B.Reflexive_ID = 0
+                        B.id = B.reflexive_id = 0
                     
                 if raw_data_paths:
                     raw_data_blocks = get_blocks(raw_data_paths[1], tagmeta)
                     for B in raw_data_blocks:
-                        B.Unknown_1 = B.Unknown_2 = B.Unknown_3 = B.ID = 0
+                        B.unknown_1 = B.unknown_2 = B.unknown_3 = B.id = 0
 
                 #need to do some extra stuff for certain tags with fields
                 #that are normally zeroed out as tags, but arent as meta

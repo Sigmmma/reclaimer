@@ -66,7 +66,7 @@ class ShaderRectifier(HaloHandler):
                         del self.tags[def_id][filepath]
 
                     '''REMOVE THE EXTRA LAYERS FROM THE TAG'''
-                    el = tag.data.Data.extra_layers.extra_layers_array
+                    el = tag.data.tagdata.extra_layers.extra_layers_array
                     if len(el):
                         logstr += "\n"+tag.filepath +"\nExtra Layers:"
                         
@@ -74,7 +74,7 @@ class ShaderRectifier(HaloHandler):
                         for layer in el:
                             #add the extra layer's path to the debug log
                             try:
-                                ext = '.'+layer.Tag_Class.data_name
+                                ext = '.'+layer.tag_class.data_name
                             except Exception:
                                 ext = ''
                             logstr += "\n    " + layer.CHILD + ext

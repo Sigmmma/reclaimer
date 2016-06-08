@@ -44,13 +44,13 @@ os_soso_ext = Struct("shader model extension",
     )
 
 
-soso_body = Struct("Data",
+soso_body = Struct("tagdata",
     #Radiosity Properties
-    Radiosity_Block,
+    radiosity_settings,
     
     #Shader Type
-    Material_Type,
-    Numeric_Shader_ID,
+    material_type,
+    shader_id_num,
 
     Pad(2),
     #Model Shader Properties
@@ -67,7 +67,7 @@ soso_body = Struct("Data",
     
     Pad(16),
     #Color-Change
-    BSEnum16("color change source", *Function_Names),
+    BSEnum16("color change source", *function_names),
         
     Pad(30),
     #Self-Illumination
@@ -76,8 +76,8 @@ soso_body = Struct("Data",
             "no random phase"
             ),
         Pad(2),
-        BSEnum16("color source", *Function_Names),
-        BSEnum16("animation function", *Animation_Functions),
+        BSEnum16("color source", *function_names),
+        BSEnum16("animation function", *animation_functions),
         BFloat("animation period"),#seconds
         Struct("color lower bound", INCLUDE=R_G_B_Float),
         Struct("color upper bound", INCLUDE=R_G_B_Float),
@@ -94,8 +94,8 @@ soso_body = Struct("Data",
         dependency("multipurpose map", valid_bitmaps),
 
         Pad(8),
-        BSEnum16("detail function", *Detail_Map_Functions),
-        BSEnum16("detail mask",     *Detail_Mask),
+        BSEnum16("detail function", *detail_map_functions),
+        BSEnum16("detail mask",     *detail_mask),
            
         BFloat("detail map scale"),
         dependency("detail map", valid_bitmaps),
@@ -107,9 +107,9 @@ soso_body = Struct("Data",
         
     #Texture Scrolling Animation
     Struct("texture scrolling",
-        Struct("u-animation", INCLUDE=Anim_Src_Func_Per_Pha_Sca),
-        Struct("v-animation", INCLUDE=Anim_Src_Func_Per_Pha_Sca),
-        Struct("rotation-animation",   INCLUDE=Anim_Src_Func_Per_Pha_Sca),
+        Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
+        Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
+        Struct("rotation-animation",   INCLUDE=anim_src_func_per_pha_sca),
         Struct("rot-animation center", INCLUDE=X_Y_Float),
         ),
                    

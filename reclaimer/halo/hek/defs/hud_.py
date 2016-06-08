@@ -1,7 +1,7 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-hud__body = Struct("Data",
+hud__body = Struct("tagdata",
     #I didnt feel like adding offsets since there is no
     #padding until AFTER all entries. it's all sequential
     dependency("digits bitmap", valid_bitmaps),

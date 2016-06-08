@@ -1,14 +1,14 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-shader_body = Struct("Data",
+shader_body = Struct("tagdata",
     #Radiosity Properties
-    Radiosity_Block,
+    radiosity_settings,
 
     #Shader Type
-    Material_Type,
+    material_type,
     FlSEnum16("numeric shader id", DEFAULT=-1,
-              INCLUDE=Numeric_Shader_ID),
+              INCLUDE=shader_id_num),
     Pad(2),
     SIZE=40, 
     )
