@@ -44,14 +44,14 @@ try:
             tgaout          = tga_maker.build_tag(def_id='tga')
             tgaout.filepath = tagsdir+splitext(meter_path)[0]+'.tga'
 
-            meterdata = meter.data.Data
+            meterdata = meter.data.tagdata
             tgaheader = tgaout.data.header
             
             tgaheader.image_type.format.set_data("unmapped_rgb")
             tgaheader.width  = meterdata.width
             tgaheader.height = meterdata.height
             tgaheader.bpp = 32
-            tgaheader.image_descriptor.alpha_bit_count    = 8
+            tgaheader.image_descriptor.alpha_bit_count = 8
             tgaheader.image_descriptor.screen_origin.set_data("upper_left")
 
             tgaout.data.pixel_data = tga_buffer
