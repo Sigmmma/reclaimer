@@ -5,7 +5,7 @@ from time import time
 from traceback import format_exc
 
 from ..handler import HaloHandler
-from supyr_struct.handler import Handler
+from supyr_struct.editor.handler import Handler
 
 class HekTagScanner(HaloHandler):
     log_filename = "HEK_Tag_Scanner.log"
@@ -156,7 +156,6 @@ class HekTagScanner(HaloHandler):
         #this is the string to store the entire debug log
         logstr = ("Debug log for HEK Tag Scanner\n\n\n")
         
-        '''loop through both chicago and extended chicago tag types'''
         for def_id in sorted(self.tag_ref_cache.keys()):
 
             tag_ref_paths = self.tag_ref_cache[def_id]
@@ -180,7 +179,7 @@ class HekTagScanner(HaloHandler):
                                 logstr += ' '*4 + block.NAME + '\n'
                                 block_name = block.NAME
                             try:
-                                ext = '.'+block.Tag_Class.data_name
+                                ext = '.'+block.tag_class.data_name
                             except Exception:
                                 ext = ''
                             logstr += ' '*8 + block.CHILD + ext + '\n'

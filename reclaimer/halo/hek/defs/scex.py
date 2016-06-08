@@ -2,34 +2,34 @@ from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.scex import ScexTag
 
-scex_body = Struct("Data",
+scex_body = Struct("tagdata",
     #Radiosity Properties
-    Radiosity_Block,
+    radiosity_settings,
 
     #Shader Type
-    Material_Type,
+    material_type,
     FlSEnum16("numeric shader id", DEFAULT=7,
-              INCLUDE=Numeric_Shader_ID),
+              INCLUDE=shader_id_num),
     Pad(2),
 
     # Shader Properties
     SInt8("numeric counter limit"),#[0,255]
 
-    Bool8("chicago shader flags",          *Transparent_Shader_Properties),
-    BSEnum16("first map type",             *Transparent_Shader_First_Map_Type),
-    BSEnum16("framebuffer blend function", *Framebuffer_Blend_Modes),
-    BSEnum16("framebuffer fade mode",      *Transparent_Shader_Fade_Mode),
-    BSEnum16("framebuffer fade source",    *Function_Outputs),
+    Bool8("chicago shader flags",          *trans_shdr_properties),
+    BSEnum16("first map type",             *trans_shdr_first_map_type),
+    BSEnum16("framebuffer blend function", *framebuffer_blend_modes),
+    BSEnum16("framebuffer fade mode",      *trans_shdr_fade_mode),
+    BSEnum16("framebuffer fade source",    *function_outputs),
 
     Pad(2),
 
     #Lens Flare
     BFloat("lens flare spacing"),#world units
     dependency("lens flare"),
-    reflexive("extra layers", Extra_Layers_Block, 4),
-    reflexive("four stage maps", Chicago_4_Stage_Maps, 4),
-    reflexive("two stage maps", Chicago_2_Stage_Maps, 2),
-    BBool32("extra flags", *Chicago_Extra_Flags),
+    reflexive("extra layers", extra_layers_block, 4),
+    reflexive("four stage maps", chicago_4_stage_maps, 4),
+    reflexive("two stage maps", chicago_2_stage_maps, 2),
+    BBool32("extra flags", *chicago_extra_flags),
     SIZE=120,
     )
 

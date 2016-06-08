@@ -36,7 +36,7 @@ FlFloat = Field(base=Float.little, name="FlFloat", enc=Float.little.enc)
 
 '''These Fields exist to easily identify where in a tag
 that raw data refs, reflexives, and tag references exist.'''
-RawDataRef  = Field(base=Struct, name="RawDataRef")
+RawdataRef  = Field(base=Struct, name="RawdataRef")
 Reflexive   = Field(base=Struct, name="Reflexive")
 TagIndexRef = Field(base=Struct, name="TagIndexRef")
 

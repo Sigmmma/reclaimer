@@ -1,15 +1,19 @@
+from array import array
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.bitm import BitmTag
 
 def get(): return bitm_def
 
-pixel_root = Array('pixel root',
-    SUB_STRUCT=Array('bitmap pixels',
-        SUB_STRUCT=BytearrayRaw('pixels', SIZE=0),
-        SIZE=0,
-        ),
-    SIZE=0,
+def pixel_block_size(block, *a, **kwa):
+    if isinstance(block, array):
+        return block.itemsize*len(block)
+    return len(block)
+
+pixel_root = WhileArray('pixel root',
+    SUB_STRUCT=WhileArray('bitmap pixels',
+        SUB_STRUCT=UInt8Array('pixels', SIZE=pixel_block_size)
+        )
     )
 
 sprite = Struct("sprite",
@@ -87,7 +91,7 @@ bitmap = Struct("bitmap",
     SIZE=48,
     )
 
-bitm_body = Struct("Data",
+bitm_body = Struct("tagdata",
     BSEnum16("type",
         "textures 2d",
         "textures 3d",

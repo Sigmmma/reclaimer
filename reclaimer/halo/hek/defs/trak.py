@@ -8,7 +8,7 @@ control_point = Struct("control point",
     SIZE=60,
     )
 
-trak_body = Struct("Data",
+trak_body = Struct("tagdata",
     Pad(4),
     reflexive("control points", control_point, 16),
     SIZE=48,

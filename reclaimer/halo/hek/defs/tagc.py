@@ -3,7 +3,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 tag_reference = dependency("tag")
 
-tagc_body = Struct("Data",
+tagc_body = Struct("tagdata",
     reflexive("tag references", tag_reference, 200),
     SIZE=12,
     )

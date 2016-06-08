@@ -3,7 +3,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 string_data_struct = rawdata_ref("string", FlStrUTF16)
 
-ustr_body = Struct("Data",
+ustr_body = Struct("tagdata",
     reflexive("strings", string_data_struct, 32767),
     SIZE=12,
     )
