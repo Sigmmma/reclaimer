@@ -11,7 +11,7 @@ def tag_class(name, *args):
     return BUEnum32(name, *(tuple(args) + (("none", 0xffffffff),) ),
                     DEFAULT=0xffffffff)
 
-valid_tags = tag_class("Tag_Class",
+valid_tags = tag_class("tag_class",
     ("actor",          'actr'),
     ("actor_varient",  'actv'),
     ("antenna",        'ant!'),
@@ -98,7 +98,7 @@ valid_tags = tag_class("Tag_Class",
     )
 
 
-valid_attachments = tag_class("Tag_Class",
+valid_attachments = tag_class("tag_class",
     ("contrail",        'cont'),
     ("effect",          'effe'),
     ("light",           'ligh'),
@@ -107,7 +107,7 @@ valid_attachments = tag_class("Tag_Class",
     ("sound_looping",   'lsnd'),
     )
 
-valid_effect_events = tag_class("Tag_Class",
+valid_effect_events = tag_class("tag_class",
     ("biped",           'bipd'),
     ("damage_effect",   'jpt!'),
     ("decal",           'deca'),
@@ -131,35 +131,35 @@ valid_effect_events = tag_class("Tag_Class",
     ("weapon",          'weap'),
     )
 
-valid_strings = tag_class("Tag_Class",
+valid_strings = tag_class("tag_class",
     ("unicode_string_list", 'ustr'),
     ("string_list",         'str#'),
     )
 
-valid_effects = tag_class("Tag_Class",
+valid_effects = tag_class("tag_class",
     ("sound",  'snd!'),
     ("effect", 'effe'),
     )
 
-valid_point_physics = tag_class("Tag_Class", ("point_physics", 'pphy') )
-valid_bitmaps = tag_class("Tag_Class", ("bitmap", 'bitm') )
-valid_sounds  = tag_class("Tag_Class", ("sound", 'snd!') )
-valid_physics = tag_class("Tag_Class", ("physics", 'phys') )
-valid_model_animations = tag_class("Tag_Class",
+valid_point_physics = tag_class("tag_class", ("point_physics", 'pphy') )
+valid_bitmaps = tag_class("tag_class", ("bitmap", 'bitm') )
+valid_sounds  = tag_class("tag_class", ("sound", 'snd!') )
+valid_physics = tag_class("tag_class", ("physics", 'phys') )
+valid_model_animations = tag_class("tag_class",
     ("model_animations", 'antr')
     )
-valid_model_collision_geometry = tag_class("Tag_Class",
+valid_model_collision_geometry = tag_class("tag_class",
     ("model_collision_geometry", 'coll')
     )
 
-valid_items = tag_class("Tag_Class",
+valid_items = tag_class("tag_class",
     ("equipment", 'eqip'),
     ("garbage",   'gar'),
     ("item",      'item'),
     ("weapon",    'weap'),
     )
 
-valid_objects = tag_class("Tag_Class",
+valid_objects = tag_class("tag_class",
     ("biped",          'bipd'),
     ("device",         'devi'),
     ("device_control", 'ctrl'),
@@ -175,7 +175,7 @@ valid_objects = tag_class("Tag_Class",
     )
 
 
-valid_shaders = tag_class("Tag_Class",
+valid_shaders = tag_class("tag_class",
     ("shader",                     'shdr'),
     ("shader_transparent_chicago", 'schi'),
     ("shader_transparent_chicago_extended", 'scex'),
@@ -188,13 +188,13 @@ valid_shaders = tag_class("Tag_Class",
     ("shader_transparent_water",   'swat'),
     )
 
-valid_units = tag_class("Tag_Class",
+valid_units = tag_class("tag_class",
     ("biped",   'bipd'),
     ("unit",    'unit'),
     ("vehicle", 'vehi'),
     )
 
-valid_widgets = tag_class("Tag_Class",
+valid_widgets = tag_class("tag_class",
     ("antenna",      'ant!'),
     ("flag",         'flag'),
     ("glow",         'glw!'),
@@ -204,15 +204,15 @@ valid_widgets = tag_class("Tag_Class",
 
 
 #The header present at the start of every tag
-Tag_Header = Struct("Blam Header",
+tag_header = Struct("blam header",
     Pad(36),
     valid_tags,
-    LUInt32("Base Address", DEFAULT=0),#random
-    LUInt32("Header Size",  DEFAULT=64),
+    LUInt32("base address", DEFAULT=0),#random
+    LUInt32("header size",  DEFAULT=64),
     Pad(8),
-    LUInt16("Version", DEFAULT=1),
-    LUInt16("Unknown", DEFAULT=255),
-    LUEnum32("Engine ID",
+    LUInt16("version", DEFAULT=1),
+    LUInt16("unknown", DEFAULT=255),
+    LUEnum32("engine id",
         ("halo 1", 'blam'),
         ("halo 2", 'BLM!'),
         DEFAULT='blam'),
@@ -220,7 +220,7 @@ Tag_Header = Struct("Blam Header",
     )
 
 #Shared Enumerator options
-Materials_List = (
+materials_list = (
     "dirt",
     "sand",
     "stone",
@@ -259,7 +259,7 @@ Materials_List = (
 
 #Transparent Shader Shared Functions
 
-Transparent_Shader_Properties = (
+trans_shdr_properties = (
     "alpha tested",
     "decal",
     "two sided",
@@ -269,19 +269,19 @@ Transparent_Shader_Properties = (
     "scale first map with distance",
     "numeric",
     )
-Transparent_Shader_Fade_Mode = (
+trans_shdr_fade_mode = (
     "none",
     "fade when perpendicular",
     "fade when parallel",
     )
-Transparent_Shader_First_Map_Type = (
+trans_shdr_first_map_type = (
     "map 2d",
     "reflection cube map",
     "object centered cube map",
     "viewer centered cube map",
     )
 
-Detail_Mask = (
+detail_mask = (
     "none",
     "red inverse",
     "red",
@@ -295,7 +295,7 @@ Detail_Mask = (
 
 #Shared Functions
 
-Animation_Functions = (
+animation_functions = (
     "one",
     "zero",
     "cosine",
@@ -309,12 +309,12 @@ Animation_Functions = (
     "wander",
     "spark",
     )
-Detail_Map_Functions = (
+detail_map_functions = (
     "double/biased multiply",
     "multiply",
     "double/biased add",
     )
-Device_Functions = (
+device_functions = (
     "none",
     "power",
     "change in power",
@@ -323,7 +323,7 @@ Device_Functions = (
     "locked",
     "delay",
     )
-Blend_Functions = (
+blend_functions = (
     "current",
     "next map",
     "multiply",
@@ -338,7 +338,7 @@ Blend_Functions = (
     "blend next map alpha",
     "blend next map alpha-inverse",
     )
-Framebuffer_Blend_Modes = (
+framebuffer_blend_modes = (
     "alpha blend",
     "multiply",
     "double multiply",
@@ -348,21 +348,21 @@ Framebuffer_Blend_Modes = (
     "component max",
     "alpha-multiply add",
     )
-Function_Names = (
+function_names = (
     "none",
     "A",
     "B",
     "C",
     "D",
     )
-Function_Inputs = (
+function_inputs = (
     "none",
     "A in",
     "B in",
     "C in",
     "D in",
     )
-Function_Outputs = (
+function_outputs = (
     "none",
     "A out",
     "B out",
@@ -370,7 +370,7 @@ Function_Outputs = (
     "D out",
     )
 
-All_Shader_Enums = (
+all_shader_enums = (
     ("shader",                     'shdr'),
     ("shader_transparent_chicago", 'schi'),
     ("shader_transparent_chicago_extended", 'scex'),
@@ -385,27 +385,27 @@ All_Shader_Enums = (
 
 
 #Miscellaneous blocks
-Anim_Func_Per_Pha = Struct('',
-    BSEnum16("function", *Animation_Functions),
+anim_func_per_pha = Struct('',
+    BSEnum16("function", *animation_functions),
     Pad(2),
     BFloat("period"),#seconds
     BFloat("phase"),#seconds
     )
-Anim_Func_Per_Sca = Struct('',
-    BSEnum16("function", *Animation_Functions),
+anim_func_per_sca = Struct('',
+    BSEnum16("function", *animation_functions),
     Pad(2),
     BFloat("period"),#seconds
     BFloat("scale"),#base map repeats
     )
-Anim_Src_Func_Per_Pha_Sca = Struct('',
-    BSEnum16("source", *Function_Outputs),
-    BSEnum16("function", *Animation_Functions),
+anim_src_func_per_pha_sca = Struct('',
+    BSEnum16("source", *function_outputs),
+    BSEnum16("function", *animation_functions),
     BFloat("period"),#seconds
     BFloat("phase"),#seconds
     BFloat("scale"),#repeats
     )
 
-From_To = Struct('',
+from_to = Struct('',
     BFloat("from", GUI_NAME=" "),
     BFloat("to"),
     )
@@ -415,9 +415,9 @@ From_To = Struct('',
 def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     '''This function serves to macro the creation of a reflexive'''
     desc.update(
-        INCLUDE=Reflexive_Struct,
+        INCLUDE=reflexive_struct,
         CHILD=Array(name+" array",
-            SIZE=".Count", MAX=max_count,
+            SIZE=".size", MAX=max_count,
             SUB_STRUCT=substruct
             ),
         SIZE=12
@@ -434,56 +434,56 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
 
 def rawdata_ref(name, field=BytearrayRaw):
     '''This function serves to macro the creation of a rawdata reference'''
-    return RawDataRef(name,
-        EDITABLE=False, INCLUDE=Raw_Data_Ref_Struct,
-        CHILD=field("data", VISIBLE=False, SIZE=".Count") )
+    return RawdataRef(name,
+        EDITABLE=False, INCLUDE=rawdata_ref_struct,
+        CHILD=field("data", VISIBLE=False, SIZE=".size") )
 
 def dependency(name='tag ref', valid_ids=valid_tags):
     '''This function serves to macro the creation of a tag dependency'''
     return TagIndexRef(name,
         valid_ids,
-        BSInt32("Tag Path Pointer"),#random
-        BSInt32("Tag Path Length"),
-        BUInt32("Tag ID", DEFAULT=0xFFFFFFFF),#random
+        BSInt32("tag path pointer"),#random
+        BSInt32("tag path length"),
+        BUInt32("tag id", DEFAULT=0xFFFFFFFF),#random
                                        
-        CHILD=StringVarLen("Filepath", SIZE=tag_ref_size),
+        CHILD=StringVarLen("filepath", SIZE=tag_ref_size),
         EDITABLE=False,
         )
 
 def blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
     return com( {1:{DEFAULT:tagid },
-                 5:{DEFAULT:version}}, Tag_Header)
+                 5:{DEFAULT:version}}, tag_header)
 
 
 #This is the structure for all points where a tag references a chunk of raw data
-Raw_Data_Ref_Struct = RawDataRef('Raw Data Ref', 
-    BSInt32("Count"),
-    BSInt32("Unknown 1"),#0x00000000 in tags
-    BSInt32("Unknown 2"),#random
-    BSInt32("Unknown 3"),#random
-    BUInt32("ID"),#random
+rawdata_ref_struct = RawdataRef('rawdata ref', 
+    BSInt32("size"),
+    BSInt32("unknown 1"),#0x00000000 in tags
+    BSInt32("unknown 2"),#random
+    BSInt32("unknown 3"),#random
+    BUInt32("id"),#random
     EDITABLE=False,
     )
 
 #This is the structure for all tag reflexives
-Reflexive_Struct = Reflexive('Reflexive',
-    BSInt32("Count"),
-    BSInt32("ID"),#random
-    BUInt32("Reflexive ID"),#random
+reflexive_struct = Reflexive('reflexive',
+    BSInt32("size"),
+    BSInt32("id"),#random
+    BUInt32("reflexive id"),#random
     EDITABLE=False,
     )
 
 #This is the structure for all points where a tag references another tag
-Tag_Index_Ref_Struct = dependency()
+tag_index_ref_struct = dependency()
 
 """Shader Stuff"""
 
-Material_Type = BSEnum16("material type", *Materials_List, OFFSET=34)
+material_type = BSEnum16("material type", *materials_list, OFFSET=34)
 
 #THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS
 #This means it likely doesn't matter, but lets not take that chance
-Numeric_Shader_ID = FlSEnum16("numeric shader id",
+shader_id_num = FlSEnum16("numeric shader id",
     ("shdr", -1),#Shader
     ("senv", 3),#Environment
     ("soso", 4),#Model
@@ -500,7 +500,7 @@ Numeric_Shader_ID = FlSEnum16("numeric shader id",
 
 """Radiosity Stuff"""
 
-Radiosity_Block = Struct("radiosity settings",
+radiosity_settings = Struct("radiosity settings",
     BBool16("radiosity flags",
         "simple parameterization",
         "ignore normals",
@@ -520,9 +520,9 @@ Radiosity_Block = Struct("radiosity settings",
 
 #Transparent Shader Stuff
 
-Extra_Layers_Block = dependency("extra layer", valid_shaders)
+extra_layers_block = dependency("extra layer", valid_shaders)
 
-Chicago_4_Stage_Maps = Struct("four stage map",
+chicago_4_stage_maps = Struct("four stage map",
     BBool16("flags" ,
         "unfiltered",
         "alpha replicate",
@@ -530,8 +530,8 @@ Chicago_4_Stage_Maps = Struct("four stage map",
         "v-clamped",
         ),
     Pad(42),
-    BSEnum16("color function", *Blend_Functions),
-    BSEnum16("alpha function", *Blend_Functions),
+    BSEnum16("color function", *blend_functions),
+    BSEnum16("alpha function", *blend_functions),
     Pad(36),
     #shader transformations
     BFloat("map u-scale"),
@@ -545,18 +545,18 @@ Chicago_4_Stage_Maps = Struct("four stage map",
     Pad(40),
                               
     #shader animations
-    Struct("u-animation", INCLUDE=Anim_Src_Func_Per_Pha_Sca),
-    Struct("v-animation", INCLUDE=Anim_Src_Func_Per_Pha_Sca),
-    Struct("rotation-animation", INCLUDE=Anim_Src_Func_Per_Pha_Sca),
+    Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
+    Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
+    Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
 
     Struct("rotation center", INCLUDE=X_Y_Float),
     SIZE=220,
     )
 
 
-Chicago_2_Stage_Maps = Struct("two stage map", INCLUDE=Chicago_4_Stage_Maps)
+chicago_2_stage_maps = Struct("two stage map", INCLUDE=chicago_4_stage_maps)
 
-Chicago_Extra_Flags = (
+chicago_extra_flags = (
     "dont fade active camouflage",
     "numeric countdown timer"
     )

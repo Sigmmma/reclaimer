@@ -9,12 +9,9 @@ scenario_description = Struct("scenario description",
     SIZE=68
     )
 
-mply_body = Struct("Data",
-    Reflexive("multiplayer scenario descriptions",
-        INCLUDE=Reflexive_Struct,
-        CHILD=Array("scenario descriptions array", MAX=32,
-            SIZE=".Count", SUB_STRUCT=scenario_description ),
-        ),
+mply_body = Struct("tagdata",
+    reflexive("multiplayer scenario descriptions",
+              scenario_description, 32),
     SIZE=12,
     )
 

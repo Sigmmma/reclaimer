@@ -2,14 +2,14 @@ from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.senv import SenvTag
 
-senv_body = Struct("Data",
+senv_body = Struct("tagdata",
     #Radiosity Properties
-    Radiosity_Block,
+    radiosity_settings,
 
     #Shader Type
-    Material_Type,
+    material_type,
     FlSEnum16("numeric shader id", DEFAULT=3,
-              INCLUDE=Numeric_Shader_ID),
+              INCLUDE=shader_id_num),
     Pad(2),
     
     #Environment Shader Properties
@@ -38,14 +38,14 @@ senv_body = Struct("Data",
     dependency("base map", valid_bitmaps),
                    
     Pad(24),
-    BSEnum16(  "detail map function", *Detail_Map_Functions),
+    BSEnum16(  "detail map function", *detail_map_functions),
     Pad(2),
     BFloat(    "primary detail map scale"),
     dependency("primary detail map", valid_bitmaps),
     BFloat(    "secondary detail map scale"),
     dependency("secondary detail map", valid_bitmaps),
     Pad(24),
-    BSEnum16(  "micro detail map function", *Detail_Map_Functions),
+    BSEnum16(  "micro detail map function", *detail_map_functions),
     Pad(2),
     BFloat(    "micro detail map scale"),
     dependency("micro detail map", valid_bitmaps),
@@ -61,24 +61,24 @@ senv_body = Struct("Data",
 
     Pad(16),
     #Texture Animation
-    Struct("u-animation", INCLUDE=Anim_Func_Per_Sca),
-    Struct("V-animation", INCLUDE=Anim_Func_Per_Sca),
+    Struct("u-animation", INCLUDE=anim_func_per_sca),
+    Struct("V-animation", INCLUDE=anim_func_per_sca),
 
     Pad(52),
     #Self Illumination
     Struct("primary on-color",  INCLUDE=R_G_B_Float),
     Struct("primary off-color", INCLUDE=R_G_B_Float),
-    Struct("primary animation", INCLUDE=Anim_Func_Per_Pha),
+    Struct("primary animation", INCLUDE=anim_func_per_pha),
 
     Pad(24),
     Struct("secondary on-color",  INCLUDE=R_G_B_Float),
     Struct("secondary off-color", INCLUDE=R_G_B_Float),
-    Struct("secondary animation", INCLUDE=Anim_Func_Per_Pha),
+    Struct("secondary animation", INCLUDE=anim_func_per_pha),
 
     Pad(24),
     Struct("plasma on-color",  INCLUDE=R_G_B_Float),
     Struct("plasma off-color", INCLUDE=R_G_B_Float),
-    Struct("plasma animation", INCLUDE=Anim_Func_Per_Pha),
+    Struct("plasma animation", INCLUDE=anim_func_per_pha),
 
     Pad(24),
     BFloat("illumination map scale"),

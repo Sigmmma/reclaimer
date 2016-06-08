@@ -282,7 +282,7 @@ animation_desc = Struct("animation",
     SIZE=180,
     )
 
-antr_body = Struct("Data",
+antr_body = Struct("tagdata",
     reflexive("objects",  object_desc, 4),
     reflexive("units",    unit_desc, 32),
     reflexive("weapons",  weapons_desc, 1),

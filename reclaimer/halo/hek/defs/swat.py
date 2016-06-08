@@ -16,13 +16,13 @@ ripple = Struct("ripple",
     SIZE=76
     )
 
-swat_body = Struct("Data",
+swat_body = Struct("tagdata",
     #Radiosity Properties
-    Radiosity_Block,
+    radiosity_settings,
 
     #Shader Type
-    Material_Type,
-    Numeric_Shader_ID,
+    material_type,
+    shader_id_num,
 
     Pad(2),
     #Water Shader Properties

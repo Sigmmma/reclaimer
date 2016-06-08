@@ -1,14 +1,14 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-smet_body = Struct("Data",
+smet_body = Struct("tagdata",
     #Radiosity Properties
-    Radiosity_Block,
+    radiosity_settings,
 
     #Shader Type
-    Material_Type,
+    material_type,
     FlSEnum16("numeric shader id", DEFAULT=10,
-              INCLUDE=Numeric_Shader_ID),
+              INCLUDE=shader_id_num),
 
     Pad(2),
     #Meter Shader Properties
@@ -34,11 +34,11 @@ smet_body = Struct("Data",
     Pad(24),
 
     #External Function Sources
-    BSEnum16("meter brightness source", *Function_Outputs),
-    BSEnum16("flash brightness source", *Function_Outputs),
-    BSEnum16("value source",            *Function_Outputs),
-    BSEnum16("gradient source",         *Function_Outputs),
-    BSEnum16("flash-extension source",  *Function_Outputs),
+    BSEnum16("meter brightness source", *function_outputs),
+    BSEnum16("flash brightness source", *function_outputs),
+    BSEnum16("value source",            *function_outputs),
+    BSEnum16("gradient source",         *function_outputs),
+    BSEnum16("flash-extension source",  *function_outputs),
     SIZE=260,
     )
 

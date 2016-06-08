@@ -2,23 +2,23 @@ from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-spla_body = Struct("Data",
+spla_body = Struct("tagdata",
     #Radiosity Properties
-    Radiosity_Block,
+    radiosity_settings,
 
     #Shader Type
-    Material_Type,
+    material_type,
     FlSEnum16("numeric shader id", DEFAULT=11,
-              INCLUDE=Numeric_Shader_ID),
+              INCLUDE=shader_id_num),
 
     Pad(6),
     #Intensity
-    BSEnum16("intensity source", *Function_Outputs),
+    BSEnum16("intensity source", *function_outputs),
     Pad(2),
     BFloat("intensity exponent"),
 
     #Offset
-    BSEnum16("offset source", *Function_Outputs),
+    BSEnum16("offset source", *function_outputs),
     Pad(2),
     BFloat("offset amount"),
     BFloat("offset exponent"),
@@ -30,7 +30,7 @@ spla_body = Struct("Data",
     Struct("perpendicular tint color", INCLUDE=R_G_B_Float),
     BFloat("parallel brightness"),#[0,1]
     Struct("parallel tint color", INCLUDE=R_G_B_Float),
-    BSEnum16("tint color source", *Function_Names),
+    BSEnum16("tint color source", *function_names),
 
     Pad(62),
     #Primary Noise Map

@@ -8,7 +8,7 @@ color = Struct("color",
     SIZE=48,
     )
 
-colo_body = Struct("Data",
+colo_body = Struct("tagdata",
     reflexive("colors", color, 512),
     SIZE=12
     )

@@ -1,13 +1,13 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-sgla_body = Struct("Data",
+sgla_body = Struct("tagdata",
     #Radiosity Properties
-    Radiosity_Block,
+    radiosity_settings,
 
     #Shader Type
-    Material_Type,
-    Numeric_Shader_ID,
+    material_type,
+    shader_id_num,
 
     Pad(2),
     #Environment Shader Properties

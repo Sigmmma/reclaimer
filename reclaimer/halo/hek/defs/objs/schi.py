@@ -6,11 +6,11 @@ class SchiTag(HekTag):
     def convert_to_scex(self, mod_desc=False):
         '''Call this function to convert a SCHI tag to a SCEX tag'''
         ext = 'shader_transparent_chicago_extended'
-        self.data.Blam_Header.Tag_Class.set_data(ext)
+        self.data.blam_header.tag_class.set_data(ext)
         self.filepath = splitext(self.filepath)[0] + '.' + ext
         
-        Data = self.data.Data
-        Data.numeric_shader_id.data = 7
+        tagdata = self.data.tagdata
+        tagdata.numeric_shader_id.data = 7
         if mod_desc:
-            Data.ATTR_OFFS[Data.NAME_MAP['extra_flags']] = 108
-            Data.set_size(120)
+            tagdata.ATTR_OFFS[tagdata.NAME_MAP['extra_flags']] = 108
+            tagdata.set_size(120)

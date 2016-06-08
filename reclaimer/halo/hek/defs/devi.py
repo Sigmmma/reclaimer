@@ -1,7 +1,7 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-devi_body = Struct("Data",
+devi_body = Struct("tagdata",
     Pad(2),
     BBool16("flags",
         "position loops",
@@ -15,10 +15,10 @@ devi_body = Struct("Data",
     BFloat("depowered position transition time"),
     BFloat("depowered position acceleration time"),
                    
-    BSEnum16("A in", *Device_Functions),
-    BSEnum16("B in", *Device_Functions),
-    BSEnum16("C in", *Device_Functions),
-    BSEnum16("D in", *Device_Functions),
+    BSEnum16("A in", *device_functions),
+    BSEnum16("B in", *device_functions),
+    BSEnum16("C in", *device_functions),
+    BSEnum16("D in", *device_functions),
                    
     dependency("open"),
     dependency("close"),

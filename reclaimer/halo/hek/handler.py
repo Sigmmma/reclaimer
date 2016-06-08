@@ -123,7 +123,7 @@ class HaloHandler(TagTestHandler):
         #reflexive_cache, and raw_data_cache
         self.tag_ref_cache   = self.build_loc_cache(TagIndexRef)
         self.reflexive_cache = self.build_loc_cache(Reflexive)
-        self.raw_data_cache  = self.build_loc_cache(RawDataRef)
+        self.raw_data_cache  = self.build_loc_cache(RawdataRef)
     
 
     def _build_loc_cache(self, f_type, desc={}):
@@ -225,29 +225,29 @@ class HaloHandler(TagTestHandler):
         #null out the parts of a tag that can screw
         #with the hash when compared to a tag meta                        
         for B in self.get_blocks_by_paths(tag_ref_paths, data):
-            B.Tag_Path_Pointer = B.Tag_ID = 0
+            B.tag_path_pointer = B.tag_id = 0
             
         for B in self.get_blocks_by_paths(reflexive_paths, data):
-            B.ID = B.Reflexive_ID = 0
+            B.id = B.reflexive_id = 0
             
         for B in self.get_blocks_by_paths(raw_data_paths, data):
-            B.Unknown_1 = B.Unknown_2 = B.Unknown_3 = B.ID = 0
+            B.unknown_1 = B.unknown_2 = B.unknown_3 = B.id = 0
 
         #write the tag data to the hash buffer
-        data.Data.TYPE.writer(data.Data, hash_buffer, None, 0, 0)
+        data.tagdata.TYPE.writer(data.tagdata, hash_buffer, None, 0, 0)
         
         return md5(hash_buffer)
         
 
     def get_tag_not_exist(self, block):
         #if the string is empty, then it doesnt NOT exist, so return False
-        if not block.Filepath:
+        if not block.filepath:
             return False
         filepath = self.tagsdir
-        filepath += block.Filepath
+        filepath += block.filepath
         
         try:
-            filepath += '.'+block.Tag_Class.data_name
+            filepath += '.'+block.tag_class.data_name
         except Exception:
             pass
         

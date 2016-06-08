@@ -8,7 +8,7 @@ item_permutation = Struct("permutation",
     SIZE=84,
     )
 
-itmc_body = Struct("Data",
+itmc_body = Struct("tagdata",
     reflexive("item permutations", item_permutation, 32767),
     BSInt16("spawn time"),
     SIZE=92,

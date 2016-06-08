@@ -583,7 +583,7 @@ def pack_dxt1(self, unpacked_pixel_array, width, height, depth=1):
         print("ERROR: TO CONVERT TO DXT1 THE UNPACK FORMAT MUST BE A8R8G8B8")
         return
     
-    dxt1_transparency = self.Color_Key_Transparency
+    dxt1_transparency = self.color_key_transparency
         
     #this is how many texels wide/tall the texture is
     texel_width, texel_height, _ = bc.dimension_lower_bound_check(width//4, height//4)
@@ -778,7 +778,7 @@ def pack_dxt2_3(self, unpacked_pixel_array, width, height, depth=1):
     This will allow us to easily group each texel's pixels nicely together."""
     
     if texel_width > 1:
-        dxt_swizzler = bc.Swizzler.Swizzler(texture_converter = self, mask_type = "DXT_CALC")
+        dxt_swizzler = bc.swizzler.Swizzler(texture_converter = self, mask_type = "DXT_CALC")
         unpacked_pixel_array = dxt_swizzler.swizzle_single_array(unpacked_pixel_array, True,
                                                                  4, width, height)
 
@@ -921,7 +921,7 @@ def pack_dxt4_5(self, unpacked_pixel_array, width, height, depth=1):
     This will allow us to easily group each texel's pixels nicely together."""
     
     if texel_width > 1:
-        dxt_swizzler = bc.Swizzler.Swizzler(texture_converter = self, mask_type = "DXT_CALC")
+        dxt_swizzler = bc.swizzler.Swizzler(texture_converter = self, mask_type = "DXT_CALC")
         unpacked_pixel_array = dxt_swizzler.swizzle_single_array(unpacked_pixel_array, True,
                                                                  4, width, height)
 

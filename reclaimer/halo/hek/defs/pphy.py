@@ -1,7 +1,7 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-pphy_body = Struct("Data",
+pphy_body = Struct("tagdata",
     BBool32("flags",
         "flamethrower particle collision",
         "collides with structures",

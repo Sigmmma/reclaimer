@@ -38,42 +38,42 @@ class BitmTag(HekTag):
     
     def bitmap_count(self, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.Count
-        self.data.Data.bitmaps.Count = new_value
+            return self.data.tagdata.bitmaps.size
+        self.data.tagdata.bitmaps.size = new_value
         
     def bitmap_width(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmaps_array[b_index].width
-        self.data.Data.bitmaps.bitmaps_array[b_index].width = new_value
+            return self.data.tagdata.bitmaps.bitmaps_array[b_index].width
+        self.data.tagdata.bitmaps.bitmaps_array[b_index].width = new_value
 
     def bitmap_height(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmaps_array[b_index].height
-        self.data.Data.bitmaps.bitmaps_array[b_index].height = new_value
+            return self.data.tagdata.bitmaps.bitmaps_array[b_index].height
+        self.data.tagdata.bitmaps.bitmaps_array[b_index].height = new_value
 
     def bitmap_depth(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmaps_array[b_index].depth
-        self.data.Data.bitmaps.bitmaps_array[b_index].depth = new_value
+            return self.data.tagdata.bitmaps.bitmaps_array[b_index].depth
+        self.data.tagdata.bitmaps.bitmaps_array[b_index].depth = new_value
 
     def bitmap_mipmaps_count(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmaps_array[b_index].mipmaps
-        self.data.Data.bitmaps.bitmaps_array[b_index].mipmaps = new_value
+            return self.data.tagdata.bitmaps.bitmaps_array[b_index].mipmaps
+        self.data.tagdata.bitmaps.bitmaps_array[b_index].mipmaps = new_value
 
     def bitmap_type(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmaps_array[b_index].type.data
-        self.data.Data.bitmaps.bitmaps_array[b_index].type.data = new_value
+            return self.data.tagdata.bitmaps.bitmaps_array[b_index].type.data
+        self.data.tagdata.bitmaps.bitmaps_array[b_index].type.data = new_value
 
     def bitmap_format(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmaps_array[b_index].format.data
-        self.data.Data.bitmaps.bitmaps_array[b_index].format.data = new_value
+            return self.data.tagdata.bitmaps.bitmaps_array[b_index].format.data
+        self.data.tagdata.bitmaps.bitmaps_array[b_index].format.data = new_value
 
 
     def bitmap_width_height_depth(self, b_index=0, new_value=None):
-        bitmap = self.data.Data.bitmaps.bitmaps_array[b_index]
+        bitmap = self.data.tagdata.bitmaps.bitmaps_array[b_index]
         if new_value is None:
             return(bitmap.width, bitmap.height, bitmap.depth)
         bitmap.width, bitmap.height, bitmap.depth = (new_value[0],
@@ -82,38 +82,39 @@ class BitmTag(HekTag):
 
     def bitmap_flags(self, b_index=0, new_value=None):
         if new_value is None:
-            return self.data.Data.bitmaps.bitmaps_array[b_index].flags
-        self.data.Data.bitmaps.bitmaps_array[b_index].flags = new_value
+            return self.data.tagdata.bitmaps.bitmaps_array[b_index].flags
+        self.data.tagdata.bitmaps.bitmaps_array[b_index].flags = new_value
         
     def bitmap_base_address(self, b_index=0, new_value=None):
         if new_value is None:
-            return(self.data.Data.bitmaps.bitmaps_array[b_index].base_address)
-        self.data.Data.bitmaps.bitmaps_array[b_index].base_address = new_value
+            return(self.data.tagdata.bitmaps.bitmaps_array[b_index].\
+                   base_address)
+        self.data.tagdata.bitmaps.bitmaps_array[b_index].base_address=new_value
 
     def bitmap_data_offset(self, b_index=0, new_value=None):
         if new_value is None:
-            return(self.data.Data.bitmaps.\
+            return(self.data.tagdata.bitmaps.\
                    bitmaps_array[b_index].pixels_offset)
-        self.data.Data.bitmaps.bitmaps_array[b_index].pixels_offset = new_value
+        self.data.tagdata.bitmaps.bitmaps_array[b_index].pixels_offset=new_value
 
 
 
     def registration_point_x(self, b_index=0, new_value=None):
-        reg_point = self.data.Data.bitmaps.\
+        reg_point = self.data.tagdata.bitmaps.\
                     bitmaps_array[b_index].registration_point
         if new_value is None:
-            return(reg_point.x)
+            return reg_point.x
         reg_point.x = new_value
 
     def registration_point_y(self, b_index=0, new_value=None):
-        reg_point = self.data.Data.bitmaps.\
+        reg_point = self.data.tagdata.bitmaps.\
                     bitmaps_array[b_index].registration_point
         if new_value is None:
-            return(reg_point.y)
+            return reg_point.y
         reg_point.y = new_value
 
     def registration_point_xy(self, b_index=0, new_value=None):
-        reg_point = self.data.Data.bitmaps.\
+        reg_point = self.data.tagdata.bitmaps.\
                     bitmaps_array[b_index].registration_point
         if new_value is None:
             return(reg_point.x, reg_point.y)
@@ -127,8 +128,8 @@ class BitmTag(HekTag):
         
     def processed_by_reclaimer(self, new_flag=None):
         if new_flag is None:
-            return self.data.Data.flags.processed_by_reclaimer
-        self.data.Data.flags.processed_by_reclaimer = new_flag
+            return self.data.tagdata.flags.processed_by_reclaimer
+        self.data.tagdata.flags.processed_by_reclaimer = new_flag
         
 
     def is_power_of_2_bitmap(self, b_index=0):
@@ -145,14 +146,14 @@ class BitmTag(HekTag):
 
     def color_plate_data_bytes_size(self, new_value=None):
         if new_value is None:
-            return(self.data.Data.compressed_color_plate_data.Count)
-        self.data.Data.compressed_color_plate_data.Count = new_value
+            return(self.data.tagdata.compressed_color_plate_data.size)
+        self.data.tagdata.compressed_color_plate_data.size = new_value
     
 
     def pixel_data_bytes_size(self, new_value=None):
         if new_value is None:
-            return self.data.Data.processed_pixel_data.Count
-        self.data.Data.processed_pixel_data.Count = new_value
+            return self.data.tagdata.processed_pixel_data.size
+        self.data.tagdata.processed_pixel_data.size = new_value
 
 
 
@@ -161,7 +162,7 @@ class BitmTag(HekTag):
         '''changes different things to set the platform to either PC or Xbox'''
         #Read each of the bitmap blocks
         for b_index in range(self.bitmap_count()):
-            bitmap = self.data.Data.bitmaps.bitmaps_array[b_index]
+            bitmap = self.data.tagdata.bitmaps.bitmaps_array[b_index]
             
             bitmap.flags.set_to('made_by_arsenic', saveasxbox)
 
@@ -180,13 +181,13 @@ class BitmTag(HekTag):
         if saveasxbox:
             #if Xbox, reset these structure variable's all to 0
             #since xbox doesn't like them being non-zero
-            Data = self.data.Data
-            for block in (Data.compressed_color_plate_data,
-                          Data.processed_pixel_data):
+            tagdata = self.data.tagdata
+            for block in (tagdata.compressed_color_plate_data,
+                          tagdata.processed_pixel_data):
                 for i in (1,2,3):
                     block[i] = 0
                     
-            for block in (Data.sequences, Data.bitmaps):
+            for block in (tagdata.sequences, tagdata.bitmaps):
                 for i in (1,2):
                     block[i] = 0
                     
@@ -204,7 +205,7 @@ class BitmTag(HekTag):
         DO NOT UNDER ANY CIRCUMSTANCES CALL THIS FUNCTION
         IF PADDING HAS ALREADY BEEN ADDED TO A BITMAP'''
 
-        raw_bitmap_data = self.data.Data.processed_pixel_data.data
+        raw_bitmap_data = self.data.tagdata.processed_pixel_data.data
 
         #Loop over each of the bitmap blocks
         for b_index in range(self.bitmap_count()):
@@ -215,8 +216,8 @@ class BitmTag(HekTag):
         
                 if isinstance(tex_block[0], array):
                     #change the type of data for the bitmap pixels
-                    #to ANY array block. All Py_Array Tag_Types use
-                    #the same writer, thus any Py_Array Tag_Type will work
+                    #to ANY array block. All Py_Array Fields use
+                    #the same writer, thus any Py_Array Field will work
                     tex_block.set_desc('TYPE', UInt8Array, 'SUB_STRUCT')
 
                 #this will be used to copy values from

@@ -12,7 +12,7 @@ effect = Struct("effect",
     SIZE=28,
     )
 
-foot_body = Struct("Data",
+foot_body = Struct("tagdata",
     reflexive("effects", effect, 13),
     SIZE=140,
     )

@@ -8,7 +8,6 @@ from reclaimer.resources.bitmap_module import bitmap_convertor as bc
 from reclaimer.resources import p8_palette
 
 
-
 """##################"""
 ### CHANNEL MAPPINGS ###
 """##################"""
@@ -108,9 +107,10 @@ def convert_bitmap_tag(tag, **kwargs):
     del tex_infos[:]
 
     conversion_flags = tag.tag_conversion_settings
+    tagsdir = tag.handler.tagsdir
 
     root_window = kwargs.get("root_window",None)
-    tagpath = kwargs.get("tagpath",tag.filepath)
+    tagpath = kwargs.get("tagpath",tag.filepath.split(tagsdir)[-1])
     conversion_report = kwargs.get("conversion_report",{})
     reprocess = kwargs.get("reprocess", False)
     
@@ -164,7 +164,6 @@ def convert_bitmap_tag(tag, **kwargs):
         conversion_report[tagpath] = False
         return False
         
-
     """LOOP THROUGH ALL THE BITMAPS, FIGURE OUT
     HOW THEY'RE BEING CONVERTED AND CONVERT THEM"""
     for i in range(tag.bitmap_count()):
@@ -173,7 +172,7 @@ def convert_bitmap_tag(tag, **kwargs):
         target_format = new_format
 
         #get the texture block to be loaded
-        tex_block = list(tag.data.Data.processed_pixel_data.data[i])
+        tex_block = list(tag.data.tagdata.processed_pixel_data.data[i])
         tex_info = tex_infos[i]
 
         """MAKE SOME CHECKS TO FIGURE OUT WHICH FORMAT WE ARE
@@ -221,28 +220,27 @@ def convert_bitmap_tag(tag, **kwargs):
         if format == bc.FORMAT_P8:
             palette_picker = P8_PALETTE.argb_array_to_p8_array_auto
             palettize = True
-        else:
-            if target_format == bc.FORMAT_P8:
-                palettize = True
-                
-                if bc.FORMAT_CHANNEL_COUNTS[format] == 4:
-                    if ck_transparency and format not in (bc.FORMAT_X8R8G8B8,
-                                                          bc.FORMAT_R5G6B5):
-                        #auto-bias
-                        if p8_mode == 0:
-                            palette_picker = P8_PALETTE.\
-                                         argb_array_to_p8_array_auto_alpha
-                        else:#average-bias
-                            palette_picker = P8_PALETTE.\
-                                         argb_array_to_p8_array_average_alpha
-                    elif p8_mode == 0:
-                        #auto-bias
+        elif target_format == bc.FORMAT_P8:
+            palettize = True
+            
+            if bc.FORMAT_CHANNEL_COUNTS[format] == 4:
+                if ck_transparency and format not in (bc.FORMAT_X8R8G8B8,
+                                                      bc.FORMAT_R5G6B5):
+                    #auto-bias
+                    if p8_mode == 0:
                         palette_picker = P8_PALETTE.\
-                                         argb_array_to_p8_array_auto
-                    else:
-                        #average-bias
+                                     argb_array_to_p8_array_auto_alpha
+                    else:#average-bias
                         palette_picker = P8_PALETTE.\
-                                         argb_array_to_p8_array_average
+                                     argb_array_to_p8_array_average_alpha
+                elif p8_mode == 0:
+                    #auto-bias
+                    palette_picker = P8_PALETTE.\
+                                     argb_array_to_p8_array_auto
+                else:
+                    #average-bias
+                    palette_picker = P8_PALETTE.\
+                                     argb_array_to_p8_array_average
 
         #we want to preserve the color key transparency of
         #the original image if converting to the same format
@@ -284,8 +282,7 @@ def convert_bitmap_tag(tag, **kwargs):
             status = bm.convert_texture()
         else:
             status = True
-        
-
+            
         if export_format != " ":
             path = bm.filepath
             if tag.bitmap_count() > 1:
@@ -297,30 +294,21 @@ def convert_bitmap_tag(tag, **kwargs):
         TAG'S DATA TO THE NEW FORMAT AND SWIZZLE MODE.
         IF WE WERE ONLY EXTRACTING THE TEXTURE WE DON'T RESAVE THE TAG"""
         if status and (processing or reprocess):
-            tex_root = tag.data.Data.processed_pixel_data.data[i]
+            tex_root = tag.data.tagdata.processed_pixel_data.data[i]
             
-            if len(bm.texture_block) and isinstance(bm.texture_block[0], array):
-                #change the type of data for the bitmap
-                #pixels to ANY array block. All Py_Array
-                #Field_Types use the same writer, thus
-                #any Py_Array Field_Type will work
-                tex_root.set_desc('TYPE', UInt8Array, 'SUB_STRUCT')
-
             #set the data block to the newly converted one
             tex_root.build(init_data = bm.texture_block)
             #set the flag showing that the bitmap
             #is either swizzled or not swizzled
             tag.swizzled(bm.swizzled, i)
-
             #change the bitmap format to the new format
             tag.bitmap_format(i, I_FORMAT_NAME_LIST[target_format])
-        else:
-            if not extracting_texture(tag):
-                print("Error occurred while attempting to convert the tag:")
-                print(tagpath+"\n")
-                conversion_report[tagpath] = False
-                return False
-
+        elif not extracting_texture(tag):
+            print("Error occurred while attempting to convert the tag:")
+            print(tagpath+"\n")
+            conversion_report[tagpath] = False
+            return False
+        
     if processing or reprocess:
         """RECALCULATE THE BITMAP HEADER AND FOOTER
         DATA AFTER POSSIBLY CHANGING IT ABOVE"""
@@ -334,7 +322,6 @@ def convert_bitmap_tag(tag, **kwargs):
         
         #IF THE FORMAT IS P8 OR PLATFORM IS XBOX WE NEED TO ADD PADDING
         add_bitmap_padding(tag, save_as_xbox)
-        
         """FINISH BY RESAVING THE TAG"""
         try:
             save_status = tag.serialize()
@@ -343,13 +330,12 @@ def convert_bitmap_tag(tag, **kwargs):
             print(format_exc())
             conversion_report[tagpath] = save_status = False
         return save_status
-    else:
-        if export_format == " ":
-            conversion_report[tagpath] = False
-            return False
-        else:
-            conversion_report[tagpath] = None
-            return None
+    elif export_format == " ":
+        conversion_report[tagpath] = False
+        return False
+    
+    conversion_report[tagpath] = None
+    return None
 
 
 
@@ -357,7 +343,7 @@ def parse_bitmap_blocks(tag):
     '''converts the raw pixel data into arrays of pixel
     data and replaces the raw data in the tag with them'''
     
-    pixel_data = tag.data.Data.processed_pixel_data
+    pixel_data = tag.data.tagdata.processed_pixel_data
     raw_bitmap_data = pixel_data.data
 
     tagsdir = tag.handler.tagsdir
@@ -370,9 +356,9 @@ def parse_bitmap_blocks(tag):
     for i in range(tag.bitmap_count()):
         #since we need this information to read the bitmap we extract it
         max_width, max_height, max_depth, = tag.bitmap_width_height_depth(i)
-        type             = tag.bitmap_type(i)
-        format           = FORMAT_NAME_LIST[tag.bitmap_format(i)]
-        mipmap_count     = tag.bitmap_mipmaps_count(i) + 1
+        type         = tag.bitmap_type(i)
+        format       = FORMAT_NAME_LIST[tag.bitmap_format(i)]
+        mipmap_count = tag.bitmap_mipmaps_count(i) + 1
         sub_bitmap_count = bc.SUB_BITMAP_COUNTS[TYPE_NAME_LIST[type]]
 
         #Get the offset of the pixel data for
@@ -412,8 +398,8 @@ def parse_bitmap_blocks(tag):
                                                                     format)
                     if format == bc.FORMAT_P8:
                         pixel_count = width*height
-                        tex_block.append(raw_bitmap_data[offset:
-                                                         offset+pixel_count])
+                        tex_block.append(array('B', raw_bitmap_data[offset:
+                                                         offset+pixel_count]))
                         offset += pixel_count
                     else:
                         offset = bc.bitmap_io.\
@@ -438,14 +424,15 @@ def parse_bitmap_blocks(tag):
                 for sub_bitmap_index in range(sub_bitmap_count):
                     if format == bc.FORMAT_P8:
                         pixel_count = width*height
-                        tex_block.append(raw_bitmap_data[offset:
-                                                         offset+pixel_count])
+                        tex_block.append(array('B', raw_bitmap_data[offset:
+                                                         offset+pixel_count]))
                         offset += pixel_count
                     else:
                         offset = bc.bitmap_io.\
                                  bitmap_bytes_to_array(raw_bitmap_data, offset,
                                                        tex_block, format,
                                                        width, height, depth)
+    
     pixel_data.set_desc('CHILD', root_tex_block.DESC)
     pixel_data.data = root_tex_block
     '''now that we've successfully built the bitmap
@@ -517,7 +504,7 @@ def add_bitmap_padding(tag, save_as_xbox):
         if tag.bitmap_type(i) == TYPE_CUBEMAP:
             sub_bitmap_count = 6
             
-        pixel_data_block = tag.data.Data.processed_pixel_data.data[i]
+        pixel_data_block = tag.data.tagdata.processed_pixel_data.data[i]
 
         """BECAUSE THESE OFFSETS ARE THE BEGINNING OF THE PIXEL
         DATA WE ADD THE NUMBER OF BYTES OF PIXEL DATA BEFORE
@@ -614,7 +601,7 @@ def bitmap_sanitize(tag):
     tie up all the loose ends and recalculate all the offsets and stuff'''
     
     #Prune the original TIFF data from the tag
-    tag.data.Data.compressed_color_plate_data.data = bytearray()
+    tag.data.tagdata.compressed_color_plate_data.data = bytearray()
 
     #Read the pixel data blocks for each bitmap
     for i in range(tag.bitmap_count()):
@@ -708,22 +695,22 @@ def get_channel_mappings(format, mono_swap, target_format,
         1 CHANNEL FORMAT TO OTHER FORMATS"""
         if target_channel_count == 4:
             if format == bc.FORMAT_A8:
-                channel_mapping = bc.A8_to_ARGB
+                channel_mapping = bc.A8_TO_ARGB
                     
             elif format == bc.FORMAT_Y8:
-                channel_mapping = bc.Y8_to_ARGB
+                channel_mapping = bc.Y8_TO_ARGB
                     
             elif format == bc.FORMAT_AY8:
-                channel_mapping = bc.AY8_to_ARGB
+                channel_mapping = bc.AY8_TO_ARGB
                 
         elif target_channel_count == 2:
             if format == bc.FORMAT_A8:
-                channel_mapping = bc.A8_to_A8Y8
+                channel_mapping = bc.A8_TO_A8Y8
                 
             elif format == bc.FORMAT_Y8:
-                channel_mapping = bc.Y8_to_A8Y8
+                channel_mapping = bc.Y8_TO_A8Y8
                 
             elif format == bc.FORMAT_AY8:
-                channel_mapping = bc.AY8_to_A8Y8
+                channel_mapping = bc.AY8_TO_A8Y8
                 
     return(channel_mapping, channel_merge_mapping, target_format)

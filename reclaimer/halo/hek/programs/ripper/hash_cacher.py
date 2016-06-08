@@ -3,7 +3,6 @@ from string import digits, ascii_letters
 from traceback import format_exc
 
 from ..hek_tag_scanner import HekTagScanner
-from ....fields import TagIndexRef, Reflexive, RawDataRef
 from supyr_struct.handler import Handler
 from supyr_struct.tag import Tag
 
@@ -77,10 +76,10 @@ class HashCacher(Handler):
                         tags with fields that are normally zeroed
                         out as tags, but arent as meta'''
                         if def_id == 'pphy':
-                            Data = data.Data
-                            Data.Wind_Coefficient = 0
-                            Data.Wind_Sine_Modifier = 0
-                            Data.Z_Translation_Rate = 0
+                            tagdata = data.tagdata
+                            tagdata.wind_coefficient = 0
+                            tagdata.wind_sine_modifier = 0
+                            tagdata.z_translation_rate = 0
 
                         hash_buffer = tag_lib.get_tag_hash(data,
                                                            tag_ref_paths,
@@ -124,7 +123,7 @@ class HashCacher(Handler):
     def add_tag_to_hashmap(self, filepath, hashmap):
         tag_lib  = self.tag_lib
         
-        tag     = tag_lib.build_tag(filepath=tag_lib.tagsdir + filepath)
+        tag  = tag_lib.build_tag(filepath=tag_lib.tagsdir + filepath)
         data = tag.data
         def_id  = tag.def_id      
 

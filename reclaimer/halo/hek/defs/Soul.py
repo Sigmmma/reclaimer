@@ -3,7 +3,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 ui_widget_def = dependency("ui widget definition")
 
-soul_body = Struct("Data",
+soul_body = Struct("tagdata",
     reflexive("ui widget definitions", ui_widget_def, 32),
     SIZE=12,
     )

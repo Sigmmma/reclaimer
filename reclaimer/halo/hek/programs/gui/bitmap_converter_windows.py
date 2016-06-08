@@ -309,7 +309,7 @@ class BitmapConverterMainWindow(Tk):
         self.format_param_name_text = self.format_param_root.\
                                       create_text(8, 5, anchor="nw")
         self.format_param_root.itemconfig(self.format_param_name_text,
-                                          text="b_format Specific Parameters")
+                                          text="Format Specific Parameters")
         self.format_param_root.config(bd=2, relief=GROOVE)
 
         #Create the FORMAT SPECIFIC PARAMETERS buttons
@@ -378,7 +378,7 @@ class BitmapConverterMainWindow(Tk):
         self.format_to_convert_to_name_text = self.format_to_convert_to_root.\
                                               create_text(8, 5, anchor="nw")
         self.format_to_convert_to_root.itemconfig(
-            self.format_to_convert_to_name_text, text="b_format to convert to")
+            self.format_to_convert_to_name_text, text="Format to convert to")
         self.format_to_convert_to_root.config(bd=2, relief=GROOVE)
 
         #Create the FORMAT TO CONVERT TO radio buttons
@@ -1135,9 +1135,9 @@ class BitmapConverterDataWindow(Canvas):
         self.tag_data_sel_bitmap_root.itemconfig(self.tag_data_depth_text,
                                                  text="Depth:")
         self.tag_data_sel_bitmap_root.itemconfig(self.tag_data_type_text,
-                                                 text="b_type:")
+                                                 text="Type:")
         self.tag_data_sel_bitmap_root.itemconfig(self.tag_data_format_text,
-                                                 text="b_format:")
+                                                 text="Format:")
         self.tag_data_sel_bitmap_root.itemconfig(self.tag_data_swizzled_text,
                                                  text="swizzled:")
         self.tag_data_sel_bitmap_root.itemconfig(self.tag_data_mipmaps_text,
@@ -1281,9 +1281,9 @@ class BitmapConverterListWindow(Toplevel):
         
         tag_list_menubar.add_command(label="Sort by Path",
                          command=lambda:(self.sort_displayed_tags_by(0, True)) )
-        tag_list_menubar.add_command(label="Sort by b_type",
+        tag_list_menubar.add_command(label="Sort by Type",
                          command=lambda:(self.sort_displayed_tags_by(2, True)) )
-        tag_list_menubar.add_command(label="Sort by b_format",
+        tag_list_menubar.add_command(label="Sort by Format",
                          command=lambda:(self.sort_displayed_tags_by(4, True)) )
         tag_list_menubar.add_command(label="Sort by Pixel Data Bytes",
                          command=lambda:(self.sort_displayed_tags_by(6, True)) )
@@ -1603,8 +1603,8 @@ class BitmapConverterHelpWindow(Toplevel):
         self.help_window_menubar = Menu(self)
         str_tmp = ["Steps to using this program",
                    "Global Parameters", "General Parameters",
-                   "Multipurpose Swap", "b_format Specific Parameters",
-                   "b_format Conversion", "Miscellaneous"]
+                   "Multipurpose Swap", "Format Specific Parameters",
+                   "Format Conversion", "Miscellaneous"]
         for i in range(len(str_tmp)):
             self.help_window_menubar.add_command(label=str_tmp[i],
                              command=lambda i=i:(self.change_displayed_help(i)))

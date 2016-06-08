@@ -1,14 +1,14 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-devc_body = Struct("Data",
+devc_body = Struct("tagdata",
     BSEnum16("device type",
         "mouse and keyboard",
         "joysticks/joypads/etc",
         "full profile definition",
         ),
-    BBool16("Flags",
-        "Unused",
+    BBool16("flags",
+        "unused",
         ),
     rawdata_ref("device id"),
     rawdata_ref("profile"),

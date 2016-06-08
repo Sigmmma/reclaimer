@@ -26,11 +26,11 @@ def tag_ref_size(block=None, parent=None, attr_index=None,
     
     if new_value is not None:
         if new_value <= 1:
-            parent.Tag_Path_Length = 0
+            parent.tag_path_length = 0
         else:
-            parent.Tag_Path_Length = new_value - 1
+            parent.tag_path_length = new_value - 1
         return
-    strlen = parent.Tag_Path_Length
+    strlen = parent.tag_path_length
     strlen += 1*bool(strlen)
     return strlen
 

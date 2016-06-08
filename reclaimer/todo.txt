@@ -9,6 +9,8 @@ Finish docstrings for modules and update existing ones.
 
 MAKE SURE BITMAP CONVERTER WORKS
 
+make init_data work better for all blocks
+
 Medium Priority:
 
 Make a Union Field and a UnionBlock that allows specifying multiple descriptors.
