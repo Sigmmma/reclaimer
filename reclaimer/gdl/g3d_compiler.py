@@ -104,6 +104,7 @@ class G3dCompiler():
                                norm[1]*norm[1]+
                                norm[2]*norm[2])
                     if mag == 0:
+                        norm[0] = norm[1] = norm[2] = 0
                         continue
                     
                     norm[0] = int(15.5*(norm[0]/mag+1))
@@ -322,7 +323,7 @@ class G3dCompiler():
                     buffer.write(b'\x04\xC0'+pack('B',len(strip))+b'\x6F')
                     for i in range(len(strip)):
                         n = norms[vert_data[strip[i]][2]]
-                        buffer.write(pack('<H', n[0]+ (n[1]<<5)+ (n[2]<<10)+
+                        buffer.write(pack('<H', n[0] + (n[1]<<5) + (n[2]<<10)+
                                                 32768*d_draws[i]))
 
                     #make sure the data is 4 byte aligned

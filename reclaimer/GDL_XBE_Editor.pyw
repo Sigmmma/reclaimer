@@ -17,21 +17,30 @@ try:
         if len(Val) > Var.Max_Len:
             Val = Val[:Var.Max_Len]
             Var.set(Val)
-        Var.Block_Parent[Var.Block_Index] = Val
+        if isinstance(Var.Block_Index, int):
+            Var.Block_Parent[Var.Block_Index] = Val
+        elif isinstance(Var.Block_Index, str):
+            Var.Block_Parent.__setattr__(Var.Block_Index, Val)
         Var.Main_Window.Reset_Rollout_Options()
             
     def Validate_and_Set_Int(Var, *args):
         try:    Val = int(Var.get())
         except: Val = None
         if Val is not None:
-            Var.Block_Parent[Var.Block_Index] = Val
+            if isinstance(Var.Block_Index, int):
+                Var.Block_Parent[Var.Block_Index] = Val
+            elif isinstance(Var.Block_Index, str):
+                Var.Block_Parent.__setattr__(Var.Block_Index, Val)
             
             
     def Validate_and_Set_Float(Var, *args):
         try:    Val = float(Var.get())
         except: Val = None
         if Val is not None:
-            Var.Block_Parent[Var.Block_Index] = Val 
+            if isinstance(Var.Block_Index, int):
+                Var.Block_Parent[Var.Block_Index] = Val
+            elif isinstance(Var.Block_Index, str):
+                Var.Block_Parent.__setattr__(Var.Block_Index, Val)
             
             
     def Validate_and_Set_Enum(Var, *args):
@@ -57,8 +66,15 @@ try:
         Mask = Flag_Var.Mask
         Inv_Mask = 4294967295-Mask
         
-        data = Var.Block_Parent[Var.Block_Index].data
-        Var.Block_Parent[Var.Block_Index].data = Flag_Var.get()*Mask+(data&Inv_Mask)
+        if isinstance(Var.Block_Index, int):
+            data = Var.Block_Parent[Var.Block_Index].data
+            Var.Block_Parent[Var.Block_Index].data = Flag_Var.get()*Mask+(data&Inv_Mask)
+        elif isinstance(Var.Block_Index, str):
+            block = Var.Block_Parent.__getattr__(Var.Block_Index)
+            block.data = Flag_Var.get()*Mask+(block.data&Inv_Mask)
+        else:
+            block = Var.Block_Parent
+            block.data = Flag_Var.get()*Mask+(block.data&Inv_Mask)
 
 
     class GDL_Editor_Window(Tk):
@@ -121,7 +137,7 @@ try:
                                                       title="Import characters from...")
                 if filepath != "":
                     try:
-                        self.Loaded_XBE.data.secret_characters.read(filepath=filepath)
+                        self.Loaded_XBE.data.secret_characters.build(filepath=filepath)
                         self._Initialize_Windows()
                     except: print(format_exc())
         
@@ -131,7 +147,7 @@ try:
                                                         filetypes=[("GDL Characters", "*.gdl_chars"),('All','*')],
                                                         title="Export the current characters to...")
                 if filepath != "":
-                    try:    self.Loaded_XBE.data.secret_characters.write(filepath=filepath)
+                    try:    self.Loaded_XBE.data.secret_characters.serialize(filepath=filepath)
                     except: print(format_exc())
             
         def _Import_Cheats(self):
@@ -141,7 +157,7 @@ try:
                                                       title="Import cheats from...")
                 if filepath != "":
                     try:
-                        self.Loaded_XBE.data.cheats.read(filepath=filepath)
+                        self.Loaded_XBE.data.cheats.build(filepath=filepath)
                         self._Initialize_Windows()
                     except: print(format_exc())
         
@@ -151,7 +167,7 @@ try:
                                                         filetypes=[("GDL cheats", "*.gdl_cheats"),('All','*')],
                                                         title="Export the current cheats to...")
                 if filepath != "":
-                    try:    self.Loaded_XBE.data.cheats.write(filepath=filepath)
+                    try:    self.Loaded_XBE.data.cheats.serialize(filepath=filepath)
                     except: print(format_exc())
         
         def Load_XBE(self):
@@ -171,7 +187,7 @@ try:
 
         def Save_XBE(self):
             if hasattr(self.Loaded_XBE, "write"):
-                try:    self.Loaded_XBE.write(temp=False, backup=True)
+                try:    self.Loaded_XBE.serialize(temp=False, backup=True)
                 except: raise IOError("The above error occurred while trying to write XBE file.")
                     
 
@@ -243,22 +259,19 @@ try:
                 i = Menu.Current_Index
                 
             cheat = self.Loaded_XBE.data.cheats[i]
-            Cheat_Flags = cheat.flags
-            Cheat_Type = cheat.type
+            cheat_flags = cheat.flags
+            cheat_type = cheat.type
                 
             Desc = cheat.DESC
             
-            if Cheat_Type.data == 5:
-                Cheat_Flags.DESC = self._Cheat_Weapon_Flags_Desc
-            elif Cheat_Type.data == 6:
-                Cheat_Flags.DESC = self._Cheat_Armor_Flags_Desc
-            elif Cheat_Type.data == 9:
-                Cheat_Flags.DESC = self._Cheat_Special_Flags_Desc
+            if cheat_type.data == 5:
+                cheat_flags.set_active('weapon_flags')
+            elif cheat_type.data == 6:
+                cheat_flags.set_active('armor_flags')
+            elif cheat_type.data == 9:
+                cheat_flags.set_active('special_flags')
             else:
-                Cheat_Flags.data = 0
-                Cheat_Flags.DESC = self._Cheat_Flags_Desc
-                
-            dict.__setitem__(Desc, 3, Cheat_Flags.DESC)
+                cheat_flags[:] = [0,0,0,0]
 
             self._Reload_Widgets(Menu, cheat, Desc)
             self.Selected_Cheat.set(cheat.code)
@@ -289,15 +302,21 @@ try:
 
                 Child_Canvas.create_text(10, Y+3, anchor="nw", text=this_desc["GUI_NAME"])
 
-                if field.is_data:
+                if field.is_data or field.name == 'Union':
                     Field_Var = StringVar(Child_Canvas)
+                    
+                    Block_Val = datablock[i]
+                    
+                    if field.name == 'Union':
+                        datablock = Block_Val = Block_Val.u_block
+                        field     = Block_Val.DESC['TYPE']
+                        this_desc = Block_Val.DESC
+                        i = None
                     
                     Field_Var.Block_Parent = datablock
                     Field_Var.Block_Desc   = this_desc
                     Field_Var.Block_Index  = i
                     Field_Var.Main_Window  = self
-                    
-                    Block_Val = datablock[i]
 
                     if field.is_enum:
                         Widget_Height = 30
@@ -342,15 +361,14 @@ try:
                             Widget_Height += 16
                             New_Widget.config(height=Widget_Height)
                     else:
-                        Field_Var.set(str(datablock[i]))
+                        Field_Var.set(str(Block_Val))
                         if field.is_str:
                             Field_Var.Max_Len = this_desc["SIZE"]-1
                             Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Str(Var)
+                        elif issubclass(field.py_type, float):
+                            Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Float(Var)
                         else:
-                            if issubclass(field.py_type, float):
-                                Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Float(Var)
-                            else:
-                                Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Int(Var)
+                            Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Int(Var)
                                 
                         Widget_Height = 20
                         
