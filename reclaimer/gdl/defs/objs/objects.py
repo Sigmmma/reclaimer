@@ -844,7 +844,7 @@ class ObjectsPs2Tag(GdlTag):
                     g3d_model = g3d_model_def.build(rawdata=f.read())
             except Exception:
                 print(format_exc())
-                print("Could not load object model %s"%i)
+                print("Could not load object model:\n    %s"%mod_filepaths[i])
                 continue
 
             #update the vert/tri counts and the bounding radius

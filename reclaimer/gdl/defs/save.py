@@ -35,7 +35,7 @@ def make_name_map(suffix=''):
 
 special_flags = xbe.special_types
 armor_flags   = xbe.armor_types
-weapon_flags  = xbe.weapon_types_bitstruct
+weapon_flags  = xbe.weapon_types
 no_flags = LBool32('flags')
 
 runes = (
@@ -102,14 +102,11 @@ p_powerup = Struct('character powerup',
         "special",
         ),
     Float('attribute add'),
-    Switch('special flags',
-        SIZE=4, DEFAULT=no_flags,
+    Union("flags",
         CASE='.type.data_name',
-        CASES={'none':no_flags,
+        CASES={'weapon':weapon_flags,
                'armor':armor_flags,
-               'weapon':weapon_flags,
-               'special':special_flags,
-               }
+               'special':special_flags}
         ),
     SIZE=16,
     )

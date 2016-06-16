@@ -1,5 +1,3 @@
-Current speed of OBJECTS.PS2: 40KB/s
-
 High Priority:
 
 Clean up instances where kwargs and args exist,
@@ -9,26 +7,12 @@ Finish docstrings for modules and update existing ones.
 
 make init_data work better for all blocks
 
-Medium Priority:
-
-Make a Union Field and a UnionBlock that allows specifying multiple descriptors.
-    BLOCKS THAT MAKE UP A UNION BLOCK CANNOT HAVE CHILDREN OR BE POINTERED
-
-    Unions cannot be used inside a Bitstruct or have bitbased members
-
-    Need to make union_reader, union_writer, and sanitizer_union functions
-
-    Make it so unions can have an initial u_index set based on a CASE, like a switch
-        Make it so when a state is set active(and u_index is NOT being set to None),
-        the CASE is used to set some data in the tag which specifies the state.        
-
-
 Low Priority:
 
 Make Bin_Size recursion safe
 
 Implement recursive pointer based blocks.
-    When writing, pass around a dictionary of which block IDs have already had
+    When writing, pass around a dictionary of which block ids have already had
     their pointers calculated and what the pointer value is. When a reused block
     is about to have its corrosponding pointer set, it will instead use the
     pointer that already exists. When the block is being written, a dictionary
