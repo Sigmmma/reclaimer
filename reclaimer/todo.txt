@@ -5,8 +5,6 @@ Clean up instances where kwargs and args exist,
 
 Finish docstrings for modules and update existing ones.
 
-make init_data work better for all blocks
-
 Low Priority:
 
 Make Bin_Size recursion safe

@@ -54,7 +54,7 @@ try:
             tgaheader.image_descriptor.alpha_bit_count = 8
             tgaheader.image_descriptor.screen_origin.set_data("upper_left")
 
-            tgaout.data.pixel_data = tga_buffer
+            tgaout.data.pixels_wrapper.pixels = tga_buffer
             #write a solid red color to the image for the background
             tga_buffer.write(RED_FILL * tgaheader.width * tgaheader.height)
 

@@ -297,7 +297,7 @@ def convert_bitmap_tag(tag, **kwargs):
             tex_root = tag.data.tagdata.processed_pixel_data.data[i]
             
             #set the data block to the newly converted one
-            tex_root.build(init_data = bm.texture_block)
+            tex_root.build(initdata = bm.texture_block)
             #set the flag showing that the bitmap
             #is either swizzled or not swizzled
             tag.swizzled(bm.swizzled, i)
