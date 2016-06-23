@@ -50,7 +50,7 @@ senv_body = Struct("tagdata",
     BFloat(    "micro detail map scale"),
     dependency("micro detail map", valid_bitmaps),
                    
-    Struct("material color", INCLUDE=R_G_B_Float),
+    Struct("material color", INCLUDE=rgb_float),
 
     Pad(12),
     #Bump Properties
@@ -66,18 +66,18 @@ senv_body = Struct("tagdata",
 
     Pad(52),
     #Self Illumination
-    Struct("primary on-color",  INCLUDE=R_G_B_Float),
-    Struct("primary off-color", INCLUDE=R_G_B_Float),
+    Struct("primary on-color",  INCLUDE=rgb_float),
+    Struct("primary off-color", INCLUDE=rgb_float),
     Struct("primary animation", INCLUDE=anim_func_per_pha),
 
     Pad(24),
-    Struct("secondary on-color",  INCLUDE=R_G_B_Float),
-    Struct("secondary off-color", INCLUDE=R_G_B_Float),
+    Struct("secondary on-color",  INCLUDE=rgb_float),
+    Struct("secondary off-color", INCLUDE=rgb_float),
     Struct("secondary animation", INCLUDE=anim_func_per_pha),
 
     Pad(24),
-    Struct("plasma on-color",  INCLUDE=R_G_B_Float),
-    Struct("plasma off-color", INCLUDE=R_G_B_Float),
+    Struct("plasma on-color",  INCLUDE=rgb_float),
+    Struct("plasma off-color", INCLUDE=rgb_float),
     Struct("plasma animation", INCLUDE=anim_func_per_pha),
 
     Pad(24),
@@ -95,8 +95,8 @@ senv_body = Struct("tagdata",
     BFloat("brightness"),#[0,1]
 
     Pad(20),
-    Struct("perpendicular color", INCLUDE=R_G_B_Float),
-    Struct("parallel color",      INCLUDE=R_G_B_Float),
+    Struct("perpendicular color", INCLUDE=rgb_float),
+    Struct("parallel color",      INCLUDE=rgb_float),
 
     Pad(16),
     #Reflection Properties
