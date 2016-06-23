@@ -33,9 +33,9 @@ os_soso_ext = Struct("shader model extension",
     Pad(4),
     #Specular Tint Override
     BFloat("perpendicular brightness"),#[0,1]
-    Struct("perpendicular tint color", INCLUDE=R_G_B_Float),
+    Struct("perpendicular tint color", INCLUDE=rgb_float),
     BFloat("parallel brightness"),#[0,1]
-    Struct("parallel tint color",      INCLUDE=R_G_B_Float),
+    Struct("parallel tint color",      INCLUDE=rgb_float),
 
     Pad(8),
     BFloat("specular Lighting exponent"),
@@ -79,8 +79,8 @@ soso_body = Struct("tagdata",
         BSEnum16("color source", *function_names),
         BSEnum16("animation function", *animation_functions),
         BFloat("animation period"),#seconds
-        Struct("color lower bound", INCLUDE=R_G_B_Float),
-        Struct("color upper bound", INCLUDE=R_G_B_Float),
+        Struct("color lower bound", INCLUDE=rgb_float),
+        Struct("color upper bound", INCLUDE=rgb_float),
         ),
         
     Pad(12),
@@ -110,7 +110,7 @@ soso_body = Struct("tagdata",
         Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
         Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
         Struct("rotation-animation",   INCLUDE=anim_src_func_per_pha_sca),
-        Struct("rot-animation center", INCLUDE=X_Y_Float),
+        Struct("rot-animation center", INCLUDE=xy_float),
         ),
                    
     Pad(8),
@@ -120,9 +120,9 @@ soso_body = Struct("tagdata",
         BFloat("cutoff distance"),#world units
      
         BFloat("perpendicular brightness"),#[0,1]
-        Struct("perpendicular tint color", INCLUDE=R_G_B_Float),
+        Struct("perpendicular tint color", INCLUDE=rgb_float),
         BFloat("parallel brightness"),#[0,1]
-        Struct("parallel tint color",      INCLUDE=R_G_B_Float),
+        Struct("parallel tint color",      INCLUDE=rgb_float),
 
         dependency("reflection cube map map", valid_bitmaps),
         ),

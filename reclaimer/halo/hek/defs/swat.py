@@ -36,9 +36,9 @@ swat_body = Struct("tagdata",
     dependency("base map", valid_bitmaps),
     Pad(16),
     BFloat("perpendicular brightness"),#[0,1]
-    Struct("perpendicular tint color", INCLUDE=R_G_B_Float),
+    Struct("perpendicular tint color", INCLUDE=rgb_float),
     BFloat("parallel brightness"),#[0,1]
-    Struct("parallel tint color",      INCLUDE=R_G_B_Float),
+    Struct("parallel tint color",      INCLUDE=rgb_float),
     Pad(16),
     dependency("reflection map", valid_bitmaps),
 

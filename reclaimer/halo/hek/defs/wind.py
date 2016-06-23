@@ -5,7 +5,7 @@ wind_body = Struct("tagdata",
     #I didnt feel like adding offsets since there is no
     #padding until AFTER all entries. it's all sequential
     Struct("velocity",       INCLUDE=from_to),
-    Struct("variation area", INCLUDE=Y_P_Float),
+    Struct("variation area", INCLUDE=yp_float),
     BFloat("local variation weight"),
     BFloat("local variation rate"),
     BFloat("damping"),
