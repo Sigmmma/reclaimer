@@ -3,8 +3,8 @@ from supyr_struct.defs.tag_def import TagDef
 
 
 control_point = Struct("control point",
-    Struct("position", I_J_K_Float),
-    Struct("orientation", I_J_K_W_Float),
+    Struct("position", ijk_float),
+    Struct("orientation", ijkw_float),
     SIZE=60,
     )
 

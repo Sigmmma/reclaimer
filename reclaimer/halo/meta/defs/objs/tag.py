@@ -1,12 +1,7 @@
 from ....fields import *
 from supyr_struct.tag import *
 
-class MetaTag(Tag):
-    __slots__ = ('Tag_Conversion_Settings',
-                 'handler', 'constructor', 'definition',
-                 'root_offset', 'calc_pointers',
-                 'sourcepath', 'filepath', 'data')
-    
+class MetaTag(Tag):    
     def __init__(self, **kwargs):
         calc_pointers = False
         

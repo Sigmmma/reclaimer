@@ -23,7 +23,7 @@ sprite = Struct("sprite",
     BFloat("right side"),
     BFloat("top side"),
     BFloat("bottom side"),
-    Struct("registration point", INCLUDE=X_Y_Float),
+    Struct("registration point", INCLUDE=xy_float),
     SIZE=32,
     )
 
@@ -161,6 +161,6 @@ bitm_def = TagDef(
     
     NAME="bitmap",
     
-    ext=".bitmap", def_id="bitm", endian=">", tag_cls = BitmTag,
+    ext=".bitmap", def_id="bitm", endian=">", tag_cls=BitmTag,
     subdefs = {'pixel_root':pixel_root}
     )

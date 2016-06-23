@@ -20,7 +20,7 @@ sgla_body = Struct("tagdata",
 
     Pad(42),
     #Background Tint Properties
-    Struct("background tint color", INCLUDE=R_G_B_Float),
+    Struct("background tint color", INCLUDE=rgb_float),
     BFloat("background tint map scale"),
     dependency("background tint map", valid_bitmaps),
 
@@ -32,9 +32,9 @@ sgla_body = Struct("tagdata",
         "dynamic Mirror",
         ),
     BFloat("perpendicular brightness"),#[0,1]
-    Struct("perpendicular tint color", INCLUDE=R_G_B_Float),
+    Struct("perpendicular tint color", INCLUDE=rgb_float),
     BFloat("parallel brightness"),#[0,1]
-    Struct("parallel tint color", INCLUDE=R_G_B_Float),
+    Struct("parallel tint color", INCLUDE=rgb_float),
     dependency("reflection map", valid_bitmaps),
 
     BFloat("bump map scale"),

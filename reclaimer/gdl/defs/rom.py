@@ -50,9 +50,9 @@ def get_oe_offs_lump_size(block=None, parent=None, attr_index=None,
             end = len(rawdata)
     return (end - start)//4
 
-lump_kw         = {SIZE:lump_size,             POINTER:lump_pointer}
-text_lump_kw    = {SIZE:get_text_lump_size,    POINTER:lump_pointer}
-oe_offs_lump_kw = {SIZE:get_oe_offs_lump_size, POINTER:lump_pointer}
+lump_kw         = {SIZE: lump_size,             POINTER: lump_pointer}
+text_lump_kw    = {SIZE: get_text_lump_size,    POINTER: lump_pointer}
+oe_offs_lump_kw = {SIZE: get_oe_offs_lump_size, POINTER: lump_pointer}
 
 #############################
 '''individual lump structs'''

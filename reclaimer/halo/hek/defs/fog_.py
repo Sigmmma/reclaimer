@@ -20,7 +20,7 @@ fog__body = Struct("tagdata",
     BFloat("distance to water plane"),
 
     #Color
-    Struct("fog color", INCLUDE=R_G_B_Float),
+    Struct("fog color", INCLUDE=rgb_float),
 
     #Screen Layers
     BBool16("flags",
@@ -36,7 +36,7 @@ fog__body = Struct("tagdata",
     BFloat("start distance from fog plane"),
     Pad(5),
 
-    Struct("color", INCLUDE=R_G_B_Byte),
+    Struct("color", INCLUDE=rgb_byte),
     BFloat("rotation multiplier"),
     BFloat("strafing multiplier"),
     BFloat("zoom multiplier"),

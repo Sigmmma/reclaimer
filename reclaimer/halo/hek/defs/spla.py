@@ -27,22 +27,22 @@ spla_body = Struct("tagdata",
 
     #Color
     BFloat("perpendicular brightness"),#[0,1]
-    Struct("perpendicular tint color", INCLUDE=R_G_B_Float),
+    Struct("perpendicular tint color", INCLUDE=rgb_float),
     BFloat("parallel brightness"),#[0,1]
-    Struct("parallel tint color", INCLUDE=R_G_B_Float),
+    Struct("parallel tint color", INCLUDE=rgb_float),
     BSEnum16("tint color source", *function_names),
 
     Pad(62),
     #Primary Noise Map
     BFloat("primary animation period"),
-    Struct("primary animation direction", INCLUDE=I_J_K_Float),
+    Struct("primary animation direction", INCLUDE=ijk_float),
     BFloat("primary noise map scale"),
     dependency("primary noise map", valid_bitmaps),
 
     Pad(36),
     #Secondary Noise Map
     BFloat("secondary animation period"),
-    Struct("secondary animation direction", INCLUDE=I_J_K_Float),
+    Struct("secondary animation direction", INCLUDE=ijk_float),
     BFloat("secondary noise map scale"),
     dependency("secondary noise map", valid_bitmaps),
     SIZE=332,

@@ -513,8 +513,8 @@ radiosity_settings = Struct("radiosity settings",
         "turd",
         ),
     BFloat("radiosity light power"),
-    Struct("radiosity light color", INCLUDE=R_G_B_Float),
-    Struct("radiosity tint color",  INCLUDE=R_G_B_Float),
+    Struct("radiosity light color", INCLUDE=rgb_float),
+    Struct("radiosity tint color",  INCLUDE=rgb_float),
     )
 
 
@@ -549,7 +549,7 @@ chicago_4_stage_maps = Struct("four stage map",
     Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
     Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
 
-    Struct("rotation center", INCLUDE=X_Y_Float),
+    Struct("rotation center", INCLUDE=xy_float),
     SIZE=220,
     )
 
