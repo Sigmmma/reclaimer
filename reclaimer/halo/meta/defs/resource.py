@@ -2,8 +2,6 @@ from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 from ...hek.defs import str_, ustr, hmt_, bitm#, snd_, font
 
-com = combine
-
 def get(): return resource_def
 
 
