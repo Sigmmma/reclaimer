@@ -1,11 +1,10 @@
-from copy import copy
+from copy import copy, deepcopy
 
 from supyr_struct.defs.common_descriptors import *
 from supyr_struct.defs.block_def import BlockDef
 from .fields import *
 from .constants import *
 
-com = combine
 
 def tag_class(name, *args):
     return BUEnum32(name, *(tuple(args) + (("none", 0xffffffff),) ),
@@ -411,7 +410,6 @@ from_to = Struct('',
     )
 
 
-
 def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     '''This function serves to macro the creation of a reflexive'''
     desc.update(
@@ -432,11 +430,13 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
         
     return Reflexive(name, **desc)
 
+
 def rawdata_ref(name, field=BytearrayRaw):
     '''This function serves to macro the creation of a rawdata reference'''
     return RawdataRef(name,
         EDITABLE=False, INCLUDE=rawdata_ref_struct,
         CHILD=field("data", VISIBLE=False, SIZE=".size") )
+
 
 def dependency(name='tag ref', valid_ids=valid_tags):
     '''This function serves to macro the creation of a tag dependency'''
@@ -450,13 +450,18 @@ def dependency(name='tag ref', valid_ids=valid_tags):
         EDITABLE=False,
         )
 
+
 def blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
-    return com( {1:{DEFAULT:tagid },
-                 5:{DEFAULT:version}}, tag_header)
+    header_dict = dict(tag_header)
+    header_dict[1] = dict(header_dict[1])
+    header_dict[5] = dict(header_dict[5])
+    header_dict[1]['DEFAULT'] = tagid
+    header_dict[5]['DEFAULT'] = version
+    return header_dict
 
 
-#This is the structure for all points where a tag references a chunk of raw data
+#This is the structure for all points where a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
     BSInt32("size"),
     BSInt32("unknown 1"),#0x00000000 in tags
@@ -465,6 +470,7 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
     BUInt32("id"),#random
     EDITABLE=False,
     )
+
 
 #This is the structure for all tag reflexives
 reflexive_struct = Reflexive('reflexive',

@@ -2,8 +2,8 @@ from supyr_struct.defs.executables.xbe import *
 
 def get(): return GdlXbeDef
 
-#these are for when the program can handle displaying
-#structs and the library can handle union fields
+# these are for when the program can handle displaying
+# structs and the library can handle union fields
 weapon_types = LBitStruct("weapon flags",
     BitUEnum("weapon type",
         "normal",
@@ -156,7 +156,7 @@ cheat = Struct("cheat",
         Pad(1),
         "potion",
 
-        #these 3 utilize the below flags
+        # these 3 utilize the below flags
         "weapon",
         "armor",
         Pad(2),
@@ -166,7 +166,7 @@ cheat = Struct("cheat",
     Union("flags",
         CASE='.type.data_name',
         CASES={'weapon':weapon_types_simp,
-               #'weapon':weapon_types,
+               # 'weapon':weapon_types,
                'armor':armor_types,
                'special':special_types}
         ),
@@ -188,11 +188,10 @@ GdlXbeDef = TagDef(
 
     NAME="Gauntlet Dark Legacy XBE",
     
-
     def_id='xbe', ext='.xbe', make_gui_names=True, incomplete=True, endian='<',
-    subdefs = { 'weapon_types':weapon_types_simp,
-                'special_types':special_types,
-                'armor_types':armor_types,
-                'no_types':Bool32("flags")
-                }
+    subdefs = {'weapon_types': weapon_types_simp,
+               'special_types': special_types,
+               'armor_types': armor_types,
+               'no_types': Bool32("flags")
+               }
     )
