@@ -245,7 +245,7 @@ bitmap_def = Struct("bitmap def",
     SIZE=36
     )
 
-objects_ps2_def = TagDef(
+objects_ps2_def = TagDef("objects",
     objects_header,
     
     Array("objects",
@@ -268,7 +268,6 @@ objects_ps2_def = TagDef(
         POINTER='.header.bitmap_defs_pointer',
         SUB_STRUCT=bitmap_def
         ),
-    
-    NAME="gdl objects resource", endian="<",
-    ext=".ps2", def_id="objects", tag_cls=ObjectsPs2Tag
+
+    endian="<", ext=".ps2", tag_cls=ObjectsPs2Tag
     )

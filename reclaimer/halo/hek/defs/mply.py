@@ -19,11 +19,9 @@ mply_body = Struct("tagdata",
 def get():
     return mply_def
 
-mply_def = TagDef(
+mply_def = TagDef("mply",
     blam_header('mply'),
     mply_body,
-    
-    NAME="multiplayer_scenario_description",
-    
-    ext=".multiplayer_scenario_description", def_id="mply", endian=">"
+
+    ext=".multiplayer_scenario_description", endian=">"
     )

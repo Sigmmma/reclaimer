@@ -26,11 +26,9 @@ hmt__body = Struct("tagdata",
 def get():
     return hmt__def
 
-hmt__def = TagDef(
+hmt__def = TagDef("hmt ",
     blam_header('hmt '),
     hmt__body,
-    
-    NAME="hud_message_text",
-    
-    ext=".hud_message_text", def_id="hmt ", endian=">"
+
+    ext=".hud_message_text", endian=">"
     )

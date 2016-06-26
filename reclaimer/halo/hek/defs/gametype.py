@@ -300,12 +300,10 @@ footer_switch = Switch('gametype footer',
     )
 
 
-gametype_def = TagDef(
+gametype_def = TagDef('gametype',
     header_switch,
     settings_switch,
     footer_switch,
-    
-    NAME='halo gametype',
-    
-    def_id='gametype', ext='.lst', endian='<', tag_cls = GametypeTag,
+
+    ext='.lst', endian='<', tag_cls=GametypeTag,
     )

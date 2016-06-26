@@ -12,11 +12,9 @@ tagc_body = Struct("tagdata",
 def get():
     return tagc_def
 
-tagc_def = TagDef(
+tagc_def = TagDef("tagc",
     blam_header('tagc'),
     tagc_body,
-    
-    NAME="tag_collection",
-    
-    ext=".tag_collection", def_id="tagc", endian=">"
+
+    ext=".tag_collection", endian=">"
     )

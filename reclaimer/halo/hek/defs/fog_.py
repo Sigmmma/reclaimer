@@ -62,11 +62,9 @@ fog__body = Struct("tagdata",
 def get():
     return fog__def
 
-fog__def = TagDef(
+fog__def = TagDef("fog ",
     blam_header('fog '),
     fog__body,
     
-    NAME="fog",
-    
-    ext=".fog", def_id="fog ", endian=">"
+    ext=".fog", endian=">"
     )

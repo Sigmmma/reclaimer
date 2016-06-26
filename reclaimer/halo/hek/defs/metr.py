@@ -71,12 +71,10 @@ meter_body = Struct("tagdata",
 def get():
     return metr_def
 
-metr_def = TagDef(
+metr_def = TagDef("metr",
     blam_header('metr'),
     meter_body,
-    
-    NAME="meter",
-    
+
     subdefs={"meter_image":meter_image},
-    ext=".meter", def_id="metr", endian=">"
+    ext=".meter", endian=">"
     )

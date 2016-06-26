@@ -20,11 +20,9 @@ ngpr_body = Struct("tagdata",
 def get():
     return ngpr_def
 
-ngpr_def = TagDef(
+ngpr_def = TagDef("ngpr",
     blam_header('ngpr', 2),
     ngpr_body,
-    
-    NAME="preferences_network_game",
-    
-    ext=".preferences_network_game", def_id="ngpr", endian=">"
+
+    ext=".preferences_network_game", endian=">"
     )

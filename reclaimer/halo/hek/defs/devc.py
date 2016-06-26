@@ -15,15 +15,12 @@ devc_body = Struct("tagdata",
     SIZE=44,
     )
 
-
 def get():
     return devc_def
 
-devc_def = TagDef(
+devc_def = TagDef("devc",
     blam_header('devc'),
     devc_body,
-    
-    NAME="input_device_defaults",
-    
-    ext=".input_device_defaults", def_id="devc", endian=">"
+
+    ext=".input_device_defaults", endian=">"
     )

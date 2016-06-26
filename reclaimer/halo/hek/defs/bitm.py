@@ -126,11 +126,11 @@ bitm_body = Struct("tagdata",
     BFloat("sharpen amount", MIN=0.0 , MAX=1.0),
     BFloat("bump height"),#repeats
     BSEnum16("sprite budget size",
-      ("x32",  0, "32x32"),
-      ("x64",  1, "64x64"),
-      ("x128", 2, "128x128"),
-      ("x256", 3, "256x256"),
-      ("x512", 4, "512x512"),
+      {NAME: "x32",  VALUE: 0, GUI_NAME: "32x32"},
+      {NAME: "x64",  VALUE: 1, GUI_NAME: "64x64"},
+      {NAME: "x128", VALUE: 2, GUI_NAME: "128x128"},
+      {NAME: "x256", VALUE: 3, GUI_NAME: "256x256"},
+      {NAME: "x512", VALUE: 4, GUI_NAME: "512x512"},
       ),
     BUInt16("sprite budget count"),
     BUInt16("color plate width"),
@@ -155,12 +155,10 @@ bitm_body = Struct("tagdata",
 def get():
     return bitm_def
 
-bitm_def = TagDef(
+bitm_def = TagDef("bitm",
     blam_header('bitm', 7),
     bitm_body,
-    
-    NAME="bitmap",
-    
-    ext=".bitmap", def_id="bitm", endian=">", tag_cls=BitmTag,
+
+    ext=".bitmap", endian=">", tag_cls=BitmTag,
     subdefs = {'pixel_root':pixel_root}
     )

@@ -23,11 +23,9 @@ snde_body = Struct("tagdata",
 def get():
     return snde_def
 
-snde_def = TagDef(
+snde_def = TagDef("snde",
     blam_header('snde'),
     snde_body,
-    
-    NAME="sound_environment",
-    
-    ext=".sound_environment", def_id="snde", endian=">"
+
+    ext=".sound_environment", endian=">"
     )

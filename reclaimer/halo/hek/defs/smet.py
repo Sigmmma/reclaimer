@@ -47,11 +47,9 @@ smet_body = Struct("tagdata",
 def get():
     return smet_def
 
-smet_def = TagDef(
+smet_def = TagDef("smet",
     blam_header('smet'),
     smet_body,
-    
-    NAME="shader_meter",
-    
-    ext=".shader_meter", def_id="smet", endian=">"
+
+    ext=".shader_meter", endian=">"
     )

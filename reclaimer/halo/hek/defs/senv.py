@@ -123,11 +123,9 @@ senv_body = Struct("tagdata",
 def get():
     return senv_def
 
-senv_def = TagDef(
+senv_def = TagDef("senv",
     blam_header('senv', 2),
     senv_body,
-    
-    NAME="shader_environment",
-    
-    ext=".shader_environment", def_id="senv", endian=">", tag_cls=SenvTag
+
+    ext=".shader_environment", endian=">", tag_cls=SenvTag
     )

@@ -38,11 +38,9 @@ item_body = Struct("tagdata",
 def get():
     return item_def
 
-item_def = TagDef(
+item_def = TagDef("item",
     blam_header('item', 2),
     item_body,
-    
-    NAME="item",
-    
-    ext=".item", def_id="item", endian=">"
+
+    ext=".item", endian=">"
     )

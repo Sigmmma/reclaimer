@@ -16,11 +16,9 @@ wind_body = Struct("tagdata",
 def get():
     return wind_def
 
-wind_def = TagDef(
+wind_def = TagDef("wind",
     blam_header('wind'),
     wind_body,
-    
-    NAME="wind",
-    
-    ext=".wind", def_id="wind", endian=">"
+
+    ext=".wind", endian=">"
     )

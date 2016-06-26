@@ -36,12 +36,10 @@ schi_body = Struct("tagdata",
 def get():
     return schi_def
 
-schi_def = TagDef(
+schi_def = TagDef("schi",
     blam_header('schi'),
     schi_body,
-    
-    NAME="shader_transparent_chicago",
-    
+
     ext=".shader_transparent_chicago",
-    def_id="schi", endian=">", tag_cls=SchiTag
+    endian=">", tag_cls=SchiTag
     )

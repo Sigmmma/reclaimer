@@ -22,11 +22,9 @@ foot_body = Struct("tagdata",
 def get():
     return foot_def
 
-foot_def = TagDef(
+foot_def = TagDef("foot",
     blam_header('foot'),
     foot_body,
     
-    NAME="material_effects",
-    
-    ext=".material_effects", def_id="foot", endian=">"
+    ext=".material_effects", endian=">"
     )

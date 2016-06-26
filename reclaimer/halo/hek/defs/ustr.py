@@ -12,11 +12,9 @@ ustr_body = Struct("tagdata",
 def get():
     return ustr_def
 
-ustr_def = TagDef(
+ustr_def = TagDef("ustr",
     blam_header('ustr'),
     ustr_body,
-    
-    NAME="unicode_string_list",
-    
-    ext=".unicode_string_list", def_id="ustr", endian=">"
+
+    ext=".unicode_string_list", endian=">"
     )

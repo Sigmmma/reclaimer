@@ -92,14 +92,11 @@ unknown_footer = Container('footer',
     LSInt32('unknown8'),
     )
 
-anim_ps2_def = TagDef(
+anim_ps2_def = TagDef("anim",
     anim_header,
     skeletons_array,
     texture_anims_array,
     #unknown_footer,
-    
-    NAME='gdl anim resource',
 
-    ext=".ps2", def_id="anim",
-    tag_cls=AnimPs2Tag, incomplete=True
+    ext=".ps2", tag_cls=AnimPs2Tag, incomplete=True
     )

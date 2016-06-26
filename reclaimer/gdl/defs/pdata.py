@@ -65,7 +65,7 @@ player_datas = Lump('player datas',
     SUB_STRUCT=player_data, **lump_kw
     )
 
-pdata_def = TagDef(
+pdata_def = TagDef("pdata",
     rom_header,
     lump_headers,
 
@@ -75,8 +75,7 @@ pdata_def = TagDef(
         effects,
         damages,
         player_datas,
-    ),
-    
-    NAME='gdl player data',
-    ext=".wad", def_id="pdata"
+        ),
+
+    ext=".wad",
     )
