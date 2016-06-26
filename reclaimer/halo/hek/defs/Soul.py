@@ -12,11 +12,9 @@ soul_body = Struct("tagdata",
 def get():
     return soul_def
 
-soul_def = TagDef(
+soul_def = TagDef("Soul",
     blam_header('Soul'),
     soul_body,#lol Megaman X4
-    
-    NAME="ui_widget_collection",
-    
-    ext=".ui_widget_collection", def_id="Soul", endian=">"
+
+    ext=".ui_widget_collection", endian=">"
     )

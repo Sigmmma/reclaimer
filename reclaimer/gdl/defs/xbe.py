@@ -174,7 +174,7 @@ cheat = Struct("cheat",
     )
 
 
-GdlXbeDef = TagDef(
+GdlXbeDef = TagDef('xbe',
     xbe_image_header,
     xbe_certificate,
     xbe_sec_headers,
@@ -186,9 +186,7 @@ GdlXbeDef = TagDef(
         SIZE=18, POINTER=1136064,
         SUB_STRUCT=cheat),
 
-    NAME="Gauntlet Dark Legacy XBE",
-    
-    def_id='xbe', ext='.xbe', make_gui_names=True, incomplete=True, endian='<',
+    ext='.xbe', incomplete=True, endian='<',
     subdefs = {'weapon_types': weapon_types_simp,
                'special_types': special_types,
                'armor_types': armor_types,

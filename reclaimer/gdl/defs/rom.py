@@ -148,7 +148,7 @@ string_def_offsets = Lump('string def offsets',
     )
 
 
-rom_def = TagDef(
+rom_def = TagDef("rom",
     rom_header,
     lump_headers,
 
@@ -164,8 +164,7 @@ rom_def = TagDef(
         def_names_data,
         string_def_offsets,
         list_def_offsets,
-    ),
+        ),
     
-    NAME='gdl strings resource',
-    ext=".rom", def_id="rom"
+    ext=".rom"
     )

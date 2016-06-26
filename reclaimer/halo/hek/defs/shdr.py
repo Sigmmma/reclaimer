@@ -17,11 +17,9 @@ shader_body = Struct("tagdata",
 def get():
     return shdr_def
 
-shdr_def = TagDef(
+shdr_def = TagDef("shdr",
     blam_header('shdr'),
     shader_body,
-    
-    NAME="shader",
-    
-    ext=".shader", def_id="shdr", endian=">"
+
+    ext=".shader", endian=">"
     )

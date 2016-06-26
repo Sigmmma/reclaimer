@@ -133,11 +133,9 @@ soso_body = Struct("tagdata",
 def get():
     return soso_def
 
-soso_def = TagDef(
+soso_def = TagDef("soso",
     blam_header('soso', 2),
     soso_body,
-    
-    NAME="shader_model",
-    
-    ext=".shader_model", def_id="soso", endian=">"
+
+    ext=".shader_model", endian=">"
     )

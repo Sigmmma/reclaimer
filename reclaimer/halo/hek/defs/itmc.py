@@ -18,11 +18,9 @@ itmc_body = Struct("tagdata",
 def get():
     return itmc_def
 
-itmc_def = TagDef(
+itmc_def = TagDef("itmc",
     blam_header('itmc',0),
     itmc_body,
-    
-    NAME="item_collection",
-    
-    ext=".item_collection", def_id="itmc", endian=">"
+
+    ext=".item_collection", endian=">"
     )

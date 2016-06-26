@@ -1,8 +1,5 @@
 High Priority:
 
-Clean up instances where kwargs and args exist,
-    but they are not used and should not exist.
-
 Finish docstrings for modules and update existing ones.
 
 Low Priority:

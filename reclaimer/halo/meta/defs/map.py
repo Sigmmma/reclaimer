@@ -140,10 +140,10 @@ tag_header = Struct("tag header",
 map_header = Struct("map_header",
     LUInt32("head", DEFAULT='head'),
     LSEnum32("version",
-        ("xbox", 5, 'xbox'),
-        ("demo", 6, 'pc demo'),
-        ("pc",   7, 'pc full'),
-        ("ce", 609, 'custom edition'),
+        ("xbox",    5),
+        ("pc_demo", 6),
+        ("pc_full", 7),
+        ("pc_ce", 609),
         ),
     LSInt32("decompressed len"),
     BytesRaw("unknown1", SIZE=4),
@@ -159,9 +159,9 @@ map_header = Struct("map_header",
         SIZE=32,
         ),
     LUEnum32("map type",
-        ("sp", 0, "campaign"),
-        ("mp", 1, "multiplayer"),
-        ("ui", 2, "user interface"),
+        ("sp", 0),
+        ("mp", 1),
+        ("ui", 2),
         ),
     LUInt32("crc32"),
     Pad(1940),
@@ -202,12 +202,10 @@ for key in tag_meta[CASES]:
     subdefs[key] = dict(tag_meta[CASES][key])
     subdefs[key][POINTER] = tag_meta[POINTER]
         
-map_def = TagDef(
+map_def = TagDef("map",
     map_header,
     tag_index_header,
     tag_index,
-    
-    NAME="halo mapfile",
-    
-    ext=".map", def_id="map", endian="<", sani_warn=False
+
+    ext=".map", endian="<", sani_warn=False
     )

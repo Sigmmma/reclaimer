@@ -41,11 +41,9 @@ flag_body = Struct("tagdata",
     SIZE=96,
     )
 
-flag_def = TagDef(
+flag_def = TagDef("flag",
     blam_header('flag'),
     flag_body,
-    
-    NAME="flag",
-    
-    ext=".flag", def_id="flag", endian=">"
+
+    ext=".flag", endian=">"
     )

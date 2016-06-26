@@ -37,12 +37,10 @@ scex_body = Struct("tagdata",
 def get():
     return scex_def
 
-scex_def = TagDef(
+scex_def = TagDef("scex",
     blam_header('scex'),
     scex_body,
-    
-    NAME="shader_transparent_chicago_extended",
-    
+
     ext=".shader_transparent_chicago_extended", 
-    def_id="scex", endian=">", tag_cls=ScexTag
+    endian=">", tag_cls=ScexTag
     )

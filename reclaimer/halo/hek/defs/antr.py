@@ -307,11 +307,9 @@ antr_body = Struct("tagdata",
 def get():
     return antr_def
 
-antr_def = TagDef(
+antr_def = TagDef("antr",
     blam_header('antr', 4),
     antr_body,
-    
-    NAME="model_animations",
-    
-    ext=".model_animations", def_id="antr", endian=">"
+
+    ext=".model_animations", endian=">"
     )

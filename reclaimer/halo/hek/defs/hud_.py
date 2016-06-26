@@ -18,11 +18,9 @@ hud__body = Struct("tagdata",
 def get():
     return hud__def
 
-hud__def = TagDef(
+hud__def = TagDef("hud#",
     blam_header('hud#'),
     hud__body,
-    
-    NAME="hud_number",
-    
-    ext=".hud_number", def_id="hud#", endian=">"
+
+    ext=".hud_number", endian=">"
     )
