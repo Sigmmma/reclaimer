@@ -70,7 +70,7 @@ item_array = Lump('items',
     SUB_STRUCT=item, SIZE=lump_size, POINTER=lump_pointer
     )
 
-shop_def = TagDef(
+shop_def = TagDef("shop",
     rom_header,
     lump_headers,
 
@@ -79,7 +79,6 @@ shop_def = TagDef(
     Container('lumps',
         item_array
     ),
-    
-    NAME='gdl shop wad',
-    ext=".wad", def_id="shop"
+
+    ext=".wad"
     )

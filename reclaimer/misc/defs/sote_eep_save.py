@@ -6,7 +6,7 @@ HEADER_MAGIC_1 = b'\xFF\x53\x68\x26'
 HEADER_MAGIC_2 = HEADER_MAGIC_1[1:]
 
 def get(): return sote_eep_def
-    
+
 weapons = Struct( "weapons",
     UInt8("pulse"),
     UInt8("flame"),
@@ -146,7 +146,7 @@ save_file = Struct("save file",
     Pad(1)
     )
 
-sote_eep_def = TagDef(
+sote_eep_def = TagDef("sote_eep_save",
     UInt8("eep checksum 1", EDITABLE=False),
     BytesRaw("header magic 1", EDITABLE=False, SIZE=4, DEFAULT=HEADER_MAGIC_1),
     UEnum8("file just beaten",
@@ -164,8 +164,7 @@ sote_eep_def = TagDef(
     #The first checksum byte will be defaulted to 0, and this one to 255.
     UInt8("eep checksum 2", DEFAULT=255, EDITABLE=False),
     Pad(14),
-    
-    GUI_NAME="sote eep save file",
-    ext=".eep", def_id="sote_eep_save", make_gui_names = True
+
+    ext=".eep",
     )
 

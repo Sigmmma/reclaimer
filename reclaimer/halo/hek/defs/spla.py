@@ -52,11 +52,9 @@ spla_body = Struct("tagdata",
 def get():
     return spla_def
 
-spla_def = TagDef(
+spla_def = TagDef("spla",
     blam_header('spla'),
     spla_body,
-    
-    NAME="shader_transparent_plasma",
-    
-    ext=".shader_transparent_plasma", def_id="spla", endian=">"
+
+    ext=".shader_transparent_plasma", endian=">"
     )

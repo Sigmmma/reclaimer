@@ -69,7 +69,7 @@ tag_header = Struct("tag header",
 tag_path = CStrLatin1("tag path")
 
 
-resource_def = TagDef(
+resource_def = TagDef("resource",
     LUEnum32("resource type",
         ('bitmaps', 1),
         ('sounds',  2),
@@ -88,7 +88,6 @@ resource_def = TagDef(
         POINTER='.tag_headers_pointer',
         SUB_STRUCT=tag_header,
         ),
-    
-    NAME="halo map resource",
-    ext=".map", def_id="resource", endian="<", align=ALIGN_AUTO
+
+    ext=".map", endian="<", align=ALIGN_AUTO
     )

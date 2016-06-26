@@ -61,11 +61,9 @@ sgla_body = Struct("tagdata",
 def get():
     return sgla_def
 
-sgla_def = TagDef(
+sgla_def = TagDef("sgla",
     blam_header('sgla'),
     sgla_body,
-    
-    NAME="shader_glass",
-    
-    ext=".shader_glass", def_id="sgla", endian=">"
+
+    ext=".shader_glass", endian=">"
     )

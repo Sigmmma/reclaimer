@@ -193,7 +193,7 @@ p_waves = Struct('levels',
     Pad(1),
     )
 
-gdl_savemeta_def = TagDef(
+gdl_savemeta_def = TagDef("save",
     BytesRaw('hmac_sig', SIZE=20),
     Container('save data',
         StrLatin1('name', SIZE=7, DEFAULT='PLAYER'),
@@ -268,7 +268,6 @@ gdl_savemeta_def = TagDef(
         #New files have 
         UInt8Array('help disp', SIZE=256, DEFAULT=help_disp_default),
         ),
-    
-    NAME='gdl game save',
-    ext=".xsv", def_id="save", endian='<', tag_cls=GdlSaveTag,
+
+    ext=".xsv", endian='<', tag_cls=GdlSaveTag,
     )

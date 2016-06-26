@@ -18,11 +18,9 @@ trak_body = Struct("tagdata",
 def get():
     return trak_def
 
-trak_def = TagDef(
+trak_def = TagDef("trak",
     blam_header('trak', 2),
     trak_body,
-    
-    NAME="camera_track",
-    
-    ext=".camera_track", def_id="trak", endian=">"
+
+    ext=".camera_track", endian=">"
     )

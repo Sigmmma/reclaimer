@@ -28,11 +28,9 @@ pphy_body = Struct("tagdata",
 def get():
     return pphy_def
 
-pphy_def = TagDef(
+pphy_def = TagDef("pphy",
     blam_header('pphy'),
     pphy_body,
-    
-    NAME="point_physics",
-    
-    ext=".point_physics", def_id="pphy", endian=">"
+
+    ext=".point_physics", endian=">"
     )

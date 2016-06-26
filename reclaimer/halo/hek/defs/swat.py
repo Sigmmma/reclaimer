@@ -60,11 +60,9 @@ swat_body = Struct("tagdata",
 def get():
     return swat_def
 
-swat_def = TagDef(
+swat_def = TagDef("swat",
     blam_header('swat', 2),
     swat_body,
-    
-    NAME="shader_transparent_water",
-    
-    ext=".shader_transparent_water", def_id="swat", endian=">"
+
+    ext=".shader_transparent_water", endian=">"
     )

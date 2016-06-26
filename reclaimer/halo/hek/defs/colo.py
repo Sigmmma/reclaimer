@@ -16,11 +16,9 @@ colo_body = Struct("tagdata",
 def get():
     return colo_def
 
-colo_def = TagDef(
+colo_def = TagDef("colo",
     blam_header('colo'),
     colo_body,
-    
-    NAME="color_table",
-    
-    ext=".color_table", def_id="colo", endian=">"
+
+    ext=".color_table", endian=">"
     )
