@@ -51,6 +51,13 @@ def lump_pointer(block=None, parent=None, attr_index=None,
         return header.lump_array_pointer
     header.lump_array_pointer = new_value
 
+# used in a lot of places
+xyz_float = Struct('xyz_float',
+    Float("x"),
+    Float("y"),
+    Float("z")
+    )
+
 #############################
 '''individual lump structs'''
 #############################

@@ -5,6 +5,58 @@ from supyr_struct.defs.block_def import BlockDef
 from .fields import *
 from .constants import *
 
+compressed_normal_32 = LBitStruct('compressed_norm32',
+    Bit1SInt("x", SIZE=11),
+    Bit1SInt("y", SIZE=11),
+    Bit1SInt("z", SIZE=10)
+    )
+
+# coordinates
+xyz_float = Struct('xyz_float',
+    Float("x"),
+    Float("y"),
+    Float("z")
+    )
+xy_float = Struct('xy_float',
+    LFloat("x"),
+    LFloat("y")
+    )
+
+# colors
+argb_float = Struct('argb_float',
+    LFloat("a"),
+    LFloat("r"),
+    LFloat("g"),
+    LFloat("b")
+    )
+rgb_float = Struct('rgb_float',
+    LFloat("r"),
+    LFloat("g"),
+    LFloat("b")
+    )
+rgb_byte = Struct('rgb_uint8',
+    UInt8("r"),
+    UInt8("g"),
+    UInt8("b")
+    )
+
+# rotations
+ijkw_float = Struct('ijkw_float',
+    LFloat("i"),
+    LFloat("j"),
+    LFloat("k"),
+    LFloat("w")
+    )
+ijk_float = Struct('ijk_float',
+    LFloat("i"),
+    LFloat("j"),
+    LFloat("k")
+    )
+yp_float = Struct('yp_float',
+    LFloat("y"),
+    LFloat("p")
+    )
+
 
 def tag_class(name, *args):
     return BUEnum32(name, *(tuple(args) + (("none", 0xffffffff),) ),
