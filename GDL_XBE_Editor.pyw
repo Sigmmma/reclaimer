@@ -265,13 +265,13 @@ try:
             Desc = cheat.DESC
             
             if cheat_type.data == 5:
-                cheat_flags.set_active('weapon_flags')
+                cheat_flags.set_active('weapon')
             elif cheat_type.data == 6:
-                cheat_flags.set_active('armor_flags')
+                cheat_flags.set_active('armor')
             elif cheat_type.data == 9:
-                cheat_flags.set_active('special_flags')
+                cheat_flags.set_active('special')
             else:
-                cheat_flags[:] = [0,0,0,0]
+                cheat_flags[:] = b'\x00\x00\x00\x00'
 
             self._Reload_Widgets(Menu, cheat, Desc)
             self.Selected_Cheat.set(cheat.code)
@@ -300,7 +300,8 @@ try:
                 field = this_desc['TYPE']
                 Trace_Func = None
 
-                Child_Canvas.create_text(10, Y+3, anchor="nw", text=this_desc["GUI_NAME"])
+                Child_Canvas.create_text(10, Y+3, anchor="nw",
+                                         text=this_desc["NAME"].replace('_', ' '))
 
                 if field.is_data or field.name == 'Union':
                     Field_Var = StringVar(Child_Canvas)
@@ -308,6 +309,8 @@ try:
                     Block_Val = datablock[i]
                     
                     if field.name == 'Union':
+                        if Block_Val.u_index is None:
+                            continue
                         datablock = Block_Val = Block_Val.u_block
                         field     = Block_Val.DESC['TYPE']
                         this_desc = Block_Val.DESC
@@ -327,9 +330,9 @@ try:
                         New_Widget.Field_Var = Field_Var
                         
                         for x in range(this_desc['ENTRIES']):
-                            New_Widget.addOption(this_desc[x]['GUI_NAME'])
+                            New_Widget.addOption(this_desc[x]["NAME"].replace('_', ' '))
                             if Block_Val.data == this_desc[x]['VALUE']:
-                                Field_Var.set(this_desc[x]['GUI_NAME'])
+                                Field_Var.set(this_desc[x]["NAME"].replace('_', ' '))
                                 
                         Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Enum(Var)
                     elif field.is_bool:
@@ -342,7 +345,7 @@ try:
                         
                         for x in range(this_desc['ENTRIES']):
                             Flag_Var = IntVar(Child_Canvas)
-                            Flag_Name = this_desc[x]['GUI_NAME']
+                            Flag_Name = this_desc[x]["NAME"].replace('_', ' ')
                             Flag_Val = this_desc[x]['VALUE']
 
                             Flag_Var.Mask = Flag_Val
