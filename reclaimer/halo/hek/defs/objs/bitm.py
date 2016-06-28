@@ -1,4 +1,6 @@
+from array import array
 from .tag import *
+
 
 #in a bitmap tag this number designates the type
 TYPE_2D = 0
@@ -213,12 +215,6 @@ class BitmTag(HekTag):
             if self.bitmap_type(b_index) == TYPE_CUBEMAP:
                 mipmap_count = self.bitmap_mipmaps_count(b_index) + 1
                 tex_block = raw_bitmap_data[b_index]
-        
-                if isinstance(tex_block[0], array):
-                    #change the type of data for the bitmap pixels
-                    #to ANY array block. All Py_Array Fields use
-                    #the same writer, thus any Py_Array Field will work
-                    tex_block.set_desc('TYPE', UInt8Array, 'SUB_STRUCT')
 
                 #this will be used to copy values from
                 template = tex_block.__copy__()

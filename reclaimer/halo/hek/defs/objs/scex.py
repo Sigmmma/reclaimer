@@ -13,6 +13,6 @@ class ScexTag(HekTag):
         tagdata = self.data.tagdata
         tagdata.numeric_shader_id.data = 6
         if mod_desc:
-            tagdata.two_stage_maps.set_desc('TYPE', Void)
+            dict.__setitem__(tagdata.two_stage_maps.DESC, 'TYPE', Void)
             tagdata.ATTR_OFFS[tagdata.NAME_MAP['extra_flags']] = 96
             tagdata.set_size(108)

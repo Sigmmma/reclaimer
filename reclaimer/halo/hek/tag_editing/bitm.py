@@ -1,3 +1,4 @@
+
 from array import array
 from os.path import splitext
 
@@ -432,8 +433,7 @@ def parse_bitmap_blocks(tag):
                                  bitmap_bytes_to_array(raw_bitmap_data, offset,
                                                        tex_block, format,
                                                        width, height, depth)
-    
-    pixel_data.set_desc('CHILD', root_tex_block.DESC)
+
     pixel_data.data = root_tex_block
     '''now that we've successfully built the bitmap
     blocks from the raw data we replace the raw data'''

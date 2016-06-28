@@ -4,6 +4,9 @@ Finish docstrings for modules and update existing ones.
 
 Low Priority:
 
+Make new property for Fields be routines for setting, inserting, and
+deleting attributes from a descriptor using that Field
+
 Make Bin_Size recursion safe
 
 Implement recursive pointer based blocks.
