@@ -2,8 +2,6 @@ from supyr_struct.defs.executables.xbe import *
 
 def get(): return GdlXbeDef
 
-# these are for when the program can handle displaying
-# structs and the library can handle union fields
 weapon_types = LBitStruct("weapon flags",
     BitUEnum("weapon type",
         "normal",
@@ -16,17 +14,13 @@ weapon_types = LBitStruct("weapon flags",
     BitBool("weapon flags",
         "knockback",
         "knockdown",
-        Pad(10),
-        "whirlwind",
-        Pad(2),
+        Pad(13),
         "three way",
         "super",
         "reflect", 
         "five way",
         "heals",
-        Pad(1),
-        "turbo",
-        Pad(2),
+        Pad(4),
         "hammer",
         "rapid",
         SIZE=28,
@@ -69,7 +63,7 @@ armor_types = LBool32("armor flags",
     "immune acid",
     "immune magic",
     "immune gas",
-    Pad(5),
+    Pad(4),
     "immune knockback",
 
     ("invulnerability silver", 65536),

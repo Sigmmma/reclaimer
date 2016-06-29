@@ -49,7 +49,7 @@ player_data = Container('player data',
     Array('weapon fx scales',  SIZE=10, SUB_STRUCT=xyz_float),
     Struct('turboA offset',   INCLUDE=xyz_float),
     Struct('familiar offset', INCLUDE=xyz_float),
-    Struct('fam proj offset', INCLUDE=xyz_float),
+    Struct('familiar proj offset', INCLUDE=xyz_float),
     LFloat('streak fwd mul'),
     )
 

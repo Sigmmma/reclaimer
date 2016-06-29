@@ -4,7 +4,7 @@ from copy import copy
 try:
     from reclaimer.gdl.handler import GdlHandler
 
-    valid_id=None
+    valid_id='save'
    
     test = GdlHandler(debug=3, allow_corrupt=True,
                        print_test=True, save_test=False, int_test=False,
@@ -16,7 +16,7 @@ try:
                                               'value',#'offset',# 'py_id',
                                               'index', 'size','flags', # 'unique',
                                               'filepath', 'binsize','ramsize',
-                                              'trueonly', 'raw'
+                                              #'trueonly', 'raw'
                                               #'all'
                                               ] })
     test.prompt_test()
