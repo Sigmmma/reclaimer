@@ -11,8 +11,8 @@ def get(): return gdl_savemeta_def
 def levels_bool(name, count):
     bools = []
     for i in range(count-1):
-        bools.append('level %s unlocked'%(i+2))
-    bools.append('realm beaten')
+        bools.append('level %s beaten'%(i+1))
+    bools.append('boss beaten')
     return Bool8(name, *bools)
 
 help_disp_default = array('B', [0]*256)
@@ -176,11 +176,12 @@ p_waves = Struct('levels',
     levels_bool('temple',2),
     levels_bool('underworld',2),
     levels_bool('town realm',5),
-    levels_bool('battlefields',3),
+    levels_bool('battlefields',4),
     levels_bool('ice realm',5),
     levels_bool('dream realm',6),
     levels_bool('sky realm',5),
     Bool8('unknown',
+        'unknown0',
         'unknown1',
         'unknown2',
         'unknown3',
@@ -188,7 +189,6 @@ p_waves = Struct('levels',
         'unknown5',
         'unknown6',
         'unknown7',
-        'unknown8',
         ),
     Pad(1),
     )
