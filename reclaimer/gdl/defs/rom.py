@@ -7,7 +7,7 @@ def get(): return rom_def
 def get_text_lump_size(block=None, parent=None, attr_index=None,
                        rawdata=None, new_value=None, *args, **kwargs):
     if block and parent is None:
-        parent = block.PARENT
+        parent = block.parent
     if attr_index is None:
         try:
             attr_index = parent.index(block)
@@ -30,7 +30,7 @@ def get_text_lump_size(block=None, parent=None, attr_index=None,
 def get_oe_offs_lump_size(block=None, parent=None, attr_index=None,
                           rawdata=None, new_value=None, *args, **kwargs):
     if block and parent is None:
-        parent = block.PARENT
+        parent = block.parent
     if attr_index is None:
         try:
             attr_index = parent.index(block)

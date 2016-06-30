@@ -27,8 +27,8 @@ def tag_path_pointer(block=None, parent=None, attr_index=None,
                      rawdata=None, new_value=None, *args, **kwargs):
     if parent is None: raise KeyError()
     
-    t_head = parent.PARENT
-    m_head = t_head.PARENT.PARENT.mapfile_header
+    t_head = parent.parent
+    m_head = t_head.parent.parent.mapfile_header
     magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
 
     #NEED TO FINISH THIS SO IT CAN SET THE PATH POINTER
@@ -41,8 +41,8 @@ def tag_meta_data_pointer(block=None, parent=None, attr_index=None,
                           rawdata=None, new_value=None, *args, **kwargs):
     if parent is None: raise KeyError()
 
-    t_head = parent.PARENT
-    m_head = t_head.PARENT.PARENT.mapfile_header
+    t_head = parent.parent
+    m_head = t_head.parent.parent.mapfile_header
     magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
     #NEED TO FINISH THIS SO IT CAN SET THE META POINTER
     
@@ -54,11 +54,11 @@ def tag_meta_case(block=None, parent=None, attr_index=None,
                   rawdata=None, new_value=None, *args, **kwargs):
     if parent is None: raise KeyError()
     
-    t_head = parent.PARENT
+    t_head = parent.parent
     if t_head.indexed:
         return
     
-    m_head = t_head.PARENT.PARENT.mapfile_header
+    m_head = t_head.parent.parent.mapfile_header
     magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
     
     offset = PC_TAG_INDEX_HEADER_SIZE + t_head.tag_offset - magic
@@ -68,8 +68,8 @@ def tag_meta_case(block=None, parent=None, attr_index=None,
 def tag_index_array_pointer(block=None, parent=None, attr_index=None,
                             rawdata=None, new_value=None, *args, **kwargs):
     if block is None: raise KeyError()
-    i_head = block.PARENT.tag_index_header
-    m_head = block.PARENT.mapfile_header
+    i_head = block.parent.tag_index_header
+    m_head = block.parent.mapfile_header
     
     if new_value is None:
         return (m_head.tag_index_offset + PC_TAG_INDEX_HEADER_SIZE +
@@ -207,5 +207,5 @@ map_def = TagDef("map",
     tag_index_header,
     tag_index,
 
-    ext=".map", endian="<", sani_warn=False
+    ext=".map", endian="<"
     )
