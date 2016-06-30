@@ -186,9 +186,11 @@ try:
                     raise IOError("Could not load file. Make sure it is a valid Gauntlet Dark Legacy XBE.")
 
         def Save_XBE(self):
-            if hasattr(self.Loaded_XBE, "write"):
-                try:    self.Loaded_XBE.serialize(temp=False, backup=True)
-                except: raise IOError("The above error occurred while trying to write XBE file.")
+            if hasattr(self.Loaded_XBE, "serialize"):
+                try:
+                    self.Loaded_XBE.serialize(temp=False, backup=True)
+                except:
+                    raise IOError("The above error occurred while trying to write XBE file.")
                     
 
         def Get_Char_Names(self):
@@ -251,7 +253,7 @@ try:
                 i = Menu.Current_Index
                 
             Char = self.Loaded_XBE.data.secret_characters[i]
-            self._Reload_Widgets(Menu, Char, Char.DESC)
+            self._Reload_Widgets(Menu, Char, Char.desc)
             self.Selected_Char.set(Char.code)
             
         def Reload_Cheat_Window(self, Menu, i=None):
@@ -262,7 +264,7 @@ try:
             cheat_flags = cheat.flags
             cheat_type = cheat.type
                 
-            Desc = cheat.DESC
+            Desc = cheat.desc
             
             if cheat_type.data == 5:
                 cheat_flags.set_active('weapon')
@@ -312,8 +314,8 @@ try:
                         if Block_Val.u_index is None:
                             continue
                         datablock = Block_Val = Block_Val.u_block
-                        field     = Block_Val.DESC['TYPE']
-                        this_desc = Block_Val.DESC
+                        field     = Block_Val.desc['TYPE']
+                        this_desc = Block_Val.desc
                         i = None
                     
                     Field_Var.Block_Parent = datablock

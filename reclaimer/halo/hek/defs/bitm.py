@@ -124,7 +124,7 @@ bitm_body = Struct("tagdata",
         ),
     BFloat("detail fade factor", MIN=0.0 , MAX=1.0),
     BFloat("sharpen amount", MIN=0.0 , MAX=1.0),
-    BFloat("bump height"),#repeats
+    BFloat("bump height"),  # repeats
     BSEnum16("sprite budget size",
       {NAME: "x32",  VALUE: 0, GUI_NAME: "32x32"},
       {NAME: "x64",  VALUE: 1, GUI_NAME: "64x64"},

@@ -4,7 +4,7 @@ from copy import copy
 try:
     from reclaimer.gdl.handler import GdlHandler
 
-    valid_id='save'
+    valid_id=None#'save'
    
     test = GdlHandler(debug=3, allow_corrupt=True,
                        print_test=True, save_test=False, int_test=False,
