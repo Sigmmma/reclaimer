@@ -5,11 +5,11 @@ def sub_objects_size(block=None, parent=None, attr_index=None,
                      rawdata=None, new_value=None, *args, **kwargs):
     if new_value is not None:
         if new_value <= 1:
-            block.PARENT.PARENT.sub_objects_count = 0
+            block.parent.parent.sub_objects_count = 0
         else:
-            block.PARENT.PARENT.sub_objects_count = new_value - 1
+            block.parent.parent.sub_objects_count = new_value - 1
     else:
-        block_count = block.PARENT.PARENT.sub_objects_count - 1
+        block_count = block.parent.parent.sub_objects_count - 1
         if block_count < 0:
             return 0
         return block_count
@@ -18,7 +18,7 @@ def sub_objects_size(block=None, parent=None, attr_index=None,
 def qword_size(block=None, parent=None, attr_index=None,
                rawdata=None, new_value=None, *args, **kwargs):
     if block and parent is None:
-        parent = block.PARENT
+        parent = block.parent
     if new_value is not None:
         parent.qword_count = (new_value-8)//16
     return parent.qword_count*16+8

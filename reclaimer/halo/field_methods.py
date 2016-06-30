@@ -54,7 +54,7 @@ def decode_raw_string(self, rawbytes, desc=None, parent=None, attr_index=None):
 def tag_index_reader(self, desc, parent=None, rawdata=None, attr_index=None,
                      root_offset=0, offset=0, **kwargs):
     if parent is not None:
-        m_head = parent.PARENT.Mapfile_Header
+        m_head = parent.parent.Mapfile_Header
         kwargs['magic'] = PC_INDEX_MAGIC - m_head.Tag_Index_Offset
 
     array_reader(self, desc, parent, rawdata, attr_index,
@@ -64,7 +64,7 @@ def tag_index_reader(self, desc, parent=None, rawdata=None, attr_index=None,
 def tag_index_writer(self, parent, writebuffer, attr_index=None,
                      root_offset=0, offset=0, **kwargs):
     if parent is not None:
-        m_head = parent.PARENT.Mapfile_Header
+        m_head = parent.parent.Mapfile_Header
         kwargs['magic'] = PC_INDEX_MAGIC - m_head.Tag_Index_Offset
         
     array_writer(self, parent, writebuffer, attr_index,

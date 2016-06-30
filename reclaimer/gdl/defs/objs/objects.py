@@ -142,17 +142,17 @@ TEX_DEFS_TAG = TEX_DEF_TAG+'s'
 
 #set up the filepaths and foldernames that textures, animations,
 #models, and definitions will be extracted to and imported from.
-ALPHA_PAL_FILENAME = pathdiv+'%s_a_pal.tga'
-DEFS_XML_FILENAME  = pathdiv+'defs.xml'
-TEXTURE_FILENAME   = pathdiv+'%s.tga'
-MIP_FILENAME       = pathdiv+'%s_%s.tga'
+ALPHA_PAL_FILENAME = PATHDIV+'%s_a_pal.tga'
+DEFS_XML_FILENAME  = PATHDIV+'defs.xml'
+TEXTURE_FILENAME   = PATHDIV+'%s.tga'
+MIP_FILENAME       = PATHDIV+'%s_%s.tga'
 
-DATA_FOLDERNAME = pathdiv+'data'
-ANIM_FOLDERNAME = pathdiv+'anim'
-MOD_FOLDERNAME  = pathdiv+'mod'
-OBJ_FOLDERNAME  = pathdiv+'obj'
-TEX_FOLDERNAME  = pathdiv+'tex'
-MIP_ALPHA_FOLDERNAME = pathdiv+'misc'
+DATA_FOLDERNAME = PATHDIV+'data'
+ANIM_FOLDERNAME = PATHDIV+'anim'
+MOD_FOLDERNAME  = PATHDIV+'mod'
+OBJ_FOLDERNAME  = PATHDIV+'obj'
+TEX_FOLDERNAME  = PATHDIV+'tex'
+MIP_ALPHA_FOLDERNAME = PATHDIV+'misc'
 
 ##############################################################################
 '''These are just used for parsing models exported by a maxscript exporter.'''

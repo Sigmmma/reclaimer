@@ -16,7 +16,7 @@ def get(): return gametype_def
 def is_xbox_gametype(block=None, parent=None, attr_index=None,
                      rawdata=None, new_value=None, *args, **kwargs):
     if parent is None:
-        parent = block.PARENT
+        parent = block.parent
     return parent.tag.is_xbox
 
 ##################################################
