@@ -57,8 +57,8 @@ item_type = LUEnum32('type',
     )
 
 item = Struct('item',
-    StrLatin1('blit', GUI_NAME='icon id',     SIZE=32),
-    StrLatin1('desc', GUI_NAME='description', SIZE=32),
+    StrLatin1('icon id',     SIZE=32),
+    StrLatin1('description', SIZE=32),
     LFloat('scale', DEFAULT=1.0),
     item_type,
     LUInt32('price'),
