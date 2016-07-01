@@ -1,4 +1,5 @@
 from supyr_struct.defs.common_descriptors import *
+
 from .fields import *
 
 def lump_fcc(value):
@@ -10,7 +11,7 @@ def get_lump_type(block=None, parent=None, attr_index=None,
         parent = block.parent
     if attr_index is None:
         attr_index = parent.index_by_id(block)
-    return parent.tag.data.lump_headers[attr_index].lump_id.data_name
+    return parent.get_root().data.lump_headers[attr_index].lump_id.data_name
 
 def lump_size(block=None, parent=None, attr_index=None,
               rawdata=None, new_value=None, *args, **kwargs):
@@ -24,7 +25,7 @@ def lump_size(block=None, parent=None, attr_index=None,
         except ValueError:
             return 0
         
-    header = parent.tag.data.lump_headers[attr_index]
+    header = parent.get_root().data.lump_headers[attr_index]
     if new_value is None:
         return header.lump_array_length
     header.lump_array_length = new_value
@@ -40,7 +41,7 @@ def lump_pointer(block=None, parent=None, attr_index=None,
             attr_index = parent.index_by_id(block)
         except ValueError:
             return 0
-    header = parent.tag.data.lump_headers[attr_index]
+    header = parent.get_root().data.lump_headers[attr_index]
     if new_value is None:
         return header.lump_array_pointer
     header.lump_array_pointer = new_value
@@ -57,7 +58,16 @@ xyz_float = Struct('xyz_float',
 #############################
 
 effect = Struct('effect',
-    LBool32('flags'),
+    LBool32('flags',
+        "unknown0",  "unknown1",  "unknown2",  "unknown3",
+        "unknown4",  "unknown5",  "unknown6",  "unknown7",
+        "unknown8",  "unknown9",  "unknown10", "unknown11",
+        "unknown12", "unknown13", "unknown14", "unknown15",
+        "unknown16", "unknown17", "unknown18", "unknown19",
+        "unknown20", "unknown21", "unknown22", "unknown23",
+        "unknown24", "unknown25", "unknown26", "unknown27",
+        "unknown28", "unknown29", "unknown30", "unknown31"
+        ),
     LSInt32('next fx index'),
     LSInt32('fx index'),
     LSInt32('snd index'),
@@ -81,22 +91,10 @@ effect = Struct('effect',
 damage = Struct('damage',
     LUEnum16("type"),
     LBool16("flags",
-        "unknown0",
-        "unknown1",
-        "unknown2",
-        "unknown3",
-        "unknown4",
-        "unknown5",
-        "unknown6",
-        "unknown7",
-        "unknown8",
-        "unknown9",
-        "unknown10",
-        "unknown11",
-        "unknown12",
-        "unknown13",
-        "unknown14",
-        "unknown15",
+        "unknown0",  "unknown1",  "unknown2",  "unknown3",
+        "unknown4",  "unknown5",  "unknown6",  "unknown7",
+        "unknown8",  "unknown9",  "unknown10", "unknown11",
+        "unknown12", "unknown13", "unknown14", "unknown15",
         ),
     LBitStruct('damage type',
         BitUEnum('type',
@@ -193,7 +191,7 @@ lump_header = Struct('lump header',
         {NAME:'damg', VALUE:lump_fcc('DAMG'), GUI_NAME:'attack damage'},
              
         #critter wad lump values
-        {NAME:'desc', VALUE:lump_fcc('desc'), GUI_NAME:'????'},
+        {NAME:'desc', VALUE:lump_fcc('DESC'), GUI_NAME:'????'},
         {NAME:'adda', VALUE:lump_fcc('ADDA'), GUI_NAME:'????'},
         {NAME:'node', VALUE:lump_fcc('NODE'), GUI_NAME:'????'},
         {NAME:'move', VALUE:lump_fcc('MOVE'), GUI_NAME:'????'},

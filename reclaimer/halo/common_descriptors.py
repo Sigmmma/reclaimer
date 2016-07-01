@@ -508,8 +508,8 @@ def blam_header(tagid, version=1):
     header_dict = dict(tag_header)
     header_dict[1] = dict(header_dict[1])
     header_dict[5] = dict(header_dict[5])
-    header_dict[1]['DEFAULT'] = tagid
-    header_dict[5]['DEFAULT'] = version
+    header_dict[1][DEFAULT] = tagid
+    header_dict[5][DEFAULT] = version
     return header_dict
 
 

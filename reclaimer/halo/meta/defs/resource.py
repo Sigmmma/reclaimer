@@ -10,7 +10,7 @@ def get_resource_tag_type(block=None, parent=None, attr_index=None,
     if parent is None:
         raise KeyError()
     
-    tag = parent.tag
+    tag = parent.get_root()
     case = ''
     
     r_type = tag.data.resource_type.data_name

@@ -83,7 +83,7 @@ try:
         
         def __init__(self, **options):
             Tk.__init__(self, **options )
-            self.XBE_Const = GdlHandler(valid_def_ids='xbe')
+            self.XBE_Const = GdlHandler(valid_def_ids='xbe', debug=5)
             
             self.title("GDL: XBE Editor V1.5")
             self.geometry("250x655+0+0")
@@ -305,7 +305,7 @@ try:
                 Child_Canvas.create_text(10, Y+3, anchor="nw",
                                          text=this_desc["NAME"].replace('_', ' '))
 
-                if field.is_data or field.name == 'Union':
+                if field.name == 'Union' or field.is_data or field.is_enum or field.is_enum:
                     Field_Var = StringVar(Child_Canvas)
                     
                     Block_Val = datablock[i]

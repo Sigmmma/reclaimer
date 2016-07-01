@@ -1,9 +1,7 @@
 from ...common_descriptors import *
 from supyr_struct.defs.tag_def import TagDef
 
-# gotta name this tag_ref cause 'tag' would
-# conflict with the tag attribute in Blocks
-tag_reference = dependency("tag ref")
+tag_reference = dependency("tag")
 
 tagc_body = Struct("tagdata",
     reflexive("tag references", tag_reference, 200),

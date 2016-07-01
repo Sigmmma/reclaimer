@@ -1,4 +1,5 @@
 from supyr_struct.fields import *
+from supyr_struct.editor.constants import *
 
 
 def sub_objects_size(block=None, parent=None, attr_index=None,
@@ -29,8 +30,8 @@ def lump_array_reader(self, desc, parent=None, rawdata=None, attr_index=None,
     if attr_index is None and parent is not None:
         new_block = parent
     else:
-        new_block = desc.get('DEFAULT',self.py_type)(desc, parent=parent,
-                                                    init_attrs=rawdata is None)
+        new_block = (desc.get(BLOCK_CLS, self.py_type)
+                     (desc, parent=parent, init_attrs=rawdata is None))
         parent[attr_index] = new_block
         
     b_desc  = desc['SUB_STRUCT']
