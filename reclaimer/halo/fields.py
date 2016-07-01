@@ -1,5 +1,6 @@
 from struct import unpack
 
+from supyr_struct.editor.constants import *
 from supyr_struct.fields import *
 from supyr_struct.blocks import *
 from .field_methods import *

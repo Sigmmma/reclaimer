@@ -166,7 +166,7 @@ g3d_sub_object_struct = Container('g3d sub-object',
     BytesRaw('data', SIZE=qword_size), ALIGN=4,
     )
 
-g3d_model_def = BlockDef(
+g3d_model_def = BlockDef("g3d model",
     Float('bnd rad'),
     UInt32('vert count'),
     UInt32('tri count'),
@@ -177,7 +177,7 @@ g3d_model_def = BlockDef(
         SIZE='.g3d_sub_object_count',
         SUB_STRUCT=g3d_sub_object_struct
         ),
-    NAME="g3d model", endian='<',
+    endian='<',
     )
 
 
