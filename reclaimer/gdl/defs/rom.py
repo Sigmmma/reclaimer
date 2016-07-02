@@ -149,7 +149,11 @@ string_def_offsets = Lump('string def offsets',
 
 
 rom_def = TagDef("rom",
-    rom_header,
+    Struct('wad header',
+        LUInt32('lump headers pointer'),
+        LUInt32('lump count', DEFAULT=9),
+        Pad(8),
+        ),
     lump_headers,
 
     #these need to be in a container to have the same index

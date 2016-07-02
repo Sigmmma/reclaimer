@@ -283,7 +283,6 @@ def convert_bitmap_tag(tag, **kwargs):
             status = bm.convert_texture()
         else:
             status = True
-            
         if export_format != " ":
             path = bm.filepath
             if tag.bitmap_count() > 1:
@@ -298,7 +297,7 @@ def convert_bitmap_tag(tag, **kwargs):
             tex_root = tag.data.tagdata.processed_pixel_data.data[i]
             
             #set the data block to the newly converted one
-            tex_root.build(initdata = bm.texture_block)
+            tex_root.rebuild(initdata=bm.texture_block)
             #set the flag showing that the bitmap
             #is either swizzled or not swizzled
             tag.swizzled(bm.swizzled, i)
@@ -620,8 +619,8 @@ def bitmap_sanitize(tag):
                                           texinfo["height"],
                                           texinfo["depth"]))
         tag.bitmap_mipmaps_count(i, texinfo["mipmap_count"])
-        tag.registration_point_xy(i, (reg_point_x//(old_w//texinfo["width"]),
-                                      reg_point_y//(old_h//texinfo["height"])))
+        tag.registration_point_xy(i, (texinfo["width"]*reg_point_x//old_w,
+                                      texinfo["height"]*reg_point_y//old_h))
 
 
 
