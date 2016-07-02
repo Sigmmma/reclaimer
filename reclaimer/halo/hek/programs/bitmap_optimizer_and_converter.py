@@ -8,16 +8,20 @@ from traceback import format_exc
 from .gui.bitmap_converter_windows import *
 from ..handler import HaloHandler
 from ..tag_editing.bitm import *
+from ..defs.bitm import bitm_def
 
 
 class BitmapConverter(HaloHandler):
 
     log_filename = "Bitmap_Converter.log"
+    default_defs_path = ''
+    
     close_program = False #if set to True the program will close
     main_delay = 0.03 #determines how often the main loop is run
     
     def __init__(self, **kwargs):
         HaloHandler.__init__(self, valid_def_ids="bitm", **kwargs)
+        self.add_def(bitm_def)
         
         self.default_conversion_flags["bitm"] = self.make_default_flags()
         self.root_window = BitmapConverterMainWindow(self)

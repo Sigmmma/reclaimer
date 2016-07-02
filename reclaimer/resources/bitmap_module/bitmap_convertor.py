@@ -1,8 +1,7 @@
-"""DONT FORGET TO INCLUDE A GNU PUBLIC LICENSE
-   ON EVERY MODULE ONCE THE PROGRAM IS DONE"""
+"""DONT FORGET TO INCLUDE AN MIT PUBLIC LICENSE
+   ON EVERY MODULE ONCE THE PROGRAM IS DONE
 
-
-"""There is a lot of code that SHOULD be executed in C++ because
+   There is a lot of code that SHOULD be executed in C++ because
 of how number intensive it is, but until I can write the C
 extensions, these will have to do. Even after they are written
 these slow pure python functions will still be included as
@@ -61,10 +60,9 @@ for log2 in range(len(powers_of_2)):
 
 
 '''when constructing this class you must provide the block containing the textures and
-a dictionary which contains the texture's height, width, type, and format.'''
-#The format must be able to be found in the appropriate dictionaries in:
-#ReclaimerLib.Tag_Specific_Functions.bitm  as well as the above dictionaries.
-'''    Optional parameters include the depth, mipmap count, sub-texture count(cubemaps are
+a dictionary which contains the texture's height, width, type, and format.
+
+    Optional parameters include the depth, mipmap count, sub-texture count(cubemaps are
 composed of 6 2D subtextures for example), the format to convert the pixels to, whether to/what
 order to swap channels around, which channels should be merged/removed/cloned when converting
 to a format with a different number of channels, 0-255 cutoff when compressing a channel to 1-bit,
@@ -781,7 +779,6 @@ class BitmapManipulator():
                     else:
                         print("ERROR: CANNOT DOWNSCALE NON-POWER-OF-2 BITMAPS.")
                         self.downres_amount = 0
-                    
                 
                 '''only run this section if we are doing at least one of these things:'''
                 #Converting to a different format
@@ -1034,7 +1031,6 @@ class BitmapManipulator():
         new_width, new_height, new_depth = dimension_lower_bound_check(width // powers_of_2[sample_size],
                                                                        height // powers_of_2[sample_size],
                                                                        depth // powers_of_2[sample_size])
-        
         """These next three variables are the log of each dimension"""
         log_w, log_h, log_d = (logs_of_2[width],
                                logs_of_2[height],

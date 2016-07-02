@@ -43,40 +43,45 @@ class GametypeTag(XboxSaveTag):
         checksum = unpack(end+'I', buffer[offset:offset+4])[0]
         return self.calc_crc32(buffer, offset) == checksum
 
-    def build(self, **kwargs):
+    def rebuild(self, **kwargs):
         ''''''
         if kwargs.get('filepath') is None and kwargs.get('rawdata') is None:
             kwargs['filepath'] = self.filepath
 
-        rawdata = BytearrayBuffer(blocks.Block.get_rawdata(self, **kwargs))
-        kwargs['rawdata'] = rawdata
+        rawdata = blocks.Block.get_rawdata(self, **kwargs)
+        if rawdata:
+            rawdata = kwargs['rawdata'] = BytearrayBuffer(rawdata)
         if 'filepath' in kwargs:
             del kwargs['filepath']
 
-        is_ce = self.validate_checksum(rawdata, CE_CRC32_OFF)
-        is_pc = self.validate_checksum(rawdata, PC_CRC32_OFF)
-        #if the checksum doesnt check out for either PC or CE,
-        #see if the big endian version of the checksum checks out
-        if not(is_ce or is_pc):
-            if self.validate_checksum(rawdata, PC_CRC32_OFF, '>'):
-                #turns out the gametype is big endian, who woulda thought?
-                self.is_powerpc = is_pc = True
+        if rawdata is not None:
+            is_ce = self.validate_checksum(rawdata, CE_CRC32_OFF)
+            is_pc = self.validate_checksum(rawdata, PC_CRC32_OFF)
+            #if the checksum doesnt check out for either PC or CE,
+            #see if the big endian version of the checksum checks out
+            if not(is_ce or is_pc):
+                if self.validate_checksum(rawdata, PC_CRC32_OFF, '>'):
+                    #turns out the gametype is big endian, who woulda thought?
+                    self.is_powerpc = is_pc = True
 
-        self.is_xbox = not(is_ce or is_pc)
+            self.is_xbox = not(is_ce or is_pc)
 
-        #if the gametype isnt a valid PC gametype, make it a hybrid of both
-        if is_ce and not is_pc:
-            #copy the checksum to the PC Halo specific location
-            rawdata[0x94:0x9C] = rawdata[0xD4:0xDC]
-            #copy the gametype settings to the PC Halo specific location
-            rawdata[0x7C:0x94] = rawdata[0x9C:0xB4]
+            #if the gametype isnt a valid PC gametype, make it a hybrid of both
+            if is_ce and not is_pc:
+                #copy the checksum to the PC Halo specific location
+                rawdata[0x94:0x9C] = rawdata[0xD4:0xDC]
+                #copy the gametype settings to the PC Halo specific location
+                rawdata[0x7C:0x94] = rawdata[0x9C:0xB4]
+        else:
+            self.is_xbox = False
+            self.is_powerpc = False
 
         #make sure to force all the fields to read normal endianness
         #after trying to read the tag, even if there is an exception
         try:
             if self.is_powerpc:
                 Field.force_big()
-            result = XboxSaveTag.build(self, **kwargs)
+            result = XboxSaveTag.rebuild(self, **kwargs)
         finally:
             if self.is_powerpc:
                 Field.force_normal()

@@ -24,8 +24,11 @@ def lump_size(block=None, parent=None, attr_index=None,
             attr_index = parent.index_by_id(block)
         except ValueError:
             return 0
-        
-    header = parent.get_root().data.lump_headers[attr_index]
+
+    try:
+        header = parent.get_root().data.lump_headers[attr_index]
+    except IndexError:
+        return 0
     if new_value is None:
         return header.lump_array_length
     header.lump_array_length = new_value
@@ -41,7 +44,10 @@ def lump_pointer(block=None, parent=None, attr_index=None,
             attr_index = parent.index_by_id(block)
         except ValueError:
             return 0
-    header = parent.get_root().data.lump_headers[attr_index]
+    try:
+        header = parent.get_root().data.lump_headers[attr_index]
+    except IndexError:
+        return 0
     if new_value is None:
         return header.lump_array_pointer
     header.lump_array_pointer = new_value
@@ -165,7 +171,7 @@ damage = Struct('damage',
 #############################
 '''main wad header structs'''
 #############################
-rom_header = Struct('rom header',
+wad_header = Struct('wad header',
     LUInt32('lump headers pointer'),
     LUInt32('lump count'),
     Pad(8),
@@ -220,8 +226,8 @@ lump_header = Struct('lump header',
     )
 
 lump_headers = Array('lump headers',
-    POINTER='.rom_header.lump_headers_pointer',
-    SIZE='.rom_header.lump_count', SUB_STRUCT=lump_header,
+    POINTER='.wad_header.lump_headers_pointer',
+    SIZE='.wad_header.lump_count', SUB_STRUCT=lump_header,
     )
 
 '''these are unused because it is just too
@@ -243,5 +249,5 @@ annoying to deal with lumps with a switch'''
 #    )
 #
 #lumps = Array('lumps',
-#    SIZE='.rom_header.lump_count', SUB_STRUCT=lump_switch,
+#    SIZE='.wad_header.lump_count', SUB_STRUCT=lump_switch,
 #    )
