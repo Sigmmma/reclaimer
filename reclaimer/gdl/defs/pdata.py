@@ -66,7 +66,11 @@ player_datas = Lump('player datas',
     )
 
 pdata_def = TagDef("pdata",
-    rom_header,
+    Struct('wad header',
+        LUInt32('lump headers pointer'),
+        LUInt32('lump count', DEFAULT=3),
+        Pad(8),
+        ),
     lump_headers,
 
     #these need to be in a container to have the same index

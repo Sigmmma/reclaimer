@@ -102,25 +102,24 @@ class BitmTag(HekTag):
 
 
     def registration_point_x(self, b_index=0, new_value=None):
-        reg_point = self.data.tagdata.bitmaps.\
-                    bitmaps_array[b_index].registration_point
+        bitm = self.data.tagdata.bitmaps.bitmaps_array[b_index]
         if new_value is None:
-            return reg_point.x
-        reg_point.x = new_value
+            return bitm.registration_point_x
+        bitm.registration_point_x = new_value
 
     def registration_point_y(self, b_index=0, new_value=None):
-        reg_point = self.data.tagdata.bitmaps.\
-                    bitmaps_array[b_index].registration_point
+        bitm = self.data.tagdata.bitmaps.bitmaps_array[b_index]
         if new_value is None:
-            return reg_point.y
-        reg_point.y = new_value
+            return bitm.registration_point_y
+        bitm.registration_point_y = new_value
 
     def registration_point_xy(self, b_index=0, new_value=None):
-        reg_point = self.data.tagdata.bitmaps.\
-                    bitmaps_array[b_index].registration_point
+        bitm = self.data.tagdata.bitmaps.bitmaps_array[b_index]
         if new_value is None:
-            return(reg_point.x, reg_point.y)
-        reg_point.x, reg_point.y = new_value[0], new_value[1]
+            return(bitm.registration_point_x,
+                   bitm.registration_point_y)
+        bitm.registration_point_x, bitm.registration_point_y = new_value[0],\
+                                                               new_value[1]
 
 
     @property

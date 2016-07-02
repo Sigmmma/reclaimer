@@ -16,7 +16,11 @@ player_datas = Lump('',
     )
 
 wdata_def = TagDef("wdata",
-    rom_header,
+    Struct('wad header',
+        LUInt32('lump headers pointer'),
+        LUInt32('lump count', DEFAULT=8),
+        Pad(8),
+        ),
     lump_headers,
 
     #these need to be in a container to have the same index
