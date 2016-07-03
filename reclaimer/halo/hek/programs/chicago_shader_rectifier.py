@@ -74,7 +74,7 @@ class ShaderRectifier(HaloHandler):
                         for layer in el:
                             #add the extra layer's path to the debug log
                             try:
-                                ext = '.'+layer.tag_class.data_name
+                                ext = '.'+layer.tag_class.enum_name
                             except Exception:
                                 ext = ''
                             logstr += "\n    " + layer.CHILD + ext

@@ -13,7 +13,7 @@ def get_resource_tag_type(block=None, parent=None, attr_index=None,
     tag = parent.get_root()
     case = ''
     
-    r_type = tag.data.resource_type.data_name
+    r_type = tag.data.resource_type.enum_name
 
     #This is a really hacky(and easy to break) method of determining
     #whether or not the 

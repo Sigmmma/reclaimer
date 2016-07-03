@@ -284,7 +284,7 @@ header_switch = Switch('gametype header',
 
 settings_switch = Switch('gametype settings',
     DEFAULT=unknown_settings,
-    CASE='.gametype_header.game_type.data_name',
+    CASE='.gametype_header.game_type.enum_name',
     CASES={ 'ctf':ctf_settings,
             'slayer':slayer_settings ,
             'oddball':oddball_settings,

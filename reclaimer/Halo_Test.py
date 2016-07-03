@@ -4,8 +4,8 @@ from time import time
 
 try:
     from reclaimer.halo.hek.handler import HaloHandler
-    cProfile.run('test = HaloHandler(debug=5)')
-    input()
+    #cProfile.run('test = HaloHandler(debug=5)')
+    #input()
     test = HaloHandler( print_test=True, save_test=False, debug=3,
                         write_as_temp=True, backup=False,
                         allow_corrupt=True,

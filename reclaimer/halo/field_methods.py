@@ -3,10 +3,11 @@ from .constants import *
 
 
 def tag_ref_sizecalc(self, block, **kwargs):
-    '''Used to calculate the size of a tag
-    reference string from a given string'''
+    '''
+    Used to calculate the size of a tag reference string from a given string
+    '''
     block = block.split(self.str_delimiter)[0]
-    if len(block):
+    if block:
         return len(block) + 1
     return 0
 
@@ -24,15 +25,14 @@ def tag_ref_size(block=None, parent=None, attr_index=None,
 
     Lengths of 1 cant exist.'''
     
-    if new_value is not None:
-        if new_value <= 1:
-            parent.tag_path_length = 0
-        else:
-            parent.tag_path_length = new_value - 1
-        return
-    strlen = parent.tag_path_length
-    strlen += 1*bool(strlen)
-    return strlen
+    if new_value is None:
+        strlen = parent.tag_path_length
+        strlen += 1*bool(strlen)
+        return strlen
+    if new_value <= 1:
+        parent.tag_path_length = 0
+    else:
+        parent.tag_path_length = new_value - 1
 
 
 def encode_tag_ref_str(self, block, parent, attr_index):
@@ -41,7 +41,7 @@ def encode_tag_ref_str(self, block, parent, attr_index):
     actually exist. It's not just a delimiter character, the string
     isn't stored at all. To make it work, we instead return an
     empty bytes object if the string length is zero"""
-    if len(block):
+    if block:
         return encode_string(self, block, parent, attr_index)
     return bytes()
 

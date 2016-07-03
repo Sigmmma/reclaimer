@@ -179,7 +179,7 @@ class HekTagScanner(HaloHandler):
                                 logstr += ' '*4 + block.NAME + '\n'
                                 block_name = block.NAME
                             try:
-                                ext = '.'+block.tag_class.data_name
+                                ext = '.'+block.tag_class.enum_name
                             except Exception:
                                 ext = ''
                             logstr += ' '*8 + block.CHILD + ext + '\n'

@@ -244,7 +244,7 @@ class HaloHandler(TagTestHandler):
         filepath += block.filepath
         
         try:
-            filepath += '.'+block.tag_class.data_name
+            filepath += '.'+block.tag_class.enum_name
         except Exception:
             pass
         
