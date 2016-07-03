@@ -103,7 +103,7 @@ p_powerup = Struct('character powerup',
         ),
     Float('attribute add'),
     Union("flags",
-        CASE='.type.data_name',
+        CASE='.type.enum_name',
         CASES={'weapon': weapon_flags,
                'armor': armor_flags,
                'special': special_flags}

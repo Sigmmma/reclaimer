@@ -291,7 +291,7 @@ class ObjectsPs2Tag(GdlTag):
                 b = bitmaps[i]
                 f = b.flags
                 df.write(idnt + '<%s format="%s"> %s\n' %
-                             (TEX_TAG, b.format.data_name, i))
+                             (TEX_TAG, b.format.enum_name, i))
                 for attr in ('halfres', 'see_alpha', 'clamp_u', 'clamp_v',
                              'animation', 'external', 'tex_shift',
                              'has_alpha', 'invalid', 'dual_tex'):
@@ -658,7 +658,7 @@ class ObjectsPs2Tag(GdlTag):
                 flags.external or mipmaps is None):
                 continue
             
-            format_name  = bitmap.format.data_name
+            format_name  = bitmap.format.enum_name
             
             palette_size = PALETTE_SIZES.get(format_name, 0)
             pixel_size   = PIXEL_SIZES.get(format_name, 0)
@@ -977,7 +977,7 @@ class ObjectsPs2Tag(GdlTag):
 
             a_filename = a_pal_filepaths[i]
 
-            format_name  = bitmap.format.data_name
+            format_name  = bitmap.format.enum_name
             
             palette_size = PALETTE_SIZES.get(format_name, 0)
             pixel_size   = PIXEL_SIZES.get(format_name, 0)
@@ -1416,7 +1416,7 @@ class ObjectsPs2Tag(GdlTag):
 
                 #set all the attributes the xml defines
                 try:
-                    bitm.format.set_data(xml_tex.attrib['format'])
+                    bitm.format.set_to(xml_tex.attrib['format'])
 
                     for attr in attrs:
                         name  = attr.attrib.get('name')
@@ -1501,7 +1501,7 @@ class ObjectsPs2Tag(GdlTag):
             if bitmap.frame_count or bitmap.flags.external:
                 continue
             
-            format_name  = bitmap.format.data_name
+            format_name  = bitmap.format.enum_name
             palette_size = PALETTE_SIZES.get(format_name, 0)
 
             #determine if its the palette or pixels that should be modified
@@ -1597,7 +1597,7 @@ class ObjectsPs2Tag(GdlTag):
             if bitmap.frame_count or bitmap.flags.external:
                 continue
             
-            format_name = bitmap.format.data_name
+            format_name = bitmap.format.enum_name
             
             tex_pointer = bitmap.tex_pointer
             mipmaps     = bitmap.mipmap_count

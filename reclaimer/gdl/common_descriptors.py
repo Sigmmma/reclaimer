@@ -11,7 +11,7 @@ def get_lump_type(block=None, parent=None, attr_index=None,
         parent = block.parent
     if attr_index is None:
         attr_index = parent.index_by_id(block)
-    return parent.get_root().data.lump_headers[attr_index].lump_id.data_name
+    return parent.get_root().data.lump_headers[attr_index].lump_id.enum_name
 
 def lump_size(block=None, parent=None, attr_index=None,
               rawdata=None, new_value=None, *args, **kwargs):
