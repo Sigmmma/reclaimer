@@ -12,7 +12,7 @@ import binascii
 from struct import unpack
 
 from .....misc.defs.objs.xboxsave import *
-from supyr_struct.buffer import BytearrayBuffer
+from supyr_struct.buffer import *
 
 CE_CRC32_OFF = 0x98
 PC_CRC32_OFF = 0xD8
@@ -48,7 +48,7 @@ class GametypeTag(XboxSaveTag):
         if kwargs.get('filepath') is None and kwargs.get('rawdata') is None:
             kwargs['filepath'] = self.filepath
 
-        rawdata = blocks.Block.get_rawdata(self, **kwargs)
+        rawdata = get_rawdata(**kwargs)
         if rawdata:
             rawdata = kwargs['rawdata'] = BytearrayBuffer(rawdata)
         if 'filepath' in kwargs:
