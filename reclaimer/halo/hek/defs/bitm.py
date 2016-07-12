@@ -23,7 +23,8 @@ sprite = Struct("sprite",
     BFloat("right side"),
     BFloat("top side"),
     BFloat("bottom side"),
-    Struct("registration point", INCLUDE=xy_float),
+    BFloat("registration point x"),
+    BFloat("registration point y"),
     SIZE=32,
     )
 
