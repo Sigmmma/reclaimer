@@ -22,14 +22,12 @@ hash_desc = Container("hash",
     CStrLatin1("value")
     )
 
-hash_cache_def = TagDef(
+hash_cache_def = TagDef("hashcache",
     hash_cache_header,
     StrUtf8("cache_name",        SIZE=".header.namelen"),
     StrUtf8("cache_description", SIZE=".header.descriptionlen"),
     Array("cache",               SIZE=".header.hashcount",
           SUB_STRUCT=hash_desc),
-    
-    NAME="hashcache",
-    
-    ext=".hashcache", def_id="hashcache"
+
+    ext=".hashcache"
     )

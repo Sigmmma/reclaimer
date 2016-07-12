@@ -109,6 +109,7 @@ game_type = LUEnum32('game type',
     ('oddball', 3),
     ('king', 4),
     ('race', 5),
+    DEFAULT=1,
     )
 
 objective_indicator = LUEnum32('objective indicator',

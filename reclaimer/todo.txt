@@ -7,6 +7,9 @@ Low Priority:
 Make new property for Fields be routines for setting, inserting, and
 deleting attributes from a descriptor using that Field
 
+Make property for Tags that allows them to store a mapping of the possible paths
+to take to get to each of the pointered blocks that may exist.
+
 Make Bin_Size recursion safe
 
 Implement recursive pointer based blocks.
