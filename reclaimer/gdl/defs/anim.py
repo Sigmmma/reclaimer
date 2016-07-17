@@ -27,6 +27,10 @@ node = Struct('node',
     SIZE=60,
     )
 
+# All the entries in the skeleton array exist in a sequence before any
+# of the 'nodes' arrays. This means all of the skeletons need to be read
+# and then have the offset of the end of the skeletons array used as the
+# start of the 'nodes' arrays. This needs to be specially coded in......
 skeleton = Container('skeleton',
     LPointer32('unknown0'),
     LPointer32('unknown1'),
@@ -40,7 +44,6 @@ skeleton = Container('skeleton',
           SIZE='.node_count',
           SUB_STRUCT=node
           ),
-    CARRY_OFF=False,
     SIZE=56, POINTER='.pointer'
     )
 
@@ -77,7 +80,6 @@ texture_anims_array = Array('texture_anims',
     SIZE='.header.texture_anims_count',
     POINTER='.header.texture_anims_pointer',
     SUB_STRUCT=texture_anim,
-    CARRY_OFF=False,
     )
 
 unknown_footer = Container('footer',
