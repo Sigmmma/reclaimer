@@ -91,8 +91,8 @@ class HashCacher(Handler):
                             tag_lib.print_to_console = False
                             print(("WARNING: hash already exists\n"+
                                    "    hash:%s\n"+
-                                   "    Path(existing): '%s'\n"+
-                                   "    Path(colliding):'%s'\n")
+                                   "        Path(existing): '%s'\n"+
+                                   "        Path(colliding):'%s'\n")
                                   % (taghash, hashmap[taghash], filepath) )
                             tag_lib.print_to_console = True
                         else:
