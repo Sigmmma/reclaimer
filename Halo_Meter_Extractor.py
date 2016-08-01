@@ -47,12 +47,12 @@ try:
             meterdata = meter.data.tagdata
             tgaheader = tgaout.data.header
             
-            tgaheader.image_type.format.set_data("unmapped_rgb")
+            tgaheader.image_type.format.set_to("unmapped_rgb")
             tgaheader.width  = meterdata.width
             tgaheader.height = meterdata.height
             tgaheader.bpp = 32
             tgaheader.image_descriptor.alpha_bit_count = 8
-            tgaheader.image_descriptor.screen_origin.set_data("upper_left")
+            tgaheader.image_descriptor.screen_origin.set_to("upper_left")
 
             tgaout.data.pixels_wrapper.pixels = tga_buffer
             #write a solid red color to the image for the background
