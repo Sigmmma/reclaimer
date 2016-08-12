@@ -7,7 +7,7 @@
     I extended it to include xbox gametypes as well
 '''
 
-from ...common_descriptors import *
+from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.gametype import GametypeTag
 

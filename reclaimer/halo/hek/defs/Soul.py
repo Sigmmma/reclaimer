@@ -1,4 +1,4 @@
-from ...common_descriptors import *
+from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 ui_widget_def = dependency("ui widget definition")
