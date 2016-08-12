@@ -1,6 +1,6 @@
 from copy import copy, deepcopy
 
-from supyr_struct.defs.common_descriptors import *
+from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
 from .fields import *
 from .constants import *

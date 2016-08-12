@@ -1,4 +1,4 @@
-from supyr_struct.defs.common_descriptors import *
+from supyr_struct.defs.common_descs import *
 
 from .fields import *
 

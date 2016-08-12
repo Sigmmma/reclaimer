@@ -1,4 +1,4 @@
-from ...common_descriptors import *
+from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 string_data_struct = rawdata_ref("string", StrLatin1)

@@ -1,7 +1,7 @@
 from array import array
 
 from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.defs.common_descriptors import *
+from supyr_struct.defs.common_descs import *
 from ..fields import *
 from . import xbe
 from .objs.save import GdlSaveTag

@@ -1,5 +1,5 @@
 from array import array
-from ...common_descriptors import *
+from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.bitm import BitmTag
 

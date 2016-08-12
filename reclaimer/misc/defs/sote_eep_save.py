@@ -1,5 +1,5 @@
 from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.defs.common_descriptors import *
+from supyr_struct.defs.common_descs import *
 from supyr_struct.fields import *
 
 HEADER_MAGIC_1 = b'\xFF\x53\x68\x26'
