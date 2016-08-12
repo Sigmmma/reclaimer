@@ -1,5 +1,5 @@
 from supyr_struct.defs.tag_def import TagDef
-from ..common_descriptors import *
+from ..common_descs import *
 from ..fields import *
 
 def get(): return shop_def

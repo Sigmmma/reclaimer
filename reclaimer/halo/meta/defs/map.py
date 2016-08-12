@@ -1,4 +1,4 @@
-from ...common_descriptors import *
+from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from ...hek.defs import bitm, boom, colo, devc, devi, flag, fog_, foot, hmt_,\
      hud_, item, itmc, metr, mply, ngpr, pphy, scex, schi, senv, sgla, shdr,\
