@@ -35,7 +35,7 @@ class HaloHandler(TagTestHandler):
     'fog ':".fog",
     'font':".font",                               #NEED
     'garb':".garbage",                            #NEED
-    'mod2':".gbxmodel",                           #NEED
+    'mod2':".gbxmodel",
     'matg':".globals",                            #NEED
     'glw!':".glow",                               #NEED
     'grhi':".grenade_hud_interface",              #NEED
@@ -51,7 +51,7 @@ class HaloHandler(TagTestHandler):
     'elec':".lightning",                          #NEED
     'foot':".material_effects",
     'metr':".meter",
-    'mode':".model",                              #NEED
+    'mode':".model",
     'antr':".model_animations",
     'coll':".model_collision_geometry",           #NEED
     'mply':".multiplayer_scenario_description",
@@ -74,14 +74,14 @@ class HaloHandler(TagTestHandler):
     'shdr':".shader",
     'schi':".shader_transparent_chicago",
     'scex':".shader_transparent_chicago_extended",
-    'sotr':".shader_transparent_generic",         #NEED
+    'sotr':".shader_transparent_generic",
     'senv':".shader_environment",
     'sgla':".shader_transparent_glass",
     'smet':".shader_transparent_meter",
     'soso':".shader_model",
     'spla':".shader_transparent_plasma",
     'swat':".shader_transparent_water",
-    'sky ':".sky",                                #NEED
+    'sky ':".sky",
     'str#':".string_list",
     'tagc':".tag_collection",
     'Soul':".ui_widget_collection",
@@ -168,7 +168,7 @@ class HaloHandler(TagTestHandler):
     def build_loc_cache(self, f_type):
         '''this builds a cache of paths that will be used
         to quickly locate specific field types in structures
-        by caching all possible locations of the Field_Type'''
+        by caching all possible locations of the Field'''
         cache = {}
         
         for def_id in self.defs:

@@ -6,9 +6,9 @@ from .fields import *
 from .constants import *
 
 compressed_normal_32 = LBitStruct('compressed_norm32',
-    Bit1SInt("x", SIZE=11),
-    Bit1SInt("y", SIZE=11),
-    Bit1SInt("z", SIZE=10)
+    Bit1SInt("i", SIZE=11),
+    Bit1SInt("j", SIZE=11),
+    Bit1SInt("k", SIZE=10)
     )
 
 # coordinates
@@ -192,6 +192,14 @@ valid_effects = tag_class("tag_class",
     ("effect", 'effe'),
     )
 
+valid_fog = tag_class("tag_class",
+    ("fog", 'fog '),
+    )
+
+valid_lens_flare = tag_class("tag_class",
+    ("lens_flare", 'lens'),
+    )
+
 valid_point_physics = tag_class("tag_class", ("point_physics", 'pphy') )
 valid_bitmaps = tag_class("tag_class", ("bitmap", 'bitm') )
 valid_sounds  = tag_class("tag_class", ("sound", 'snd!') )
@@ -201,6 +209,10 @@ valid_model_animations = tag_class("tag_class",
     )
 valid_model_collision_geometry = tag_class("tag_class",
     ("model_collision_geometry", 'coll')
+    )
+valid_models = tag_class("tag_class",
+    ("model", 'mode'),
+    ("gbxmodel", 'mod2')
     )
 
 valid_items = tag_class("tag_class",
