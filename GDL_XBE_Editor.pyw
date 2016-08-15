@@ -305,7 +305,7 @@ try:
                 Child_Canvas.create_text(10, Y+3, anchor="nw",
                                          text=this_desc["NAME"].replace('_', ' '))
 
-                if field.name == 'Union' or field.is_data or field.is_enum or field.is_enum:
+                if field.name == 'Union' or field.is_data or field.is_bool or field.is_enum:
                     Field_Var = StringVar(Child_Canvas)
                     
                     Block_Val = datablock[i]
