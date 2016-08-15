@@ -2,6 +2,7 @@ from hashlib import md5
 from supyr_struct.buffer import BytearrayBuffer
 from supyr_struct.fields import Field
 from supyr_struct.blocks import VoidBlock
+from supyr_struct.defs.constants import *
 
 from .hash_cacher import HashCacher
 from ....meta.handler import MapLoader
@@ -19,6 +20,8 @@ class TagRipper(MapLoader):
         self.tag_headers = {}
         
         for def_id in sorted(self.tag_lib.defs):
+            if len(def_id) != 4:
+                continue
             h_desc = self.tag_lib.defs[def_id].descriptor[0]
             
             h_block = [None]
@@ -41,8 +44,9 @@ class TagRipper(MapLoader):
 
     def rip_tags(self, mappath):
         print('Loading map...')
+
         halomap = self.build_tag(filepath=mappath, def_id='map')
-        tag_array = halomap.data.tag_index_header.tag_index
+        tag_array = halomap.data.tag_index
 
         hashmap = self.hash_cacher.main_hashmap
         hash_buffer = BytearrayBuffer()
@@ -57,11 +61,14 @@ class TagRipper(MapLoader):
         #change the endianness of the library since we're now
         #going to treat all the meta data as if they were tags
         Field.force_big()
-        
+
         print('Checking tags against hashmap...')
 
         for tag_header in tag_array:
-            def_id = def_id_map[tag_header.tag_class_1.data]
+            try:
+                def_id = def_id_map[tag_header.tag_class_1.data]
+            except Exception:
+                continue
 
             tagmeta = tag_header.tag_data.tag_meta
 
@@ -106,9 +113,9 @@ class TagRipper(MapLoader):
                 #need to do some extra stuff for certain tags with fields
                 #that are normally zeroed out as tags, but arent as meta
                 if def_id == 'pphy':
-                    tagmeta.Wind_Coefficient = 0
-                    tagmeta.Wind_Sine_Modifier = 0
-                    tagmeta.Z_Translation_Rate = 0
+                    tagmeta.wind_coefficient = 0
+                    tagmeta.wind_sine_modifier = 0
+                    tagmeta.z_translation_rate = 0
                 
                 #write the tag data to the hash buffer
                 tagmeta.TYPE.writer(tagmeta, hash_buffer, None, 0, 0)

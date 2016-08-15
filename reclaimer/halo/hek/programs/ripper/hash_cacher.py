@@ -41,7 +41,7 @@ class HashCacher(Handler):
         
         tag_lib.index_tags()
         tag_lib.mode = 2
-        print('\nFound %s tags...' % tag_lib.tags_indexed)
+        print('\nFound %s tags...\n' % tag_lib.tags_indexed)
 
         hashmap = {}
         
@@ -52,7 +52,7 @@ class HashCacher(Handler):
             for def_id in sorted(tags):
                 if tag_lib.print_to_console:
                     tag_lib.print_to_console = False
-                    print(" "*4+ "Hashing '%s' tags..." % def_id)
+                    print("Hashing '%s' tags..." % def_id)
                     tag_lib.print_to_console = True
                     
                 tag_ref_paths   = tag_lib.tag_ref_cache.get(def_id, ())
@@ -60,12 +60,14 @@ class HashCacher(Handler):
                 raw_data_paths  = tag_lib.raw_data_cache.get(def_id, ())
 
                 tag_coll = tags[def_id]
+                subdir = subdir.lstrip(' ')
                 
                 for filepath in sorted(tag_coll):
                     try:
                         #if this tag isnt located in the sub
                         #directory being scanned, then skip it
-                        if not filepath.startswith(subdir):
+                        if subdir and not filepath.startswith(subdir):
+                            print('FAILED', filepath)
                             continue
                             
                         tag_lib.current_tag = filepath
@@ -89,10 +91,10 @@ class HashCacher(Handler):
                         
                         if taghash in hashmap:
                             tag_lib.print_to_console = False
-                            print(("WARNING: hash already exists\n"+
-                                   "    hash:%s\n"+
-                                   "        Path(existing): '%s'\n"+
-                                   "        Path(colliding):'%s'\n")
+                            print(("    WARNING: hash already exists\n"+
+                                   "        hash:%s\n"+
+                                   "        path(existing): '%s'\n"+
+                                   "        path(colliding):'%s'\n")
                                   % (taghash, hashmap[taghash], filepath) )
                             tag_lib.print_to_console = True
                         else:
@@ -104,14 +106,12 @@ class HashCacher(Handler):
                         
                     except Exception:
                         print(format_exc())
-                       
             tag_lib.mode = 100
             print('Building hashcache...')
             cache = self.hashmap_to_hashcache(hashmap, cache_name, description)
             
             print('Writing  hashcache...')
             cache.serialize(temp=False, backup=False, int_test=False)
-            
             return cache
         except:
             tag_lib.mode = 100
