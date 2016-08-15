@@ -13,7 +13,7 @@ scex_body = Struct("tagdata",
     Pad(2),
 
     # Shader Properties
-    SInt8("numeric counter limit"),#[0,255]
+    UInt8("numeric counter limit"),#[0,255]
 
     Bool8("chicago shader flags",          *trans_shdr_properties),
     BSEnum16("first map type",             *trans_shdr_first_map_type),
