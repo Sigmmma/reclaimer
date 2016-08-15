@@ -25,59 +25,71 @@ def get(): return map_def
 
 def tag_path_pointer(block=None, parent=None, attr_index=None,
                      rawdata=None, new_value=None, *args, **kwargs):
-    if parent is None: raise KeyError()
-    
+    if parent is None:
+        raise KeyError()
     t_head = parent.parent
-    m_head = t_head.parent.parent.mapfile_header
-    magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
+    magic = kwargs.get('magic')
+    if magic is None:
+        m_head = t_head.parent.parent.map_header
+        magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
 
     #NEED TO FINISH THIS SO IT CAN SET THE PATH POINTER
-    
+
     if new_value is None:
         return PC_TAG_INDEX_HEADER_SIZE + t_head.tag_path_offset - magic
-    
+
 
 def tag_meta_data_pointer(block=None, parent=None, attr_index=None,
                           rawdata=None, new_value=None, *args, **kwargs):
-    if parent is None: raise KeyError()
+    if parent is None:
+        raise KeyError()
 
     t_head = parent.parent
-    m_head = t_head.parent.parent.mapfile_header
-    magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
+    magic = kwargs.get('magic')
+    if magic is None:
+        m_head = t_head.parent.parent.map_header
+        magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
     #NEED TO FINISH THIS SO IT CAN SET THE META POINTER
-    
+
     if new_value is None:
         return PC_TAG_INDEX_HEADER_SIZE + t_head.tag_offset - magic
-    
+
 
 def tag_meta_case(block=None, parent=None, attr_index=None,
                   rawdata=None, new_value=None, *args, **kwargs):
-    if parent is None: raise KeyError()
-    
+    if parent is None:
+        raise KeyError()
+
     t_head = parent.parent
     if t_head.indexed:
         return
-    
-    m_head = t_head.parent.parent.mapfile_header
-    magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
-    
+
+    magic = kwargs.get('magic')
+    if magic is None:
+        m_head = t_head.parent.parent.map_header
+        magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
+
     offset = PC_TAG_INDEX_HEADER_SIZE + t_head.tag_offset - magic
     return t_head.tag_class_1.data
     
 
 def tag_index_array_pointer(block=None, parent=None, attr_index=None,
                             rawdata=None, new_value=None, *args, **kwargs):
-    if block is None: raise KeyError()
-    i_head = block.parent.tag_index_header
-    m_head = block.parent.mapfile_header
-    
+    if block is None:
+        raise KeyError()
+    b_parent = block.parent
+
+    magic = kwargs.get('magic')
+    if magic is None:
+        magic = PC_INDEX_MAGIC - b_parent.map_header.tag_index_offset
+
     if new_value is None:
-        return (m_head.tag_index_offset + PC_TAG_INDEX_HEADER_SIZE +
-                i_head.index_magic - PC_INDEX_MAGIC)
-    
+        return (PC_TAG_INDEX_HEADER_SIZE +
+                b_parent.tag_index_header.index_magic - magic)
+
 def map_fcc(value):
     return fcc(value, 'big')
-       
+
 
 tag_meta = Switch("tag meta",
     CASE=tag_meta_case,
@@ -126,9 +138,9 @@ tag_data = Container("tag data",
     )
 
 tag_header = Struct("tag header",
-    Struct("tag class 1", INCLUDE=valid_tags),
-    Struct("tag class 2", INCLUDE=valid_tags),
-    Struct("tag class 3", INCLUDE=valid_tags),
+    LUEnum32("tag class 1", INCLUDE=valid_tags),
+    LUEnum32("tag class 2", INCLUDE=valid_tags),
+    LUEnum32("tag class 3", INCLUDE=valid_tags),
     LUInt32("tag id"),
     LSInt32("tag path offset"),
     LSInt32("tag offset"),
@@ -187,14 +199,14 @@ tag_index_header = Struct("tag index header",
     LUInt32("model raw data size"),
     LUInt32("tag sig", DEFAULT='tags'),
 
-    POINTER='.mapfile_header.tag_index_offset'
+    POINTER='.map_header.tag_index_offset'
     )
 
 tag_index = TagIndex("tag index",
     SIZE=".tag_index_header.tag_count",
     SUB_STRUCT=tag_header,
     POINTER=tag_index_array_pointer
-    ),
+    )
 
 subdefs = {}
 for key in tag_meta[CASES]:

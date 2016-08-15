@@ -12,7 +12,7 @@ reclaimer/halo/hek/defs/objs/__pycache__/**
 reclaimer/halo/hek/programs/__pycache__/**
 reclaimer/halo/hek/programs/gui/__pycache__/**
 reclaimer/halo/hek/programs/ripper/__pycache__/**
-reclaimer/halo/hek/programs/ripper/all_original_tags/**
+reclaimer/halo/hek/programs/ripper/all_h1_tags/**
 reclaimer/halo/hek/programs/ripper/defs/__pycache__/**
 reclaimer/halo/hek/programs/ripper/resources/**
 reclaimer/halo/hek/tag_editing/__pycache__/**
@@ -46,5 +46,5 @@ ReclaimerLib Archive/2016-04-09.rar
 reclaimer/halo/hek/programs/ripper/CMT Tagset Release 1.rar
 ReclaimerLib Archive.rar
 reclaimer/Python Word Locator or Replacer.py
-reclaimer/halo/hek/programs/ripper/all_original_tags.rar
+reclaimer/halo/hek/programs/ripper/all_h1_tags.rar
 Notes/jpt!.xml

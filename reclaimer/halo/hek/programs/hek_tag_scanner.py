@@ -12,7 +12,7 @@ class HekTagScanner(HaloHandler):
     print_to_console = False
 
     feedback_interval = 10
-    feedback_indent   = 8
+    feedback_indent   = 4
     mode = 0
     
     #initialize the class

@@ -12,7 +12,7 @@ def tag_ref_sizecalc(self, block, **kwargs):
     return 0
 
 def tag_ref_size(block=None, parent=None, attr_index=None,
-                 rawdata=None, new_value=None, *args, **kwargs):
+                 rawdata=None, new_value=None, **kwargs):
     '''Used to retrieve or set the byte size of a Halo tag
     reference string. If the string is empty, the actual amount
     of bytes it takes up is zero, otherwise it is (1+length) bytes.
@@ -35,18 +35,18 @@ def tag_ref_size(block=None, parent=None, attr_index=None,
         parent.tag_path_length = new_value - 1
 
 
-def encode_tag_ref_str(self, block, parent, attr_index):
+def encode_tag_ref_str(self, block, parent=None, attr_index=None):
     """This function is the same as encode_string, except that
     when a halo reference string has zero length, the string doesnt
     actually exist. It's not just a delimiter character, the string
     isn't stored at all. To make it work, we instead return an
     empty bytes object if the string length is zero"""
     if block:
-        return encode_string(self, block, parent, attr_index)
+        return encode_string(self, block, parent=parent, attr_index=attr_index)
     return bytes()
 
-def decode_raw_string(self, rawbytes, desc=None, parent=None, attr_index=None):
-    return rawbytes.decode(encoding=self.enc)
+def decode_raw_string(self, rawdata, desc=None, parent=None, attr_index=None):
+    return rawdata.decode(encoding=self.enc)
 
 
 
@@ -54,8 +54,8 @@ def decode_raw_string(self, rawbytes, desc=None, parent=None, attr_index=None):
 def tag_index_reader(self, desc, parent=None, rawdata=None, attr_index=None,
                      root_offset=0, offset=0, **kwargs):
     if parent is not None:
-        m_head = parent.parent.Mapfile_Header
-        kwargs['magic'] = PC_INDEX_MAGIC - m_head.Tag_Index_Offset
+        m_head = parent.map_header
+        kwargs['magic'] = PC_INDEX_MAGIC - m_head.tag_index_offset
 
     array_reader(self, desc, parent, rawdata, attr_index,
                  root_offset, offset, **kwargs)
@@ -64,8 +64,8 @@ def tag_index_reader(self, desc, parent=None, rawdata=None, attr_index=None,
 def tag_index_writer(self, parent, writebuffer, attr_index=None,
                      root_offset=0, offset=0, **kwargs):
     if parent is not None:
-        m_head = parent.parent.Mapfile_Header
-        kwargs['magic'] = PC_INDEX_MAGIC - m_head.Tag_Index_Offset
+        m_head = parent.map_header
+        kwargs['magic'] = PC_INDEX_MAGIC - m_head.tag_index_offset
         
     array_writer(self, parent, writebuffer, attr_index,
                  root_offset, offset, **kwargs)

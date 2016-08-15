@@ -3,7 +3,7 @@ from supyr_struct.defs.tag_def import *
 def get(): return hash_cache_def
 
 hash_cache_header = Struct("header",
-    LUInt32("id",      DEFAULT='hsah'),
+    LUInt32("id", DEFAULT='hsah'),
     LUInt32("version", DEFAULT=2),
 
     LUInt32("hashcount"),
@@ -24,10 +24,9 @@ hash_desc = Container("hash",
 
 hash_cache_def = TagDef("hashcache",
     hash_cache_header,
-    StrUtf8("cache_name",        SIZE=".header.namelen"),
+    StrUtf8("cache_name", SIZE=".header.namelen"),
     StrUtf8("cache_description", SIZE=".header.descriptionlen"),
-    Array("cache",               SIZE=".header.hashcount",
-          SUB_STRUCT=hash_desc),
+    Array("cache", SIZE=".header.hashcount", SUB_STRUCT=hash_desc),
 
     ext=".hashcache"
     )
