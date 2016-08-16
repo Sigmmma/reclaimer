@@ -92,23 +92,20 @@ class TagRipper(MapLoader):
                 
                 #null out the parts of a tag that can screw
                 #with the hash when compared to a tag meta
-                
-                #FOR NOW DONT WORRY ABOUT MATCHING THESE TYPES OF TAGS
                 if tag_ref_paths:
-                    continue
                     tag_ref_blocks = get_blocks(tag_ref_paths[1], tagmeta)
-                    for B in tag_ref_blocks:
-                        B.tag_path_pointer = B.tag_id = 0
+                    for b in tag_ref_blocks:
+                        b.tag_path_pointer = b.tag_path_length = b.tag_id = 0
                     
                 if reflexive_paths:
                     reflexive_blocks = get_blocks(reflexive_paths[1], tagmeta)
-                    for B in reflexive_blocks:
-                        B.id = B.reflexive_id = 0
+                    for b in reflexive_blocks:
+                        b.id = b.reflexive_id = 0
                     
                 if raw_data_paths:
                     raw_data_blocks = get_blocks(raw_data_paths[1], tagmeta)
-                    for B in raw_data_blocks:
-                        B.unknown_1 = B.unknown_2 = B.unknown_3 = B.id = 0
+                    for b in raw_data_blocks:
+                        b.unknown_1 = b.unknown_2 = b.unknown_3 = b.id = 0
 
                 #need to do some extra stuff for certain tags with fields
                 #that are normally zeroed out as tags, but arent as meta

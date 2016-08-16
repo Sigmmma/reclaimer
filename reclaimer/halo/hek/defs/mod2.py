@@ -4,6 +4,9 @@ from supyr_struct.defs.tag_def import TagDef
 def get():
     return mod2_def
 
+# certain descriptors have been commented out for now to ensure
+# programs using these can flip the endianness of everything properly
+
 local_marker = Struct('local marker',
     StrLatin1("name", SIZE=32),
     SInt16('node index'),
@@ -53,9 +56,12 @@ compressed_vertex = Struct('compressed vertex',
     BFloat('translation y'),
     BFloat('translation z'),
 
-    BBitStruct('normal',   INCLUDE=compressed_normal_32, SIZE=4),
-    BBitStruct('binormal', INCLUDE=compressed_normal_32, SIZE=4),
-    BBitStruct('tangent',  INCLUDE=compressed_normal_32, SIZE=4),
+    #BBitStruct('normal',   INCLUDE=compressed_normal_32, SIZE=4),
+    #BBitStruct('binormal', INCLUDE=compressed_normal_32, SIZE=4),
+    #BBitStruct('tangent',  INCLUDE=compressed_normal_32, SIZE=4),
+    BUInt32('normal'),
+    BUInt32('binormal'),
+    BUInt32('tangent'),
 
     BSInt16('tex coord u'),
     BSInt16('tex coord v'),
@@ -142,9 +148,12 @@ part = Struct('part',
     BFloat('centroid translation y'),
     BFloat('centroid translation z'),
 
-    reflexive("uncompressed vertices", uncompressed_vertex_union),
-    reflexive("compressed vertices", compressed_vertex_union),
-    reflexive("triangles", triangle_union),
+    #reflexive("uncompressed vertices", uncompressed_vertex_union),
+    #reflexive("compressed vertices", compressed_vertex_union),
+    #reflexive("triangles", triangle_union),
+    reflexive("uncompressed vertices", uncompressed_vertex),
+    reflexive("compressed vertices", compressed_vertex),
+    reflexive("triangles", triangle),
     Pad(40),
 
     UInt8('local node count'),
