@@ -1,8 +1,9 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
-from ...hek.defs import bitm, boom, colo, devc, devi, flag, fog_, foot, hmt_,\
-     hud_, item, itmc, metr, mply, ngpr, pphy, scex, schi, senv, sgla, shdr,\
-     smet, snde, soso, Soul, spla, str_, swat, tagc, trak, ustr, wind
+from ...hek.defs import bitm, boom, colo, devc, devi, effe, flag, fog_, foot,\
+     hmt_, hud_, item, itmc, metr, mply, ngpr, pphy, scex, schi, senv, sgla,\
+     shdr, smet, snde, soso, sotr, Soul, spla, str_, swat, tagc, trak, ustr,\
+     wind
 
 ################################################################
 ################################################################
@@ -100,6 +101,7 @@ tag_meta = Switch("tag meta",
         map_fcc('colo'):colo.colo_def.descriptor[1],
         map_fcc('devc'):devc.devc_def.descriptor[1],
         map_fcc('devi'):devi.devi_def.descriptor[1],
+        map_fcc('effe'):effe.effe_def.descriptor[1],
         map_fcc('flag'):flag.flag_def.descriptor[1],
         map_fcc('fog '):fog_.fog__def.descriptor[1],
         map_fcc('foot'):foot.foot_def.descriptor[1],
@@ -119,6 +121,7 @@ tag_meta = Switch("tag meta",
         map_fcc('smet'):smet.smet_def.descriptor[1],
         map_fcc('snde'):snde.snde_def.descriptor[1],
         map_fcc('soso'):soso.soso_def.descriptor[1],
+        map_fcc('sotr'):sotr.sotr_def.descriptor[1],
         map_fcc('Soul'):Soul.soul_def.descriptor[1],
         map_fcc('spla'):spla.spla_def.descriptor[1],
         #map_fcc('str#'):str_.str__def.descriptor[1],

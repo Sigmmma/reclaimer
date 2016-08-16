@@ -29,7 +29,7 @@ class HaloHandler(TagTestHandler):
     'lifi':".device_light_fixture",               #NEED
     'mach':".device_machine",                     #NEED
     'jpt!':".damage_effect",                      #NEED
-    'effe':".effect",                             #NEED
+    'effe':".effect",
     'eqip':".equipment",                          #NEED
     'flag':".flag",
     'fog ':".fog",
@@ -66,7 +66,7 @@ class HaloHandler(TagTestHandler):
     'scnr':".scenario",                           #NEED
     'sbsp':".scenario_structure_bsp",             #NEED
     'scen':".scenery",                            #NEED
-    'snd!':".sound",                              #NEED
+    'snd!':".sound",
     'snde':".sound_environment",
     'lsnd':".sound_looping",                      #NEED
     'ssce':".sound_scenery",                      #NEED
@@ -221,17 +221,17 @@ class HaloHandler(TagTestHandler):
 
         #null out the parts of a tag that can screw
         #with the hash when compared to a tag meta                        
-        for B in self.get_blocks_by_paths(tag_ref_paths, data):
-            B.tag_path_pointer = B.tag_id = 0
+        for b in self.get_blocks_by_paths(tag_ref_paths, data):
+            b.tag_path_pointer = b.tag_path_length = b.tag_id = 0
             
-        for B in self.get_blocks_by_paths(reflexive_paths, data):
-            B.id = B.reflexive_id = 0
+        for b in self.get_blocks_by_paths(reflexive_paths, data):
+            b.id = b.reflexive_id = 0
             
-        for B in self.get_blocks_by_paths(raw_data_paths, data):
-            B.unknown_1 = B.unknown_2 = B.unknown_3 = B.id = 0
+        for b in self.get_blocks_by_paths(raw_data_paths, data):
+            b.unknown_1 = b.unknown_2 = b.unknown_3 = b.id = 0
 
         #write the tag data to the hash buffer
-        data.tagdata.TYPE.writer(data.tagdata, hash_buffer, None, 0, 0)
+        data.TYPE.writer(data, hash_buffer, None, 0, 0)
         
         return md5(hash_buffer)
         

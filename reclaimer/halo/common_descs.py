@@ -192,8 +192,16 @@ valid_effects = tag_class("tag_class",
     ("effect", 'effe'),
     )
 
+valid_sounds = tag_class("tag_class",
+    ("sound",  'snd!'),
+    )
+
 valid_fog = tag_class("tag_class",
     ("fog", 'fog '),
+    )
+
+valid_particles = tag_class("tag_class",
+    ("particle", 'part'),
     )
 
 valid_lens_flare = tag_class("tag_class",
@@ -509,7 +517,7 @@ def dependency(name='tag ref', valid_ids=valid_tags):
         BSInt32("tag path pointer"),#random
         BSInt32("tag path length"),
         BUInt32("tag id", DEFAULT=0xFFFFFFFF),#random
-                                       
+
         CHILD=StringVarLen("filepath", SIZE=tag_ref_size),
         EDITABLE=False,
         )
