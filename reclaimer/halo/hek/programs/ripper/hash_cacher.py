@@ -35,6 +35,18 @@ class HashCacher(Handler):
     def build_hashcache(self, cache_name, description, tagsdir, subdir=''):
         tag_lib = self.tag_lib
         tag_lib.tagsdir = tagsdir
+
+        print('Attempting to load existing hashcache...')
+        # its faster to try and just update the hashcache if it already exists
+        try:
+            cache = self.build_tag(filepath=self.tagsdir + cache_name + ".hashcache")
+            hashmap = self.hashcache_to_hashmap(cache)
+            description = description.rstrip('\n')
+            if len(description):
+                cache.data.cache_description = description
+        except Exception:
+            cache = None
+            hashmap = {}
         
         print('Indexing...')
         tag_lib.mode = 1
@@ -43,47 +55,50 @@ class HashCacher(Handler):
         tag_lib.mode = 2
         print('\nFound %s tags...\n' % tag_lib.tags_indexed)
 
-        hashmap = {}
+        initial_cache_filenames = set(hashmap.values())
+        get_blocks = self.tag_lib.get_blocks_by_paths
         
         try:
             tagsdir = tag_lib.tagsdir
             tags    = tag_lib.tags
             
             for def_id in sorted(tags):
+                tag_coll = tags[def_id]
+
                 if tag_lib.print_to_console:
                     tag_lib.print_to_console = False
-                    print("Hashing '%s' tags..." % def_id)
+                    print("Hashing %s '%s' tags..." % (len(tag_coll), def_id))
                     tag_lib.print_to_console = True
                     
-                tag_ref_paths   = tag_lib.tag_ref_cache.get(def_id, ())
-                reflexive_paths = tag_lib.reflexive_cache.get(def_id, ())
-                raw_data_paths  = tag_lib.raw_data_cache.get(def_id, ())
+                tag_ref_paths   = tag_lib.tag_ref_cache.get(def_id,   ((), ()))[1]
+                reflexive_paths = tag_lib.reflexive_cache.get(def_id, ((), ()))[1]
+                raw_data_paths  = tag_lib.raw_data_cache.get(def_id,  ((), ()))[1]
 
-                tag_coll = tags[def_id]
                 subdir = subdir.lstrip(' ')
                 
                 for filepath in sorted(tag_coll):
+                    tag_lib.current_tag = filepath
+                    if filepath in initial_cache_filenames:
+                        continue
                     try:
                         #if this tag isnt located in the sub
                         #directory being scanned, then skip it
                         if subdir and not filepath.startswith(subdir):
-                            print('FAILED', filepath)
                             continue
-                            
-                        tag_lib.current_tag = filepath
-                        tag = tag_lib.build_tag(filepath=tagsdir+filepath)
-                        data = tag.data
-                        
-                        '''need to do some extra stuff for certain
-                        tags with fields that are normally zeroed
-                        out as tags, but arent as meta'''
-                        if def_id == 'pphy':
+                        data = tag_lib.build_tag(filepath=tagsdir+filepath).data
+
+                        '''need to do some extra stuff for certain tags with fields
+                        that are normally zeroed out as tags, but arent as meta.'''
+                        if def_id == 'effe':
+                            # mask away the meaningless flags
+                            data.tagdata.flags.data &= 3
+                        elif def_id == 'pphy':
                             tagdata = data.tagdata
                             tagdata.wind_coefficient = 0
                             tagdata.wind_sine_modifier = 0
                             tagdata.z_translation_rate = 0
 
-                        hash_buffer = tag_lib.get_tag_hash(data,
+                        hash_buffer = tag_lib.get_tag_hash(data[1],
                                                            tag_ref_paths,
                                                            reflexive_paths,
                                                            raw_data_paths)
@@ -91,7 +106,7 @@ class HashCacher(Handler):
                         
                         if taghash in hashmap:
                             tag_lib.print_to_console = False
-                            print(("    WARNING: hash already exists\n"+
+                            print(("    COLLISION: hash already exists\n"+
                                    "        hash:%s\n"+
                                    "        path(existing): '%s'\n"+
                                    "        path(colliding):'%s'\n")
@@ -106,9 +121,12 @@ class HashCacher(Handler):
                         
                     except Exception:
                         print(format_exc())
+
             tag_lib.mode = 100
-            print('Building hashcache...')
-            cache = self.hashmap_to_hashcache(hashmap, cache_name, description)
+            if cache is None:
+                print('Building hashcache...')
+                cache = self.hashmap_to_hashcache(hashmap, cache_name,
+                                                  description)
             
             print('Writing  hashcache...')
             cache.serialize(temp=False, backup=False, int_test=False)
@@ -176,7 +194,6 @@ class HashCacher(Handler):
     def hashcache_to_hashmap(self, hashcache):
         hashmap = {}
         cache_array = hashcache.data.cache
-        
         for mapping in cache_array:
             hashmap[mapping.hash] = mapping.value
 

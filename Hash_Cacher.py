@@ -40,17 +40,10 @@ class Hashcacher(Tk):
 
     cacher = None
 
-    curr_dir = curr_dir
-
     def __init__(self, **kwargs):
-        tags_path = kwargs.pop('tags_path', '')
+        tags_path = kwargs.pop('tags_path', curr_dir + '\\tags')
         hash_name = kwargs.pop('hash_name', '')
         hash_desc = kwargs.pop('hash_desc', '')
-
-        try:
-            self.curr_dir = dirname(tags_path)
-        except Exception:
-            pass
 
         Tk.__init__(self, **kwargs)
 
@@ -92,11 +85,10 @@ class Hashcacher(Tk):
 
     def select_tags_folder(self):
         tags_path = filedialog.askdirectory(
-            initialdir=self.curr_dir, title="Select tags folder...")
+            initialdir=self.tags_path.get(), title="Select tags folder...")
         tags_path = tags_path.replace('/','\\') + '\\'
         if tags_path:
             self.tags_path.set(tags_path)
-            self.curr_dir = tags_path
 
     def build_cache(self):
         try:
@@ -108,7 +100,7 @@ class Hashcacher(Tk):
 
         if hash_name in (DEF_NAME, ''):
             print('enter a valid hashcache name.')
-        elif hash_desc in (DEF_DESC, ''):
+        elif hash_desc == DEF_DESC:
             print('enter a hashcache description.')
         else:
             self.cacher.build_hashcache(
