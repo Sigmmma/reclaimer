@@ -11,14 +11,14 @@ class TagRipper(MapLoader):
 
     def __init__(self, **kwargs):
         MapLoader.__init__(self, **kwargs)
-        
+
         self.hash_cacher = HashCacher()
         self.tag_lib     = self.hash_cacher.tag_lib
 
         #make a cache of all the different headers for
         #each type of tag to speed up writing tags
         self.tag_headers = {}
-        
+
         for def_id in sorted(self.tag_lib.defs):
             if len(def_id) != 4:
                 continue
@@ -106,13 +106,6 @@ class TagRipper(MapLoader):
                     raw_data_blocks = get_blocks(raw_data_paths[1], tagmeta)
                     for b in raw_data_blocks:
                         b.unknown_1 = b.unknown_2 = b.unknown_3 = b.id = 0
-
-                #need to do some extra stuff for certain tags with fields
-                #that are normally zeroed out as tags, but arent as meta
-                if def_id == 'pphy':
-                    tagmeta.wind_coefficient = 0
-                    tagmeta.wind_sine_modifier = 0
-                    tagmeta.z_translation_rate = 0
                 
                 #write the tag data to the hash buffer
                 tagmeta.TYPE.writer(tagmeta, hash_buffer, None, 0, 0)

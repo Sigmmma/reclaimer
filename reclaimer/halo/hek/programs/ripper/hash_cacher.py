@@ -53,14 +53,17 @@ class HashCacher(Handler):
         
         tag_lib.index_tags()
         tag_lib.mode = 2
-        print('\nFound %s tags...\n' % tag_lib.tags_indexed)
-
-        initial_cache_filenames = set(hashmap.values())
-        get_blocks = self.tag_lib.get_blocks_by_paths
         
         try:
             tagsdir = tag_lib.tagsdir
             tags    = tag_lib.tags
+
+            print('\nFound %s tags of these types\n' % tag_lib.tags_indexed)
+            print('    %s' % list(sorted(tags.keys())))
+
+            initial_cache_filenames = set(hashmap.values())
+            initial_cache_hashes = set(hashmap.keys())
+            get_blocks = self.tag_lib.get_blocks_by_paths
             
             for def_id in sorted(tags):
                 tag_coll = tags[def_id]
@@ -103,6 +106,9 @@ class HashCacher(Handler):
                                                            reflexive_paths,
                                                            raw_data_paths)
                         taghash = hash_buffer.digest()
+
+                        if taghash in initial_cache_hashes:
+                            continue
                         
                         if taghash in hashmap:
                             tag_lib.print_to_console = False
@@ -128,7 +134,7 @@ class HashCacher(Handler):
                 cache = self.hashmap_to_hashcache(hashmap, cache_name,
                                                   description)
             
-            print('Writing  hashcache...')
+            print('Writing hashcache...')
             cache.serialize(temp=False, backup=False, int_test=False)
             return cache
         except:
