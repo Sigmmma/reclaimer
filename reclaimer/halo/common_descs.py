@@ -380,6 +380,14 @@ animation_functions = (
     "wander",
     "spark",
     )
+fade_functions = (
+    "linear",
+    "early",
+    "very early",
+    "late",
+    "very late",
+    "cosine",
+    )
 detail_map_functions = (
     "double/biased multiply",
     "multiply",
