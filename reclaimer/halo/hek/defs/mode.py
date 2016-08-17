@@ -35,10 +35,10 @@ part = Struct('part',
     BFloat('centroid translation z'),
     Pad(12),
 
-    #reflexive("compressed vertices", compressed_vertex_union),
-    #reflexive("triangles", triangle_union),
-    reflexive("compressed vertices", compressed_vertex),
-    reflexive("triangles", triangle),
+    reflexive("compressed vertices", compressed_vertex_union),
+    reflexive("triangles", triangle_union),
+    #reflexive("compressed vertices", compressed_vertex),
+    #reflexive("triangles", triangle),
 
     SIZE=104
     )

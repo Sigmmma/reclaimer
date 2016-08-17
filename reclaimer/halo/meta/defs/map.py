@@ -1,9 +1,9 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from ...hek.defs import bitm, boom, colo, devc, devi, effe, flag, fog_, foot,\
-     hmt_, hud_, item, itmc, metr, mply, ngpr, pphy, scex, schi, senv, sgla,\
-     shdr, smet, snde, soso, sotr, Soul, spla, str_, swat, tagc, trak, ustr,\
-     wind
+     jpt_, hmt_, hud_, item, itmc, metr, mply, ngpr, pphy, scex, schi, senv,\
+     sgla, shdr, smet, snde, soso, sotr, Soul, spla, str_, swat, tagc, trak,\
+     ustr, wind
 
 ################################################################
 ################################################################
@@ -109,6 +109,7 @@ tag_meta = Switch("tag meta",
         map_fcc('hud#'):hud_.hud__def.descriptor[1],
         map_fcc('item'):item.item_def.descriptor[1],
         map_fcc('itmc'):itmc.itmc_def.descriptor[1],
+        map_fcc('jpt!'):jpt_.jpt__def.descriptor[1],
         #map_fcc('metr'):metr.metr_def.descriptor[1],
         map_fcc('mply'):mply.mply_def.descriptor[1],
         map_fcc('ngpr'):ngpr.ngpr_def.descriptor[1],
