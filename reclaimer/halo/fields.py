@@ -46,3 +46,5 @@ TagIndexRef = Field(base=Struct, name="TagIndexRef")
 #can be easily supplied through the keyword argument "Map_Magic"
 TagIndex = Field(base=Array, name="TagIndex",
                  reader=tag_index_reader, writer=tag_index_writer)
+
+Rawdata = Field(base=BytearrayRaw, name="Rawdata", reader=rawdata_reader)

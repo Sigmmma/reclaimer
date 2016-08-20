@@ -28,7 +28,7 @@ class HaloHandler(TagTestHandler):
     'ctrl':".device_control",                     #NEED
     'lifi':".device_light_fixture",               #NEED
     'mach':".device_machine",                     #NEED
-    'jpt!':".damage_effect",                      #NEED
+    'jpt!':".damage_effect",
     'effe':".effect",
     'eqip':".equipment",                          #NEED
     'flag':".flag",
@@ -222,13 +222,13 @@ class HaloHandler(TagTestHandler):
         #null out the parts of a tag that can screw
         #with the hash when compared to a tag meta                        
         for b in self.get_blocks_by_paths(tag_ref_paths, data):
-            b.tag_path_pointer = b.tag_path_length = b.tag_id = 0
+            b.path_pointer = b.id = 0
             
         for b in self.get_blocks_by_paths(reflexive_paths, data):
-            b.id = b.reflexive_id = 0
+            b.id = b.pointer = 0
             
         for b in self.get_blocks_by_paths(raw_data_paths, data):
-            b.unknown_1 = b.unknown_2 = b.unknown_3 = b.id = 0
+            b.unknown_1 = b.unknown_2 = b.pointer = b.id = 0
 
         #write the tag data to the hash buffer
         data.TYPE.writer(data, hash_buffer, None, 0, 0)

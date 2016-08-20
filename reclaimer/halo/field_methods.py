@@ -26,13 +26,13 @@ def tag_ref_size(block=None, parent=None, attr_index=None,
     Lengths of 1 cant exist.'''
     
     if new_value is None:
-        strlen = parent.tag_path_length
+        strlen = parent.path_length
         strlen += 1*bool(strlen)
         return strlen
     if new_value <= 1:
-        parent.tag_path_length = 0
+        parent.path_length = 0
     else:
-        parent.tag_path_length = new_value - 1
+        parent.path_length = new_value - 1
 
 
 def encode_tag_ref_str(self, block, parent=None, attr_index=None):
@@ -69,3 +69,19 @@ def tag_index_writer(self, parent, writebuffer, attr_index=None,
         
     array_writer(self, parent, writebuffer, attr_index,
                  root_offset, offset, **kwargs)
+
+
+def rawdata_reader(self, desc, parent, rawdata=None, attr_index=None,
+                   root_offset=0, offset=0, **kwargs):
+    if rawdata is not None:
+        bytecount = parent.size
+
+        if 'magic' in kwargs:
+            offset = PC_TAG_INDEX_HEADER_SIZE + parent.pointer - kwargs['magic']
+        rawdata.seek(root_offset + offset)
+        parent[attr_index] = self.py_type(rawdata.read(bytecount))
+
+        return offset + bytecount
+
+    parent[attr_index] = self.py_type(b'\x00'*parent.size)
+    return offset

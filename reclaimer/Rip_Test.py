@@ -6,9 +6,10 @@ this_dir = dirname(__file__)
 try:
     from reclaimer.halo.hek.programs.ripper.tag_ripper import TagRipper
 
-    #mappath = this_dir + "\\tags\\precipice.map"
-    mappath = 'D:\\Program Files\\Microsoft Games\\Halo Custom Edition\\maps\\longest.map'
-    ripper = TagRipper(debug=5, allow_corrupt=True)
+    tags_path = ('e:\\Applications\\My Repos\Reclaimer\\tags\\')
+    mappath = tags_path + 'longest.map'
+    #mappath = tags_path + "precipice.map"
+    ripper = TagRipper(debug=5, tagsdir=tags_path+'tags\\', allow_corrupt=True)
     print(ripper.tags.keys())
     input('Press Enter to begin ripping tags from:\n'+
           '    %s\n\n' % mappath)
