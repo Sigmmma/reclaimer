@@ -1,0 +1,87 @@
+no references
+    'bitm':".bitmap",
+    'trak':".camera_track",
+    'colo':".color_table",
+    'cdmg':".continuous_damage_effect",           #NEED
+    'cont':".contrail",                           #NEED
+    'hmt ':".hud_message_text",
+    'devc':".input_device_defaults",
+    'phys':".physics",                            #NEED
+    'pphy':".point_physics",
+    'shdr':".shader",
+    'boom':".spheroid",
+    'str#':".string_list",
+    'ustr':".unicode_string_list",
+    'wind':".wind"
+
+non-circular references
+    'ant!':".antenna",                            #NEED
+    'deca':".decal",                              #NEED
+    'dobc':".detail_object_collection",           #NEED
+    'font':".font",                               #NEED
+    'hud#':".hud_number",
+    'lens':".lens_flare",                         #NEED
+    'ligh':".light",                              #NEED
+    'mgs2':".light_volume",                       #NEED
+    'elec':".lightning",                          #NEED
+    'metr':".meter",
+    'mply':".multiplayer_scenario_description",
+    'ngpr':".preferences_network_game",
+    'vcky':".virtual_keyboard",                   #NEED
+    'soso':".shader_model",
+    'schi':".shader_transparent_chicago",
+    'scex':".shader_transparent_chicago_extended",
+    'sotr':".shader_transparent_generic",
+    'sgla':".shader_transparent_glass",
+    'smet':".shader_transparent_meter",
+    'senv':".shader_environment",
+    'spla':".shader_transparent_plasma",
+    'swat':".shader_transparent_water",
+    'rain':".weather_particle_system",            #NEED
+
+circular references
+    'actr':".actor",                              #NEED
+    'actv':".actor_varient",                      #NEED
+    'bipd':".biped",                              #NEED
+    'udlg':".dialogue",                           #NEED
+    'devi':".device",
+    'ctrl':".device_control",                     #NEED
+    'lifi':".device_light_fixture",               #NEED
+    'mach':".device_machine",                     #NEED
+    'jpt!':".damage_effect",
+    'effe':".effect",
+    'eqip':".equipment",                          #NEED
+    'flag':".flag",
+    'fog ':".fog",
+    'garb':".garbage",                            #NEED
+    'mod2':".gbxmodel",
+    'matg':".globals",                            #NEED
+    'glw!':".glow",                               #NEED
+    'grhi':".grenade_hud_interface",              #NEED
+    'hudg':".hud_globals",                        #NEED
+    'item':".item",
+    'itmc':".item_collection",
+    'foot':".material_effects",
+    'mode':".model",
+    'antr':".model_animations",
+    'coll':".model_collision_geometry",           #NEED
+    'obje':".object",                             #----
+    'part':".particle",                           #NEED
+    'pctl':".particle_system",                    #NEED
+    'plac':".placeholder",                        #NEED
+    'proj':".projectile",                         #NEED
+    'scnr':".scenario",                           #NEED
+    'sbsp':".scenario_structure_bsp",             #NEED
+    'scen':".scenery",                            #NEED
+    'snd!':".sound",
+    'lsnd':".sound_looping",                      #NEED
+    'ssce':".sound_scenery",                      #NEED
+    'sky ':".sky",
+    'tagc':".tag_collection",
+    'Soul':".ui_widget_collection",
+    'DeLa':".ui_widget_definition",               #NEED
+    'unit':".unit",                               #----
+    'unhi':".unit_hud_interface",                 #NEED
+    'vehi':".vehicle",                            #NEED
+    'weap':".weapon",                             #NEED
+    'wphi':".weapon_hud_interface",               #NEED

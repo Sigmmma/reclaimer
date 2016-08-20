@@ -2,14 +2,14 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from ...hek.defs import bitm, boom, colo, devc, devi, effe, flag, fog_, foot,\
      jpt_, hmt_, hud_, item, itmc, metr, mply, ngpr, pphy, scex, schi, senv,\
-     sgla, shdr, smet, snde, soso, sotr, Soul, spla, str_, swat, tagc, trak,\
-     ustr, wind
+     sgla, shdr, smet, snde, snd_, soso, sotr, Soul, spla, str_, swat, tagc,\
+     trak, ustr, wind
 
 ################################################################
 ################################################################
 '''-----------------------   Notes   ---------------------------
     If a tag is located in one of the shared resource maps, the
-    tag_offset in tag_header will the the index in the resource
+    offset in tag_header will the the index in the resource
     map that the tag is located in and indexed will be 1.
     To determine which resource map the tag is in, it must be
     done based on the tag class.
@@ -24,8 +24,12 @@ from ...hek.defs import bitm, boom, colo, devc, devi, effe, flag, fog_, foot,\
 
 def get(): return map_def
 
-def tag_path_pointer(block=None, parent=None, attr_index=None,
-                     rawdata=None, new_value=None, *args, **kwargs):
+def map_fcc(value):
+    return fcc(value, 'big')
+
+SND__FCC = map_fcc('snd!')
+
+def tag_path_pointer(block=None, parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
     t_head = parent.parent
@@ -37,11 +41,10 @@ def tag_path_pointer(block=None, parent=None, attr_index=None,
     #NEED TO FINISH THIS SO IT CAN SET THE PATH POINTER
 
     if new_value is None:
-        return PC_TAG_INDEX_HEADER_SIZE + t_head.tag_path_offset - magic
+        return PC_TAG_INDEX_HEADER_SIZE + t_head.path_offset - magic
 
 
-def tag_meta_data_pointer(block=None, parent=None, attr_index=None,
-                          rawdata=None, new_value=None, *args, **kwargs):
+def tag_meta_data_pointer(block=None, parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
 
@@ -53,16 +56,17 @@ def tag_meta_data_pointer(block=None, parent=None, attr_index=None,
     #NEED TO FINISH THIS SO IT CAN SET THE META POINTER
 
     if new_value is None:
-        return PC_TAG_INDEX_HEADER_SIZE + t_head.tag_offset - magic
+        return PC_TAG_INDEX_HEADER_SIZE + t_head.meta_offset - magic
 
 
-def tag_meta_case(block=None, parent=None, attr_index=None,
-                  rawdata=None, new_value=None, *args, **kwargs):
+def tag_meta_case(block=None, parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
 
     t_head = parent.parent
     if t_head.indexed:
+        if t_head.class_1.data == SND__FCC:
+            return 'indexed_snd!'
         return
 
     magic = kwargs.get('magic')
@@ -70,12 +74,11 @@ def tag_meta_case(block=None, parent=None, attr_index=None,
         m_head = t_head.parent.parent.map_header
         magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
 
-    offset = PC_TAG_INDEX_HEADER_SIZE + t_head.tag_offset - magic
-    return t_head.tag_class_1.data
+    offset = PC_TAG_INDEX_HEADER_SIZE + t_head.meta_offset - magic
+    return t_head.class_1.data
     
 
-def tag_index_array_pointer(block=None, parent=None, attr_index=None,
-                            rawdata=None, new_value=None, *args, **kwargs):
+def tag_index_array_pointer(block=None, parent=None, new_value=None, **kwargs):
     if block is None:
         raise KeyError()
     b_parent = block.parent
@@ -88,15 +91,15 @@ def tag_index_array_pointer(block=None, parent=None, attr_index=None,
         return (PC_TAG_INDEX_HEADER_SIZE +
                 b_parent.tag_index_header.index_magic - magic)
 
-def map_fcc(value):
-    return fcc(value, 'big')
-
+#sound tags actually located in the sound cache
+#still have part of the tag exist in the map.
+indexed_sound = dict(snd_.snd__def.descriptor[1])
+indexed_sound[18] = reflexive_struct
 
 tag_meta = Switch("tag meta",
     CASE=tag_meta_case,
-    #THESE WILL NEED TO BE MODIFIED SINCE
-    #RAW DATA ISN'T INSIDE IT ANYMORE
-    CASES={#map_fcc('bitm'):bitm.bitm_def.descriptor[1],
+    CASES={
+        map_fcc('bitm'):bitm.bitm_def.descriptor[1],
         map_fcc('boom'):boom.boom_def.descriptor[1],
         map_fcc('colo'):colo.colo_def.descriptor[1],
         map_fcc('devc'):devc.devc_def.descriptor[1],
@@ -105,12 +108,12 @@ tag_meta = Switch("tag meta",
         map_fcc('flag'):flag.flag_def.descriptor[1],
         map_fcc('fog '):fog_.fog__def.descriptor[1],
         map_fcc('foot'):foot.foot_def.descriptor[1],
-        #map_fcc('hmt '):hmt_.hmt__def.descriptor[1],
+        map_fcc('hmt '):hmt_.hmt__def.descriptor[1],
         map_fcc('hud#'):hud_.hud__def.descriptor[1],
         map_fcc('item'):item.item_def.descriptor[1],
         map_fcc('itmc'):itmc.itmc_def.descriptor[1],
         map_fcc('jpt!'):jpt_.jpt__def.descriptor[1],
-        #map_fcc('metr'):metr.metr_def.descriptor[1],
+        map_fcc('metr'):metr.metr_def.descriptor[1],
         map_fcc('mply'):mply.mply_def.descriptor[1],
         map_fcc('ngpr'):ngpr.ngpr_def.descriptor[1],
         map_fcc('pphy'):pphy.pphy_def.descriptor[1],
@@ -121,16 +124,18 @@ tag_meta = Switch("tag meta",
         map_fcc('shdr'):shdr.shdr_def.descriptor[1],
         map_fcc('smet'):smet.smet_def.descriptor[1],
         map_fcc('snde'):snde.snde_def.descriptor[1],
+        map_fcc('snd!'):snd_.snd__def.descriptor[1],
         map_fcc('soso'):soso.soso_def.descriptor[1],
         map_fcc('sotr'):sotr.sotr_def.descriptor[1],
         map_fcc('Soul'):Soul.soul_def.descriptor[1],
         map_fcc('spla'):spla.spla_def.descriptor[1],
-        #map_fcc('str#'):str_.str__def.descriptor[1],
+        map_fcc('str#'):str_.str__def.descriptor[1],
         map_fcc('swat'):swat.swat_def.descriptor[1],
         map_fcc('tagc'):tagc.tagc_def.descriptor[1],
         map_fcc('trak'):trak.trak_def.descriptor[1],
-        #map_fcc('ustr'):ustr.ustr_def.descriptor[1],
+        map_fcc('ustr'):ustr.ustr_def.descriptor[1],
         map_fcc('wind'):wind.wind_def.descriptor[1],
+        'indexed_snd!':indexed_sound,
         },
     POINTER=tag_meta_data_pointer,
     )
@@ -142,18 +147,20 @@ tag_data = Container("tag data",
     )
 
 tag_header = Struct("tag header",
-    LUEnum32("tag class 1", INCLUDE=valid_tags),
-    LUEnum32("tag class 2", INCLUDE=valid_tags),
-    LUEnum32("tag class 3", INCLUDE=valid_tags),
-    LUInt32("tag id"),
-    LSInt32("tag path offset"),
-    LSInt32("tag offset"),
+    LUEnum32("class 1", INCLUDE=valid_tags),
+    LUEnum32("class 2", INCLUDE=valid_tags),
+    LUEnum32("class 3", INCLUDE=valid_tags),
+    LUInt32("id"),
+    LSInt32("path offset"),
+    LSInt32("meta offset"),
     LUInt32("indexed"),
+    # if indexed is 1, the meta_offset is the literal index in the
+    # bitmaps, sounds, or loc cache that the meta data is located in.
     Pad(4),
     CHILD=tag_data,
     )
 
-map_header = Struct("map_header",
+map_header = Struct("map header",
     LUInt32("head", DEFAULT='head'),
     LSEnum32("version",
         ("xbox",    5),
