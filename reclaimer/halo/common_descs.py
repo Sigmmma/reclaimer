@@ -495,8 +495,7 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     desc.update(
         INCLUDE=reflexive_struct,
         CHILD=Array(name+" array",
-            SIZE=".size", MAX=max_count,
-            SUB_STRUCT=substruct
+            SIZE=".size", MAX=max_count, SUB_STRUCT=substruct,
             ),
         SIZE=12
         )
@@ -511,7 +510,7 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     return Reflexive(name, **desc)
 
 
-def rawdata_ref(name, field=BytearrayRaw):
+def rawdata_ref(name, field=Rawdata):
     '''This function serves to macro the creation of a rawdata reference'''
     return RawdataRef(name,
         EDITABLE=False, INCLUDE=rawdata_ref_struct,
@@ -522,14 +521,13 @@ def dependency(name='tag ref', valid_ids=valid_tags):
     '''This function serves to macro the creation of a tag dependency'''
     return TagIndexRef(name,
         valid_ids,
-        BSInt32("tag path pointer"),#random
-        BSInt32("tag path length"),
-        BUInt32("tag id", DEFAULT=0xFFFFFFFF),#random
+        BSInt32("path pointer"),
+        BSInt32("path length"),
+        BUInt32("id", DEFAULT=0xFFFFFFFF),
 
         CHILD=StringVarLen("filepath", SIZE=tag_ref_size),
         EDITABLE=False,
         )
-
 
 def blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
@@ -544,10 +542,10 @@ def blam_header(tagid, version=1):
 #This is the structure for all points where a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
     BSInt32("size"),
-    BSInt32("unknown 1"),#0x00000000 in tags
-    BSInt32("unknown 2"),#random
-    BSInt32("unknown 3"),#random
-    BUInt32("id"),#random
+    BSInt32("unknown 1"),#0x00000000 in tags(and meta it seems)
+    BSInt32("unknown 2"),#random(low number in meta)
+    BSInt32("pointer"),
+    BUInt32("id"),#0x00000000 in meta it seems
     EDITABLE=False,
     )
 
@@ -555,8 +553,8 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
 #This is the structure for all tag reflexives
 reflexive_struct = Reflexive('reflexive',
     BSInt32("size"),
-    BSInt32("id"),#random
-    BUInt32("reflexive id"),#random
+    BSInt32("pointer"),#random
+    BUInt32("id"),#0x00000000 in meta it seems
     EDITABLE=False,
     )
 
