@@ -2,12 +2,12 @@ no references
     'bitm':".bitmap",
     'trak':".camera_track",
     'colo':".color_table",
-    'cdmg':".continuous_damage_effect",           #NEED
-    'cont':".contrail",                           #NEED
+    'cdmg':".continuous_damage_effect",
     'hmt ':".hud_message_text",
     'devc':".input_device_defaults",
-    'phys':".physics",                            #NEED
+    'phys':".physics",
     'pphy':".point_physics",
+    'snde':".sound_environment",
     'shdr':".shader",
     'boom':".spheroid",
     'str#':".string_list",
@@ -15,10 +15,12 @@ no references
     'wind':".wind"
 
 non-circular references
-    'ant!':".antenna",                            #NEED
+    'ant!':".antenna",
+    'cont':".contrail",
     'deca':".decal",                              #NEED
-    'dobc':".detail_object_collection",           #NEED
-    'font':".font",                               #NEED
+    'dobc':".detail_object_collection",
+    'flag':".flag",
+    'font':".font",
     'hud#':".hud_number",
     'lens':".lens_flare",                         #NEED
     'ligh':".light",                              #NEED
@@ -27,14 +29,14 @@ non-circular references
     'metr':".meter",
     'mply':".multiplayer_scenario_description",
     'ngpr':".preferences_network_game",
-    'vcky':".virtual_keyboard",                   #NEED
+    'vcky':".virtual_keyboard",
+    'senv':".shader_environment",
     'soso':".shader_model",
     'schi':".shader_transparent_chicago",
     'scex':".shader_transparent_chicago_extended",
     'sotr':".shader_transparent_generic",
     'sgla':".shader_transparent_glass",
     'smet':".shader_transparent_meter",
-    'senv':".shader_environment",
     'spla':".shader_transparent_plasma",
     'swat':".shader_transparent_water",
     'rain':".weather_particle_system",            #NEED
@@ -51,7 +53,6 @@ circular references
     'jpt!':".damage_effect",
     'effe':".effect",
     'eqip':".equipment",                          #NEED
-    'flag':".flag",
     'fog ':".fog",
     'garb':".garbage",                            #NEED
     'mod2':".gbxmodel",
