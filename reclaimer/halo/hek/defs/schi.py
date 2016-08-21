@@ -17,7 +17,7 @@ schi_body = Struct("tagdata",
 
     Bool8("chicago shader flags",          *trans_shdr_properties),
     BSEnum16("first map type",             *trans_shdr_first_map_type),
-    BSEnum16("framebuffer blend function", *framebuffer_blend_modes),
+    BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
     BSEnum16("framebuffer fade mode",      *trans_shdr_fade_mode),
     BSEnum16("framebuffer fade source",    *function_outputs),
 

@@ -39,6 +39,12 @@ rgb_byte = Struct('rgb_uint8',
     UInt8("g"),
     UInt8("b")
     )
+argb_byte = Struct('argb_uint8',
+    UInt8("a"),
+    UInt8("r"),
+    UInt8("g"),
+    UInt8("b")
+    )
 
 # rotations
 ijkw_float = Struct('ijkw_float',
@@ -192,30 +198,18 @@ valid_effects = tag_class("tag_class",
     ("effect", 'effe'),
     )
 
-valid_sounds = tag_class("tag_class",
-    ("sound",  'snd!'),
-    )
+valid_fogs = tag_class("tag_class", ("fog", 'fog '))
+valid_fonts = tag_class("tag_class", ("font", 'font'))
+valid_particles = tag_class("tag_class", ("particle", 'part'))
+valid_lens_flares = tag_class("tag_class", ("lens_flare", 'lens'))
+valid_point_physics = tag_class("tag_class", ("point_physics", 'pphy'))
+valid_bitmaps = tag_class("tag_class", ("bitmap", 'bitm'))
+valid_sounds  = tag_class("tag_class", ("sound", 'snd!'))
+valid_physics = tag_class("tag_class", ("physics", 'phys'))
+valid_model_animations = tag_class("tag_class", ("model_animations", 'antr'))
+valid_unicode_strings = tag_class("tag_class", ("unicode_string_list", 'ustr'))
 
-valid_fog = tag_class("tag_class",
-    ("fog", 'fog '),
-    )
-
-valid_particles = tag_class("tag_class",
-    ("particle", 'part'),
-    )
-
-valid_lens_flare = tag_class("tag_class",
-    ("lens_flare", 'lens'),
-    )
-
-valid_point_physics = tag_class("tag_class", ("point_physics", 'pphy') )
-valid_bitmaps = tag_class("tag_class", ("bitmap", 'bitm') )
-valid_sounds  = tag_class("tag_class", ("sound", 'snd!') )
-valid_physics = tag_class("tag_class", ("physics", 'phys') )
-valid_model_animations = tag_class("tag_class",
-    ("model_animations", 'antr')
-    )
-valid_model_collision_geometry = tag_class("tag_class",
+valid_model_collision_geometries = tag_class("tag_class",
     ("model_collision_geometry", 'coll')
     )
 valid_models = tag_class("tag_class",
@@ -380,6 +374,21 @@ animation_functions = (
     "wander",
     "spark",
     )
+damage_category = (
+    "none",
+    "falling",
+    "bullet",
+    "grenade",
+    "high explosive",
+    "sniper",
+    "melee",
+    "flame",
+    "mounted weapon",
+    "vehicle",
+    "plasma",
+    "needle",
+    "shotgun",
+    )
 fade_functions = (
     "linear",
     "early",
@@ -417,7 +426,7 @@ blend_functions = (
     "blend next map alpha",
     "blend next map alpha-inverse",
     )
-framebuffer_blend_modes = (
+framebuffer_blend_functions = (
     "alpha blend",
     "multiply",
     "double multiply",
@@ -482,6 +491,7 @@ anim_src_func_per_pha_sca = Struct('',
     BFloat("period"),#seconds
     BFloat("phase"),#seconds
     BFloat("scale"),#repeats
+    # when scale is for rotation, its actually in degrees, not radians. weird!
     )
 
 from_to = Struct('',
@@ -601,6 +611,42 @@ radiosity_settings = Struct("radiosity settings",
     Struct("radiosity tint color",  INCLUDE=rgb_float),
     )
 
+damage_modifiers = Struct("damage modifiers",
+    BFloat("dirt"),
+    BFloat("sand"),
+    BFloat("stone"),
+    BFloat("snow"),
+    BFloat("wood"),
+    BFloat("metal hollow"),
+    BFloat("metal thin"),
+    BFloat("metal thick"),
+    BFloat("rubber"),
+    BFloat("glass"),
+    BFloat("force field"),
+    BFloat("grunt"),
+    BFloat("hunter armor"),
+    BFloat("hunter skin"),
+    BFloat("elite"),
+    BFloat("jackal"),
+    BFloat("jackal energy shield"),
+    BFloat("engineer skin"),
+    BFloat("engineer force field"),
+    BFloat("flood combat form"),
+    BFloat("flood carrier form"),
+    BFloat("cyborg armor"),
+    BFloat("cyborg energy shield"),
+    BFloat("human armor"),
+    BFloat("human skin"),
+    BFloat("sentinel"),
+    BFloat("moniter"),
+    BFloat("plastic"),
+    BFloat("water"),
+    BFloat("leaves"),
+    BFloat("elite energy shield"),
+    BFloat("ice"),
+    BFloat("hunter shield"),
+    Pad(28),
+    )
 
 #Transparent Shader Stuff
 
@@ -625,9 +671,9 @@ chicago_4_stage_maps = Struct("four stage map",
     BFloat("map rotation"),#degrees
     BFloat("map bias"),#[0,1]
     dependency("bitmap", valid_bitmaps),
-                              
+
     Pad(40),
-                              
+
     #shader animations
     Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
     Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),

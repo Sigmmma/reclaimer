@@ -1,49 +1,37 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-def get(): return flag_def
+def get(): return ant__def
 
-attachment_point = Struct("attachment point",
-    BSInt16("height to next attachment"),
-    Pad(18),
-    StrLatin1("marker name", SIZE=32),
-    )
-
-flag_body = Struct("tagdata",
-    Pad(4),
-    BSEnum16("trailing edge shape",
-        "flat",
-        "concave triangular",
-        "convex triangular",
-        "trapezoid short top",
-        "trapezoid short bottom",
-        ),
-
-    BSInt16("trailing edge shape offset"),
-    BSEnum16("attached edge shape",
-        "flat",
-        "concave triangular",
-        ),
+antenna_vertex = Struct("antenna vertex",
+    BFloat("spring strength coefficient"),
+    Pad(24),
+    Struct("angles", INCLUDE=yp_float),  # measured in radians
+    BFloat("length"),
+    BSInt16("sequence index"),
     Pad(2),
-    BSInt16("width"),
-    BSInt16("height"),
-
-    BFloat("cell width"),
-    BFloat("cell height"),
-
-    dependency("red flag shader", valid_shaders),
-    dependency("physics", valid_point_physics),
-
-    BFloat("wind noise"),
-    Pad(8),
-    dependency("blue flag shader", valid_shaders),
-    reflexive("attachment points", attachment_point, 4),
-    SIZE=96,
+    Struct("color", INCLUDE=argb_float),
+    Struct("lod color", INCLUDE=argb_float),
+    SIZE=128
     )
 
-flag_def = TagDef("flag",
-    blam_header('flag'),
-    flag_body,
+ant__body = Struct("tagdata",
+    StrLatin1("name", SIZE=32),
+    dependency("bitmaps", valid_bitmaps),
+    dependency("physics", valid_point_physics),
+    Pad(80),
 
-    ext=".flag", endian=">"
+    BFloat("spring strength coefficient"),
+    BFloat("falloff pixels"),
+    BFloat("cutoff pixels"),
+    Pad(40),
+    reflexive("vertices", antenna_vertex, 20),
+    SIZE=208,
+    )
+
+ant__def = TagDef("ant!",
+    blam_header('ant!'),
+    ant__body,
+
+    ext=".antenna", endian=">"
     )
