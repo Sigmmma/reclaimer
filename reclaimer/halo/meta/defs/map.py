@@ -195,7 +195,7 @@ map_header = Struct("map header",
 #header as there are 704 bytes #before the header
 #that appear to be garbage AND garbage filling
 #all the headers null padding.
-tag_index_header = Struct("tag index header",
+tag_index_header = QuickStruct("tag index header",
     LUInt32("index magic"),
     LUInt32("base magic"),
     LUInt32("map id"),

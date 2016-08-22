@@ -20,7 +20,7 @@ fog__body = Struct("tagdata",
     BFloat("distance to water plane"),
 
     #Color
-    Struct("fog color", INCLUDE=rgb_float),
+    QuickStruct("fog color", INCLUDE=rgb_float),
 
     #Screen Layers
     BBool16("flags",
@@ -30,13 +30,13 @@ fog__body = Struct("tagdata",
         ),
     BUInt16("layer count"),
 
-    Struct("distance gradient", INCLUDE=from_to),
-    Struct("density gradient",  INCLUDE=from_to),
+    QuickStruct("distance gradient", INCLUDE=from_to),
+    QuickStruct("density gradient",  INCLUDE=from_to),
 
     BFloat("start distance from fog plane"),
     Pad(5),
 
-    Struct("color", INCLUDE=rgb_byte),
+    QuickStruct("color", INCLUDE=rgb_byte),
     BFloat("rotation multiplier"),
     BFloat("strafing multiplier"),
     BFloat("zoom multiplier"),
@@ -47,8 +47,8 @@ fog__body = Struct("tagdata",
     #Screen Layer Animation
     BFloat("animation period"),
     Pad(4),
-    Struct("wind velocity", INCLUDE=from_to),
-    Struct("wind period",   INCLUDE=from_to),
+    QuickStruct("wind velocity", INCLUDE=from_to),
+    QuickStruct("wind period",   INCLUDE=from_to),
     BFloat("wind acceleration weight"),
     BFloat("wind perpendicular weight"),
 

@@ -17,9 +17,9 @@ detail_object_type = Struct("detail object type",
     BFloat("far fade distance"),
     BFloat("size"),
     Pad(4),
-    Struct("minimum color", INCLUDE=rgb_float),
-    Struct("maximum color", INCLUDE=rgb_float),
-    Struct("ambient color", INCLUDE=argb_byte),
+    QuickStruct("minimum color", INCLUDE=rgb_float),
+    QuickStruct("maximum color", INCLUDE=rgb_float),
+    QuickStruct("ambient color", INCLUDE=argb_byte),
     SIZE=104
     )
 

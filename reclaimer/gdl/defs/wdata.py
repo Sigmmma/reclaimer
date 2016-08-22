@@ -16,7 +16,7 @@ player_datas = Lump('',
     )
 
 wdata_def = TagDef("wdata",
-    Struct('wad header',
+    QStruct('wad header',
         LUInt32('lump headers pointer'),
         LUInt32('lump count', DEFAULT=8),
         Pad(8),

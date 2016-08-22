@@ -69,7 +69,7 @@ legend_items = (
     'javelin',
     )
 
-p_attrs = Struct('character attrs',
+p_attrs = QStruct('character attrs',
     SInt32('exp', GUI_NAME='experience'),
     Float('health'),
     Float('fight added'),
@@ -79,7 +79,7 @@ p_attrs = Struct('character attrs',
     SIZE=24,
     )
 
-p_stats = Struct('character stats',
+p_stats = QStruct('character stats',
     SInt32('enemies killed'),
     SInt32('generals killed'),
     SInt32('golems killed'),
@@ -141,7 +141,7 @@ p_stuff = Container('character stuff',
     #UInt16('boss attempts 2'),
     Pad(4),
 
-    Struct('gargoyle items',
+    QStruct('gargoyle items',
         # a value of -1 means all that the max amount have been collected
         LSInt16('fangs'),
         LSInt16('feathers'),
@@ -149,7 +149,7 @@ p_stuff = Container('character stuff',
         ),
     Pad(2),#the shell3d.pdb lied about this padding. it tried to say
     #       that it's after the crystals, not before it. it isn't.
-    Struct('crystals',
+    QStruct('crystals',
         # a value of -1 means all that the max amount have been collected
         LSInt16('town'),
         LSInt16('mountain'),

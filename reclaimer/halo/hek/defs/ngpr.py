@@ -5,8 +5,8 @@ ngpr_body = Struct("tagdata",
     #I didnt feel like adding offsets since
     #there is only padding in one spot
     StrLatin1("name", SIZE=32),
-    Struct("primary color",   INCLUDE=rgb_float),
-    Struct("secondary color", INCLUDE=rgb_float),
+    QuickStruct("primary color",   INCLUDE=rgb_float),
+    QuickStruct("secondary color", INCLUDE=rgb_float),
 
     dependency("pattern", valid_bitmaps),
     BSInt16("pattern bitmap index"),
