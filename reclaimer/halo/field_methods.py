@@ -80,7 +80,6 @@ def rawdata_reader(self, desc, parent, rawdata=None, attr_index=None,
             offset = PC_TAG_INDEX_HEADER_SIZE + parent.pointer - kwargs['magic']
         rawdata.seek(root_offset + offset)
         parent[attr_index] = self.py_type(rawdata.read(bytecount))
-
         return offset + bytecount
 
     parent[attr_index] = self.py_type(b'\x00'*parent.size)

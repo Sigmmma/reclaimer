@@ -6,10 +6,10 @@ try:
     from reclaimer.halo.hek.handler import HaloHandler
     #cProfile.run('test = HaloHandler(debug=5)')
     #input()
-    test = HaloHandler( print_test=True, save_test=False, debug=3,
+    test = HaloHandler( print_test=True, save_test=False, debug=5,
                         write_as_temp=True, backup=False,
                         allow_corrupt=True,
-                        valid_def_ids="udlg",
+                        #valid_def_ids="mod2",
                         print_options={'indent':4,
                                        'printout':True, 'precision':3,
                                        'show':['name', 'children', 'field',

@@ -58,7 +58,7 @@ oe_offs_lump_kw = {SIZE: get_oe_offs_lump_size, POINTER: lump_pointer}
 '''individual lump structs'''
 #############################
 
-string_message = Struct('string message',
+string_message = QStruct('string message',
     #These define which strings(specified by TOFF) are grouped into messages.
 
     #For example, all of a single boss's hints are in one STRS block.
@@ -74,7 +74,7 @@ string_message = Struct('string message',
     LFloat('sscale'),
     )
 
-string_list = Struct('string list',
+string_list = QStruct('string list',
     #These define which string offsets are grouped together into lists.
 
     #For example, all of the rune hints are in one
@@ -149,7 +149,7 @@ string_def_offsets = Lump('string def offsets',
 
 
 rom_def = TagDef("rom",
-    Struct('wad header',
+    QStruct('wad header',
         LUInt32('lump headers pointer'),
         LUInt32('lump count', DEFAULT=9),
         Pad(8),

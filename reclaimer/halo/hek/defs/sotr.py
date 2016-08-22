@@ -120,9 +120,9 @@ stage = Struct("stage",
     BSEnum16("color0 source", *function_names),
     BSEnum16("color0 anim function", *animation_functions),
     BFloat("color0 anim period"),
-    Struct("color0 anim lower bound", INCLUDE=argb_float),
-    Struct("color0 anim upper bound", INCLUDE=argb_float),
-    Struct("color1", INCLUDE=argb_float),
+    QuickStruct("color0 anim lower bound", INCLUDE=argb_float),
+    QuickStruct("color0 anim upper bound", INCLUDE=argb_float),
+    QuickStruct("color1", INCLUDE=argb_float),
 
     Struct('color input',
         BSEnum16('A', *sotr_color_inputs),
@@ -186,7 +186,7 @@ map = Struct("map",
     Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
     Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
 
-    Struct("rotation center", INCLUDE=xy_float),
+    QuickStruct("rotation center", INCLUDE=xy_float),
     SIZE=100,
     )
 
@@ -196,8 +196,7 @@ sotr_body = Struct("tagdata",
 
     #Shader Type
     material_type,
-    FlSEnum16("numeric shader id", DEFAULT=6,
-              INCLUDE=shader_id_num),
+    FlSEnum16("numeric shader id", DEFAULT=6, INCLUDE=shader_id_num),
     Pad(2),
 
     #Generic Transparent Shader

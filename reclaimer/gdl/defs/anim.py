@@ -5,7 +5,7 @@ from .objs.anim import AnimPs2Tag
 
 def get(): return anim_ps2_def
 
-anim_header = Struct('header',
+anim_header = QStruct('header',
     LUInt16('skeletons count'),
     LUInt16('unknown count'),
     LPointer32('skeletons pointer'),
@@ -82,7 +82,7 @@ texture_anims_array = Array('texture_anims',
     SUB_STRUCT=texture_anim,
     )
 
-unknown_footer = Container('footer',
+unknown_footer = QStruct('footer',
     LSInt32('unknown0'),
     LSInt32('unknown1'),
     LSInt32('unknown2'),

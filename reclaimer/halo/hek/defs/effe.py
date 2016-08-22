@@ -50,10 +50,10 @@ part = Struct("part",
     dependency("type", valid_effect_events),
     Pad(24),
 
-    Struct("velocity bounds", INCLUDE=from_to),
-    BFloat("velocity cone angle"),  # measured in radians
-    Struct("angular velocity bounds", INCLUDE=from_to),  # measured in radians
-    Struct("radius modifier bounds", INCLUDE=from_to),
+    QuickStruct("velocity bounds", INCLUDE=from_to),
+    BFloat("velocity cone angle"),  # radians
+    QuickStruct("angular velocity bounds", INCLUDE=from_to),  # radians
+    QuickStruct("radius modifier bounds", INCLUDE=from_to),
 
     BBool32("A scales values", *part_scale_modifiers),
     BBool32("B scales values", *part_scale_modifiers),
@@ -73,8 +73,8 @@ particle = Struct("particle",
     BSInt16("location"),
     Pad(2),
 
-    Struct("relative direction", INCLUDE=yp_float),  # measured in radians
-    Struct("relative offset", INCLUDE=ijk_float),
+    QuickStruct("relative direction", INCLUDE=yp_float),  # measured in radians
+    QuickStruct("relative offset", INCLUDE=ijk_float),
     Pad(52),
 
     dependency("particle type", valid_particles),
@@ -95,24 +95,20 @@ particle = Struct("particle",
         ),
     Pad(2),
 
-    Struct("count",
-        BUInt16("from", GUI_NAME=" "),
-        BUInt16("to"),
-        ),
-
-    Struct("distribution radius", INCLUDE=from_to),
+    QuickStruct("count", INCLUDE=from_to),
+    QuickStruct("distribution radius", INCLUDE=from_to),
     Pad(12),
 
-    Struct("velocity", INCLUDE=from_to),
+    QuickStruct("velocity", INCLUDE=from_to),
     BFloat("velocity cone angle"),  # measured in radians
-    Struct("angular velocity", INCLUDE=from_to),  # measured in radians
+    QuickStruct("angular velocity", INCLUDE=from_to),  # measured in radians
     Pad(8),
 
-    Struct("radius", INCLUDE=from_to),
+    QuickStruct("radius", INCLUDE=from_to),
     Pad(8),
 
-    Struct("tint lower bound", INCLUDE=argb_float),
-    Struct("tint upper bound", INCLUDE=argb_float),
+    QuickStruct("tint lower bound", INCLUDE=argb_float),
+    QuickStruct("tint upper bound", INCLUDE=argb_float),
     Pad(16),
 
     BBool32("A scales values", *particle_scale_modifiers),
@@ -128,8 +124,8 @@ location = Struct("location",
 event = Struct("event",
     Pad(4),
     BFloat("skip fraction"),
-    Struct("delay bounds", INCLUDE=from_to),
-    Struct("duration bounds", INCLUDE=from_to),
+    QuickStruct("delay bounds", INCLUDE=from_to),
+    QuickStruct("duration bounds", INCLUDE=from_to),
 
     Pad(20),
     reflexive("parts", part, 32),
