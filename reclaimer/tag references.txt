@@ -45,7 +45,7 @@ circular references
     'actr':".actor",                              #NEED
     'actv':".actor_varient",                      #NEED
     'bipd':".biped",                              #NEED
-    'udlg':".dialogue",                           #NEED
+    'udlg':".dialogue",
     'devi':".device",
     'ctrl':".device_control",                     #NEED
     'lifi':".device_light_fixture",               #NEED
