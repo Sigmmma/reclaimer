@@ -26,7 +26,7 @@ sub_object_model = Container("sub-object model",
 
 #Multiple sub-objects are for things where you may have multiple
 #textures on one mesh. In that case each subobject would have one texture.
-sub_object_block = Struct("sub-object",
+sub_object_block = QStruct("sub-object",
     #number of 16 byte chunks that the subobject model consists of.
     UInt16("qword count", GUI_NAME="quadword count"),
 

@@ -16,7 +16,7 @@ pixel_root = WhileArray('pixel root',
         )
     )
 
-sprite = Struct("sprite",
+sprite = QuickStruct("sprite",
     BUInt16("bitmap index"),
     Pad(6),
     BFloat("left side"),

@@ -4,9 +4,6 @@ from supyr_struct.defs.tag_def import TagDef
 def get():
     return mod2_def
 
-# certain descriptors have been commented out for now to ensure
-# programs using these can flip the endianness of everything properly
-
 local_marker = Struct('local marker',
     StrLatin1("name", SIZE=32),
     SInt16('node index'),
@@ -20,11 +17,10 @@ local_marker = Struct('local marker',
     BFloat('translation x'),
     BFloat('translation y'),
     BFloat('translation z'),
-
     SIZE=80
     )
 
-uncompressed_vertex = Struct('uncompressed vertex',
+uncompressed_vertex = QuickStruct('uncompressed vertex',
     BFloat('translation x'),
     BFloat('translation y'),
     BFloat('translation z'),
@@ -51,11 +47,12 @@ uncompressed_vertex = Struct('uncompressed vertex',
     SIZE=68
     )
 
-compressed_vertex = Struct('compressed vertex',
+compressed_vertex = QuickStruct('compressed vertex',
     BFloat('translation x'),
     BFloat('translation y'),
     BFloat('translation z'),
 
+    # These wont work in a quickstruct, so make sure not to use them with it.
     #BBitStruct('normal',   INCLUDE=compressed_normal_32, SIZE=4),
     #BBitStruct('binormal', INCLUDE=compressed_normal_32, SIZE=4),
     #BBitStruct('tangent',  INCLUDE=compressed_normal_32, SIZE=4),
@@ -72,7 +69,7 @@ compressed_vertex = Struct('compressed vertex',
     SIZE=32
     )
 
-triangle = Struct('triangle',
+triangle = QuickStruct('triangle',
     BSInt16('vert 0 index'),
     BSInt16('vert 1 index'),
     BSInt16('vert 2 index'),
@@ -93,8 +90,7 @@ triangle_union = Union('triangle',
     )
 
 
-
-marker_instance = Struct('marker instance',
+marker_instance = QuickStruct('marker instance',
     SInt8('region index'),
     SInt8('permutation index'),
     SInt8('node index'),
@@ -148,12 +144,12 @@ part = Struct('part',
     BFloat('centroid translation y'),
     BFloat('centroid translation z'),
 
-    reflexive("uncompressed vertices", uncompressed_vertex_union),
-    reflexive("compressed vertices", compressed_vertex_union),
-    reflexive("triangles", triangle_union),
-    #reflexive("uncompressed vertices", uncompressed_vertex),
-    #reflexive("compressed vertices", compressed_vertex),
-    #reflexive("triangles", triangle),
+    #reflexive("uncompressed vertices", uncompressed_vertex_union),
+    #reflexive("compressed vertices", compressed_vertex_union),
+    #reflexive("triangles", triangle_union),
+    reflexive("uncompressed vertices", uncompressed_vertex),
+    reflexive("compressed vertices", compressed_vertex),
+    reflexive("triangles", triangle),
     Pad(40),
 
     UInt8('local node count'),

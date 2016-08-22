@@ -2,11 +2,11 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 cdmg_body = Struct("tagdata",
-    Struct("radius", INCLUDE=from_to),
+    QuickStruct("radius", INCLUDE=from_to),
     BFloat("cutoff scale"),  # [0.0 to 1.0]
     Pad(24),
 
-    Struct("vibrate parameters",
+    QuickStruct("vibrate parameters",
         BFloat("low frequency"),
         BFloat("high frequency"),
         Pad(24),
