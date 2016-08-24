@@ -1735,6 +1735,8 @@ class ObjectsPs2Tag(GdlTag):
         if palettes and textures:
             temppath   = filepath + ".temp"
             backuppath = filepath + ".backup"
+            if not kwargs.get('backup',True):
+                backuppath = None
             
             #swizzle the palette if it isnt
             if not self.palette_swizzled:
@@ -1760,6 +1762,5 @@ class ObjectsPs2Tag(GdlTag):
                         f.write(rawdata)
                         
             if not bool(kwargs.get('temp',True)):
-                self.rename_backup_and_temp(filepath, backuppath, temppath,
-                                            bool(kwargs.get('backup',True)))
+                backup_and_rename_temp(filepath, temppath, backuppath)
         return return_val
