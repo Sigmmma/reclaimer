@@ -43,12 +43,7 @@ def encode_tag_ref_str(self, block, parent=None, attr_index=None):
     empty bytes object if the string length is zero"""
     if block:
         return encode_string(self, block, parent=parent, attr_index=attr_index)
-    return bytes()
-
-def decode_raw_string(self, rawdata, desc=None, parent=None, attr_index=None):
-    return rawdata.decode(encoding=self.enc)
-
-
+    return b''
 
 
 def tag_index_reader(self, desc, parent=None, rawdata=None, attr_index=None,
