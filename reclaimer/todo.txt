@@ -7,9 +7,6 @@ Low Priority:
 Make new property for Fields be routines for setting, inserting, and
 deleting attributes from a descriptor using that Field
 
-Make property for Tags that allows them to store a mapping of the possible paths
-to take to get to each of the pointered blocks that may exist.
-
 Make Bin_Size recursion safe
 
 Implement recursive pointer based blocks.
@@ -79,60 +76,6 @@ when making their hashes as well as compressed vertices in models and bsp
 make sure to null the tag class in tag references that dont exist so that the
 hashes still work with smokescreen protected maps.
 ## MAP RIPPING ##
-
-
-Remaining tagdefs:
-    'actr':".actor"
-    'actv':".actor_varient"
-    'ant!':".antenna"
-    'bipd':".biped"
-    'cdmg':".continuous_damage_effect"
-    'cont':".contrail"
-    'deca':".decal"
-    'udlg':".dialogue"
-    'dobc':".detail_object_collection"
-    'ctrl':".device_control"
-    'lifi':".device_light_fixture"
-    'mach':".device_machine"
-    'jpt!':".damage_effect"
-    'effe':".effect"
-    'eqip':".equipment"
-    'font':".font"
-    'garb':".garbage"
-    'mod2':".gbxmodel"
-    'matg':".globals"
-    'glw!':".glow"
-    'grhi':".grenade_hud_interface"
-    'hudg':".hud_globals"
-    'lens':".lens_flare"
-    'ligh':".light"
-    'mgs2':".light_volume"
-    'elec':".lightning"
-    'mode':".model"
-    'coll':".model_collision_geometry"
-    'obje':".object"
-    'part':".particle"
-    'pctl':".particle_system"
-    'phys':".physics"
-    'plac':".placeholder"
-    'proj':".projectile"
-    'scnr':".scenario"
-    'sbsp':".scenario_structure_bsp"
-    'scen':".scenery"
-    'snd!':".sound"
-    'lsnd':".sound_looping"
-    'ssce':".sound_scenery"
-    'sotr':".shader_transparent_generic"
-    'sky ':".sky"
-    'DeLa':".ui_widget_definition"
-    'unit':".unit"
-    'unhi':".unit_hud_interface"
-    'vehi':".vehicle"
-    'vcky':".virtual_keyboard"
-    'weap':".weapon"
-    'wphi':".weapon_hud_interface"
-    'rain':".weather_particle_system"
-
 
 
 ##################
