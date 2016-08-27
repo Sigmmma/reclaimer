@@ -75,7 +75,7 @@ class TagRipper(MapLoader):
             h_desc = self.tag_lib.defs[def_id].descriptor[0]
             
             h_block = [None]
-            h_desc['TYPE'].reader(h_desc, h_block, attr_index=0)
+            h_desc['TYPE'].reader(h_desc, parent=h_block, attr_index=0)
             b_buffer = h_block[0].serialize(buffer=BytearrayBuffer(),
                                             calc_pointers=False)
             
@@ -236,7 +236,7 @@ class TagRipper(MapLoader):
 
         #write the tag data to the hash buffer
         tag_buffer = BytearrayBuffer()
-        tag_meta.TYPE.writer(tag_meta, tag_buffer, None, 0, 0)
+        tag_meta.TYPE.writer(tag_meta, writebuffer=tag_buffer)
 
         if rebuild_paths:
             #get the tag data's hash and try to match it to a path

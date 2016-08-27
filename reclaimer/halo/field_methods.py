@@ -46,28 +46,28 @@ def encode_tag_ref_str(self, block, parent=None, attr_index=None):
     return b''
 
 
-def tag_index_reader(self, desc, parent=None, rawdata=None, attr_index=None,
-                     root_offset=0, offset=0, **kwargs):
+def tag_index_reader(self, desc, block=None, parent=None, attr_index=None,
+                     rawdata=None, root_offset=0, offset=0, **kwargs):
     if parent is not None:
         m_head = parent.map_header
         kwargs['magic'] = PC_INDEX_MAGIC - m_head.tag_index_offset
 
-    array_reader(self, desc, parent, rawdata, attr_index,
-                 root_offset, offset, **kwargs)
+    array_reader(self, desc, block, parent, attr_index,
+                 rawdata, root_offset, offset, **kwargs)
 
 
-def tag_index_writer(self, parent, writebuffer, attr_index=None,
-                     root_offset=0, offset=0, **kwargs):
+def tag_index_writer(self, block, parent=None, attr_index=None,
+                     writebuffer=None, root_offset=0, offset=0, **kwargs):
     if parent is not None:
         m_head = parent.map_header
         kwargs['magic'] = PC_INDEX_MAGIC - m_head.tag_index_offset
         
-    array_writer(self, parent, writebuffer, attr_index,
-                 root_offset, offset, **kwargs)
+    array_writer(self, block, parent, attr_index,
+                 writebuffer, root_offset, offset, **kwargs)
 
 
-def rawdata_reader(self, desc, parent, rawdata=None, attr_index=None,
-                   root_offset=0, offset=0, **kwargs):
+def rawdata_reader(self, desc, block=None, parent=None, attr_index=None,
+                   rawdata=None, root_offset=0, offset=0, **kwargs):
     if rawdata is not None:
         bytecount = parent.size
 

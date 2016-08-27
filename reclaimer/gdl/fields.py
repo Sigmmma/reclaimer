@@ -25,27 +25,26 @@ def qword_size(block=None, parent=None, attr_index=None,
     return parent.qword_count*16+8
 
 
-def lump_array_reader(self, desc, parent=None, rawdata=None, attr_index=None,
-                      root_offset=0, offset=0, **kwargs):
-    if attr_index is None and parent is not None:
-        new_block = parent
-    else:
-        new_block = (desc.get(BLOCK_CLS, self.py_type)
+def lump_array_reader(self, desc, block=None, parent=None, attr_index=None,
+                      rawdata=None, root_offset=0, offset=0, **kwargs):
+    if block is None:
+        block = (desc.get(BLOCK_CLS, self.py_type)
                      (desc, parent=parent, init_attrs=rawdata is None))
-        parent[attr_index] = new_block
+        parent[attr_index] = block
         
     b_desc  = desc['SUB_STRUCT']
     b_field = b_desc['TYPE']
 
     if attr_index is not None and desc.get('POINTER') is not None:
-        offset = new_block.get_meta('POINTER', **kwargs)
+        offset = block.get_meta('POINTER', **kwargs)
 
-    list.__delitem__(new_block, slice(None, None, None))
-    for i in range(new_block.get_size()):
+    list.__delitem__(block, slice(None, None, None))
+    kwargs.update(root_offset=root_offset, parent=block, rawdata=rawdata)
+
+    for i in range(block.get_size()):
         #need to append a new entry to the block
-        list.append(new_block, None)
-        offset = b_field.reader(b_desc, new_block, rawdata, i,
-                                root_offset, offset,**kwargs)
+        list.append(block, None)
+        offset = b_field.reader(b_desc, attr_index=i, offset=offset, **kwargs)
 
     return offset
 

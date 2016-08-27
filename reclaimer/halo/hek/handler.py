@@ -231,7 +231,7 @@ class HaloHandler(TagTestHandler):
             b.unknown_1 = b.unknown_2 = b.pointer = b.id = 0
 
         #write the tag data to the hash buffer
-        data.TYPE.writer(data, hash_buffer, None, 0, 0)
+        data.TYPE.writer(data, writebuffer=hash_buffer)
         
         return md5(hash_buffer)
         
