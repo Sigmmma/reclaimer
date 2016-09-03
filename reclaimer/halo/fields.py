@@ -50,5 +50,5 @@ TagIndex = Field(base=Array, name="TagIndex",
 Rawdata = Field(base=BytearrayRaw, name="Rawdata", reader=rawdata_reader)
 
 StrLatin1Enum = Field(base=StrRawLatin1, name="StrLatin1Enum",
-                      is_enum=True, is_block=True, data_type=str,
+                      is_enum=True, is_block=True, is_data=True, data_type=str,
                       py_type=EnumBlock, sanitizer=bool_enum_sanitizer)
