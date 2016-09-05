@@ -37,8 +37,8 @@ FlFloat = Field(base=Float.little, name="FlFloat", enc=Float.little.enc)
 
 '''These Fields exist to easily identify where in a tag
 that raw data refs, reflexives, and tag references exist.'''
-RawdataRef  = Field(base=QuickStruct, name="RawdataRef")
-Reflexive   = Field(base=QuickStruct, name="Reflexive")
+RawdataRef  = Field(base=QStruct, name="RawdataRef")
+Reflexive   = Field(base=QStruct, name="Reflexive")
 TagIndexRef = Field(base=Struct, name="TagIndexRef")
 
 #the Tag_Index is the array that stores all the tag string paths and
@@ -50,5 +50,5 @@ TagIndex = Field(base=Array, name="TagIndex",
 Rawdata = Field(base=BytearrayRaw, name="Rawdata", reader=rawdata_reader)
 
 StrLatin1Enum = Field(base=StrRawLatin1, name="StrLatin1Enum",
-                      is_enum=True, is_block=True, is_data=True, data_type=str,
+                      is_block=True, is_data=True, data_type=str,
                       py_type=EnumBlock, sanitizer=bool_enum_sanitizer)

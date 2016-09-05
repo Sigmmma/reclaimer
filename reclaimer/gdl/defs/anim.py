@@ -3,7 +3,8 @@ from supyr_struct.defs.common_descs import *
 from ..fields import *
 from .objs.anim import AnimPs2Tag
 
-def get(): return anim_ps2_def
+# This definition doesnt actually work. They store stuff weirdly.
+# def get(): return anim_ps2_def
 
 anim_header = QStruct('header',
     LUInt16('skeletons count'),
