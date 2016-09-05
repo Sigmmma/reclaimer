@@ -20,7 +20,7 @@ local_marker = Struct('local marker',
     SIZE=80
     )
 
-uncompressed_vertex = QuickStruct('uncompressed vertex',
+uncompressed_vertex = QStruct('uncompressed vertex',
     BFloat('translation x'),
     BFloat('translation y'),
     BFloat('translation z'),
@@ -47,7 +47,7 @@ uncompressed_vertex = QuickStruct('uncompressed vertex',
     SIZE=68
     )
 
-compressed_vertex = QuickStruct('compressed vertex',
+compressed_vertex = QStruct('compressed vertex',
     BFloat('translation x'),
     BFloat('translation y'),
     BFloat('translation z'),
@@ -69,7 +69,7 @@ compressed_vertex = QuickStruct('compressed vertex',
     SIZE=32
     )
 
-triangle = QuickStruct('triangle',
+triangle = QStruct('triangle',
     BSInt16('vert 0 index'),
     BSInt16('vert 1 index'),
     BSInt16('vert 2 index'),
@@ -90,7 +90,7 @@ triangle_union = Union('triangle',
     )
 
 
-marker_instance = QuickStruct('marker instance',
+marker_instance = QStruct('marker instance',
     SInt8('region index'),
     SInt8('permutation index'),
     SInt8('node index'),
