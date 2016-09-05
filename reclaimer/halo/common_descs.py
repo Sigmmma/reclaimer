@@ -12,34 +12,34 @@ compressed_normal_32 = LBitStruct('compressed_norm32',
     )
 
 # coordinates
-xyz_float = QuickStruct('xyz_float',
+xyz_float = QStruct('xyz_float',
     Float("x"),
     Float("y"),
     Float("z")
     )
-xy_float = QuickStruct('xy_float',
+xy_float = QStruct('xy_float',
     LFloat("x"),
     LFloat("y")
     )
 
 # colors
-argb_float = QuickStruct('argb_float',
+argb_float = QStruct('argb_float',
     LFloat("a"),
     LFloat("r"),
     LFloat("g"),
     LFloat("b")
     )
-rgb_float = QuickStruct('rgb_float',
+rgb_float = QStruct('rgb_float',
     LFloat("r"),
     LFloat("g"),
     LFloat("b")
     )
-rgb_byte = QuickStruct('rgb_uint8',
+rgb_byte = QStruct('rgb_uint8',
     UInt8("r"),
     UInt8("g"),
     UInt8("b")
     )
-argb_byte = QuickStruct('argb_uint8',
+argb_byte = QStruct('argb_uint8',
     UInt8("a"),
     UInt8("r"),
     UInt8("g"),
@@ -47,18 +47,18 @@ argb_byte = QuickStruct('argb_uint8',
     )
 
 # rotations
-ijkw_float = QuickStruct('ijkw_float',
+ijkw_float = QStruct('ijkw_float',
     LFloat("i"),
     LFloat("j"),
     LFloat("k"),
     LFloat("w")
     )
-ijk_float = QuickStruct('ijk_float',
+ijk_float = QStruct('ijk_float',
     LFloat("i"),
     LFloat("j"),
     LFloat("k")
     )
-yp_float = QuickStruct('yp_float',
+yp_float = QStruct('yp_float',
     LFloat("y"),
     LFloat("p")
     )
@@ -494,7 +494,7 @@ anim_src_func_per_pha_sca = Struct('',
     # when scale is for rotation, its actually in degrees, not radians. weird!
     )
 
-from_to = QuickStruct('',
+from_to = QStruct('',
     BFloat("from", GUI_NAME=" "),
     BFloat("to"),
     )
@@ -607,11 +607,11 @@ radiosity_settings = Struct("radiosity settings",
         "turd",
         ),
     BFloat("radiosity light power"),
-    QuickStruct("radiosity light color", INCLUDE=rgb_float),
-    QuickStruct("radiosity tint color",  INCLUDE=rgb_float),
+    QStruct("radiosity light color", INCLUDE=rgb_float),
+    QStruct("radiosity tint color",  INCLUDE=rgb_float),
     )
 
-damage_modifiers = QuickStruct("damage modifiers",
+damage_modifiers = QStruct("damage modifiers",
     BFloat("dirt"),
     BFloat("sand"),
     BFloat("stone"),
@@ -679,7 +679,7 @@ chicago_4_stage_maps = Struct("four stage map",
     Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
     Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
 
-    QuickStruct("rotation center", INCLUDE=xy_float),
+    QStruct("rotation center", INCLUDE=xy_float),
     SIZE=220,
     )
 

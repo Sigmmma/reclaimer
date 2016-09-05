@@ -71,7 +71,7 @@ pitch_range = Struct('pitch range',
     StrLatin1("name", SIZE=32),
 
     BFloat("natural pitch"),
-    QuickStruct("bend bounds", INCLUDE=from_to),
+    QStruct("bend bounds", INCLUDE=from_to),
     BSInt16("actual permutation count"),
     Pad(14),
 
@@ -95,7 +95,7 @@ snd__body = Struct("tagdata",
     BFloat("skip fraction"),  # [0.0 to 1.0]
 
     #Randomization
-    QuickStruct("random pitch bounds", INCLUDE=from_to),
+    QStruct("random pitch bounds", INCLUDE=from_to),
     BFloat("inner cone angle"),  # measured in radians
     BFloat("outer cone angle"),  # measured in radians
     BFloat("outer cone gain"),  # [0.0 to 1.0]
@@ -103,14 +103,14 @@ snd__body = Struct("tagdata",
     BFloat("maximum bend per second"),
     Pad(12),
 
-    QuickStruct("modifiers when scale is zero",
+    QStruct("modifiers when scale is zero",
         BFloat("skip fraction"),
         BFloat("gain"),
         BFloat("pitch"),
         ),
     Pad(12),
 
-    QuickStruct("modifiers when scale is one",
+    QStruct("modifiers when scale is one",
         BFloat("skip fraction"),
         BFloat("gain"),
         BFloat("pitch"),
