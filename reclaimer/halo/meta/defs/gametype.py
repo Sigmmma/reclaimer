@@ -13,9 +13,9 @@ from .objs.gametype import GametypeTag
 
 def get(): return gametype_def
 
-def is_xbox_gametype(parent=None, **kwargs):
+def is_xbox_gametype(node=None, parent=None, **kwargs):
     if parent is None:
-        parent = block.parent
+        parent = node.parent
     return parent.get_root().is_xbox
 
 ##################################################

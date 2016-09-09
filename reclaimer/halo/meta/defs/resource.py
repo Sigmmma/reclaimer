@@ -5,7 +5,7 @@ from ...hek.defs import str_, ustr, hmt_, bitm, snd_, font
 def get(): return resource_def
 
 
-def get_resource_tag_type(block=None, parent=None, attr_index=None,
+def get_resource_tag_type(node=None, parent=None, attr_index=None,
                           rawdata=None, new_value=None, *args, **kwargs):
     if parent is None:
         raise KeyError()

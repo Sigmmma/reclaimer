@@ -5,10 +5,10 @@ from .objs.bitm import BitmTag
 
 def get(): return bitm_def
 
-def pixel_block_size(block, *a, **kwa):
-    if isinstance(block, array):
-        return block.itemsize*len(block)
-    return len(block)
+def pixel_block_size(node, *a, **kwa):
+    if isinstance(node, array):
+        return node.itemsize*len(node)
+    return len(node)
 
 pixel_root = WhileArray('pixel root',
     SUB_STRUCT=WhileArray('bitmap pixels',

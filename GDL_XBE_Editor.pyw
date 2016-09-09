@@ -279,7 +279,7 @@ try:
             self.Selected_Cheat.set(cheat.code)
 
 
-        def _Reload_Widgets(self, Parent, datablock, Desc):
+        def _Reload_Widgets(self, Parent, node, Desc):
             i = Parent.Current_Index
             
             Root_X = Parent.winfo_x()
@@ -308,36 +308,22 @@ try:
                 if field.name == 'Union' or field.is_data:
                     Field_Var = StringVar(Child_Canvas)
                     
-                    Block_Val = datablock[i]
+                    Block_Val = node[i]
                     
                     if field.name == 'Union':
                         if Block_Val.u_index is None:
                             continue
-                        datablock = Block_Val = Block_Val.u_block
+                        node = Block_Val = Block_Val.u_node
                         field     = Block_Val.desc['TYPE']
                         this_desc = Block_Val.desc
                         i = None
                     
-                    Field_Var.Block_Parent = datablock
+                    Field_Var.Block_Parent = node
                     Field_Var.Block_Desc   = this_desc
                     Field_Var.Block_Index  = i
                     Field_Var.Main_Window  = self
 
-                    if field.is_enum:
-                        Widget_Height = 30
-                        New_Widget = OptionMenu(Child_Canvas, Field_Var, (), Func=Set_Enum)
-                        
-                        New_Widget['menu'].delete(0, 'end')
-                        New_Widget.config(width=16)
-                        New_Widget.Field_Var = Field_Var
-                        
-                        for x in range(this_desc['ENTRIES']):
-                            New_Widget.addOption(this_desc[x]["NAME"].replace('_', ' '))
-                            if Block_Val.data == this_desc[x]['VALUE']:
-                                Field_Var.set(this_desc[x]["NAME"].replace('_', ' '))
-                                
-                        Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Enum(Var)
-                    elif field.is_bool:
+                    if field.is_bool:
                         Widget_Height = 0
                         New_Widget = Canvas(Child_Canvas, highlightthickness=0,
                                             width=Main_Window.winfo_width(),
@@ -365,6 +351,20 @@ try:
                             
                             Widget_Height += 16
                             New_Widget.config(height=Widget_Height)
+                    elif 'VALUE_MAP' in this_desc:
+                        Widget_Height = 30
+                        New_Widget = OptionMenu(Child_Canvas, Field_Var, (), Func=Set_Enum)
+                        
+                        New_Widget['menu'].delete(0, 'end')
+                        New_Widget.config(width=16)
+                        New_Widget.Field_Var = Field_Var
+                        
+                        for x in range(this_desc['ENTRIES']):
+                            New_Widget.addOption(this_desc[x]["NAME"].replace('_', ' '))
+                            if Block_Val.data == this_desc[x]['VALUE']:
+                                Field_Var.set(this_desc[x]["NAME"].replace('_', ' '))
+                                
+                        Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Enum(Var)
                     else:
                         Field_Var.set(str(Block_Val))
                         if field.is_str:
