@@ -29,7 +29,7 @@ def map_fcc(value):
 
 SND__FCC = map_fcc('snd!')
 
-def tag_path_pointer(block=None, parent=None, new_value=None, **kwargs):
+def tag_path_pointer(node=None, parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
     t_head = parent.parent
@@ -44,7 +44,7 @@ def tag_path_pointer(block=None, parent=None, new_value=None, **kwargs):
         return PC_TAG_INDEX_HEADER_SIZE + t_head.path_offset - magic
 
 
-def tag_meta_data_pointer(block=None, parent=None, new_value=None, **kwargs):
+def tag_meta_data_pointer(node=None, parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
 
@@ -59,7 +59,7 @@ def tag_meta_data_pointer(block=None, parent=None, new_value=None, **kwargs):
         return PC_TAG_INDEX_HEADER_SIZE + t_head.meta_offset - magic
 
 
-def tag_meta_case(block=None, parent=None, new_value=None, **kwargs):
+def tag_meta_case(node=None, parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
 
@@ -78,10 +78,10 @@ def tag_meta_case(block=None, parent=None, new_value=None, **kwargs):
     return t_head.class_1.data
     
 
-def tag_index_array_pointer(block=None, parent=None, new_value=None, **kwargs):
-    if block is None:
+def tag_index_array_pointer(node=None, parent=None, new_value=None, **kwargs):
+    if node is None:
         raise KeyError()
-    b_parent = block.parent
+    b_parent = node.parent
 
     magic = kwargs.get('magic')
     if magic is None:

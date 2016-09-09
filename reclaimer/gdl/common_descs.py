@@ -5,23 +5,23 @@ from .fields import *
 def lump_fcc(value):
     return fcc(value, 'big')    
 
-def get_lump_type(block=None, parent=None, attr_index=None,
+def get_lump_type(node=None, parent=None, attr_index=None,
                   rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.parent
+    if node and parent is None:
+        parent = node.parent
     if attr_index is None:
-        attr_index = parent.index_by_id(block)
+        attr_index = parent.index_by_id(node)
     return parent.get_root().data.lump_headers[attr_index].lump_id.enum_name
 
-def lump_size(block=None, parent=None, attr_index=None,
+def lump_size(node=None, parent=None, attr_index=None,
               rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.parent
+    if node and parent is None:
+        parent = node.parent
     if parent is None:
         return 0
     if attr_index is None:
         try:
-            attr_index = parent.index_by_id(block)
+            attr_index = parent.index_by_id(node)
         except ValueError:
             return 0
 
@@ -33,15 +33,15 @@ def lump_size(block=None, parent=None, attr_index=None,
         return header.lump_array_length
     header.lump_array_length = new_value
 
-def lump_pointer(block=None, parent=None, attr_index=None,
-                     rawdata=None, new_value=None, *args, **kwargs):
-    if block and parent is None:
-        parent = block.parent
+def lump_pointer(node=None, parent=None, attr_index=None,
+                 rawdata=None, new_value=None, *args, **kwargs):
+    if node and parent is None:
+        parent = node.parent
     if parent is None:
         return 0
     if attr_index is None:
         try:
-            attr_index = parent.index_by_id(block)
+            attr_index = parent.index_by_id(node)
         except ValueError:
             return 0
     try:
