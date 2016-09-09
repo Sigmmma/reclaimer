@@ -183,14 +183,13 @@ class BitmTag(HekTag):
             #if Xbox, reset these structure variable's all to 0
             #since xbox doesn't like them being non-zero
             tagdata = self.data.tagdata
-            for block in (tagdata.compressed_color_plate_data,
-                          tagdata.processed_pixel_data):
-                for i in (1,2,3):
-                    block[i] = 0
-                    
-            for block in (tagdata.sequences, tagdata.bitmaps):
-                for i in (1,2):
-                    block[i] = 0
+            for i in (1,2,3):
+                tagdata.compressed_color_plate_data[i] = 0
+                tagdata.processed_pixel_data[i] = 0
+
+            for i in (1,2):
+                tagdata.sequences[i] = 0
+                tagdata.bitmaps[i] = 0
                     
             #swap the order of the cubemap faces
             #and mipmaps if saving to xbox format

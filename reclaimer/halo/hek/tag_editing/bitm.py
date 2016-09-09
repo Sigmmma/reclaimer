@@ -391,11 +391,8 @@ def parse_bitmap_blocks(tag):
         if tag.is_xbox_bitmap:
             for sub_bitmap_index in range(sub_bitmap_count):
                 for mipmap in range(mipmap_count):
-                    width, height, depth = bc.get_mipmap_dimensions(max_width,
-                                                                    max_height,
-                                                                    max_depth,
-                                                                    mipmap,
-                                                                    format)
+                    width, height, depth = bc.get_mipmap_dimensions(
+                        max_width, max_height, max_depth, mipmap, format)
                     if format == bc.FORMAT_P8:
                         pixel_count = width*height
                         tex_block.append(array('B', raw_bitmap_data[offset:
@@ -416,10 +413,8 @@ def parse_bitmap_blocks(tag):
             
         else:
             for mipmap in range(mipmap_count):
-                width, height, depth = bc.get_mipmap_dimensions(max_width,
-                                                                max_height,
-                                                                max_depth,
-                                                                mipmap, format)
+                width, height, depth = bc.get_mipmap_dimensions(
+                    max_width, max_height, max_depth, mipmap, format)
                 #Loop for each cubemap face(or only once if not a cubemap)
                 for sub_bitmap_index in range(sub_bitmap_count):
                     if format == bc.FORMAT_P8:
@@ -615,9 +610,8 @@ def bitmap_sanitize(tag):
         flags.palletized = (format == bc.FORMAT_P8)
         flags.compressed = (format in bc.COMPRESSED_FORMATS)
         
-        tag.bitmap_width_height_depth(i, (texinfo["width"],
-                                          texinfo["height"],
-                                          texinfo["depth"]))
+        tag.bitmap_width_height_depth(
+            i, (texinfo["width"], texinfo["height"], texinfo["depth"]))
         tag.bitmap_mipmaps_count(i, texinfo["mipmap_count"])
         tag.registration_point_xy(i, (texinfo["width"]*reg_point_x//old_w,
                                       texinfo["height"]*reg_point_y//old_h))
