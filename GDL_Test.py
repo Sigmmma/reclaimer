@@ -12,7 +12,7 @@ try:
                        valid_def_ids=valid_id,
                        print_options={'indent':4,
                                       'printout':True, 'precision':3,
-                                      'show':['name', 'children', 'field',
+                                      'show':['name', 'subtrees', 'field',
                                               'value',#'offset',# 'py_id',
                                               'index', 'size','flags', # 'unique',
                                               'filepath', 'binsize','ramsize',
