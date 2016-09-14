@@ -88,7 +88,7 @@ object_block = Struct("object",
 
     SIZE=64,
     
-    CHILD=Container("data",
+    SUBTREE=Container("data",
         Array("sub-objects",
               SIZE=sub_objects_size, SUB_STRUCT=sub_object_block,
               POINTER="..sub_objects_pointer"),

@@ -19,10 +19,10 @@ try:
     #strings = loader.build_tag(filepath=path+'loc.map',     def_id="resource")
     #halomap = loader.build_tag(filepath=path+'Smoke Screen\\CE_bloodgulch.map', def_id="map")
 
-    sounds.pprint(printout=True, show=['name','value','children','index','field'])
-    #bitmaps.pprint(printout=True, show=['name','value','children','index','field'])
-    #strings.pprint(printout=True, show=['name','value','children','index','field'])
-    #halomap.pprint(printout=True, show=['name','value','children','index','field'])
+    sounds.pprint(printout=True, show=['name','value','subtrees','index','field'])
+    #bitmaps.pprint(printout=True, show=['name','value','subtrees','index','field'])
+    #strings.pprint(printout=True, show=['name','value','subtrees','index','field'])
+    #halomap.pprint(printout=True, show=['name','value','subtrees','index','field'])
     
     input('-'*80 + '\n'+
           'Finished.\n'+

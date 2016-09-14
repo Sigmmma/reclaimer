@@ -182,7 +182,7 @@ class HekTagScanner(HaloHandler):
                                 ext = '.'+block.tag_class.enum_name
                             except Exception:
                                 ext = ''
-                            logstr += ' '*8 + block.CHILD + ext + '\n'
+                            logstr += ' '*8 + block.SUBTREE + ext + '\n'
                             
                 except Exception:
                     print("ERROR OCCURRED WHILE ATTEMPTING TO SCAN:\n" +
