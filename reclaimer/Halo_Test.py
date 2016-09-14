@@ -12,7 +12,7 @@ try:
                         #valid_def_ids="mod2",
                         print_options={'indent':4,
                                        'printout':True, 'precision':3,
-                                       'show':['name', 'children', 'field',
+                                       'show':['name', 'subtrees', 'field',
                                                'value', 'offset',# 'size', 
                                                'index', 'flags',# 'py_id',
                                                'filepath', #'unique', 'py_type',

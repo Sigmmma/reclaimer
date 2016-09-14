@@ -157,7 +157,7 @@ tag_header = Struct("tag header",
     # if indexed is 1, the meta_offset is the literal index in the
     # bitmaps, sounds, or loc cache that the meta data is located in.
     Pad(4),
-    CHILD=tag_data,
+    SUBTREE=tag_data,
     )
 
 map_header = Struct("map header",

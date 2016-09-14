@@ -17,7 +17,7 @@ try:
     meter_image_struct = metrdef.subdefs['meter_image'].descriptor
     
     #override the immutability of the frozendict
-    dict.__setitem__(metrdef.descriptor[1][14], 'CHILD', meter_image_struct)
+    dict.__setitem__(metrdef.descriptor[1][14], 'SUBTREE', meter_image_struct)
     
     tagsdir = metr_loader.datadir
     #handler to build tga images

@@ -51,23 +51,23 @@ bitmap_meta[11] = Void(bitmap_meta[11][NAME])
 bitmap_meta[12] = Void(bitmap_meta[12][NAME])
 
 pitch_range = sound_meta[18] = dict(sound_meta[18])
-pitch_range[CHILD] = Void(pitch_range[CHILD][NAME])
+pitch_range[SUBTREE] = Void(pitch_range[SUBTREE][NAME])
 # delete just the above one line and uncomment the below lines
 # when I figure out how the pointers and shit work for the reflexives
-#pitch_range_child = pitch_range[CHILD] = dict(pitch_range[CHILD])
+#pitch_range_child = pitch_range[SUBTREE] = dict(pitch_range[SUBTREE])
 #pitch_range_substruct = pitch_range_child[SUB_STRUCT] =\
 #                        dict(pitch_range_child[SUB_STRUCT])
 
 #permutations = pitch_range_substruct[4] = dict(pitch_range_substruct[4])
-#perms_child = permutations[CHILD] = dict(permutations[CHILD])
+#perms_child = permutations[SUBTREE] = dict(permutations[SUBTREE])
 #perms_substruct = perms_child[SUB_STRUCT] = dict(perms_child[SUB_STRUCT])
 #rawdata1 = perms_substruct[5] = dict(perms_substruct[5])
 #rawdata2 = perms_substruct[6] = dict(perms_substruct[6])
 #rawdata3 = perms_substruct[7] = dict(perms_substruct[7])
 
-#rawdata1[CHILD] = Void(rawdata1[CHILD][NAME])
-#rawdata2[CHILD] = Void(rawdata2[CHILD][NAME])
-#rawdata3[CHILD] = Void(rawdata3[CHILD][NAME])
+#rawdata1[SUBTREE] = Void(rawdata1[SUBTREE][NAME])
+#rawdata2[SUBTREE] = Void(rawdata2[SUBTREE][NAME])
+#rawdata3[SUBTREE] = Void(rawdata3[SUBTREE][NAME])
 
 tag_meta = Switch("tag meta",
     DEFAULT=raw_meta_data, POINTER='.offset',
@@ -81,7 +81,7 @@ tag_header = QuickStruct("tag header",
     LUInt32("id"),
     LUInt32("size"),
     LUInt32("offset"),
-    CHILD=tag_meta
+    SUBTREE=tag_meta
     )
 
 tag_path = CStrLatin1("tag path")

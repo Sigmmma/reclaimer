@@ -504,7 +504,7 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     '''This function serves to macro the creation of a reflexive'''
     desc.update(
         INCLUDE=reflexive_struct,
-        CHILD=Array(name+" array",
+        SUBTREE=Array(name+" array",
             SIZE=".size", MAX=max_count, SUB_STRUCT=substruct,
             ),
         SIZE=12
@@ -515,7 +515,7 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
             e_name = BlockDef.str_to_name(None, names[i])
             name_map[e_name] = i
             
-        desc[CHILD][NAME_MAP] = name_map
+        desc[SUBTREE][NAME_MAP] = name_map
         
     return Reflexive(name, **desc)
 
@@ -524,7 +524,7 @@ def rawdata_ref(name, field=Rawdata):
     '''This function serves to macro the creation of a rawdata reference'''
     return RawdataRef(name,
         EDITABLE=False, INCLUDE=rawdata_ref_struct,
-        CHILD=field("data", VISIBLE=False, SIZE=".size") )
+        SUBTREE=field("data", VISIBLE=False, SIZE=".size") )
 
 
 def dependency(name='tag ref', valid_ids=valid_tags):
@@ -535,7 +535,7 @@ def dependency(name='tag ref', valid_ids=valid_tags):
         BSInt32("path length"),
         BUInt32("id", DEFAULT=0xFFFFFFFF),
 
-        CHILD=StringVarLen("filepath", SIZE=tag_ref_size),
+        SUBTREE=StringVarLen("filepath", SIZE=tag_ref_size),
         EDITABLE=False,
         )
 
