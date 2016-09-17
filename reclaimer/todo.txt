@@ -4,9 +4,6 @@ Finish docstrings for modules and update existing ones.
 
 Low Priority:
 
-Make new property for Fields be routines for setting, inserting, and
-deleting attributes from a descriptor using that Field
-
 Make Bin_Size recursion safe
 
 Implement recursive pointer based blocks.
@@ -70,7 +67,7 @@ above paragraph of steps on it. Repeat this process until all tags have
 been written. If there is a point where no tags have an empty Requires
 set, either name it heuristically or ask the user what to name it.
 
-MAKE SURE TO REMOVE Compressed_Color_Plate_Data from bitmap tags
+MAKE SURE TO REMOVE compressed_color_plate_data from bitmap tags
 when making their hashes as well as compressed vertices in models and bsp
 
 make sure to null the tag class in tag references that dont exist so that the

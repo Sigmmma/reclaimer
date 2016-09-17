@@ -51,4 +51,7 @@ Rawdata = Field(base=BytearrayRaw, name="Rawdata", reader=rawdata_reader)
 
 StrLatin1Enum = Field(base=StrRawLatin1, name="StrLatin1Enum",
                       is_block=True, is_data=True, data_type=str,
+                      sizecalc=sizecalc_wrapper(len_sizecalc),
+                      decoder=decoder_wrapper(decode_string),
+                      encoder=encoder_wrapper(encode_string),
                       py_type=EnumBlock, sanitizer=bool_enum_sanitizer)
