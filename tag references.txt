@@ -86,3 +86,48 @@ circular references
     'vehi':".vehicle",                            #NEED
     'weap':".weapon",                             #NEED
     'wphi':".weapon_hud_interface",               #NEED
+
+
+
+
+REMAINING:
+
+non-circular references
+    'deca':".decal",                              #NEED
+    'lens':".lens_flare",                         #NEED
+    'ligh':".light",                              #NEED
+    'mgs2':".light_volume",                       #NEED
+    'elec':".lightning",                          #NEED
+    'rain':".weather_particle_system",            #NEED
+
+circular references
+    'actr':".actor",                              #NEED
+    'actv':".actor_varient",                      #NEED
+    'matg':".globals",                            #NEED
+    'glw!':".glow",                               #NEED
+    'grhi':".grenade_hud_interface",              #NEED
+    'hudg':".hud_globals",                        #NEED
+    'coll':".model_collision_geometry",           #NEED
+    'part':".particle",                           #NEED
+    'pctl':".particle_system",                    #NEED
+    'scnr':".scenario",                           #NEED
+    'sbsp':".scenario_structure_bsp",             #NEED
+    'lsnd':".sound_looping",                      #NEED
+    'DeLa':".ui_widget_definition",               #NEED
+    'unhi':".unit_hud_interface",                 #NEED
+    'wphi':".weapon_hud_interface",               #NEED
+
+    'obje':".object",                             #----
+    'ctrl':".device_control",                     #NEED
+    'lifi':".device_light_fixture",               #NEED
+    'mach':".device_machine",                     #NEED
+    'eqip':".equipment",                          #NEED
+    'garb':".garbage",                            #NEED
+    'weap':".weapon",                             #NEED
+    'plac':".placeholder",                        #NEED
+    'proj':".projectile",                         #NEED
+    'scen':".scenery",                            #NEED
+    'ssce':".sound_scenery",                      #NEED
+    'unit':".unit",                               #----
+    'bipd':".biped",                              #NEED
+    'vehi':".vehicle",                            #NEED
