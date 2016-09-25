@@ -3,7 +3,7 @@ from os.path import basename, exists, normpath, splitext
 
 from supyr_struct.test import TagTestHandler
 from supyr_struct.buffer import BytearrayBuffer
-from ..fields import *
+from ..field_types import *
 from .defs.objs.tag import HekTag
 
 
@@ -129,13 +129,13 @@ class HaloHandler(TagTestHandler):
         refs = {}
 
         try:
-            field = desc['TYPE']
+            this_f_type = desc['TYPE']
         except Exception:
-            field = None
+            this_f_type = None
         
-        if field is f_type:
+        if this_f_type is f_type:
             return True, None
-        elif field is not None:
+        elif this_f_type is not None:
             for key in desc:
                 hassubrefs, subrefs = self._build_loc_cache(f_type,desc[key])
                 if hassubrefs:
@@ -167,8 +167,8 @@ class HaloHandler(TagTestHandler):
 
     def build_loc_cache(self, f_type):
         '''this builds a cache of paths that will be used
-        to quickly locate specific field types in structures
-        by caching all possible locations of the Field'''
+        to quickly locate specific FieldTypes in structures
+        by caching all possible locations of the FieldType'''
         cache = {}
         
         for def_id in self.defs:

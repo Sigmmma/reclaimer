@@ -2,7 +2,7 @@ from hashlib import md5
 from os import makedirs
 from os.path import dirname, exists
 from supyr_struct.buffer import *
-from supyr_struct.fields import Field
+from supyr_struct.field_types import FieldType
 from supyr_struct.blocks import VoidBlock
 from traceback import format_exc
 
@@ -126,7 +126,7 @@ class TagRipper(MapLoader):
 
         #change the endianness of the library since we're now
         #going to treat all the meta data as if they were tags
-        Field.force_big()
+        FieldType.force_big()
 
         extra_ops = ''
         if rebuild_paths:
@@ -194,10 +194,10 @@ class TagRipper(MapLoader):
                     except Exception:
                         print(format_exc())
         except Exception:
-            Field.force_normal()
+            FieldType.force_normal()
             raise
 
-        Field.force_normal()
+        FieldType.force_normal()
 
 
     def get_meta_path(self,

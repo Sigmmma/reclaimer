@@ -39,7 +39,8 @@ class HashCacher(Handler):
         print('Attempting to load existing hashcache...')
         # its faster to try and just update the hashcache if it already exists
         try:
-            cache = self.build_tag(filepath=self.tagsdir + cache_name + ".hashcache")
+            cache = self.build_tag(
+                filepath=self.tagsdir + cache_name + ".hashcache")
             hashmap = self.hashcache_to_hashmap(cache)
             description = description.rstrip('\n')
             if len(description):
@@ -73,9 +74,12 @@ class HashCacher(Handler):
                     print("Hashing %s '%s' tags..." % (len(tag_coll), def_id))
                     tag_lib.print_to_console = True
                     
-                tag_ref_paths   = tag_lib.tag_ref_cache.get(def_id,   ((), ()))[1]
-                reflexive_paths = tag_lib.reflexive_cache.get(def_id, ((), ()))[1]
-                raw_data_paths  = tag_lib.raw_data_cache.get(def_id,  ((), ()))[1]
+                tag_ref_paths   = tag_lib.tag_ref_cache.get(def_id,
+                                                            ((), ()))[1]
+                reflexive_paths = tag_lib.reflexive_cache.get(def_id,
+                                                              ((), ()))[1]
+                raw_data_paths  = tag_lib.raw_data_cache.get(def_id,
+                                                             ((), ()))[1]
 
                 subdir = subdir.lstrip(' ')
                 
@@ -88,10 +92,12 @@ class HashCacher(Handler):
                         #directory being scanned, then skip it
                         if subdir and not filepath.startswith(subdir):
                             continue
-                        data = tag_lib.build_tag(filepath=tagsdir+filepath).data
+                        data = tag_lib.build_tag(
+                            filepath=tagsdir+filepath).data
 
-                        '''need to do some extra stuff for certain tags with fields
-                        that are normally zeroed out as tags, but arent as meta.'''
+                        '''need to do some extra stuff for certain tags
+                        with fields that are normally zeroed out as tags,
+                        but arent as meta.'''
                         if def_id == 'effe':
                             # mask away the meaningless flags
                             data.tagdata.flags.data &= 3

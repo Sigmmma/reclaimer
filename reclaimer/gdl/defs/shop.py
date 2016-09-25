@@ -1,6 +1,6 @@
 from supyr_struct.defs.tag_def import TagDef
 from ..common_descs import *
-from ..fields import *
+from ..field_types import *
 
 def get(): return shop_def
 

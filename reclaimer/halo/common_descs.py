@@ -2,7 +2,7 @@ from copy import copy, deepcopy
 
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
-from .fields import *
+from .field_types import *
 from .constants import *
 
 compressed_normal_32 = LBitStruct('compressed_norm32',
@@ -520,11 +520,11 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     return Reflexive(name, **desc)
 
 
-def rawdata_ref(name, field=Rawdata):
+def rawdata_ref(name, f_type=Rawdata):
     '''This function serves to macro the creation of a rawdata reference'''
     return RawdataRef(name,
         EDITABLE=False, INCLUDE=rawdata_ref_struct,
-        SUBTREE=field("data", VISIBLE=False, SIZE=".size") )
+        SUBTREE=f_type("data", VISIBLE=False, SIZE=".size") )
 
 
 def dependency(name='tag ref', valid_ids=valid_tags):

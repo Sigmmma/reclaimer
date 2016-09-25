@@ -1,4 +1,4 @@
-from supyr_struct.field_methods import *
+from supyr_struct.field_type_methods import *
 from .constants import *
 
 
