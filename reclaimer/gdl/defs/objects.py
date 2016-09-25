@@ -1,6 +1,6 @@
 from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.defs.common_descs import *
-from ..fields import *
+from ..field_types import *
 from .objs.objects import ObjectsPs2Tag
 
 def get(): return objects_ps2_def

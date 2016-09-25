@@ -1,4 +1,4 @@
-from ....fields import *
+from ....field_types import *
 from supyr_struct.tag import *
 
 class MetaTag(Tag):    

@@ -1,6 +1,6 @@
 from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.defs.common_descs import *
-from ..fields import *
+from ..field_types import *
 from .objs.anim import AnimPs2Tag
 
 # This definition doesnt actually work. They store stuff weirdly.

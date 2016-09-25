@@ -1,6 +1,6 @@
 from supyr_struct.defs.common_descs import *
 
-from .fields import *
+from .field_types import *
 
 def lump_fcc(value):
     return fcc(value, 'big')    

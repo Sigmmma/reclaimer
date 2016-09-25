@@ -1,5 +1,5 @@
 from supyr_struct.tag import *
-from supyr_struct.fields import *
+from supyr_struct.field_types import *
 
 
 class GdlTag(Tag):

@@ -2,7 +2,7 @@
 from array import array
 from os.path import splitext
 
-from ...fields import *
+from ...field_types import *
 from ..defs.objs.bitm import *
 
 from reclaimer.resources.bitmap_module import bitmap_convertor as bc

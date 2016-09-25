@@ -1,7 +1,7 @@
 from os.path import basename, normpath
 
 from supyr_struct.test import TagTestHandler
-from ..fields import *
+from ..field_types import *
 from .defs.objs.tag import MetaTag
 
 
