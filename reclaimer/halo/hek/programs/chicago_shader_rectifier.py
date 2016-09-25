@@ -2,7 +2,7 @@ import os
 
 from traceback import format_exc
 from ..handler import HaloHandler
-from supyr_struct.fields import Void
+from supyr_struct.field_types import Void
 
 class ShaderRectifier(HaloHandler):
     target_id = "schi"

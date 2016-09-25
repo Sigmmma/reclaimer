@@ -1,6 +1,5 @@
 from os.path import splitext
 from .tag import *
-from supyr_struct.fields import Void
 
 class ScexTag(HekTag):
 

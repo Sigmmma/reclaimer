@@ -80,11 +80,11 @@ class GametypeTag(XboxSaveTag):
         #after trying to read the tag, even if there is an exception
         try:
             if self.is_powerpc:
-                Field.force_big()
+                FieldType.force_big()
             result = XboxSaveTag.rebuild(self, **kwargs)
         finally:
             if self.is_powerpc:
-                Field.force_normal()
+                FieldType.force_normal()
         return result
 
     def xbox_sign(self, rawdata=None, authkey=None):
@@ -101,7 +101,7 @@ class GametypeTag(XboxSaveTag):
         try:
             result = None
             if self.is_powerpc:
-                Field.force_big()
+                FieldType.force_big()
             if self.is_xbox:
                 #calculate the xbox checksum
                 self.xbox_sign()
@@ -118,6 +118,6 @@ class GametypeTag(XboxSaveTag):
             result = XboxSaveTag.serialize(self, **kwargs)
         finally:
             if self.is_powerpc:
-                Field.force_normal()
+                FieldType.force_normal()
 
         return result

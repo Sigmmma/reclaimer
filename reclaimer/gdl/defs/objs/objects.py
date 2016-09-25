@@ -8,7 +8,7 @@ from traceback import format_exc
 from xml.etree.ElementTree import ElementTree as etree
 
 from .tag import *
-from ...fields import *
+from ...field_types import *
 from supyr_struct.defs.block_def import BlockDef
 
 MONOCHROME_FORMATS = set(("A_4_IDX_4", "I_4_IDX_4", "A_8_IDX_8", "I_8_IDX_8"))
