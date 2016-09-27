@@ -137,7 +137,7 @@ try:
                                                       title="Import characters from...")
                 if filepath != "":
                     try:
-                        self.Loaded_XBE.data.secret_characters.rebuild(filepath=filepath)
+                        self.Loaded_XBE.data.secret_characters.parse(filepath=filepath)
                         self._Initialize_Windows()
                     except: print(format_exc())
         
@@ -157,7 +157,7 @@ try:
                                                       title="Import cheats from...")
                 if filepath != "":
                     try:
-                        self.Loaded_XBE.data.cheats.rebuild(filepath=filepath)
+                        self.Loaded_XBE.data.cheats.parse(filepath=filepath)
                         self._Initialize_Windows()
                     except: print(format_exc())
         

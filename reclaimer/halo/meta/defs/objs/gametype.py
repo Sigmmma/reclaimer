@@ -43,7 +43,7 @@ class GametypeTag(XboxSaveTag):
         checksum = unpack(end+'I', buffer[offset:offset+4])[0]
         return self.calc_crc32(buffer, offset) == checksum
 
-    def rebuild(self, **kwargs):
+    def parse(self, **kwargs):
         ''''''
         if kwargs.get('filepath') is None and kwargs.get('rawdata') is None:
             kwargs['filepath'] = self.filepath
@@ -81,7 +81,7 @@ class GametypeTag(XboxSaveTag):
         try:
             if self.is_powerpc:
                 FieldType.force_big()
-            result = XboxSaveTag.rebuild(self, **kwargs)
+            result = XboxSaveTag.parse(self, **kwargs)
         finally:
             if self.is_powerpc:
                 FieldType.force_normal()
