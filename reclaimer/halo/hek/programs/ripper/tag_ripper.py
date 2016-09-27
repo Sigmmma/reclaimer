@@ -75,7 +75,7 @@ class TagRipper(MapLoader):
             h_desc = self.tag_lib.defs[def_id].descriptor[0]
             
             h_block = [None]
-            h_desc['TYPE'].reader(h_desc, parent=h_block, attr_index=0)
+            h_desc['TYPE'].parser(h_desc, parent=h_block, attr_index=0)
             b_buffer = h_block[0].serialize(buffer=BytearrayBuffer(),
                                             calc_pointers=False)
             
@@ -221,8 +221,7 @@ class TagRipper(MapLoader):
 
         get_blocks = self.tag_lib.get_blocks_by_paths
 
-        #null out the fields that are normally nulled
-        #out in tags and read the rawdata chunks
+        #null out the fields that are normally nulled out in tags
         if tag_ref_paths:
             for b in get_blocks(tag_ref_paths[1], tag_meta):
                 b.path_pointer = b.path_length = 0

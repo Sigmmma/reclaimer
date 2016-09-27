@@ -230,8 +230,8 @@ class HaloHandler(TagTestHandler):
         for b in self.get_blocks_by_paths(raw_data_paths, data):
             b.unknown_1 = b.unknown_2 = b.pointer = b.id = 0
 
-        #write the tag data to the hash buffer
-        data.TYPE.writer(data, writebuffer=hash_buffer)
+        #serialize the tag data to the hash buffer
+        data.TYPE.serializer(data, writebuffer=hash_buffer)
         
         return md5(hash_buffer)
         

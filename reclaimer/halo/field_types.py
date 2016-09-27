@@ -55,9 +55,9 @@ TagIndexRef = FieldType(base=Struct, name="TagIndexRef")
 #meta datas in a map file. This Field exists so the Map_Magic
 #can be easily supplied through the keyword argument "Map_Magic"
 TagIndex = FieldType(base=Array, name="TagIndex",
-                     reader=tag_index_reader, writer=tag_index_writer)
+                     parser=tag_index_parser, serializer=tag_index_serializer)
 
-Rawdata = FieldType(base=BytearrayRaw, name="Rawdata", reader=rawdata_reader)
+Rawdata = FieldType(base=BytearrayRaw, name="Rawdata", parser=rawdata_parser)
 
 StrLatin1Enum = FieldType(base=StrRawLatin1, name="StrLatin1Enum",
                           is_block=True, is_data=True, data_type=str,

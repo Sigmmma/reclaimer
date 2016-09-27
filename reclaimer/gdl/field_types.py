@@ -25,7 +25,7 @@ def qword_size(node=None, parent=None, attr_index=None,
     return parent.qword_count*16+8
 
 
-def lump_array_reader(self, desc, node=None, parent=None, attr_index=None,
+def lump_array_parser(self, desc, node=None, parent=None, attr_index=None,
                       rawdata=None, root_offset=0, offset=0, **kwargs):
     if node is None:
         node = (desc.get(BLOCK_CLS, self.py_type)
@@ -44,9 +44,9 @@ def lump_array_reader(self, desc, node=None, parent=None, attr_index=None,
     for i in range(node.get_size()):
         #need to append a new entry to the block
         list.append(node, None)
-        offset = b_f_type.reader(b_desc, attr_index=i, offset=offset, **kwargs)
+        offset = b_f_type.parser(b_desc, attr_index=i, offset=offset, **kwargs)
 
     return offset
 
 
-Lump = FieldType(base=Array, name='Lump', reader=lump_array_reader)
+Lump = FieldType(base=Array, name='Lump', parser=lump_array_parser)

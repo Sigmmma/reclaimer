@@ -73,14 +73,14 @@ class HekTagScanner(HaloHandler):
                     except (OSError, MemoryError) as e:
                         print(format_exc())
                         print('Not enough accessable memory to continue '+
-                              'loading tags. Ran out while opening\\reading:'+
+                              'loading tags. Ran out while opening\\parsing:'+
                               ('\n    %s\n    Remaining unloaded tags will ' +
                                'be de-indexed and skipped\n') % filepath)
                         del tag_coll[filepath]
                         self.clear_unloaded_tags()
                         return
                     except Exception:
-                        print('Error encountered while opening\\reading:'+
+                        print('Error encountered while opening\\parsing:'+
                               '\n    %s\n    Tag may be corrupt\n' % filepath )
                         del tag_coll[filepath]
                     self.tags_indexed -= 1
