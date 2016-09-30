@@ -229,25 +229,3 @@ lump_headers = Array('lump headers',
     POINTER='.wad_header.lump_headers_pointer',
     SIZE='.wad_header.lump_count', SUB_STRUCT=lump_header,
     )
-
-'''these are unused because it is just too
-annoying to deal with lumps with a switch'''
-#lump_switch = Switch('lump',
-#    CASE=get_lump_type,
-#    CASES={'TOFF':string_offsets,
-#           'LOFF':list_offsets,
-#           'SDEF':string_def_offsets,
-#           'LDEF':list_def_offsets,
-#           
-#           'LIST':string_list_array,
-#           'STRS':string_message_array,
-#
-#           'FONT':font_array,
-#           'TEXT':raw_text,
-#           'DEFS':raw_def_names,
-#           },
-#    )
-#
-#lumps = Array('lumps',
-#    SIZE='.wad_header.lump_count', SUB_STRUCT=lump_switch,
-#    )

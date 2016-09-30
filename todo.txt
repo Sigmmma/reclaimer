@@ -1,8 +1,3 @@
-High Priority:
-
-Finish docstrings for modules and update existing ones.
-
-Low Priority:
 
 Make Bin_Size recursion safe
 

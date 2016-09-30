@@ -187,9 +187,7 @@ class ObjectsPs2Tag(GdlTag):
     palette_swizzled = True
     palette_order    = GDL_CHANNELS
 
-    def extract_data(self, defs=True, g3d=False, obj=False, tex=False,
-                     anim=False, individual=False, overwrite=False,
-                     mips=False, alpha_pal=True):
+    def extract_data(self, **kwargs):
         ''''''
         extract_folder = dirname(self.filepath) + DATA_FOLDERNAME
         mod_folder  = extract_folder + MOD_FOLDERNAME
@@ -197,27 +195,26 @@ class ObjectsPs2Tag(GdlTag):
         tex_folder  = extract_folder + TEX_FOLDERNAME
         anim_folder = extract_folder + ANIM_FOLDERNAME
 
-        if defs:
-            self.export_defs(extract_folder, overwrite)
+        if kwargs.get('defs', True):
+            self.export_defs(extract_folder, **kwargs)
 
-        if tex:
+        if kwargs.get('tex', False):
             if self.textures is None or self.palettes is None:
                 self.load_textures()
-            self.export_textures(tex_folder, overwrite, mips, alpha_pal)
+            self.export_textures(tex_folder, **kwargs)
             
-        if anim:
-            self.export_animations(anim_folder, overwrite)
+        if kwargs.get('anim', False):
+            self.export_animations(anim_folder, **kwargs)
 
-        if g3d:
-            self.export_g3d_models(mod_folder, overwrite)
+        if kwargs.get('g3d', False):
+            self.export_g3d_models(mod_folder, **kwargs)
             
-        if obj:
-            self.export_obj_models(obj_folder, individual, overwrite)
-                
+        if kwargs.get('obj', False):
+            self.export_obj_models(obj_folder, **kwargs)
 
-
-    def export_defs(self, extract_folder, overwrite=False):
+    def export_defs(self, extract_folder, **kwargs):
         ''''''
+        overwrite = kwargs.get('overwrite', False)
         if exists(extract_folder + DEFS_XML_FILENAME) and not overwrite:
             return
         
@@ -330,13 +327,13 @@ class ObjectsPs2Tag(GdlTag):
             df.write('</%s>\n'%TEX_DEFS_TAG)
             df.write('</%s>\n'%OBJECTS_PS2_TAG)
 
-
-    def export_animations(self, anim_folder=ANIM_FOLDERNAME, overwrite=False):
+    def export_animations(self, anim_folder=ANIM_FOLDERNAME, **kwargs):
         ''''''
         pass
-    
-    def export_g3d_models(self, mod_folder=MOD_FOLDERNAME, overwrite=False):
+
+    def export_g3d_models(self, mod_folder=MOD_FOLDERNAME, **kwargs):
         ''''''
+        overwrite = kwargs.get('overwrite', False)
         objects = self.data.objects
         object_defs = self.data.object_defs
         
@@ -396,9 +393,11 @@ class ObjectsPs2Tag(GdlTag):
                       'export the g3d model of object %s'%i)
                     
 
-    def export_obj_models(self, mod_folder=OBJ_FOLDERNAME,
-                          individual=False, overwrite=False):
+    def export_obj_models(self, mod_folder=OBJ_FOLDERNAME, **kwargs):
         ''''''
+        overwrite = kwargs.get('overwrite', False)
+        individual = kwargs.get('individual', False)
+
         obj_num = strip_num = ''
         objects = self.data.objects
         object_defs = self.data.object_defs
@@ -608,9 +607,11 @@ class ObjectsPs2Tag(GdlTag):
             obj_file.close()
             
 
-    def export_textures(self, tex_folder=TEX_FOLDERNAME, overwrite=False,
-                        mips=False, alpha_pal=True):
+    def export_textures(self, tex_folder=TEX_FOLDERNAME, **kwargs):
         ''''''
+        mips = kwargs.get('mips', False)
+        alpha_pal = kwargs.get('alpha_pal', False)
+        overwrite = kwargs.get('overwrite', False)
         
         if self.palettes is None or self.textures is None:
             return
@@ -772,10 +773,15 @@ class ObjectsPs2Tag(GdlTag):
                 height = (height+1)//2
 
 
-    def import_data(self, data_folder=None, update_only=False,
-                    xml=True, mod=True, tex=True, anim=True):
+    def import_data(self, **kwargs):
         '''Imports data from the data_folder into this objects tag
         and the neighboring animations tag and textures blob.'''
+        update_only = kwargs.get('update_only', False)
+        data_folder = kwargs.get('data_folder', None)
+        xml = kwargs.get('xml', True)
+        mod = kwargs.get('mod', True)
+        tex = kwargs.get('tex', True)
+        anim = kwargs.get('anim', True)
         
         if data_folder is None:
             data_folder = dirname(self.filepath) + DATA_FOLDERNAME
@@ -1542,9 +1548,7 @@ class ObjectsPs2Tag(GdlTag):
                             pix = tex[i]
                             tex[i] = (pix&0xFF00FF00)+(((pix>>16)+
                                                         (pix<<16))&0xFF00FF)
-                
 
-    
     def swizzle_palette(self, indexes=None):
         '''Except for the first and last set of 8 colors
         in the palette, the palette has every other set
@@ -1630,7 +1634,7 @@ class ObjectsPs2Tag(GdlTag):
         header = self.data.header
         objs = self.data.objects
         
-        offset = offset+160#size of the header is 160 bytes
+        offset = offset+160  # size of the header is 160 bytes
         
         obj_count = header.objects_count
         tex_count = header.bitmaps_count
@@ -1681,12 +1685,10 @@ class ObjectsPs2Tag(GdlTag):
         #set the file length
         header.obj_end = header.tex_bits = offset
 
-
     @property
     def textures_filepath(self):
         ''''''
         return dirname(self.filepath) + '\\TEXTURES.PS2'
-
 
     def serialize(self, **kwargs):
         ''''''

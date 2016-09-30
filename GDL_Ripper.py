@@ -41,15 +41,11 @@ try:
     
     for filepath in sorted(test.tags['objects']):
         print('extracting:', filepath)
-        test.tags['objects'][filepath].extract_data(defs='d' in cmd,
-                                               g3d='g' in cmd,
-                                               obj='o' in cmd,
-                                               tex='t' in cmd,
-                                               anim='a' in cmd,
-                                               individual='i' in cmd,
-                                               overwrite='ow' in cmd,
-                                               mips='mips' in cmd,
-                                               alpha_pal='alpha' in cmd)
+        test.tags['objects'][filepath].extract_data(
+            defs='d' in cmd, g3d='g' in cmd, obj='o' in cmd,
+            tex='t' in cmd,  anim='a' in cmd, mips='mips' in cmd,
+            individual='i' in cmd, alpha_pal='alpha' in cmd,
+            overwrite='ow' in cmd)
         del test.tags['objects'][filepath]
         
     input('Extraction finished.')
