@@ -136,9 +136,11 @@ try:
             if folderpath:
                 try:
                     print('---------Decompiling--------')
-                    objects_tag = self.handler.build_tag(filepath=
-                        folderpath+'\\OBJECTS.PS2')
-                    objects_tag.extract_data(1,1,1,1,1,1,0,1,1)
+                    objects_tag = self.handler.build_tag(
+                        filepath=folderpath+'\\OBJECTS.PS2')
+                    objects_tag.extract_data(
+                        defs=1, g3d=1, obj=1, tex=1, anim=1, mips=1,
+                        individual=1, overwrite=0, alpha_pal=1)
                     print('----------Finished----------')
                 except Exception:
                     print(format_exc())

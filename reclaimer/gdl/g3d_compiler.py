@@ -7,12 +7,13 @@ from .stripify import Stripifier
 
 STRIP_START = b'\x00\x00\x00\x14'
 STRIP_LINK  = b'\x00\x00\x00\x17'
-MAX_STRIP_LEN = 190 - 1#UInt8_Max - (final null vert)
+MAX_STRIP_LEN = 190 - 1  # UInt8_Max - (final null vert)
+
 DEFAULT_TEX = 0
 DEFAULT_LOD_K = -90
 DEFAULT_LM_INDEX = 0
 
-#I know that a strip can be at least 190 verts long(null vert included)
+# I know that a strip can be AT LEAST 190 verts long(null vert included)
 
 class G3dCompiler():
 
@@ -280,7 +281,6 @@ class G3dCompiler():
                         face_dir = 1.0
                     else:
                         face_dir = -1.0
-                    
 
                     #write the tristrip header
                     buffer.write(b'\x00\x80\x01\x6C'+pack('<I',len(strip))+
@@ -292,27 +292,24 @@ class G3dCompiler():
                         buffer.write(b'\x01\x80'+pack('B',len(strip)+1)+b'\x6A')
                         for i in strip:
                             v = verts[vert_data[i][0]]
-                            buffer.write(pack('b',v[0])+
-                                         pack('b',v[1])+
-                                         pack('b',v[2]))
+                            buffer.write(
+                                pack('b',v[0])+pack('b',v[1])+pack('b',v[2]))
                         #write the final vert
                         buffer.write(b'\x00'*3)
                     elif vert_max <= 32767:
                         buffer.write(b'\x01\x80'+pack('B',len(strip)+1)+b'\x69')
                         for i in strip:
                             v = verts[vert_data[i][0]]
-                            buffer.write(pack('<h',v[0])+
-                                         pack('<h',v[1])+
-                                         pack('<h',v[2]))
+                            buffer.write(
+                                pack('<h',v[0])+pack('<h',v[1])+pack('<h',v[2]))
                         #write the final vert
                         buffer.write(b'\x00'*6)
                     else:
                         buffer.write(b'\x01\x80'+pack('B',len(strip)+1)+b'\x68')
                         for i in strip:
                             v = verts[vert_data[i][0]]
-                            buffer.write(pack('<i',v[0])+
-                                         pack('<i',v[1])+
-                                         pack('<i',v[2]))
+                            buffer.write(
+                                pack('<i',v[0])+pack('<i',v[1])+pack('<i',v[2]))
                         #write the final vert
                         buffer.write(b'\x00'*12)
                     #make sure the data is 4 byte aligned
