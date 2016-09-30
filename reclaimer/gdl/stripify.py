@@ -7,26 +7,24 @@ MAX_STRIP_LEN = 2**32-4
 
 class Stripifier():
     ''''''
-
     #the max length a strip can be
     max_strip_len = MAX_STRIP_LEN
-    
+
     #whether or not the strips have all been linked together
     linked = False
-    
+
     #whether or not to link strips together with 2 degen tris
     degen_link = True
-    
+
     def __init__(self, all_tris=None, *args, **kwargs):
         '''class initialization'''
         self.load_mesh(all_tris)
 
-    
     def calc_strip(self, tri, neighbor_i=0, set_added=1):
         '''Given a starting triangle and the edge to start navigating,
         this function will return a list of the verts that make up the
         longest strip it can find and whether the strip faces backward.
-        
+
         If set_added is True, triangles found will be flagged as
         added to a strip. Otherwise they will be de-flagged.'''
         vert_data = self.vert_data
@@ -34,7 +32,7 @@ class Stripifier():
         #this is the index of the edge the
         #next triangle will be connected to
         neighbor_i = neighbor_i%3
-        
+
         strip_len = 2
         last_neighbor_i = neighbor_i
         strip_dir = False
@@ -42,9 +40,9 @@ class Stripifier():
 
         #keep track of which tris have been seen
         seen = set()
-        
+
         set_added = bool(set_added)
-        
+
         '''navigate the strip in reverse to find the best place to start'''
         while True:
             #set the last triangle as this one
@@ -55,9 +53,9 @@ class Stripifier():
             if tri is None or tri[3] or id(tri) in seen:
                 tri = last_tri
                 break
-            
+
             last_neighbor_i = (neighbor_i + 1 + strip_dir)%3
-            
+
             #get which index the last tri was in the new tri so we can
             #orient outselves and figure out which edge to travel next
             neighbor_i = (tri.index(last_tri)-4 + 1 + strip_dir)%3
@@ -66,25 +64,25 @@ class Stripifier():
             #and set the triangle as seen
             strip_dir = not strip_dir
             seen.add(id(last_tri))
-            
+
         #reset the seen set
         seen = set()
-        
+
         #make a strip starting with the first 2 verts to the triangle
         strip = tri[neighbor_i:neighbor_i+2]
         if neighbor_i == 2:
             strip = [tri[2], tri[0]]
-        
+
         #if the strip direction should be reversed
         if strip_dir:
             #reverse the first 2 verts
             strip = strip[::-1]
             strip_reversed = True
-        
+
         #get the max coordinate value of these first 2 verts and their uvs
         v0_i = tri[neighbor_i]
         v1_i = tri[(1+neighbor_i)%3]
-        
+
         '''loop over triangles until the length is maxed or
         we reach a triangle without a neighbor on that edge'''
         #cant have more than ~252 triangles in a strip since
@@ -98,7 +96,7 @@ class Stripifier():
 
             #set the last triangle as this one
             last_tri = tri
-            
+
             '''Get the next triangle.
             Starting at 1, every odd numbered triangle will
             have the next triangle chosen from its second edge,
@@ -120,26 +118,25 @@ class Stripifier():
             #orient outselves and figure out which edge to travel next
             neighbor_i = tri.index(last_tri)-4
         return strip, strip_reversed
-    
 
     def link_strips(self):
         '''Links the strips that are currently loaded together into one
         large strip. This will introduce degenerate triangles into the
         mesh to link strips. 
-        
+
         If degen_link is True, 2-3 additional degen triangles will be added 
         between strips. Otherwise, 0-1 degen triangles will be added.
         The variance depends on both strips directions and strip0's length.'''
         if self.linked:
             return
-        
+
         all_strips = self.all_strips
         all_degens = self.all_degens
         all_face_dirs = self.all_face_dirs
 
         max_len = self.max_strip_len
         degen_link = bool(self.degen_link)
-        
+
         degen_tris_added = 2*degen_link
 
         for tex_index in all_strips:
@@ -149,7 +146,7 @@ class Stripifier():
             #if there are no strips for this mesh, skip it
             if not len(strips):
                 continue
-            
+
             #a mapping that stores the strips from shortest to longest
             sorted_strips = {}
             sorted_dirs = {}
@@ -159,13 +156,13 @@ class Stripifier():
                 strip     = strips[i]
                 face_dir  = face_dirs[i]
                 strip_len = len(strip)
-                
+
                 same_len_strips = sorted_strips.get(strip_len, [])
                 same_len_strip_dirs = sorted_dirs.get(strip_len, [])
-                
+
                 same_len_strips.append(strip)
                 same_len_strip_dirs.append(face_dir)
-                
+
                 sorted_strips[strip_len] = same_len_strips
                 sorted_dirs[strip_len]   = same_len_strip_dirs
 
@@ -175,16 +172,16 @@ class Stripifier():
             new_face_dirs = []
 
             strip_lengths = list(sorted(sorted_strips.keys()))
-            
+
             #get the first set of strips to link together
             strips_i = strip_lengths.pop(0)
             curr_strips = sorted_strips.pop(strips_i)
             curr_dirs   = sorted_dirs.pop(strips_i)
-            
+
             #get the first strip to link together
             strip0_dir = curr_dirs.pop(0)
             strip0 = curr_strips.pop(0)
-            
+
             '''keep linking strips together till none are left'''
             while strip0 is not None:
                 #make a new degens list and get the current strip direction
@@ -208,22 +205,22 @@ class Stripifier():
                     #get the strip to link to
                     strip1_dir = curr_dirs.pop(0)
                     strip1 = curr_strips.pop(0)
-                    
+
                     len0 = len(strip0)
                     len1 = len(strip1)
                     end_dir0 = (strip0_dir == (len0 % 2))
                     '''find out if the strips face the opposite direction
                     because if they do they'll need a degen between them'''
                     add_degen = (end_dir0 == strip1_dir)
-                    
+
                     #if the strip being added is empty, skip it
                     if len1 == 0:
                         continue
-                    
+
                     if len0 + len1 + add_degen + degen_tris_added > max_len:
                         #total length will be over max. dont try to combine
                         break
-                    
+
                     #add to the degens list
                     for i in range(2+degen_tris_added+add_degen):
                         strip0_degens.append(len(strip0)+i)
@@ -231,7 +228,7 @@ class Stripifier():
                     #if a degen needs to be added, repeat the last vert
                     if add_degen:
                         strip0.append(strip0[-1])
-                    
+
                     #create the extra degenerate triangles
                     if degen_link:
                         strip0.append(strip0[-1])
@@ -247,9 +244,8 @@ class Stripifier():
             all_degens[tex_index]    = new_degens
             all_strips[tex_index]    = new_strips
             all_face_dirs[tex_index] = new_face_dirs
-        
-        self.linked = True
 
+        self.linked = True
 
     def load_mesh(self, all_tris=None):
         '''Loads a list of triangles into the stripifier.'''
@@ -258,20 +254,20 @@ class Stripifier():
         self.vert_map = vert_map = {}
         #Stores each unique combination of vert/uv/norm/color number
         self.vert_data = vert_data = []
-        
+
         '''Stores triangles indexed by their tex_index and then their edges.
         The triangle edges they are indexed under are in reverse direction.
         This is because all connected neighboring triangles will
         share the same edge, but in the opposite direction.'''
         self.all_tris_by_edges = {}
-        
+
         '''Stores lists of the direction of each tex_indexs triangle strips.
         False == strip is facing properly. True == strip is facing inverted.'''
         self.all_face_dirs = {}
 
         '''Stores the triangle strip lists indexed by their tex_index'''
         self.all_strips = {}
-        
+
         '''Stores tri counts for each subobject separated by tex_index'''
         self.tri_counts = {}
 
@@ -281,7 +277,7 @@ class Stripifier():
 
         #whether or not the strips have been linked together
         self.linked = False
-        
+
         if all_tris is None:
             return
         elif isinstance(all_tris, (list, tuple)):
@@ -293,13 +289,13 @@ class Stripifier():
         #loop over all meshes by texture
         for tex_index in all_tris:
             tris = all_tris[tex_index]
-            
+
             self.all_tris_by_edges[tex_index] = t_by_e = {}
             self.all_face_dirs[tex_index] = []
             self.all_strips[tex_index] = []
             self.tri_counts[tex_index] = len(tris)
             self.all_degens[tex_index] = []
-            
+
             for tri in tris:
                 v0 = tuple(tri[0])+(tex_index,)
                 v1 = tuple(tri[1])+(tex_index,)
@@ -328,7 +324,7 @@ class Stripifier():
                     vert_data.append(v2)
 
                 edges = [(v0_i, v1_i), (v1_i, v2_i), (v2_i, v0_i)]
-                
+
                 #      [vert1, vert2, vert3, added,
                 #       sib1,  sib2,  sib3,
                 #       edge1, edge2, edge3]
@@ -350,25 +346,24 @@ class Stripifier():
                     #neighbor edges are travelled in reverse.
                     t_by_e[edges[i][::-1]] = tri
 
-    
     def make_strips(self):
         '''Takes all loaded triangles and
         creates triangle strips out of them.'''
         all_tris_by_edges = self.all_tris_by_edges
-        
+
         '''loop over all meshes by texture'''
         for tex_index in all_tris_by_edges:
             tris = all_tris_by_edges[tex_index]
             self.all_face_dirs[tex_index] = face_dirs = []
             self.all_strips[tex_index] = strips = []
             self.all_degens[tex_index] = degens = []
-            
+
             tri_count = self.tri_counts[tex_index]
             edges = list(tris.keys())
-            
+
             tris_added = 0
             e_i = 0
-            
+
             '''create triangle strips for this mesh'''
             while tri_count > tris_added:
                 #get the first triangle in the strip
@@ -394,5 +389,5 @@ class Stripifier():
                 face_dirs.append(rev)
                 strips.append(strip)
                 degens.append([])
-                
+
                 tris_added += len(strip) - 2
