@@ -6,7 +6,7 @@ RED_FILL = b'\x00\x00\xff\x00'
 try:
     from reclaimer.halo.hek.handler import HaloHandler
     from supyr_struct import buffer
-    from supyr_struct.editor import handler
+    from supyr_struct.defs.bitmaps.tga import tga_def
 
     #used for loading all meter tags that can be found
     metr_loader = HaloHandler(valid_def_ids="metr", print_test=False)
@@ -20,9 +20,6 @@ try:
     dict.__setitem__(metrdef.descriptor[1][14], 'SUBTREE', meter_image_struct)
     
     tagsdir = metr_loader.datadir
-    #handler to build tga images
-    tga_maker = handler.Handler(valid_def_ids='tga', tagsdir=tagsdir,
-                                defs_path='supyr_struct.defs')
     
     print("Press enter to begin extracting meter images.")
     input()
@@ -34,15 +31,15 @@ try:
     
     for meter_path in metr_loader.tags['metr']:
         try:
-            print("Extracting '%s'..."%meter_path)
+            print("Extracting '%s'..." % meter_path)
             #clear the buffer
             del tga_buffer[:]
             tga_buffer.seek(0)
             
             meter = metr_loader.tags['metr'][meter_path]
 
-            tgaout          = tga_maker.build_tag(def_id='tga')
-            tgaout.filepath = tagsdir+splitext(meter_path)[0]+'.tga'
+            tgaout = tga_def.build()
+            tgaout.filepath = tagsdir+splitext(meter_path)[0] + '.tga'
 
             meterdata = meter.data.tagdata
             tgaheader = tgaout.data.header
@@ -62,14 +59,14 @@ try:
 
             #write each of the lines to the appropriate location
             for line in lines:
-                tga_buffer.seek( (line.x_pos + line.y_pos*tgaheader.width )*4 )
+                tga_buffer.seek((line.x_pos + line.y_pos*tgaheader.width)*4)
                 tga_buffer.write(line.line_data)
                 
             tgaout.serialize(temp=False, int_test=False, backup=False)
         except Exception:
             print(format_exc())
-            print("Above exception occurred while trying to extract "+
-                  "meter image for:\n    %s\n\n"%meter_path)
+            print("Above exception occurred while trying to extract " +
+                  "meter image for:\n    %s\n\n" % meter_path)
 
     input("\nExtraction finished. Hit enter to exit.")
 

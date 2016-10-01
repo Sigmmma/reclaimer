@@ -1,7 +1,7 @@
 from hashlib import md5
 from os.path import basename, exists, normpath, splitext
 
-from supyr_struct.test import TagTestHandler
+from supyr_struct.editor.test import TagTestHandler
 from supyr_struct.buffer import BytearrayBuffer
 from ..field_types import *
 from .defs.objs.tag import HekTag
