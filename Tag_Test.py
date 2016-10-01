@@ -1,6 +1,6 @@
 from traceback import format_exc
 try:
-    from supyr_struct.test import TagTestHandler
+    from supyr_struct.editor.test import TagTestHandler
     
     test = TagTestHandler(debug=3, print_test=True, save_test=False,
                           write_as_temp=True, backup=False,

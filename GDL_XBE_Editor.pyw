@@ -323,7 +323,7 @@ try:
                     Field_Var.Block_Index  = i
                     Field_Var.Main_Window  = self
 
-                    if field.is_bool:
+                    if 'Bool' in field.name:
                         Widget_Height = 0
                         New_Widget = Canvas(Child_Canvas, highlightthickness=0,
                                             width=Main_Window.winfo_width(),
