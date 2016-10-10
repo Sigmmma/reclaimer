@@ -14,8 +14,8 @@ try:
                                        'printout':True, 'precision':3,
                                        'show':['name', 'subtrees', 'type',
                                                'value', 'offset',# 'size', 
-                                               'index', 'flags',# 'py_id',
-                                               'filepath', #'unique', 'py_type',
+                                               'index', 'flags',# 'node_id',
+                                               'filepath', #'unique', 'node_cls',
                                                'binsize', 'ramsize'] })
     test.prompt_test()
     #cProfile.run('test.prompt_test()')

@@ -370,7 +370,7 @@ try:
                         if field.is_str:
                             Field_Var.Max_Len = this_desc["SIZE"]-1
                             Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Str(Var)
-                        elif issubclass(field.py_type, float):
+                        elif issubclass(field.node_cls, float):
                             Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Float(Var)
                         else:
                             Trace_Func = lambda name, index, mode, Var=Field_Var:Validate_and_Set_Int(Var)
