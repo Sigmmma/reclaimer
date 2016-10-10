@@ -13,7 +13,7 @@ try:
                        print_options={'indent':4,
                                       'printout':True, 'precision':3,
                                       'show':['name', 'subtrees', 'type',
-                                              'value',#'offset',# 'py_id',
+                                              'value',#'offset',# 'node_id',
                                               'index', 'size','flags', # 'unique',
                                               'filepath', 'binsize','ramsize',
                                               'trueonly',  # 'raw'

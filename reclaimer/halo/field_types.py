@@ -60,8 +60,8 @@ TagIndex = FieldType(base=Array, name="TagIndex",
 Rawdata = FieldType(base=BytearrayRaw, name="Rawdata", parser=rawdata_parser)
 
 StrLatin1Enum = FieldType(base=StrRawLatin1, name="StrLatin1Enum",
-                          is_block=True, is_data=True, data_type=str,
+                          is_block=True, is_data=True, data_cls=str,
                           sizecalc=sizecalc_wrapper(len_sizecalc),
                           decoder=decoder_wrapper(decode_string),
                           encoder=encoder_wrapper(encode_string),
-                          py_type=EnumBlock, sanitizer=enum_sanitizer)
+                          node_cls=EnumBlock, sanitizer=enum_sanitizer)
