@@ -74,8 +74,8 @@ def rawdata_parser(self, desc, node=None, parent=None, attr_index=None,
         if 'magic' in kwargs:
             offset = PC_TAG_INDEX_HEADER_SIZE + parent.pointer - kwargs['magic']
         rawdata.seek(root_offset + offset)
-        parent[attr_index] = self.py_type(rawdata.read(bytecount))
+        parent[attr_index] = self.node_cls(rawdata.read(bytecount))
         return offset + bytecount
 
-    parent[attr_index] = self.py_type(b'\x00'*parent.size)
+    parent[attr_index] = self.node_cls(b'\x00'*parent.size)
     return offset
