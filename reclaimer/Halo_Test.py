@@ -12,7 +12,7 @@ try:
                         #valid_def_ids="mod2",
                         print_options={'indent':4,
                                        'printout':True, 'precision':3,
-                                       'show':['name', 'subtrees', 'type',
+                                       'show':['name', 'steptrees', 'type',
                                                'value', 'offset',# 'size', 
                                                'index', 'flags',# 'node_id',
                                                'filepath', #'unique', 'node_cls',
