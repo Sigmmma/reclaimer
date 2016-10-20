@@ -9,7 +9,7 @@ try:
                           
                           print_options={'indent':4,
                                          'printout':True, 'precision':3,
-                                         'show':['name', 'subtrees', 'type',
+                                         'show':['name', 'steptrees', 'type',
                                                  'value', 'offset',# 'size',
                                                  'index', 'flags',
                                                  'filepath', #'unique', 
