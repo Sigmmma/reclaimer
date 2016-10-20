@@ -77,7 +77,7 @@ class ShaderRectifier(HaloHandler):
                                 ext = '.'+layer.tag_class.enum_name
                             except Exception:
                                 ext = ''
-                            logstr += "\n    " + layer.SUBTREE + ext
+                            logstr += "\n    " + layer.STEPTREE + ext
 
                     new_tag_path = tag.filepath.split(self.tagsdir)[1]
                     self.tags[def_id][new_tag_path] = tag
