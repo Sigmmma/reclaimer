@@ -1,133 +1,34 @@
-no references
-    'bitm':".bitmap",
-    'trak':".camera_track",
-    'colo':".color_table",
-    'cdmg':".continuous_damage_effect",
-    'hmt ':".hud_message_text",
-    'devc':".input_device_defaults",
-    'phys':".physics",
-    'pphy':".point_physics",
-    'snde':".sound_environment",
-    'shdr':".shader",
-    'boom':".spheroid",
-    'str#':".string_list",
-    'ustr':".unicode_string_list",
-    'wind':".wind"
-
-non-circular references
-    'ant!':".antenna",
-    'cont':".contrail",
-    'deca':".decal",                              #NEED
-    'dobc':".detail_object_collection",
-    'flag':".flag",
-    'font':".font",
-    'hud#':".hud_number",
-    'lens':".lens_flare",                         #NEED
-    'ligh':".light",                              #NEED
-    'mgs2':".light_volume",                       #NEED
-    'elec':".lightning",                          #NEED
-    'metr':".meter",
-    'mply':".multiplayer_scenario_description",
-    'ngpr':".preferences_network_game",
-    'vcky':".virtual_keyboard",
-    'senv':".shader_environment",
-    'soso':".shader_model",
-    'schi':".shader_transparent_chicago",
-    'scex':".shader_transparent_chicago_extended",
-    'sotr':".shader_transparent_generic",
-    'sgla':".shader_transparent_glass",
-    'smet':".shader_transparent_meter",
-    'spla':".shader_transparent_plasma",
-    'swat':".shader_transparent_water",
-    'rain':".weather_particle_system",            #NEED
-
-circular references
-    'actr':".actor",                              #NEED
-    'actv':".actor_varient",                      #NEED
-    'bipd':".biped",                              #NEED
-    'udlg':".dialogue",
-    'devi':".device",
-    'ctrl':".device_control",                     #NEED
-    'lifi':".device_light_fixture",               #NEED
-    'mach':".device_machine",                     #NEED
-    'jpt!':".damage_effect",
-    'effe':".effect",
-    'eqip':".equipment",                          #NEED
-    'fog ':".fog",
-    'garb':".garbage",                            #NEED
-    'mod2':".gbxmodel",
-    'matg':".globals",                            #NEED
-    'glw!':".glow",                               #NEED
-    'grhi':".grenade_hud_interface",              #NEED
-    'hudg':".hud_globals",                        #NEED
-    'item':".item",
-    'itmc':".item_collection",
-    'foot':".material_effects",
-    'mode':".model",
-    'antr':".model_animations",
-    'coll':".model_collision_geometry",           #NEED
-    'obje':".object",                             #----
-    'part':".particle",                           #NEED
-    'pctl':".particle_system",                    #NEED
-    'plac':".placeholder",                        #NEED
-    'proj':".projectile",                         #NEED
-    'scnr':".scenario",                           #NEED
-    'sbsp':".scenario_structure_bsp",             #NEED
-    'scen':".scenery",                            #NEED
-    'snd!':".sound",
-    'lsnd':".sound_looping",                      #NEED
-    'ssce':".sound_scenery",                      #NEED
-    'sky ':".sky",
-    'tagc':".tag_collection",
-    'Soul':".ui_widget_collection",
-    'DeLa':".ui_widget_definition",               #NEED
-    'unit':".unit",                               #----
-    'unhi':".unit_hud_interface",                 #NEED
-    'vehi':".vehicle",                            #NEED
-    'weap':".weapon",                             #NEED
-    'wphi':".weapon_hud_interface",               #NEED
-
-
-
-
 REMAINING:
 
-non-circular references
-    'deca':".decal",                              #NEED
-    'lens':".lens_flare",                         #NEED
-    'ligh':".light",                              #NEED
-    'mgs2':".light_volume",                       #NEED
-    'elec':".lightning",                          #NEED
-    'rain':".weather_particle_system",            #NEED
-
 circular references
-    'actr':".actor",                              #NEED
-    'actv':".actor_varient",                      #NEED
-    'matg':".globals",                            #NEED
-    'glw!':".glow",                               #NEED
-    'grhi':".grenade_hud_interface",              #NEED
-    'hudg':".hud_globals",                        #NEED
-    'coll':".model_collision_geometry",           #NEED
-    'part':".particle",                           #NEED
-    'pctl':".particle_system",                    #NEED
-    'scnr':".scenario",                           #NEED
-    'sbsp':".scenario_structure_bsp",             #NEED
-    'lsnd':".sound_looping",                      #NEED
-    'DeLa':".ui_widget_definition",               #NEED
-    'unhi':".unit_hud_interface",                 #NEED
-    'wphi':".weapon_hud_interface",               #NEED
+    'actr':".actor"
+    'actv':".actor_varient"
+    'matg':".globals"
+    'glw!':".glow"
+    'grhi':".grenade_hud_interface"
+    'hudg':".hud_globals"
+    'coll':".model_collision_geometry"
+    'part':".particle"
+    'pctl':".particle_system"
+    'scnr':".scenario"
+    'sbsp':".scenario_structure_bsp"
+    'lsnd':".sound_looping"
+    'DeLa':".ui_widget_definition"
+    'unhi':".unit_hud_interface"
+    'wphi':".weapon_hud_interface"
 
-    'obje':".object",                             #----
-    'ctrl':".device_control",                     #NEED
-    'lifi':".device_light_fixture",               #NEED
-    'mach':".device_machine",                     #NEED
-    'eqip':".equipment",                          #NEED
-    'garb':".garbage",                            #NEED
-    'weap':".weapon",                             #NEED
-    'plac':".placeholder",                        #NEED
-    'proj':".projectile",                         #NEED
-    'scen':".scenery",                            #NEED
-    'ssce':".sound_scenery",                      #NEED
-    'unit':".unit",                               #----
-    'bipd':".biped",                              #NEED
-    'vehi':".vehicle",                            #NEED
+    'obje':".object"
+    'ctrl':".device_control"
+    'lifi':".device_light_fixture"
+    'mach':".device_machine"
+    'eqip':".equipment"
+    'garb':".garbage"
+    'weap':".weapon"
+    'plac':".placeholder"
+    'proj':".projectile"
+    'scen':".scenery"
+    'ssce':".sound_scenery"
+
+    'unit':".unit"
+    'bipd':".biped"
+    'vehi':".vehicle"

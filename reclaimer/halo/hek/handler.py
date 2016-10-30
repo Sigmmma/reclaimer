@@ -9,95 +9,100 @@ from .defs.objs.tag import HekTag
 
 class HaloHandler(TagTestHandler):
     default_defs_path = "reclaimer.halo.hek.defs"
+    tag_fcc_match_set = frozenset()
+    tag_filepath_match_set = frozenset()
 
     '''
-    'actr':".actor",                              #NEED
-    'actv':".actor_varient",                      #NEED
-    'ant!':".antenna",                            #NEED
-    'bipd':".biped",                              #NEED
-    'bitm':".bitmap",
-    'trak':".camera_track",
-    'colo':".color_table",
-    'cdmg':".continuous_damage_effect",           #NEED
-    'cont':".contrail",                           #NEED
-    'deca':".decal",                              #NEED
-    'udlg':".dialogue",                           #NEED
-    'dobc':".detail_object_collection",           #NEED
-    'devi':".device",
-    'ctrl':".device_control",                     #NEED
-    'lifi':".device_light_fixture",               #NEED
-    'mach':".device_machine",                     #NEED
-    'jpt!':".damage_effect",
-    'effe':".effect",
-    'eqip':".equipment",                          #NEED
-    'flag':".flag",
-    'fog ':".fog",
-    'font':".font",                               #NEED
-    'garb':".garbage",                            #NEED
-    'mod2':".gbxmodel",
-    'matg':".globals",                            #NEED
-    'glw!':".glow",                               #NEED
-    'grhi':".grenade_hud_interface",              #NEED
-    'hudg':".hud_globals",                        #NEED
-    'hmt ':".hud_message_text",
-    'hud#':".hud_number",
-    'devc':".input_device_defaults",
-    'item':".item",
-    'itmc':".item_collection",
-    'lens':".lens_flare",                         #NEED
-    'ligh':".light",                              #NEED
-    'mgs2':".light_volume",                       #NEED
-    'elec':".lightning",                          #NEED
-    'foot':".material_effects",
-    'metr':".meter",
-    'mode':".model",
-    'antr':".model_animations",
-    'coll':".model_collision_geometry",           #NEED
-    'mply':".multiplayer_scenario_description",
-    'obje':".object",                             #----
-    'part':".particle",                           #NEED
-    'pctl':".particle_system",                    #NEED
-    'phys':".physics",                            #NEED
-    'plac':".placeholder",                        #NEED
-    'pphy':".point_physics",
-    'ngpr':".preferences_network_game",
-    'proj':".projectile",                         #NEED
-    'scnr':".scenario",                           #NEED
-    'sbsp':".scenario_structure_bsp",             #NEED
-    'scen':".scenery",                            #NEED
-    'snd!':".sound",
-    'snde':".sound_environment",
-    'lsnd':".sound_looping",                      #NEED
-    'ssce':".sound_scenery",                      #NEED
-    'boom':".spheroid",
-    'shdr':".shader",
-    'schi':".shader_transparent_chicago",
-    'scex':".shader_transparent_chicago_extended",
-    'sotr':".shader_transparent_generic",
-    'senv':".shader_environment",
-    'sgla':".shader_transparent_glass",
-    'smet':".shader_transparent_meter",
-    'soso':".shader_model",
-    'spla':".shader_transparent_plasma",
-    'swat':".shader_transparent_water",
-    'sky ':".sky",
-    'str#':".string_list",
-    'tagc':".tag_collection",
-    'Soul':".ui_widget_collection",
-    'DeLa':".ui_widget_definition",               #NEED
-    'ustr':".unicode_string_list",
-    'unit':".unit",                               #----
-    'unhi':".unit_hud_interface",                 #NEED
-    'vehi':".vehicle",                            #NEED
-    'vcky':".virtual_keyboard",                   #NEED
-    'weap':".weapon",                             #NEED
-    'wphi':".weapon_hud_interface",               #NEED
-    'rain':".weather_particle_system",            #NEED
-    'wind':".wind"
+    'actr': '.actor',                              #NEED
+    'actv': '.actor_varient',                      #NEED
+    'ant!': '.antenna',
+    'bipd': '.biped',                              #NEED
+    'bitm': '.bitmap',
+    'trak': '.camera_track',
+    'colo': '.color_table',
+    'cdmg': '.continuous_damage_effect',
+    'cont': '.contrail',
+    'deca': '.decal',
+    'udlg': '.dialogue',
+    'dobc': '.detail_object_collection',
+    'devi': '.device',
+    'ctrl': '.device_control',                     #NEED
+    'lifi': '.device_light_fixture',               #NEED
+    'mach': '.device_machine',                     #NEED
+    'jpt!': '.damage_effect',
+    'effe': '.effect',
+    'eqip': '.equipment',                          #NEED
+    'flag': '.flag',
+    'fog ': '.fog',
+    'font': '.font',
+    'garb': '.garbage',                            #NEED
+    'mod2': '.gbxmodel',
+    'matg': '.globals',                            #NEED
+    'glw!': '.glow',                               #NEED
+    'grhi': '.grenade_hud_interface',              #NEED
+    'hudg': '.hud_globals',                        #NEED
+    'hmt ': '.hud_message_text',
+    'hud#': '.hud_number',
+    'devc': '.input_device_defaults',
+    'item': '.item',
+    'itmc': '.item_collection',
+    'lens': '.lens_flare',
+    'ligh': '.light',
+    'mgs2': '.light_volume',
+    'elec': '.lightning',
+    'foot': '.material_effects',
+    'metr': '.meter',
+    'mode': '.model',
+    'antr': '.model_animations',
+    'coll': '.model_collision_geometry',           #NEED
+    'mply': '.multiplayer_scenario_description',
+    'obje': '.object',                             #----
+    'part': '.particle',                           #NEED
+    'pctl': '.particle_system',                    #NEED
+    'phys': '.physics',
+    'plac': '.placeholder',                        #NEED
+    'pphy': '.point_physics',
+    'ngpr': '.preferences_network_game',
+    'proj': '.projectile',                         #NEED
+    'scnr': '.scenario',                           #NEED
+    'sbsp': '.scenario_structure_bsp',             #NEED
+    'scen': '.scenery',                            #NEED
+    'snd!': '.sound',
+    'snde': '.sound_environment',
+    'lsnd': '.sound_looping',                      #NEED
+    'ssce': '.sound_scenery',                      #NEED
+    'boom': '.spheroid',
+    'shdr': '.shader',
+    'schi': '.shader_transparent_chicago',
+    'scex': '.shader_transparent_chicago_extended',
+    'sotr': '.shader_transparent_generic',
+    'senv': '.shader_environment',
+    'sgla': '.shader_transparent_glass',
+    'smet': '.shader_transparent_meter',
+    'soso': '.shader_model',
+    'spla': '.shader_transparent_plasma',
+    'swat': '.shader_transparent_water',
+    'sky ': '.sky',
+    'str#': '.string_list',
+    'tagc': '.tag_collection',
+    'Soul': '.ui_widget_collection',
+    'DeLa': '.ui_widget_definition',               #NEED
+    'ustr': '.unicode_string_list',
+    'unit': '.unit',                               #----
+    'unhi': '.unit_hud_interface',                 #NEED
+    'vehi': '.vehicle',                            #NEED
+    'vcky': '.virtual_keyboard',
+    'weap': '.weapon',                             #NEED
+    'wphi': '.weapon_hud_interface',               #NEED
+    'rain': '.weather_particle_system',
+    'wind': '.wind'
     '''
 
     def __init__(self, *args, **kwargs):
         TagTestHandler.__init__(self, *args, **kwargs)
+
+        self.tag_fcc_match_set = set()
+        self.tag_filepath_match_set = set()
 
         self.ext_id_map = {}
         for key in self.id_ext_map.keys():
@@ -121,7 +126,6 @@ class HaloHandler(TagTestHandler):
         self.tag_ref_cache   = self.build_loc_cache(TagIndexRef)
         self.reflexive_cache = self.build_loc_cache(Reflexive)
         self.raw_data_cache  = self.build_loc_cache(RawdataRef)
-    
 
     def _build_loc_cache(self, f_type, desc={}):
         hasrefs = False
@@ -136,33 +140,30 @@ class HaloHandler(TagTestHandler):
             return True, None
         elif this_f_type is not None:
             for key in desc:
-                hassubrefs, subrefs = self._build_loc_cache(f_type,desc[key])
+                hassubrefs, subrefs = self._build_loc_cache(f_type, desc[key])
                 if hassubrefs:
                     hasrefs = True
                     refs[key] = subrefs
                     
         return hasrefs, refs
-    
 
-    def _get_blocks_by_paths(self, paths, block, coll, cond):
+    def _get_nodes_by_paths(self, paths, node, coll, cond):
         if paths is None:
-            if cond(block):
-                coll.append(block)
-            return
-        
+            # the paths have been exhausted, so this is a Block to check
+            if cond(node):
+                coll.append(node)
         elif isinstance(paths, dict):
             if 'SUB_STRUCT' in paths:
                 paths = paths['SUB_STRUCT']
-                for i in range(len(block)):
-                    self._get_blocks_by_paths(paths, block[i], coll, cond)
+                for i in range(len(node)):
+                    self._get_nodes_by_paths(paths, node[i], coll, cond)
                 return
             
             for key in paths:
-                self._get_blocks_by_paths(paths[key], block[key], coll, cond)
+                self._get_nodes_by_paths(paths[key], node[key], coll, cond)
         else:
             raise TypeError("Expected 'paths' to be of type %s or %s, not %s."%
                             (type(None), type(dict), type(paths)) )
-    
 
     def build_loc_cache(self, f_type):
         '''this builds a cache of paths that will be used
@@ -180,18 +181,15 @@ class HaloHandler(TagTestHandler):
 
         return cache
 
-
-    def get_blocks_by_paths(self, paths, block, cond=None):
+    def get_nodes_by_paths(self, paths, node, cond=None):
         coll = []
         if cond is None:
             cond = lambda x: True
             
         if len(paths):
-            self._get_blocks_by_paths(paths, block, coll, cond)
+            self._get_nodes_by_paths(paths, node, coll, cond)
 
         return coll
-
-        
 
     def get_def_id(self, filepath):
         if not filepath.startswith('.') and '.' in filepath:
@@ -213,38 +211,54 @@ class HaloHandler(TagTestHandler):
         except:
             return None
 
-
     def get_tag_hash(self, data, tag_ref_paths=(),
                      reflexive_paths=(), raw_data_paths=()):
         hash_buffer = BytearrayBuffer()
 
         #null out the parts of a tag that can screw
         #with the hash when compared to a tag meta                        
-        for b in self.get_blocks_by_paths(tag_ref_paths, data):
+        for b in self.get_nodes_by_paths(tag_ref_paths, data):
             b.path_pointer = b.id = 0
             
-        for b in self.get_blocks_by_paths(reflexive_paths, data):
+        for b in self.get_nodes_by_paths(reflexive_paths, data):
             b.id = b.pointer = 0
             
-        for b in self.get_blocks_by_paths(raw_data_paths, data):
+        for b in self.get_nodes_by_paths(raw_data_paths, data):
             b.unknown_1 = b.unknown_2 = b.pointer = b.id = 0
 
         #serialize the tag data to the hash buffer
         data.TYPE.serializer(data, writebuffer=hash_buffer)
         
         return md5(hash_buffer)
-        
 
-    def get_tag_not_exist(self, block):
+    def get_tagref_invalid(self, node):
+        '''
+        Returns whether or not the filepath of the tag reference isnt valid.
+        Returns False if the filepath is empty or the file exists.
+        Returns True otherwise.
+        '''
         #if the string is empty, then it doesnt NOT exist, so return False
-        if not block.filepath:
+        if not node.filepath:
             return False
         filepath = self.tagsdir
-        filepath += block.filepath
+        filepath += node.filepath
         
         try:
-            filepath += '.'+block.tag_class.enum_name
+            filepath += '.' + node.tag_class.enum_name
         except Exception:
             pass
         
         return not exists(filepath)
+
+    def get_tagref_matches(self, node):
+        '''
+        Returns whether or not the int fcc of the nodes tag_class
+        matches any of the int fccs in self.tag_fcc_match_set and
+        if the nodes filepath is in self.tag_filepath_match_set.
+
+        Returns True if both matchs are found AND the filepath is valid.
+        Returns False otherwise.
+        '''
+        return (bool(node.filepath) and (
+            node.filepath in self.tag_filepath_match_set and
+            node.tag_class.data in self.tag_fcc_match_set))

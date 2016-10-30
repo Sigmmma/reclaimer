@@ -6,7 +6,7 @@ def get():
 
 boom_def = TagDef("boom",
     blam_header('boom'),
-    QuickStruct('tagdata',
+    QStruct('tagdata',
         #this is just a guess. This could just as easily
         #be 4 bytes of padding. effing useless tag type
         BFloat('radius')

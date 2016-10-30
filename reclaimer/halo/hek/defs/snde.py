@@ -1,7 +1,7 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-snde_body = QuickStruct("tagdata",
+snde_body = QStruct("tagdata",
     Pad(4),
     BUInt16("priority"),
     Pad(2),

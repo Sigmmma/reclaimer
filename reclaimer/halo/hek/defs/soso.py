@@ -33,9 +33,9 @@ os_soso_ext = Struct("shader model extension",
     Pad(4),
     #Specular Tint Override
     BFloat("perpendicular brightness"),#[0,1]
-    QuickStruct("perpendicular tint color", INCLUDE=rgb_float),
+    QStruct("perpendicular tint color", INCLUDE=rgb_float),
     BFloat("parallel brightness"),#[0,1]
-    QuickStruct("parallel tint color",      INCLUDE=rgb_float),
+    QStruct("parallel tint color",      INCLUDE=rgb_float),
 
     Pad(8),
     BFloat("specular Lighting exponent"),
@@ -45,14 +45,9 @@ os_soso_ext = Struct("shader model extension",
 
 
 soso_body = Struct("tagdata",
-    #Radiosity Properties
     radiosity_settings,
-    
-    #Shader Type
-    material_type,
-    shader_id_num,
+    shader_physics,
 
-    Pad(2),
     #Model Shader Properties
     BBool16("flags",
         "detail after reflection",
@@ -79,8 +74,8 @@ soso_body = Struct("tagdata",
         BSEnum16("color source", *function_names),
         BSEnum16("animation function", *animation_functions),
         BFloat("animation period"),#seconds
-        QuickStruct("color lower bound", INCLUDE=rgb_float),
-        QuickStruct("color upper bound", INCLUDE=rgb_float),
+        QStruct("color lower bound", INCLUDE=rgb_float),
+        QStruct("color upper bound", INCLUDE=rgb_float),
         ),
         
     Pad(12),
@@ -110,7 +105,7 @@ soso_body = Struct("tagdata",
         Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
         Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
         Struct("rotation-animation",   INCLUDE=anim_src_func_per_pha_sca),
-        QuickStruct("rot-animation center", INCLUDE=xy_float),
+        QStruct("rot-animation center", INCLUDE=xy_float),
         ),
                    
     Pad(8),
@@ -120,9 +115,9 @@ soso_body = Struct("tagdata",
         BFloat("cutoff distance"),#world units
      
         BFloat("perpendicular brightness"),#[0,1]
-        QuickStruct("perpendicular tint color", INCLUDE=rgb_float),
+        QStruct("perpendicular tint color", INCLUDE=rgb_float),
         BFloat("parallel brightness"),#[0,1]
-        QuickStruct("parallel tint color",      INCLUDE=rgb_float),
+        QStruct("parallel tint color",      INCLUDE=rgb_float),
 
         dependency("reflection cube map map", valid_bitmaps),
         ),

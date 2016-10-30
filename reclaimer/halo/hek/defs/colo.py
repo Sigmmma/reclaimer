@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 color = Struct("color",
     StrLatin1('name', SIZE=32),
-    QuickStruct("color", INCLUDE=argb_float),
+    QStruct("color", INCLUDE=argb_float),
     SIZE=48,
     )
 

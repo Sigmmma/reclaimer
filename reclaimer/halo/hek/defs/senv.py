@@ -3,15 +3,9 @@ from supyr_struct.defs.tag_def import TagDef
 from .objs.senv import SenvTag
 
 senv_body = Struct("tagdata",
-    #Radiosity Properties
     radiosity_settings,
+    shader_physics,
 
-    #Shader Type
-    material_type,
-    FlSEnum16("numeric shader id", DEFAULT=3,
-              INCLUDE=shader_id_num),
-    Pad(2),
-    
     #Environment Shader Properties
     BBool16("environment shader flags",
         "alpha tested",
@@ -50,7 +44,7 @@ senv_body = Struct("tagdata",
     BFloat(    "micro detail map scale"),
     dependency("micro detail map", valid_bitmaps),
                    
-    QuickStruct("material color", INCLUDE=rgb_float),
+    QStruct("material color", INCLUDE=rgb_float),
 
     Pad(12),
     #Bump Properties
@@ -66,18 +60,18 @@ senv_body = Struct("tagdata",
 
     Pad(52),
     #Self Illumination
-    QuickStruct("primary on-color",  INCLUDE=rgb_float),
-    QuickStruct("primary off-color", INCLUDE=rgb_float),
+    QStruct("primary on-color",  INCLUDE=rgb_float),
+    QStruct("primary off-color", INCLUDE=rgb_float),
     Struct("primary animation", INCLUDE=anim_func_per_pha),
 
     Pad(24),
-    QuickStruct("secondary on-color",  INCLUDE=rgb_float),
-    QuickStruct("secondary off-color", INCLUDE=rgb_float),
+    QStruct("secondary on-color",  INCLUDE=rgb_float),
+    QStruct("secondary off-color", INCLUDE=rgb_float),
     Struct("secondary animation", INCLUDE=anim_func_per_pha),
 
     Pad(24),
-    QuickStruct("plasma on-color",  INCLUDE=rgb_float),
-    QuickStruct("plasma off-color", INCLUDE=rgb_float),
+    QStruct("plasma on-color",  INCLUDE=rgb_float),
+    QStruct("plasma off-color", INCLUDE=rgb_float),
     Struct("plasma animation", INCLUDE=anim_func_per_pha),
 
     Pad(24),
@@ -95,8 +89,8 @@ senv_body = Struct("tagdata",
     BFloat("brightness"),#[0,1]
 
     Pad(20),
-    QuickStruct("perpendicular color", INCLUDE=rgb_float),
-    QuickStruct("parallel color",      INCLUDE=rgb_float),
+    QStruct("perpendicular color", INCLUDE=rgb_float),
+    QStruct("parallel color",      INCLUDE=rgb_float),
 
     Pad(16),
     #Reflection Properties
