@@ -14,6 +14,9 @@ the respective axis on a path perpendicular to the axis.
 
 This will mean doing sqrt(y^2+z^2) for xx,
 sqrt(x^2+z^2) for yy, and sqrt(x^2+y^2) for zz
+
+The second matrix is an inverse of the first matrix.
+Both matricies must exist.
 '''
 
 inertial_matrix = Struct("inertial matrix",
