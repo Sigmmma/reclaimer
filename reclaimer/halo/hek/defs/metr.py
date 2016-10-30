@@ -2,8 +2,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-def linesize(node=None, parent=None, attr_index=None,
-             rawdata=None, new_value=None, *args, **kwargs):
+def linesize(parent=None,new_value=None, *args, **kwargs):
     if parent is None:
         raise KeyError
     if new_value is None:
@@ -12,8 +11,7 @@ def linesize(node=None, parent=None, attr_index=None,
     parent.width = new_value//4
 
 
-def has_next_line(node=None, parent=None, attr_index=None,
-                 rawdata=None, new_value=None, *args, **kwargs):
+def has_next_line(rawdata=None, *args, **kwargs):
     try:
         return len(rawdata.peek(6)) >= 6
     except Exception:

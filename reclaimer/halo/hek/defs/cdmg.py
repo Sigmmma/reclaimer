@@ -3,7 +3,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 cdmg_body = Struct("tagdata",
     QStruct("radius", INCLUDE=from_to),
-    BFloat("cutoff scale"),  # [0.0 to 1.0]
+    BFloat("cutoff scale", MIN=0.0, MAX=1.0),
     Pad(24),
 
     QStruct("vibrate parameters",
