@@ -24,26 +24,26 @@ xy_float = QStruct('xy_float',
 
 # colors
 argb_float = QStruct('argb_float',
-    LFloat("a"),
-    LFloat("r"),
-    LFloat("g"),
-    LFloat("b")
+    LFloat("a", MIN=0.0, MAX=1.0),
+    LFloat("r", MIN=0.0, MAX=1.0),
+    LFloat("g", MIN=0.0, MAX=1.0),
+    LFloat("b", MIN=0.0, MAX=1.0)
     )
 rgb_float = QStruct('rgb_float',
-    LFloat("r"),
-    LFloat("g"),
-    LFloat("b")
+    LFloat("r", MIN=0.0, MAX=1.0),
+    LFloat("g", MIN=0.0, MAX=1.0),
+    LFloat("b", MIN=0.0, MAX=1.0)
     )
 rgb_byte = QStruct('rgb_uint8',
-    UInt8("r"),
-    UInt8("g"),
-    UInt8("b")
+    UInt8("r", MIN=0, MAX=255),
+    UInt8("g", MIN=0, MAX=255),
+    UInt8("b", MIN=0, MAX=255)
     )
 argb_byte = QStruct('argb_uint8',
-    UInt8("a"),
-    UInt8("r"),
-    UInt8("g"),
-    UInt8("b")
+    UInt8("a", MIN=0, MAX=255),
+    UInt8("r", MIN=0, MAX=255),
+    UInt8("g", MIN=0, MAX=255),
+    UInt8("b", MIN=0, MAX=255)
     )
 
 # rotations
@@ -63,9 +63,17 @@ yp_float = QStruct('yp_float',
     LFloat("p")
     )
 
+# maps tag class four character codes(fccs) in
+# their string encoding to their int encoding.
+tag_class_str_to_int = {}
+# maps tag class four character codes(fccs) in
+# their int encoding to their string encoding.
+tag_class_int_to_str = {}
+
 
 def tag_class(name, *args):
-    return BUEnum32(name, *(tuple(args) + (("none", 0xffffffff),) ),
+    return BUEnum32(name,
+                    *(tuple(args) + (("none", 0xffffffff),) ),
                     DEFAULT=0xffffffff)
 
 valid_tags = tag_class("tag_class",
@@ -91,7 +99,7 @@ valid_tags = tag_class("tag_class",
     ("flag",           'flag'),
     ("fog",            'fog '),
     ("font",           'font'),
-    ("garbage",        'gar'),
+    ("garbage",        'garb'),
     ("gbxmodel",       'mod2'),
     ("globals",        'matg'),
     ("glow",           'glw!'),
@@ -154,6 +162,13 @@ valid_tags = tag_class("tag_class",
     ("wind",                 'wind'),
     )
 
+for key in valid_tags:
+    if not isinstance(key, int):
+        continue
+    tag_cls = valid_tags[key][1]
+    if isinstance(tag_cls, str):
+        tag_class_str_to_int[tag_cls] = fcc(tag_cls)
+        tag_class_int_to_str[fcc(tag_cls)] = tag_cls
 
 valid_attachments = tag_class("tag_class",
     ("contrail",        'cont'),
@@ -204,6 +219,7 @@ valid_particles = tag_class("tag_class", ("particle", 'part'))
 valid_lens_flares = tag_class("tag_class", ("lens_flare", 'lens'))
 valid_point_physics = tag_class("tag_class", ("point_physics", 'pphy'))
 valid_bitmaps = tag_class("tag_class", ("bitmap", 'bitm'))
+valid_decals = tag_class("tag_class", ("decal", 'deca'))
 valid_sounds  = tag_class("tag_class", ("sound", 'snd!'))
 valid_physics = tag_class("tag_class", ("physics", 'phys'))
 valid_model_animations = tag_class("tag_class", ("model_animations", 'antr'))
@@ -334,11 +350,6 @@ trans_shdr_properties = (
     "scale first map with distance",
     "numeric",
     )
-trans_shdr_fade_mode = (
-    "none",
-    "fade when perpendicular",
-    "fade when parallel",
-    )
 trans_shdr_first_map_type = (
     "map 2d",
     "reflection cube map",
@@ -411,6 +422,11 @@ device_functions = (
     "locked",
     "delay",
     )
+shader_fade_mode = (
+    "none",
+    "fade when perpendicular",
+    "fade when parallel",
+    )
 blend_functions = (
     "current",
     "next map",
@@ -472,7 +488,7 @@ all_shader_enums = (
     )
 
 
-#Miscellaneous blocks
+#Miscellaneous descs
 anim_func_per_pha = Struct('',
     BSEnum16("function", *animation_functions),
     Pad(2),
@@ -571,29 +587,26 @@ reflexive_struct = Reflexive('reflexive',
 #This is the structure for all points where a tag references another tag
 tag_index_ref_struct = dependency()
 
-"""Shader Stuff"""
+"""Objects"""
 
-material_type = BSEnum16("material type", *materials_list, OFFSET=34)
-
-#THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS
-#This means it likely doesn't matter, but lets not take that chance
-shader_id_num = FlSEnum16("numeric shader id",
-    ("shdr", -1),#Shader
-    ("senv", 3),#Environment
-    ("soso", 4),#Model
-    ("sotr", 5),#Transparent Generic
-    ("schi", 6),#Transparent Chicago
-    ("scex", 7),#Transparent Chicago Extended
-    ("swat", 8),#Water
-    ("sgla", 9),#Glass
-    ("smet", 10),#Meter
-    ("spla", 11),#Plasma
-    OFFSET=36, EDITABLE=False,
-    )
+FlSEnum16("object type",
+    ("bipd", 0),
+    ("vehi", 1),
+    ("weap", 2),
+    ("eqip", 3),
+    ("garb", 4),
+    ("proj", 5),
+    ("scen", 6),
+    ("mach", 7),
+    ("ctrl", 8),
+    ("lifi", 9),
+    ("plac", 10),
+    ("ssce", 11),
+    DEFAULT=0, EDITABLE=False,
+    ),
 
 
-"""Radiosity Stuff"""
-
+"""Shader radiosity"""
 radiosity_settings = Struct("radiosity settings",
     BBool16("radiosity flags",
         "simple parameterization",
@@ -611,45 +624,29 @@ radiosity_settings = Struct("radiosity settings",
     QStruct("radiosity tint color",  INCLUDE=rgb_float),
     )
 
-damage_modifiers = QStruct("damage modifiers",
-    BFloat("dirt"),
-    BFloat("sand"),
-    BFloat("stone"),
-    BFloat("snow"),
-    BFloat("wood"),
-    BFloat("metal hollow"),
-    BFloat("metal thin"),
-    BFloat("metal thick"),
-    BFloat("rubber"),
-    BFloat("glass"),
-    BFloat("force field"),
-    BFloat("grunt"),
-    BFloat("hunter armor"),
-    BFloat("hunter skin"),
-    BFloat("elite"),
-    BFloat("jackal"),
-    BFloat("jackal energy shield"),
-    BFloat("engineer skin"),
-    BFloat("engineer force field"),
-    BFloat("flood combat form"),
-    BFloat("flood carrier form"),
-    BFloat("cyborg armor"),
-    BFloat("cyborg energy shield"),
-    BFloat("human armor"),
-    BFloat("human skin"),
-    BFloat("sentinel"),
-    BFloat("moniter"),
-    BFloat("plastic"),
-    BFloat("water"),
-    BFloat("leaves"),
-    BFloat("elite energy shield"),
-    BFloat("ice"),
-    BFloat("hunter shield"),
-    Pad(28),
+"""Shader physics"""
+shader_physics = Struct('physics',
+    Pad(2),
+    BSEnum16("material type", *materials_list),
+    # THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS.
+    # This seems to be a Guerilla-only optimization value
+    FlSEnum16("shader type",
+        ("shdr", -1),   # Shader
+        ("senv", 3),    # Environment
+        ("soso", 4),    # Model
+        ("sotr", 5),    # Transparent Generic
+        ("schi", 6),    # Transparent Chicago
+        ("scex", 7),    # Transparent Chicago Extended
+        ("swat", 8),    # Water
+        ("sgla", 9),    # Glass
+        ("smet", 10),   # Meter
+        ("spla", 11),   # Plasma
+        DEFAULT=-1, EDITABLE=False,
+        ),
+    Pad(2)
     )
 
-#Transparent Shader Stuff
-
+"""Transparent Shader"""
 extra_layers_block = dependency("extra layer", valid_shaders)
 
 chicago_4_stage_maps = Struct("four stage map",
@@ -689,4 +686,42 @@ chicago_2_stage_maps = Struct("two stage map", INCLUDE=chicago_4_stage_maps)
 chicago_extra_flags = (
     "dont fade active camouflage",
     "numeric countdown timer"
+    )
+
+"""Misc"""
+damage_modifiers = QStruct("damage modifiers",
+    BFloat("dirt"),
+    BFloat("sand"),
+    BFloat("stone"),
+    BFloat("snow"),
+    BFloat("wood"),
+    BFloat("metal hollow"),
+    BFloat("metal thin"),
+    BFloat("metal thick"),
+    BFloat("rubber"),
+    BFloat("glass"),
+    BFloat("force field"),
+    BFloat("grunt"),
+    BFloat("hunter armor"),
+    BFloat("hunter skin"),
+    BFloat("elite"),
+    BFloat("jackal"),
+    BFloat("jackal energy shield"),
+    BFloat("engineer skin"),
+    BFloat("engineer force field"),
+    BFloat("flood combat form"),
+    BFloat("flood carrier form"),
+    BFloat("cyborg armor"),
+    BFloat("cyborg energy shield"),
+    BFloat("human armor"),
+    BFloat("human skin"),
+    BFloat("sentinel"),
+    BFloat("moniter"),
+    BFloat("plastic"),
+    BFloat("water"),
+    BFloat("leaves"),
+    BFloat("elite energy shield"),
+    BFloat("ice"),
+    BFloat("hunter shield"),
+    Pad(28),
     )

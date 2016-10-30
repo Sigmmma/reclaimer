@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 def get(): return font_def
 
 
-character_table = QuickStruct("character table",
+character_table = QStruct("character table",
     BSInt16("character index"),
     SIZE=2
     )
@@ -14,7 +14,7 @@ character_tables = Struct("character tables",
     SIZE=12
     )
 
-character = QuickStruct("character",
+character = QStruct("character",
     BSInt16("character"),
     BSInt16("character width"),
     BSInt16("bitmap width"),

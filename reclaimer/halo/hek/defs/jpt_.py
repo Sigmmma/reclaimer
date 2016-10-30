@@ -9,7 +9,7 @@ frequency_vibration = Struct("",
     )
 
 jpt__body = Struct("tagdata",
-    QuickStruct("radius", INCLUDE=from_to),
+    QStruct("radius", INCLUDE=from_to),
     BFloat("cutoff scale"),  # [0.0 to 1.0]
     BBool32("flags",
         {NAME: "dont_scale_by_distance",
@@ -42,7 +42,7 @@ jpt__body = Struct("tagdata",
         BFloat("maximum intensity"),  # [0.0 to 1.0]
         Pad(4),
 
-        QuickStruct("tint lower bound", INCLUDE=argb_float),
+        QStruct("tint lower bound", INCLUDE=argb_float),
         ),
 
     Struct("low frequency vibrate", INCLUDE=frequency_vibration),
@@ -57,7 +57,7 @@ jpt__body = Struct("tagdata",
 
         BFloat("rotation"),  # measured in radians
         BFloat("pushback"),
-        QuickStruct("jitter", INCLUDE=from_to),
+        QStruct("jitter", INCLUDE=from_to),
         Pad(8),
         ),
 
@@ -83,7 +83,7 @@ jpt__body = Struct("tagdata",
     dependency("sound", valid_sounds),
     Pad(112),
 
-    QuickStruct("breaking effect",
+    QStruct("breaking effect",
         BFloat("forward velocity"),
         BFloat("forward radius"),
         BFloat("forward exponent"),
@@ -122,7 +122,7 @@ jpt__body = Struct("tagdata",
             ),
         BFloat("aoe core radius"),
         BFloat("damage lower bound"),
-        QuickStruct("damage upper bound", INCLUDE=from_to),
+        QStruct("damage upper bound", INCLUDE=from_to),
         BFloat("vehicle passthrough penalty"),
         BFloat("active camouflage damage"),
         BFloat("stun"),

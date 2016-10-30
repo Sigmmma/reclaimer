@@ -52,7 +52,7 @@ compressed_vertex = QStruct('compressed vertex',
     BFloat('translation y'),
     BFloat('translation z'),
 
-    # These wont work in a quickstruct, so make sure not to use them with it.
+    # These wont work in a QStruct, so make sure not to use them with it.
     #BBitStruct('normal',   INCLUDE=compressed_normal_32, SIZE=4),
     #BBitStruct('binormal', INCLUDE=compressed_normal_32, SIZE=4),
     #BBitStruct('tangent',  INCLUDE=compressed_normal_32, SIZE=4),

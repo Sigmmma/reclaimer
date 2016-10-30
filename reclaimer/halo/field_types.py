@@ -12,10 +12,10 @@ StringVarLen = FieldType(base=StrLatin1, name="HaloRefStr",
                          encoder=encode_tag_ref_str, sizecalc=tag_ref_sizecalc)
 FlUTF16StrData = FieldType(base=StrUtf16, name="UTF16StrData",
                            enc=StrUtf16.little.enc, decoder=decode_raw_string,
-                           sizecalc=utf_sizecalc )
+                           sizecalc=utf_sizecalc)
 FlStrUTF16 = FieldType(base=StrUtf16, name="StrUTF16",
                        enc=StrUtf16.little.enc, decoder=decode_string,
-                       sizecalc=delim_utf_sizecalc )
+                       sizecalc=delim_utf_sizecalc)
 
 #forces little endian integers and float
 FlUInt16 = FieldType(

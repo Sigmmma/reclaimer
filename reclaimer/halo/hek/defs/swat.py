@@ -17,14 +17,9 @@ ripple = Struct("ripple",
     )
 
 swat_body = Struct("tagdata",
-    #Radiosity Properties
     radiosity_settings,
+    shader_physics,
 
-    #Shader Type
-    material_type,
-    shader_id_num,
-
-    Pad(2),
     #Water Shader Properties
     BBool16("flags",
         "base map alpha modulates reflection",

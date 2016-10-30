@@ -50,10 +50,10 @@ part = Struct("part",
     dependency("type", valid_effect_events),
     Pad(24),
 
-    QuickStruct("velocity bounds", INCLUDE=from_to),
+    QStruct("velocity bounds", INCLUDE=from_to),
     BFloat("velocity cone angle"),  # radians
-    QuickStruct("angular velocity bounds", INCLUDE=from_to),  # radians
-    QuickStruct("radius modifier bounds", INCLUDE=from_to),
+    QStruct("angular velocity bounds", INCLUDE=from_to),  # radians
+    QStruct("radius modifier bounds", INCLUDE=from_to),
 
     BBool32("A scales values", *part_scale_modifiers),
     BBool32("B scales values", *part_scale_modifiers),
@@ -73,8 +73,8 @@ particle = Struct("particle",
     BSInt16("location"),
     Pad(2),
 
-    QuickStruct("relative direction", INCLUDE=yp_float),  # measured in radians
-    QuickStruct("relative offset", INCLUDE=ijk_float),
+    QStruct("relative direction", INCLUDE=yp_float),  # measured in radians
+    QStruct("relative offset", INCLUDE=ijk_float),
     Pad(52),
 
     dependency("particle type", valid_particles),
@@ -95,20 +95,20 @@ particle = Struct("particle",
         ),
     Pad(2),
 
-    QuickStruct("count", INCLUDE=from_to),
-    QuickStruct("distribution radius", INCLUDE=from_to),
+    QStruct("count", INCLUDE=from_to),
+    QStruct("distribution radius", INCLUDE=from_to),
     Pad(12),
 
-    QuickStruct("velocity", INCLUDE=from_to),
+    QStruct("velocity", INCLUDE=from_to),
     BFloat("velocity cone angle"),  # measured in radians
-    QuickStruct("angular velocity", INCLUDE=from_to),  # measured in radians
+    QStruct("angular velocity", INCLUDE=from_to),  # measured in radians
     Pad(8),
 
-    QuickStruct("radius", INCLUDE=from_to),
+    QStruct("radius", INCLUDE=from_to),
     Pad(8),
 
-    QuickStruct("tint lower bound", INCLUDE=argb_float),
-    QuickStruct("tint upper bound", INCLUDE=argb_float),
+    QStruct("tint lower bound", INCLUDE=argb_float),
+    QStruct("tint upper bound", INCLUDE=argb_float),
     Pad(16),
 
     BBool32("A scales values", *particle_scale_modifiers),
@@ -124,8 +124,8 @@ location = Struct("location",
 event = Struct("event",
     Pad(4),
     BFloat("skip fraction"),
-    QuickStruct("delay bounds", INCLUDE=from_to),
-    QuickStruct("duration bounds", INCLUDE=from_to),
+    QStruct("delay bounds", INCLUDE=from_to),
+    QStruct("duration bounds", INCLUDE=from_to),
 
     Pad(20),
     reflexive("parts", part, 32),

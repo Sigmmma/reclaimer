@@ -22,11 +22,11 @@ light = Struct('light',
         'affects exteriors',
         'affects interiors',
         ),
-    QuickStruct("color", INCLUDE=rgb_float),
+    QStruct("color", INCLUDE=rgb_float),
     BFloat("power"),
     BFloat("test distance"),
     Pad(4),
-    QuickStruct("direction", INCLUDE=yp_float),  # measured in radians
+    QStruct("direction", INCLUDE=yp_float),  # measured in radians
     BFloat("diameter"),  # displayed_value == internal_value * 180/pi
     SIZE=116
     )
@@ -37,19 +37,19 @@ sky__body = Struct("tagdata",
     dependency("animation graph", valid_model_animations),
     Pad(24),
 
-    QuickStruct("indoor ambient radiosity color", INCLUDE=rgb_float),
+    QStruct("indoor ambient radiosity color", INCLUDE=rgb_float),
     BFloat("indoor ambient radiosity power"),
 
-    QuickStruct("outdoor ambient radiosity color", INCLUDE=rgb_float),
+    QStruct("outdoor ambient radiosity color", INCLUDE=rgb_float),
     BFloat("outdoor ambient radiosity power"),
 
-    QuickStruct("outdoor fog color", INCLUDE=rgb_float),
+    QStruct("outdoor fog color", INCLUDE=rgb_float),
     Pad(8),
     BFloat("outdoor fog maximum density"),
     BFloat("outdoor fog start distance"),
     BFloat("outdoor fog opaque distance"),
 
-    QuickStruct("indoor fog color", INCLUDE=rgb_float),
+    QStruct("indoor fog color", INCLUDE=rgb_float),
     Pad(8),
     BFloat("indoor fog maximum density"),
     BFloat("indoor fog start distance"),
