@@ -2,8 +2,6 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 ngpr_body = Struct("tagdata",
-    #I didnt feel like adding offsets since
-    #there is only padding in one spot
     StrLatin1("name", SIZE=32),
     QStruct("primary color",   INCLUDE=rgb_float),
     QStruct("secondary color", INCLUDE=rgb_float),

@@ -3,17 +3,16 @@ from supyr_struct.defs.tag_def import TagDef
 
 
 frequency_vibration = Struct("",
-    BFloat("frequency"),  # [0.0 to 1.0]
+    BFloat("frequency", MIN=0.0, MAX=1.0),
     BFloat("duration"),
     BSEnum16("fade function", *fade_functions),
     )
 
 jpt__body = Struct("tagdata",
     QStruct("radius", INCLUDE=from_to),
-    BFloat("cutoff scale"),  # [0.0 to 1.0]
+    BFloat("cutoff scale", MIN=0.0, MAX=1.0),
     BBool32("flags",
-        {NAME: "dont_scale_by_distance",
-         GUI_NAME: "don't scale damage by distance"},
+        NAME: "dont_scale_by_distance",
         ),
     Pad(20),
 
@@ -39,7 +38,7 @@ jpt__body = Struct("tagdata",
         BSEnum16("fade function", *fade_functions),
         Pad(10),
 
-        BFloat("maximum intensity"),  # [0.0 to 1.0]
+        BFloat("maximum intensity", MIN=0.0, MAX=1.0),
         Pad(4),
 
         QStruct("tint lower bound", INCLUDE=argb_float),

@@ -138,7 +138,7 @@ effe_body = Struct("tagdata",
     BBool32("flags",
         {NAME: "deleted when inactive", GUI_NAME: "deleted when attachment deactivates"},
         {NAME: "required", GUI_NAME: "required for gameplay(cannot optimize)"},
-        #'unknown'  # found only in map meta data
+        'unknown'  # found only in map meta data
         ),
     BSInt16("loop start event"),
     BSInt16("loop stop event"),
