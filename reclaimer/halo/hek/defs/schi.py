@@ -3,14 +3,8 @@ from supyr_struct.defs.tag_def import TagDef
 from .objs.schi import SchiTag
 
 schi_body = Struct("tagdata",
-    #Radiosity Properties
     radiosity_settings,
-
-    #Shader Type
-    material_type,
-    FlSEnum16("numeric shader id", DEFAULT=6,
-              INCLUDE=shader_id_num),
-    Pad(2),
+    shader_physics,
 
     # Shader Properties
     UInt8("numeric counter limit"),#[0,255]
@@ -18,7 +12,7 @@ schi_body = Struct("tagdata",
     Bool8("chicago shader flags",          *trans_shdr_properties),
     BSEnum16("first map type",             *trans_shdr_first_map_type),
     BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
-    BSEnum16("framebuffer fade mode",      *trans_shdr_fade_mode),
+    BSEnum16("framebuffer fade mode",      *shader_fade_mode),
     BSEnum16("framebuffer fade source",    *function_outputs),
 
     Pad(2),

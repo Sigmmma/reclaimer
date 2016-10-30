@@ -4,14 +4,14 @@ from supyr_struct.defs.tag_def import TagDef
 def get():
     return AntrDef
 
-object_desc = QuickStruct("object", 
+object_desc = QStruct("object", 
     BSInt16("animation"),
     BUInt16("function"),
     BUInt16("function controls"),
     SIZE=20,
     )
 
-anim_enum_desc = QuickStruct("animation",
+anim_enum_desc = QStruct("animation",
     BSInt16("animation")
     )
 
@@ -149,7 +149,7 @@ weapons_desc = Struct("weapons",
     SIZE=28,
     )
 
-suspension_desc = QuickStruct("suspension animation", 
+suspension_desc = QStruct("suspension animation", 
     BSInt16("mass point index"),
     BSInt16("animation"),
     BFloat("full extension ground depth"),
@@ -232,7 +232,7 @@ nodes_desc = Struct("node",
         "compress all animations",
         "force idle compression",
         ),
-    QuickStruct("base vector", INCLUDE=ijk_float),
+    QStruct("base vector", INCLUDE=ijk_float),
     BFloat("vector range"),
     Pad(4),
     SIZE=64,

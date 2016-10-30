@@ -2,14 +2,9 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 sgla_body = Struct("tagdata",
-    #Radiosity Properties
     radiosity_settings,
+    shader_physics,
 
-    #Shader Type
-    material_type,
-    shader_id_num,
-
-    Pad(2),
     #Environment Shader Properties
     BBool16("glass shader flags",
         "alpha tested",
@@ -20,7 +15,7 @@ sgla_body = Struct("tagdata",
 
     Pad(42),
     #Background Tint Properties
-    QuickStruct("background tint color", INCLUDE=rgb_float),
+    QStruct("background tint color", INCLUDE=rgb_float),
     BFloat("background tint map scale"),
     dependency("background tint map", valid_bitmaps),
 
@@ -32,9 +27,9 @@ sgla_body = Struct("tagdata",
         "dynamic Mirror",
         ),
     BFloat("perpendicular brightness"),#[0,1]
-    QuickStruct("perpendicular tint color", INCLUDE=rgb_float),
+    QStruct("perpendicular tint color", INCLUDE=rgb_float),
     BFloat("parallel brightness"),#[0,1]
-    QuickStruct("parallel tint color", INCLUDE=rgb_float),
+    QStruct("parallel tint color", INCLUDE=rgb_float),
     dependency("reflection map", valid_bitmaps),
 
     BFloat("bump map scale"),

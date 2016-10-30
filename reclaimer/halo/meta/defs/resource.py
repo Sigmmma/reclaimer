@@ -107,5 +107,5 @@ resource_def = TagDef("resource",
         SUB_STRUCT=tag_header,
         ),
 
-    ext=".map", endian="<", align=ALIGN_AUTO
+    ext=".map", endian="<"
     )

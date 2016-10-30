@@ -10,7 +10,7 @@ class ScexTag(HekTag):
         self.filepath = splitext(self.filepath)[0] + '.' + ext
         
         tagdata = self.data.tagdata
-        tagdata.numeric_shader_id.data = 6
+        tagdata.physics.shader_type.data = 6
         if mod_desc:
             dict.__setitem__(tagdata.two_stage_maps.desc, 'TYPE', Void)
             tagdata.ATTR_OFFS[tagdata.NAME_MAP['extra_flags']] = 96

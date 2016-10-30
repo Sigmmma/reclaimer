@@ -219,18 +219,18 @@ class TagRipper(MapLoader):
                         print('CACHE HIT: [%s] %s' % (def_id, tag_path))
             return None, tag_path
 
-        get_blocks = self.tag_lib.get_blocks_by_paths
+        get_nodes = self.tag_lib.get_nodes_by_paths
 
         #null out the fields that are normally nulled out in tags
         if tag_ref_paths:
-            for b in get_blocks(tag_ref_paths[1], tag_meta):
+            for b in get_nodes(tag_ref_paths[1], tag_meta):
                 b.path_pointer = b.path_length = 0
                 b.id = 0xFFFFFFFF
         if reflexive_paths:
-            for b in get_blocks(reflexive_paths[1], tag_meta):
+            for b in get_nodes(reflexive_paths[1], tag_meta):
                 b.id = b.pointer = 0
         if rawdata_paths:
-            for b in get_blocks(rawdata_paths[1], tag_meta):
+            for b in get_nodes(rawdata_paths[1], tag_meta):
                 b.unknown_1 = b.unknown_2 = b.pointer = b.id = 0
 
         #write the tag data to the hash buffer

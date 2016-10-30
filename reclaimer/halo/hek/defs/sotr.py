@@ -120,9 +120,9 @@ stage = Struct("stage",
     BSEnum16("color0 source", *function_names),
     BSEnum16("color0 anim function", *animation_functions),
     BFloat("color0 anim period"),
-    QuickStruct("color0 anim lower bound", INCLUDE=argb_float),
-    QuickStruct("color0 anim upper bound", INCLUDE=argb_float),
-    QuickStruct("color1", INCLUDE=argb_float),
+    QStruct("color0 anim lower bound", INCLUDE=argb_float),
+    QStruct("color0 anim upper bound", INCLUDE=argb_float),
+    QStruct("color1", INCLUDE=argb_float),
 
     Struct('color input',
         BSEnum16('A', *sotr_color_inputs),
@@ -186,18 +186,13 @@ map = Struct("map",
     Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
     Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
 
-    QuickStruct("rotation center", INCLUDE=xy_float),
+    QStruct("rotation center", INCLUDE=xy_float),
     SIZE=100,
     )
 
 sotr_body = Struct("tagdata",
-    #Radiosity Properties
     radiosity_settings,
-
-    #Shader Type
-    material_type,
-    FlSEnum16("numeric shader id", DEFAULT=6, INCLUDE=shader_id_num),
-    Pad(2),
+    shader_physics,
 
     #Generic Transparent Shader
     UInt8("numeric counter limit"),#[0,255]
@@ -213,7 +208,7 @@ sotr_body = Struct("tagdata",
         ),
     BSEnum16("first map type",             *trans_shdr_first_map_type),
     BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
-    BSEnum16("framebuffer fade mode",      *trans_shdr_fade_mode),
+    BSEnum16("framebuffer fade mode",      *shader_fade_mode),
     BSEnum16("framebuffer fade source",    *function_outputs),
 
     Pad(2),

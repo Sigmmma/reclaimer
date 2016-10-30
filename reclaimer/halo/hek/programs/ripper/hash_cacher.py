@@ -64,7 +64,7 @@ class HashCacher(Handler):
 
             initial_cache_filenames = set(hashmap.values())
             initial_cache_hashes = set(hashmap.keys())
-            get_blocks = self.tag_lib.get_blocks_by_paths
+            get_nodes = self.tag_lib.get_nodes_by_paths
             
             for def_id in sorted(tags):
                 tag_coll = tags[def_id]

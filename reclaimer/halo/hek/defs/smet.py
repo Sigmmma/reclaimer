@@ -2,15 +2,9 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 smet_body = Struct("tagdata",
-    #Radiosity Properties
     radiosity_settings,
+    shader_physics,
 
-    #Shader Type
-    material_type,
-    FlSEnum16("numeric shader id", DEFAULT=10,
-              INCLUDE=shader_id_num),
-
-    Pad(2),
     #Meter Shader Properties
     BBool16("meter shader flags",
         "decal",
