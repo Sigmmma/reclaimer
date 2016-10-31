@@ -65,222 +65,155 @@ yp_float = QStruct('yp_float',
 
 # maps tag class four character codes(fccs) in
 # their string encoding to their int encoding.
-tag_class_str_to_int = {}
+tag_class_fcc_to_int = {}
 # maps tag class four character codes(fccs) in
 # their int encoding to their string encoding.
-tag_class_int_to_str = {}
+tag_class_int_to_fcc = {}
 
+tag_class_fcc_to_ext = {
+    'actr': "actor",
+    'actv': "actor_varient",
+    'ant!': "antenna",
+    'bipd': "biped",
+    'bitm': "bitmap",
+    'trak': "camera_track",
+    'colo': "color_table",
+    'cdmg': "continuous_damage_effect",
+    'cont': "contrail",
+    'jpt!': "damage_effect",
+    'deca': "decal",
+    'udlg': "dialogue",
+    'dobc': "detail_object_collection",
+    'devi': "device",
+    'ctrl': "device_control",
+    'lifi': "device_light_fixture",
+    'mach': "device_machine",
+    'effe': "effect",
+    'eqip': "equipment",
+    'flag': "flag",
+    'fog ': "fog",
+    'font': "font",
+    'garb': "garbage",
+    'mod2': "gbxmodel",
+    'matg': "globals",
+    'glw!': "glow",
+    'grhi': "grenade_hud_interface",
+    'hudg': "hud_globals",
+    'hmt ': "hud_message_text",
+    'hud#': "hud_number",
+    'devc': "input_device_defaults",
+    'item': "item",
+    'itmc': "item_collection",
+    'lens': "lens_flare",
+    'ligh': "light",
+    'mgs2': "light_volume",
+    'elec': "lightning",
+    'foot': "material_effects",
+    'metr': "meter",
+    'mode': "model",
+    'antr': "model_animations",
+    'coll': "model_collision_geometry",
+    'mply': "multiplayer_scenario_description",
+    'obje': "object",
+    'part': "particle",
+    'pctl': "particle_system",
+    'phys': "physics",
+    'plac': "placeholder",
+    'pphy': "point_physics",
+    'ngpr': "preferences_network_game",
+    'proj': "projectile",
+    'scnr': "scenario",
+    'sbsp': "scenario_structure_bsp",
+    'scen': "scenery",
+    'snd!': "sound",
+    'snde': "sound_environment",
+    'lsnd': "sound_looping",
+    'ssce': "sound_scenery",
+    'boom': "spheroid",
+    'shdr': "shader",
+    'schi': "shader_transparent_chicago",
+    'scex': "shader_transparent_chicago_extended",
+    'sotr': "shader_transparent_generic",
+    'senv': "shader_environment",
+    'sgla': "shader_transparent_glass",
+    'smet': "shader_transparent_meter",
+    'soso': "shader_model",
+    'spla': "shader_transparent_plasma",
+    'swat': "shader_transparent_water",
+    'sky ': "sky",
+    'str#': "string_list",
+    'tagc': "tag_collection",
+    'Soul': "ui_widget_collection",
+    'DeLa': "ui_widget_definition",
+    'ustr': "unicode_string_list",
+    'unit': "unit",
+    'unhi': "unit_hud_interface",
+    'vehi': "vehicle",
+    'vcky': "virtual_keyboard",
+    'weap': "weapon",
+    'wphi': "weapon_hud_interface",
+    'rain': "weather_particle_system",
+    'wind': "wind",
+    }
 
 def tag_class(name, *args):
+    classes = []
+    for four_cc in sorted(args):
+        classes.append((tag_class_fcc_to_ext[four_cc], four_cc))
+
     return BUEnum32(name,
-                    *(tuple(args) + (("none", 0xffffffff),) ),
+                    *(tuple(classes) + (("none", 0xffffffff),) ),
                     DEFAULT=0xffffffff)
 
-valid_tags = tag_class("tag_class",
-    ("actor",          'actr'),
-    ("actor_varient",  'actv'),
-    ("antenna",        'ant!'),
-    ("biped",          'bipd'),
-    ("bitmap",         'bitm'),
-    ("camera_track",   'trak'),
-    ("color_table",    'colo'),
-    ("continuous_damage_effect", 'cdmg'),
-    ("contrail",       'cont'),
-    ("damage_effect",  'jpt!'),
-    ("decal",          'deca'),
-    ("dialogue",       'udlg'),
-    ("detail_object_collection", 'dobc'),
-    ("device",         'devi'),
-    ("device_control", 'ctrl'),
-    ("device_light_fixture", 'lifi'),
-    ("device_machine", 'mach'),
-    ("effect",         'effe'),
-    ("equipment",      'eqip'),
-    ("flag",           'flag'),
-    ("fog",            'fog '),
-    ("font",           'font'),
-    ("garbage",        'garb'),
-    ("gbxmodel",       'mod2'),
-    ("globals",        'matg'),
-    ("glow",           'glw!'),
-    ("grenade_hud_interface", 'grhi'),
-    ("hud_globals",      'hudg'),
-    ("hud_message_text", 'hmt '),
-    ("hud_number",       'hud#'),
-    ("input_device_defaults", 'devc'),
-    ("item",             'item'),
-    ("item_collection",  'itmc'),
-    ("lens_flare",       'lens'),
-    ("light",            'ligh'),
-    ("light_volume",     'mgs2'),
-    ("lightning",        'elec'),
-    ("material_effects", 'foot'),
-    ("meter",            'metr'),
-    ("model",            'mode'),
-    ("model_animations", 'antr'),
-    ("model_collision_geometry",         'coll'),
-    ("multiplayer_scenario_description", 'mply'),
-    ("object",           'obje'),
-    ("particle",         'part'),
-    ("particle_system",  'pctl'),
-    ("physics",          'phys'),
-    ("placeholder",      'plac'),
-    ("point_physics",    'pphy'),
-    ("preferences_network_game", 'ngpr'),
-    ("projectile",       'proj'),
-    ("scenario",         'scnr'),
-    ("scenario_structure_bsp", 'sbsp'),
-    ("scenery",           'scen'),
-    ("sound",             'snd!'),
-    ("sound_environment", 'snde'),
-    ("sound_looping",     'lsnd'),
-    ("sound_scenery",     'ssce'),
-    ("spheroid",          'boom'),
-    ("shader",            'shdr'),
-    ("shader_transparent_chicago", 'schi'),
-    ("shader_transparent_chicago_extended", 'scex'),
-    ("shader_transparent_generic", 'sotr'),
-    ("shader_environment",         'senv'),
-    ("shader_transparent_glass",   'sgla'),
-    ("shader_transparent_meter",   'smet'),
-    ("shader_model",               'soso'),
-    ("shader_transparent_plasma",  'spla'),
-    ("shader_transparent_water",   'swat'),
-    ("sky",                  'sky '),
-    ("string_list",          'str#'),
-    ("tag_collection",       'tagc'),
-    ("ui_widget_collection", 'Soul'),
-    ("ui_widget_definition", 'DeLa'),
-    ("unicode_string_list",  'ustr'),
-    ("unit",                 'unit'),
-    ("unit_hud_interface",   'unhi'),
-    ("vehicle",              'vehi'),
-    ("virtual_keyboard",     'vcky'),
-    ("weapon",               'weap'),
-    ("weapon_hud_interface", 'wphi'),
-    ("weather_particle_system", 'rain'),
-    ("wind",                 'wind'),
-    )
+valid_tags = tag_class("tag_class", *tag_class_fcc_to_ext.keys())
 
 for key in valid_tags:
     if not isinstance(key, int):
         continue
     tag_cls = valid_tags[key][1]
     if isinstance(tag_cls, str):
-        tag_class_str_to_int[tag_cls] = fcc(tag_cls)
-        tag_class_int_to_str[fcc(tag_cls)] = tag_cls
+        tag_class_fcc_to_int[tag_cls] = fcc(tag_cls)
+        tag_class_int_to_fcc[fcc(tag_cls)] = tag_cls
 
+valid_strings = tag_class("tag_class", 'ustr', 'str#')
+valid_effects = tag_class("tag_class", 'snd!', 'effe')
+valid_continuous_damages = tag_class("tag_class", 'cdmg')
+valid_fogs = tag_class("tag_class", 'fog ')
+valid_fonts = tag_class("tag_class", 'font')
+valid_particles = tag_class("tag_class", 'part')
+valid_lens_flares = tag_class("tag_class", 'lens')
+valid_point_physics = tag_class("tag_class", 'pphy')
+valid_bitmaps = tag_class("tag_class", 'bitm')
+valid_decals = tag_class("tag_class", 'deca')
+valid_sounds  = tag_class("tag_class", 'snd!')
+valid_physics = tag_class("tag_class", 'phys')
+valid_model_animations = tag_class("tag_class", 'antr')
+valid_unicode_strings = tag_class("tag_class", 'ustr')
+valid_model_collision_geometries = tag_class("tag_class", 'coll')
+valid_models = tag_class("tag_class", 'mode', 'mod2')
 valid_attachments = tag_class("tag_class",
-    ("contrail",        'cont'),
-    ("effect",          'effe'),
-    ("light",           'ligh'),
-    ("light_volume",    'mgs2'),
-    ("particle_system", 'pctl'),
-    ("sound_looping",   'lsnd'),
+    'cont', 'effe', 'ligh', 'mgs2', 'pctl', 'lsnd'
     )
-
-valid_effect_events = tag_class("tag_class",
-    ("biped",           'bipd'),
-    ("damage_effect",   'jpt!'),
-    ("decal",           'deca'),
-    ("device",          'devi'),
-    ("device_control",  'ctrl'),
-    ("device_light_fixture", 'lifi'),
-    ("device_machine",  'mach'),
-    ("equipment",       'eqip'),
-    ("garbage",         'gar'),
-    ("item",            'item'),
-    ("light",           'ligh'),
-    ("object",          'obje'),
-    ("particle_system", 'pctl'),
-    ("placeholder",     'plac'),
-    ("projectile",      'proj'),
-    ("scenery",         'scen'),
-    ("sound",           'snd!'),
-    ("sound_scenery",   'ssce'),
-    ("unit",            'unit'),
-    ("vehicle",         'vehi'),
-    ("weapon",          'weap'),
-    )
-
-valid_strings = tag_class("tag_class",
-    ("unicode_string_list", 'ustr'),
-    ("string_list",         'str#'),
-    )
-
-valid_effects = tag_class("tag_class",
-    ("sound",  'snd!'),
-    ("effect", 'effe'),
-    )
-
-valid_fogs = tag_class("tag_class", ("fog", 'fog '))
-valid_fonts = tag_class("tag_class", ("font", 'font'))
-valid_particles = tag_class("tag_class", ("particle", 'part'))
-valid_lens_flares = tag_class("tag_class", ("lens_flare", 'lens'))
-valid_point_physics = tag_class("tag_class", ("point_physics", 'pphy'))
-valid_bitmaps = tag_class("tag_class", ("bitmap", 'bitm'))
-valid_decals = tag_class("tag_class", ("decal", 'deca'))
-valid_sounds  = tag_class("tag_class", ("sound", 'snd!'))
-valid_physics = tag_class("tag_class", ("physics", 'phys'))
-valid_model_animations = tag_class("tag_class", ("model_animations", 'antr'))
-valid_unicode_strings = tag_class("tag_class", ("unicode_string_list", 'ustr'))
-
-valid_model_collision_geometries = tag_class("tag_class",
-    ("model_collision_geometry", 'coll')
-    )
-valid_models = tag_class("tag_class",
-    ("model", 'mode'),
-    ("gbxmodel", 'mod2')
-    )
-
-valid_items = tag_class("tag_class",
-    ("equipment", 'eqip'),
-    ("garbage",   'gar'),
-    ("item",      'item'),
-    ("weapon",    'weap'),
-    )
-
-valid_objects = tag_class("tag_class",
-    ("biped",          'bipd'),
-    ("device",         'devi'),
-    ("device_control", 'ctrl'),
-    ("device_light_fixture", 'lifi'),
-    ("device_machine", 'mach'),
-    ("equipment",      'eqip'),
-    ("object",         'obje'),
-    ("projectile",     'proj'),
-    ("scenery",        'scen'),
-    ("sound_scenery",  'ssce'),
-    ("vehicle",        'vehi'),
-    ("weapon",         'weap'),
-    )
-
-
-valid_shaders = tag_class("tag_class",
-    ("shader",                     'shdr'),
-    ("shader_transparent_chicago", 'schi'),
-    ("shader_transparent_chicago_extended", 'scex'),
-    ("shader_transparent_generic", 'sotr'),
-    ("shader_environment",         'senv'),
-    ("shader_transparent_glass",   'sgla'),
-    ("shader_transparent_meter",   'smet'),
-    ("shader_model",               'soso'),
-    ("shader_transparent_plasma",  'spla'),
-    ("shader_transparent_water",   'swat'),
-    )
-
-valid_units = tag_class("tag_class",
-    ("biped",   'bipd'),
-    ("unit",    'unit'),
-    ("vehicle", 'vehi'),
-    )
-
 valid_widgets = tag_class("tag_class",
-    ("antenna",      'ant!'),
-    ("flag",         'flag'),
-    ("glow",         'glw!'),
-    ("light_volume", 'mgs2'),
-    ("lightning",    'elec'),
+    'ant!', 'flag', 'glw!', 'mgs2', 'elec',
+    )
+valid_effect_events = tag_class("tag_class",
+    'bipd', 'jpt!', 'deca', 'devi', 'ctrl', 'lifi', 'mach',
+    'eqip', 'garb', 'item', 'ligh', 'obje', 'pctl', 'plac',
+    'proj', 'scen', 'snd!', 'ssce', 'unit', 'vehi', 'weap',
+    )
+valid_shaders = tag_class("tag_class",
+    'shdr', 'schi', 'scex', 'sotr', 'senv',
+    'sgla', 'smet', 'soso', 'spla', 'swat'
+    )
+valid_items = tag_class("tag_class",
+    'eqip', 'garb', 'item', 'weap')
+valid_objects = tag_class("tag_class",
+    'obje', 'bipd', 'vehi', 'weap', 'eqip', 'garb', 'proj',
+    'scen', 'mach', 'ctrl', 'lifi', 'plac', 'ssce'
+    )
+valid_units = tag_class("tag_class",
+    'bipd', 'unit', 'vehi'
     )
 
 
@@ -302,6 +235,7 @@ tag_header = Struct("blam header",
 
 #Shared Enumerator options
 materials_list = (
+    # the order of these elements is important(DONT SHUFFLE IT)
     "dirt",
     "sand",
     "stone",
@@ -339,7 +273,6 @@ materials_list = (
 
 
 #Transparent Shader Shared Functions
-
 trans_shdr_properties = (
     "alpha tested",
     "decal",
@@ -473,20 +406,6 @@ function_outputs = (
     "C out",
     "D out",
     )
-
-all_shader_enums = (
-    ("shader",                     'shdr'),
-    ("shader_transparent_chicago", 'schi'),
-    ("shader_transparent_chicago_extended", 'scex'),
-    ("shader_transparent_generic", 'sotr'),
-    ("shader_environment",         'senv'),
-    ("shader_transparent_glass",   'sgla'),
-    ("shader_transparent_meter",   'smet'),
-    ("shader_model",               'soso'),
-    ("shader_transparent_plasma",  'spla'),
-    ("shader_transparent_water",   'swat'),
-    )
-
 
 #Miscellaneous descs
 anim_func_per_pha = Struct('',
@@ -628,6 +547,7 @@ radiosity_settings = Struct("radiosity settings",
 shader_physics = Struct('physics',
     Pad(2),
     BSEnum16("material type", *materials_list),
+
     # THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS.
     # This seems to be a Guerilla-only optimization value
     FlSEnum16("shader type",
@@ -690,38 +610,5 @@ chicago_extra_flags = (
 
 """Misc"""
 damage_modifiers = QStruct("damage modifiers",
-    BFloat("dirt"),
-    BFloat("sand"),
-    BFloat("stone"),
-    BFloat("snow"),
-    BFloat("wood"),
-    BFloat("metal hollow"),
-    BFloat("metal thin"),
-    BFloat("metal thick"),
-    BFloat("rubber"),
-    BFloat("glass"),
-    BFloat("force field"),
-    BFloat("grunt"),
-    BFloat("hunter armor"),
-    BFloat("hunter skin"),
-    BFloat("elite"),
-    BFloat("jackal"),
-    BFloat("jackal energy shield"),
-    BFloat("engineer skin"),
-    BFloat("engineer force field"),
-    BFloat("flood combat form"),
-    BFloat("flood carrier form"),
-    BFloat("cyborg armor"),
-    BFloat("cyborg energy shield"),
-    BFloat("human armor"),
-    BFloat("human skin"),
-    BFloat("sentinel"),
-    BFloat("moniter"),
-    BFloat("plastic"),
-    BFloat("water"),
-    BFloat("leaves"),
-    BFloat("elite energy shield"),
-    BFloat("ice"),
-    BFloat("hunter shield"),
-    Pad(28),
+    *(BFloat(material_name) for material_name in materials_list)
     )

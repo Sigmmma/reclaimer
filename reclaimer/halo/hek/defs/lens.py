@@ -14,7 +14,7 @@ reflection = Struct("reflection",
     BFloat("position"), # along flare axis
     BFloat("rotation offset"), # degrees
     Pad(4),
-    QuickStruct("radius", INCLUDE=from_to),  # world units
+    QStruct("radius", INCLUDE=from_to),  # world units
     BSEnum16("radius scaled by",
         "none",
         "rotation",
@@ -22,7 +22,7 @@ reflection = Struct("reflection",
         "distance from center",
         ),
     Pad(2),
-    QuickStruct("brightness", INCLUDE=from_to),  # world units
+    QStruct("brightness", INCLUDE=from_to),  # world units
     BSEnum16("brightness scaled by",
         "none",
         "rotation",
@@ -32,12 +32,12 @@ reflection = Struct("reflection",
     Pad(2),
 
     #Tint color
-    QuickStruct("tint color", INCLUDE=argb_float),
+    QStruct("tint color", INCLUDE=argb_float),
 
     #Animation
     Struct("animation",
-        QuickStruct("color lower bound", INCLUDE=argb_float),
-        QuickStruct("color upper bound", INCLUDE=argb_float),
+        QStruct("color lower bound", INCLUDE=argb_float),
+        QStruct("color upper bound", INCLUDE=argb_float),
         BBool16("more flags",
             "interpolate color in hsv",
             "more colors",
@@ -54,8 +54,8 @@ reflection = Struct("reflection",
 lens_body = Struct("tagdata",
     BFloat("falloff angle"),  # measured in radians
     BFloat("cutoff angle"),  # measured in radians
-    BFloat("unknown1", DEFAULT=1.0),
-    BFloat("unknown2", DEFAULT=1.0),
+    FlFloat("unknown1", DEFAULT=1.0),
+    FlFloat("unknown2", DEFAULT=1.0),
     BFloat("occlusion radius"),
     BSEnum16("occlusion offset direction",
         "toward viewer",
