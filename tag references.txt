@@ -120,3 +120,34 @@ REMAINING TO IMPLEMENT:
     unit: unit
     bipd: biped
     vehi: vehicle
+
+
+IMPLEMENTATION ORDER:
+    glw!: glow
+    part: particle
+    hudg: hud_globals
+    coll: model_collision_geometry
+    pctl: particle_system
+    obje: object
+    unit: unit
+    ctrl: device_control
+    lifi: device_light_fixture
+    mach: device_machine
+    eqip: equipment
+    garb: garbage
+    weap: weapon
+    plac: placeholder
+    proj: projectile
+    scen: scenery
+    ssce: sound_scenery
+    bipd: biped
+    vehi: vehicle
+    DeLa: ui_widget_definition
+    grhi: grenade_hud_interface
+    unhi: unit_hud_interface
+    wphi: weapon_hud_interface
+    actr: actor
+    actv: actor_varient
+    matg: globals
+    scnr: scenario
+    sbsp: scenario_structure_bsp
