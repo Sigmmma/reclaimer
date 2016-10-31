@@ -118,7 +118,7 @@ particle = Struct("particle",
 
 
 location = Struct("location",
-    StrLatin1("marker name", SIZE=32),
+    ascii_str32("marker name"),
     )
 
 event = Struct("event",

@@ -123,7 +123,6 @@ REMAINING TO IMPLEMENT:
 
 
 IMPLEMENTATION ORDER:
-    glw!: glow
     part: particle
     hudg: hud_globals
     coll: model_collision_geometry

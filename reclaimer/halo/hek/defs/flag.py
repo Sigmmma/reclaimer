@@ -6,7 +6,7 @@ def get(): return flag_def
 attachment_point = Struct("attachment point",
     BSInt16("height to next attachment"),
     Pad(18),
-    StrLatin1("marker name", SIZE=32),
+    ascii_str32("marker name"),
     )
 
 flag_body = Struct("tagdata",

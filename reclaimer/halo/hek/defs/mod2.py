@@ -5,7 +5,7 @@ def get():
     return mod2_def
 
 local_marker = Struct('local marker',
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     SInt16('node index'),
     Pad(2),
 
@@ -108,7 +108,7 @@ marker_instance = QStruct('marker instance',
     )
 
 permutation = Struct('permutation',
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     BBool32('flags',
         'cannot be chosen randomly'
         ),
@@ -160,7 +160,7 @@ part = Struct('part',
 
 
 marker = Struct('marker',
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     BUInt16('magic identifier'),
     Pad(18),
 
@@ -169,7 +169,7 @@ marker = Struct('marker',
     )
 
 node = Struct('node',
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     BSInt16('next sibling node'),
     BSInt16('first child node'),
     BSInt16('parent node'),
@@ -188,7 +188,7 @@ node = Struct('node',
     )
 
 region = Struct('region',
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     Pad(32),
     reflexive("permutations", permutation),
     SIZE=76

@@ -29,7 +29,7 @@ sprite = QStruct("sprite",
     )
 
 sequence = Struct("sequence",
-    StrLatin1("sequence name", SIZE=32),
+    ascii_str32("sequence name"),
     BUInt16("first bitmap index"),
     BUInt16("bitmap count"),
     Pad(16),

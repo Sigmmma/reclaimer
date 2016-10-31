@@ -221,12 +221,16 @@ def dependency(name='tag ref', valid_ids=valid_tags):
 
 def blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
-    header_dict = dict(tag_header)
-    header_dict[1] = dict(header_dict[1])
-    header_dict[5] = dict(header_dict[5])
-    header_dict[1][DEFAULT] = tagid
-    header_dict[5][DEFAULT] = version
-    return header_dict
+    header_desc= dict(tag_header)
+    header_desc[1] = dict(header_desc[1])
+    header_desc[5] = dict(header_desc[5])
+    header_desc[1][DEFAULT] = tagid
+    header_desc[5][DEFAULT] = version
+    return header_desc
+
+
+def ascii_str32(name):
+    return StrAscii(str(name), SIZE=32)
 
 valid_strings = tag_class('ustr', 'str#')
 valid_effects = tag_class('snd!', 'effe')
@@ -349,7 +353,6 @@ detail_mask = (
     )
 
 #Shared Functions
-
 animation_functions = (
     "one",
     "zero",
@@ -548,16 +551,16 @@ shader_physics = Struct('physics',
     # THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS.
     # This seems to be a Guerilla-only optimization value
     FlSEnum16("shader type",
-        ("shdr", -1),   # Shader
-        ("senv", 3),    # Environment
-        ("soso", 4),    # Model
-        ("sotr", 5),    # Transparent Generic
-        ("schi", 6),    # Transparent Chicago
-        ("scex", 7),    # Transparent Chicago Extended
-        ("swat", 8),    # Water
-        ("sgla", 9),    # Glass
-        ("smet", 10),   # Meter
-        ("spla", 11),   # Plasma
+        ("shdr", -1),  # Shader
+        ("senv", 3),   # Environment
+        ("soso", 4),   # Model
+        ("sotr", 5),   # Transparent Generic
+        ("schi", 6),   # Transparent Chicago
+        ("scex", 7),   # Transparent Chicago Extended
+        ("swat", 8),   # Water
+        ("sgla", 9),   # Glass
+        ("smet", 10),  # Meter
+        ("spla", 11),  # Plasma
         DEFAULT=-1, EDITABLE=False,
         ),
     Pad(2)

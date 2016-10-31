@@ -22,7 +22,7 @@ frame = Struct("frame",
 
 mgs2_body = Struct("tagdata",
     #Light volume
-    StrLatin1("attachment marker", SIZE=32),
+    ascii_str32("attachment marker"),
     BBool32("flags",
         "interpolate color in hsv",
         "more colors"

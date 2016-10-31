@@ -16,7 +16,7 @@ vertex = Struct("vertex",
     )
 
 ant__body = Struct("tagdata",
-    StrLatin1("attachment marker name", SIZE=32),
+    ascii_str32("attachment marker name"),
     dependency("bitmaps", valid_bitmaps),
     dependency("physics", valid_point_physics),
 

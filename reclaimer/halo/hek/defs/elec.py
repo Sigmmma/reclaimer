@@ -17,7 +17,7 @@ shader = Struct("shader",
     )
 
 marker = Struct("marker",
-    StrLatin1("attachment marker", SIZE=32),
+    ascii_str32("attachment marker"),
     BBool16("flags",
         "not connected to next marker"
         ),

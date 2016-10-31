@@ -2,7 +2,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 ngpr_body = Struct("tagdata",
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     QStruct("primary color",   INCLUDE=rgb_float),
     QStruct("secondary color", INCLUDE=rgb_float),
 

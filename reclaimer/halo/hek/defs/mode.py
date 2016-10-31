@@ -4,7 +4,7 @@ def get():
     return mode_def
 
 permutation = Struct('permutation',
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     BBool32('flags',
         'cannot be chosen randomly'
         ),
@@ -45,7 +45,7 @@ part = Struct('part',
 
 
 node = Struct('node',
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     BSInt16('next sibling node'),
     BSInt16('first child node'),
     BSInt16('parent node'),
@@ -83,7 +83,7 @@ node = Struct('node',
     )
 
 region = Struct('region',
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     Pad(32),
     reflexive("permutations", permutation),
     SIZE=76
