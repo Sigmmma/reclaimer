@@ -27,7 +27,7 @@ inertial_matrix = Struct("inertial matrix",
     )
 
 powered_mass_point = Struct("powered mass point",
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     BBool32('flags',
         'ground friction',
         'water friction',
@@ -47,7 +47,7 @@ powered_mass_point = Struct("powered mass point",
     )
 
 mass_point = Struct("mass point",
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     BSInt16("powered mass point"),
     BSInt16("model node"),
     BBool32('flags',

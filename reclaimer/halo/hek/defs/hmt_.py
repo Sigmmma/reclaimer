@@ -8,7 +8,7 @@ message_element = QStruct("message element",
     )
 
 message = Struct("message",
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     SInt16("text start", GUI_NAME="start index into text blob"),
     SInt16("message index", GUI_NAME="start index of message block"),
     SInt8("panel count"),

@@ -16,13 +16,13 @@ anim_enum_desc = QStruct("animation",
     )
 
 ik_point_desc = Struct("ik point", 
-    StrLatin1("marker", SIZE=32),
-    StrLatin1("attach to marker", SIZE=32),
+    ascii_str32("marker"),
+    ascii_str32("attach to marker"),
     SIZE=64,
     )
 
 weapon_types_desc = Struct("weapon types",
-    StrLatin1("label", SIZE=32),
+    ascii_str32("label"),
     Pad(16),
     reflexive("animations", anim_enum_desc, 10,
         'reload-1','reload-2','chamber-1','chamber-2',
@@ -32,9 +32,9 @@ weapon_types_desc = Struct("weapon types",
     )
 
 unit_weapon_desc = Struct("weapon",
-    StrLatin1("name", SIZE=32),
-    StrLatin1("grip marker", SIZE=32),
-    StrLatin1("hand marker", SIZE=32),
+    ascii_str32("name"),
+    ascii_str32("grip marker"),
+    ascii_str32("hand marker"),
     #Aiming screen bounds
 
     #pitch and yaw are saved in radians.
@@ -91,7 +91,7 @@ unit_weapon_desc = Struct("weapon",
     )
 
 unit_desc = Struct("unit", 
-    StrLatin1("label", SIZE=32),
+    ascii_str32("label"),
     #pitch and yaw are saved in radians.
                    
     #Looking screen bounds
@@ -223,7 +223,7 @@ sound_reference_desc = Struct("sound reference",
     )
 
 nodes_desc = Struct("node", 
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     BSInt16("next sibling node index"),
     BSInt16("first child node index"),
     BSInt16("parent node index"),
@@ -239,7 +239,7 @@ nodes_desc = Struct("node",
     )
 
 animation_desc = Struct("animation", 
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     BSEnum16("type",
         "base",
         "overlay",
