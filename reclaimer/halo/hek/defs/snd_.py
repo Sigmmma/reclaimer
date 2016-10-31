@@ -53,7 +53,7 @@ compression = BSEnum16("compression",
 
 
 permutation = Struct('permutation',
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     BFloat("skip fraction"),
     BFloat("gain"),
     compression,
@@ -68,7 +68,7 @@ permutation = Struct('permutation',
     )
 
 pitch_range = Struct('pitch range',
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
 
     BFloat("natural pitch"),
     QStruct("bend bounds", INCLUDE=from_to),

@@ -3,7 +3,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 shader_function = Struct('shader function',
     Pad(4),
-    StrLatin1("global function name", SIZE=32),
+    ascii_str32("global function name"),
     SIZE=36
     )
 
@@ -16,7 +16,7 @@ animation = Struct('animation',
 
 light = Struct('light',
     dependency("lens flare", valid_lens_flares),
-    StrLatin1("global function name", SIZE=32),
+    ascii_str32("global function name"),
     Pad(28),
     BBool32('flags',
         'affects exteriors',

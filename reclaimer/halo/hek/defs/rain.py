@@ -2,7 +2,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 particle_type = Struct("particle_type",
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     BBool32("flags",
         "interpolate colors in hsv",
         "along long hue path",

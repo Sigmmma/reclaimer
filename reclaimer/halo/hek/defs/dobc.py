@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 def get(): return dobc_def
 
 detail_object_type = Struct("detail object type",
-    StrLatin1("name", SIZE=32),
+    ascii_str32("name"),
     SInt8("sequence index"),
     Bool8("scale flags",
         ("interpolate color in hsv", 4),
