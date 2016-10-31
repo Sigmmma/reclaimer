@@ -65,11 +65,14 @@ yp_float = QStruct('yp_float',
 
 # maps tag class four character codes(fccs) in
 # their string encoding to their int encoding.
-tag_class_fcc_to_int = {}
+tag_class_fcc_to_be_int = {}
+tag_class_fcc_to_le_int = {}
 # maps tag class four character codes(fccs) in
 # their int encoding to their string encoding.
-tag_class_int_to_fcc = {}
+tag_class_be_int_to_fcc = {}
+tag_class_le_int_to_fcc = {}
 
+# maps tag class four character codes to the tags file extension
 tag_class_fcc_to_ext = {
     'actr': "actor",
     'actv': "actor_varient",
@@ -156,72 +159,115 @@ tag_class_fcc_to_ext = {
     'wind': "wind",
     }
 
-def tag_class(name, *args):
+for tag_cls in tag_class_fcc_to_ext:
+    tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls, 'big')
+    tag_class_be_int_to_fcc[fcc(tag_cls, 'big')] = tag_cls
+    tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
+    tag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls
+
+def tag_class(*args):
+    '''
+    A macro for creating a tag_class enum desc with the
+    enumerations set to the provided tag_class fcc's.
+    '''
     classes = []
     for four_cc in sorted(args):
         classes.append((tag_class_fcc_to_ext[four_cc], four_cc))
 
-    return BUEnum32(name,
+    return BUEnum32('tag_class',
                     *(tuple(classes) + (("none", 0xffffffff),) ),
                     DEFAULT=0xffffffff)
 
-valid_tags = tag_class("tag_class", *tag_class_fcc_to_ext.keys())
+valid_tags = tag_class(*tag_class_fcc_to_ext.keys())
 
-for key in valid_tags:
-    if not isinstance(key, int):
-        continue
-    tag_cls = valid_tags[key][1]
-    if isinstance(tag_cls, str):
-        tag_class_fcc_to_int[tag_cls] = fcc(tag_cls)
-        tag_class_int_to_fcc[fcc(tag_cls)] = tag_cls
+def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
+    '''This function serves to macro the creation of a reflexive'''
+    desc.update(
+        INCLUDE=reflexive_struct,
+        STEPTREE=Array(name + " array",
+            SIZE=".size", MAX=max_count, SUB_STRUCT=substruct,
+            ),
+        SIZE=12
+        )
+    if names:
+        name_map = {}
+        for i in range(len(names)):
+            e_name = BlockDef.str_to_name(None, names[i])
+            name_map[e_name] = i
+            
+        desc[STEPTREE][NAME_MAP] = name_map
+        
+    return Reflexive(name, **desc)
 
-valid_strings = tag_class("tag_class", 'ustr', 'str#')
-valid_effects = tag_class("tag_class", 'snd!', 'effe')
-valid_continuous_damages = tag_class("tag_class", 'cdmg')
-valid_fogs = tag_class("tag_class", 'fog ')
-valid_fonts = tag_class("tag_class", 'font')
-valid_particles = tag_class("tag_class", 'part')
-valid_lens_flares = tag_class("tag_class", 'lens')
-valid_point_physics = tag_class("tag_class", 'pphy')
-valid_bitmaps = tag_class("tag_class", 'bitm')
-valid_decals = tag_class("tag_class", 'deca')
-valid_sounds  = tag_class("tag_class", 'snd!')
-valid_physics = tag_class("tag_class", 'phys')
-valid_model_animations = tag_class("tag_class", 'antr')
-valid_unicode_strings = tag_class("tag_class", 'ustr')
-valid_model_collision_geometries = tag_class("tag_class", 'coll')
-valid_models = tag_class("tag_class", 'mode', 'mod2')
-valid_attachments = tag_class("tag_class",
-    'cont', 'effe', 'ligh', 'mgs2', 'pctl', 'lsnd'
-    )
-valid_widgets = tag_class("tag_class",
-    'ant!', 'flag', 'glw!', 'mgs2', 'elec',
-    )
-valid_effect_events = tag_class("tag_class",
+
+def rawdata_ref(name, f_type=Rawdata):
+    '''This function serves to macro the creation of a rawdata reference'''
+    return RawdataRef(name,
+        EDITABLE=False, INCLUDE=rawdata_ref_struct,
+        STEPTREE=f_type("data", VISIBLE=False, SIZE=".size") )
+
+
+def dependency(name='tag ref', valid_ids=valid_tags):
+    '''This function serves to macro the creation of a tag dependency'''
+    return TagIndexRef(name,
+        valid_ids,
+        BSInt32("path pointer"),
+        BSInt32("path length"),
+        BUInt32("id", DEFAULT=0xFFFFFFFF),
+
+        STEPTREE=StringVarLen("filepath", SIZE=tag_ref_size),
+        EDITABLE=False,
+        )
+
+def blam_header(tagid, version=1):
+    '''This function serves to macro the creation of a tag header'''
+    header_dict = dict(tag_header)
+    header_dict[1] = dict(header_dict[1])
+    header_dict[5] = dict(header_dict[5])
+    header_dict[1][DEFAULT] = tagid
+    header_dict[5][DEFAULT] = version
+    return header_dict
+
+valid_strings = tag_class('ustr', 'str#')
+valid_effects = tag_class('snd!', 'effe')
+valid_continuous_damages = tag_class('cdmg')
+valid_fogs = tag_class('fog ')
+valid_fonts = tag_class('font')
+valid_particles = tag_class('part')
+valid_lens_flares = tag_class('lens')
+valid_point_physics = tag_class('pphy')
+valid_bitmaps = tag_class('bitm')
+valid_decals = tag_class('deca')
+valid_sounds  = tag_class('snd!')
+valid_physics = tag_class('phys')
+valid_model_animations = tag_class('antr')
+valid_unicode_strings = tag_class('ustr')
+valid_model_collision_geometries = tag_class('coll')
+valid_models = tag_class('mode', 'mod2')
+valid_attachments = tag_class('cont', 'effe', 'ligh', 'mgs2', 'pctl', 'lsnd')
+valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
+valid_effect_events = tag_class(
     'bipd', 'jpt!', 'deca', 'devi', 'ctrl', 'lifi', 'mach',
     'eqip', 'garb', 'item', 'ligh', 'obje', 'pctl', 'plac',
-    'proj', 'scen', 'snd!', 'ssce', 'unit', 'vehi', 'weap',
+    'proj', 'scen', 'snd!', 'ssce', 'unit', 'vehi', 'weap'
     )
-valid_shaders = tag_class("tag_class",
+valid_shaders = tag_class(
     'shdr', 'schi', 'scex', 'sotr', 'senv',
     'sgla', 'smet', 'soso', 'spla', 'swat'
     )
-valid_items = tag_class("tag_class",
-    'eqip', 'garb', 'item', 'weap')
-valid_objects = tag_class("tag_class",
+valid_items = tag_class('eqip', 'garb', 'item', 'weap')
+valid_objects = tag_class(
     'obje', 'bipd', 'vehi', 'weap', 'eqip', 'garb', 'proj',
     'scen', 'mach', 'ctrl', 'lifi', 'plac', 'ssce'
     )
-valid_units = tag_class("tag_class",
-    'bipd', 'unit', 'vehi'
-    )
+valid_units = tag_class('bipd', 'unit', 'vehi')
 
 
 #The header present at the start of every tag
 tag_header = Struct("blam header",
     Pad(36),
     valid_tags,
-    LUInt32("base address", DEFAULT=0),#random
+    LUInt32("base address", DEFAULT=0),  #random
     LUInt32("header size",  DEFAULT=64),
     Pad(8),
     LUInt16("version", DEFAULT=1),
@@ -433,55 +479,6 @@ from_to = QStruct('',
     BFloat("from", GUI_NAME=" "),
     BFloat("to"),
     )
-
-
-def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
-    '''This function serves to macro the creation of a reflexive'''
-    desc.update(
-        INCLUDE=reflexive_struct,
-        STEPTREE=Array(name+" array",
-            SIZE=".size", MAX=max_count, SUB_STRUCT=substruct,
-            ),
-        SIZE=12
-        )
-    if names:
-        name_map = {}
-        for i in range(len(names)):
-            e_name = BlockDef.str_to_name(None, names[i])
-            name_map[e_name] = i
-            
-        desc[STEPTREE][NAME_MAP] = name_map
-        
-    return Reflexive(name, **desc)
-
-
-def rawdata_ref(name, f_type=Rawdata):
-    '''This function serves to macro the creation of a rawdata reference'''
-    return RawdataRef(name,
-        EDITABLE=False, INCLUDE=rawdata_ref_struct,
-        STEPTREE=f_type("data", VISIBLE=False, SIZE=".size") )
-
-
-def dependency(name='tag ref', valid_ids=valid_tags):
-    '''This function serves to macro the creation of a tag dependency'''
-    return TagIndexRef(name,
-        valid_ids,
-        BSInt32("path pointer"),
-        BSInt32("path length"),
-        BUInt32("id", DEFAULT=0xFFFFFFFF),
-
-        STEPTREE=StringVarLen("filepath", SIZE=tag_ref_size),
-        EDITABLE=False,
-        )
-
-def blam_header(tagid, version=1):
-    '''This function serves to macro the creation of a tag header'''
-    header_dict = dict(tag_header)
-    header_dict[1] = dict(header_dict[1])
-    header_dict[5] = dict(header_dict[5])
-    header_dict[1][DEFAULT] = tagid
-    header_dict[5][DEFAULT] = version
-    return header_dict
 
 
 #This is the structure for all points where a tag references a rawdata chunk
