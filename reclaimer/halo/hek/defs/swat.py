@@ -1,4 +1,4 @@
-from ...common_descs import *
+from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 
 ripple = Struct("ripple",
@@ -17,8 +17,7 @@ ripple = Struct("ripple",
     )
 
 swat_body = Struct("tagdata",
-    radiosity_settings,
-    shader_physics,
+    shader_attrs,
 
     #Water Shader Properties
     BBool16("flags",

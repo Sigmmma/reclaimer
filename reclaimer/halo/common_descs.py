@@ -233,10 +233,12 @@ def ascii_str32(name):
     return StrAscii(str(name), SIZE=32)
 
 valid_strings = tag_class('ustr', 'str#')
-valid_effects = tag_class('snd!', 'effe')
+valid_device_effects = tag_class('effe', 'snd!')
+valid_effects = tag_class('effe')
 valid_continuous_damages = tag_class('cdmg')
 valid_fogs = tag_class('fog ')
 valid_fonts = tag_class('font')
+valid_material_effects = tag_class('foot')
 valid_particles = tag_class('part')
 valid_lens_flares = tag_class('lens')
 valid_point_physics = tag_class('pphy')
@@ -246,7 +248,7 @@ valid_sounds  = tag_class('snd!')
 valid_physics = tag_class('phys')
 valid_model_animations = tag_class('antr')
 valid_unicode_strings = tag_class('ustr')
-valid_model_collision_geometries = tag_class('coll')
+valid_model_collision_models = tag_class('coll')
 valid_models = tag_class('mode', 'mod2')
 valid_attachments = tag_class('cont', 'effe', 'ligh', 'mgs2', 'pctl', 'lsnd')
 valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
@@ -321,8 +323,31 @@ materials_list = (
     "hunter shield",
     )
 
+#Object shared functions
+object_export_to = (
+    'none',
+    'body vitality',
+    'shield vitality',
+    'recent body damage',
+    'recent shield damage',
+    'random constant',
+    'umbrella shield vitality',
+    'shield stun',
+    'recent umbrella shield vitality',
+    'umbrella shield stun',
+    'region 0 damage',
+    'region 1 damage',
+    'region 2 damage',
+    'region 3 damage',
+    'region 4 damage',
+    'region 5 damage',
+    'region 6 damage',
+    'region 7 damage',
+    'alive',
+    'compass',
+    )
 
-#Transparent Shader Shared Functions
+#Transparent shader shared functions
 trans_shdr_properties = (
     "alpha tested",
     "decal",
@@ -352,7 +377,7 @@ detail_mask = (
     "alpha"
     )
 
-#Shared Functions
+#Shared enumerators
 animation_functions = (
     "one",
     "zero",
@@ -441,6 +466,17 @@ function_names = (
     "C",
     "D",
     )
+function_inputs_outputs = (
+    "none",
+    "A in",
+    "B in",
+    "C in",
+    "D in",
+    "A out",
+    "B out",
+    "C out",
+    "D out",
+    )
 function_inputs = (
     "none",
     "A in",
@@ -503,110 +539,20 @@ reflexive_struct = Reflexive('reflexive',
     EDITABLE=False,
     )
 
+predicted_resource = Struct('predicted_resource',
+    BSInt16('type',
+        'bitmap',
+        'sound',
+        ),
+    BSInt16('resource index'),
+    BSInt32('tag index'),
+    )
+
 #This is the structure for all points where a tag references another tag
 tag_index_ref_struct = dependency()
 
-"""Objects"""
-
-FlSEnum16("object type",
-    ("bipd", 0),
-    ("vehi", 1),
-    ("weap", 2),
-    ("eqip", 3),
-    ("garb", 4),
-    ("proj", 5),
-    ("scen", 6),
-    ("mach", 7),
-    ("ctrl", 8),
-    ("lifi", 9),
-    ("plac", 10),
-    ("ssce", 11),
-    DEFAULT=0, EDITABLE=False,
-    ),
-
-
-"""Shader radiosity"""
-radiosity_settings = Struct("radiosity settings",
-    BBool16("radiosity flags",
-        "simple parameterization",
-        "ignore normals",
-        "transparent lit",
-        ),
-    BSEnum16("radiosity detail level" ,
-        "high",
-        "medium",
-        "low",
-        "turd",
-        ),
-    BFloat("radiosity light power"),
-    QStruct("radiosity light color", INCLUDE=rgb_float),
-    QStruct("radiosity tint color",  INCLUDE=rgb_float),
-    )
-
-"""Shader physics"""
-shader_physics = Struct('physics',
-    Pad(2),
-    BSEnum16("material type", *materials_list),
-
-    # THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS.
-    # This seems to be a Guerilla-only optimization value
-    FlSEnum16("shader type",
-        ("shdr", -1),  # Shader
-        ("senv", 3),   # Environment
-        ("soso", 4),   # Model
-        ("sotr", 5),   # Transparent Generic
-        ("schi", 6),   # Transparent Chicago
-        ("scex", 7),   # Transparent Chicago Extended
-        ("swat", 8),   # Water
-        ("sgla", 9),   # Glass
-        ("smet", 10),  # Meter
-        ("spla", 11),  # Plasma
-        DEFAULT=-1, EDITABLE=False,
-        ),
-    Pad(2)
-    )
-
-"""Transparent Shader"""
+"""Shaders"""
 extra_layers_block = dependency("extra layer", valid_shaders)
-
-chicago_4_stage_maps = Struct("four stage map",
-    BBool16("flags" ,
-        "unfiltered",
-        "alpha replicate",
-        "u-clamped",
-        "v-clamped",
-        ),
-    Pad(42),
-    BSEnum16("color function", *blend_functions),
-    BSEnum16("alpha function", *blend_functions),
-    Pad(36),
-    #shader transformations
-    BFloat("map u-scale"),
-    BFloat("map v-scale"),
-    BFloat("map u-offset"),
-    BFloat("map v-offset"),
-    BFloat("map rotation"),#degrees
-    BFloat("map bias"),#[0,1]
-    dependency("bitmap", valid_bitmaps),
-
-    Pad(40),
-
-    #shader animations
-    Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
-    Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
-    Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
-
-    QStruct("rotation center", INCLUDE=xy_float),
-    SIZE=220,
-    )
-
-
-chicago_2_stage_maps = Struct("two stage map", INCLUDE=chicago_4_stage_maps)
-
-chicago_extra_flags = (
-    "dont fade active camouflage",
-    "numeric countdown timer"
-    )
 
 """Misc"""
 damage_modifiers = QStruct("damage modifiers",

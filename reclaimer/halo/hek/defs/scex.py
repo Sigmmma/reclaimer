@@ -1,10 +1,11 @@
-from ...common_descs import *
+from .schi import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.scex import ScexTag
 
+chicago_2_stage_maps = Struct("two stage map", INCLUDE=chicago_4_stage_maps)
+
 scex_body = Struct("tagdata",
-    radiosity_settings,
-    shader_physics,
+    shader_attrs,
 
     # Shader Properties
     UInt8("numeric counter limit"),#[0,255]
@@ -23,7 +24,10 @@ scex_body = Struct("tagdata",
     reflexive("extra layers", extra_layers_block, 4),
     reflexive("four stage maps", chicago_4_stage_maps, 4),
     reflexive("two stage maps", chicago_2_stage_maps, 2),
-    BBool32("extra flags", *chicago_extra_flags),
+    BBool32("extra flags",
+        "dont fade active camouflage",
+        "numeric countdown timer"
+        ),
     SIZE=120,
     )
 

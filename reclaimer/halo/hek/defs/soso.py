@@ -1,4 +1,4 @@
-from ...common_descs import *
+from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.soso import SosoTag
 
@@ -45,8 +45,7 @@ os_soso_ext = Struct("shader model extension",
 
 
 soso_body = Struct("tagdata",
-    radiosity_settings,
-    shader_physics,
+    shader_attrs,
 
     #Model Shader Properties
     BBool16("flags",

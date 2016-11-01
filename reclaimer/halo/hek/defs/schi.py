@@ -1,10 +1,41 @@
-from ...common_descs import *
+from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.schi import SchiTag
 
+chicago_4_stage_maps = Struct("four stage map",
+    BBool16("flags" ,
+        "unfiltered",
+        "alpha replicate",
+        "u-clamped",
+        "v-clamped",
+        ),
+
+    Pad(42),
+    BSEnum16("color function", *blend_functions),
+    BSEnum16("alpha function", *blend_functions),
+
+    Pad(36),
+    #shader transformations
+    BFloat("map u-scale"),
+    BFloat("map v-scale"),
+    BFloat("map u-offset"),
+    BFloat("map v-offset"),
+    BFloat("map rotation"),#degrees
+    BFloat("map bias"),#[0,1]
+    dependency("bitmap", valid_bitmaps),
+
+    #shader animations
+    Pad(40),
+    Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
+    Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
+    Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
+
+    QStruct("rotation center", INCLUDE=xy_float),
+    SIZE=220,
+    )
+
 schi_body = Struct("tagdata",
-    radiosity_settings,
-    shader_physics,
+    shader_attrs,
 
     # Shader Properties
     UInt8("numeric counter limit"),#[0,255]
@@ -22,7 +53,10 @@ schi_body = Struct("tagdata",
     dependency("lens flare"),
     reflexive("extra layers", extra_layers_block, 4),
     reflexive("maps", chicago_4_stage_maps, 4),
-    BBool32("extra flags", *chicago_extra_flags),
+    BBool32("extra flags",
+        "dont fade active camouflage",
+        "numeric countdown timer"
+        ),
     SIZE=108,
     )
 
