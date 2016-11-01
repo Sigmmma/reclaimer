@@ -31,18 +31,20 @@ senv_body = Struct("tagdata",
     dependency("base map", valid_bitmaps),
                    
     Pad(24),
-    BSEnum16(  "detail map function", *detail_map_functions),
+    BSEnum16("detail map function", *detail_map_functions),
     Pad(2),
-    BFloat(    "primary detail map scale"),
+
+    BFloat("primary detail map scale"),
     dependency("primary detail map", valid_bitmaps),
-    BFloat(    "secondary detail map scale"),
+    BFloat("secondary detail map scale"),
     dependency("secondary detail map", valid_bitmaps),
+
     Pad(24),
-    BSEnum16(  "micro detail map function", *detail_map_functions),
+    BSEnum16("micro detail map function", *detail_map_functions),
+
     Pad(2),
-    BFloat(    "micro detail map scale"),
+    BFloat("micro detail map scale"),
     dependency("micro detail map", valid_bitmaps),
-                   
     QStruct("material color", INCLUDE=rgb_float),
 
     Pad(12),

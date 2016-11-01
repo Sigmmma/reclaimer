@@ -20,10 +20,7 @@ ligh_body = Struct("tagdata",
     Pad(24),
 
     #Color
-    BBool32("interpolation flags",
-        "blend in hsv",
-        "more colors"
-        ),
+    BBool32("interpolation flags", *blend_flags),
     QStruct("color lower bound", INCLUDE=argb_float),
     QStruct("color upper bound", INCLUDE=argb_float),
     Pad(12),
