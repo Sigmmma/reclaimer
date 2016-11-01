@@ -23,10 +23,7 @@ frame = Struct("frame",
 mgs2_body = Struct("tagdata",
     #Light volume
     ascii_str32("attachment marker"),
-    BBool32("flags",
-        "interpolate color in hsv",
-        "more colors"
-        ),
+    BBool32("flags", *blend_flags),
     Pad(16),
 
     #Brightness scale

@@ -3,13 +3,9 @@ from supyr_struct.defs.tag_def import TagDef
 
 shader = Struct("shader",
     Pad(40),
-    BBool16("shader flags",
-        "sort bias",
-        "nonlinear tint",
-        "dont overdraw fp weapon",
-        ),
+    BBool16("shader flags", *shader_flags),
     BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
-    BSEnum16("framebuffer fade mode", *shader_fade_mode),
+    BSEnum16("framebuffer fade mode", *render_fade_mode),
     BBool16("map flags",
         "unfiltered"
         ),

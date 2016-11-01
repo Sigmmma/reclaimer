@@ -38,10 +38,7 @@ reflection = Struct("reflection",
     Struct("animation",
         QStruct("color lower bound", INCLUDE=argb_float),
         QStruct("color upper bound", INCLUDE=argb_float),
-        BBool16("more flags",
-            "interpolate color in hsv",
-            "more colors",
-            ),
+        BBool16("flags", *blend_flags),
         BSEnum16("function", *animation_functions),
         BFloat("period"),#seconds
         BFloat("phase"),#seconds

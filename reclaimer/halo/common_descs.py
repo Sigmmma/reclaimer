@@ -233,7 +233,7 @@ def ascii_str32(name):
     return StrAscii(str(name), SIZE=32)
 
 valid_strings = tag_class('ustr', 'str#')
-valid_device_effects = tag_class('effe', 'snd!')
+valid_event_effects = tag_class('effe', 'snd!')
 valid_effects = tag_class('effe')
 valid_continuous_damages = tag_class('cdmg')
 valid_fogs = tag_class('fog ')
@@ -429,10 +429,29 @@ device_functions = (
     "locked",
     "delay",
     )
-shader_fade_mode = (
+render_anchor = (
+    "with primary",
+    "with screen space",
+    "with zsprite"
+    )
+render_fade_mode = (
     "none",
     "fade when perpendicular",
     "fade when parallel",
+    )
+render_mode = (
+    "screen facing",
+    "parallel to direction",
+    "perpendicular to direction"
+    )
+shader_flags = (
+    "sort bias",
+    "nonlinear tint",
+    "dont overdraw fp weapon"
+    )
+blend_flags = (
+    "blend in hsv",
+    "more colors"
     )
 blend_functions = (
     "current",

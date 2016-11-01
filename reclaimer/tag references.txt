@@ -123,7 +123,6 @@ REMAINING TO IMPLEMENT:
 
 
 IMPLEMENTATION ORDER:
-    part: particle
     hudg: hud_globals
     coll: model_collision_geometry
     pctl: particle_system

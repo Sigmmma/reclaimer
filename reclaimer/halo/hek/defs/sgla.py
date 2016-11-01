@@ -21,9 +21,9 @@ sgla_body = Struct("tagdata",
     Pad(22),
     #Reflection Properties
     BSEnum16("reflection type",
-        "bumped Cubemap",
-        "flat Cubemap",
-        "dynamic Mirror",
+        "bumped cubemap",
+        "flat cubemap",
+        "dynamic mirror",
         ),
     BFloat("perpendicular brightness"),#[0,1]
     QStruct("perpendicular tint color", INCLUDE=rgb_float),
