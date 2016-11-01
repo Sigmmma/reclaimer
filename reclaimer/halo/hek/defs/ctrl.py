@@ -19,9 +19,9 @@ ctrl_body = Struct("tagdata",
     BFloat('call value', MIN=0.0, MAX=1.0),
 
     Pad(80),
-    dependency("on", valid_device_effects),
-    dependency("off", valid_device_effects),
-    dependency("deny", valid_device_effects),
+    dependency("on", valid_event_effects),
+    dependency("off", valid_event_effects),
+    dependency("deny", valid_event_effects),
 
     SIZE=792,
     )

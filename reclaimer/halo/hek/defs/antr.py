@@ -49,28 +49,6 @@ unit_weapon_desc = Struct("weapon",
     BSInt16("up frame count"),
 
     Pad(32),
-    #animations are as follows:
-    #0-1   == idle, gesture
-    #2-3   == turn-left/right
-    #4-7   == dive-front/back/left/right
-    #8-11  == move-front/back/left/right
-    #12-15 == slide-front/back/left/right
-    #16 == airborne
-    #17-18 == land-soft/hard
-    #19-24 == unused, throw-grenade, disarm, drop, ready, put-away
-    #25-26 == aim-still/move
-    #27-28 == surprise-front/back
-    #29 == berserk
-    #30-31 == evade-left/right
-    #32-33 == signal-move/attack
-    #34 == warn
-    #35-38 == stunned-front/back/left/right
-    #39-43 == melee, celebrate, panic, melee-airborne, flaming
-    #44-45 == resurrect-front/back
-    #46 == melee-continuous
-    #47 == feeding
-    #48-50 == leap-start/airborne/melee
-    #51-54 == zapping, unused, unused, unused
     reflexive("animations", anim_enum_desc, 55,
         'idle','gesture','turn-left','turn-right',
         'dive-front','dive-back','dive-left','dive-right',
@@ -106,21 +84,6 @@ unit_desc = Struct("unit",
     BSInt16("up frame count"),
 
     Pad(8),
-    #animations are as follows:
-    #0  == airborne-dead
-    #1  == landing-dead
-    #2  == acc-front-back
-    #3  == acc-left-right
-    #4  == acc-up-down
-    #5-10 == push, twist, enter, exit, look, talk
-    #11 == emotions
-    #12 == unused
-    #13-22 == user0 - user9
-    #23 == flying-front
-    #24 == flying-back
-    #25 == flying-left
-    #26 == flying-right
-    #27-29 == opening, closing, hovering
     reflexive("animations", anim_enum_desc, 30,
         'airborne-dead','landing-dead',
         'acc-front-back','acc-left-right','acc-up-down',
@@ -136,12 +99,6 @@ unit_desc = Struct("unit",
 
 weapons_desc = Struct("weapons", 
     Pad(16),
-    #animations are as follows:
-    #0-2  == idle, ready, put-away
-    #3-4  == reload-1, reload-2
-    #5-6  == chamber-1, chamber-2
-    #7-8  == charged-1, charged-2
-    #9-10 == fire-1, fire-2
     reflexive("animations", anim_enum_desc, 11,
         'idle','ready','put-away',
         'reload-1','reload-2','chamber-1','chamber-2',
@@ -172,11 +129,6 @@ vehicle_desc = Struct("vehicle desc",
     BSInt16("up frame count"),
 
     Pad(68),
-    #animations are as follows:
-    #0-1 == steering, roll
-    #2-3 == throttle, velocity
-    #4-5 == braking,  ground-speed
-    #6-7 == occupied, unoccupied
     reflexive("animations", anim_enum_desc, 8,
         'steering','roll','throttle','velocity',
         'braking','ground-speed','occupied','unoccupied'),
@@ -186,9 +138,6 @@ vehicle_desc = Struct("vehicle desc",
 
 device_desc = Struct("device", 
     Pad(84),
-    #animations are as follows:
-    #0 == position
-    #1 == power
     reflexive("animations", anim_enum_desc, 2,
               'position','power'),
     SIZE=96,
@@ -196,16 +145,6 @@ device_desc = Struct("device",
 
 fp_animation_desc = Struct("fp animation", 
     Pad(16),
-    #animations are as follows:
-    #0-4   == idle, posing, fire-1, moving, overlays
-    #5-6   == light-off/on
-    #7-8   == reload-empty/full
-    #9-11  == overheated, ready, put-away
-    #12-14 == overcharged, melee, fire-2
-    #15-17 == overcharged-jitter, throw-grenade, ammunition
-    #18-19 == misfire-1/2
-    #20-22 == throw-overheated, overheating, overheating-again
-    #23-27 == enter, exit-empty, exit-full, o-h-exit, o-h-s-enter
     reflexive("animations", anim_enum_desc, 28,
         'idle','posing','fire-1',
         'moving','overlays', 'light-off','light-on',
