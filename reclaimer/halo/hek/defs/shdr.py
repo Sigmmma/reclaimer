@@ -1,12 +1,45 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-shader_body = Struct("tagdata",
-    radiosity_settings,
-    shader_physics,
-    SIZE=40, 
+shader_attrs = Struct("shader attrs",
+    BBool16("radiosity flags",
+        "simple parameterization",
+        "ignore normals",
+        "transparent lit",
+        ),
+    BSEnum16("radiosity detail level" ,
+        "high",
+        "medium",
+        "low",
+        "turd",
+        ),
+    BFloat("radiosity light power"),
+    QStruct("radiosity light color", INCLUDE=rgb_float),
+    QStruct("radiosity tint color",  INCLUDE=rgb_float),
+
+    Pad(2),
+    BSEnum16("material type", *materials_list),
+    # THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS.
+    # This seems to be a Guerilla-only optimization value
+    FlSEnum16("shader type",
+        ("shdr", -1),  # Shader
+        ("senv", 3),   # Environment
+        ("soso", 4),   # Model
+        ("sotr", 5),   # Transparent Generic
+        ("schi", 6),   # Transparent Chicago
+        ("scex", 7),   # Transparent Chicago Extended
+        ("swat", 8),   # Water
+        ("sgla", 9),   # Glass
+        ("smet", 10),  # Meter
+        ("spla", 11),  # Plasma
+        DEFAULT=-1, EDITABLE=False,
+        ),
+    SIZE=40
     )
 
+shader_body = Struct("tagdata",
+    shader_attrs
+    )
 
 def get():
     return shdr_def

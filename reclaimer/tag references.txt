@@ -127,18 +127,9 @@ IMPLEMENTATION ORDER:
     hudg: hud_globals
     coll: model_collision_geometry
     pctl: particle_system
-    obje: object
     unit: unit
-    ctrl: device_control
-    lifi: device_light_fixture
-    mach: device_machine
-    eqip: equipment
-    garb: garbage
     weap: weapon
-    plac: placeholder
     proj: projectile
-    scen: scenery
-    ssce: sound_scenery
     bipd: biped
     vehi: vehicle
     DeLa: ui_widget_definition

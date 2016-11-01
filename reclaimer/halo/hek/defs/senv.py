@@ -1,10 +1,9 @@
-from ...common_descs import *
+from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.senv import SenvTag
 
 senv_body = Struct("tagdata",
-    radiosity_settings,
-    shader_physics,
+    shader_attrs,
 
     #Environment Shader Properties
     BBool16("environment shader flags",

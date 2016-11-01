@@ -1,7 +1,7 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-item_body = Struct("tagdata",
+item_attrs = Struct('item attrs',
     Pad(2),
     BBool16("flags",
         "always maintains z up",
@@ -23,17 +23,18 @@ item_body = Struct("tagdata",
 
     Pad(164),
 
-    dependency("material effects"),
-    dependency("collision sound"),
+    dependency("material effects", valid_material_effects),
+    dependency("collision sound", valid_sounds),
 
     Pad(120),
 
     Struct("detonation delay", INCLUDE=from_to),
-    dependency("detonating effect"),
-    dependency("detonation effect"),
+    dependency("detonating effect", valid_effects),
+    dependency("detonation effect", valid_effects),
     SIZE=396,
     )
 
+item_body = Struct('tagdata', item_attrs)
 
 def get():
     return item_def

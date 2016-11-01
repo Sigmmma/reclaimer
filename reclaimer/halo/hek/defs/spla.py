@@ -1,10 +1,9 @@
-from ...common_descs import *
+from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 
 
 spla_body = Struct("tagdata",
-    radiosity_settings,
-    shader_physics,
+    shader_attrs,
 
     Pad(4),
     #Intensity

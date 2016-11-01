@@ -1,4 +1,4 @@
-from ...common_descs import *
+from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 
 sotr_input_mappings = (
@@ -191,8 +191,7 @@ map = Struct("map",
     )
 
 sotr_body = Struct("tagdata",
-    radiosity_settings,
-    shader_physics,
+    shader_attrs,
 
     #Generic Transparent Shader
     UInt8("numeric counter limit"),#[0,255]
