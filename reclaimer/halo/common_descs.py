@@ -5,166 +5,6 @@ from supyr_struct.defs.block_def import BlockDef
 from .field_types import *
 from .constants import *
 
-compressed_normal_32 = LBitStruct('compressed_norm32',
-    Bit1SInt("i", SIZE=11),
-    Bit1SInt("j", SIZE=11),
-    Bit1SInt("k", SIZE=10)
-    )
-
-# coordinates
-xyz_float = QStruct('xyz_float',
-    Float("x"),
-    Float("y"),
-    Float("z")
-    )
-xy_float = QStruct('xy_float',
-    LFloat("x"),
-    LFloat("y")
-    )
-
-# colors
-argb_float = QStruct('argb_float',
-    LFloat("a", MIN=0.0, MAX=1.0),
-    LFloat("r", MIN=0.0, MAX=1.0),
-    LFloat("g", MIN=0.0, MAX=1.0),
-    LFloat("b", MIN=0.0, MAX=1.0)
-    )
-rgb_float = QStruct('rgb_float',
-    LFloat("r", MIN=0.0, MAX=1.0),
-    LFloat("g", MIN=0.0, MAX=1.0),
-    LFloat("b", MIN=0.0, MAX=1.0)
-    )
-rgb_byte = QStruct('rgb_uint8',
-    UInt8("r", MIN=0, MAX=255),
-    UInt8("g", MIN=0, MAX=255),
-    UInt8("b", MIN=0, MAX=255)
-    )
-argb_byte = QStruct('argb_uint8',
-    UInt8("a", MIN=0, MAX=255),
-    UInt8("r", MIN=0, MAX=255),
-    UInt8("g", MIN=0, MAX=255),
-    UInt8("b", MIN=0, MAX=255)
-    )
-
-# rotations
-ijkw_float = QStruct('ijkw_float',
-    LFloat("i"),
-    LFloat("j"),
-    LFloat("k"),
-    LFloat("w")
-    )
-ijk_float = QStruct('ijk_float',
-    LFloat("i"),
-    LFloat("j"),
-    LFloat("k")
-    )
-yp_float = QStruct('yp_float',
-    LFloat("y"),
-    LFloat("p")
-    )
-
-# maps tag class four character codes(fccs) in
-# their string encoding to their int encoding.
-tag_class_fcc_to_be_int = {}
-tag_class_fcc_to_le_int = {}
-# maps tag class four character codes(fccs) in
-# their int encoding to their string encoding.
-tag_class_be_int_to_fcc = {}
-tag_class_le_int_to_fcc = {}
-
-# maps tag class four character codes to the tags file extension
-tag_class_fcc_to_ext = {
-    'actr': "actor",
-    'actv': "actor_varient",
-    'ant!': "antenna",
-    'bipd': "biped",
-    'bitm': "bitmap",
-    'trak': "camera_track",
-    'colo': "color_table",
-    'cdmg': "continuous_damage_effect",
-    'cont': "contrail",
-    'jpt!': "damage_effect",
-    'deca': "decal",
-    'udlg': "dialogue",
-    'dobc': "detail_object_collection",
-    'devi': "device",
-    'ctrl': "device_control",
-    'lifi': "device_light_fixture",
-    'mach': "device_machine",
-    'effe': "effect",
-    'eqip': "equipment",
-    'flag': "flag",
-    'fog ': "fog",
-    'font': "font",
-    'garb': "garbage",
-    'mod2': "gbxmodel",
-    'matg': "globals",
-    'glw!': "glow",
-    'grhi': "grenade_hud_interface",
-    'hudg': "hud_globals",
-    'hmt ': "hud_message_text",
-    'hud#': "hud_number",
-    'devc': "input_device_defaults",
-    'item': "item",
-    'itmc': "item_collection",
-    'lens': "lens_flare",
-    'ligh': "light",
-    'mgs2': "light_volume",
-    'elec': "lightning",
-    'foot': "material_effects",
-    'metr': "meter",
-    'mode': "model",
-    'antr': "model_animations",
-    'coll': "model_collision_geometry",
-    'mply': "multiplayer_scenario_description",
-    'obje': "object",
-    'part': "particle",
-    'pctl': "particle_system",
-    'phys': "physics",
-    'plac': "placeholder",
-    'pphy': "point_physics",
-    'ngpr': "preferences_network_game",
-    'proj': "projectile",
-    'scnr': "scenario",
-    'sbsp': "scenario_structure_bsp",
-    'scen': "scenery",
-    'snd!': "sound",
-    'snde': "sound_environment",
-    'lsnd': "sound_looping",
-    'ssce': "sound_scenery",
-    'boom': "spheroid",
-    'shdr': "shader",
-    'schi': "shader_transparent_chicago",
-    'scex': "shader_transparent_chicago_extended",
-    'sotr': "shader_transparent_generic",
-    'senv': "shader_environment",
-    'sgla': "shader_transparent_glass",
-    'smet': "shader_transparent_meter",
-    'soso': "shader_model",
-    'spla': "shader_transparent_plasma",
-    'swat': "shader_transparent_water",
-    'sky ': "sky",
-    'str#': "string_list",
-    'tagc': "tag_collection",
-    'Soul': "ui_widget_collection",
-    'DeLa': "ui_widget_definition",
-    'ustr': "unicode_string_list",
-    'unit': "unit",
-    'unhi': "unit_hud_interface",
-    'vehi': "vehicle",
-    'vcky': "virtual_keyboard",
-    'weap': "weapon",
-    'wphi': "weapon_hud_interface",
-    'rain': "weather_particle_system",
-    'wind': "wind",
-    }
-
-for tag_cls in tag_class_fcc_to_ext:
-    tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls, 'big')
-    tag_class_be_int_to_fcc[fcc(tag_cls, 'big')] = tag_cls
-    tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
-    tag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls
-
 def tag_class(*args):
     '''
     A macro for creating a tag_class enum desc with the
@@ -235,7 +75,9 @@ def ascii_str32(name):
 valid_actors = tag_class('actr')
 valid_actor_variants = tag_class('actv')
 valid_bitmaps = tag_class('bitm')
+valid_camera_tracks = tag_class('trak')
 valid_continuous_damages = tag_class('cdmg')
+valid_damage_effects = tag_class('jpt!')
 valid_decals = tag_class('deca')
 valid_effects = tag_class('effe')
 valid_event_effects = tag_class('effe', 'snd!')
@@ -253,6 +95,8 @@ valid_point_physics = tag_class('pphy')
 valid_sounds  = tag_class('snd!')
 valid_strings = tag_class('ustr', 'str#')
 valid_unicode_strings = tag_class('ustr')
+valid_unit_hud_interfaces = tag_class('unhi')
+valid_unit_dialogues = tag_class('udlg')
 valid_weapons  = tag_class('weap')
 valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
 
@@ -274,25 +118,12 @@ valid_shaders = tag_class(
 valid_units = tag_class('bipd', 'unit', 'vehi')
 
 
-#The header present at the start of every tag
-tag_header = Struct("blam header",
-    Pad(36),
-    valid_tags,
-    LUInt32("base address", DEFAULT=0),  #random
-    LUInt32("header size",  DEFAULT=64),
-    Pad(8),
-    LUInt16("version", DEFAULT=1),
-    LUInt16("unknown", DEFAULT=255),
-    LUEnum32("engine id",
-        ("halo 1", 'blam'),
-        ("halo 2", 'BLM!'),
-        DEFAULT='blam'),
-    EDITABLE=False, SIZE=64
-    )
-
+# ###########################################################################
+# The order of element in all the enumerators is important(DONT SHUFFLE THEM)
+# ###########################################################################
+    
 #Shared Enumerator options
 materials_list = (
-    # the order of these elements is important(DONT SHUFFLE IT)
     "dirt",
     "sand",
     "stone",
@@ -327,62 +158,6 @@ materials_list = (
     "ice",
     "hunter shield",
     )
-
-#Object shared functions
-object_export_to = (
-    'none',
-    'body vitality',
-    'shield vitality',
-    'recent body damage',
-    'recent shield damage',
-    'random constant',
-    'umbrella shield vitality',
-    'shield stun',
-    'recent umbrella shield vitality',
-    'umbrella shield stun',
-    'region 0 damage',
-    'region 1 damage',
-    'region 2 damage',
-    'region 3 damage',
-    'region 4 damage',
-    'region 5 damage',
-    'region 6 damage',
-    'region 7 damage',
-    'alive',
-    'compass',
-    )
-
-#Transparent shader shared functions
-trans_shdr_properties = (
-    "alpha tested",
-    "decal",
-    "two sided",
-    "first map is in screenspace",
-    "draw before water",
-    "ignore effect",
-    "scale first map with distance",
-    "numeric",
-    )
-trans_shdr_first_map_type = (
-    "map 2d",
-    "reflection cube map",
-    "object centered cube map",
-    "viewer centered cube map",
-    )
-
-detail_mask = (
-    "none",
-    "red inverse",
-    "red",
-    "green inverse",
-    "green",
-    "blue inverse",
-    "blue",
-    "alpha inverse",
-    "alpha"
-    )
-
-#Shared enumerators
 animation_functions = (
     "one",
     "zero",
@@ -520,50 +295,189 @@ function_outputs = (
     "D out",
     )
 
-#Miscellaneous descs
+#Tag class specific enumerators
+object_export_to = (
+    'none',
+    'body vitality',
+    'shield vitality',
+    'recent body damage',
+    'recent shield damage',
+    'random constant',
+    'umbrella shield vitality',
+    'shield stun',
+    'recent umbrella shield vitality',
+    'umbrella shield stun',
+    'region 0 damage',
+    'region 1 damage',
+    'region 2 damage',
+    'region 3 damage',
+    'region 4 damage',
+    'region 5 damage',
+    'region 6 damage',
+    'region 7 damage',
+    'alive',
+    'compass',
+    )
+biped_inputs = (
+    'none',
+    'flying velocity'
+    )
+unit_inputs = (
+    "none",
+    "driver seat power",
+    "gunner seat power",
+    "aiming change",
+    "mouth aperture",
+    "integrated light power",
+    "can blink",
+    "shield sapping"
+    )
+unit_teams = (
+    "none",
+    "player",
+    "covenant",
+    "human",
+    "flood",
+    "sentinel",
+    "unused6",
+    "unused7",
+    "unused8",
+    "unused9",
+    )
+vehicle_inputs = (
+    "none",
+    "speed absolute",
+    "speed forward",
+    "speed backward",
+    "slide absolute",
+    "slide left",
+    "slide right",
+    "speed slide maximum",
+    "turn absolute",
+    "turn left",
+    "turn right",
+    "crouch",
+    "jump",
+    "walk",
+    "veolcity air",
+    "veolcity water",
+    "veolcity ground",
+    "veolcity forward",
+    "veolcity left",
+    "veolcity up",
+    "left tread position",
+    "right tread position",
+    "left tread veolcity",
+    "right tread veolcity",
+    "front left tire position",
+    "front right tire position",
+    "back left tire position",
+    "back right tire position",
+    "front left tire veolcity",
+    "front right tire veolcity",
+    "back left tire veolcity",
+    "back right tire veolcity",
+    "wingtip contrail",
+    "hover",
+    "thrust",
+    "engine hack",
+    "wingtip contrail new",
+    )
+vehicle_types = (
+    "human tank",
+    "human jeep",
+    "human boat",
+    "human plane",
+    "alien scout",
+    "alien fighter",
+    "turret",
+    )
+trans_shdr_properties = (
+    "alpha tested",
+    "decal",
+    "two sided",
+    "first map is in screenspace",
+    "draw before water",
+    "ignore effect",
+    "scale first map with distance",
+    "numeric",
+    )
+trans_shdr_first_map_type = (
+    "map 2d",
+    "reflection cube map",
+    "object centered cube map",
+    "viewer centered cube map",
+    )
+detail_mask = (
+    "none",
+    "red inverse",
+    "red",
+    "green inverse",
+    "green",
+    "blue inverse",
+    "blue",
+    "alpha inverse",
+    "alpha"
+    )
+
+# Descriptors
+tag_header = Struct("blam header",
+    Pad(36),
+    valid_tags,
+    LUInt32("base address", DEFAULT=0),  #random
+    LUInt32("header size",  DEFAULT=64),
+    Pad(8),
+    LUInt16("version", DEFAULT=1),
+    LUInt16("unknown", DEFAULT=255),
+    LUEnum32("engine id",
+        ("halo 1", 'blam'),
+        ("halo 2", 'BLM!'),
+        DEFAULT='blam'),
+    EDITABLE=False, SIZE=64
+    )
+
+# Miscellaneous, Halo specific descriptors
 anim_func_per_pha = Struct('',
     BSEnum16("function", *animation_functions),
     Pad(2),
-    BFloat("period"),#seconds
-    BFloat("phase"),#seconds
+    BFloat("period"),  # seconds
+    BFloat("phase"),  # seconds
     )
 anim_func_per_sca = Struct('',
     BSEnum16("function", *animation_functions),
     Pad(2),
-    BFloat("period"),#seconds
-    BFloat("scale"),#base map repeats
+    BFloat("period"),  # seconds
+    BFloat("scale"),  # base map repeats
     )
 anim_src_func_per_pha_sca = Struct('',
     BSEnum16("source", *function_outputs),
     BSEnum16("function", *animation_functions),
-    BFloat("period"),#seconds
-    BFloat("phase"),#seconds
-    BFloat("scale"),#repeats
+    BFloat("period"),  # seconds
+    BFloat("phase"),  # seconds
+    BFloat("scale"),  # repeats
     # when scale is for rotation, its actually in degrees, not radians. weird!
     )
-
 from_to = QStruct('',
     BFloat("from", GUI_NAME=" "),
     BFloat("to"),
     )
 
 
-#This is the structure for all points where a tag references a rawdata chunk
+# This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
     BSInt32("size"),
-    BSInt32("unknown 1"),#0x00000000 in tags(and meta it seems)
-    BSInt32("unknown 2"),#random(low number in meta)
+    BSInt32("unknown 1"),  # 0x00000000 in tags(and meta it seems)
+    BSInt32("unknown 2"),  # random(low number in meta)
     BSInt32("pointer"),
-    BUInt32("id"),#0x00000000 in meta it seems
+    BUInt32("id"),  # 0x00000000 in meta it seems
     EDITABLE=False,
     )
 
-
-#This is the structure for all tag reflexives
+# This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
     BSInt32("size"),
-    BSInt32("pointer"),#random
-    BUInt32("id"),#0x00000000 in meta it seems
+    BSInt32("pointer"),  # random
+    BUInt32("id"),  # 0x00000000 in meta it seems
     EDITABLE=False,
     )
 
@@ -576,13 +490,70 @@ predicted_resource = Struct('predicted_resource',
     BSInt32('tag index'),
     )
 
-#This is the desc used wherever a tag references another tag
+# This is the descriptor used wherever a tag references another tag
 tag_index_ref_struct = dependency()
 
-"""Shaders"""
 extra_layers_block = dependency("extra layer", valid_shaders)
 
-"""Misc"""
 damage_modifiers = QStruct("damage modifiers",
     *(BFloat(material_name) for material_name in materials_list)
+    )
+
+# Miscellaneous shared descriptors
+compressed_normal_32 = LBitStruct('compressed_norm32',
+    Bit1SInt("i", SIZE=11),
+    Bit1SInt("j", SIZE=11),
+    Bit1SInt("k", SIZE=10)
+    )
+
+# coordinates
+xyz_float = QStruct('xyz_float',
+    Float("x"),
+    Float("y"),
+    Float("z")
+    )
+xy_float = QStruct('xy_float',
+    LFloat("x"),
+    LFloat("y")
+    )
+
+# colors
+argb_float = QStruct('argb_float',
+    LFloat("a", MIN=0.0, MAX=1.0),
+    LFloat("r", MIN=0.0, MAX=1.0),
+    LFloat("g", MIN=0.0, MAX=1.0),
+    LFloat("b", MIN=0.0, MAX=1.0)
+    )
+rgb_float = QStruct('rgb_float',
+    LFloat("r", MIN=0.0, MAX=1.0),
+    LFloat("g", MIN=0.0, MAX=1.0),
+    LFloat("b", MIN=0.0, MAX=1.0)
+    )
+rgb_byte = QStruct('rgb_uint8',
+    UInt8("r", MIN=0, MAX=255),
+    UInt8("g", MIN=0, MAX=255),
+    UInt8("b", MIN=0, MAX=255)
+    )
+argb_byte = QStruct('argb_uint8',
+    UInt8("a", MIN=0, MAX=255),
+    UInt8("r", MIN=0, MAX=255),
+    UInt8("g", MIN=0, MAX=255),
+    UInt8("b", MIN=0, MAX=255)
+    )
+
+# rotations
+ijkw_float = QStruct('ijkw_float',
+    LFloat("i"),
+    LFloat("j"),
+    LFloat("k"),
+    LFloat("w")
+    )
+ijk_float = QStruct('ijk_float',
+    LFloat("i"),
+    LFloat("j"),
+    LFloat("k")
+    )
+yp_float = QStruct('yp_float',
+    LFloat("y"),
+    LFloat("p")
     )

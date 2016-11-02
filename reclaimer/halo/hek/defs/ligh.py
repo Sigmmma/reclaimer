@@ -14,8 +14,8 @@ ligh_body = Struct("tagdata",
     #Shape
     BFloat("radius"),
     QStruct("radius modifier", INCLUDE=from_to),
-    BFloat("falloff angle"),  # measured in radians
-    BFloat("cutoff angle"),  # measured in radians
+    BFloat("falloff angle"),  # radians
+    BFloat("cutoff angle"),  # radians
     BFloat("lens flare only radius"),
     Pad(24),
 

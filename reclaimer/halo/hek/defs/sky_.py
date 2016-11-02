@@ -26,8 +26,9 @@ light = Struct('light',
     BFloat("power"),
     BFloat("test distance"),
     Pad(4),
-    QStruct("direction", INCLUDE=yp_float),  # measured in radians
-    BFloat("diameter"),  # displayed_value == internal_value * 180/pi
+    QStruct("direction", INCLUDE=yp_float),  # radians
+    BFloat("diameter"),  # radians (yeah, it sounds weird, but this
+    #                      value is stored as a radian coefficient)
     SIZE=116
     )
 

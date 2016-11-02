@@ -73,7 +73,7 @@ particle = Struct("particle",
     BSInt16("location"),
     Pad(2),
 
-    QStruct("relative direction", INCLUDE=yp_float),  # measured in radians
+    QStruct("relative direction", INCLUDE=yp_float),  # radians
     QStruct("relative offset", INCLUDE=ijk_float),
     Pad(52),
 
@@ -100,8 +100,8 @@ particle = Struct("particle",
     Pad(12),
 
     QStruct("velocity", INCLUDE=from_to),
-    BFloat("velocity cone angle"),  # measured in radians
-    QStruct("angular velocity", INCLUDE=from_to),  # measured in radians
+    BFloat("velocity cone angle"),  # radians
+    QStruct("angular velocity", INCLUDE=from_to),  # radians
     Pad(8),
 
     QStruct("radius", INCLUDE=from_to),
