@@ -124,7 +124,6 @@ REMAINING TO IMPLEMENT:
 
 IMPLEMENTATION ORDER:
     hudg: hud_globals
-    coll: model_collision_geometry
     pctl: particle_system
     unit: unit
     weap: weapon
@@ -136,7 +135,6 @@ IMPLEMENTATION ORDER:
     unhi: unit_hud_interface
     wphi: weapon_hud_interface
     actr: actor
-    actv: actor_varient
     matg: globals
     scnr: scenario
     sbsp: scenario_structure_bsp

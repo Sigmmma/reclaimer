@@ -178,7 +178,7 @@ map = Struct("map",
     BFloat("map u-offset"),
     BFloat("map v-offset"),
     BFloat("map rotation"),#degrees
-    BFloat("map bias"),#[0,1]
+    BFloat("map bias", MIN=0.0, MAX=1.0),
     dependency("bitmap", valid_bitmaps),
                               
     #shader animations
@@ -194,7 +194,7 @@ sotr_body = Struct("tagdata",
     shader_attrs,
 
     #Generic Transparent Shader
-    UInt8("numeric counter limit"),#[0,255]
+    UInt8("numeric counter limit", MIN=0, MAX=255),
     Bool8("flags",
         "alpha tested",
         "decal",
