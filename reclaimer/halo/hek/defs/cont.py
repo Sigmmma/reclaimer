@@ -43,6 +43,7 @@ cont_body = Struct("tagdata",
         "texture animation u",
         "texture animation v",
         ),
+
     Struct("point creation",
         BFloat("generation rate"),
         QStruct("veloctiy", INCLUDE=from_to),
@@ -62,9 +63,9 @@ cont_body = Struct("tagdata",
         Pad(2),
         BFloat("texture repeats u"),
         BFloat("texture repeats v"),
-        BFloat("texture animation u"),
-        BFloat("texture animation v"),
-        BFloat("animation rate"),
+        BFloat("texture animation u"),  # repeats per second
+        BFloat("texture animation v"),  # repeats per second
+        BFloat("animation rate"),  # frames per second
         dependency("bitmap", valid_bitmaps),
         BSInt16("first sequence index"),
         BSInt16("sequence count"),

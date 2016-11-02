@@ -30,9 +30,7 @@ part = Struct('part',
     BFloat('centroid primary weight'),
     BFloat('centroid secondary weight'),
 
-    BFloat('centroid translation x'),
-    BFloat('centroid translation y'),
-    BFloat('centroid translation z'),
+    QStruct('centroid translation', INCLUDE=xyz_float),
     Pad(12),
 
     #reflexive("compressed vertices", compressed_vertex_union),
@@ -51,34 +49,17 @@ node = Struct('node',
     BSInt16('parent node'),
     Pad(2),
 
-    BFloat('translation x'),
-    BFloat('translation y'),
-    BFloat('translation z'),
-
-    BFloat('rotation i'),
-    BFloat('rotation j'),
-    BFloat('rotation k'),
-    BFloat('rotation w'),
+    QStruct('translation', INCLUDE=xyz_float),
+    QStruct('rotation', INCLUDE=ijkw_float),
     BFloat('distance from parent'),
     Pad(32),
 
     # xbox specific values
     LFloat('unknown', ENDIAN='<'),
-    LFloat('normal i', ENDIAN='<'),
-    LFloat('normal j', ENDIAN='<'),
-    LFloat('normal k', ENDIAN='<'),
-
-    LFloat('binormal i', ENDIAN='<'),
-    LFloat('binormal j', ENDIAN='<'),
-    LFloat('binormal k', ENDIAN='<'),
-
-    LFloat('tangent i', ENDIAN='<'),
-    LFloat('tangent j', ENDIAN='<'),
-    LFloat('tangent k', ENDIAN='<'),
-
-    LFloat('unknown x', ENDIAN='<'),
-    LFloat('unknown y', ENDIAN='<'),
-    LFloat('unknown z', ENDIAN='<'),
+    QStruct('unknown normal', INCLUDE=ijk_float, ENDIAN='<'),
+    QStruct('unknown binormal', INCLUDE=ijk_float, ENDIAN='<'),
+    QStruct('unknown tangent', INCLUDE=ijk_float, ENDIAN='<'),
+    QStruct('unknown translation', INCLUDE=xyz_float, ENDIAN='<'),
     SIZE=156,
     )
 

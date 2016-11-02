@@ -92,13 +92,13 @@ snd__body = Struct("tagdata",
         ),
     BFloat("minimum distance"),
     BFloat("maximum distance"),
-    BFloat("skip fraction"),  # [0.0 to 1.0]
+    BFloat("skip fraction", MIN=0.0, MAX=1.0),
 
     #Randomization
     QStruct("random pitch bounds", INCLUDE=from_to),
     BFloat("inner cone angle"),  # measured in radians
     BFloat("outer cone angle"),  # measured in radians
-    BFloat("outer cone gain"),  # [0.0 to 1.0]
+    BFloat("outer cone gain", MIN=0.0, MAX=1.0),
     BFloat("gain modifier"),
     BFloat("maximum bend per second"),
     Pad(12),

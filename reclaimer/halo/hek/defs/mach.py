@@ -2,10 +2,7 @@ from .obje import *
 from .devi import *
 from supyr_struct.defs.tag_def import TagDef
 
-mach_body = Struct("tagdata",
-    object_attrs,
-    devi_attrs,
-
+machine_attrs = Struct("machine attrs",
     BSEnum16('type',
         'door',
         'platform',
@@ -23,7 +20,13 @@ mach_body = Struct("tagdata",
         'pause until crushed',
         'reverse directions'
         ),
-    BSInt16('elevator node'),
+    BSInt16('elevator node')
+    )
+
+mach_body = Struct("tagdata",
+    object_attrs,
+    devi_attrs,
+    machine_attrs,
 
     SIZE=804,
     )

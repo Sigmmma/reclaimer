@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 particle_type = Struct("particle_type",
     ascii_str32("name"),
     BBool32("flags",
-        "interpolate colors in hsv",
+        "blend colors in hsv",
         "along long hue path",
         "random rotation",
         ),
@@ -36,33 +36,38 @@ particle_type = Struct("particle_type",
     QStruct("color upper bound", INCLUDE=argb_float),
 
     #Shader
-    Pad(64),
-    dependency("sprite bitmap", valid_bitmaps),
-    BSEnum16("render mode", *render_mode),
-    BSEnum16("render direction source",
-        "from velocity",
-        "from acceleration",
-        ),
+    Struct("shader",
+        Pad(64),
+        dependency("sprite bitmap", valid_bitmaps),
+        BSEnum16("render mode", *render_mode),
+        BSEnum16("render direction source",
+            "from velocity",
+            "from acceleration"
+            ),
 
-    Pad(40),
-    BBool16("shader flags", *shader_flags),
-    BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
-    BSEnum16("framebuffer fade mode", *render_fade_mode),
-    BBool16("map flags",
-        "unfiltered"
+        Pad(40),
+        BBool16("shader flags", *shader_flags),
+        BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
+        BSEnum16("framebuffer fade mode", *render_fade_mode),
+        BBool16("map flags",
+            "unfiltered"
+            )
         ),
-    Pad(28),
 
     #Secondary bitmap
-    dependency("bitmap", valid_bitmaps),
-    BSEnum16("anchor", *render_anchor),
-    BBool16("secondary map flags",
-        "unfiltered"
+    Struct("secondary bitmap",
+        Pad(28),
+        dependency("bitmap", valid_bitmaps),
+        BSEnum16("anchor", *render_anchor),
+        BBool16("secondary map flags",
+            "unfiltered"
+            ),
+        Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
+        Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
+        Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
+        QStruct("rotation center", INCLUDE=xy_float)
         ),
-    Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
-    Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
-    Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
-    QStruct("rotation center", INCLUDE=xy_float),
+
     Pad(4),
     BFloat("zsprite radius scale"),
 
