@@ -112,7 +112,7 @@ save_file = Struct("save file",
         ),
     Pad(1),
     QStruct("completion times",
-        #measured in seconds
+        # seconds
         BUInt16("battle of hoth"),
         BUInt16("escape from echo base"),
         BUInt16("the asteroid field"),

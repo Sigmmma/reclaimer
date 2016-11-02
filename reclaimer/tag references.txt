@@ -123,18 +123,15 @@ REMAINING TO IMPLEMENT:
 
 
 IMPLEMENTATION ORDER:
-    hudg: hud_globals
-    pctl: particle_system
-    unit: unit
     weap: weapon
     proj: projectile
-    bipd: biped
-    vehi: vehicle
+    pctl: particle_system
     DeLa: ui_widget_definition
     grhi: grenade_hud_interface
     unhi: unit_hud_interface
     wphi: weapon_hud_interface
     actr: actor
+    hudg: hud_globals
     matg: globals
     scnr: scenario
     sbsp: scenario_structure_bsp

@@ -40,8 +40,8 @@ reflection = Struct("reflection",
         QStruct("color upper bound", INCLUDE=argb_float),
         BBool16("flags", *blend_flags),
         BSEnum16("function", *animation_functions),
-        BFloat("period"),#seconds
-        BFloat("phase"),#seconds
+        BFloat("period"),  # seconds
+        BFloat("phase"),  # seconds
         ),
 
     SIZE=128
@@ -49,8 +49,8 @@ reflection = Struct("reflection",
 
 
 lens_body = Struct("tagdata",
-    BFloat("falloff angle"),  # measured in radians
-    BFloat("cutoff angle"),  # measured in radians
+    BFloat("falloff angle"),  # radians
+    BFloat("cutoff angle"),  # radians
     FlFloat("unknown1", DEFAULT=1.0),
     FlFloat("unknown2", DEFAULT=1.0),
     BFloat("occlusion radius"),
@@ -76,7 +76,7 @@ lens_body = Struct("tagdata",
         "translation",
         ),
     Pad(2),
-    BFloat("rotation function scale"),  # measured in radians
+    BFloat("rotation function scale"),  # radians
     Pad(24),
     BFloat("horizontal scale"),
     BFloat("vertical scale"),

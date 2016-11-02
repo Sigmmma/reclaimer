@@ -11,8 +11,8 @@ detail_sound = Struct("detail sound",
         ),
 
     Pad(48),
-    QStruct('yaw bounds', INCLUDE=from_to),  # measured in radians
-    QStruct('pitch bounds', INCLUDE=from_to),  # measured in radians
+    QStruct('yaw bounds', INCLUDE=from_to),  # radians
+    QStruct('pitch bounds', INCLUDE=from_to),  # radians
     QStruct('distance bounds', INCLUDE=from_to),
 
     SIZE=104

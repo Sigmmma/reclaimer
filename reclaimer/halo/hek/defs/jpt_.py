@@ -54,7 +54,7 @@ jpt__body = Struct("tagdata",
         BSEnum16("fade function", *fade_functions),
         Pad(2),
 
-        BFloat("rotation"),  # measured in radians
+        BFloat("rotation"),  # radians
         BFloat("pushback"),
         QStruct("jitter", INCLUDE=from_to),
         Pad(8),
@@ -69,7 +69,7 @@ jpt__body = Struct("tagdata",
         Pad(2),
 
         BFloat("random translation"),
-        BFloat("random rotation"),  # measured in radians
+        BFloat("random rotation"),  # radians
         Pad(12),
 
         BSEnum16("wobble function", *animation_functions),

@@ -14,7 +14,7 @@ cdmg_body = Struct("tagdata",
 
     Struct("camera shaking",
         BFloat("random translation"),
-        BFloat("random rotation"),  # measured in radians
+        BFloat("random rotation"),  # radians
         Pad(12),
 
         BSEnum16("wobble function", *animation_functions),

@@ -96,8 +96,8 @@ snd__body = Struct("tagdata",
 
     #Randomization
     QStruct("random pitch bounds", INCLUDE=from_to),
-    BFloat("inner cone angle"),  # measured in radians
-    BFloat("outer cone angle"),  # measured in radians
+    BFloat("inner cone angle"),  # radians
+    BFloat("outer cone angle"),  # radians
     BFloat("outer cone gain", MIN=0.0, MAX=1.0),
     BFloat("gain modifier"),
     BFloat("maximum bend per second"),

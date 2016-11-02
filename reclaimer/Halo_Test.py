@@ -9,7 +9,7 @@ try:
     test = HaloHandler( print_test=True, save_test=False, debug=5,
                         write_as_temp=True, backup=False,
                         allow_corrupt=True,
-                        valid_def_ids=('coll'),
+                        valid_def_ids=('vehi'),
                         print_options={'indent':4,
                                        'printout':True, 'precision':3,
                                        'show':['name', 'steptrees', 'type',
