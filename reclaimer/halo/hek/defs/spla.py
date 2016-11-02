@@ -20,9 +20,9 @@ spla_body = Struct("tagdata",
     Pad(32),
 
     #Color
-    BFloat("perpendicular brightness"),#[0,1]
+    BFloat("perpendicular brightness", MIN=0.0, MAX=1.0),
     QStruct("perpendicular tint color", INCLUDE=rgb_float),
-    BFloat("parallel brightness"),#[0,1]
+    BFloat("parallel brightness", MIN=0.0, MAX=1.0),
     QStruct("parallel tint color", INCLUDE=rgb_float),
     BSEnum16("tint color source", *function_names),
 

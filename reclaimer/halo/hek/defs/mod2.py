@@ -9,14 +9,8 @@ local_marker = Struct('local marker',
     SInt16('node index'),
     Pad(2),
 
-    BFloat('rotation i'),
-    BFloat('rotation j'),
-    BFloat('rotation k'),
-    BFloat('rotation w'),
-
-    BFloat('translation x'),
-    BFloat('translation y'),
-    BFloat('translation z'),
+    QStruct('rotation', INCLUDE=ijkw_float),
+    QStruct('translation', INCLUDE=xyz_float),
     SIZE=80
     )
 
@@ -140,9 +134,7 @@ part = Struct('part',
     BFloat('centroid primary weight'),
     BFloat('centroid secondary weight'),
 
-    BFloat('centroid translation x'),
-    BFloat('centroid translation y'),
-    BFloat('centroid translation z'),
+    QStruct('centroid translation', INCLUDE=xyz_float),
 
     #reflexive("uncompressed vertices", uncompressed_vertex_union),
     #reflexive("compressed vertices", compressed_vertex_union),
@@ -175,14 +167,8 @@ node = Struct('node',
     BSInt16('parent node'),
     Pad(2),
 
-    BFloat('translation x'),
-    BFloat('translation y'),
-    BFloat('translation z'),
-
-    BFloat('rotation i'),
-    BFloat('rotation j'),
-    BFloat('rotation k'),
-    BFloat('rotation w'),
+    QStruct('translation', INCLUDE=xyz_float),
+    QStruct('rotation', INCLUDE=ijkw_float),
     BFloat('distance from parent'),
     SIZE=156,
     )

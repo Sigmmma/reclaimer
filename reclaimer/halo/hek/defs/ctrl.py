@@ -2,10 +2,7 @@ from .obje import *
 from .devi import *
 from supyr_struct.defs.tag_def import TagDef
 
-ctrl_body = Struct("tagdata",
-    object_attrs,
-    devi_attrs,
-
+control_attrs = Struct("control attrs",
     BSEnum16('type',
         'toggle switch',
         'on button',
@@ -22,6 +19,12 @@ ctrl_body = Struct("tagdata",
     dependency("on", valid_event_effects),
     dependency("off", valid_event_effects),
     dependency("deny", valid_event_effects),
+    )
+
+ctrl_body = Struct("tagdata",
+    object_attrs,
+    devi_attrs,
+    control_attrs,
 
     SIZE=792,
     )

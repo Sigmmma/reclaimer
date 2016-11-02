@@ -232,39 +232,44 @@ def blam_header(tagid, version=1):
 def ascii_str32(name):
     return StrAscii(str(name), SIZE=32)
 
-valid_strings = tag_class('ustr', 'str#')
-valid_event_effects = tag_class('effe', 'snd!')
-valid_effects = tag_class('effe')
+valid_actors = tag_class('actr')
+valid_actor_variants = tag_class('actv')
+valid_bitmaps = tag_class('bitm')
 valid_continuous_damages = tag_class('cdmg')
+valid_decals = tag_class('deca')
+valid_effects = tag_class('effe')
+valid_event_effects = tag_class('effe', 'snd!')
+valid_equipment = tag_class('eqip')
 valid_fogs = tag_class('fog ')
 valid_fonts = tag_class('font')
-valid_material_effects = tag_class('foot')
-valid_particles = tag_class('part')
 valid_lens_flares = tag_class('lens')
-valid_point_physics = tag_class('pphy')
-valid_bitmaps = tag_class('bitm')
-valid_decals = tag_class('deca')
-valid_sounds  = tag_class('snd!')
-valid_physics = tag_class('phys')
-valid_model_animations = tag_class('antr')
-valid_unicode_strings = tag_class('ustr')
-valid_model_collision_models = tag_class('coll')
+valid_material_effects = tag_class('foot')
 valid_models = tag_class('mode', 'mod2')
-valid_attachments = tag_class('cont', 'effe', 'ligh', 'mgs2', 'pctl', 'lsnd')
+valid_model_animations = tag_class('antr')
+valid_model_collision_models = tag_class('coll')
+valid_particles = tag_class('part')
+valid_physics = tag_class('phys')
+valid_point_physics = tag_class('pphy')
+valid_sounds  = tag_class('snd!')
+valid_strings = tag_class('ustr', 'str#')
+valid_unicode_strings = tag_class('ustr')
+valid_weapons  = tag_class('weap')
 valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
+
+valid_attachments = tag_class('cont', 'effe', 'ligh', 'mgs2', 'pctl', 'lsnd')
 valid_effect_events = tag_class(
     'bipd', 'jpt!', 'deca', 'devi', 'ctrl', 'lifi', 'mach',
     'eqip', 'garb', 'item', 'ligh', 'obje', 'pctl', 'plac',
     'proj', 'scen', 'snd!', 'ssce', 'unit', 'vehi', 'weap'
     )
-valid_shaders = tag_class(
-    'shdr', 'schi', 'scex', 'sotr', 'senv',
-    'sgla', 'smet', 'soso', 'spla', 'swat'
-    )
 valid_items = tag_class('eqip', 'garb', 'item', 'weap')
 valid_objects = tag_class(
     'obje', 'bipd', 'vehi', 'weap', 'eqip', 'garb', 'proj',
     'scen', 'mach', 'ctrl', 'lifi', 'plac', 'ssce'
+    )
+valid_shaders = tag_class(
+    'shdr', 'schi', 'scex', 'sotr', 'senv',
+    'sgla', 'smet', 'soso', 'spla', 'swat'
     )
 valid_units = tag_class('bipd', 'unit', 'vehi')
 
@@ -406,6 +411,10 @@ damage_category = (
     "plasma",
     "needle",
     "shotgun",
+    )
+grenade_types = (
+    'human frag',
+    'covenant plasma'
     )
 fade_functions = (
     "linear",
@@ -567,7 +576,7 @@ predicted_resource = Struct('predicted_resource',
     BSInt32('tag index'),
     )
 
-#This is the structure for all points where a tag references another tag
+#This is the desc used wherever a tag references another tag
 tag_index_ref_struct = dependency()
 
 """Shaders"""

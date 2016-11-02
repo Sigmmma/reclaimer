@@ -32,10 +32,10 @@ os_soso_ext = Struct("shader model extension",
 
     Pad(4),
     #Specular Tint Override
-    BFloat("perpendicular brightness"),#[0,1]
+    BFloat("perpendicular brightness", MIN=0.0, MAX=1.0),
     QStruct("perpendicular tint color", INCLUDE=rgb_float),
-    BFloat("parallel brightness"),#[0,1]
-    QStruct("parallel tint color",      INCLUDE=rgb_float),
+    BFloat("parallel brightness", MIN=0.0, MAX=1.0),
+    QStruct("parallel tint color", INCLUDE=rgb_float),
 
     Pad(8),
     BFloat("specular Lighting exponent"),
@@ -89,7 +89,7 @@ soso_body = Struct("tagdata",
 
         Pad(8),
         BSEnum16("detail function", *detail_map_functions),
-        BSEnum16("detail mask",     *detail_mask),
+        BSEnum16("detail mask", *detail_mask),
            
         BFloat("detail map scale"),
         dependency("detail map", valid_bitmaps),
@@ -103,7 +103,7 @@ soso_body = Struct("tagdata",
     Struct("texture scrolling",
         Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
         Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
-        Struct("rotation-animation",   INCLUDE=anim_src_func_per_pha_sca),
+        Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
         QStruct("rot-animation center", INCLUDE=xy_float),
         ),
                    
@@ -113,10 +113,10 @@ soso_body = Struct("tagdata",
         BFloat("falloff distance"),#world units
         BFloat("cutoff distance"),#world units
      
-        BFloat("perpendicular brightness"),#[0,1]
+        BFloat("perpendicular brightness", MIN=0.0, MAX=1.0),
         QStruct("perpendicular tint color", INCLUDE=rgb_float),
-        BFloat("parallel brightness"),#[0,1]
-        QStruct("parallel tint color",      INCLUDE=rgb_float),
+        BFloat("parallel brightness", MIN=0.0, MAX=1.0),
+        QStruct("parallel tint color", INCLUDE=rgb_float),
 
         dependency("reflection cube map map", valid_bitmaps),
         ),

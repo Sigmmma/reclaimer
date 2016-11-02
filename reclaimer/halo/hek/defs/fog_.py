@@ -3,7 +3,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 fog__body = Struct("tagdata",
     #fog flags
-    BBool32("fog flags",
+    BBool32("flags",
         "is water",
         "atmospheric dominant",
         "fog screen only",
@@ -23,34 +23,38 @@ fog__body = Struct("tagdata",
     QStruct("fog color", INCLUDE=rgb_float),
 
     #Screen Layers
-    BBool16("flags",
-        "no environment multipass",
-        "no model multipass",
-        "no texture-based falloff",
+    Struct("screen layers",
+        BBool16("flags",
+            "no environment multipass",
+            "no model multipass",
+            "no texture-based falloff",
+            ),
+        BUInt16("layer count"),
+
+        QStruct("distance gradient", INCLUDE=from_to),
+        QStruct("density gradient",  INCLUDE=from_to),
+
+        BFloat("start distance from fog plane"),
+        Pad(5),
+
+        QStruct("color", INCLUDE=rgb_byte),
+        BFloat("rotation multiplier"),
+        BFloat("strafing multiplier"),
+        BFloat("zoom multiplier"),
+        Pad(8),
+        BFloat("map scale"),
+        dependency("fog map")
         ),
-    BUInt16("layer count"),
-
-    QStruct("distance gradient", INCLUDE=from_to),
-    QStruct("density gradient",  INCLUDE=from_to),
-
-    BFloat("start distance from fog plane"),
-    Pad(5),
-
-    QStruct("color", INCLUDE=rgb_byte),
-    BFloat("rotation multiplier"),
-    BFloat("strafing multiplier"),
-    BFloat("zoom multiplier"),
-    Pad(8),
-    BFloat("map scale"),
-    dependency("fog map"),
 
     #Screen Layer Animation
-    BFloat("animation period"),
-    Pad(4),
-    QStruct("wind velocity", INCLUDE=from_to),
-    QStruct("wind period",   INCLUDE=from_to),
-    BFloat("wind acceleration weight"),
-    BFloat("wind perpendicular weight"),
+    Struct("screen layer animation",
+        BFloat("animation period"),
+        Pad(4),
+        QStruct("wind velocity", INCLUDE=from_to),
+        QStruct("wind period",   INCLUDE=from_to),
+        BFloat("wind acceleration weight"),
+        BFloat("wind perpendicular weight")
+        ),
 
     Pad(8),
     #Sound
