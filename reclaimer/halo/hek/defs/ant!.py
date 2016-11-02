@@ -5,7 +5,7 @@ vertex = Struct("vertex",
     BFloat("spring strength coefficient"),
 
     Pad(24),
-    QStruct("angles", INCLUDE=yp_float),  # measured in radians
+    QStruct("angles", INCLUDE=yp_float),  # radians
     BFloat("length"),
     BSInt16("sequence index"),
 

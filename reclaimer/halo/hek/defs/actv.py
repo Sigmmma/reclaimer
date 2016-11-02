@@ -41,7 +41,7 @@ actv_body = Struct("tagdata",
         dependency("weapon", valid_weapons),
         BFloat("maximum firing distance"),
         BFloat("rate of fire"),
-        BFloat("projectile error"),  # measured in radians
+        BFloat("projectile error"),  # radians
         QStruct("first burst delay time", INCLUDE=from_to),  # seconds
         BFloat("new-target firing pattern time"),
         BFloat("surprise delay time"),
@@ -60,15 +60,15 @@ actv_body = Struct("tagdata",
     #Burst geometry
     Struct("burst geometry",
         BFloat("burst origin radius"),
-        BFloat("burst origin angle"),  # measured in radians
+        BFloat("burst origin angle"),  # radians
         QStruct("burst return length", INCLUDE=from_to),
-        BFloat("burst return angle"),  # measured in radians
+        BFloat("burst return angle"),  # radians
         QStruct("burst duration", INCLUDE=from_to),
         QStruct("burst separation", INCLUDE=from_to),
-        BFloat("burst angular velocity"),  # radians per second
+        BFloat("burst angular velocity"),  # radians/second
         Pad(4),
         BFloat("special damage modifier"),
-        BFloat("special projectile error")  # measured in radians
+        BFloat("special projectile error")  # radians
         ),
 
     #Firing patterns"

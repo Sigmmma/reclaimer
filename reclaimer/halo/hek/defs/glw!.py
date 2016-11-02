@@ -66,7 +66,7 @@ glw__body = Struct("tagdata",
 
     BFloat("color rate of change"),
     BFloat("fading percentage of glow"),
-    BFloat("particle generation frequency"),  # measured in Hz
+    BFloat("particle generation frequency"),  # Hz
     BFloat("lifetime of trailing particles"),
     BFloat("velocity of trailing particles"),
     BFloat("trailing particle min time"),

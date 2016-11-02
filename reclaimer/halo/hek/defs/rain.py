@@ -23,13 +23,13 @@ particle_type = Struct("particle_type",
 
     Pad(16),
     QStruct("acceleration count", INCLUDE=from_to),
-    BFloat("acceleration turning rate"),  # measured in radians
+    BFloat("acceleration turning rate"),  # radians
     BFloat("acceleration change rate"),
 
     Pad(32),
     QStruct("particle radius", INCLUDE=from_to),
     QStruct("animation rate", INCLUDE=from_to),
-    QStruct("rotation rate", INCLUDE=from_to),  # measured in radians
+    QStruct("rotation rate", INCLUDE=from_to),  # radians
 
     Pad(32),
     QStruct("color lower bound", INCLUDE=argb_float),
