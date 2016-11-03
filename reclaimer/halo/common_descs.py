@@ -92,12 +92,14 @@ valid_model_collision_models = tag_class('coll')
 valid_particles = tag_class('part')
 valid_physics = tag_class('phys')
 valid_point_physics = tag_class('pphy')
+valid_projectiles = tag_class('proj')
 valid_sounds  = tag_class('snd!')
 valid_strings = tag_class('ustr', 'str#')
 valid_unicode_strings = tag_class('ustr')
 valid_unit_hud_interfaces = tag_class('unhi')
 valid_unit_dialogues = tag_class('udlg')
 valid_weapons  = tag_class('weap')
+valid_weapon_hud_interfaces = tag_class('wphi')
 valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
 
 valid_attachments = tag_class('cont', 'effe', 'ligh', 'mgs2', 'pctl', 'lsnd')
@@ -171,6 +173,13 @@ animation_functions = (
     "jitter",
     "wander",
     "spark",
+    )
+sound_volumes = (
+    "silent",
+    "medium",
+    "loud",
+    "shout",
+    "quiet"
     )
 damage_category = (
     "none",
@@ -318,9 +327,36 @@ object_export_to = (
     'alive',
     'compass',
     )
+weapon_export_to = (
+    'none',
+    'heat',
+    'primary ammunition',
+    'secondary ammunition',
+    'primary rate of fire',
+    'secondary rate of fire',
+    'ready',
+    'primary ejection port',
+    'secondary ejection port',
+    'overheated',
+    'primary charged',
+    'secondary charged',
+    'illumination',
+    'age',
+    'integrated light',
+    'primary firing',
+    'secondary firing',
+    'primary firing on',
+    'secondary firing on',
+    )
 biped_inputs = (
     'none',
     'flying velocity'
+    )
+projectile_inputs = (
+    "none",
+    "range remaining",
+    "time remaining",
+    "tracer",
     )
 unit_inputs = (
     "none",
@@ -391,6 +427,13 @@ vehicle_types = (
     "alien scout",
     "alien fighter",
     "turret",
+    )
+weapon_types = (
+    "undefined",
+    "shotgun",
+    "needler",
+    "plasma pistol",
+    "plasma rifle",
     )
 trans_shdr_properties = (
     "alpha tested",
