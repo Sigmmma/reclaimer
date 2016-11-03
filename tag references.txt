@@ -123,8 +123,6 @@ REMAINING TO IMPLEMENT:
 
 
 IMPLEMENTATION ORDER:
-    weap: weapon
-    proj: projectile
     pctl: particle_system
     DeLa: ui_widget_definition
     grhi: grenade_hud_interface
