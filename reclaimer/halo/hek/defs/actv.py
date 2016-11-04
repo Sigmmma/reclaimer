@@ -182,7 +182,7 @@ def get():
     return actv_def
 
 actv_def = TagDef("actv",
-    blam_header('"actv'),
+    blam_header('actv'),
     actv_body,
 
     ext=".actor_variant", endian=">"
