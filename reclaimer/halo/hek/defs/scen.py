@@ -2,7 +2,7 @@ from .obje import *
 from supyr_struct.defs.tag_def import TagDef
 
 scen_body = Struct("tagdata",
-    object_attrs,
+    obje_attrs,
     SIZE=508,
     )
 

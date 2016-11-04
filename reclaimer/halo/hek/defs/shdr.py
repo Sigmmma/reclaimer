@@ -1,7 +1,7 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-shader_attrs = Struct("shader attrs",
+shdr_attrs = Struct("shdr attrs",
     BBool16("radiosity flags",
         "simple parameterization",
         "ignore normals",
@@ -38,7 +38,8 @@ shader_attrs = Struct("shader attrs",
     )
 
 shader_body = Struct("tagdata",
-    shader_attrs
+    shdr_attrs,
+    SIZE=40
     )
 
 def get():

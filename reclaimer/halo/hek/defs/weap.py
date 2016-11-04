@@ -139,7 +139,7 @@ trigger = Struct("trigger",
     SIZE=276
     )
 
-weapon_attrs = Struct("weapon attrs",
+weap_attrs = Struct("weap attrs",
     BBool32("flags",
         "vertical heat display",
         "mutually exclusive triggers",
@@ -262,9 +262,9 @@ weapon_attrs = Struct("weapon attrs",
     )
 
 weap_body = Struct("tagdata",
-    object_attrs,
+    obje_attrs,
     item_attrs,
-    weapon_attrs,
+    weap_attrs,
     SIZE=1288,
     )
 
