@@ -178,7 +178,10 @@ unit_attrs = Struct("unit attrs",
     SIZE=372
     )
 
-unit_body = Struct('tagdata', unit_attrs)
+unit_body = Struct('tagdata',
+    unit_attrs,
+    SIZE=372
+    )
 
 unit_def = TagDef("unit",
     blam_header('unit', 2),

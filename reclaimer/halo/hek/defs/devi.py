@@ -34,7 +34,10 @@ devi_attrs = Struct("devi attrs",
     SIZE=276,
     )
 
-devi_body = Struct('tagdata', devi_attrs)
+devi_body = Struct('tagdata',
+    devi_attrs,
+    SIZE=276
+    )
 
 def get():
     return devi_def

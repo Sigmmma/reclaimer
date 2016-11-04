@@ -15,7 +15,7 @@ def tag_class(*args):
         classes.append((tag_class_fcc_to_ext[four_cc], four_cc))
 
     return BUEnum32('tag_class',
-                    *(tuple(classes) + (("none", 0xffffffff),) ),
+                    *(tuple(classes) + (("NONE", 0xffffffff),) ),
                     DEFAULT=0xffffffff)
 
 valid_tags = tag_class(*tag_class_fcc_to_ext.keys())
@@ -45,7 +45,6 @@ def rawdata_ref(name, f_type=Rawdata):
     return RawdataRef(name,
         EDITABLE=False, INCLUDE=rawdata_ref_struct,
         STEPTREE=f_type("data", VISIBLE=False, SIZE=".size") )
-
 
 def dependency(name='tag ref', valid_ids=valid_tags):
     '''This function serves to macro the creation of a tag dependency'''
@@ -85,6 +84,7 @@ valid_event_effects = tag_class('effe', 'snd!')
 valid_equipment = tag_class('eqip')
 valid_fogs = tag_class('fog ')
 valid_fonts = tag_class('font')
+valid_globals = tag_class('matg')
 valid_grenade_hud_interfaces = tag_class('grhi')
 valid_hud_globals = tag_class('hudg')
 valid_hud_numbers = tag_class('hud#')
@@ -98,13 +98,15 @@ valid_particles = tag_class('part')
 valid_physics = tag_class('phys')
 valid_point_physics = tag_class('pphy')
 valid_projectiles = tag_class('proj')
-valid_sounds  = tag_class('snd!')
+valid_sounds = tag_class('snd!')
 valid_strings = tag_class('str#')
+valid_tag_collections = tag_class('tagc')
+valid_ui_widget_definitions = tag_class('DeLa')
 valid_unicode_strings = tag_class('ustr')
 valid_unit_hud_interfaces = tag_class('unhi')
 valid_unit_dialogues = tag_class('udlg')
-valid_vehicles  = tag_class('vehi')
-valid_weapons  = tag_class('weap')
+valid_vehicles = tag_class('vehi')
+valid_weapons = tag_class('weap')
 valid_weapon_hud_interfaces = tag_class('wphi')
 valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
 
@@ -116,20 +118,24 @@ valid_effect_events = tag_class(
     )
 valid_items = tag_class('eqip', 'garb', 'item', 'weap')
 valid_objects = tag_class(
-    'obje', 'bipd', 'vehi', 'weap', 'eqip', 'garb', 'proj',
-    'scen', 'mach', 'ctrl', 'lifi', 'plac', 'ssce'
+    'bipd', 'ctrl', 'lifi', 'mach', 'eqip', 'garb', 'obje',
+    'plac', 'proj', 'scen', 'ssce', 'vehi', 'weap'
+    )
+valid_units = tag_class('bipd', 'unit', 'vehi')
+valid_devices_items_objects_units = tag_class(
+    'bipd', 'devi', 'ctrl', 'lifi', 'mach', 'eqip', 'garb', 'item',
+    'obje', 'plac', 'proj', 'scen', 'ssce', 'unit', 'vehi', 'weap'
     )
 valid_shaders = tag_class(
     'shdr', 'schi', 'scex', 'sotr', 'senv',
     'sgla', 'smet', 'soso', 'spla', 'swat'
     )
-valid_units = tag_class('bipd', 'unit', 'vehi')
 
 
 # ###########################################################################
 # The order of element in all the enumerators is important(DONT SHUFFLE THEM)
 # ###########################################################################
-    
+
 #Shared Enumerator options
 materials_list = (
     "dirt",
@@ -276,6 +282,71 @@ framebuffer_blend_functions = (
     "component min",
     "component max",
     "alpha-multiply add",
+    )
+script_types = (
+    "startup",
+    "dormant",
+    "continuous",
+    "static",
+    "stub",
+    )
+script_object_types = (
+    "unparsed",
+    "special form",
+    "function name",
+    "passthrough",
+    "void",
+    "boolean",
+    "real",
+    "short",
+    "long",
+    "string",
+    "script",
+
+    "trigger volume",
+    "cutscene flag",
+    "cutscene camera point",
+    "cutscene title",
+    "cutscene recording",
+
+    "device group",
+    "ai",
+    "ai command list",
+    "starting profile",
+
+    "conversation",
+    "navpoint",
+    "hud message",
+    "object list",
+
+    "sound",
+    "effect",
+    "damage",
+    "looping sound",
+    "animation graph",
+    "actor variant",
+    "damage effect",
+
+    "object definition",
+    "game difficulty",
+    "team",
+    "ai default state",
+    "actor type",
+    "hud corner",
+
+    "object",
+    "unit",
+    "vehicle",
+    "weapon",
+    "device",
+    "scenery",
+
+    "object name",
+    "unit name",
+    "vehicle name",
+    "weapon name",
+    "device name",
+    "scenery name"
     )
 function_names = (
     "none",
@@ -602,7 +673,90 @@ ijk_float = QStruct('ijk_float',
     LFloat("j"),
     LFloat("k")
     )
+ij_float = QStruct('ij_float',
+    LFloat("i"),
+    LFloat("j"),
+    )
 yp_float = QStruct('yp_float',
     LFloat("y"),
     LFloat("p")
     )
+
+
+#############################
+# Open Sauce related things #
+#############################
+def tag_class_os(*args):
+    '''
+    A macro for creating an Open Sauce tag_class enum desc
+    with the enumerations set to the provided tag_class fcc's.
+    '''
+    classes = []
+    for four_cc in sorted(args):
+        classes.append((tag_class_fcc_to_ext_os[four_cc], four_cc))
+
+    return BUEnum32('tag_class',
+                    *(tuple(classes) + (("NONE", 0xffffffff),) ),
+                    DEFAULT=0xffffffff)
+
+
+valid_tags_os = tag_class_os(*tag_class_fcc_to_ext_os.keys())
+
+
+def dependency_os(name='tag ref', valid_ids=valid_tags_os):
+    '''This function serves to macro the creation of a tag dependency'''
+    return TagIndexRef(name,
+        valid_ids,
+        BSInt32("path pointer"),
+        BSInt32("path length"),
+        BUInt32("id", DEFAULT=0xFFFFFFFF),
+
+        STEPTREE=StringVarLen("filepath", SIZE=tag_ref_size),
+        EDITABLE=False,
+        )
+
+
+def blam_header_os(tagid, version=1):
+    '''This function serves to macro the creation of a tag header'''
+    header_desc= dict(tag_header_os)
+    header_desc[1] = dict(header_desc[1])
+    header_desc[5] = dict(header_desc[5])
+    header_desc[1][DEFAULT] = tagid
+    header_desc[5][DEFAULT] = version
+    return header_desc
+
+
+# ###########################################################################
+# The order of element in all the enumerators is important(DONT SHUFFLE THEM)
+# ###########################################################################
+
+#Shared Enumerator options
+grenade_types_os = (
+    'human frag',
+    'covenant plasma',
+    'custom 2',
+    'custom 3',
+    )
+
+# Descriptors
+tag_header_os = Struct("blam header",
+    Pad(36),
+    valid_tags_os,
+    LUInt32("base address", DEFAULT=0),  #random
+    LUInt32("header size",  DEFAULT=64),
+    Pad(8),
+    LUInt16("version", DEFAULT=1),
+    LUInt16("unknown", DEFAULT=255),
+    LUEnum32("engine id",
+        ("halo 1", 'blam'),
+        DEFAULT='blam'),
+    EDITABLE=False, SIZE=64
+    )
+
+valid_effect_postprocess_generic = tag_class_os('efpg')
+valid_model_animations_yelo = tag_class_os('antr', 'magy')
+valid_project_yellow_globals = tag_class_os('gelo')
+valid_project_yellow_globals_cv = tag_class_os('gelc')
+valid_shader_postprocess_generic = tag_class_os('shpg')
+valid_string_id_yelo = tag_class_os('sidy')
+

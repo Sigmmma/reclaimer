@@ -4,9 +4,7 @@ from .objs.scex import ScexTag
 
 chicago_2_stage_maps = Struct("two stage map", INCLUDE=chicago_4_stage_maps)
 
-scex_body = Struct("tagdata",
-    shader_attrs,
-
+scex_attrs = Struct("scex attrs",
     # Shader Properties
     UInt8("numeric counter limit"),#[0,255]
 
@@ -17,7 +15,6 @@ scex_body = Struct("tagdata",
     BSEnum16("framebuffer fade source", *function_outputs),
 
     Pad(2),
-
     #Lens Flare
     BFloat("lens flare spacing"),#world units
     dependency("lens flare"),
@@ -28,6 +25,12 @@ scex_body = Struct("tagdata",
         "dont fade active camouflage",
         "numeric countdown timer"
         ),
+    SIZE=80
+    )
+
+scex_body = Struct("tagdata",
+    shdr_attrs,
+    scex_attrs,
     SIZE=120
     )
 

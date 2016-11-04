@@ -34,7 +34,10 @@ item_attrs = Struct('item attrs',
     SIZE=396,
     )
 
-item_body = Struct('tagdata', item_attrs)
+item_body = Struct('tagdata',
+    item_attrs,
+    SIZE=396
+    )
 
 def get():
     return item_def

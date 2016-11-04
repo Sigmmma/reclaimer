@@ -1,9 +1,7 @@
 from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 
-sgla_body = Struct("tagdata",
-    shader_attrs,
-
+sgla_attrs = Struct("sgla attrs",
     #Environment Shader Properties
     BBool16("glass shader flags",
         "alpha tested",
@@ -47,7 +45,12 @@ sgla_body = Struct("tagdata",
     dependency("specular map", valid_bitmaps),
     BFloat("specular detail map scale"),
     dependency("specular detail map", valid_bitmaps),
+    SIZE=440
+    )
 
+sgla_body = Struct("tagdata",
+    shdr_attrs,
+    sgla_attrs,
     SIZE=480,
     )
 

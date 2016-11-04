@@ -7,18 +7,14 @@ ripple = Struct("ripple",
     Pad(32),
     BFloat("animation angle"),
     BFloat("animation velocity"),
-    Struct("map offset",
-        BFloat("i"),
-        BFloat("j"),
-        ),
+    Struct("map offset", INCLUDE=ij_float),
     BUInt16("map repeats"),
     BUInt16("map index"),
     SIZE=76
     )
 
-swat_body = Struct("tagdata",
-    shader_attrs,
 
+swat_attrs = Struct("swat attrs",
     #Water Shader Properties
     BBool16("flags",
         "base map alpha modulates reflection",
@@ -48,6 +44,12 @@ swat_body = Struct("tagdata",
 
     Pad(64),
     reflexive("ripples", ripple, 4),
+    SIZE=280
+    )
+
+swat_body = Struct("tagdata",
+    shdr_attrs,
+    swat_attrs,
     SIZE=320,
     )
 

@@ -1,5 +1,4 @@
 from .obje import *
-from .item import *
 
 responses = (
     "disappear",
@@ -50,7 +49,7 @@ material_response = Struct("material response",
     SIZE=160
     )
 
-projectile_attrs = Struct("projectile attrs",
+proj_attrs = Struct("proj attrs",
     BBool32("flags",
         "oriented along velocity",
         "ai must use ballistic aiming",
@@ -108,8 +107,8 @@ projectile_attrs = Struct("projectile attrs",
     )
 
 proj_body = Struct("tagdata",
-    object_attrs,
-    projectile_attrs,
+    obje_attrs,
+    proj_attrs,
     SIZE=588,
     )
 

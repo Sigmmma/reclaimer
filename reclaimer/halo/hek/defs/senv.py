@@ -2,9 +2,7 @@ from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.senv import SenvTag
 
-senv_body = Struct("tagdata",
-    shader_attrs,
-
+senv_attrs = Struct("senv attrs",
     #Environment Shader Properties
     BBool16("environment shader flags",
         "alpha tested",
@@ -111,6 +109,12 @@ senv_body = Struct("tagdata",
 
     Pad(40),
     dependency("reflection cube map", valid_bitmaps),
+    SIZE=796
+    )
+
+senv_body = Struct("tagdata",
+    shdr_attrs,
+    senv_attrs,
     SIZE=836,
     )
 

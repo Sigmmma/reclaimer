@@ -113,3 +113,41 @@ for tag_cls in tag_class_fcc_to_ext:
     tag_class_be_int_to_fcc[fcc(tag_cls, 'big')] = tag_cls
     tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
     tag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls
+
+
+################################
+# Open Sauce related constants #
+################################
+tag_class_fcc_to_ext_os = {
+    'efpp': "effect_postprocess",
+    'efpc': "effect_postprocess_collection",
+    'efpg': "effect_postprocess_generic",
+    'magy': "model_animations_yelo",
+    'unic': "multilingual_unicode_string_list",
+    'yelo': "project_yellow",
+    'gelo': "project_yellow_globals",
+    'gelc': "project_yellow_globals_cv",
+    'shpp': "shader_postprocess",
+    'shpg': "shader_postprocess_generic",
+    'sppg': "shader_postprocess_globals",
+    'sidy': "string_id_yelo",
+    'tag+': "tag_database",
+    'sily': "text_value_pair_definition",
+    }
+
+tag_class_fcc_to_ext_os.update(tag_class_fcc_to_ext)
+
+# maps open sauce tag class four character codes(fccs)
+# in their string encoding to their int encoding.
+tag_class_fcc_to_be_int_os = {}
+tag_class_fcc_to_le_int_os = {}
+# maps open sauce tag class four character codes(fccs)
+# in their int encoding to their string encoding.
+tag_class_be_int_to_fcc_os = {}
+tag_class_le_int_to_fcc_os = {}
+
+for tag_cls in tag_class_fcc_to_ext_os:
+    tag_class_fcc_to_be_int_os[tag_cls] = fcc(tag_cls, 'big')
+    tag_class_be_int_to_fcc_os[fcc(tag_cls, 'big')] = tag_cls
+    tag_class_fcc_to_le_int_os[tag_cls] = fcc(tag_cls)
+    tag_class_le_int_to_fcc_os[fcc(tag_cls)] = tag_cls

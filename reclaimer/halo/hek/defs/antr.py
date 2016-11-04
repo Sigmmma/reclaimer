@@ -1,9 +1,6 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-def get():
-    return AntrDef
-
 object_desc = QStruct("object", 
     BSInt16("animation"),
     BUInt16("function"),

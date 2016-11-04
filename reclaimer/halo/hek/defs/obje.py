@@ -83,7 +83,7 @@ change_color = Struct('change_color',
     SIZE=44
     )
 
-object_attrs = Struct('object attrs',
+obje_attrs = Struct('obje attrs',
     FlSEnum16("object type",
         "bipd",
         "vehi",
@@ -145,7 +145,10 @@ object_attrs = Struct('object attrs',
     SIZE=380
     )
 
-obje_body = Struct('tagdata', object_attrs)
+obje_body = Struct('tagdata',
+    obje_attrs,
+    SIZE=380
+    )
 
 obje_def = TagDef("obje",
     blam_header('obje'),

@@ -3,7 +3,7 @@ from .devi import *
 from supyr_struct.defs.tag_def import TagDef
 
 lifi_body = Struct("tagdata",
-    object_attrs,
+    obje_attrs,
     devi_attrs,
 
     SIZE=720,

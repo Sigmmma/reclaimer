@@ -4,15 +4,9 @@ from supyr_struct.defs.tag_def import TagDef
 def get():
     return matg_def
 
-camera = Struct('camera',
-    dependency('track', valid_camera_tracks),
-    SIZE=16
-    )
+camera = dependency('track', valid_camera_tracks)
 
-sound = Struct('sound',
-    dependency('sound', valid_sounds),
-    SIZE=16
-    )
+sound = dependency('sound', valid_sounds)
 
 look_function = Struct("look function",
     BFloat('scale'),
@@ -170,20 +164,11 @@ interface_bitmaps = Struct("interface bitmaps",
     SIZE=304
     )
 
-cheat_weapon = Struct("cheat weapon",
-    dependency('weapon', valid_items),
-    SIZE=16
-    )
+cheat_weapon = dependency('weapon', valid_items)
 
-cheat_powerup = Struct("cheat powerup",
-    dependency('powerup', valid_equipment),
-    SIZE=16
-    )
+cheat_powerup = dependency('powerup', valid_equipment)
 
-vehicle = Struct("vehicle",
-    dependency('powerup', valid_vehicles),
-    SIZE=16
-    )
+vehicle = dependency('powerup', valid_vehicles)
 
 multiplayer_information = Struct("multiplayer information",
     dependency('flag', valid_items),

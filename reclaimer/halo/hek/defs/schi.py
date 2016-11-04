@@ -34,9 +34,7 @@ chicago_4_stage_maps = Struct("four stage map",
     SIZE=220,
     )
 
-schi_body = Struct("tagdata",
-    shader_attrs,
-
+schi_attrs = Struct("schi attrs",
     # Shader Properties
     UInt8("numeric counter limit"),#[0,255]
 
@@ -47,7 +45,6 @@ schi_body = Struct("tagdata",
     BSEnum16("framebuffer fade source", *function_outputs),
 
     Pad(2),
-
     #Lens Flare
     BFloat("lens flare spacing"),#world units
     dependency("lens flare"),
@@ -57,6 +54,12 @@ schi_body = Struct("tagdata",
         "dont fade active camouflage",
         "numeric countdown timer"
         ),
+    SIZE=68
+    )
+
+schi_body = Struct("tagdata",
+    shdr_attrs,
+    schi_attrs,
     SIZE=108
     )
 

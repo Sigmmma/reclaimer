@@ -1,10 +1,7 @@
 from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 
-
-spla_body = Struct("tagdata",
-    shader_attrs,
-
+spla_attrs = Struct("spla attrs",
     Pad(4),
     #Intensity
     BSEnum16("intensity source", *function_outputs),
@@ -39,6 +36,12 @@ spla_body = Struct("tagdata",
     QStruct("secondary animation direction", INCLUDE=ijk_float),
     BFloat("secondary noise map scale"),
     dependency("secondary noise map", valid_bitmaps),
+    SIZE=292
+    )
+
+spla_body = Struct("tagdata",
+    shdr_attrs,
+    spla_attrs,
     SIZE=332,
     )
 

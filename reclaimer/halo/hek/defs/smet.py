@@ -1,9 +1,7 @@
 from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 
-smet_body = Struct("tagdata",
-    shader_attrs,
-
+smet_attrs = Struct("smet attrs",
     #Meter Shader Properties
     BBool16("meter shader flags",
         "decal",
@@ -32,6 +30,12 @@ smet_body = Struct("tagdata",
     BSEnum16("value source",            *function_outputs),
     BSEnum16("gradient source",         *function_outputs),
     BSEnum16("flash-extension source",  *function_outputs),
+    SIZE=220,
+    )
+
+smet_body = Struct("tagdata",
+    shdr_attrs,
+    smet_attrs,
     SIZE=260,
     )
 

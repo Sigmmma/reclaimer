@@ -7,7 +7,7 @@ contact_point = Struct("contact point",
     SIZE=64
     )
 
-biped_attrs = Struct("biped attrs",
+bipd_attrs = Struct("bipd attrs",
     BFloat("moving turning speed"),  # radians
     BBool32("flags",
         "turns without aiming",
@@ -106,9 +106,9 @@ biped_attrs = Struct("biped attrs",
     )
 
 bipd_body = Struct("tagdata",
-    object_attrs,
+    obje_attrs,
     unit_attrs,
-    biped_attrs,
+    bipd_attrs,
     SIZE=1268,
     )
 
