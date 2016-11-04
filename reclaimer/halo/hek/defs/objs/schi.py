@@ -10,7 +10,8 @@ class SchiTag(HekTag):
         self.filepath = splitext(self.filepath)[0] + '.' + ext
         
         tagdata = self.data.tagdata
-        tagdata.shader_attrs.shader_type.data = 7
+        tagdata.shdr_attrs.shader_type.data = 7
         if mod_desc:
-            tagdata.ATTR_OFFS[tagdata.NAME_MAP['extra_flags']] = 108
+            tagdata.schi_attrs.ATTR_OFFS[
+                tagdata.schi_attrs.NAME_MAP['extra_flags']] = 108
             tagdata.set_size(120)

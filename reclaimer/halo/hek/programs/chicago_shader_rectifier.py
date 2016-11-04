@@ -2,6 +2,8 @@ import os
 
 from traceback import format_exc
 from ..handler import HaloHandler
+from ..defs.schi import schi_def
+from ..defs.scex import scex_def
 from supyr_struct.field_types import Void
 
 class ShaderRectifier(HaloHandler):
@@ -13,9 +15,20 @@ class ShaderRectifier(HaloHandler):
     def __init__(self, **kwargs):
         self.target_id = kwargs.get("target_id", self.target_id)
         self.backup    = kwargs.get("backup", self.backup)
-        kwargs["valid_def_ids"] = ("schi","scex")
+        kwargs["valid_def_ids"] = ("schi", "scex")
+
+        tmp = self.default_defs_path
+
+        self.default_defs_path = ''
         HaloHandler.__init__(self, **kwargs)
 
+        self.add_def(schi_def)
+        self.add_def(scex_def)
+
+        # make slots in self.tags for the types we want to load
+        self.reset_tags(self.defs.keys())
+
+        self.default_defs_path = tmp
 
     #This is used to convert extended chicago tags
     #into regular ones and remove all extra layers
@@ -30,22 +43,31 @@ class ShaderRectifier(HaloHandler):
         '''WARNING: THIS NEXT STEP WILL TOTALLY EFF UP THE DEFINITIONS!!
         DONT LOAD ANY schi OR scex TAGS AFTER CALLING convert_shaders'''
         ################################################################
+        __dsi__ = dict.__setitem__
         if self.target_id == 'schi':
-            data_desc = self.get_def('scex').descriptor[1]#Data index = 1
-            #scex extra flags index = 14
-            attr_offs = list(data_desc['ATTR_OFFS']); attr_offs[14] = 96
-            dict.__setitem__(data_desc[11], 'TYPE', Void)#void the extra layers
-            dict.__setitem__(data_desc[13], 'TYPE', Void)#void the 2-stage maps
-            dict.__setitem__(data_desc, 'ATTR_OFFS', attr_offs)#replace offsets
-            dict.__setitem__(data_desc, 'SIZE',     108)#change the struct size
+            body_desc = self.get_def('scex').descriptor[1]  # body index = 1
+            scex_desc = body_desc[1]  # scex index = 1
+            attr_offs = list(scex_desc['ATTR_OFFS'])
+
+            #scex extra flags index = 11
+            attr_offs[11] = 96
+            __dsi__(scex_desc[8], 'TYPE', Void)  # void the extra layers
+            __dsi__(scex_desc[10], 'TYPE', Void)  # void the 2-stage maps
+            __dsi__(scex_desc, 'ATTR_OFFS', attr_offs)  # replace offsets
+            __dsi__(scex_desc, 'SIZE', 68)   # change the struct size
+            __dsi__(body_desc, 'SIZE', 108)  # change the struct size
             
         elif self.target_id == 'scex':
-            data_desc = self.get_def('schi').descriptor[1]#Data index = 1
-            #schi extra flags index = 13
-            attr_offs = list(data_desc['ATTR_OFFS']); attr_offs[13] = 108
-            dict.__setitem__(data_desc[11], 'TYPE', Void)#void the extra layers
-            dict.__setitem__(data_desc, 'ATTR_OFFS', attr_offs)#replace offsets
-            dict.__setitem__(data_desc, 'SIZE',     120)#change the struct size
+            body_desc = self.get_def('schi').descriptor[1]  # body index = 1
+            schi_desc = body_desc[1]  # schi index = 1
+            attr_offs = list(schi_desc['ATTR_OFFS'])
+
+            #schi extra flags index = 10
+            attr_offs[10] = 108
+            __dsi__(schi_desc[8], 'TYPE', Void)  # void the extra layers
+            __dsi__(schi_desc, 'ATTR_OFFS', attr_offs)  # replace offsets
+            __dsi__(schi_desc, 'SIZE', 80)   # change the struct size
+            __dsi__(body_desc, 'SIZE', 120)  # change the struct size
 
         
         '''loop through both chicago and extended chicago tag types'''
@@ -65,8 +87,8 @@ class ShaderRectifier(HaloHandler):
                         tag.convert_to_schi()
                         del self.tags[def_id][filepath]
 
+                    el = tag.data.tagdata[1].extra_layers.extra_layers_array
                     '''REMOVE THE EXTRA LAYERS FROM THE TAG'''
-                    el = tag.data.tagdata.extra_layers.extra_layers_array
                     if len(el):
                         logstr += "\n"+tag.filepath +"\nExtra Layers:"
                         
@@ -74,7 +96,7 @@ class ShaderRectifier(HaloHandler):
                         for layer in el:
                             #add the extra layer's path to the debug log
                             try:
-                                ext = '.'+layer.tag_class.enum_name
+                                ext = '.' + layer.tag_class.enum_name
                             except Exception:
                                 ext = ''
                             logstr += "\n    " + layer.STEPTREE + ext

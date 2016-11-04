@@ -190,9 +190,7 @@ map = Struct("map",
     SIZE=100,
     )
 
-sotr_body = Struct("tagdata",
-    shader_attrs,
-
+sotr_attrs = Struct("sotr attrs",
     #Generic Transparent Shader
     UInt8("numeric counter limit", MIN=0, MAX=255),
     Bool8("flags",
@@ -218,6 +216,12 @@ sotr_body = Struct("tagdata",
     reflexive("extra layers", extra_layers_block, 4),
     reflexive("maps", map, 4),
     reflexive("stages", stage, 7),
+    SIZE=68
+    )
+
+sotr_body = Struct("tagdata",
+    shdr_attrs,
+    sotr_attrs,
 
     SIZE=108,
     )

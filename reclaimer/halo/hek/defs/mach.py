@@ -2,7 +2,7 @@ from .obje import *
 from .devi import *
 from supyr_struct.defs.tag_def import TagDef
 
-machine_attrs = Struct("machine attrs",
+mach_attrs = Struct("mach attrs",
     BSEnum16('type',
         'door',
         'platform',
@@ -24,9 +24,9 @@ machine_attrs = Struct("machine attrs",
     )
 
 mach_body = Struct("tagdata",
-    object_attrs,
+    obje_attrs,
     devi_attrs,
-    machine_attrs,
+    mach_attrs,
 
     SIZE=804,
     )

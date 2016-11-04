@@ -1,7 +1,7 @@
 from .obje import *
 from .unit import *
 
-vehicle_attrs = Struct("vehicle attrs",
+vehi_attrs = Struct("vehi attrs",
     BBool32("flags",
         "speed wakes physics",
         "turn wakes physics",
@@ -72,9 +72,9 @@ vehicle_attrs = Struct("vehicle attrs",
     )
 
 vehi_body = Struct("tagdata",
-    object_attrs,
+    obje_attrs,
     unit_attrs,
-    vehicle_attrs,
+    vehi_attrs,
     SIZE=1008,
     )
 

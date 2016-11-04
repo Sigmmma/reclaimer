@@ -3,7 +3,7 @@ from .item import *
 from supyr_struct.defs.tag_def import TagDef
 
 garb_body = Struct("tagdata",
-    object_attrs,
+    obje_attrs,
     item_attrs,
     SIZE=944,
     )

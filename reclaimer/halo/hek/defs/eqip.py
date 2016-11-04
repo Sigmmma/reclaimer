@@ -20,7 +20,7 @@ eqip_attrs = Struct("equipment attrs",
     )
 
 eqip_body = Struct("tagdata",
-    object_attrs,
+    obje_attrs,
     item_attrs,
     eqip_attrs,
 
