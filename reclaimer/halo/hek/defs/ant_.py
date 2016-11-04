@@ -35,7 +35,7 @@ def get():
     return ant__def
 
 ant__def = TagDef("ant!",
-    blam_header('"ant!'),
+    blam_header('ant!'),
     ant__body,
 
     ext=".antenna", endian=">"

@@ -24,7 +24,7 @@ tag_class_le_int_to_fcc = {}
 # maps tag class four character codes to the tags file extension
 tag_class_fcc_to_ext = {
     'actr': "actor",
-    'actv': "actor_varient",
+    'actv': "actor_variant",
     'ant!': "antenna",
     'bipd': "biped",
     'bitm': "bitmap",

@@ -31,7 +31,7 @@ boolean = Struct("boolean",
 
     Pad(31),
     # Runtime value override
-    runtime_value,
+    Pad(2),  # runtime_value,
     BBool16("flags", "invert"),
     # Animation
     animation_function,
@@ -50,7 +50,7 @@ integer = Struct("integer",
 
     Pad(24),
     # Runtime value override
-    runtime_value,
+    Pad(2),  # runtime_value,
 
     Pad(2),
     # Animation
@@ -71,7 +71,7 @@ float_1d = Struct("float 1d",
 
     Pad(12),
     # Runtime value override
-    runtime_value,
+    Pad(2),  # runtime_value,
 
     Pad(2),
     # Animation
@@ -92,7 +92,7 @@ float_2d = Struct("float 2d",
 
     Pad(8),
     # Runtime value override
-    runtime_value,
+    Pad(2),  # runtime_value,
 
     Pad(2),
     # Animation
@@ -113,7 +113,7 @@ float_3d = Struct("float 3d",
 
     Pad(4),
     # Runtime value override
-    runtime_value,
+    Pad(2),  # runtime_value,
 
     Pad(2),
     # Animation
@@ -132,7 +132,7 @@ float_4d = Struct("float 4d",
     QStruct("value upper bound", INCLUDE=ijkw_float),
 
     # Runtime value override
-    runtime_value,
+    Pad(2),  # runtime_value,
 
     Pad(2),
     # Animation
