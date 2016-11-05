@@ -10,21 +10,21 @@ text_value_pair = Struct("effect_instance",
 
     BSInt32("integer"),
     BFloat("real"),
-    dependency("string id", valid_string_id_yelo),
+    dependency_os("string id", "sidy"),
     Pad(4),
-    dependency("label string id", valid_string_id_yelo),
+    dependency_os("label string id", "sidy"),
     Pad(4),
-    dependency("description string id", valid_string_id_yelo),
+    dependency_os("description string id", "sidy"),
 
     SIZE=72
     )
 
 sily_body = Struct("tagdata",
-    dependency("parameter", valid_string_id_yelo),
+    dependency_os("parameter", "sidy"),
     Pad(4),
-    dependency("title text", valid_string_id_yelo),
+    dependency_os("title text", "sidy"),
     Pad(4),
-    dependency("description text", valid_string_id_yelo),
+    dependency_os("description text", "sidy"),
 
     Pad(4),
     BSEnum16("type",

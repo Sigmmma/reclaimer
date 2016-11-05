@@ -16,7 +16,7 @@ build_info = Struct("build info",
 
 scripted_ui_widget = Struct("scripted ui widget",
     ascii_str32("name"),
-    dependency("definition", valid_ui_widget_definitions),
+    dependency_os("definition", "DeLa"),
     SIZE=76
     )
 
@@ -54,9 +54,9 @@ yelo_body = Struct("tagdata",
         "dont fix ui game globals",
         "game updates ignore player pvs hack",
         ),
-    dependency("yelo globals", valid_project_yellow_globals),
-    dependency("globals override", valid_globals),
-    dependency("scenario explicit references", valid_tag_collections),
+    dependency_os("yelo globals", "yelo"),
+    dependency_os("globals override", "matg"),
+    dependency_os("scenario explicit references", "tagc"),
     reflexive("build info", build_info, 1),
 
     Pad(40),

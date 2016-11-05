@@ -14,7 +14,7 @@ sgla_attrs = Struct("sgla attrs",
     #Background Tint Properties
     QStruct("background tint color", INCLUDE=rgb_float),
     BFloat("background tint map scale"),
-    dependency("background tint map", valid_bitmaps),
+    dependency("background tint map", "bitm"),
 
     Pad(22),
     #Reflection Properties
@@ -27,24 +27,24 @@ sgla_attrs = Struct("sgla attrs",
     QStruct("perpendicular tint color", INCLUDE=rgb_float),
     BFloat("parallel brightness"),#[0,1]
     QStruct("parallel tint color", INCLUDE=rgb_float),
-    dependency("reflection map", valid_bitmaps),
+    dependency("reflection map", "bitm"),
 
     BFloat("bump map scale"),
-    dependency("bump map", valid_bitmaps),
+    dependency("bump map", "bitm"),
 
     Pad(132),
     #Diffuse Properties
     BFloat("diffuse map scale"),
-    dependency("diffuse map", valid_bitmaps),
+    dependency("diffuse map", "bitm"),
     BFloat("diffuse detail map scale"),
-    dependency("diffuse detail map", valid_bitmaps),
+    dependency("diffuse detail map", "bitm"),
 
     Pad(32),
     #Specular Properties
     BFloat("specular map scale"),
-    dependency("specular map", valid_bitmaps),
+    dependency("specular map", "bitm"),
     BFloat("specular detail map scale"),
-    dependency("specular detail map", valid_bitmaps),
+    dependency("specular detail map", "bitm"),
     SIZE=440
     )
 

@@ -23,14 +23,14 @@ item_attrs = Struct('item attrs',
 
     Pad(164),
 
-    dependency("material effects", valid_material_effects),
-    dependency("collision sound", valid_sounds),
+    dependency("material effects", "foot"),
+    dependency("collision sound", "snd!"),
 
     Pad(120),
 
     Struct("detonation delay", INCLUDE=from_to),
-    dependency("detonating effect", valid_effects),
-    dependency("detonation effect", valid_effects),
+    dependency("detonating effect", "effe"),
+    dependency("detonation effect", "effe"),
     SIZE=396,
     )
 

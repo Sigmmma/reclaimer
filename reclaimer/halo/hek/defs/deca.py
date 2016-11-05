@@ -28,7 +28,7 @@ deca_body = Struct("tagdata",
         "water"
         ),
     Pad(2),
-    dependency("next decal in chain", valid_decals),
+    dependency("next decal in chain", "deca"),
 
     #Radius and color
     Struct("radius", INCLUDE=from_to),  # world units
@@ -49,7 +49,7 @@ deca_body = Struct("tagdata",
     #Shader
     BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
     Pad(22),
-    dependency("shader map", valid_bitmaps),
+    dependency("shader map", "bitm"),
 
     #Sprite info
     Pad(20),

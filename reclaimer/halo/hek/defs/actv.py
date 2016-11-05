@@ -18,9 +18,9 @@ actv_body = Struct("tagdata",
         "cannot use ranged weapons",
         "prefer passenger seat",
         ),
-    dependency("actor definition", valid_actors),
+    dependency("actor definition", "actr"),
     dependency("unit", valid_units),
-    dependency("major variant", valid_actor_variants),
+    dependency("major variant", "actv"),
 
     #Movement switching
     Struct("movement switching",
@@ -38,7 +38,7 @@ actv_body = Struct("tagdata",
 
     #Ranged combat
     Struct("ranged combat",
-        dependency("weapon", valid_weapons),
+        dependency("weapon", "weap"),
         BFloat("maximum firing distance"),
         BFloat("rate of fire"),
         BFloat("projectile error"),  # radians
@@ -150,7 +150,7 @@ actv_body = Struct("tagdata",
     #Items
     Struct("items",
         Pad(20),
-        dependency("equipment", valid_equipment),
+        dependency("equipment", "eqip"),
         QStruct("grenade count",
             BSInt16("from", GUI_NAME=" "),
             BSInt16("to"),

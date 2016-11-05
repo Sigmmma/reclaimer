@@ -3,8 +3,8 @@ from supyr_struct.defs.tag_def import TagDef
 
 
 scenario_description = Struct("scenario description",
-    dependency("descriptive bitmap", valid_bitmaps),
-    dependency("displayed map name", valid_strings),
+    dependency("descriptive bitmap", "bitm"),
+    dependency("displayed map name", "str#"),
     ascii_str32("scenario tag directory path"),
     SIZE=68
     )

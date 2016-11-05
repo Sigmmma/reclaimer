@@ -11,7 +11,7 @@ smet_attrs = Struct("smet attrs",
         "unfiltered"
         ),
     Pad(34),
-    dependency("meter map", valid_bitmaps),
+    dependency("meter map", "bitm"),
     Pad(32),
 
     #Colors

@@ -34,7 +34,7 @@ static_element = Struct("static element",
     BBool16("scaling flags", *hud_scaling_flags),
 
     Pad(22),
-    dependency("interface bitmap", valid_bitmaps),
+    dependency("interface bitmap", "bitm"),
     QStruct("default color", INCLUDE=argb_byte),
     QStruct("flashing color", INCLUDE=argb_byte),
     BFloat("flash period"),
@@ -67,7 +67,7 @@ meter_element = Struct("meter element",
     BBool16("scaling flags", *hud_scaling_flags),
 
     Pad(22),
-    dependency("meter bitmap", valid_bitmaps),
+    dependency("meter bitmap", "bitm"),
     Pad(1),
     QStruct("color at meter minimum", INCLUDE=rgb_byte),
     Pad(1),
@@ -223,7 +223,7 @@ crosshair = Struct("crosshair",
     use_on_map_type,
 
     Pad(30),
-    dependency("crosshair bitmap", valid_bitmaps),
+    dependency("crosshair bitmap", "bitm"),
     reflexive("crosshair overlays", crosshair_overlay, 16),
     SIZE=104
     )
@@ -234,7 +234,7 @@ overlay_element = Struct("overlay element",
     use_on_map_type,
 
     Pad(30),
-    dependency("overlay bitmap", valid_bitmaps),
+    dependency("overlay bitmap", "bitm"),
     reflexive("overlays", overlay, 16),
     SIZE=104
     )
@@ -246,8 +246,8 @@ screen_effect = Struct("screen effect",
             "only when zoomed"
             ),
         Pad(18),
-        dependency("fullscreen mask", valid_bitmaps),
-        dependency("splitscreen mask", valid_bitmaps)
+        dependency("fullscreen mask", "bitm"),
+        dependency("splitscreen mask", "bitm")
         ),
 
     Pad(9),

@@ -20,7 +20,7 @@ bitmap = Struct("bitmap",
     BSInt16("bitmap index"),
 
     Pad(58),
-    dependency("bitmap", valid_bitmaps),
+    dependency_os("bitmap", "bitm"),
     SIZE=116
     )
 
@@ -172,7 +172,7 @@ color = Struct("color",
 
 shpg_attrs = Struct("shpg attrs",
     Pad(4),
-    dependency("base shader", valid_shader_postprocess_generic),
+    dependency_os("base shader", "shpg"),
 
     # whatever this is, each is 116 bytes
     Pad(12),#reflexive("unknown", void_desc),

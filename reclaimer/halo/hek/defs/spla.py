@@ -28,14 +28,14 @@ spla_attrs = Struct("spla attrs",
     BFloat("primary animation period"),
     QStruct("primary animation direction", INCLUDE=ijk_float),
     BFloat("primary noise map scale"),
-    dependency("primary noise map", valid_bitmaps),
+    dependency("primary noise map", "bitm"),
 
     Pad(36),
     #Secondary Noise Map
     BFloat("secondary animation period"),
     QStruct("secondary animation direction", INCLUDE=ijk_float),
     BFloat("secondary noise map scale"),
-    dependency("secondary noise map", valid_bitmaps),
+    dependency("secondary noise map", "bitm"),
     SIZE=292
     )
 

@@ -8,7 +8,7 @@ script_variable = Struct("script variable",
     )
 
 effect = Struct("effect",
-    dependency("effect", valid_effect_postprocess_generic),
+    dependency_os("effect", "efpg"),
     ascii_str32("name"),
     reflexive("script variables", script_variable, 32),
     SIZE=72

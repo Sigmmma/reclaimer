@@ -22,7 +22,7 @@ chicago_4_stage_maps = Struct("four stage map",
     BFloat("map v-offset"),
     BFloat("map rotation"),#degrees
     BFloat("map bias"),#[0,1]
-    dependency("bitmap", valid_bitmaps),
+    dependency("bitmap", "bitm"),
 
     #shader animations
     Pad(40),

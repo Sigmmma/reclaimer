@@ -179,7 +179,7 @@ map = Struct("map",
     BFloat("map v-offset"),
     BFloat("map rotation"),#degrees
     BFloat("map bias", MIN=0.0, MAX=1.0),
-    dependency("bitmap", valid_bitmaps),
+    dependency("bitmap", "bitm"),
                               
     #shader animations
     Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),

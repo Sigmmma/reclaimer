@@ -5,19 +5,19 @@ def get():
     return unit_def
 
 camera_track = Struct('camera track',
-    dependency('track', valid_camera_tracks),
+    dependency('track', "trak"),
     SIZE=28
     )
 
 new_hud_interface = Struct('new hud interface',
-    dependency('unit hud interface', valid_unit_hud_interfaces),
+    dependency('unit hud interface', "unhi"),
     SIZE=48
     )
 
 dialogue_variant = Struct('dialogue variant',
     BSInt16('variant number'),
     Pad(6),
-    dependency('dialogue', valid_unit_dialogues),
+    dependency('dialogue', "udlg"),
     SIZE=24
     )
 
@@ -29,7 +29,7 @@ powered_seat = Struct('powered seat',
     )
 
 weapon = Struct('weapon',
-    dependency('weapon', valid_weapons),
+    dependency('weapon', "weap"),
     SIZE=36
     )
 
@@ -72,7 +72,7 @@ seat = Struct('seat',
     Pad(2),
     BFloat('yaw minimum'),
     BFloat('yaw maximum'),
-    dependency('built-in gunner', valid_actor_variants),
+    dependency('built-in gunner', "actv"),
     SIZE=284
     )
 
@@ -106,7 +106,7 @@ unit_attrs = Struct("unit attrs",
     BSEnum16('default team', *unit_teams),
     BSEnum16('constant sound volume', *sound_volumes),
     BFloat('rider damage fraction'),
-    dependency('integrated light toggle', valid_effects),
+    dependency('integrated light toggle', "effe"),
     BSEnum16('A in', *unit_inputs),
     BSEnum16('B in', *unit_inputs),
     BSEnum16('C in', *unit_inputs),
@@ -137,7 +137,7 @@ unit_attrs = Struct("unit attrs",
     BFloat('stunned movement threshold', MIN=0.0, MAX=1.0),
     BFloat('feign death chance', MIN=0.0, MAX=1.0),
     BFloat('feign repeat chance', MIN=0.0, MAX=1.0),
-    dependency('spawned actor', valid_actor_variants),
+    dependency('spawned actor', "actv"),
     QStruct("spawned actor count",
         BSInt16("from", GUI_NAME=" "),
         BSInt16("to"),
@@ -152,7 +152,7 @@ unit_attrs = Struct("unit attrs",
     Pad(8),
     BFloat('ai vehicle radius'),
     BFloat('ai danger radius'),
-    dependency('melee damage', valid_damage_effects),
+    dependency('melee damage', "jpt!"),
     BSEnum16('motion sensor blip size',
         "medium",
         "small",

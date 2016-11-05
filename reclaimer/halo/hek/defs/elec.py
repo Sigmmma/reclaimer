@@ -42,7 +42,7 @@ elec_body = Struct("tagdata",
     BSEnum16("thickness scale source", *function_outputs),
     BSEnum16("tint modulation source", *function_names),
     BSEnum16("brightness scale source", *function_outputs),
-    dependency("bitmap", valid_bitmaps),
+    dependency("bitmap", "bitm"),
 
     Pad(84),
     reflexive("markers", marker, 16),

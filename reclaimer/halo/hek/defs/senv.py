@@ -26,29 +26,29 @@ senv_attrs = Struct("senv attrs",
         "rescale bump maps",
         ),
     Pad(26),
-    dependency("base map", valid_bitmaps),
+    dependency("base map", "bitm"),
                    
     Pad(24),
     BSEnum16("detail map function", *detail_map_functions),
     Pad(2),
 
     BFloat("primary detail map scale"),
-    dependency("primary detail map", valid_bitmaps),
+    dependency("primary detail map", "bitm"),
     BFloat("secondary detail map scale"),
-    dependency("secondary detail map", valid_bitmaps),
+    dependency("secondary detail map", "bitm"),
 
     Pad(24),
     BSEnum16("micro detail map function", *detail_map_functions),
 
     Pad(2),
     BFloat("micro detail map scale"),
-    dependency("micro detail map", valid_bitmaps),
+    dependency("micro detail map", "bitm"),
     QStruct("material color", INCLUDE=rgb_float),
 
     Pad(12),
     #Bump Properties
     BFloat("bump map scale"),
-    dependency("bump map", valid_bitmaps),
+    dependency("bump map", "bitm"),
     FlFloat("bump map scale x"),
     FlFloat("bump map scale y"),
 
@@ -75,7 +75,7 @@ senv_attrs = Struct("senv attrs",
 
     Pad(24),
     BFloat("illumination map scale"),
-    dependency("illumination map", valid_bitmaps),
+    dependency("illumination map", "bitm"),
 
     Pad(24),
     #Specular Properties
@@ -108,7 +108,7 @@ senv_attrs = Struct("senv attrs",
     BFloat("parallel brightness"),#[0,1]
 
     Pad(40),
-    dependency("reflection cube map", valid_bitmaps),
+    dependency("reflection cube map", "bitm"),
     SIZE=796
     )
 
