@@ -88,39 +88,6 @@ circular references
     wphi: weapon_hud_interface
 
 
-REMAINING TO IMPLEMENT:
-    actr: actor
-    actv: actor_varient
-    matg: globals
-    glw!: glow
-    grhi: grenade_hud_interface
-    hudg: hud_globals
-    coll: model_collision_geometry
-    part: particle
-    pctl: particle_system
-    scnr: scenario
-    sbsp: scenario_structure_bsp
-    lsnd: sound_looping
-    DeLa: ui_widget_definition
-    unhi: unit_hud_interface
-    wphi: weapon_hud_interface
-
-    obje: object
-    ctrl: device_control
-    lifi: device_light_fixture
-    mach: device_machine
-    eqip: equipment
-    garb: garbage
-    weap: weapon
-    plac: placeholder
-    proj: projectile
-    scen: scenery
-    ssce: sound_scenery
-
-    unit: unit
-    bipd: biped
-    vehi: vehicle
-
 
 IMPLEMENTATION ORDER:
     actr: actor
