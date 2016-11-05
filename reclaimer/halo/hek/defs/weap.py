@@ -120,7 +120,7 @@ trigger = Struct("trigger",
         QStruct("first person offset", INCLUDE=xyz_float),
 
         Pad(4),
-        dependency('projectile', valid_projectiles),
+        dependency('projectile', valid_objects),
         ),
 
     BFloat("ejection port recovery time"),
