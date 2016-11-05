@@ -123,12 +123,8 @@ REMAINING TO IMPLEMENT:
 
 
 IMPLEMENTATION ORDER:
-    grhi: grenade_hud_interface
-    unhi: unit_hud_interface
-    wphi: weapon_hud_interface
-    pctl: particle_system
-    DeLa: ui_widget_definition
     actr: actor
+    DeLa: ui_widget_definition
     hudg: hud_globals
     scnr: scenario
     sbsp: scenario_structure_bsp
