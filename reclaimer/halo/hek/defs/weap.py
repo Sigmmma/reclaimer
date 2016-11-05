@@ -5,7 +5,7 @@ magazine_item = Struct("magazine item",
     BSInt16("rounds"),
 
     Pad(10),
-    dependency('equipment', valid_equipment),
+    dependency('equipment', "eqip"),
     SIZE=28
     )
 
@@ -44,9 +44,9 @@ firing_effect = Struct("firing_effect",
     dependency('firing effect', valid_event_effects),
     dependency('misfire effect', valid_event_effects),
     dependency('empty effect', valid_event_effects),
-    dependency('firing damage', valid_damage_effects),
-    dependency('misfire damage', valid_damage_effects),
-    dependency('empty damage', valid_damage_effects),
+    dependency('firing damage', "jpt!"),
+    dependency('misfire damage', "jpt!"),
+    dependency('empty damage', "jpt!"),
     SIZE=132
     )
 
@@ -185,10 +185,10 @@ weap_attrs = Struct("weap attrs",
         dependency('detonation', valid_event_effects),
         ),
 
-    dependency('player melee damage', valid_damage_effects),
-    dependency('player melee response', valid_damage_effects),
+    dependency('player melee damage', "jpt!"),
+    dependency('player melee response', "jpt!"),
     Pad(8),
-    dependency('actor firing parameters', valid_actor_variants),
+    dependency('actor firing parameters', "actv"),
 
     Struct("aiming",
         BFloat("near reticle range"),
@@ -236,13 +236,13 @@ weap_attrs = Struct("weap attrs",
     Pad(12),
     Struct("interface",
         dependency('first person model', valid_models),
-        dependency('first person animations', valid_model_animations),
+        dependency('first person animations', "antr"),
 
         Pad(4),
-        dependency('hud interface', valid_weapon_hud_interfaces),
-        dependency('pickup sound', valid_sounds),
-        dependency('zoom-in sound', valid_sounds),
-        dependency('zoom-out sound', valid_sounds),
+        dependency('hud interface', "wphi"),
+        dependency('pickup sound', "snd!"),
+        dependency('zoom-in sound', "snd!"),
+        dependency('zoom-out sound', "snd!"),
 
         Pad(12),
         BFloat('active camo ding'),

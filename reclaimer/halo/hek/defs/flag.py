@@ -32,7 +32,7 @@ flag_body = Struct("tagdata",
     BFloat("cell height"),
 
     dependency("red flag shader", valid_shaders),
-    dependency("physics", valid_point_physics),
+    dependency("physics", "pphy"),
 
     BFloat("wind noise"),
     Pad(8),

@@ -38,17 +38,17 @@ soso_attrs = Struct("soso attrs",
     Struct("maps",
         BFloat("map u-scale"),
         BFloat("map v-scale"),
-        dependency("diffuse map", valid_bitmaps),
+        dependency("diffuse map", "bitm"),
            
         Pad(8),
-        dependency("multipurpose map", valid_bitmaps),
+        dependency("multipurpose map", "bitm"),
 
         Pad(8),
         BSEnum16("detail function", *detail_map_functions),
         BSEnum16("detail mask", *detail_mask),
            
         BFloat("detail map scale"),
-        dependency("detail map", valid_bitmaps),
+        dependency("detail map", "bitm"),
         BFloat("detail map v-scale"),
         ),
 
@@ -74,7 +74,7 @@ soso_attrs = Struct("soso attrs",
         BFloat("parallel brightness", MIN=0.0, MAX=1.0),
         QStruct("parallel tint color", INCLUDE=rgb_float),
 
-        dependency("reflection cube map map", valid_bitmaps),
+        dependency("reflection cube map map", "bitm"),
         ),
     SIZE=400
     )

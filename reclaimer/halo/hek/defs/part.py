@@ -16,10 +16,10 @@ part_body = Struct("tagdata",
         "random horizontal mirroring",
         "random vertical mirroring",
         ),
-    dependency("bitmap", valid_bitmaps),
-    dependency("physics", valid_point_physics),
+    dependency("bitmap", "bitm"),
+    dependency("physics", "pphy"),
     # apparently marty traded his kids for this >:3
-    dependency("impact effect", valid_material_effects),
+    dependency("impact effect", "foot"),
 
     Pad(4),
     QStruct("lifespan", INCLUDE=from_to),
@@ -59,7 +59,7 @@ part_body = Struct("tagdata",
 
     #Secondary map
     Struct("secondary map",
-        dependency("bitmap", valid_bitmaps),
+        dependency("bitmap", "bitm"),
         BSEnum16("anchor", *render_anchor),
         BBool16("flags",
             "unfiltered"

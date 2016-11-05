@@ -115,13 +115,13 @@ obje_attrs = Struct('obje attrs',
 
     Pad(4),
     dependency('model', valid_models),
-    dependency('animation graph', valid_model_animations),
+    dependency('animation graph', "antr"),
 
     Pad(40),
-    dependency('collision model', valid_model_collision_models),
-    dependency('physics', valid_physics),
+    dependency('collision model', "coll"),
+    dependency('physics', "phys"),
     dependency('modifier shader', valid_shaders),
-    dependency('creation effect', valid_effects),
+    dependency('creation effect', "effe"),
     Pad(84),
     BFloat('render bounding radius'),
 

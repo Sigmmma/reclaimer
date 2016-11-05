@@ -37,7 +37,7 @@ particle_state = Struct("particle state",
     QStruct("duration bounds", INCLUDE=from_to),
     QStruct("transition time bounds", INCLUDE=from_to),
 
-    dependency("bitmaps", valid_bitmaps),
+    dependency("bitmaps", "bitm"),
     BSInt16("sequence index"),
 
     Pad(6),
@@ -47,7 +47,7 @@ particle_state = Struct("particle state",
     QStruct("color 1", INCLUDE=argb_float),
     QStruct("color 2", INCLUDE=argb_float),
     BFloat("radius multiplier"),
-    dependency("physics", valid_point_physics),
+    dependency("physics", "pphy"),
 
     Pad(76),
     BBool16("shader flags", *shader_flags),
@@ -60,7 +60,7 @@ particle_state = Struct("particle state",
     Pad(28),
     #Secondary map
     Struct("secondary map",
-        dependency("bitmap", valid_bitmaps),
+        dependency("bitmap", "bitm"),
         BSEnum16("anchor", *render_anchor),
         BBool16("flags",
             "unfiltered"
@@ -124,7 +124,7 @@ particle_type = Struct("particle type",
 
 pctl_body = Struct("tagdata",
     Pad(56),
-    dependency("point physics", valid_point_physics),
+    dependency("point physics", "pphy"),
     BSEnum16("system update physics",
         "default",
         "explosion"

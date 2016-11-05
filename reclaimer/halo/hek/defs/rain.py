@@ -19,7 +19,7 @@ particle_type = Struct("particle_type",
 
     Pad(96),
     QStruct("particle count", INCLUDE=from_to),
-    dependency("physics", valid_point_physics),
+    dependency("physics", "pphy"),
 
     Pad(16),
     QStruct("acceleration count", INCLUDE=from_to),
@@ -38,7 +38,7 @@ particle_type = Struct("particle_type",
     #Shader
     Struct("shader",
         Pad(64),
-        dependency("sprite bitmap", valid_bitmaps),
+        dependency("sprite bitmap", "bitm"),
         BSEnum16("render mode", *render_mode),
         BSEnum16("render direction source",
             "from velocity",
@@ -57,7 +57,7 @@ particle_type = Struct("particle_type",
     #Secondary bitmap
     Struct("secondary bitmap",
         Pad(28),
-        dependency("bitmap", valid_bitmaps),
+        dependency("bitmap", "bitm"),
         BSEnum16("anchor", *render_anchor),
         BBool16("secondary map flags",
             "unfiltered"

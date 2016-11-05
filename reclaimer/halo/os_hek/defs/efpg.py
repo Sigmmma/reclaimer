@@ -1,7 +1,7 @@
 from .efpp import *
 
 shader = Struct("shader",
-    dependency("shader", valid_shader_postprocess_generic),
+    dependency_os("shader", 'shpg'),
     SIZE=16
     )
 

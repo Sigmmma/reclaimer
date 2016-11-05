@@ -2,7 +2,7 @@ from ...hek.defs.soso import *
 
 os_soso_ext = Struct("shader model extension",
     #Specular Color
-    dependency("specular color map", valid_bitmaps),
+    dependency_os("specular color map", "bitm"),
     BFloat("specular color coefficient"),
     Pad(4),
     BFloat("specular color exponent"),
@@ -12,18 +12,18 @@ os_soso_ext = Struct("shader model extension",
                      
     Pad(2),
     #Base Normal Map
-    dependency("base normal map", valid_bitmaps),
+    dependency_os("base normal map", "bitm"),
     BFloat("base normal coefficient"),
 
     Pad(12),
     #Detail Normal Maps
-    dependency("detail normal 1 map", valid_bitmaps),
+    dependency_os("detail normal 1 map", "bitm"),
     BFloat("detail normal 1 coefficient"),
     BFloat("detail normal 1 scale"),
     BFloat("detail normal 1 v-scale"),
 
     Pad(4),
-    dependency("detail normal 2 map", valid_bitmaps),
+    dependency_os("detail normal 2 map", "bitm"),
     BFloat("detail normal 2 coefficient"),
     BFloat("detail normal 2 scale"),
     BFloat("detail normal 2 v-scale"),
