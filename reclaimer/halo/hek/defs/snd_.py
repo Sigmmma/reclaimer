@@ -122,7 +122,7 @@ snd__body = Struct("tagdata",
         'stereo'
         ),
     compression,
-    dependency("promotion sound", valid_sounds),
+    dependency("promotion sound", "snd!"),
     BSInt16("promotion count"),
     Pad(22),
     reflexive("pitch ranges", pitch_range, 8),

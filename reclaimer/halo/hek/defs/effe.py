@@ -77,7 +77,7 @@ particle = Struct("particle",
     QStruct("relative offset", INCLUDE=ijk_float),
     Pad(52),
 
-    dependency("particle type", valid_particles),
+    dependency("particle type", "part"),
     BBool32("flags",
         "stay attached to marker",
         "random initial angle",

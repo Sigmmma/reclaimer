@@ -27,12 +27,12 @@ ligh_body = Struct("tagdata",
 
     #Gel
     Struct("gel map",
-        dependency("primary cube map", valid_bitmaps),
+        dependency("primary cube map", "bitm"),
         Pad(2),
         BSEnum16("texture animation function", *animation_functions),
         BFloat("texture animation period"),
 
-        dependency("secondary cube map", valid_bitmaps),
+        dependency("secondary cube map", "bitm"),
         Pad(2),
         BSEnum16("yaw animation function", *animation_functions),
         BFloat("yaw animation period"),
@@ -46,7 +46,7 @@ ligh_body = Struct("tagdata",
         ),
 
     #Lens flare
-    dependency("lens flare", valid_lens_flares),
+    dependency("lens flare", "lens"),
     Pad(24),
 
     #Radiosity

@@ -3,7 +3,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 material = Struct("material",
     dependency("effect"),
-    dependency("sound", valid_sounds),
+    dependency("sound", "snd!"),
     SIZE=48,
     )
                          

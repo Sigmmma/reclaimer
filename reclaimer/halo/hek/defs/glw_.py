@@ -73,7 +73,7 @@ glw__body = Struct("tagdata",
     BFloat("trailing particle max time"),
 
     Pad(52),
-    dependency("texture",  valid_bitmaps),
+    dependency("texture",  "bitm"),
     SIZE=340,
     )
 

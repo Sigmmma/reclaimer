@@ -35,7 +35,7 @@ mgs2_body = Struct("tagdata",
     Pad(22),
 
     #Bitmaps
-    dependency("map", valid_bitmaps),
+    dependency("map", "bitm"),
     BSInt16("sequence index"),
     BSInt16("count"),
     Pad(72),

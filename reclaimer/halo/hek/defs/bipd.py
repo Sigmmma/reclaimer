@@ -30,7 +30,7 @@ bipd_attrs = Struct("bipd attrs",
     BSEnum16('B in', *biped_inputs),
     BSEnum16('C in', *biped_inputs),
     BSEnum16('D in', *biped_inputs),
-    dependency('dont use', valid_damage_effects),
+    dependency('dont use', "jpt!"),
 
     QStruct("flying",
         BFloat("bank angle"),  # radians
@@ -57,7 +57,7 @@ bipd_attrs = Struct("bipd attrs",
         BFloat("uphill velocity scale"),
 
         Pad(24),
-        dependency('footsteps', valid_material_effects),
+        dependency('footsteps', "foot"),
         ),
 
     Pad(24),

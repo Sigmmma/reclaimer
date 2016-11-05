@@ -18,7 +18,6 @@ def tag_class(*args):
                     *(tuple(classes) + (("NONE", 0xffffffff),) ),
                     DEFAULT=0xffffffff)
 
-valid_tags = tag_class(*tag_class_fcc_to_ext.keys())
 
 def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     '''This function serves to macro the creation of a reflexive'''
@@ -46,12 +45,15 @@ def rawdata_ref(name, f_type=Rawdata):
         EDITABLE=False, INCLUDE=rawdata_ref_struct,
         STEPTREE=f_type("data", VISIBLE=False, SIZE=".size") )
 
-def dependency(name='tag ref', valid_ids=valid_tags):
+
+def dependency(name='tag ref', valid_ids=None):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
         valid_ids = tag_class(*valid_ids)
     elif isinstance(valid_ids, str):
         valid_ids = tag_class(valid_ids)
+    elif valid_ids is None:
+        valid_ids = valid_tags
 
     return TagIndexRef(name,
         valid_ids,
@@ -62,6 +64,7 @@ def dependency(name='tag ref', valid_ids=valid_tags):
         STEPTREE=StringVarLen("filepath", SIZE=tag_ref_size),
         EDITABLE=False,
         )
+
 
 def blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
@@ -76,44 +79,9 @@ def blam_header(tagid, version=1):
 def ascii_str32(name):
     return StrAscii(str(name), SIZE=32)
 
-valid_actors = tag_class('actr')
-valid_actor_variants = tag_class('actv')
-valid_bitmaps = tag_class('bitm')
-valid_camera_tracks = tag_class('trak')
-valid_continuous_damages = tag_class('cdmg')
-valid_color_tables = tag_class('colo')
-valid_damage_effects = tag_class('jpt!')
-valid_decals = tag_class('deca')
-valid_effects = tag_class('effe')
-valid_event_effects = tag_class('effe', 'snd!')
-valid_equipment = tag_class('eqip')
-valid_fogs = tag_class('fog ')
-valid_fonts = tag_class('font')
-valid_globals = tag_class('matg')
-valid_grenade_hud_interfaces = tag_class('grhi')
-valid_hud_globals = tag_class('hudg')
-valid_hud_numbers = tag_class('hud#')
-valid_lens_flares = tag_class('lens')
-valid_material_effects = tag_class('foot')
-valid_meters = tag_class('metr')
+valid_tags = tag_class(*tag_class_fcc_to_ext.keys())
 valid_models = tag_class('mode', 'mod2')
-valid_model_animations = tag_class('antr')
-valid_model_collision_models = tag_class('coll')
-valid_particles = tag_class('part')
-valid_physics = tag_class('phys')
-valid_point_physics = tag_class('pphy')
-valid_sounds = tag_class('snd!')
-valid_strings = tag_class('str#')
-valid_tag_collections = tag_class('tagc')
-valid_ui_widget_definitions = tag_class('DeLa')
-valid_unicode_strings = tag_class('ustr')
-valid_unit_hud_interfaces = tag_class('unhi')
-valid_unit_dialogues = tag_class('udlg')
-valid_vehicles = tag_class('vehi')
-valid_weapons = tag_class('weap')
-valid_weapon_hud_interfaces = tag_class('wphi')
-valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
-
+valid_event_effects = tag_class('effe', 'snd!')
 valid_attachments = tag_class('cont', 'effe', 'ligh', 'mgs2', 'pctl', 'lsnd')
 valid_effect_events = tag_class(
     'bipd', 'jpt!', 'deca', 'devi', 'ctrl', 'lifi', 'mach',
@@ -134,6 +102,7 @@ valid_shaders = tag_class(
     'shdr', 'schi', 'scex', 'sotr', 'senv',
     'sgla', 'smet', 'soso', 'spla', 'swat'
     )
+valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
 
 
 # ###########################################################################
@@ -421,7 +390,6 @@ function_outputs = (
     "C out",
     "D out",
     )
-
 #Tag class specific enumerators
 object_export_to = (
     'none',
@@ -741,11 +709,15 @@ def tag_class_os(*args):
                     DEFAULT=0xffffffff)
 
 
-valid_tags_os = tag_class_os(*tag_class_fcc_to_ext_os.keys())
-
-
-def dependency_os(name='tag ref', valid_ids=valid_tags_os):
+def dependency_os(name='tag ref', valid_ids=None):
     '''This function serves to macro the creation of a tag dependency'''
+    if isinstance(valid_ids, tuple):
+        valid_ids = tag_class_os(*valid_ids)
+    elif isinstance(valid_ids, str):
+        valid_ids = tag_class_os(valid_ids)
+    elif valid_ids is None:
+        valid_ids = valid_tags_os
+
     return TagIndexRef(name,
         valid_ids,
         BSInt32("path pointer"),
@@ -765,6 +737,9 @@ def blam_header_os(tagid, version=1):
     header_desc[1][DEFAULT] = tagid
     header_desc[5][DEFAULT] = version
     return header_desc
+
+
+valid_tags_os = tag_class_os(*tag_class_fcc_to_ext_os.keys())
 
 
 # ###########################################################################
@@ -794,10 +769,4 @@ tag_header_os = Struct("blam header",
     EDITABLE=False, SIZE=64
     )
 
-valid_effect_postprocess_generic = tag_class_os('efpg')
 valid_model_animations_yelo = tag_class_os('antr', 'magy')
-valid_project_yellow_globals = tag_class_os('gelo')
-valid_project_yellow_globals_cv = tag_class_os('gelc')
-valid_shader_postprocess_generic = tag_class_os('shpg')
-valid_string_id_yelo = tag_class_os('sidy')
-

@@ -63,10 +63,10 @@ vehi_attrs = Struct("vehi attrs",
         ),
 
     Pad(4),
-    dependency('suspension sound', valid_sounds),
-    dependency('crash sound', valid_sounds),
-    dependency('material effect', valid_material_effects),
-    dependency('effect', valid_effects),
+    dependency('suspension sound', "snd!"),
+    dependency('crash sound', "snd!"),
+    dependency('material effect', "foot"),
+    dependency('effect', "effe"),
     
     SIZE=256
     )

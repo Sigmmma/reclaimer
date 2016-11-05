@@ -23,11 +23,6 @@ Make it so that a definitions folder must be located in the same module as __mai
 ## HALO RELATED ##
 ##################
 
-Make descriptor for weapon hud tag
-Make descriptor for unit hud tag
-Make descriptor for grenade hud tag
-Make descriptor for hud_globals tag
-
 make program to load all hud, shader_environment, shader_model, and bitmap 
 tags it can find, load all bitmaps referenced within those tags, pass them 
 to the bitmap convertor with settings specifying how to convert them.

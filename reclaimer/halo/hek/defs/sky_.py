@@ -15,7 +15,7 @@ animation = Struct('animation',
     )
 
 light = Struct('light',
-    dependency("lens flare", valid_lens_flares),
+    dependency("lens flare", "lens"),
     ascii_str32("global function name"),
     Pad(28),
     BBool32('flags',
@@ -35,7 +35,7 @@ light = Struct('light',
 
 sky__body = Struct("tagdata",
     dependency("model", valid_models),
-    dependency("animation graph", valid_model_animations),
+    dependency("animation graph", "antr"),
     Pad(24),
 
     QStruct("indoor ambient radiosity color", INCLUDE=rgb_float),
@@ -56,7 +56,7 @@ sky__body = Struct("tagdata",
     BFloat("indoor fog start distance"),
     BFloat("indoor fog opaque distance"),
 
-    dependency("indoor fog screen", valid_fogs),
+    dependency("indoor fog screen", "fog "),
     Pad(4),
     reflexive("shader functions", shader_function, 8),
     reflexive("animations", animation, 8),

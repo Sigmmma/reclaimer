@@ -6,7 +6,7 @@ def get(): return cont_def
 point_state = Struct("point state",
     QStruct("state duration", INCLUDE=from_to),
     QStruct("state transition duration", INCLUDE=from_to),
-    dependency("physics", valid_point_physics),
+    dependency("physics", "pphy"),
     Pad(32),
     BFloat("width"),
     QStruct("color lower bound", INCLUDE=argb_float),
@@ -66,7 +66,7 @@ cont_body = Struct("tagdata",
         BFloat("texture animation u"),  # repeats per second
         BFloat("texture animation v"),  # repeats per second
         BFloat("animation rate"),  # frames per second
-        dependency("bitmap", valid_bitmaps),
+        dependency("bitmap", "bitm"),
         BSInt16("first sequence index"),
         BSInt16("sequence count"),
         Pad(104),
@@ -81,7 +81,7 @@ cont_body = Struct("tagdata",
         ),
 
     Struct("secondary map",
-        dependency("bitmap", valid_bitmaps),
+        dependency("bitmap", "bitm"),
         BSEnum16("anchor", *render_anchor),
         BBool16("map flags",
             "unfiltered",

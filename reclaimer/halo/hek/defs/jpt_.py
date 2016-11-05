@@ -79,7 +79,7 @@ jpt__body = Struct("tagdata",
         Pad(32),
         ),
 
-    dependency("sound", valid_sounds),
+    dependency("sound", "snd!"),
     Pad(112),
 
     QStruct("breaking effect",

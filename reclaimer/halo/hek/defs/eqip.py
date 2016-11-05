@@ -14,7 +14,7 @@ eqip_attrs = Struct("equipment attrs",
         ),
     BSEnum16('grenade type', *grenade_types),
     BFloat('powerup time'),
-    dependency('pickup sound', valid_sounds),
+    dependency('pickup sound', "snd!"),
 
     SIZE=168
     )

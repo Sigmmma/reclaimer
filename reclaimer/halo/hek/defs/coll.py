@@ -130,7 +130,7 @@ region = Struct("region",
     BFloat("damage threshold"),
 
     Pad(12),
-    dependency("destroyed effect", valid_effects),
+    dependency("destroyed effect", "effe"),
     reflexive("permutations", permutation, 32),
     SIZE=84
     )
@@ -171,16 +171,16 @@ coll_body = Struct("tagdata",
         BFloat("friendly damage resistance", MIN=0.0, MAX=1.0),
 
         Pad(40),
-        dependency("localized damage effect", valid_effects),
+        dependency("localized damage effect", "effe"),
 
         BFloat("area damage effect threshold", MIN=0.0, MAX=1.0),
-        dependency("area damage effect", valid_effects),
+        dependency("area damage effect", "effe"),
 
         BFloat("body damaged threshold"),
-        dependency("body damaged effect", valid_effects),
-        dependency("body depleted effect", valid_effects),
+        dependency("body damaged effect", "effe"),
+        dependency("body depleted effect", "effe"),
         BFloat("body destroyed threshold"),
-        dependency("body destroyed effect", valid_effects),
+        dependency("body destroyed effect", "effe"),
         ),
 
     Struct("shield",
@@ -203,9 +203,9 @@ coll_body = Struct("tagdata",
 
         Pad(112),
         BFloat("shield damaged threshold"),
-        dependency("shield damaged effect", valid_effects),
-        dependency("shield depleted effect", valid_effects),
-        dependency("shield recharging effect", valid_effects),
+        dependency("shield damaged effect", "effe"),
+        dependency("shield depleted effect", "effe"),
+        dependency("shield recharging effect", "effe"),
         ),
 
     Pad(124),

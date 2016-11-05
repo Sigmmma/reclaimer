@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 item_permutation = Struct("permutation",
     Pad(32),
     BFloat("weight"),
-    dependency("item"),
+    dependency("item", valid_items),
     SIZE=84,
     )
 

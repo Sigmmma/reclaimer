@@ -2,7 +2,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 detail_sound = Struct("detail sound",
-    dependency("sound", valid_sounds),
+    dependency("sound", "snd!"),
     QStruct('random period bounds', INCLUDE=from_to),
     BFloat("gain"),
     BBool32("flags",
@@ -29,13 +29,13 @@ track = Struct("track",
     BFloat("fade out duration"),
 
     Pad(32),
-    dependency("start", valid_sounds),
-    dependency("loop", valid_sounds),
-    dependency("end", valid_sounds),
+    dependency("start", "snd!"),
+    dependency("loop", "snd!"),
+    dependency("end", "snd!"),
 
     Pad(32),
-    dependency("alternate loop", valid_sounds),
-    dependency("alternate end", valid_sounds),
+    dependency("alternate loop", "snd!"),
+    dependency("alternate end", "snd!"),
     SIZE=160
     )
 
@@ -50,7 +50,7 @@ sndl_body = Struct("tagdata",
     Pad(8),
     BFloat("detail sound period at one"),
     Pad(24),
-    dependency("continuous damage effect", valid_continuous_damages),
+    dependency("continuous damage effect", "cdmg"),
 
     reflexive("tracks", track, 4),
     reflexive("detail sounds", detail_sound, 32),

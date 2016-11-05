@@ -2,7 +2,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 string_reference = Struct("string reference",
-    dependency("string id", valid_string_id_yelo),
+    dependency_os("string id", "sidy"),
     BSInt32("english offset"),
     BSInt32("unused offset 1"),
     BSInt32("unused offset 2"),

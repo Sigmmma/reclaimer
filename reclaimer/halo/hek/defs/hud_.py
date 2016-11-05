@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 hud__body = Struct("tagdata",
     #I didnt feel like adding offsets since there is no
     #padding until AFTER all entries. it's all sequential
-    dependency("digits bitmap", valid_bitmaps),
+    dependency("digits bitmap", "bitm"),
     SInt8("bitmap digit width"),
     SInt8("screen digit width"),
     SInt8("x offset"),

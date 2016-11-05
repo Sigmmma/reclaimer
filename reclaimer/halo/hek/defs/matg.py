@@ -4,9 +4,9 @@ from supyr_struct.defs.tag_def import TagDef
 def get():
     return matg_def
 
-camera = dependency('track', valid_camera_tracks)
+camera = dependency('track', "trak")
 
-sound = dependency('sound', valid_sounds)
+sound = dependency('sound', "snd!")
 
 look_function = Struct("look function",
     BFloat('scale'),
@@ -92,38 +92,38 @@ difficulty = Struct("difficulty",
 grenade = Struct("grenade",
     BSInt16('maximum count'),
     BSInt16('mp spawn default'),
-    dependency('throwing effect', valid_effects),
-    dependency('hud interface', valid_grenade_hud_interfaces),
-    dependency('equipment', valid_equipment),
+    dependency('throwing effect', "effe"),
+    dependency('hud interface', "grhi"),
+    dependency('equipment', "eqip"),
     dependency('projectile', "proj"),
     SIZE=68
     )
 
 rasterizer_data = Struct("rasterizer data",
     # Function textures
-    dependency('distance attenuation', valid_bitmaps),
-    dependency('vector normalization', valid_bitmaps),
-    dependency('atmospheric fog density', valid_bitmaps),
-    dependency('planar fog density', valid_bitmaps),
-    dependency('linear corner fade', valid_bitmaps),
-    dependency('active camouflage distortion', valid_bitmaps),
-    dependency('glow', valid_bitmaps),
+    dependency('distance attenuation', "bitm"),
+    dependency('vector normalization', "bitm"),
+    dependency('atmospheric fog density', "bitm"),
+    dependency('planar fog density', "bitm"),
+    dependency('linear corner fade', "bitm"),
+    dependency('active camouflage distortion', "bitm"),
+    dependency('glow', "bitm"),
 
     Pad(60),
     # Default textures
-    dependency('default 2d', valid_bitmaps),
-    dependency('default 3d', valid_bitmaps),
-    dependency('default cubemap', valid_bitmaps),
+    dependency('default 2d', "bitm"),
+    dependency('default 3d', "bitm"),
+    dependency('default cubemap', "bitm"),
 
     # Experimental textures
-    dependency('test0', valid_bitmaps),
-    dependency('test1', valid_bitmaps),
-    dependency('test2', valid_bitmaps),
-    dependency('test3', valid_bitmaps),
+    dependency('test0', "bitm"),
+    dependency('test1', "bitm"),
+    dependency('test2', "bitm"),
+    dependency('test3', "bitm"),
 
     # video effect textures
-    dependency('video scanline map', valid_bitmaps),
-    dependency('video noise map', valid_bitmaps),
+    dependency('video scanline map', "bitm"),
+    dependency('video noise map', "bitm"),
 
     Pad(52),
     # Active camouflage
@@ -139,36 +139,36 @@ rasterizer_data = Struct("rasterizer data",
     QStruct('hyper-stealth tint color', INCLUDE=rgb_float),
 
     # PC textures
-    dependency('distance attenuation 2d', valid_bitmaps),
+    dependency('distance attenuation 2d', "bitm"),
 
     SIZE=428
     )
 
 interface_bitmaps = Struct("interface bitmaps",
-    dependency('font system', valid_fonts),
-    dependency('font terminal', valid_fonts),
-    dependency('screen color table', valid_color_tables),
-    dependency('hud color table', valid_color_tables),
-    dependency('editor color table', valid_color_tables),
-    dependency('dialog color table', valid_color_tables),
-    dependency('hud globals', valid_hud_globals),
-    dependency('motion sensor sweep bitmap', valid_bitmaps),
-    dependency('motion sensor sweep bitmap mask', valid_bitmaps),
-    dependency('multiplayer hud bitmap', valid_bitmaps),
-    dependency('localization', valid_strings),
-    dependency('hud digits definition', valid_hud_numbers),
-    dependency('motion sensor blip', valid_bitmaps),
-    dependency('interface goo map1', valid_bitmaps),
-    dependency('interface goo map2', valid_bitmaps),
-    dependency('interface goo map3', valid_bitmaps),
+    dependency('font system', "font"),
+    dependency('font terminal', "font"),
+    dependency('screen color table', "colo"),
+    dependency('hud color table', "colo"),
+    dependency('editor color table', "colo"),
+    dependency('dialog color table', "colo"),
+    dependency('hud globals', "hudg"),
+    dependency('motion sensor sweep bitmap', "bitm"),
+    dependency('motion sensor sweep bitmap mask', "bitm"),
+    dependency('multiplayer hud bitmap', "bitm"),
+    dependency('localization', "str#"),
+    dependency('hud digits definition', "hud#"),
+    dependency('motion sensor blip', "bitm"),
+    dependency('interface goo map1', "bitm"),
+    dependency('interface goo map2', "bitm"),
+    dependency('interface goo map3', "bitm"),
     SIZE=304
     )
 
 cheat_weapon = dependency('weapon', valid_items)
 
-cheat_powerup = dependency('powerup', valid_equipment)
+cheat_powerup = dependency('powerup', "eqip")
 
-vehicle = dependency('powerup', valid_vehicles)
+vehicle = dependency('powerup', "vehi")
 
 multiplayer_information = Struct("multiplayer information",
     dependency('flag', valid_items),
@@ -213,25 +213,25 @@ player_information = Struct("player information",
     BFloat("first person  skip fraction", MIN=0.0, MAX=1.0),
 
     Pad(16),
-    dependency('coop respawn effect', valid_effects),
+    dependency('coop respawn effect', "effe"),
     SIZE=244
     )
 
 first_person_interface = Struct("first person interface",
     dependency('first person hands', valid_models),
-    dependency('base bitmap', valid_bitmaps),
-    dependency('shield meter', valid_meters),
+    dependency('base bitmap', "bitm"),
+    dependency('shield meter', "metr"),
     QStruct('shield meter origin',
         BSInt16('x'),
         BSInt16('y')
         ),
-    dependency('body meter', valid_meters),
+    dependency('body meter', "metr"),
     QStruct('body meter origin',
         BSInt16('x'),
         BSInt16('y')
         ),
-    dependency('night-vision toggle on effect', valid_effects),
-    dependency('night-vision toggle off effect', valid_effects),
+    dependency('night-vision toggle on effect', "effe"),
+    dependency('night-vision toggle off effect', "effe"),
 
     SIZE=192
     )
@@ -239,20 +239,20 @@ first_person_interface = Struct("first person interface",
 falling_damage = Struct("falling_damage",
     Pad(8),
     QStruct("harmful falling distance", INCLUDE=from_to),
-    dependency('falling damage', valid_damage_effects),
+    dependency('falling damage', "jpt!"),
 
     Pad(8),
     BFloat("maximum falling distance"),
-    dependency('distance damage', valid_damage_effects),
-    dependency('vehicle environment collision damage', valid_damage_effects),
-    dependency('vehicle killed unit damage', valid_damage_effects),
-    dependency('vehicle collision damage', valid_damage_effects),
-    dependency('flaming death damage', valid_damage_effects),
+    dependency('distance damage', "jpt!"),
+    dependency('vehicle environment collision damage', "jpt!"),
+    dependency('vehicle killed unit damage', "jpt!"),
+    dependency('vehicle collision damage', "jpt!"),
+    dependency('flaming death damage', "jpt!"),
     SIZE=152
     )
 
 particle_effect = Struct("particle effect",
-    dependency('particle type', valid_particles),
+    dependency('particle type', "part"),
     BBool32("flags", *blend_flags),
     BFloat("density"),
     QStruct("velocity scale", INCLUDE=from_to),
@@ -283,14 +283,14 @@ material = Struct("material",
     BFloat("maximum vitality"),
 
     Pad(12),
-    dependency('effect', valid_effects),
-    dependency('sound', valid_sounds),
+    dependency('effect', "effe"),
+    dependency('sound', "snd!"),
 
     Pad(24),
     reflexive("particle effects", particle_effect, 8),
 
     Pad(60),
-    dependency('melee hit sound', valid_sounds),
+    dependency('melee hit sound', "snd!"),
     SIZE=884
     )
 

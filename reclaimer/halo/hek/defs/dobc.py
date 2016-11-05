@@ -31,7 +31,7 @@ dobc_body = Struct("tagdata",
     Pad(2),
     BFloat("global z offset"), #applied to all detail object so they dont float
     Pad(44),
-    dependency("sprite plate", valid_bitmaps),
+    dependency("sprite plate", "bitm"),
     reflexive("detail object types", detail_object_type, 16),
     SIZE=128,
     )
