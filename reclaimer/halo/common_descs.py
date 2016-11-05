@@ -48,6 +48,11 @@ def rawdata_ref(name, f_type=Rawdata):
 
 def dependency(name='tag ref', valid_ids=valid_tags):
     '''This function serves to macro the creation of a tag dependency'''
+    if isinstance(valid_ids, tuple):
+        valid_ids = tag_class(*valid_ids)
+    elif isinstance(valid_ids, str):
+        valid_ids = tag_class(valid_ids)
+
     return TagIndexRef(name,
         valid_ids,
         BSInt32("path pointer"),
@@ -257,6 +262,43 @@ shader_flags = (
 blend_flags = (
     "blend in hsv",
     "more colors"
+    )
+hud_scaling_flags = (
+    "dont scale offset",
+    "dont scale size",
+    "use high res scale"
+    )
+hud_flash_flags = (
+    "reverse default and flashing colors",
+    )
+hud_anchors = (
+    "top left",
+    "top right",
+    "bottom left",
+    "bottom right",
+    "center"
+    )
+hud_panel_meter_flags = (
+    "use min/max for state changes",
+    "interpolate between min/max flash colors",
+    "interpolate color along hsv space",
+    "more colors for hsv interpolation ",
+    "invert interpolation"
+    )
+multitex_anchors = (
+    "texture",
+    "screen",
+    )
+multitex_wrap_modes = (
+    "clamp",
+    "wrap",
+    )
+blending_funcs = (
+    "add",
+    "subtract",
+    "multiply",
+    "multiply 2x",
+    "dot",
     )
 blend_functions = (
     "current",
@@ -620,7 +662,7 @@ damage_modifiers = QStruct("damage modifiers",
     )
 
 # Miscellaneous shared descriptors
-compressed_normal_32 = LBitStruct('compressed_norm32',
+compressed_normal_32 = BitStruct('compressed_norm32',
     Bit1SInt("i", SIZE=11),
     Bit1SInt("j", SIZE=11),
     Bit1SInt("k", SIZE=10)
@@ -633,21 +675,21 @@ xyz_float = QStruct('xyz_float',
     Float("z")
     )
 xy_float = QStruct('xy_float',
-    LFloat("x"),
-    LFloat("y")
+    Float("x"),
+    Float("y")
     )
 
 # colors
 argb_float = QStruct('argb_float',
-    LFloat("a", MIN=0.0, MAX=1.0),
-    LFloat("r", MIN=0.0, MAX=1.0),
-    LFloat("g", MIN=0.0, MAX=1.0),
-    LFloat("b", MIN=0.0, MAX=1.0)
+    Float("a", MIN=0.0, MAX=1.0),
+    Float("r", MIN=0.0, MAX=1.0),
+    Float("g", MIN=0.0, MAX=1.0),
+    Float("b", MIN=0.0, MAX=1.0)
     )
 rgb_float = QStruct('rgb_float',
-    LFloat("r", MIN=0.0, MAX=1.0),
-    LFloat("g", MIN=0.0, MAX=1.0),
-    LFloat("b", MIN=0.0, MAX=1.0)
+    Float("r", MIN=0.0, MAX=1.0),
+    Float("g", MIN=0.0, MAX=1.0),
+    Float("b", MIN=0.0, MAX=1.0)
     )
 rgb_byte = QStruct('rgb_uint8',
     UInt8("r", MIN=0, MAX=255),
@@ -663,23 +705,23 @@ argb_byte = QStruct('argb_uint8',
 
 # rotations
 ijkw_float = QStruct('ijkw_float',
-    LFloat("i"),
-    LFloat("j"),
-    LFloat("k"),
-    LFloat("w")
+    Float("i"),
+    Float("j"),
+    Float("k"),
+    Float("w")
     )
 ijk_float = QStruct('ijk_float',
-    LFloat("i"),
-    LFloat("j"),
-    LFloat("k")
+    Float("i"),
+    Float("j"),
+    Float("k")
     )
 ij_float = QStruct('ij_float',
-    LFloat("i"),
-    LFloat("j"),
+    Float("i"),
+    Float("j"),
     )
 yp_float = QStruct('yp_float',
-    LFloat("y"),
-    LFloat("p")
+    Float("y"),
+    Float("p")
     )
 
 
