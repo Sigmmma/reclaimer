@@ -95,7 +95,7 @@ grenade = Struct("grenade",
     dependency('throwing effect', valid_effects),
     dependency('hud interface', valid_grenade_hud_interfaces),
     dependency('equipment', valid_equipment),
-    dependency('projectile', valid_projectiles),
+    dependency('projectile', "proj"),
     SIZE=68
     )
 
