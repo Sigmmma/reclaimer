@@ -1,6 +1,5 @@
 from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
-from .objs.soso import SosoTag
 
 soso_attrs = Struct("soso attrs",
     #Model Shader Properties

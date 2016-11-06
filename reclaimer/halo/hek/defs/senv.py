@@ -1,6 +1,5 @@
 from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
-from .objs.senv import SenvTag
 
 senv_attrs = Struct("senv attrs",
     #Environment Shader Properties
@@ -126,5 +125,5 @@ senv_def = TagDef("senv",
     blam_header('senv', 2),
     senv_body,
 
-    ext=".shader_environment", endian=">", tag_cls=SenvTag
+    ext=".shader_environment", endian=">"
     )
