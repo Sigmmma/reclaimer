@@ -122,6 +122,7 @@ tag_class_fcc_to_ext_os = {
     'efpp': "effect_postprocess",
     'efpc': "effect_postprocess_collection",
     'efpg': "effect_postprocess_generic",
+    'eqhi': "equipment_hud_interface",
     'magy': "model_animations_yelo",
     'unic': "multilingual_unicode_string_list",
     'yelo': "project_yellow",

@@ -685,8 +685,10 @@ ijkw_float = QStruct('ijkw_float',
     Float("i"), Float("j"), Float("k"), Float("w")
     )
 ijk_float = QStruct('ijk_float',
-    Float("i"), Float("j"),
-    Float("k")
+    Float("i"), Float("j"), Float("k")
+    )
+ypr_float = QStruct('ypr_float',
+    Float("y"), Float("p"), Float("r")
     )
 ij_float = QStruct('ij_float',
     Float("i"), Float("j"),
