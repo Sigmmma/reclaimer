@@ -145,6 +145,24 @@ materials_list = (
     "ice",
     "hunter shield",
     )
+actor_types = (
+    "elite",
+    "jackal",
+    "grunt",
+    "hunter",
+    "engineer",
+    "assassin",
+    "player",
+    "marine",
+    "crew",
+    "combat form",
+    "infection form",
+    "carrier form",
+    "moniter",
+    "sentinal",
+    "none",
+    "mounted weapon"
+    )
 animation_functions = (
     "one",
     "zero",
@@ -637,13 +655,10 @@ compressed_normal_32 = BitStruct('compressed_norm32',
 
 # coordinates
 xyz_float = QStruct('xyz_float',
-    Float("x"),
-    Float("y"),
-    Float("z")
+    Float("x"), Float("y"), Float("z")
     )
 xy_float = QStruct('xy_float',
-    Float("x"),
-    Float("y")
+    Float("x"), Float("y")
     )
 
 # colors
@@ -659,36 +674,25 @@ rgb_float = QStruct('rgb_float',
     Float("b", MIN=0.0, MAX=1.0)
     )
 rgb_byte = QStruct('rgb_uint8',
-    UInt8("r", MIN=0, MAX=255),
-    UInt8("g", MIN=0, MAX=255),
-    UInt8("b", MIN=0, MAX=255)
+    UInt8("r"), UInt8("g"), UInt8("b")
     )
 argb_byte = QStruct('argb_uint8',
-    UInt8("a", MIN=0, MAX=255),
-    UInt8("r", MIN=0, MAX=255),
-    UInt8("g", MIN=0, MAX=255),
-    UInt8("b", MIN=0, MAX=255)
+    UInt8("a"), UInt8("r"), UInt8("g"), UInt8("b")
     )
 
 # rotations
 ijkw_float = QStruct('ijkw_float',
-    Float("i"),
-    Float("j"),
-    Float("k"),
-    Float("w")
+    Float("i"), Float("j"), Float("k"), Float("w")
     )
 ijk_float = QStruct('ijk_float',
-    Float("i"),
-    Float("j"),
+    Float("i"), Float("j"),
     Float("k")
     )
 ij_float = QStruct('ij_float',
-    Float("i"),
-    Float("j"),
+    Float("i"), Float("j"),
     )
 yp_float = QStruct('yp_float',
-    Float("y"),
-    Float("p")
+    Float("y"), Float("p")
     )
 
 
