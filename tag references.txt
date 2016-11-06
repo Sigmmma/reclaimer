@@ -90,8 +90,7 @@ circular references
 
 
 IMPLEMENTATION ORDER:
-    actr: actor
-    DeLa: ui_widget_definition
-    hudg: hud_globals
     scnr: scenario
     sbsp: scenario_structure_bsp
+
+REMEMBER TO GO BACK TO DeLa AND FINISH THE ENUMERATOR OPTIONS
