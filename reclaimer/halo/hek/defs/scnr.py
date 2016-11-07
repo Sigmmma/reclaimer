@@ -2,6 +2,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 def object_reference(name, *args, **kwargs):
+    "Macro to cut down on a lot of code"
     return Struct(name,
         BSInt16('type'),
         BSInt16('name'),
@@ -18,22 +19,22 @@ def object_reference(name, *args, **kwargs):
         **kwargs
         )
 
-def object_palette(name, def_id):
+def object_palette(name, def_id, size=48):
+    "Macro to cut down on a lot of code"
     return Struct(name,
         dependency("name", def_id),
-        SIZE=48
+        SIZE=size
         )
 
 device_flags = (
     "initially open",  # value of 1.0
     "initially off",  #  value of 0.0
-    "can only change once",
+    "can change only once",
     "position reversed",
-    "initially",
     "not usable from any side"
     )
 
-starting_location_types = (
+location_types = (
     "none",
     "ctf",
     "slayer",
@@ -50,6 +51,68 @@ starting_location_types = (
     "all games except ctf",
     "all games except ctf and race"
     )
+
+group_indices = tuple("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+squad_states = (
+    "none",
+    "sleeping",
+    "alert",
+    "moving - repeat same position",
+    "moving - loop",
+    "moving - loop back and forth",
+    "moving - loop randomly",
+    "moving - randomly",
+    "guarding",
+    "guarding at position",
+    "searching",
+    "fleeing"
+    )
+
+manuever_when_states = (
+    "never",
+    {NAME: "strength at 75 percent", GUI_NAME: "< 75% strength"},
+    {NAME: "strength at 50 percent", GUI_NAME: "< 50% strength"},
+    {NAME: "strength at 25 percent", GUI_NAME: "< 25% strength"},
+    "anybody dead",
+    {NAME: "dead at 25 percent", GUI_NAME: "25% dead"},
+    {NAME: "dead at 50 percent", GUI_NAME: "50% dead"},
+    {NAME: "dead at 75 percent", GUI_NAME: "75% dead"},
+    "all but one dead",
+    "all dead"
+    )
+
+atom_types = (
+    "pause",
+    "goto",
+    "goto and face",
+    "move in direction",
+    "look",
+    "animation mode",
+    "crouch",
+    "shoot",
+    "grenade",
+    "vehicle",
+    "running jump",
+    "targeted jump",
+    "script",
+    "animate",
+    "recording",
+    "action",
+    "vocalize",
+    "targeting",
+    "initiative",
+    "wait",
+    "loop",
+    "die",
+    "move immediate",
+    "look random",
+    "look player",
+    "look object",
+    "set radius",
+    "teleport"
+    )
+
 
 sky = Struct("sky",
     dependency("sky", "sky "),
@@ -242,8 +305,8 @@ player_starting_profile = Struct("player starting profile",
     dependency("secondary weapon", "weap"),
     BSInt16("secondary rounds loaded"),
     BSInt16("secondary rounds total"),
-    SInt8("starting fragmentation count"),
-    SInt8("starting plasma count"),
+    SInt8("starting frag grenade count"),
+    SInt8("starting plasma grenade count"),
     SIZE=104
     )
 
@@ -252,10 +315,10 @@ player_starting_location = Struct("player starting location",
     BFloat("facing"),  # radians
     BSInt16("team index"),
     BSInt16("bsp index"),
-    BSInt16("type 0", *starting_location_types),
-    BSInt16("type 1", *starting_location_types),
-    BSInt16("type 2", *starting_location_types),
-    BSInt16("type 3", *starting_location_types),
+    BSEnum16("type 0", *location_types),
+    BSEnum16("type 1", *location_types),
+    BSEnum16("type 2", *location_types),
+    BSEnum16("type 3", *location_types),
     SIZE=52
     )
 
@@ -263,7 +326,19 @@ trigger_volume = Struct("trigger volume",
     Pad(4),
     ascii_str32("name"),
     # find out what these fields actually are and name them
-    *(BFloat("field" + str(i + 1)) for i in range(15)),
+    BFloat("field1"),
+    BFloat("field2"),
+    BFloat("field3"),
+    BFloat("field4", DEFAULT=1.0),
+    BFloat("field5"),
+    BFloat("field6"),
+    BFloat("field7", DEFAULT=-0.0),
+    BFloat("field8", DEFAULT=-0.0),
+    BFloat("field9", DEFAULT=1.0),
+    QStruct("position", INCLUDE=xyz_float),
+    QStruct("dimensions",
+        BFloat("width"), BFloat("length"), BFloat("height")
+        ),
     SIZE=96
     )
 
@@ -275,73 +350,455 @@ recorded_animation = Struct("recorded animation",
     Pad(1),
     BSInt16("length of animation"),  # ticks
     Pad(6),
+    rawdata_ref("recorded animation event stream"),
     SIZE=64
     )
 
 netgame_flag = Struct("netgame flag",
+    QStruct("position", INCLUDE=xyz_float),
+    BFloat("facing"),  # radians
+    BSEnum16("type",
+        "ctf - flag",
+        "ctf - vehicle",
+        "oddball - ball spawn",
+        "race - track",
+        "race - vehicle",
+        "vegas - bank",
+        "teleport - from",
+        "teleport - to",
+        "hill - flag",
+        ),
+    BSInt16("team index"),
+    dependency("weapon group", "itmc"),
+    SIZE=148
     )
 
 netgame_equipment = Struct("netgame equipment",
+    BBool32("type",
+        "levitate"
+        ),
+    BSEnum16("type 0", *location_types),
+    BSEnum16("type 1", *location_types),
+    BSEnum16("type 2", *location_types),
+    BSEnum16("type 3", *location_types),
+    BSInt16("team index"),
+    BSInt16("spawn time"),  # seconds
+
+    Pad(48),
+    QStruct("position", INCLUDE=xyz_float),
+    BFloat("facing"),  # radians
+    dependency("item collection", "itmc"),
+    SIZE=144
     )
 
 starting_equipment = Struct("starting equipment",
+    BBool32("type",
+        "no grenades",
+        "plasma grenades",
+        ),
+    BSEnum16("type 0", *location_types),
+    BSEnum16("type 1", *location_types),
+    BSEnum16("type 2", *location_types),
+    BSEnum16("type 3", *location_types),
+
+    Pad(48),
+    dependency("item collection 1", "itmc"),
+    dependency("item collection 2", "itmc"),
+    dependency("item collection 3", "itmc"),
+    dependency("item collection 4", "itmc"),
+    dependency("item collection 5", "itmc"),
+    dependency("item collection 6", "itmc"),
+    SIZE=204
     )
 
 bsp_switch_trigger_volume = Struct("bsp switch trigger volume",
+    BSInt16("trigger volume"),
+    BSInt16("source"),
+    BSInt16("destination"),
+    SIZE=8
     )
 
 decal = Struct("decal",
+    BSInt16("decal type"),
+    SInt8("yaw"),
+    SInt8("pitch"),
+    QStruct("position", INCLUDE=xyz_float),
+    SIZE=16
     )
 
-decal_palette = Struct("decal palette",
-    )
+decal_palette = object_palette("decal palette", "deca", 16)
+detail_object_collection_palette = object_palette(
+    "detail object collection palette", "dobc")
+actor_palette = object_palette("actor palette", "actv", 16)
 
-detail_object_collection_palette = Struct("detail object collection palette",
-    )
-
-actor_palette = Struct("actor_palette",
-    )
-
-encounter = Struct("encounter",
-    )
-
-command_list = Struct("command list",
-    )
-
-ai_animation_reference = Struct("ai animation reference",
+ai_anim_reference = Struct("ai animation reference",
+    ascii_str32("animation name"),
+    dependency("animation graph", "antr"),
+    SIZE=60
     )
 
 ai_script_reference = Struct("ai script reference",
+    ascii_str32("script name"),
+    SIZE=40
     )
 
 ai_recording_reference = Struct("ai recording reference",
-    )
-
-ai_conversation = Struct("ai conversation",
+    ascii_str32("recording name"),
+    SIZE=40
     )
 
 script = Struct("script",
+    ascii_str32("script name"),
+    BSEnum16("script type", *script_types),
+    BSEnum16("return type", *script_object_types),
+    BSInt32("root expression index"),
+    SIZE=92
     )
 
 halo_global = Struct("halo global",
+    ascii_str32("script name"),
+    BSEnum16("type", *script_object_types),
+    Pad(6),
+    BSInt32("initialization expression index"),
+    SIZE=92
     )
 
-reference = Struct("reference",
+reference = Struct("tag reference",
+    Pad(24),
+    dependency("reference"),
+    SIZE=40
     )
 
 source_file = Struct("source_file",
+    ascii_str32("script name"),
+    rawdata_ref("source"),
+    SIZE=52
     )
 
 cutscene_flag = Struct("cutscene flag",
+    Pad(4),
+    ascii_str32("name"),
+    QStruct("position", INCLUDE=xyz_float),
+    QStruct("facing", INCLUDE=yp_float),  # radians
+    SIZE=92
     )
 
 cutscene_camera_point = Struct("cutscene camera point",
+    Pad(4),
+    ascii_str32("name"),
+    Pad(4),
+    QStruct("position", INCLUDE=xyz_float),
+    QStruct("orientation", INCLUDE=ypr_float),  # radians
+    BFloat("field of view"),  # radians
+    SIZE=104
     )
 
 cutscene_title = Struct("cutscene title",
+    Pad(4),
+    ascii_str32("name"),
+    Pad(4),
+    QStruct("text bounds",
+        BSInt16("t"), BSInt16("l"), BSInt16("b"), BSInt16("r"),
+        ),
+    BSInt16("string index"),
+    BSEnum16("text style",
+        "plain",
+        "bold",
+        "italic",
+        "condense",
+        "underline",
+        ),
+    BSEnum16("justification",
+        "left",
+        "right",
+        "center",
+        ),
+
+    Pad(6),
+    QStruct("text color", INCLUDE=argb_byte),
+    QStruct("shadow color", INCLUDE=argb_byte),
+    BFloat("fade in time"),  # seconds
+    BFloat("up time"),  # seconds
+    BFloat("fade out time"),  # seconds
+    SIZE=96
     )
 
 structure_bsp = Struct("structure bsp",
+    Pad(16),
+    dependency("structure bsp", "sbsp"),
+    SIZE=32
+    )
+
+
+move_position = Struct("move position",
+    QStruct("position", INCLUDE=xyz_float),
+    BFloat("facing"),  # radians
+    BFloat("weight"),
+    QStruct("time", INCLUDE=from_to),
+    BSInt16("animation"),
+    SInt8("sequence id"),
+
+    Pad(45),
+    BSInt32("surface index"),
+    SIZE=80
+    )
+
+actor_starting_location = Struct("starting location",
+    QStruct("position", INCLUDE=xyz_float),
+    BFloat("facing"),  # radians
+    Pad(2),
+    SInt8("sequence id"),
+    Bool8("flags",
+        "required",
+        ),
+    BSEnum16("return state", *squad_states),
+    BSEnum16("initial state", *squad_states),
+    BSInt16("actor type"),
+    BSInt16("command list"),
+    SIZE=28
+    )
+
+squad = Struct("squad",
+    ascii_str32("name"),
+    BSInt16("actor type"),
+    BSInt16("platoon"),
+    BSEnum16("initial state", *squad_states),
+    BSEnum16("return state", *squad_states),
+    BBool32("flags",
+        "unused",
+        "never search",
+        "start timer immediately",
+        "no timer, delay forever",
+        "magic sight after timer",
+        "automatic migration",
+        ),
+    BSEnum16("unique leader type",
+        "normal",
+        "none",
+        "random",
+        "sgt johnson",
+        "sgt lehto",
+        ),
+
+    Pad(32),
+    BSInt16("manuever to squad"),
+    BFloat("squad delay time"),  # seconds
+    BBool32("attacking", *group_indices),
+    BBool32("attacking search", *group_indices),
+    BBool32("attacking guard", *group_indices),
+    BBool32("defending", *group_indices),
+    BBool32("defending search", *group_indices),
+    BBool32("defending guard", *group_indices),
+    BBool32("pursuing", *group_indices),
+
+    Pad(12),
+    BSInt16("normal diff count"),
+    BSInt16("insane diff count"),
+    BSEnum16("major upgrade",
+        "normal",
+        "few",
+        "many",
+        "none",
+        "all",
+        ),
+
+    Pad(2),
+    BSInt16("respawn min actors"),
+    BSInt16("respawn max actors"),
+    BSInt16("respawn total"),
+
+    Pad(2),
+    QStruct("respawn delay", INCLUDE=from_to),
+
+    Pad(48),
+    reflexive("move positions", move_position, 31),
+    reflexive("starting locations", actor_starting_location, 31),
+    SIZE=232
+    )
+
+platoon = Struct("platoon",
+    ascii_str32("name"),
+    BBool32("flags",
+        "flee when manuevering",
+        "say advancing when manuevering",
+        "start in defending state",
+        ),
+
+    Pad(12),
+    BSEnum16("change attacking/defending state", *manuever_when_states),
+    BSInt16("change happens to"),
+
+    Pad(8),
+    BSEnum16("manuever when", *manuever_when_states),
+    BSInt16("manuever happens to"),
+    SIZE=172
+    )
+
+firing_position = Struct("firing position",
+    QStruct("position", INCLUDE=xyz_float),
+    BSEnum16("group index", *group_indices),
+    SIZE=24
+    )
+
+encounter = Struct("encounter",
+    ascii_str32("name"),
+    BBool32("flags",
+        "not initially created",
+        "respawn enabled",
+        "initially blind",
+        "initially deaf",
+        "initially braindead",
+        "firing positions are 3d",
+        "manual bsp index specified",
+        ),
+    BSEnum16("team index",
+        "0 / default by unit",
+        "1 / player",
+        "2 / human",
+        "3 / covenant",
+        "4 / flood",
+        "5 / sentinel",
+        "6 / unused6",
+        "7 / unused7",
+        "8 / unused8",
+        "9 / unused9"
+        ),
+    Pad(2),
+    BSEnum16("search behavior",
+        "normal",
+        "never",
+        "tenacious"
+        ),
+    BSInt16("manual bsp index"),
+    QStruct("respawn delay", INCLUDE=from_to),
+
+    Pad(76),
+    reflexive("squads", squad, 64),
+    reflexive("platoons", platoon, 32),
+    reflexive("firing positions", firing_position, 512),
+    reflexive("player starting locations", player_starting_location, 256),
+    
+    SIZE=176
+    )
+
+command = Struct("command",
+    BSEnum16("atom type", *atom_types),
+    BSInt16("atom modifier"),
+    BFloat("parameter 1"),
+    BFloat("parameter 2"),
+    BSInt16("point 1"),
+    BSInt16("point 2"),
+    BSInt16("animation"),
+    BSInt16("script"),
+    BSInt16("recording"),
+    BSInt16("command"),
+    BSInt16("object name"),
+    SIZE=32
+    )
+
+point = Struct("point",
+    QStruct("position", INCLUDE=xyz_float),
+    SIZE=20
+    )
+
+command_list = Struct("command list",
+    ascii_str32("name"),
+    BBool32("flags",
+        "allow initiative",
+        "allow targeting",
+        "disable looking",
+        "disable communication",
+        "disable falling damage",
+        "manual bsp index",
+        ),
+
+    Pad(8),
+    BSInt16("manual bsp index"),
+
+    Pad(2),
+    reflexive("commands", command, 64),
+    reflexive("points", point, 64),
+    SIZE=96
+    )
+
+participant = Struct("participant",
+    Pad(3),
+    Bool8("flags",
+        "optional",
+        "has alternate",
+        "is alternate",
+        ),
+    BSEnum16("selection type",
+        "friendly actor",
+        "disembodied",
+        "in players vehicle",
+        "not in a vehicle",
+        "prefer sergeant",
+        "any actor",
+        "radio unit",
+        "radio sergeant",
+        ),
+    BSEnum16("actor type", *actor_types),
+    BSInt16("use this object"),
+    BSInt16("set new name"),
+
+    Pad(12),
+    BytesRaw("unknown", DEFAULT=b"\xFF"*12, SIZE=12),
+    ascii_str32("encounter name"),
+    SIZE=84
+    )
+
+line = Struct("line",
+    BBool16("flags",
+        "addressee look at speaker",
+        "everyone look at speaker",
+        "everyone look at addressee",
+        "wait until told to advance",
+        "wait until speaker nearby",
+        "wait until everyone nearby",
+        ),
+    BSInt16("participant"),
+    BSEnum16("addressee",
+        "none",
+        "player",
+        "participant",
+        ),
+    BSInt16("addressee participant"),
+
+    Pad(4),
+    BFloat("line delay time"),
+
+    Pad(12),
+    dependency("variant 1", "snd!"),
+    dependency("variant 2", "snd!"),
+    dependency("variant 3", "snd!"),
+    dependency("variant 4", "snd!"),
+    dependency("variant 5", "snd!"),
+    dependency("variant 6", "snd!"),
+    SIZE=124
+    )
+
+ai_conversation = Struct("ai conversation",
+    ascii_str32("name"),
+    BBool16("flags",
+        "stop if death",
+        "stop if damaged",
+        "stop if visible enemy",
+        "stop if alerted to enemy",
+        "player must be visible",
+        "stop other actions",
+        "keep trying to play",
+        "player must be looking",
+        ),
+
+    Pad(2),
+    BFloat("trigger distance"),
+    BFloat("run-to-player distance"),
+
+    Pad(36),
+    reflexive("participants", participant, 8),
+    reflexive("lines", line, 32),
+    SIZE=116
     )
 
 scnr_body = Struct("tagdata",
@@ -407,9 +864,9 @@ scnr_body = Struct("tagdata",
     reflexive("actor palette", actor_palette, 64),
     reflexive("encounters", encounter, 128),
     reflexive("command lists", command_list, 256),
-    reflexive("ai animation reference", ai_animation_reference, 128),
-    reflexive("ai script reference", ai_script_reference, 128),
-    reflexive("ai recording reference", ai_recording_reference, 128),
+    reflexive("ai animation references", ai_anim_reference, 128),
+    reflexive("ai script references", ai_script_reference, 128),
+    reflexive("ai recording references", ai_recording_reference, 128),
     reflexive("ai conversations", ai_conversation, 128),
     rawdata_ref("script syntax data"),
     rawdata_ref("script string data"),
@@ -430,9 +887,6 @@ scnr_body = Struct("tagdata",
     reflexive("structure bsps", structure_bsp, 16),
     SIZE=1456,
     )
-
-# PLAYER STARTING PROFILES HAVE 2 MORE FIELDS FOR EXTRA GRENADES IN OPEN SAUCE
-# ALSO ai animation reference WILL NEED magy INCLUDED IN ITS GRAPHS
 
 def get():
     return scnr_def

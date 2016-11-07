@@ -91,8 +91,8 @@ def tag_index_array_pointer(node=None, parent=None, new_value=None, **kwargs):
         return (PC_TAG_INDEX_HEADER_SIZE +
                 b_parent.tag_index_header.index_magic - magic)
 
-#sound tags actually located in the sound cache
-#still have part of the tag exist in the map.
+# sound tags actually located in the sound cache
+# still have part of the tag exist in the map.
 indexed_sound = dict(snd_.snd__def.descriptor[1])
 indexed_sound[18] = reflexive_struct
 
