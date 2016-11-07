@@ -8,10 +8,7 @@ event_types = ()
 event_functions = ()
 
 widget_bounds = QStruct("",
-    BSInt16("t"),
-    BSInt16("l"),
-    BSInt16("b"),
-    BSInt16("r"),
+    BSInt16("t"), BSInt16("l"), BSInt16("b"),  BSInt16("r"),
     )
 
 game_data_input = Struct("game data input",
