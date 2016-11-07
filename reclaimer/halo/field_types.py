@@ -45,14 +45,14 @@ FlSEnum32 = FieldType(
 
 FlFloat = FieldType(base=Float.little, name="FlFloat", enc=Float.little.enc)
 
-'''These Fields exist to easily identify where in a tag
+'''These FieldTypes exist to easily identify where in a tag
 that raw data refs, reflexives, and tag references exist.'''
 RawdataRef  = FieldType(base=QStruct, name="RawdataRef")
 Reflexive   = FieldType(base=QStruct, name="Reflexive")
 TagIndexRef = FieldType(base=Struct, name="TagIndexRef")
 
-#the Tag_Index is the array that stores all the tag string paths and
-#meta datas in a map file. This Field exists so the Map_Magic
+#The tag_index is the array that stores all the tag string paths and
+#meta datas in a map file. This FieldType exists so the Map_Magic
 #can be easily supplied through the keyword argument "Map_Magic"
 TagIndex = FieldType(base=Array, name="TagIndex",
                      parser=tag_index_parser, serializer=tag_index_serializer)

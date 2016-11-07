@@ -45,9 +45,13 @@ class HashCacher(Handler):
             description = description.rstrip('\n')
             if len(description):
                 cache.data.cache_description = description
+            print("Existing hashcache loaded.\n"+
+                  "    Contains %s hashes" % len(hashmap))
         except Exception:
             cache = None
             hashmap = {}
+            print("Failed to locate and/or load an existing hashcache.\n"+
+                  "    Creating a hashcache from scratch instead.")
         
         print('Indexing...')
         tag_lib.mode = 1

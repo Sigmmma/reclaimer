@@ -20,7 +20,7 @@ detail_object_type = Struct("detail object type",
     QStruct("minimum color", INCLUDE=rgb_float),
     QStruct("maximum color", INCLUDE=rgb_float),
     QStruct("ambient color", INCLUDE=argb_byte),
-    SIZE=104
+    SIZE=96
     )
 
 dobc_body = Struct("tagdata",
