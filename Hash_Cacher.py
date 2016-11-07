@@ -110,13 +110,13 @@ class Hashcacher(Tk):
 try:
     if __name__ == '__main__':
         extractor = Hashcacher(
-            #hash_name='Halo_1_Default',
-            hash_name=DEF_NAME, hash_desc=DEF_DESC,
-            #tags_path=(curr_dir +
-            #    "\\reclaimer\\halo\\hek\\programs\\ripper\\all_h1_tags\\"),
-            #hash_desc=('All the tags that are used in the original Halo 1 ' +
-            #           'singleplayer, multiplayer, and ui maps.\n' +
-            #           'This should always be used, and as the base cache.')
+            hash_name='Halo_1_Default',
+            #hash_name=DEF_NAME, hash_desc=DEF_DESC,
+            tags_path=(curr_dir +
+                "\\reclaimer\\halo\\hek\\programs\\ripper\\all_h1_tags\\"),
+            hash_desc=('All the tags that are used in the original Halo 1 ' +
+                       'singleplayer, multiplayer, and ui maps.\n' +
+                       'This should always be used, and as the base cache.')
             )
         extractor.mainloop()
 except:

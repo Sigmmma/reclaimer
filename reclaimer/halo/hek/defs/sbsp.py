@@ -14,3 +14,5 @@ sbsp_def = TagDef("sbsp",
 
     ext=".scenario_structure_bsp", endian=">",
     )
+
+DO NOT USE YET
