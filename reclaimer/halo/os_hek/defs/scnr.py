@@ -29,14 +29,15 @@ reference = Struct("tag reference",
     SIZE=40
     )
 
-# copy the scnr_body and replace the descriptors for the DONT_USE dependency,
-# ai_animation_references reflexive, and references reflexive with ones
-# that are tweaked to use open sauce
+# copy the scnr_body and replace the descriptors for certain fields
+# with ones that are tweaked for use with open sauce
 scnr_body = dict(scnr_body)
 scnr_body[0] = dependency_os("project yellow definitions", 'yelo')
 scnr_body[35] = reflexive("player starting profiles",
     player_starting_profile, 128)
 scnr_body[50] = reflexive("ai animation references", ai_anim_reference, 128)
+scnr_body[54] = rawdata_ref("script syntax data", max_size=570076)
+scnr_body[55] = rawdata_ref("script string data", max_size=393216)
 scnr_body[58] = reflexive("references", reference, 256)
 scnr_body[68] = reflexive("structure bsps", structure_bsp, 32)
 

@@ -39,11 +39,15 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     return Reflexive(name, **desc)
 
 
-def rawdata_ref(name, f_type=Rawdata):
+def rawdata_ref(name, f_type=Rawdata, max_size=None):
     '''This function serves to macro the creation of a rawdata reference'''
+    ref_struct = dict(rawdata_ref_struct)
+    if max_size is not None:
+        ref_struct[0] = dict(ref_struct[0])
+        ref_struct[0][MAX] = max_size
     return RawdataRef(name,
-        EDITABLE=False, INCLUDE=rawdata_ref_struct,
-        STEPTREE=f_type("data", VISIBLE=False, SIZE=".size") )
+        EDITABLE=False, INCLUDE=ref_struct,
+        STEPTREE=f_type("data", VISIBLE=False, SIZE=".size"))
 
 
 def dependency(name='tag ref', valid_ids=None):
