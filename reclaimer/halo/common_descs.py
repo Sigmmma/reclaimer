@@ -62,7 +62,7 @@ def dependency(name='tag ref', valid_ids=None):
     return TagIndexRef(name,
         valid_ids,
         BSInt32("path pointer"),
-        BSInt32("path length"),
+        BSInt32("path length", MAX=243),  # max filepath length is 243 chars
         BUInt32("id", DEFAULT=0xFFFFFFFF),
 
         STEPTREE=StringVarLen("filepath", SIZE=tag_ref_size),

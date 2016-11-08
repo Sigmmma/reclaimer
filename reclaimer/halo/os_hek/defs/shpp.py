@@ -30,7 +30,7 @@ technique = Struct("entry",
 
 shpp_attrs = Struct("shpp",
     Pad(24),
-    rawdata_ref("shader code binary", Rawdata),
+    rawdata_ref("shader code binary", Rawdata, max_size=32768),
 
     Pad(64),
     reflexive("techniques", technique),

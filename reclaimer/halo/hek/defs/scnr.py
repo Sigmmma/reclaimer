@@ -162,7 +162,7 @@ function = Struct('function',
 comment = Struct("comment",
     QStruct("position", INCLUDE=xyz_float),
     Pad(16),
-    rawdata_ref("comment data"),
+    rawdata_ref("comment data", max_size=16384),
     SIZE=48
     )
 
@@ -350,7 +350,7 @@ recorded_animation = Struct("recorded animation",
     Pad(1),
     BSInt16("length of animation"),  # ticks
     Pad(6),
-    rawdata_ref("recorded animation event stream"),
+    rawdata_ref("recorded animation event stream", max_size=2097152),
     SIZE=64
     )
 
@@ -471,7 +471,7 @@ reference = Struct("tag reference",
 
 source_file = Struct("source_file",
     ascii_str32("script name"),
-    rawdata_ref("source"),
+    rawdata_ref("source", max_size=262144),
     SIZE=52
     )
 

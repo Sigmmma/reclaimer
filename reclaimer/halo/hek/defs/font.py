@@ -41,7 +41,7 @@ font_body = Struct("tagdata",
     dependency("condense", "font"),
     dependency("underline", "font"),
     reflexive("characters", character),
-    rawdata_ref("pixels"),
+    rawdata_ref("pixels", max_size=8388608),
     SIZE=156,
     )
 

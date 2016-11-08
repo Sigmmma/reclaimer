@@ -87,5 +87,4 @@ circular references
     weap: weapon
     wphi: weapon_hud_interface
 
-Find max size for tag path strings and max size for all rawdata_ref fields
 REMEMBER TO GO BACK TO DeLa AND FINISH THE ENUMERATOR OPTIONS

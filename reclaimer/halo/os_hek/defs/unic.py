@@ -18,7 +18,7 @@ string_reference = Struct("string reference",
 unic_body = Struct("tagdata",
     reflexive("string references", string_reference),
     Pad(12),
-    rawdata_ref("string data utf8", StrUtf8),
+    rawdata_ref("string data utf8", StrUtf8, max_size=18874368),
 
     SIZE=80
     )
