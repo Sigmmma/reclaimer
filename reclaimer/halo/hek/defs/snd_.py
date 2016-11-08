@@ -60,9 +60,9 @@ permutation = Struct('permutation',
     BSInt16("next permutation index"),
     Pad(20),
 
-    rawdata_ref("samples"),
-    rawdata_ref("mouth data"),
-    rawdata_ref("subtitle data"),
+    rawdata_ref("samples", max_size=4194304),
+    rawdata_ref("mouth data", max_size=8192),
+    rawdata_ref("subtitle data", max_size=512),
 
     SIZE=124
     )

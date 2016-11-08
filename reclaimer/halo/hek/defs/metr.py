@@ -62,7 +62,7 @@ meter_body = Struct("tagdata",
     FlUInt16("width"),
     FlUInt16("height"),
 
-    rawdata_ref("meter data"),
+    rawdata_ref("meter data", max_size=65536),
     SIZE=172,
     )
 
