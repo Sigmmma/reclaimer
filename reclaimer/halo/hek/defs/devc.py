@@ -10,8 +10,8 @@ devc_body = Struct("tagdata",
     BBool16("flags",
         "unused",
         ),
-    rawdata_ref("device id"),
-    rawdata_ref("profile"),
+    rawdata_ref("device id", max_size=16),
+    rawdata_ref("profile", max_size=41984),
     SIZE=44,
     )
 

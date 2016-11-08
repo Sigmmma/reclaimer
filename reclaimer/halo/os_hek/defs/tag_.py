@@ -9,7 +9,7 @@ child_ids = Struct("child id",
 referenced_by = Struct("referenced by", INCLUDE=child_ids)
 
 entry = Struct("entry",
-    rawdata_ref("name", StrUtf8),
+    rawdata_ref("name", StrUtf8, max_size=256),
     valid_tags_os,
     BSInt32("handle data"),
     BSInt32("flags"),

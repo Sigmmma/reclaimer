@@ -2,7 +2,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 sidy_body = Struct("tagdata",
-    rawdata_ref("documentation", StrAscii),
+    rawdata_ref("documentation", StrAscii, max_size=65536),
     SIZE=40
     )
 
