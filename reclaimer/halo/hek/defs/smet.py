@@ -48,5 +48,5 @@ smet_def = TagDef("smet",
     blam_header('smet'),
     smet_body,
 
-    ext=".shader_meter", endian=">"
+    ext=".shader_transparent_meter", endian=">"
     )

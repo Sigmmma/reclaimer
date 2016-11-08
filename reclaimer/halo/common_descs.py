@@ -615,7 +615,7 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
     BSInt32("size"),
     BSInt32("unknown 1"),  # 0x00000000 in tags(and meta it seems)
     BSInt32("unknown 2"),  # random(low number in meta)
-    BSInt32("pointer"),
+    BSInt32("pointer", DEFAULT=-1),
     BUInt32("id"),  # 0x00000000 in meta it seems
     EDITABLE=False,
     )
@@ -623,7 +623,7 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
     BSInt32("size"),
-    BSInt32("pointer"),  # random
+    BSInt32("pointer", DEFAULT=-1),  # random
     BUInt32("id"),  # 0x00000000 in meta it seems
     EDITABLE=False,
     )

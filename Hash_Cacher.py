@@ -1,7 +1,7 @@
 import tkinter.filedialog
+import time
 
 from os.path import dirname
-from time import time
 from tkinter import *
 from traceback import format_exc
 
@@ -47,7 +47,7 @@ class Hashcacher(Tk):
 
         Tk.__init__(self, **kwargs)
 
-        self.title("Halo hashcacher v1.0")
+        self.title("Halo Hashcacher v1.0")
         self.geometry("400x300+0+0")
         self.resizable(0, 0)
 
@@ -103,9 +103,10 @@ class Hashcacher(Tk):
         elif hash_desc == DEF_DESC:
             print('enter a hashcache description.')
         else:
+            start = time.time()
             self.cacher.build_hashcache(
                 hash_name, hash_desc, self.tags_path.get())
-            print('Hashing completed.')
+            print('Hashing completed. Took %s seconds' % (time.time() - start))
 
 try:
     if __name__ == '__main__':

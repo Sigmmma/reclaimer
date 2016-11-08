@@ -9,6 +9,10 @@ from supyr_struct.tag import Tag
 
 valid_path_chars = " ()-_%s%s" % (digits, ascii_letters)
 
+def bytes_to_hex(taghash):
+    hsh = hex(int.from_bytes(taghash, 'big'))[2:]
+    return '0x' + '0'*(len(taghash)*2-len(hsh)) + hsh
+
 
 class HashCacher(Handler):
     default_defs_path = "reclaimer.halo.hek.programs.ripper.defs"
@@ -78,12 +82,12 @@ class HashCacher(Handler):
                     print("Hashing %s '%s' tags..." % (len(tag_coll), def_id))
                     tag_lib.print_to_console = True
                     
-                tag_ref_paths   = tag_lib.tag_ref_cache.get(def_id,
-                                                            ((), ()))[1]
-                reflexive_paths = tag_lib.reflexive_cache.get(def_id,
-                                                              ((), ()))[1]
-                raw_data_paths  = tag_lib.raw_data_cache.get(def_id,
-                                                             ((), ()))[1]
+                tag_ref_paths   = tag_lib.tag_ref_cache.get(
+                    def_id, ((), ()))[1]
+                reflexive_paths = tag_lib.reflexive_cache.get(
+                    def_id, ((), ()))[1]
+                raw_data_paths  = tag_lib.raw_data_cache.get(
+                    def_id, ((), ()))[1]
 
                 subdir = subdir.lstrip(' ')
                 
@@ -97,13 +101,13 @@ class HashCacher(Handler):
                         if subdir and not filepath.startswith(subdir):
                             continue
                         data = tag_lib.build_tag(
-                            filepath=tagsdir+filepath).data
+                            filepath=tagsdir + filepath).data
 
                         '''need to do some extra stuff for certain tags
                         with fields that are normally zeroed out as tags,
                         but arent as meta.'''
                         if def_id == 'effe':
-                            # mask away the meaningless flags
+                            # mask away the meta-only flags
                             data.tagdata.flags.data &= 3
                         elif def_id == 'pphy':
                             tagdata = data.tagdata
@@ -111,10 +115,9 @@ class HashCacher(Handler):
                             tagdata.wind_sine_modifier = 0
                             tagdata.z_translation_rate = 0
 
-                        hash_buffer = tag_lib.get_tag_hash(data[1],
-                                                           tag_ref_paths,
-                                                           reflexive_paths,
-                                                           raw_data_paths)
+                        hash_buffer = tag_lib.get_tag_hash(
+                            data[1], tag_ref_paths, reflexive_paths,
+                            raw_data_paths)
                         taghash = hash_buffer.digest()
 
                         if taghash in initial_cache_hashes:
@@ -126,7 +129,8 @@ class HashCacher(Handler):
                                    "        hash:%s\n"+
                                    "        path(existing): '%s'\n"+
                                    "        path(colliding):'%s'\n")
-                                  % (taghash, hashmap[taghash], filepath) )
+                                  % (bytes_to_hex(taghash),
+                                     hashmap[taghash], filepath))
                             tag_lib.print_to_console = True
                         else:
                             hashmap[taghash] = filepath
@@ -174,7 +178,7 @@ class HashCacher(Handler):
                    "    hash:%s\n"+
                    "    path(existing): '%s'\n"+
                    "    path(colliding):'%s'\n")
-                  % (taghash, hashmap[taghash], filepath) )
+                  % (bytes_to_hex(taghash), hashmap[taghash], filepath))
         else:
             hashmap[taghash] = filepath
         

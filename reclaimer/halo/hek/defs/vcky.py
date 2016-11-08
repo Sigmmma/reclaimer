@@ -44,7 +44,7 @@ vcky_body = Struct("tagdata",
     dependency("display font", "font"),
     dependency("background bitmap", "bitm"),
     dependency("special key labels string list", "ustr"),
-    reflexive("virtual keys", virtual_key),
+    reflexive("virtual keys", virtual_key, 44),
     SIZE=60,
     )
 
