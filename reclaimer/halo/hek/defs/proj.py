@@ -101,7 +101,7 @@ proj_attrs = Struct("proj attrs",
 
     Pad(12),
     reflexive("material responses", material_response,
-        len(materials_list), *(mat_name for mat_name in materials_list)),
+        len(materials_list), *materials_list),
 
     SIZE=208
     )

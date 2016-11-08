@@ -855,7 +855,7 @@ scnr_body = Struct("tagdata",
     reflexive("netgame equipment", netgame_equipment, 200),
     reflexive("starting equipment", starting_equipment, 200),
     reflexive("bsp switch trigger volumes", bsp_switch_trigger_volume, 256),
-    reflexive("decals", decal),  # dont know the max reflexive count
+    reflexive("decals", decal, 65536),
     reflexive("decal palette", decal_palette, 128),
     reflexive("detail object collection palette",
               detail_object_collection_palette, 32),

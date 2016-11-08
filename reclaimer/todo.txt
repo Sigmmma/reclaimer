@@ -1,6 +1,8 @@
 
 Make Bin_Size recursion safe
 
+Find out why hashcacher is taking a long ass time on simple stuff like senv tags(about 2.5 seconds for each)
+
 Implement recursive pointer based blocks.
     When writing, pass around a dictionary of which block ids have already had
     their pointers calculated and what the pointer value is. When a reused block
@@ -60,8 +62,6 @@ set, either name it heuristically or ask the user what to name it.
 MAKE SURE TO REMOVE compressed_color_plate_data from bitmap tags
 when making their hashes as well as compressed vertices in models and bsp
 
-make sure to null the tag class in tag references that dont exist so that the
-hashes still work with smokescreen protected maps.
 ## MAP RIPPING ##
 
 

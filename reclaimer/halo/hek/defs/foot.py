@@ -8,12 +8,16 @@ material = Struct("material",
     )
                          
 effect = Struct("effect",
-    reflexive("materials", material, 33),
+    reflexive("materials", material, len(materials_list), *materials_list),
     SIZE=28,
     )
 
 foot_body = Struct("tagdata",
-    reflexive("effects", effect, 13),
+    reflexive("effects", effect, 13,
+        "walk", "run", "sliding", "shuffle", "jump", "jump land",
+        "biped unused1", "biped unused2",
+        "impact", "vehicle tire slip", "vehicle chassis slip",
+        "vehicle unused1", "vehicle unused2"),
     SIZE=140,
     )
 

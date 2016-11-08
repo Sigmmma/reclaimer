@@ -17,8 +17,8 @@ message = Struct("message",
 
 hmt__body = Struct("tagdata",
     rawdata_ref("string", FlUTF16StrData),
-    reflexive("message elements", message_element),
-    reflexive("messages", message),
+    reflexive("message elements", message_element, 8192),
+    reflexive("messages", message, 1024),
     SIZE=128,
     )
 

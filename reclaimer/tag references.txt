@@ -88,8 +88,4 @@ circular references
     wphi: weapon_hud_interface
 
 
-
-IMPLEMENTATION ORDER:
-    sbsp: scenario_structure_bsp
-
 REMEMBER TO GO BACK TO DeLa AND FINISH THE ENUMERATOR OPTIONS

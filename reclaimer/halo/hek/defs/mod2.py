@@ -136,12 +136,12 @@ part = Struct('part',
 
     QStruct('centroid translation', INCLUDE=xyz_float),
 
-    #reflexive("uncompressed vertices", uncompressed_vertex_union),
-    #reflexive("compressed vertices", compressed_vertex_union),
-    #reflexive("triangles", triangle_union),
-    reflexive("uncompressed vertices", uncompressed_vertex),
-    reflexive("compressed vertices", compressed_vertex),
-    reflexive("triangles", triangle),
+    #reflexive("uncompressed vertices", uncompressed_vertex_union, 65535),
+    #reflexive("compressed vertices", compressed_vertex_union, 65535),
+    #reflexive("triangles", triangle_union, 65535),
+    reflexive("uncompressed vertices", uncompressed_vertex, 65535),
+    reflexive("compressed vertices", compressed_vertex, 65535),
+    reflexive("triangles", triangle, 65535),
     Pad(40),
 
     UInt8('local node count'),
@@ -176,7 +176,7 @@ node = Struct('node',
 region = Struct('region',
     ascii_str32("name"),
     Pad(32),
-    reflexive("permutations", permutation),
+    reflexive("permutations", permutation, 32),
     SIZE=76
     )
 

@@ -76,14 +76,14 @@ vertex = QStruct("vertex",
     )
 
 bsp = Struct("bsp",
-    reflexive("bsp3d nodes", bsp3d_node),
-    reflexive("planes", plane),
-    reflexive("leaves", leaf),
-    reflexive("bsp2d references", bsp2d_reference),
-    reflexive("bsp2d nodes", bsp2d_node),
-    reflexive("surfaces", surface),
-    reflexive("edges", edge),
-    reflexive("vertices", vertex),
+    reflexive("bsp3d nodes", bsp3d_node, 131072),
+    reflexive("planes", plane, 65535),
+    reflexive("leaves", leaf, 65535),
+    reflexive("bsp2d references", bsp2d_reference, 131072),
+    reflexive("bsp2d nodes", bsp2d_node, 65535),
+    reflexive("surfaces", surface, 131072),
+    reflexive("edges", edge, 262144),
+    reflexive("vertices", vertex, 131072),
     SIZE=96
     )
 
