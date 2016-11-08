@@ -1,6 +1,11 @@
 from .obje import *
 from .unit import *
 
+# replace the object_type enum one that uses
+# the correct default value for this object
+obje_attrs = dict(obje_attrs)
+obje_attrs[0] = dict(obje_attrs[0], DEFAULT=0)
+
 contact_point = Struct("contact point",
     Pad(32),
     ascii_str32('marker name'),

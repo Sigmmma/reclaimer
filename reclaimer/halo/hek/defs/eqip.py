@@ -2,6 +2,11 @@ from .obje import *
 from .item import *
 from supyr_struct.defs.tag_def import TagDef
 
+# replace the object_type enum one that uses
+# the correct default value for this object
+obje_attrs = dict(obje_attrs)
+obje_attrs[0] = dict(obje_attrs[0], DEFAULT=3)
+
 eqip_attrs = Struct("equipment attrs",
     BSEnum16('powerup type',
         'none',
