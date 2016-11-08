@@ -1,6 +1,11 @@
 from .obje import *
 from .item import *
 
+# replace the object_type enum one that uses
+# the correct default value for this object
+obje_attrs = dict(obje_attrs)
+obje_attrs[0] = dict(obje_attrs[0], DEFAULT=2)
+
 magazine_item = Struct("magazine item",
     BSInt16("rounds"),
 
