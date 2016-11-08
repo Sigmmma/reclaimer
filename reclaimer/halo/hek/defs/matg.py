@@ -321,8 +321,7 @@ matg_body = Struct('tagdata',
     reflexive("player information", player_information, 1),
     reflexive("first person interface", first_person_interface, 1),
     reflexive("falling damage", falling_damage, 1),
-    reflexive("materials", material,
-        len(materials_list), *(mat_name for mat_name in materials_list)),
+    reflexive("materials", material, len(materials_list), *materials_list),
     reflexive("playlist members", playlist_member, 20),
 
     SIZE=428

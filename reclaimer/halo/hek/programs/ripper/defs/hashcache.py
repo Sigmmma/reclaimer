@@ -4,7 +4,7 @@ def get(): return hash_cache_def
 
 hash_cache_header = Struct("header",
     LUInt32("id", DEFAULT='hsah'),
-    LUInt32("version", DEFAULT=2),
+    LUInt32("version", DEFAULT=3),
 
     LUInt32("hashcount"),
     LUInt16("hashsize"),
@@ -19,7 +19,8 @@ hash_cache_header = Struct("header",
                           
 hash_desc = Container("hash",
     BytesRaw("hash", SIZE="...header.hashsize"),
-    CStrLatin1("value")
+    LSInt16("value size"),
+    StrUtf8("value", SIZE=".value_size")
     )
 
 hash_cache_def = TagDef("hashcache",
