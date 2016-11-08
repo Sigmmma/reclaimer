@@ -98,7 +98,7 @@ obje_attrs = Struct('obje attrs',
         "plac",
         "ssce",
         ("obje", -1),
-        EDITABLE=False,
+        EDITABLE=False, DEFAULT=-1
         ),
     BBool16('flags',
         'does not cast shadow',

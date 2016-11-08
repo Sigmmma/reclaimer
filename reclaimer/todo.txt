@@ -25,6 +25,12 @@ Make it so that a definitions folder must be located in the same module as __mai
 ## HALO RELATED ##
 ##################
 
+HashCacher will need to:
+    prune compressed vertices before calculating a gbxmodel's hash
+    prune compressed lightmap data and other data not saved in a map(script syntax and
+        string data and maybe also editor data)
+
+
 make program to load all hud, shader_environment, shader_model, and bitmap 
 tags it can find, load all bitmaps referenced within those tags, pass them 
 to the bitmap convertor with settings specifying how to convert them.
