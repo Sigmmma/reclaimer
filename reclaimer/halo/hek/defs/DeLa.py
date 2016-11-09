@@ -3,9 +3,9 @@ from supyr_struct.defs.tag_def import TagDef
 
 # TYPING OUT THESE THREE ENUMERATORS WAS THE BIGGEST PAIN
 # IN THE ASS PART OF WRITING ANY OF THESE TAG DEFINITIONS
-game_data_inputs = (
+game_data_input_functions = (
     'NULL',
-    '',
+    #'',
     )
 event_types = (
     'A button', 'B button', 'X button', 'Y button',
@@ -22,7 +22,7 @@ event_types = (
     )
 event_functions = (
     'NULL',
-    '',
+    #'',
     )
 
 widget_bounds = QStruct("",
@@ -30,7 +30,7 @@ widget_bounds = QStruct("",
     )
 
 game_data_input = Struct("game data input",
-    BSEnum16("function", *game_data_inputs),
+    BSEnum16("function", *game_data_input_functions),
     SIZE=36
     )
 
