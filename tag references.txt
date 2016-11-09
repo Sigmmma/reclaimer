@@ -86,5 +86,3 @@ circular references
     vehi: vehicle
     weap: weapon
     wphi: weapon_hud_interface
-
-REMEMBER TO GO BACK TO DeLa AND FINISH THE ENUMERATOR OPTIONS
