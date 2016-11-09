@@ -17,7 +17,7 @@ scex_attrs = Struct("scex attrs",
     Pad(2),
     #Lens Flare
     BFloat("lens flare spacing"),#world units
-    dependency("lens flare"),
+    dependency("lens flare", "lens"),
     reflexive("extra layers", extra_layers_block, 4),
     reflexive("four stage maps", chicago_4_stage_maps, 4),
     reflexive("two stage maps", chicago_2_stage_maps, 2),

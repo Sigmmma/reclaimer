@@ -212,7 +212,7 @@ sotr_attrs = Struct("sotr attrs",
 
     #Lens Flare
     BFloat("lens flare spacing"),#world units
-    dependency("lens flare"),
+    dependency("lens flare", "lens"),
     reflexive("extra layers", extra_layers_block, 4),
     reflexive("maps", map, 4),
     reflexive("stages", stage, 7),

@@ -47,7 +47,7 @@ schi_attrs = Struct("schi attrs",
     Pad(2),
     #Lens Flare
     BFloat("lens flare spacing"),#world units
-    dependency("lens flare"),
+    dependency("lens flare", "lens"),
     reflexive("extra layers", extra_layers_block, 4),
     reflexive("maps", chicago_4_stage_maps, 4),
     BBool32("extra flags",
