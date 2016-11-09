@@ -1,7 +1,10 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-infection_form = dependency_os("infected unit", valid_devices_items_objects_units)
+infection_form = Struct("infection form",
+    dependency_os("infection form", valid_devices_items_objects_units),
+    SIZE=16
+    )
 
 infectable_unit = Struct("infectable unit",
     Pad(2),

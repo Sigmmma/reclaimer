@@ -2,7 +2,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 material = Struct("material",
-    dependency("effect"),
+    dependency("effect", "effe"),
     dependency("sound", "snd!"),
     SIZE=48,
     )

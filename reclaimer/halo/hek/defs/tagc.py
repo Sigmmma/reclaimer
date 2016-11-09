@@ -1,7 +1,10 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-tag_reference = dependency("tag")
+tag_reference = Struct("tag reference",
+    dependency("tag"),
+    SIZE=16
+    )
 
 tagc_body = Struct("tagdata",
     reflexive("tag references", tag_reference, 200),

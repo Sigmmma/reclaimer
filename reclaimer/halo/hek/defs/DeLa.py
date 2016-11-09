@@ -3,9 +3,27 @@ from supyr_struct.defs.tag_def import TagDef
 
 # TYPING OUT THESE THREE ENUMERATORS WAS THE BIGGEST PAIN
 # IN THE ASS PART OF WRITING ANY OF THESE TAG DEFINITIONS
-game_data_inputs = ()
-event_types = ()
-event_functions = ()
+game_data_inputs = (
+    'NULL',
+    '',
+    )
+event_types = (
+    'A button', 'B button', 'X button', 'Y button',
+    'black button', 'white button', 'left trigger', 'right trigger',
+    'dpad up', 'dpad down', 'dpad left', 'dpad right',
+    'start button', 'back button', 'left thumb', 'right thumb',
+    'left analog stick up', 'left analog stick down',
+    'left analog stick left', 'left analog stick right',
+    'right analog stick up', 'right analog stick down',
+    'right analog stick left', 'right analog stick right',
+    'created', 'deleted', 'get focus', 'lose focus',
+    'left mouse', 'middle mouse', 'right mouse', 'double click',
+    'custom activation', 'post render'
+    )
+event_functions = (
+    'NULL',
+    '',
+    )
 
 widget_bounds = QStruct("",
     BSInt16("t"), BSInt16("l"), BSInt16("b"),  BSInt16("r"),

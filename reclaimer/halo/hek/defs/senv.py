@@ -16,7 +16,7 @@ senv_attrs = Struct("senv attrs",
 
     #Lens Flare
     BFloat("lens flare spacing"),#world units
-    dependency("lens flare"),
+    dependency("lens flare", "lens"),
     Pad(44),
 
     #Diffuse Properties
