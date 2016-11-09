@@ -4,6 +4,11 @@ from supyr_struct.defs.tag_def import TagDef
 def get():
     return matg_def
 
+camera = Struct("camera",
+    dependency('camera', "trak"),
+    SIZE=16
+    )
+
 sound = Struct("sound",
     dependency('sound', "snd!"),
     SIZE=16
