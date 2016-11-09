@@ -1,34 +1,11 @@
-
-Make Bin_Size recursion safe
-
 Find out why hashcacher is taking a long ass time on simple stuff like senv tags(about 2.5 seconds for each)
-
-Implement recursive pointer based blocks.
-    When writing, pass around a dictionary of which block ids have already had
-    their pointers calculated and what the pointer value is. When a reused block
-    is about to have its corrosponding pointer set, it will instead use the
-    pointer that already exists. When the block is being written, a dictionary
-    will be passed around with which block ID was written to which location.
-    If an ID already exists in the dictionary, the block is not written.
-
-    When reading, a dictionary of pointers to blocks is passed around. When a
-    pointer is read that exists in the dictionary keys, the corrosponding
-    block in the dictionary is used instead of reading it from the file again.
-
-    Make it so that Pointer32/64 are set to 0 when their pointed to block DNE
-
-Make it so that a definitions folder must be located in the same module as __main__
-
-
-
-##################
-## HALO RELATED ##
-##################
 
 HashCacher will need to:
     prune compressed vertices before calculating a gbxmodel's hash
     prune compressed lightmap data and other data not saved in a map(script syntax and
         string data and maybe also editor data)
+
+    prune compressed_color_plate_data from bitmap tags
 
 
 make program to load all hud, shader_environment, shader_model, and bitmap 
@@ -71,10 +48,6 @@ when making their hashes as well as compressed vertices in models and bsp
 ## MAP RIPPING ##
 
 
-##################
-## HALO RELATED ##
-##################
-
 
 
 BITMAP MODULE TODO:
@@ -91,21 +64,3 @@ Make setting to use same palette for all mipmaps of a bitmap
 Write palettized mipmap generator.
     make it so that a palette can be supplied to the 
     mipmap generator so it already has one to work from
-
-
-
-
-OranguTag Ideas:
-
-create "UNITS" and make it accept an object which defines a 
-way to display the data(bytes, KB, MB, degrees, radians, etc).
-	Make it so the first entry in the Units is the default
-	unit and all other ones base themselves around it
-
-Undo system that works by using a redo deque and undo deque object
-	https://docs.python.org/2/library/collections.html#deque-objects
-
-	Need an object which has these properties:
-		list to hold all the blocks that are changed
-		list to hold all the previous block values
-		list to hold which index of each block was changed
