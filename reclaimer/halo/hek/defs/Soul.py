@@ -1,7 +1,10 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-ui_widget_def = dependency("ui widget definition")
+ui_widget_def = Struct("ui widget definition",
+    dependency("ui widget definition", 'DeLa'),
+    SIZE=16
+    )
 
 soul_body = Struct("tagdata",
     reflexive("ui widget definitions", ui_widget_def, 32),

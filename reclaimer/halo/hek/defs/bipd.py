@@ -35,7 +35,7 @@ bipd_attrs = Struct("bipd attrs",
     BSEnum16('B in', *biped_inputs),
     BSEnum16('C in', *biped_inputs),
     BSEnum16('D in', *biped_inputs),
-    dependency('dont use', "jpt!"),
+    dependency('DONT USE', "jpt!"),
 
     QStruct("flying",
         BFloat("bank angle"),  # radians
