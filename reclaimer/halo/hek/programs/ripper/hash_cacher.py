@@ -3,7 +3,7 @@ from string import digits, ascii_letters
 from traceback import format_exc
 
 from ..hek_tag_scanner import HekTagScanner
-from supyr_struct.editor.handler import Handler
+from supyr_struct.apps.handler import Handler
 from supyr_struct.tag import Tag
 
 
