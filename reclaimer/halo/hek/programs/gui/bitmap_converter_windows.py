@@ -1296,9 +1296,9 @@ class BitmapConverterListWindow(Toplevel):
         formats_settings_menu = self.formats_settings_menu
         
         tag_list_menubar.add_cascade(label="Enable/Disable Types",
-                                     underline=0, menu=types_settings_menu)
+                                     menu=types_settings_menu)
         tag_list_menubar.add_cascade(label="Enable/Disable Formats",
-                                     underline=0, menu=formats_settings_menu)
+                                     menu=formats_settings_menu)
         
         self.config(menu=tag_list_menubar)
 

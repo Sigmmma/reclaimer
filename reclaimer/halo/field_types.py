@@ -1,6 +1,6 @@
 from struct import unpack
 
-from supyr_struct.apps.constants import *
+from supyr_struct.apps.binilla.constants import *
 from supyr_struct.field_types import *
 from supyr_struct.blocks import *
 from .field_type_methods import *
