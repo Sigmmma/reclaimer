@@ -11,7 +11,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.gametype import GametypeTag
 
-def get(): return gametype_def
+def get(): return pc_gametype_def
 
 def is_xbox_gametype(node=None, parent=None, **kwargs):
     if parent is None:
@@ -300,7 +300,7 @@ footer_switch = Switch('gametype footer',
     )
 
 
-gametype_def = TagDef('gametype',
+pc_gametype_def = TagDef('pc_gametype',
     header_switch,
     settings_switch,
     footer_switch,
