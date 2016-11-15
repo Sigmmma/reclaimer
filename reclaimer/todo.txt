@@ -1,3 +1,7 @@
+Mozzarilla
+    Halo-specific tab with special commands like add/remove sauce(opens window), open
+       map with ability to browse it and load tags, convert one tag into another(xbox to pc), etc
+
 Find out why hashcacher is taking a long ass time on simple stuff like senv tags(about 2.5 seconds for each)
 
 HashCacher will need to:
