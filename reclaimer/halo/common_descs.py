@@ -584,7 +584,7 @@ tag_header = Struct("blam header",
         ("halo 1", 'blam'),
         ("halo 2", 'BLM!'),
         DEFAULT='blam'),
-    EDITABLE=False, SIZE=64
+    EDITABLE=False, VISIBLE=False, SIZE=64
     )
 
 # Miscellaneous, Halo specific descriptors
@@ -611,17 +611,17 @@ anim_src_func_per_pha_sca = Struct('',
 from_to = QStruct('',
     BFloat("from", GUI_NAME=" "),
     BFloat("to"),
+    ORIENT='h'
     )
 
 
 # This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
-    BSInt32("size"),
-    BSInt32("unknown 1"),  # 0x00000000 in tags(and meta it seems)
-    BSInt32("unknown 2"),  # random(low number in meta)
-    BSInt32("pointer", DEFAULT=-1),
-    BUInt32("id"),  # 0x00000000 in meta it seems
-    EDITABLE=False,
+    BSInt32("size", EDITABLE=False),
+    BSInt32("unknown 1", VISIBLE=False),  # 0x00 in tags(and meta it seems)
+    BSInt32("unknown 2", VISIBLE=False),  # random(low number in meta)
+    BSInt32("pointer", VISIBLE=False, DEFAULT=-1),
+    BUInt32("id", VISIBLE=False),  # 0x00000000 in meta it seems
     )
 
 # This is the descriptor used wherever a tag reference a reflexive
@@ -629,7 +629,7 @@ reflexive_struct = Reflexive('reflexive',
     BSInt32("size"),
     BSInt32("pointer", DEFAULT=-1),  # random
     BUInt32("id"),  # 0x00000000 in meta it seems
-    EDITABLE=False,
+    EDITABLE=False, VISIBLE=False
     )
 
 predicted_resource = Struct('predicted_resource',
@@ -654,15 +654,18 @@ damage_modifiers = QStruct("damage modifiers",
 compressed_normal_32 = BitStruct('compressed_norm32',
     Bit1SInt("i", SIZE=11),
     Bit1SInt("j", SIZE=11),
-    Bit1SInt("k", SIZE=10)
+    Bit1SInt("k", SIZE=10),
+    ORIENT='h'
     )
 
 # coordinates
 xyz_float = QStruct('xyz_float',
-    Float("x"), Float("y"), Float("z")
+    Float("x"), Float("y"), Float("z"),
+    ORIENT='h' 
     )
 xy_float = QStruct('xy_float',
-    Float("x"), Float("y")
+    Float("x"), Float("y"),
+    ORIENT='h'
     )
 
 # colors
@@ -670,35 +673,44 @@ argb_float = QStruct('argb_float',
     Float("a", MIN=0.0, MAX=1.0),
     Float("r", MIN=0.0, MAX=1.0),
     Float("g", MIN=0.0, MAX=1.0),
-    Float("b", MIN=0.0, MAX=1.0)
+    Float("b", MIN=0.0, MAX=1.0),
+    ORIENT='h'
     )
 rgb_float = QStruct('rgb_float',
     Float("r", MIN=0.0, MAX=1.0),
     Float("g", MIN=0.0, MAX=1.0),
-    Float("b", MIN=0.0, MAX=1.0)
+    Float("b", MIN=0.0, MAX=1.0),
+    ORIENT='h'
     )
 rgb_byte = QStruct('rgb_uint8',
-    UInt8("r"), UInt8("g"), UInt8("b")
+    UInt8("r"), UInt8("g"), UInt8("b"),
+    ORIENT='h'
     )
 argb_byte = QStruct('argb_uint8',
-    UInt8("a"), UInt8("r"), UInt8("g"), UInt8("b")
+    UInt8("a"), UInt8("r"), UInt8("g"), UInt8("b"),
+    ORIENT='h'
     )
 
 # rotations
 ijkw_float = QStruct('ijkw_float',
-    Float("i"), Float("j"), Float("k"), Float("w")
+    Float("i"), Float("j"), Float("k"), Float("w"),
+    ORIENT='h'
     )
 ijk_float = QStruct('ijk_float',
-    Float("i"), Float("j"), Float("k")
+    Float("i"), Float("j"), Float("k"),
+    ORIENT='h'
     )
 ypr_float = QStruct('ypr_float',
-    Float("y"), Float("p"), Float("r")
+    Float("y"), Float("p"), Float("r"),
+    ORIENT='h'
     )
 ij_float = QStruct('ij_float',
     Float("i"), Float("j"),
+    ORIENT='h'
     )
 yp_float = QStruct('yp_float',
-    Float("y"), Float("p")
+    Float("y"), Float("p"),
+    ORIENT='h'
     )
 
 
@@ -776,7 +788,7 @@ tag_header_os = Struct("blam header",
     LUEnum32("engine id",
         ("halo 1", 'blam'),
         DEFAULT='blam'),
-    EDITABLE=False, SIZE=64
+    EDITABLE=False, VISIBLE=False, SIZE=64
     )
 
 valid_model_animations_yelo = tag_class_os('antr', 'magy')
