@@ -141,6 +141,7 @@ event_functions = (
 
 widget_bounds = QStruct("",
     BSInt16("t"), BSInt16("l"), BSInt16("b"),  BSInt16("r"),
+    ORIENT='h', SIZE=8
     )
 
 game_data_input = Struct("game data input",

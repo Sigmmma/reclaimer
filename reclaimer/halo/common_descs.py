@@ -61,9 +61,9 @@ def dependency(name='tag ref', valid_ids=None):
 
     return TagIndexRef(name,
         valid_ids,
-        BSInt32("path pointer"),
-        BSInt32("path length", MAX=243),  # max filepath length is 243 chars
-        BUInt32("id", DEFAULT=0xFFFFFFFF),
+        BSInt32("path pointer", VISIBLE=False),
+        BSInt32("path length", MAX=243, VISIBLE=False),
+        BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False),
 
         STEPTREE=StringVarLen("filepath", SIZE=tag_ref_size),
         EDITABLE=False,
@@ -584,7 +584,7 @@ tag_header = Struct("blam header",
         ("halo 1", 'blam'),
         ("halo 2", 'BLM!'),
         DEFAULT='blam'),
-    EDITABLE=False, VISIBLE=False, SIZE=64
+    VISIBLE=False, SIZE=64
     )
 
 # Miscellaneous, Halo specific descriptors
@@ -626,10 +626,9 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
 
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
-    BSInt32("size"),
-    BSInt32("pointer", DEFAULT=-1),  # random
-    BUInt32("id"),  # 0x00000000 in meta it seems
-    EDITABLE=False, VISIBLE=False
+    BSInt32("size", VISIBLE=False),
+    BSInt32("pointer", DEFAULT=-1, VISIBLE=False),  # random
+    BUInt32("id", VISIBLE=False),  # 0x00000000 in meta it seems
     )
 
 predicted_resource = Struct('predicted_resource',
@@ -742,12 +741,11 @@ def dependency_os(name='tag ref', valid_ids=None):
 
     return TagIndexRef(name,
         valid_ids,
-        BSInt32("path pointer"),
-        BSInt32("path length"),
-        BUInt32("id", DEFAULT=0xFFFFFFFF),
+        BSInt32("path pointer", VISIBLE=False),
+        BSInt32("path length", MAX=243, VISIBLE=False),
+        BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False),
 
         STEPTREE=StringVarLen("filepath", SIZE=tag_ref_size),
-        EDITABLE=False,
         )
 
 
@@ -788,7 +786,7 @@ tag_header_os = Struct("blam header",
     LUEnum32("engine id",
         ("halo 1", 'blam'),
         DEFAULT='blam'),
-    EDITABLE=False, VISIBLE=False, SIZE=64
+    VISIBLE=False, SIZE=64
     )
 
 valid_model_animations_yelo = tag_class_os('antr', 'magy')
