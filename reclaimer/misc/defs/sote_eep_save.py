@@ -12,7 +12,8 @@ weapons = QStruct( "weapons",
     UInt8("flame"),
     UInt8("seeker"),
     UInt8("stunner"),
-    UInt8("disruptor")
+    UInt8("disruptor"),
+    ORIENT='h'
     )
 
 save_file = Struct("save file",
