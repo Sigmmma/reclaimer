@@ -49,33 +49,31 @@ jpt__body = Struct("tagdata",
     Struct("high frequency vibrate", INCLUDE=frequency_vibration),
     Pad(30),
 
-    Struct("temporary camera impulse",
-        BFloat("duration"),
-        BSEnum16("fade function", *fade_functions),
+    Struct("camera",
+        BFloat("temporary impulse duration"),
+        BSEnum16("temporary impulse fade function", *fade_functions),
         Pad(2),
 
-        BFloat("rotation"),  # radians
-        BFloat("pushback"),
-        QStruct("jitter", INCLUDE=from_to),
+        BFloat("temporary impulse rotation"),  # radians
+        BFloat("temporary impulse pushback"),
+        QStruct("temporary impulse jitter", INCLUDE=from_to),
         Pad(8),
-        ),
 
-    BFloat("permanent camera impulse angle"),
-    Pad(16),
+        BFloat("permanent impulse angle"),
+        Pad(16),
 
-    Struct("camera shaking",
-        BFloat("duration"),
-        BSEnum16("fade function", *fade_functions),
+        BFloat("shaking duration"),
+        BSEnum16("shaking fade function", *fade_functions),
         Pad(2),
 
-        BFloat("random translation"),
-        BFloat("random rotation"),  # radians
+        BFloat("shaking random translation"),
+        BFloat("shaking random rotation"),  # radians
         Pad(12),
 
-        BSEnum16("wobble function", *animation_functions),
+        BSEnum16("shaking wobble function", *animation_functions),
         Pad(2),
-        BFloat("wobble function period"),
-        BFloat("wobble weight"),
+        BFloat("shaking wobble function period"),
+        BFloat("shaking wobble weight"),
         Pad(32),
         ),
 
