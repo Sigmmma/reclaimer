@@ -11,11 +11,8 @@ bsp3d_node = QStruct("bsp3d node",
 plane = QStruct("plane",
     # i, j, and k form a unit vector where d(presumably)
     # specifies the location of a point a "distance" along it
-    BFloat("i"),
-    BFloat("j"),
-    BFloat("k"),
-    BFloat("d"),
-    SIZE=16
+    BFloat("i"), BFloat("j"), BFloat("k"), BFloat("d"),
+    SIZE=16, ORIENT='h'
     )
 
 leaf = Struct("leaf",

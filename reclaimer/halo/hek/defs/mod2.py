@@ -15,9 +15,9 @@ local_marker = Struct('local marker',
     )
 
 uncompressed_vertex = QStruct('uncompressed vertex',
-    BFloat('translation x'),
-    BFloat('translation y'),
-    BFloat('translation z'),
+    BFloat('position x'),
+    BFloat('position y'),
+    BFloat('position z'),
 
     BFloat('normal i'),
     BFloat('normal j'),
@@ -42,9 +42,9 @@ uncompressed_vertex = QStruct('uncompressed vertex',
     )
 
 compressed_vertex = QStruct('compressed vertex',
-    BFloat('translation x'),
-    BFloat('translation y'),
-    BFloat('translation z'),
+    BFloat('position x'),
+    BFloat('position y'),
+    BFloat('position z'),
 
     # These wont work in a QStruct, so make sure not to use them with it.
     #BBitStruct('normal',   INCLUDE=compressed_normal_32, SIZE=4),
@@ -148,7 +148,6 @@ part = Struct('part',
     UInt8Array('local nodes', SIZE=20),
     SIZE=132
     )
-
 
 
 marker = Struct('marker',

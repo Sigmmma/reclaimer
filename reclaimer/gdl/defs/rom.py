@@ -102,7 +102,8 @@ font_array = Lump('fonts',
 string_offsets = Lump('string offsets',
     #An array of UInt32 offsets to the null
     #terminated strings within the TEXT lump
-    SUB_STRUCT=LUInt32('offset'), **oe_offs_lump_kw
+    SUB_STRUCT=LUInt32('offset'),
+    **oe_offs_lump_kw
     )
 string_message_array = Lump('string messages',
     SUB_STRUCT=string_message, **lump_kw

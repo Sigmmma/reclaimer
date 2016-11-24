@@ -35,6 +35,8 @@ class GdlHandler(TagTestHandler):
                               'skorne1','skorne2','garm',
                               'general','golem','golemf', 'golemi'):
                 return 'critter'
+            elif filename == 'shop':
+                return 'shop'
         elif filename in self.defs:
             return filename
         elif ext in self.id_ext_map.values():

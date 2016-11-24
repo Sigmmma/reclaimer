@@ -2,8 +2,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 message_element = QStruct("message element",
-    SInt8("type"),
-    SInt8("data"),
+    SInt8("type"), SInt8("data"), ORIENT='h'
     SIZE=2
     )
 

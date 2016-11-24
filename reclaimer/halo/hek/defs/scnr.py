@@ -336,8 +336,9 @@ trigger_volume = Struct("trigger volume",
     BFloat("field8", DEFAULT=-0.0),
     BFloat("field9", DEFAULT=1.0),
     QStruct("position", INCLUDE=xyz_float),
-    QStruct("dimensions",
-        BFloat("width"), BFloat("length"), BFloat("height")
+    QStruct("sides",
+        BFloat("width"), BFloat("length"), BFloat("height"),
+        ORIENT='h'
         ),
     SIZE=96
     )
@@ -499,6 +500,7 @@ cutscene_title = Struct("cutscene title",
     Pad(4),
     QStruct("text bounds",
         BSInt16("t"), BSInt16("l"), BSInt16("b"), BSInt16("r"),
+        ORIENT='h',
         ),
     BSInt16("string index"),
     BSEnum16("text style",
