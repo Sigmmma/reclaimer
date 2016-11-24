@@ -5,7 +5,7 @@ messaging_information = Struct("messaging information",
     BSInt16("sequence index"),
     BSInt16("width offset"),
     QStruct("offset from reference corner",
-        BSInt16("x"), BSInt16("y")
+        BSInt16("x"), BSInt16("y"), ORIENT='h'
         ),
     QStruct("override icon color", INCLUDE=argb_byte),
     SInt8("frame rate", MIN=0, MAX=30),
@@ -93,7 +93,7 @@ multitex_overlay = Struct("multitex overlay",
 
 total_grenades_numbers = Struct("totat grenades numbers",
     QStruct("anchor offset",
-        BSInt16("x"), BSInt16("y"),
+        BSInt16("x"), BSInt16("y"), ORIENT='h'
         ),
     BFloat("width scale"),
     BFloat("height scale"),
@@ -125,7 +125,7 @@ total_grenades_numbers = Struct("totat grenades numbers",
 
 overlay = Struct("overlay",
     QStruct("anchor offset",
-        BSInt16("x"), BSInt16("y"),
+        BSInt16("x"), BSInt16("y"), ORIENT='h'
         ),
     BFloat("width scale"),
     BFloat("height scale"),
@@ -171,7 +171,7 @@ warning_sound = Struct("warning sound",
 # Use this with INCLUDE keywords since it will need to be named
 hud_background = Struct("",
     QStruct("anchor offset",
-        BSInt16("x"), BSInt16("y"),
+        BSInt16("x"), BSInt16("y"), ORIENT='h'
         ),
     BFloat("width scale"),
     BFloat("height scale"),

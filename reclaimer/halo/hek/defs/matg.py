@@ -44,8 +44,9 @@ player_control = Struct("player control",
 difficulty_base = QStruct("",
     BFloat("easy"),
     BFloat("normal"),
-    BFloat("hard"),
-    BFloat("legendary")
+    BFloat("heroic"),
+    BFloat("legendary"),
+    ORIENT='h'
     )
 
 difficulty = Struct("difficulty",
@@ -237,13 +238,11 @@ first_person_interface = Struct("first person interface",
     dependency('base bitmap', "bitm"),
     dependency('shield meter', "metr"),
     QStruct('shield meter origin',
-        BSInt16('x'),
-        BSInt16('y')
+        BSInt16('x'), BSInt16('y'), ORIENT='h'
         ),
     dependency('body meter', "metr"),
     QStruct('body meter origin',
-        BSInt16('x'),
-        BSInt16('y')
+        BSInt16('x'), BSInt16('y'), ORIENT='h'
         ),
     dependency('night-vision toggle on effect', "effe"),
     dependency('night-vision toggle off effect', "effe"),

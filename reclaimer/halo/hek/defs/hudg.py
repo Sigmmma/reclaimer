@@ -5,7 +5,7 @@ button_icon = Struct("button icon",
     BSInt16("sequence index"),
     BSInt16("width offset"),
     QStruct("offset from reference corner",
-        BSInt16("x"), BSInt16("y")
+        BSInt16("x"), BSInt16("y"), ORIENT='h'
         ),
     QStruct("override icon color", INCLUDE=argb_byte),
     SInt8("frame rate", MIN=0, MAX=30),
@@ -42,7 +42,7 @@ messaging_parameters = Struct("messaging parameters",
 
     Pad(34),
     QStruct("anchor offset",
-        BSInt16("x"), BSInt16("y"),
+        BSInt16("x"), BSInt16("y"), ORIENT='h'
         ),
     BFloat("width scale"),
     BFloat("height scale"),
@@ -108,7 +108,7 @@ hud_globals = Struct("hud globals",
     BFloat("motion sensor velocity sensitivity"),
     BFloat("motion sensor scale", DEFAULT=32.0),  # DONT TOUCH(why?)
     QStruct("default chapter title bounds",
-        BSInt16("t"), BSInt16("l"), BSInt16("b"), BSInt16("r"),
+        BSInt16("t"), BSInt16("l"), BSInt16("b"), BSInt16("r"), ORIENT='h'
         ),
     SIZE=340
     )
