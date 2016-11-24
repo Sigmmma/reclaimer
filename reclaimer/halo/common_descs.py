@@ -66,7 +66,7 @@ def dependency(name='tag ref', valid_ids=None):
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False),
 
         STEPTREE=StringVarLen("filepath", SIZE=tag_ref_size),
-        EDITABLE=False,
+        EDITABLE=False, ORIENT='h'
         )
 
 
@@ -609,9 +609,7 @@ anim_src_func_per_pha_sca = Struct('',
     # when scale is for rotation, its actually in degrees, not radians. weird!
     )
 from_to = QStruct('',
-    BFloat("from", GUI_NAME=" "),
-    BFloat("to"),
-    ORIENT='h'
+    BFloat("from", GUI_NAME=" "), BFloat("to"), ORIENT='h'
     )
 
 
@@ -621,7 +619,8 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
     BSInt32("unknown 1", VISIBLE=False),  # 0x00 in tags(and meta it seems)
     BSInt32("unknown 2", VISIBLE=False),  # random(low number in meta)
     BSInt32("pointer", VISIBLE=False, DEFAULT=-1),
-    BUInt32("id", VISIBLE=False),  # 0x00000000 in meta it seems
+    BUInt32("id", VISIBLE=False),  # 0x00000000 in meta it seems,
+    ORIENT='h'
     )
 
 # This is the descriptor used wherever a tag reference a reflexive
@@ -746,6 +745,7 @@ def dependency_os(name='tag ref', valid_ids=None):
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False),
 
         STEPTREE=StringVarLen("filepath", SIZE=tag_ref_size),
+        ORIENT='h'
         )
 
 

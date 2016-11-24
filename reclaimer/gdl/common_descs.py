@@ -54,9 +54,7 @@ def lump_pointer(node=None, parent=None, attr_index=None,
 
 # used in a lot of places
 xyz_float = QStruct('xyz_float',
-    Float("x"),
-    Float("y"),
-    Float("z")
+    Float("x"), Float("y"), Float("z"), ORIENT='h'
     )
 
 #############################
@@ -86,12 +84,13 @@ effect = Struct('effect',
     LFloat('radius'),
     LFloat('scale'),
     QStruct('color',
-           UInt8('b'),
-           UInt8('g'),
-           UInt8('r'),
-           UInt8('a'),
+           UInt8('b'), UInt8('g'), UInt8('r'), UInt8('a'), ORIENT='h',
            ),
     SIZE=80,
+    )
+
+stat = QStruct("",
+    LFloat('min'), LFloat('max'), ORIENT='h'
     )
 
 damage = Struct('damage',
@@ -147,15 +146,13 @@ damage = Struct('damage',
     LFloat('radius'),
     LFloat('min rad'),
     LFloat('delay'),
-    LFloat('min time'),
-    LFloat('max time'),
+    QStruct('time', INCLUDE=stat),
     LFloat('angle'),
     LFloat('arc'),
     LFloat('pitch'),
     QStruct('offset', INCLUDE=xyz_float),
     LFloat('amount'),
-    LFloat('speed min'),
-    LFloat('speed max'),
+    QStruct('speed', INCLUDE=stat),
     LFloat('weight'),
     LSInt16('fx index'),
     LSInt16('hit fx index'),

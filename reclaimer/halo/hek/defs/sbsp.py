@@ -6,7 +6,7 @@ plane = QStruct("plane",
     BFloat("j", MIN=0.0, MAX=1.0),
     BFloat("k", MIN=0.0, MAX=1.0),
     BFloat("d"),
-    SIZE=16
+    SIZE=16, ORIENT='h'
     )
 
 vertex = QStruct("vertex", INCLUDE=xyz_float, SIZE=12)
@@ -33,14 +33,14 @@ leaf = Struct("leaf",
 leaf_surface = Struct("leaf surface",
     BSInt32("surface"),
     BSInt32("node"),
-    SIZE=8
+    SIZE=8, ORIENT='h'
     )
 
 surface = Struct("surface",
     BSInt16("a"),
     BSInt16("b"),
     BSInt16("c"),
-    SIZE=6
+    SIZE=6, ORIENT='h'
     )
 
 material = Struct("material",
