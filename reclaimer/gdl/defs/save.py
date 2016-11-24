@@ -72,7 +72,7 @@ legend_items = (
 p_attrs = QStruct('character attrs',
     SInt32('exp', GUI_NAME='experience'),
     Float('health'),
-    Float('fight added'),
+    Float('strength added'),
     Float('armor added'),
     Float('magic added'),
     Float('speed added'),
