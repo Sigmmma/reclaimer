@@ -1,6 +1,9 @@
+from supyr_struct.apps.binilla import editor_constants
 from supyr_struct.apps.binilla.widget_picker import *
 from supyr_struct.apps.binilla.field_widgets import *
 from ....field_types import *
+
+editor_constants.FRAME_TITLE_WIDTH = 25
 
 __all__ = ("WidgetPicker", "def_widget_picker", "add_widget",
            "MozzarillaWidgetPicker", "def_halo_widget_picker")

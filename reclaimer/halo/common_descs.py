@@ -46,8 +46,7 @@ def rawdata_ref(name, f_type=Rawdata, max_size=None):
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
     return RawdataRef(name,
-        EDITABLE=False, INCLUDE=ref_struct,
-        STEPTREE=f_type("data", VISIBLE=False, SIZE=".size"))
+        INCLUDE=ref_struct, STEPTREE=f_type("data", SIZE=".size"))
 
 
 def dependency(name='tag ref', valid_ids=None):
