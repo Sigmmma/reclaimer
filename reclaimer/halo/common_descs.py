@@ -16,7 +16,8 @@ def tag_class(*args):
 
     return BUEnum32('tag_class',
                     *(tuple(classes) + (("NONE", 0xffffffff),) ),
-                    DEFAULT=0xffffffff)
+                    DEFAULT=0xffffffff, GUI_NAME=''
+                    )
 
 
 def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
@@ -725,7 +726,8 @@ def tag_class_os(*args):
 
     return BUEnum32('tag_class',
                     *(tuple(classes) + (("NONE", 0xffffffff),) ),
-                    DEFAULT=0xffffffff)
+                    DEFAULT=0xffffffff, GUI_NAME=''
+                    )
 
 
 def dependency_os(name='tag ref', valid_ids=None):
