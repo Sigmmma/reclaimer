@@ -148,9 +148,6 @@ time_out = Struct("time out flash color",
     BBool16("flash flags", *hud_flash_flags),
     BFloat("flash length"),
     QStruct("disabled color", INCLUDE=argb_byte),
-
-    Pad(44),
-    dependency("carnage report bitmap", "bitm"),
     SIZE=88
     )
 
@@ -182,6 +179,9 @@ hudg_body = Struct("tagdata",
     hud_damage_indicators,
     time_running_out,
     time_out,
+
+    Pad(44),
+    dependency("carnage report bitmap", "bitm"),
     misc_hud_crap,
     SIZE=1104
     )
