@@ -1,10 +1,18 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-object_desc = QStruct("object", 
+object_desc = Struct("object", 
     BSInt16("animation"),
-    BUInt16("function"),
-    BUInt16("function controls"),
+    BSEnum16("function",
+        "A out",
+        "B out",
+        "C out",
+        "D out"
+        ),
+    BSEnum16("function controls",
+        "frame",
+        "scale",
+        ),
     SIZE=20,
     )
 
