@@ -46,7 +46,7 @@ function = Struct('function',
     QStruct('bounds', INCLUDE=from_to),
 
     Pad(6),
-    BSInt16('turn off with',
+    BSEnum16('turn off with',
         'A out',
         'B out',
         'C out',
