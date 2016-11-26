@@ -155,7 +155,7 @@ bitmap_block = Struct("bitmap",
 
     #pointer to the texture in the BITMAPS.ps2
     #where the pixel texture data is located
-    Pointer32("tex pointer"),
+    Pointer32("tex pointer", EDITABLE=False),
 
     UInt16("tex palette count"),
     UInt16("tex shift index"),
@@ -199,27 +199,27 @@ bitmap_block = Struct("bitmap",
 objects_header = Struct('header',
     StrRawLatin1("dir name",   SIZE=32),
     StrRawLatin1("model name", SIZE=32),
-    UInt32("version", DEFAULT=0xF00B000D),
+    UInt32("version", DEFAULT=0xF00B000D, EDITABLE=False),
 
-    UInt32("objects count"),
-    UInt32("bitmaps count"),
-    UInt32("object defs count"),
-    UInt32("bitmap defs count"),
+    UInt32("objects count", EDITABLE=False),
+    UInt32("bitmaps count", EDITABLE=False),
+    UInt32("object defs count", EDITABLE=False),
+    UInt32("bitmap defs count", EDITABLE=False),
 
-    Pointer32("objects pointer"),
-    Pointer32("bitmaps pointer"),
-    Pointer32("object defs pointer"),
-    Pointer32("bitmap defs pointer"),
+    Pointer32("objects pointer", VISIBLE=False),
+    Pointer32("bitmaps pointer", VISIBLE=False),
+    Pointer32("object defs pointer", VISIBLE=False),
+    Pointer32("bitmap defs pointer", VISIBLE=False),
 
-    Pointer32("sub-objects pointer"),
-    Pointer32("geometry pointer"),
+    Pointer32("sub-objects pointer", VISIBLE=False),
+    Pointer32("geometry pointer", VISIBLE=False),
 
-    UInt32("obj end"),
+    UInt32("obj end", EDITABLE=False),
 
-    UInt32("tex start"),
-    UInt32("tex end"),
+    UInt32("tex start", EDITABLE=False),
+    UInt32("tex end", EDITABLE=False),
     
-    UInt32("tex bits"),
+    UInt32("tex bits", EDITABLE=False),
 
     UInt16("lm tex first"),
     UInt16("lm tex num"),
