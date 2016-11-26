@@ -53,3 +53,6 @@ reclaimer/halo/os_hek/__pycache__/
 reclaimer/halo/os_hek/defs/__pycache__/
 reclaimer/gdl/gdl_binilla/__pycache__/
 reclaimer/halo/hek/programs/mozzarilla/__pycache__/
+reclaimer/halo/misc/__pycache__/
+reclaimer/halo/misc/defs/__pycache__/
+reclaimer/halo/misc/defs/objs/__pycache__/
