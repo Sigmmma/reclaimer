@@ -12,6 +12,7 @@ import binascii
 from struct import unpack
 
 from .....misc.defs.objs.xboxsave import *
+from ....field_types import *
 from supyr_struct.buffer import *
 
 CE_CRC32_OFF = 0x98

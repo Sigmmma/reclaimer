@@ -213,31 +213,36 @@ weap_attrs = Struct("weap attrs",
         ),
 
     Pad(4),
-    Struct("movement and ai targeting",
-        BSEnum16('movement penalized',
+    Struct("movement",
+        BSEnum16('penalized',
             "always",
             "when zoomed",
             "when zoomed or reloading",
             ),
         Pad(2),
-        BFloat("forward movement penalty"),
-        BFloat("sideways movement penalty"),
-
-        Pad(4),
-        BFloat("ai minimum target range"),
-        BFloat("ai looking time modifier")
+        BFloat("forward penalty"),
+        BFloat("sideways penalty"),
         ),
 
     Pad(4),
-    Struct("misc",
-        BFloat("light power-on time"),
-        BFloat("light power-off time"),
-        dependency('light power-on effect', valid_event_effects),
-        dependency('light power-off effect', valid_event_effects),
-        BFloat("age heat penalty"),
-        BFloat("age rate of fire penalty"),
-        BFloat("age misfire start", MIN=0.0, MAX=1.0),
-        BFloat("age misfire chance", MIN=0.0, MAX=1.0)
+    Struct("ai targeting",
+        BFloat("minimum target range"),
+        BFloat("looking time modifier")
+        ),
+
+    Pad(4),
+    Struct("light",
+        BFloat('power-on time'),
+        BFloat('power-off time'),
+        dependency('power-on effect', valid_event_effects),
+        dependency('power-off effect', valid_event_effects)
+        ),
+
+    Struct("age",
+        BFloat("heat penalty"),
+        BFloat("rate of fire penalty"),
+        BFloat("misfire start", MIN=0.0, MAX=1.0),
+        BFloat("misfire chance", MIN=0.0, MAX=1.0)
         ),
 
     Pad(12),
