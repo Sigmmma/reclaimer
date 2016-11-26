@@ -1,12 +1,13 @@
 import tkinter as tk
 
+from supyr_struct.apps.binilla.app_window import *
+
 from traceback import format_exc
 from ...handler import HaloHandler
 from ....meta.handler import MapLoader
 from ....os_hek.handler import OsHaloHandler
 from ....misc.handler import MiscHaloLoader
 from .widget_picker import *
-from supyr_struct.apps.binilla.app_window import *
 
 
 class Mozzarilla(Binilla):
@@ -16,14 +17,14 @@ class Mozzarilla(Binilla):
     handlers = {
         "Halo 1": HaloHandler,
         "Halo 1 Open Sauce": OsHaloHandler,
-        "Halo 1 Map Meta": MapLoader,
+        "Halo 1 Map": MapLoader,
         "Halo 1 Misc": MiscHaloLoader,
         }
 
     _handler_menu_loc = {
         "Halo 1": 0,
         "Halo 1 Open Sauce": 1,
-        "Halo 1 Map Meta": 2,
+        "Halo 1 Map": 2,
         "Halo 1 Misc": 3,
         }
 
@@ -40,7 +41,7 @@ class Mozzarilla(Binilla):
         self.defs_menu = tk.Menu(self.main_menu, tearoff=0)
         self.main_menu.add_cascade(label="Tag set", menu=self.defs_menu)
 
-        for n in ("", " Open Sauce", " Map Meta", " Misc"):
+        for n in ("", " Open Sauce", " Map", " Misc"):
             n = "Halo 1" + n
             self.defs_menu.add_command(command=lambda n=n: self.select_defs(n))
 

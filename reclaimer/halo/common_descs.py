@@ -658,12 +658,10 @@ compressed_normal_32 = BitStruct('compressed_norm32',
 
 # coordinates
 xyz_float = QStruct('xyz_float',
-    Float("x"), Float("y"), Float("z"),
-    ORIENT='h' 
+    Float("x"), Float("y"), Float("z"), ORIENT='h' 
     )
 xy_float = QStruct('xy_float',
-    Float("x"), Float("y"),
-    ORIENT='h'
+    Float("x"), Float("y"), ORIENT='h'
     )
 
 # colors

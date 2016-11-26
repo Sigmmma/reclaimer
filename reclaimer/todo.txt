@@ -1,3 +1,14 @@
+Rewrite map definition so tags are loaded on-demand rather than all at once
+    Do this by making a new FieldType and have the MapTag store a reference to the buffer of the map.
+    The widget for the block will not display the tag until the "show" button is clicked.
+    Once it is, the tag meta is parsed from the MapTag's buffer reference.
+    When the map is re-written, the set_pointers needs to be False and the MapTag's
+        buffer needs to be written to the map before anything else is written to it
+
+    More needs to be done and it all needs to be thought out more, but I believe that's the general method
+
+    ALSO PUT A BUTTON IN THE TAG META WIDGET TO TURN THE META INTO A TAG
+
 Mozzarilla
     Halo-specific tab with special commands like add/remove sauce(opens window), open
        map with ability to browse it and load tags, convert one tag into another(xbox to pc), etc

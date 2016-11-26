@@ -44,30 +44,30 @@ player_control = Struct("player control",
 difficulty_base = QStruct("",
     BFloat("easy"),
     BFloat("normal"),
-    BFloat("heroic"),
-    BFloat("legendary"),
+    BFloat("hard"),
+    BFloat("imposs"),
     ORIENT='h'
     )
 
 difficulty = Struct("difficulty",
     # Health
-    Struct("enemy",
+    Struct("enemy scales",
         QStruct("damage", INCLUDE=difficulty_base),
         QStruct("vitality", INCLUDE=difficulty_base),
         QStruct("shield", INCLUDE=difficulty_base),
         QStruct("recharge", INCLUDE=difficulty_base),
         ),
-    Struct("friend",
+    Struct("friend scales",
         QStruct("damage", INCLUDE=difficulty_base),
         QStruct("vitality", INCLUDE=difficulty_base),
         QStruct("shield", INCLUDE=difficulty_base),
         QStruct("recharge", INCLUDE=difficulty_base),
         ),
-    QStruct("infection forms", INCLUDE=difficulty_base),
+    QStruct("infection form vitality scales", INCLUDE=difficulty_base),
 
     Pad(16),
     # Enemy ranged fire
-    Struct("ranged fire",
+    Struct("ranged combat scales",
         QStruct("rate of fire", INCLUDE=difficulty_base),
         QStruct("projectile error", INCLUDE=difficulty_base),
         QStruct("burst error", INCLUDE=difficulty_base),
@@ -78,20 +78,27 @@ difficulty = Struct("difficulty",
         QStruct("overcharge chance", INCLUDE=difficulty_base),
         QStruct("special fire delay", INCLUDE=difficulty_base),
         QStruct("guidance vs player", INCLUDE=difficulty_base),
-        QStruct("melee delay base", INCLUDE=difficulty_base),
-        QStruct("melee delay scale", INCLUDE=difficulty_base)
         ),
 
-    Pad(16),
-    # Grenades
-    QStruct("grenade chance scale", INCLUDE=difficulty_base),
-    QStruct("grenade timer scale", INCLUDE=difficulty_base),
+    Struct("close combat scales",
+        QStruct("melee delay base",
+            GUI_NAME="melee delay base(not a scale)", INCLUDE=difficulty_base
+            ),
+        QStruct("melee delay", INCLUDE=difficulty_base),
+           
+        Pad(16),
+        # Grenades
+        QStruct("grenade chance", INCLUDE=difficulty_base),
+        QStruct("grenade timer", INCLUDE=difficulty_base),
+        ),
 
     Pad(48),
     # Placement
-    QStruct("major upgrade normal", INCLUDE=difficulty_base),
-    QStruct("major upgrade few", INCLUDE=difficulty_base),
-    QStruct("major upgrade many", INCLUDE=difficulty_base),
+    Struct("major upgrade fractions",
+        QStruct("normal", INCLUDE=difficulty_base),
+        QStruct("few", INCLUDE=difficulty_base),
+        QStruct("many", INCLUDE=difficulty_base),
+        ),
 
     SIZE=644
     )

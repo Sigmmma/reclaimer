@@ -1,5 +1,5 @@
 from supyr_struct.field_types import *
-from supyr_struct.apps.binilla.constants import *
+from supyr_struct.defs.constants import *
 
 
 def sub_objects_size(node=None, parent=None, attr_index=None,
