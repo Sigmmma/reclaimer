@@ -154,7 +154,7 @@ vehicle_type = LUEnum32('vehicle type',
 
 ctf_settings = Struct('ctf settings',
     UEnum8('assault', INCLUDE=enum_off_on),
-    UInt8('unknown'),
+    UInt8('unknown', VISIBLE=False),
     UEnum8('flag must reset', INCLUDE=enum_off_on),
     UEnum8('flag must be at home', INCLUDE=enum_off_on),
     LUInt32('single_flag_time'),# ticks
@@ -263,6 +263,7 @@ xbox_gametype_footer = Container('gametype footer',
     #20 byte hmac sha1 digest of the save file
     BytesRaw('hmac_sig', SIZE=20),
     Pad(388),
+    VISIBLE=False
     )
 
 pc_gametype_footer = Struct('gametype footer',
@@ -273,6 +274,7 @@ pc_gametype_footer = Struct('gametype footer',
     Pad(32),
     LUInt32('crc 32 ce'),
     Pad(7972),
+    VISIBLE=False
     )
 
 

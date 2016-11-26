@@ -9,6 +9,7 @@ def get():
     return xbox_gametype_def
 
 xbox_gametype_def = TagDef('xbox_gametype',
+    xbox_gametype_header,
     settings_switch,
     xbox_gametype_footer,
 
