@@ -4,14 +4,15 @@
 '''
 
 from .pc_gametype import *
+from .objs.xbox_gametype import *
 
 def get():
     return xbox_gametype_def
 
 xbox_gametype_def = TagDef('xbox_gametype',
     xbox_gametype_header,
-    settings_switch,
+    settings,
     xbox_gametype_footer,
 
-    ext='.lst', endian='<', tag_cls=GametypeTag,
+    ext='.lst', endian='<', tag_cls=XboxGametypeTag,
     )
