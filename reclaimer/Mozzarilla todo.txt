@@ -1,0 +1,19 @@
+Completed:
+	Buttons which would allow you hide specific blocks of tags.
+	Ability to easily create and use templates for tags.
+	Ability to switch between loading/creating vanilla tags and open sauce tags
+
+Incomplete:
+	Undo/redo system
+	Value search/replace
+	Bitmap viewer that can be seen right in the shader tag
+	Graph preview for functions.
+	Something that shows links between regions, permutations and BSP data in collision tags
+	Something wherein you could edit the pivots for an animated texture's rotation
+	Compile scripts in Guerilla
+	Ability to move a tag/tags and all tags that reference them are updated
+	Ability to select a certain tag and have all its dependencies be added to a zip folder with it
+	Dependency viewer
+	Ability to add/remove open sauce from tags
+	Ability to open map to browse it, edit metadata, and rip selected tags
+	Ability to convert one tags from pc to xbox

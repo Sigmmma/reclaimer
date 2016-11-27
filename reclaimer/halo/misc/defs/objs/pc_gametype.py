@@ -14,14 +14,15 @@ from struct import unpack
 from .....misc.defs.objs.xboxsave import *
 from ....field_types import *
 from supyr_struct.buffer import *
+from supyr_struct.tag import *
 
 CE_CRC32_OFF = 0x98
 PC_CRC32_OFF = 0xD8
 
-HALO_SIGKEY =  (b'\x1F\x71\xDE\x93\xD5\x2A\xAD\xB1'+
-                b'\x94\x46\xD7\x49\x4F\x73\x11\x58')
+HALO_SIGKEY = (b'\x1F\x71\xDE\x93\xD5\x2A\xAD\xB1'+
+               b'\x94\x46\xD7\x49\x4F\x73\x11\x58')
 
-class GametypeTag(XboxSaveTag):
+class PcGametypeTag(XboxSaveTag):
     
     sigkey     = HALO_SIGKEY
     data_start = 0
@@ -82,11 +83,10 @@ class GametypeTag(XboxSaveTag):
         try:
             if self.is_powerpc:
                 FieldType.force_big()
-            result = XboxSaveTag.parse(self, **kwargs)
+            return XboxSaveTag.parse(self, **kwargs)
         finally:
             if self.is_powerpc:
                 FieldType.force_normal()
-        return result
 
     def xbox_sign(self, rawdata=None, authkey=None):
         if rawdata is None:
@@ -100,7 +100,6 @@ class GametypeTag(XboxSaveTag):
         '''Writes this tag to the set path like normal, but makes
         sure to calculate and set the checksums before doing so.'''
         try:
-            result = None
             if self.is_powerpc:
                 FieldType.force_big()
             if self.is_xbox:
@@ -116,9 +115,7 @@ class GametypeTag(XboxSaveTag):
                                                       hybrid_settings)
 
                 footer.crc_32_ce = self.calc_crc32(None, PC_CRC32_OFF)
-            result = XboxSaveTag.serialize(self, **kwargs)
+            return Tag.serialize(self, **kwargs)
         finally:
             if self.is_powerpc:
                 FieldType.force_normal()
-
-        return result

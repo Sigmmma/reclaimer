@@ -9,13 +9,13 @@
 
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
-from .objs.gametype import GametypeTag
+from .objs.pc_gametype import PcGametypeTag
 
 def get(): return pc_gametype_def
 
 def is_xbox_gametype(node=None, parent=None, **kwargs):
     if parent is None:
-        parent = node.parent
+        return node.get_root().is_xbox
     return parent.get_root().is_xbox
 
 ##################################################
@@ -108,7 +108,7 @@ game_type = LUEnum32('game type',
     ('oddball', 3),
     ('king', 4),
     ('race', 5),
-    DEFAULT=1,
+    DEFAULT=1, VISIBLE=False
     )
 
 objective_indicator = LUEnum32('objective indicator',
@@ -188,12 +188,6 @@ race_settings = Struct('race settings',
     race_order,
     Pad(3),
     race_points_used,
-    SIZE=28,
-    )
-
-unknown_settings = Struct('unknown settings',
-    BytesRaw('settings', SIZE=4),
-    BytesRaw('more settings', SIZE=24),
     SIZE=28,
     )
 
@@ -281,31 +275,31 @@ pc_gametype_footer = Struct('gametype footer',
 header_switch = Switch('gametype header',
     DEFAULT=pc_gametype_header,
     CASE=is_xbox_gametype,
-    CASES={True:xbox_gametype_header},
+    CASES={True: xbox_gametype_header},
     )
 
-settings_switch = Switch('gametype settings',
-    DEFAULT=unknown_settings,
+settings = Union('gametype settings',
     CASE='.gametype_header.game_type.enum_name',
-    CASES={ 'ctf':ctf_settings,
-            'slayer':slayer_settings ,
-            'oddball':oddball_settings,
-            'king':king_settings,
-            'race':race_settings,
+    CASES={
+        'ctf':ctf_settings,
+        'slayer':slayer_settings ,
+        'oddball':oddball_settings,
+        'king':king_settings,
+        'race':race_settings,
         },
     )
 
 footer_switch = Switch('gametype footer',
     DEFAULT=pc_gametype_footer,
     CASE=is_xbox_gametype,
-    CASES={True:xbox_gametype_footer},
+    CASES={True: xbox_gametype_footer},
     )
 
 
 pc_gametype_def = TagDef('pc_gametype',
     header_switch,
-    settings_switch,
+    settings,
     footer_switch,
 
-    ext='.lst', endian='<', tag_cls=GametypeTag,
+    ext='.lst', endian='<', tag_cls=PcGametypeTag,
     )
