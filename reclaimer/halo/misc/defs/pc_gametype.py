@@ -153,18 +153,33 @@ vehicle_type = LUEnum32('vehicle type',
 ##################################################
 
 ctf_settings = Struct('ctf settings',
-    UEnum8('assault', INCLUDE=enum_off_on),
-    UInt8('unknown', VISIBLE=False),
-    UEnum8('flag must reset', INCLUDE=enum_off_on),
-    UEnum8('flag must be at home', INCLUDE=enum_off_on),
+    #UEnum8('assault', INCLUDE=enum_off_on),
+    #UInt8('unknown', VISIBLE=False),
+    #UEnum8('flag must reset', INCLUDE=enum_off_on),
+    #UEnum8('flag must be at home', INCLUDE=enum_off_on),
+
+    # It looks better this way.
+    # Make it a FlBool32 so it doesnt get screwed up for powerpc
+    FlBool32('flags',
+        ('assault', 1<<0),
+        ('flag must reset', 1<<16),
+        ('flag must be at home', 1<<24),
+        ),
     LUInt32('single_flag_time'),# ticks
     SIZE=28,
     )
 
 slayer_settings = Struct('slayer settings',
-    UEnum8('death bonus',   INCLUDE=enum_on_off),
-    UEnum8('kill penalty',  INCLUDE=enum_on_off),
-    UEnum8('kill in order', INCLUDE=enum_off_on),
+    #UEnum8('death bonus',   INCLUDE=enum_on_off),
+    #UEnum8('kill penalty',  INCLUDE=enum_on_off),
+    #UEnum8('kill in order', INCLUDE=enum_off_on),
+    # It looks better this way.
+    # Make it a FlBool32 so it doesnt get screwed up for powerpc
+    FlBool32('flags',
+        ('no death bonus', 1<<0),
+        ('no kill penalty', 1<<8),
+        ('kill in order', 1<<16),
+        ),
     SIZE=28,
     )
 

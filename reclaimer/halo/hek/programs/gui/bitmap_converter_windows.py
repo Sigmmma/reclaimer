@@ -1317,12 +1317,12 @@ class BitmapConverterListWindow(Toplevel):
 
         self.tag_list_scrollbar_y = Scrollbar(self, orient="vertical")
         self.tag_list_scrollbar_x = Scrollbar(self, orient="horizontal")
-        self.tag_list_listbox = Listbox(self, width=90, height=194,
+        self.tag_list_listbox = Listbox(self, width=90,
                                    selectmode=EXTENDED, highlightthickness=0,
                                    xscrollcommand=self.tag_list_scrollbar_x.set,
                                    yscrollcommand=self._scroll_tag_list)
         
-        self.tag_data_listbox = Listbox(self, width=25, height=194,
+        self.tag_data_listbox = Listbox(self, width=25,
                                     selectmode=EXTENDED, highlightthickness=0,
                                     yscrollcommand=self._scroll_tag_data,)
         
