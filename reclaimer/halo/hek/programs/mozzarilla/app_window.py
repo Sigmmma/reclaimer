@@ -1,8 +1,10 @@
 import tkinter as tk
 
-from supyr_struct.apps.binilla.app_window import *
-
+from os.path import dirname
 from traceback import format_exc
+
+from supyr_struct.apps.binilla.app_window import *
+from supyr_struct.defs.constants import *
 from ...handler import HaloHandler
 from ....meta.handler import MapLoader
 from ....os_hek.handler import OsHaloHandler
@@ -13,6 +15,7 @@ from .widget_picker import *
 class Mozzarilla(Binilla):
     app_name = 'Mozzarilla'
     version = '0.2'
+    config_path = dirname(__file__) + '%smozzarilla.cfg' % PATHDIV
 
     handlers = {
         "Halo 1": HaloHandler,
