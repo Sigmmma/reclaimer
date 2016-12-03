@@ -9,27 +9,31 @@ from ...handler import HaloHandler
 from ....meta.handler import MapLoader
 from ....os_hek.handler import OsHaloHandler
 from ....misc.handler import MiscHaloLoader
+from .config_def import config_def
 from .widget_picker import *
 
 
 class Mozzarilla(Binilla):
     app_name = 'Mozzarilla'
-    version = '0.2'
     config_path = dirname(__file__) + '%smozzarilla.cfg' % PATHDIV
 
-    handlers = {
-        "Halo 1": HaloHandler,
-        "Halo 1 Open Sauce": OsHaloHandler,
-        "Halo 1 Map": MapLoader,
-        "Halo 1 Misc": MiscHaloLoader,
-        }
+    config_def = config_def
 
-    _handler_menu_loc = {
-        "Halo 1": 0,
-        "Halo 1 Open Sauce": 1,
-        "Halo 1 Map": 2,
-        "Halo 1 Misc": 3,
-        }
+    handlers = (
+        HaloHandler,
+        OsHaloHandler,
+        MapLoader,
+        MiscHaloLoader,
+        )
+
+    handler_names = (
+        "Halo 1",
+        "Halo 1 Open Sauce",
+        "Halo 1 Map",
+        "Halo 1 Misc",
+        )
+
+    _curr_handler_index = 0
 
     widget_picker = def_halo_widget_picker
 
@@ -44,13 +48,20 @@ class Mozzarilla(Binilla):
         self.defs_menu = tk.Menu(self.main_menu, tearoff=0)
         self.main_menu.add_cascade(label="Tag set", menu=self.defs_menu)
 
-        for n in ("", " Open Sauce", " Map", " Misc"):
-            n = "Halo 1" + n
-            self.defs_menu.add_command(command=lambda n=n: self.select_defs(n))
+        for i in range(len(self.handler_names)):
+            self.defs_menu.add_command(command=lambda i=i: self.select_defs(i))
 
         self.defs_menu.add_separator()
+        self.handlers = list(self.handlers)
+        self.handler_names = list(self.handler_names)
 
-        self.select_defs("Halo 1", True)
+        self.select_defs(silent=True)
+
+    def load_config(self, filepath=None):
+        Binilla.load_config(self)
+
+        mozzarilla_data = self.config_file.data.mozzarilla
+        self._curr_handler_index = mozzarilla_data.selected_handler.data
 
     def load_tag_as(self, e=None):
         '''Prompts the user for a tag to load and loads it.'''
@@ -82,24 +93,40 @@ class Mozzarilla(Binilla):
         self.def_selector_window = dsw
         self.place_window_relative(self.def_selector_window, 30, 50)
 
-    def select_defs(self, def_set, silent=False):
-        handler = self.handlers.get(def_set)
-        menu_locs = self._handler_menu_loc
+    def select_defs(self, menu_index=None, silent=False):
+        names = self.handler_names
+        if menu_index is None:
+            menu_index = self._curr_handler_index
+
+        name = names[menu_index]
+        handler = self.handlers[menu_index]
+
         if handler is None or handler is self.handler:
             return
 
         if not silent:
-            print("Changing tag set to %s" % def_set)
+            print("Changing tag set to %s" % name)
             self.update_idletasks()
 
         if isinstance(handler, type):
-            handler = self.handlers[def_set] = handler()
-        self.handler = self.handlers[def_set]
+            self.handlers[menu_index] = handler()
+        self.handler = self.handlers[menu_index]
 
         entryconfig = self.defs_menu.entryconfig
-        for label in self._handler_menu_loc.keys():
-            entryconfig(menu_locs[label], label=label)
+        for i in range(len(names)):
+            entryconfig(i, label=names[i])
 
-        entryconfig(menu_locs[def_set], label=("%s %s" % (def_set, u'\u2713')))
+        self._curr_handler_index = menu_index
+
+        entryconfig(menu_index, label=("%s %s" % (name, u'\u2713')))
         if not silent:
-            print("Tag set changed to  %s" % def_set)
+            print("Tag set changed to  %s" % name)
+
+    def update_config(self, config_file=None):
+        if config_file is None:
+            config_file = self.config_file
+        mozzarilla_data = config_file.data.mozzarilla
+
+        mozzarilla_data.selected_handler.data = self._curr_handler_index
+
+        Binilla.update_config(self, config_file)

@@ -9,7 +9,6 @@ from supyr_struct.apps.binilla.app_window import Binilla
 
 class GdlBinilla(Binilla):
     app_name = 'GDL Binilla'
-    version = '0.1'
     config_path = dirname(__file__) + '%sgdl_binilla.cfg' % PATHDIV
 
     widget_picker = def_gdl_widget_picker
