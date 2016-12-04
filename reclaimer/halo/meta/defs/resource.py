@@ -44,8 +44,8 @@ raw_meta_data = Container("tag meta",
     )
 
 #replace raw data references with padding since they dont exist
-bitmap_meta = dict(bitm.bitm_def.descriptor[1])
-sound_meta = dict(snd_.snd__def.descriptor[1])
+bitmap_meta = dict(bitm.bitm_def.descriptor[1], NAME='meta_data')
+sound_meta = dict(snd_.snd__def.descriptor[1], NAME='meta_data')
 
 bitmap_meta[11] = Void(bitmap_meta[11][NAME])
 bitmap_meta[12] = Void(bitmap_meta[12][NAME])
@@ -72,8 +72,8 @@ pitch_range[STEPTREE] = Void(pitch_range[STEPTREE][NAME])
 tag_meta = Switch("tag meta",
     DEFAULT=raw_meta_data, POINTER='.offset',
     CASE=get_resource_tag_type,
-    CASES={'bitmap':Container("meta data", bitmap_meta),
-           'sound':Container("meta_data", sound_meta)
+    CASES={'bitmap':bitmap_meta,
+           'sound':sound_meta
            }
     )
 
