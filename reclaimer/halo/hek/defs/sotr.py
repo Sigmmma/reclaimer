@@ -124,42 +124,68 @@ stage = Struct("stage",
     QStruct("color0 anim upper bound", INCLUDE=argb_float),
     QStruct("color1", INCLUDE=argb_float),
 
-    Struct('color input',
-        BSEnum16('A', *sotr_color_inputs),
-        BSEnum16('A mapping', *sotr_input_mappings),
-        BSEnum16('B', *sotr_color_inputs),
-        BSEnum16('B mapping', *sotr_input_mappings),
-        BSEnum16('C', *sotr_color_inputs),
-        BSEnum16('C mapping', *sotr_input_mappings),
-        BSEnum16('D', *sotr_color_inputs),
-        BSEnum16('D mapping', *sotr_input_mappings)
+    Struct('color',
+        Struct('input A', 
+            BSEnum16('input', GUI_NAME='', *sotr_color_inputs),
+            BSEnum16('mapped_to', *sotr_input_mappings),
+            ORIENT='h'
+            ),
+        Struct('input B', 
+            BSEnum16('input', GUI_NAME='', *sotr_color_inputs),
+            BSEnum16('mapped_to', *sotr_input_mappings),
+            ORIENT='h'
+            ),
+        Struct('input C', 
+            BSEnum16('input', GUI_NAME='', *sotr_color_inputs),
+            BSEnum16('mapped_to', *sotr_input_mappings),
+            ORIENT='h'
+            ),
+        Struct('input D', 
+            BSEnum16('input', GUI_NAME='', *sotr_color_inputs),
+            BSEnum16('mapped_to', *sotr_input_mappings),
+            ORIENT='h'
+            ),
+
+        Struct('output AB', 
+            BSEnum16('output', GUI_NAME='', *sotr_color_outputs),
+            BSEnum16('function', *sotr_color_output_functions),
+            ORIENT='h'
+            ),
+        Struct('output CD', 
+            BSEnum16('output', GUI_NAME='', *sotr_color_outputs),
+            BSEnum16('function', *sotr_color_output_functions),
+            ORIENT='h'
+            ),
+        BSEnum16('output AB CD mux/sum', *sotr_color_outputs),
+        BSEnum16('output mapping', *sotr_output_mappings)
         ),
 
-    Struct('color output',
-        BSEnum16('AB', *sotr_color_outputs),
-        BSEnum16('AB function', *sotr_color_output_functions),
-        BSEnum16('CD', *sotr_color_outputs),
-        BSEnum16('CD function', *sotr_color_output_functions),
-        BSEnum16('AB CD mux/sum', *sotr_color_outputs),
-        BSEnum16('mapping', *sotr_output_mappings)
-        ),
+    Struct('alpha',
+        Struct('input A', 
+            BSEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
+            BSEnum16('mapped_to', *sotr_input_mappings),
+            ORIENT='h'
+            ),
+        Struct('input B', 
+            BSEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
+            BSEnum16('mapped_to', *sotr_input_mappings),
+            ORIENT='h'
+            ),
+        Struct('input C', 
+            BSEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
+            BSEnum16('mapped_to', *sotr_input_mappings),
+            ORIENT='h'
+            ),
+        Struct('input D', 
+            BSEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
+            BSEnum16('mapped_to', *sotr_input_mappings),
+            ORIENT='h'
+            ),
 
-    Struct('alpha input',
-        BSEnum16('A', *sotr_alpha_inputs),
-        BSEnum16('A mapping', *sotr_input_mappings),
-        BSEnum16('B', *sotr_alpha_inputs),
-        BSEnum16('B mapping', *sotr_input_mappings),
-        BSEnum16('C', *sotr_alpha_inputs),
-        BSEnum16('C mapping', *sotr_input_mappings),
-        BSEnum16('D', *sotr_alpha_inputs),
-        BSEnum16('D mapping', *sotr_input_mappings)
-        ),
-
-    Struct('alpha output',
-        BSEnum16('AB', *sotr_alpha_outputs),
-        BSEnum16('CD', *sotr_alpha_outputs),
-        BSEnum16('AB CD mux/sum', *sotr_alpha_outputs),
-        BSEnum16('mapping', *sotr_output_mappings)
+        BSEnum16('output AB', *sotr_alpha_outputs),
+        BSEnum16('output CD', *sotr_alpha_outputs),
+        BSEnum16('output AB CD mux/sum', *sotr_alpha_outputs),
+        BSEnum16('output mapping', *sotr_output_mappings)
         ),
 
     SIZE=112
