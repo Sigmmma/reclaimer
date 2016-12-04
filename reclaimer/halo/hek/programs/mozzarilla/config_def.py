@@ -31,6 +31,7 @@ config_def = TagDef("mozzarilla_config",
     widget_depths,
     colors,
     hotkeys,
+    tag_window_hotkeys,
     mozzarilla,
     ENDIAN='<', ext=".cfg",
     )

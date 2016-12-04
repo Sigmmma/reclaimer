@@ -11,11 +11,11 @@ def tag_class(*args):
     enumerations set to the provided tag_class fcc's.
     '''
     classes = []
-    for four_cc in sorted(args):
+    for four_cc in args:
         classes.append((tag_class_fcc_to_ext[four_cc], four_cc))
 
     return BUEnum32('tag_class',
-                    *(tuple(classes) + (("NONE", 0xffffffff),) ),
+                    *(tuple(sorted(classes)) + (("NONE", 0xffffffff),) ),
                     DEFAULT=0xffffffff, GUI_NAME=''
                     )
 
