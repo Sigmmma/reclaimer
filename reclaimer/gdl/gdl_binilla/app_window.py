@@ -1,10 +1,11 @@
 from traceback import format_exc
 from os.path import dirname
 
+# import Binilla first to make sure the constants are injected
+from supyr_struct.apps.binilla.app_window import Binilla
+from supyr_struct.defs.constants import *
 from ..handler import GdlHandler
 from .widget_picker import *
-from supyr_struct.defs.constants import *
-from supyr_struct.apps.binilla.app_window import Binilla
 
 
 class GdlBinilla(Binilla):
