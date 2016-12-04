@@ -152,12 +152,12 @@ actv_body = Struct("tagdata",
         Pad(20),
         dependency("equipment", "eqip"),
         QStruct("grenade count",
-            BSInt16("from", GUI_NAME=" "), BSInt16("to"),
+            BSInt16("from", GUI_NAME=" "), BSInt16("to"), ORIENT='h'
             ),
         BFloat("dont drop grenades chance", MIN=0.0, MAX=1.0),
         QStruct("drop weapon loaded", INCLUDE=from_to),
         QStruct("drop weapon ammo",
-            BSInt16("from", GUI_NAME=" "), BSInt16("to"),
+            BSInt16("from", GUI_NAME=" "), BSInt16("to"), ORIENT='h'
             )
         ),
 

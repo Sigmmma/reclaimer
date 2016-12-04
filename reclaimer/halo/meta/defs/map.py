@@ -141,15 +141,15 @@ tag_meta = Switch("tag meta",
     )
 
 
-tag_data = Container("tag data",
+tag_data = Container("tag",
     CStrLatin1("tag path", POINTER=tag_path_pointer),
     tag_meta,
     )
 
 tag_header = Struct("tag header",
-    LUEnum32("class 1", INCLUDE=valid_tags),
-    LUEnum32("class 2", INCLUDE=valid_tags),
-    LUEnum32("class 3", INCLUDE=valid_tags),
+    LUEnum32("class 1", GUI_NAME="primary tag class", INCLUDE=valid_tags),
+    LUEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_tags),
+    LUEnum32("class 3", GUI_NAME="tertiary tag class", INCLUDE=valid_tags),
     LUInt32("id"),
     LSInt32("path offset"),
     LSInt32("meta offset"),
