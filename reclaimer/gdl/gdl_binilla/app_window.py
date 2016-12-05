@@ -10,6 +10,8 @@ from .widget_picker import *
 
 class GdlBinilla(Binilla):
     app_name = 'GDL Binilla'
+    log_filename = 'gdl_binilla.log'
+
     config_path = dirname(__file__) + '%sgdl_binilla.cfg' % PATHDIV
 
     widget_picker = def_gdl_widget_picker
