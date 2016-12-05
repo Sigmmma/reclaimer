@@ -574,7 +574,7 @@ detail_mask = (
 # Descriptors
 tag_header = Struct("blam header",
     Pad(36),
-    valid_tags,
+    BUEnum32("tag_class", GUI_NAME="tag class", INCLUDE=valid_tags),
     LUInt32("base address", DEFAULT=0),  #random
     LUInt32("header size",  DEFAULT=64),
     Pad(8),
