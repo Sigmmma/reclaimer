@@ -15,6 +15,8 @@ from .widget_picker import *
 
 class Mozzarilla(Binilla):
     app_name = 'Mozzarilla'
+    log_filename = 'mozzarilla.log'
+    
     config_path = dirname(__file__) + '%smozzarilla.cfg' % PATHDIV
 
     config_def = config_def
@@ -51,12 +53,18 @@ class Mozzarilla(Binilla):
     widget_picker = def_halo_widget_picker
 
     def __init__(self, *args, **kwargs):
-        kwargs['handler'] = None
+        # gotta give it a default handler or else the
+        # config file will fail to be created as updating
+        # the config requires using methods in the handler.
+        kwargs['handler'] = MiscHaloLoader()
         Binilla.__init__(self, *args, **kwargs)
 
         self.settings_menu.delete(0, "end")  # clear the menu
         self.settings_menu.add_command(label="Set tags directory",
                                        command=self.set_tags_dir)
+        self.settings_menu.add_separator()
+        self.settings_menu.add_command(
+            label="Edit configuation", command=self.show_config_file)
 
         self.defs_menu = tk.Menu(self.main_menu, tearoff=0)
         self.main_menu.add_cascade(label="Tag set", menu=self.defs_menu)
@@ -69,7 +77,8 @@ class Mozzarilla(Binilla):
         self.handler_names = list(self.handler_names)
 
         self.select_defs(silent=True)
-        print("Tags directory is currently:\n    %s\n" % self.tagsdir)
+        if self.tagsdir is not None:
+            print("Tags directory is currently:\n    %s\n" % self.tagsdir)
 
     def load_tags(self, filepaths=None, def_id=None):
         tagsdir = self.tagsdir
@@ -161,8 +170,9 @@ class Mozzarilla(Binilla):
 
             print("Tags directory is currently:\n    %s\n" % tagsdir)
 
-    def make_tag_window(self, tag, focus=True):
-        w = Binilla.make_tag_window(self, tag, focus)
+    def make_tag_window(self, tag, *, focus=True, window_cls=None):
+        w = Binilla.make_tag_window(self, tag, focus=focus,
+                                    window_cls=window_cls)
         self.update_tag_window_title(w)
         return w
 
@@ -179,6 +189,9 @@ class Mozzarilla(Binilla):
     def update_tag_window_title(self, window):
         tagsdir = self.tagsdir
         if not hasattr(window, 'tag'):
+            return
+
+        if window.tag is self.config_file:
             return
 
         window.tag.filepath = self.handler.sanitize_path(window.tag.filepath)
@@ -272,6 +285,8 @@ class Mozzarilla(Binilla):
 
         if not silent:
             print()
+
+        self.config_file.data.mozzarilla.selected_handler.data = menu_index
 
     def load_config(self, filepath=None):
         Binilla.load_config(self, filepath)
