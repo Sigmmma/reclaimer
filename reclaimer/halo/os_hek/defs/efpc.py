@@ -38,8 +38,7 @@ effect_instance = Struct("effect instance",
         "after menu",
         ),
     QStruct("quad tesselation",
-        BSInt16("x"),
-        BSInt16("y")
+        BSInt16("x"), BSInt16("y"), ORIENT="h"
         ),
     QStruct("x screen bounds", INCLUDE=from_to, MIN=0.0, MAX=1.0),
     QStruct("y screen bounds", INCLUDE=from_to, MIN=0.0, MAX=1.0),

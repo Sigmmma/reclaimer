@@ -8,6 +8,13 @@ config_header = Struct("header",
     INCLUDE=config_header
     )
 
+directory_paths = Array("directory_paths",
+    SUB_STRUCT=filepath, SIZE=".array_counts.directory_path_count", MAX=4,
+    NAME_MAP=("last_load_dir", "last_defs_dir", "last_imp_dir", "curr_dir",
+              "debug_log_path",
+              "halo_1_tags_dir", "halo_1_os_tags_dir")
+    )
+
 mozzarilla = Struct("mozzarilla",
     Bool16("flags",
         ),
