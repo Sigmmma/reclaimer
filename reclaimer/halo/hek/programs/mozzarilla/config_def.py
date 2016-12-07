@@ -8,11 +8,12 @@ config_header = Struct("header",
     INCLUDE=config_header
     )
 
-directory_paths = Array("directory_paths",
-    SUB_STRUCT=filepath, SIZE=".array_counts.directory_path_count", MAX=4,
-    NAME_MAP=("last_load_dir", "last_defs_dir", "last_imp_dir", "curr_dir",
-              "debug_log_path",
-              "halo_1_tags_dir", "halo_1_os_tags_dir")
+tag_dirs = Array("tag_dirs",
+    SUB_STRUCT=filepath, SIZE=".mozzarilla.tag_dirs_count", MAX=4,
+    NAME_MAP=(
+        "halo_1_tags_dir", "halo_1_os_tags_dir",
+        "halo_1_map_tags_dir", "halo_1_misc_tags_dir"
+        )
     )
 
 mozzarilla = Struct("mozzarilla",
@@ -24,6 +25,9 @@ mozzarilla = Struct("mozzarilla",
         "halo_1_map",
         "halo_1_misc",
         ),
+    Pad(64 - 2*2),
+
+    UInt32("tag_dirs_count", VISIBLE=False),
     SIZE=128
     )
 
@@ -39,6 +43,8 @@ config_def = TagDef("mozzarilla_config",
     colors,
     hotkeys,
     tag_window_hotkeys,
+
     mozzarilla,
+    tag_dirs,
     ENDIAN='<', ext=".cfg",
     )
