@@ -1,5 +1,7 @@
+import os
+
 from hashlib import md5
-from os.path import basename, exists, normpath, splitext
+from os.path import abspath, basename, exists, normpath, splitext
 
 from supyr_struct.tests.test import TagTestHandler
 from supyr_struct.buffer import BytearrayBuffer
@@ -11,6 +13,8 @@ class HaloHandler(TagTestHandler):
     default_defs_path = "reclaimer.halo.hek.defs"
     tag_fcc_match_set = frozenset()
     tag_filepath_match_set = frozenset()
+
+    tagsdir = "%s%stags%s" % (abspath(os.curdir), PATHDIV, PATHDIV)
 
     def __init__(self, *args, **kwargs):
         TagTestHandler.__init__(self, *args, **kwargs)
