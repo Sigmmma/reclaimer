@@ -18,7 +18,7 @@ weapons = QStruct( "weapons",
     )
 
 save_file = Struct("save file",
-    UInt8("file checksum 1", DEFAULT=0, EDITABLE=False),
+    UInt8("file checksum 1", DEFAULT=0, VISIBLE=False),
     UEnum8("difficulty",
         "none",
         "easy",
@@ -144,13 +144,13 @@ save_file = Struct("save file",
     #produce 255, b'\xff'. If it doesnt then the save is
     #considered corrupt and is erased. The first checksum
     #byte will be defaulted to 0, and this one to 255.
-    UInt8("file checksum 2", DEFAULT=255, EDITABLE=False),
+    UInt8("file checksum 2", DEFAULT=255, VISIBLE=False),
     Pad(1)
     )
 
 sote_eep_def = TagDef("sote_eep_save",
-    UInt8("eep checksum 1", EDITABLE=False),
-    BytesRaw("header magic 1", EDITABLE=False, SIZE=4, DEFAULT=HEADER_MAGIC_1),
+    UInt8("eep checksum 1", VISIBLE=False),
+    BytesRaw("header magic 1", VISIBLE=False, SIZE=4, DEFAULT=HEADER_MAGIC_1),
     UEnum8("file just beaten",
         "none",
         "file 1",
@@ -159,12 +159,12 @@ sote_eep_def = TagDef("sote_eep_save",
         "file 4"
         ),
     Array("saves", SIZE=4, SUB_STRUCT=save_file, MIN=4, MAX=4),
-    BytesRaw("header magic 2", EDITABLE=False, SIZE=3, DEFAULT=HEADER_MAGIC_2),
+    BytesRaw("header magic 2", VISIBLE=False, SIZE=3, DEFAULT=HEADER_MAGIC_2),
 
     #OR-ing this value with the first checksum byte must produce 255, b'\xff'.
     #If it doesnt then the save is considered corrupt and is erased.
     #The first checksum byte will be defaulted to 0, and this one to 255.
-    UInt8("eep checksum 2", DEFAULT=255, EDITABLE=False),
+    UInt8("eep checksum 2", DEFAULT=255, VISIBLE=False),
     Pad(14),
 
     ext=".eep",

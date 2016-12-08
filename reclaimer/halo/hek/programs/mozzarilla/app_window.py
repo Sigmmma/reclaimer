@@ -1,6 +1,7 @@
 import tkinter as tk
+import zipfile
 
-from os.path import dirname
+from os.path import dirname, splitext
 from traceback import format_exc
 
 from supyr_struct.apps.binilla.app_window import *
@@ -9,7 +10,7 @@ from ...handler import HaloHandler
 from ....meta.handler import MapLoader
 from ....os_hek.handler import OsHaloHandler
 from ....misc.handler import MiscHaloLoader
-from .config_def import config_def
+from .config_def import config_def, guerilla_workspace_def
 from .widget_picker import *
 
 
@@ -18,7 +19,6 @@ class Mozzarilla(Binilla):
     log_filename = 'mozzarilla.log'
     
     config_path = dirname(__file__) + '%smozzarilla.cfg' % PATHDIV
-
     config_def = config_def
 
     handlers = (
@@ -53,6 +53,8 @@ class Mozzarilla(Binilla):
 
     widget_picker = def_halo_widget_picker
 
+    dependency_window = None
+
     def __init__(self, *args, **kwargs):
         # gotta give it a default handler or else the
         # config file will fail to be created as updating
@@ -60,6 +62,10 @@ class Mozzarilla(Binilla):
         kwargs['handler'] = MiscHaloLoader()
         self.tags_dir_relative = set(self.tags_dir_relative)
         Binilla.__init__(self, *args, **kwargs)
+
+        self.file_menu.insert_command("Exit", label="Load guerilla config",
+                                      command=self.load_guerilla_config)
+        self.file_menu.insert_separator("Exit")
 
         self.settings_menu.delete(0, "end")  # clear the menu
         self.settings_menu.add_command(label="Set tags directory",
@@ -75,12 +81,19 @@ class Mozzarilla(Binilla):
         self.settings_menu.add_command(
             label="Save current style", command=self.make_style)
 
+        # make the tools and tag set menus
+        self.tools_menu = tk.Menu(self.main_menu, tearoff=0)
         self.defs_menu = tk.Menu(self.main_menu, tearoff=0)
+
         self.main_menu.add_cascade(label="Tag set", menu=self.defs_menu)
+        self.main_menu.add_cascade(label="Tools", menu=self.tools_menu)
 
         for i in range(len(self.handler_names)):
             self.defs_menu.add_command(command=lambda i=i:
                                        self.select_defs(i, manual=True))
+
+        self.tools_menu.add_command(
+            label="Dependency viewer", command=self.show_dependency_viewer)
 
         self.defs_menu.add_separator()
         self.handlers = list(self.handlers)
@@ -98,6 +111,46 @@ class Mozzarilla(Binilla):
     def tags_dir(self, new_val):
         handler = self.handlers[self._curr_handler_index]
         handler.tagsdir = self.handler.sanitize_path(new_val)
+
+    def load_guerilla_config(self):
+        fp = askopenfilename(
+            initialdir=self.last_load_dir, title="Select the tag to load",
+            filetypes=(('All', '*'), ('Guerilla config', '*.cfg')))
+
+        if not fp:
+            return
+
+        self.last_load_dir = dirname(fp)
+        workspace = guerilla_workspace_def.build(filepath=fp)
+
+        pad_x = self.io_text.winfo_rootx() - self.winfo_x()
+        pad_y = self.io_text.winfo_rooty() - self.winfo_y()
+
+        tl_corner = workspace.data.window_header.top_left_corner
+        br_corner = workspace.data.window_header.bottom_right_corner
+
+        self.geometry("%sx%s+%s+%s" % (
+            br_corner.x - tl_corner.x - pad_x,
+            br_corner.y - tl_corner.y - pad_y,
+            tl_corner.x, tl_corner.y))
+
+        for tag in workspace.data.tags:
+            if not tag.is_valid_tag:
+                continue
+
+            windows = self.load_tags(tag.filepath)
+            if not windows:
+                continue
+
+            w = windows[0]
+
+            tl_corner = tag.window_header.top_left_corner
+            br_corner = tag.window_header.bottom_right_corner
+
+            self.place_window_relative(w, pad_x + tl_corner.x,
+                                          pad_y + tl_corner.y)
+            w.geometry("%sx%s" % (br_corner.x - tl_corner.x,
+                                  br_corner.y - tl_corner.y))
 
     def load_tags(self, filepaths=None, def_id=None):
         tags_dir = self.tags_dir
@@ -137,17 +190,23 @@ class Mozzarilla(Binilla):
                 return
 
         windows = Binilla.load_tags(self, sanitized_paths, def_id)
+
+        if not windows:
+            print("Change the tag set to load these tag(s).")
+            return ()
         tags_dir = self.handler.tagsdir
 
         # Give the tag a filepath relative to the current tags directory
         for w in windows:
             w.tag.rel_filepath = sani(w.tag.filepath).split(tags_dir)[-1]
 
+        return windows
+
     def load_tag_as(self, e=None):
         '''Prompts the user for a tag to load and loads it.'''
         if self.def_selector_window:
             return
-        
+
         filetypes = [('All', '*')]
         defs = self.handler.defs
         for def_id in sorted(defs.keys()):
@@ -155,13 +214,16 @@ class Mozzarilla(Binilla):
         fp = askopenfilename(initialdir=self.last_load_dir,
                              filetypes=filetypes,
                              title="Select the tag to load")
-        if fp != "":
-            self.last_load_dir = dirname(fp)
-            dsw = DefSelectorWindow(
-                self, title="Which tag is this", action=lambda def_id:
-                self.load_tags(filepaths=fp, def_id=def_id))
-            self.def_selector_window = dsw
-            self.place_window_relative(self.def_selector_window, 30, 50)
+
+        if not fp:
+            return
+
+        self.last_load_dir = dirname(fp)
+        dsw = DefSelectorWindow(
+            self, title="Which tag is this", action=lambda def_id:
+            self.load_tags(filepaths=fp, def_id=def_id))
+        self.def_selector_window = dsw
+        self.place_window_relative(self.def_selector_window, 30, 50)
 
     def set_tags_dir(self, e=None, *, tags_dir=None):
         if self.tags_dir is None:
@@ -171,17 +233,19 @@ class Mozzarilla(Binilla):
             tags_dir = askdirectory(initialdir=self.tags_dir,
                                    title="Select the tags directory")
 
-        if tags_dir:
-            tags_dir = self.handler.sanitize_path(tags_dir)
-            if tags_dir and not tags_dir.endswith(s_c.PATHDIV):
-                tags_dir += s_c.PATHDIV
-            self.tags_dir = self.last_load_dir = tags_dir
+        if not tags_dir:
+            return
 
-            curr_index = self._curr_handler_index
-            name = self.handler_names[curr_index]
-            dir_name = self.handler_tags_dir_map[name]
+        tags_dir = self.handler.sanitize_path(tags_dir)
+        if tags_dir and not tags_dir.endswith(s_c.PATHDIV):
+            tags_dir += s_c.PATHDIV
+        self.tags_dir = self.last_load_dir = tags_dir
 
-            print("Tags directory is currently:\n    %s\n" % tags_dir)
+        curr_index = self._curr_handler_index
+        name = self.handler_names[curr_index]
+        dir_name = self.handler_tags_dir_map[name]
+
+        print("Tags directory is currently:\n    %s\n" % tags_dir)
 
     def make_tag_window(self, tag, *, focus=True, window_cls=None):
         w = Binilla.make_tag_window(self, tag, focus=focus,
@@ -204,18 +268,18 @@ class Mozzarilla(Binilla):
         if not hasattr(window, 'tag'):
             return
 
-        if window.tag is self.config_file:
+        if window.tag is self.config_file or not tags_dir:
             return
 
         window.tag.filepath = self.handler.sanitize_path(window.tag.filepath)
-        if tags_dir:
-            title = window.tag.filepath.split(tags_dir)[-1]
-            try:
-                handler_i = self.handlers.index(window.handler)
-                title = "[%s] %s" % (self.handler_names[handler_i], title)
-            except Exception:
-                pass
-            window.update_title(title)
+
+        title = window.tag.filepath.split(tags_dir)[-1]
+        try:
+            handler_i = self.handlers.index(window.handler)
+            title = "[%s] %s" % (self.handler_names[handler_i], title)
+        except Exception:
+            pass
+        window.update_title(title)
 
     def save_tag(self, tag=None):
         if isinstance(tag, tk.Event):
@@ -386,3 +450,219 @@ class Mozzarilla(Binilla):
                 tags_dir += s_c.PATHDIV
 
             tag_dirs[dir_name].path = handler.tagsdir = tags_dir
+
+    def show_dependency_viewer(self):
+        if self.dependency_window is not None:
+            return
+
+        self.dependency_window = DependencyWindow(self, app_root=self)
+        self.place_window_relative(self.dependency_window, 30, 50)
+
+
+class DependencyWindow(tk.Toplevel, BinillaWidget):
+
+    app_root = None
+    handler = None
+
+    def __init__(self, master, *args, **kwargs): 
+        self.app_root = kwargs.pop('app_root', self.app_root)
+        self.handler = self.app_root.handler
+        kwargs.update(width=400, height=100)
+        tk.Toplevel.__init__(self, master, *args, **kwargs)
+        
+        self.title("Tag dependency viewer")
+        self.minsize(width=400, height=100)
+
+        # make the tkinter variables
+        self.tag_filepath = tk.StringVar(self)
+
+        # make the frames
+        self.filepath_frame = tk.LabelFrame(self, text="Select a tag")
+        self.button_frame = tk.LabelFrame(self, text="Actions")
+
+        self.display_button = tk.Button(
+            self.button_frame, text='Show dependencies',
+            command=self.populate_dependency_tree,
+            width=20, bg=self.default_bg_color, fg=self.text_normal_color)
+
+        self.zip_button = tk.Button(
+            self.button_frame, text='Zip tag recursively',
+            command=self.recursive_zip,
+            width=20, bg=self.default_bg_color, fg=self.text_normal_color)
+
+        self.filepath_entry = tk.Entry(
+            self.filepath_frame, textvariable=self.tag_filepath)
+        self.browse_button = tk.Button(
+            self.filepath_frame, text="Browse", command=self.browse)
+
+        self.display_button.pack(padx=4, pady=2, side=tk.LEFT)
+        self.zip_button.pack(padx=4, pady=2, side=tk.LEFT)
+
+        self.filepath_entry.pack(padx=(4, 0), pady=2, side=tk.LEFT,
+                                 expand=True, fill='x')
+        self.browse_button.pack(padx=(0, 4), pady=2, side=tk.LEFT)
+
+        self.filepath_frame.pack(fill='x', padx=1)
+        self.button_frame.pack(fill='x', padx=1)
+
+        self.transient(self.master)
+
+    def browse(self):
+        filetypes = [('All', '*')]
+
+        defs = self.app_root.handler.defs
+        for def_id in sorted(defs.keys()):
+            filetypes.append((def_id, defs[def_id].ext))
+        fp = askopenfilename(initialdir=self.app_root.last_load_dir,
+                             filetypes=filetypes, title="Select a tag")
+
+        if not fp:
+            return
+
+        fp = self.app_root.handler.sanitize_path(fp)
+        self.app_root.last_load_dir = dirname(fp)
+
+        self.filepath_entry.delete(0, tk.END)
+        self.filepath_entry.insert(0, fp)
+
+    def destroy(self):
+        try:
+            self.master.dependency_window = None
+        except AttributeError:
+            pass
+        tk.Toplevel.destroy(self)
+
+    def get_tag(self, filepath):
+        def_id = self.app_root.handler.get_def_id(filepath)
+        tag = self.app_root.get_tag(def_id, filepath)
+        if tag is not None:
+            return tag
+        try:
+            return self.app_root.handler.build_tag(filepath=filepath)
+        except Exception:
+            pass
+
+    def get_dependencies(self, tag):
+        handler = self.handler
+        def_id = tag.def_id
+        dependency_cache = handler.tag_ref_cache.get(def_id)
+
+        if not dependency_cache:
+            return ()
+
+        nodes = handler.get_nodes_by_paths(handler.tag_ref_cache[def_id],
+                                           tag.data)
+
+        dependencies = []
+
+        for node in nodes:
+            # if the node's filepath is empty, just skip it
+            if not node.filepath:
+                continue
+            try:
+                ext = '.' + node.tag_class.enum_name
+            except Exception:
+                ext = ''
+            dependencies.append(node.filepath + ext)
+        return dependencies
+
+    def populate_dependency_tree(self):
+        filepath = self.tag_filepath.get()
+        if not filepath:
+            return
+
+        app = self.app_root
+        handler = self.handler = app.handler
+        sani = handler.sanitize_path
+
+        handler_name = app.handler_names[app._curr_handler_index]
+        if handler_name not in app.tags_dir_relative:
+            print("Change the current tag set.")
+            return
+        else:
+            tags_dir = handler.tagsdir
+
+        filepath = sani(filepath)
+        if len(filepath.split(tags_dir)) != 2:
+            print("Specified tag is not located within the tags directory")
+            return
+
+        tag = self.get_tag(filepath)
+        if tag is None:
+            print("Could not load tag:\n    %s" % filepath)
+            return
+
+        print(tag)
+
+    def recursive_zip(self):
+        tag_path = self.tag_filepath.get()
+        if not tag_path:
+            return
+
+        app = self.app_root
+        handler = self.handler = app.handler
+        sani = handler.sanitize_path
+
+        handler_name = app.handler_names[app._curr_handler_index]
+        if handler_name not in app.tags_dir_relative:
+            print("Change the current tag set.")
+            return
+        else:
+            tags_dir = handler.tagsdir
+
+        tag_path = sani(tag_path)
+        if len(tag_path.split(tags_dir)) != 2:
+            print("Specified tag is not located within the tags directory")
+            return
+
+        tagzip_path = asksaveasfilename(
+            initialdir=self.app_root.last_load_dir, title="Save zipfile to...",
+            filetypes=(("zipfile", "*.zip"), ))
+
+        if not tagzip_path:
+            return
+
+        # TURN THE BELOW CODE INTO A DAEMON THREAD SO THE
+        # APPLICATION ISNT LOCKED WHILE ITS PROGRESSING.
+        tag = self.get_tag(tag_path)
+        if tag is None:
+            print("Could not load tag:\n    %s" % tag_path)
+            return
+
+        # make the zipfile to put everything in
+        tagzip_path = splitext(tagzip_path)[0] + ".zip"
+
+        tags_to_zip = [tag_path.split(tags_dir)[-1]]
+        new_tags_to_zip = []
+        seen_tags = set()
+
+        with zipfile.ZipFile(tagzip_path, mode='w') as tagzip:
+            # loop over all the tags and add them to the zipfile
+            while tags_to_zip:
+                for rel_tag_path in tags_to_zip:
+                    tag_path = tags_dir + rel_tag_path
+
+                    if rel_tag_path in seen_tags:
+                        continue
+                    seen_tags.add(rel_tag_path)
+
+                    try:
+                        tag = self.get_tag(tag_path)
+                        new_tags_to_zip.extend(self.get_dependencies(tag))
+
+                        tagzip.write(tag_path, arcname=rel_tag_path)
+                        print("Added '%s' to zipfile" % rel_tag_path)
+                    except Exception:
+                        print("    Could not add '%s' to zipfile." %
+                              rel_tag_path)
+
+                    try:
+                        app.io_text.update_idletasks()
+                    except Exception:
+                        pass
+
+                # replace the tags to zip with the newly collected ones
+                tags_to_zip[:] = new_tags_to_zip
+                del new_tags_to_zip[:]
+
+            print('\n')
