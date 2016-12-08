@@ -1,7 +1,9 @@
+import os
 import tkinter as tk
 import zipfile
 
 from os.path import dirname, splitext
+from time import time
 from traceback import format_exc
 
 from supyr_struct.apps.binilla.app_window import *
@@ -54,6 +56,7 @@ class Mozzarilla(Binilla):
     widget_picker = def_halo_widget_picker
 
     dependency_window = None
+    tag_scanner_window = None
 
     def __init__(self, *args, **kwargs):
         # gotta give it a default handler or else the
@@ -94,6 +97,8 @@ class Mozzarilla(Binilla):
 
         self.tools_menu.add_command(
             label="Dependency viewer", command=self.show_dependency_viewer)
+        self.tools_menu.add_command(
+            label="Scan tags directory", command=self.show_tag_scanner)
 
         self.defs_menu.add_separator()
         self.handlers = list(self.handlers)
@@ -451,6 +456,54 @@ class Mozzarilla(Binilla):
 
             tag_dirs[dir_name].path = handler.tagsdir = tags_dir
 
+    def scan_tags_dir(self):
+        handler = self.handler
+        log_name = "Tag Scanner debug log"
+
+        #this is the string to store the entire debug log
+        debuglog = "\n%s%s%s\n\n\n" % ("-"*30, log_name,
+                                       "-" * (50-len(log_name)))
+        get_nodes = handler.get_nodes_by_paths
+        get_tagref_invalid = handler.get_tagref_invalid
+
+        # make the debug string by scanning the tags directory
+        for def_id in sorted(handler.tag_ref_cache.keys()):
+            tag_ref_paths = handler.tag_ref_cache[def_id]
+
+            print("Scanning '%s' tags..." % def_id)
+            tags_coll = handler.tags[def_id]
+
+            for filepath in sorted(tags_coll.keys()):
+                tag = tags_coll[filepath]
+                self.current_tag = filepath
+
+                try:
+                    missed = get_nodes(tag_ref_paths, tag.data,
+                                       get_tagref_invalid)
+
+                    if not missed:
+                        continue
+
+                    debuglog += "\n\n%s\n" % filepath
+                    block_name = None
+
+                    for block in missed:
+                        if block.NAME != block_name:
+                            debuglog += '%s%s\n' % (' '*4, block.NAME)
+                            block_name = block.NAME
+                        try:
+                            ext = '.' + block.tag_class.enum_name
+                        except Exception:
+                            ext = ''
+                        debuglog += '%s%s\n' % (' '*8, block.STEPTREE + ext)
+
+                except Exception:
+                    print("    Could not scan '%s'" % tag.filepath)
+                    continue
+
+        # make and write to the logfile
+        handler.make_log_file(debuglog, "hek_tag_scanner.log")
+
     def show_dependency_viewer(self):
         if self.dependency_window is not None:
             return
@@ -458,11 +511,24 @@ class Mozzarilla(Binilla):
         self.dependency_window = DependencyWindow(self, app_root=self)
         self.place_window_relative(self.dependency_window, 30, 50)
 
+    def show_tag_scanner(self):
+        if self.tag_scanner_window is not None:
+            return
+
+        if not hasattr(self.handler, 'tag_ref_cache'):
+            print("Change the current tag set.")
+            return
+
+        self.tag_scanner_window = TagScannerWindow(self, app_root=self)
+        self.place_window_relative(self.tag_scanner_window, 30, 50)
+
 
 class DependencyWindow(tk.Toplevel, BinillaWidget):
 
     app_root = None
     handler = None
+
+    stop_zipping = False
 
     def __init__(self, master, *args, **kwargs): 
         self.app_root = kwargs.pop('app_root', self.app_root)
@@ -470,7 +536,8 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         kwargs.update(width=400, height=100)
         tk.Toplevel.__init__(self, master, *args, **kwargs)
         
-        self.title("Tag dependency viewer")
+        tagset = self.app_root.handler_names[self.app_root._curr_handler_index]
+        self.title("[%s] Tag dependency viewer" % tagset)
         self.minsize(width=400, height=100)
 
         # make the tkinter variables
@@ -481,14 +548,12 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         self.button_frame = tk.LabelFrame(self, text="Actions")
 
         self.display_button = tk.Button(
-            self.button_frame, text='Show dependencies',
-            command=self.populate_dependency_tree,
-            width=20, bg=self.default_bg_color, fg=self.text_normal_color)
+            self.button_frame, width=25, text='Show dependencies',
+            command=self.populate_dependency_tree)
 
         self.zip_button = tk.Button(
-            self.button_frame, text='Zip tag recursively',
-            command=self.recursive_zip,
-            width=20, bg=self.default_bg_color, fg=self.text_normal_color)
+            self.button_frame, width=25, text='Zip tag recursively',
+            command=self.recursive_zip)
 
         self.filepath_entry = tk.Entry(
             self.filepath_frame, textvariable=self.tag_filepath)
@@ -496,7 +561,7 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
             self.filepath_frame, text="Browse", command=self.browse)
 
         self.display_button.pack(padx=4, pady=2, side=tk.LEFT)
-        self.zip_button.pack(padx=4, pady=2, side=tk.LEFT)
+        self.zip_button.pack(padx=4, pady=2, side=tk.RIGHT)
 
         self.filepath_entry.pack(padx=(4, 0), pady=2, side=tk.LEFT,
                                  expand=True, fill='x')
@@ -530,6 +595,7 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
             self.master.dependency_window = None
         except AttributeError:
             pass
+        self.stop_zipping = True
         tk.Toplevel.destroy(self)
 
     def get_tag(self, filepath):
@@ -641,6 +707,9 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
             while tags_to_zip:
                 for rel_tag_path in tags_to_zip:
                     tag_path = tags_dir + rel_tag_path
+                    if self.stop_zipping:
+                        print('Recursive zip operation cancelled.\n')
+                        return
 
                     if rel_tag_path in seen_tags:
                         continue
@@ -650,19 +719,335 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
                         tag = self.get_tag(tag_path)
                         new_tags_to_zip.extend(self.get_dependencies(tag))
 
+                        # try to conserve memory a bit
+                        del tag
+
                         tagzip.write(tag_path, arcname=rel_tag_path)
                         print("Added '%s' to zipfile" % rel_tag_path)
                     except Exception:
                         print("    Could not add '%s' to zipfile." %
                               rel_tag_path)
 
-                    try:
-                        app.io_text.update_idletasks()
-                    except Exception:
-                        pass
+                    try: app.io_text.update()
+                    except Exception: pass
 
                 # replace the tags to zip with the newly collected ones
                 tags_to_zip[:] = new_tags_to_zip
                 del new_tags_to_zip[:]
 
-            print('\n')
+        print("\nRecursive zip completed.\n")
+
+
+class TagScannerWindow(tk.Toplevel, BinillaWidget):
+
+    app_root = None
+    handler = None
+
+    stop_scanning = False
+    print_interval = 5
+
+    listbox_index_to_def_id = ()
+
+    def __init__(self, master, *args, **kwargs): 
+        self.app_root = kwargs.pop('app_root', self.app_root)
+        self.handler = handler = self.app_root.handler
+        kwargs.update(width=400, height=100)
+        tk.Toplevel.__init__(self, master, *args, **kwargs)
+
+        ext_id_map = handler.ext_id_map
+        self.listbox_index_to_def_id = [
+            ext_id_map[ext] for ext in sorted(ext_id_map.keys())
+            if ext_id_map[ext] in handler.tag_ref_cache]
+
+        tagset = self.app_root.handler_names[self.app_root._curr_handler_index]
+
+        self.title("[%s] Tag directory scanner" % tagset)
+        self.minsize(width=500, height=300)
+        self.resizable(0, 0)
+
+        # make the tkinter variables
+        self.directory_path = tk.StringVar(self)
+        self.logfile_path = tk.StringVar(self)
+
+        # make the frames
+        self.directory_frame = tk.LabelFrame(
+            self, text="Directory to scan")
+        self.logfile_frame = tk.LabelFrame(
+            self, text="Output log filepath")
+        self.button_frame = tk.LabelFrame(self, text="")
+        self.def_ids_frame = tk.LabelFrame(
+            self, text="Select which tag types to scan")
+
+        self.scan_button = tk.Button(
+            self.button_frame, text='Scan directory', width=20,
+            command=self.scan_directory)
+        self.cancel_button = tk.Button(
+            self.button_frame, text='Cancel scan', width=20,
+            command=self.cancel_scan)
+        self.select_all_button = tk.Button(
+            self.button_frame, text='Select all', width=15,
+            command=self.select_all)
+        self.deselect_all_button = tk.Button(
+            self.button_frame, text='Deselect all', width=15,
+            command=self.deselect_all)
+
+        self.directory_entry = tk.Entry(
+            self.directory_frame, textvariable=self.directory_path)
+        self.dir_browse_button = tk.Button(
+            self.directory_frame, text="Browse", command=self.dir_browse)
+
+        self.logfile_entry = tk.Entry(
+            self.logfile_frame, textvariable=self.logfile_path)
+        self.log_browse_button = tk.Button(
+            self.logfile_frame, text="Browse", command=self.log_browse)
+
+        self.def_ids_scrollbar = tk.Scrollbar(
+            self.def_ids_frame, orient="vertical")
+        self.def_ids_listbox = tk.Listbox(
+            self.def_ids_frame, selectmode=tk.MULTIPLE, highlightthickness=0,
+            yscrollcommand=self.def_ids_scrollbar.set)
+        self.def_ids_scrollbar.config(command=self.def_ids_listbox.yview)
+
+        for def_id in self.listbox_index_to_def_id:
+            tag_ext = handler.id_ext_map[def_id].split('.')[-1]
+            self.def_ids_listbox.insert(tk.END, tag_ext)
+
+            # these tag types are massive, so by
+            # default dont set them to be scanned
+            if def_id in ("sbsp", "scnr"):
+                continue
+            self.def_ids_listbox.select_set(tk.END)
+
+        for w in (self.directory_entry, self.logfile_entry):
+            w.pack(padx=(4, 0), pady=2, side=tk.LEFT, expand=True, fill='x')
+
+        for w in (self.dir_browse_button, self.log_browse_button):
+            w.pack(padx=(0, 4), pady=2, side=tk.LEFT)
+
+        for w in (self.scan_button, self.cancel_button):
+            w.pack(padx=4, pady=2, side=tk.LEFT)
+
+        for w in (self.deselect_all_button, self.select_all_button):
+            w.pack(padx=4, pady=2, side=tk.RIGHT)
+
+        self.def_ids_listbox.pack(side=tk.LEFT, fill="both", expand=True)
+        self.def_ids_scrollbar.pack(side=tk.LEFT, fill="y")
+
+        self.directory_frame.pack(fill='x', padx=1)
+        self.logfile_frame.pack(fill='x', padx=1)
+        self.def_ids_frame.pack(fill='x', padx=1, expand=True)
+        self.button_frame.pack(fill='x', padx=1)
+
+        self.transient(self.master)
+
+        self.directory_entry.insert(0, handler.tagsdir)
+        self.logfile_entry.insert(0, handler.tagsdir + "tag_scanner.log")
+
+    def deselect_all(self):
+        self.def_ids_listbox.select_clear(0, tk.END)
+
+    def select_all(self):
+        for i in range(len(self.listbox_index_to_def_id)):
+            self.def_ids_listbox.select_set(i)
+
+    def get_tag(self, filepath):
+        def_id = self.app_root.handler.get_def_id(filepath)
+        tag = self.app_root.get_tag(def_id, filepath)
+        if tag is not None:
+            return tag
+        try:
+            return self.app_root.handler.build_tag(filepath=filepath)
+        except Exception:
+            pass
+
+    def dir_browse(self):
+        dirpath = askdirectory(
+            initialdir=self.directory_path.get(),
+            title="Select directory to scan")
+
+        if not dirpath:
+            return
+
+        dirpath = self.app_root.handler.sanitize_path(dirpath)
+        if not dirpath.endswith(PATHDIV):
+            dirpath += PATHDIV
+
+        self.app_root.last_load_dir = dirname(dirpath)
+        if len(dirpath.split(self.handler.tagsdir)) != 2:
+            print("Chosen directory is not located within the tags directory")
+            return
+
+        self.directory_entry.delete(0, tk.END)
+        self.directory_entry.insert(0, dirpath)
+
+    def log_browse(self):
+        filepath = asksaveasfilename(
+            initialdir=dirname(self.logfile_entry.get()),
+            title="Save scan log to...",
+            filetypes=(("tag scanner log", "*.log"), ('All', '*')))
+
+        if not filepath:
+            return
+
+        filepath = self.app_root.handler.sanitize_path(filepath)
+        self.app_root.last_load_dir = dirname(filepath)
+
+        self.logfile_entry.delete(0, tk.END)
+        self.logfile_entry.insert(0, filepath)
+
+    def destroy(self):
+        try:
+            self.master.tag_scanner_window = None
+        except AttributeError:
+            pass
+        self.stop_scanning = True
+        tk.Toplevel.destroy(self)
+
+    def cancel_scan(self):
+        self.stop_scanning = True
+
+    def scan_directory(self):
+        app = self.app_root
+        handler = self.handler
+        sani = handler.sanitize_path
+        self.stop_scanning = False
+
+        tagsdir = self.handler.tagsdir
+        dirpath = sani(self.directory_path.get())
+        logpath = sani(self.logfile_path.get())
+
+        if len(dirpath.split(tagsdir)) != 2:
+            print("Chosen directory is not located within the tags directory")
+            return
+
+        #this is the string to store the entire debug log
+        log_name = "HEK Tag Scanner log"
+        debuglog = "\n%s%s%s\n\n" % (
+            "-"*30, log_name, "-" * (50-len(log_name)))
+        debuglog += "tags directory = %s\nscan directory = %s\n\n" % (
+            tagsdir, dirpath)
+        debuglog += "broken dependencies are listed below\n"
+
+        get_nodes = handler.get_nodes_by_paths
+        get_tagref_invalid = handler.get_tagref_invalid
+
+        s_time = time()
+        c_time = s_time
+        p_int = self.print_interval
+
+        all_tag_paths = {self.listbox_index_to_def_id[i]: [] for i in
+                         self.def_ids_listbox.curselection()}
+        ext_id_map = handler.ext_id_map
+        id_ext_map = handler.id_ext_map
+
+        print("Locating tags...")
+        try: app.io_text.update()
+        except Exception: pass
+
+        for root, directories, files in os.walk(dirpath):
+            if not root.endswith(PATHDIV):
+                root += PATHDIV
+
+            root = root.split(tagsdir)[-1]
+
+            for filename in files:
+                filepath = sani(root + filename)
+
+                if time() - c_time > p_int:
+                    c_time = time()
+                    print(' '*4 + filepath)
+                    try: app.io_text.update()
+                    except Exception: pass
+
+                if self.stop_scanning:
+                    print('Tag scanning operation cancelled.\n')
+                    return
+
+                tag_paths = all_tag_paths.get(
+                    ext_id_map.get(splitext(filename)[-1].lower()))
+
+                if tag_paths is not None:
+                    tag_paths.append(filepath)
+
+        # make the debug string by scanning the tags directory
+        for def_id in sorted(all_tag_paths.keys()):
+            tag_ref_paths = handler.tag_ref_cache[def_id]
+
+            print("Scanning '%s' tags..." % id_ext_map[def_id])
+            try: app.io_text.update()
+            except Exception: pass
+            tags_coll = all_tag_paths[def_id]
+
+            # always display the first tag's filepath
+            c_time = time() - p_int + 1
+
+            for filepath in sorted(tags_coll):
+                if self.stop_scanning:
+                    print('Tag scanning operation cancelled.\n')
+                    break
+
+                if time() - c_time > p_int:
+                    c_time = time()
+                    print(' '*4 + filepath)
+
+                try: app.io_text.update()
+                except Exception: pass
+
+                tag = self.get_tag(tagsdir + filepath)
+                if tag is None:
+                    continue
+
+                try:
+                    missed = get_nodes(tag_ref_paths, tag.data,
+                                       get_tagref_invalid)
+
+                    if not missed:
+                        continue
+
+                    debuglog += "\n\n%s\n" % filepath
+                    block_name = None
+
+                    for block in missed:
+                        if block.NAME != block_name:
+                            debuglog += '%s%s\n' % (' '*4, block.NAME)
+                            block_name = block.NAME
+                        try:
+                            ext = '.' + block.tag_class.enum_name
+                        except Exception:
+                            ext = ''
+                        debuglog += '%s%s\n' % (' '*8, block.STEPTREE + ext)
+
+                except Exception:
+                    print("    Could not scan '%s'" % tag.filepath)
+                    try: app.io_text.update()
+                    except Exception: pass
+                    continue
+
+            if self.stop_scanning:
+                break
+
+        print("\nScanning took %s seconds." % int(time() - s_time))
+        print("Writing logfile...")
+        try: app.io_text.update()
+        except Exception: pass
+
+        # make and write to the logfile
+        try:
+            handler.make_log_file(debuglog, logpath)
+            print("Scan completed.\n")
+            return
+        except Exception:
+            pass
+
+        print("Could not create log. Printing log to console instead.\n\n")
+        try: app.io_text.update()
+        except Exception: pass
+        for line in debug_log.split('\n'):
+            try:
+                print(line)
+            except Exception:
+                print("<COULD NOT PRINT THIS LINE>")
+            try: app.io_text.update()
+            except Exception: pass
+
+        print("Scan completed.\n")
