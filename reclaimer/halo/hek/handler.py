@@ -158,8 +158,7 @@ class HaloHandler(TagTestHandler):
         #if the string is empty, then it doesnt NOT exist, so return False
         if not node.filepath:
             return False
-        filepath = self.tagsdir
-        filepath += node.filepath
+        filepath = self.tagsdir + node.filepath
         
         try:
             filepath += '.' + node.tag_class.enum_name
@@ -167,6 +166,18 @@ class HaloHandler(TagTestHandler):
             pass
         
         return not exists(filepath)
+
+    def get_tagref_exists(self, node):
+        if not node.filepath:
+            return False
+        filepath = self.tagsdir + node.filepath
+        
+        try:
+            filepath += '.' + node.tag_class.enum_name
+        except Exception:
+            pass
+        
+        return exists(filepath)
 
     def get_tagref_matches(self, node):
         '''
