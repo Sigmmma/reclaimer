@@ -19,6 +19,7 @@ from .widget_picker import *
 class Mozzarilla(Binilla):
     app_name = 'Mozzarilla'
     log_filename = 'mozzarilla.log'
+    debug = 0
     
     config_path = dirname(__file__) + '%smozzarilla.cfg' % PATHDIV
     config_def = config_def
@@ -62,7 +63,8 @@ class Mozzarilla(Binilla):
         # gotta give it a default handler or else the
         # config file will fail to be created as updating
         # the config requires using methods in the handler.
-        kwargs['handler'] = MiscHaloLoader()
+        self.debug = kwargs.pop('debug', self.debug)
+        kwargs['handler'] = MiscHaloLoader(debug=self.debug)
         self.tags_dir_relative = set(self.tags_dir_relative)
         Binilla.__init__(self, *args, **kwargs)
 
@@ -360,7 +362,7 @@ class Mozzarilla(Binilla):
             self.io_text.update_idletasks()
 
         if isinstance(handler, type):
-            self.handlers[menu_index] = handler()
+            self.handlers[menu_index] = handler(debug=self.debug)
 
         self.handler = self.handlers[menu_index]
 
@@ -378,7 +380,6 @@ class Mozzarilla(Binilla):
         if tags_dir == '':
             self.tags_dir = tags_dir = (
                 self.curr_dir + "%stags%s" % (s_c.PATHDIV,  s_c.PATHDIV))
-        self.last_load_dir = self.tags_dir
 
         if manual:
             self.last_load_dir = tags_dir
@@ -751,7 +752,6 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
     def __init__(self, master, *args, **kwargs): 
         self.app_root = kwargs.pop('app_root', self.app_root)
         self.handler = handler = self.app_root.handler
-        kwargs.update(width=400, height=100)
         tk.Toplevel.__init__(self, master, *args, **kwargs)
 
         ext_id_map = handler.ext_id_map
@@ -762,7 +762,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
         tagset = self.app_root.handler_names[self.app_root._curr_handler_index]
 
         self.title("[%s] Tag directory scanner" % tagset)
-        self.minsize(width=500, height=300)
+        self.minsize(width=400, height=250)
         self.resizable(0, 0)
 
         # make the tkinter variables
@@ -774,9 +774,9 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
             self, text="Directory to scan")
         self.logfile_frame = tk.LabelFrame(
             self, text="Output log filepath")
-        self.button_frame = tk.LabelFrame(self, text="")
         self.def_ids_frame = tk.LabelFrame(
             self, text="Select which tag types to scan")
+        self.button_frame = tk.Frame(self.def_ids_frame)
 
         self.scan_button = tk.Button(
             self.button_frame, text='Scan directory', width=20,
@@ -785,10 +785,10 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
             self.button_frame, text='Cancel scan', width=20,
             command=self.cancel_scan)
         self.select_all_button = tk.Button(
-            self.button_frame, text='Select all', width=15,
+            self.button_frame, text='Select all', width=20,
             command=self.select_all)
         self.deselect_all_button = tk.Button(
-            self.button_frame, text='Deselect all', width=15,
+            self.button_frame, text='Deselect all', width=20,
             command=self.deselect_all)
 
         self.directory_entry = tk.Entry(
@@ -825,18 +825,18 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
             w.pack(padx=(0, 4), pady=2, side=tk.LEFT)
 
         for w in (self.scan_button, self.cancel_button):
-            w.pack(padx=4, pady=2, side=tk.LEFT)
+            w.pack(padx=4, pady=2)
 
         for w in (self.deselect_all_button, self.select_all_button):
-            w.pack(padx=4, pady=2, side=tk.RIGHT)
+            w.pack(padx=4, pady=2, side=tk.BOTTOM)
 
         self.def_ids_listbox.pack(side=tk.LEFT, fill="both", expand=True)
         self.def_ids_scrollbar.pack(side=tk.LEFT, fill="y")
+        self.button_frame.pack(side=tk.LEFT, fill="y")
 
         self.directory_frame.pack(fill='x', padx=1)
         self.logfile_frame.pack(fill='x', padx=1)
         self.def_ids_frame.pack(fill='x', padx=1, expand=True)
-        self.button_frame.pack(fill='x', padx=1)
 
         self.transient(self.master)
 
