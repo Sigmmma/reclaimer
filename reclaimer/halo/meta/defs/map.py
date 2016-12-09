@@ -161,7 +161,7 @@ tag_header = Struct("tag header",
     )
 
 map_header = Struct("map header",
-    LUInt32("head", DEFAULT='head'),
+    LUEnum32('head', ('head', 'head'), EDITABLE=False, DEFAULT='head'),
     LSEnum32("version",
         ("xbox",    5),
         ("pc_demo", 6),
@@ -188,14 +188,14 @@ map_header = Struct("map header",
         ),
     LUInt32("crc32"),
     Pad(1940),
-    LUInt32("foot", DEFAULT='foot'),
+    LUEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
     )
 
 #Apparently the Halo Demo maps have a different
 #header as there are 704 bytes #before the header
 #that appear to be garbage AND garbage filling
 #all the headers null padding.
-tag_index_header = QuickStruct("tag index header",
+tag_index_header = Struct("tag index header",
     LUInt32("index magic"),
     LUInt32("base magic"),
     LUInt32("map id"),
@@ -208,7 +208,7 @@ tag_index_header = QuickStruct("tag index header",
     LUInt32("indices offset"),
 
     LUInt32("model raw data size"),
-    LUInt32("tag sig", DEFAULT='tags'),
+    LUEnum32("tag sig", ('tags', 'tags'), EDITABLE=False, DEFAULT='tags'),
 
     POINTER='.map_header.tag_index_offset'
     )

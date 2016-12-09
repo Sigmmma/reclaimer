@@ -5,7 +5,7 @@ from supyr_struct.defs.block_def import BlockDef
 from .field_types import *
 from .constants import *
 
-def tag_class(*args):
+def tag_class(*args, **kwargs):
     '''
     A macro for creating a tag_class enum desc with the
     enumerations set to the provided tag_class fcc's.
@@ -16,7 +16,7 @@ def tag_class(*args):
 
     return BUEnum32('tag_class',
                     *(tuple(sorted(classes)) + (("NONE", 0xffffffff),) ),
-                    DEFAULT=0xffffffff, GUI_NAME=''
+                    DEFAULT=0xffffffff, GUI_NAME='', WIDGET_WIDTH=20, **kwargs
                     )
 
 
@@ -61,12 +61,12 @@ def dependency(name='tag ref', valid_ids=None):
 
     return TagIndexRef(name,
         valid_ids,
-        BSInt32("path pointer", VISIBLE=False),
-        BSInt32("path length", MAX=243, VISIBLE=False),
-        BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False),
+        BSInt32("path pointer", VISIBLE=False, EDITABLE=False),
+        BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
+        BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
-        STEPTREE=StringVarLen("filepath", SIZE=tag_ref_size),
-        EDITABLE=False, ORIENT='h'
+        STEPTREE=StringVarLen("filepath", GUI_NAME="", SIZE=tag_ref_size),
+        ORIENT='h'
         )
 
 
@@ -609,13 +609,22 @@ anim_src_func_per_pha_sca = Struct('',
     # when scale is for rotation, its actually in degrees, not radians. weird!
     )
 from_to = QStruct('',
-    BFloat("from", GUI_NAME=" "), BFloat("to"), ORIENT='h'
+    BFloat("from", GUI_NAME=''), BFloat("to"), ORIENT='h'
+    )
+from_to_degrees = QStruct('',
+    BFloat("from", GUI_NAME=''), BFloat("to"), ORIENT='h', SIDETIP='degrees'
+    )
+zero_to_one = QStruct('',
+    BFloat("from", GUI_NAME=''), BFloat("to"), ORIENT='h', SIDETIP='[0,1]'
+    )
+neg_one_to_one = QStruct('',
+    BFloat("from", GUI_NAME=''), BFloat("to"), ORIENT='h', SIDETIP='[-1,1]'
     )
 
 
 # This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
-    BSInt32("size", EDITABLE=False),
+    BSInt32("size", EDITABLE=False, GUI_NAME=""),
     BSInt32("unknown 1", VISIBLE=False),  # 0x00 in tags(and meta it seems)
     BSInt32("unknown 2", VISIBLE=False),  # random(low number in meta)
     BSInt32("pointer", VISIBLE=False, DEFAULT=-1),
@@ -739,11 +748,11 @@ def dependency_os(name='tag ref', valid_ids=None):
 
     return TagIndexRef(name,
         valid_ids,
-        BSInt32("path pointer", VISIBLE=False),
-        BSInt32("path length", MAX=243, VISIBLE=False),
-        BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False),
+        BSInt32("path pointer", VISIBLE=False, EDITABLE=False),
+        BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
+        BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
-        STEPTREE=StringVarLen("filepath", SIZE=tag_ref_size),
+        STEPTREE=StringVarLen("filepath", GUI_NAME="", SIZE=tag_ref_size),
         ORIENT='h'
         )
 

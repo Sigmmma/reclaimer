@@ -49,7 +49,7 @@ jpt__body = Struct("tagdata",
     Struct("high frequency vibrate", INCLUDE=frequency_vibration),
     Pad(30),
 
-    Struct("camera",
+    Struct("camera impulse",
         BFloat("temporary impulse duration"),
         BSEnum16("temporary impulse fade function", *fade_functions),
         Pad(2),
@@ -61,7 +61,9 @@ jpt__body = Struct("tagdata",
 
         BFloat("permanent impulse angle"),
         Pad(16),
+        ),
 
+    Struct("camera shaking",
         BFloat("shaking duration"),
         BSEnum16("shaking fade function", *fade_functions),
         Pad(2),
