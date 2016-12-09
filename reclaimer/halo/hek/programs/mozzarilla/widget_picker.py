@@ -1,9 +1,11 @@
-from supyr_struct.apps.binilla import editor_constants
+from supyr_struct.apps.binilla import editor_constants as e_c
 from supyr_struct.apps.binilla.widget_picker import *
-from supyr_struct.apps.binilla.field_widgets import *
+from supyr_struct.apps.binilla.widgets import BinillaWidget
+from .field_widgets import *
 from ....field_types import *
 
-editor_constants.FRAME_TITLE_WIDTH = 30
+e_c.TITLE_WIDTH = 28
+BinillaWidget.title_width = e_c.TITLE_WIDTH
 
 __all__ = ("WidgetPicker", "def_widget_picker", "add_widget",
            "MozzarillaWidgetPicker", "def_halo_widget_picker")
@@ -13,7 +15,8 @@ class MozzarillaWidgetPicker(WidgetPicker):
 
 def_halo_widget_picker = dhwp = MozzarillaWidgetPicker()
 
-dhwp.add_widget(StringVarLen, NullFrame)  # PLACEHOLDER
+dhwp.add_widget(StringVarLen, EntryFrame)
+dhwp.add_widget(TagIndexRef, DependencyFrame)
 
 dhwp.copy_widget(FlUTF16StrData, StrUtf16)
 dhwp.copy_widget(FlStrUTF16, StrUtf16)
@@ -29,9 +32,10 @@ dhwp.copy_widget(FlSInt32, SInt32)
 dhwp.copy_widget(FlSEnum16, SEnum16)
 dhwp.copy_widget(FlSEnum32, SEnum32)
 
+dhwp.copy_widget(FlFloat, Float)
+
 dhwp.copy_widget(RawdataRef, Struct)
 dhwp.copy_widget(Reflexive, Struct)
-dhwp.copy_widget(TagIndexRef, Struct)
 
 dhwp.copy_widget(TagIndex, Array)
 dhwp.copy_widget(Rawdata, BytearrayRaw)

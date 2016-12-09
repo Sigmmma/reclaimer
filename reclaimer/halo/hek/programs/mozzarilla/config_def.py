@@ -4,7 +4,7 @@ from supyr_struct.field_types import *
 from supyr_struct.defs.tag_def import TagDef
 
 config_header = Struct("header",
-    UInt32("id", DEFAULT='ezoM'),
+    LUEnum32("id", ('Moze', 'ezoM'), VISIBLE=False, DEFAULT='ezoM'),
     INCLUDE=config_header
     )
 
