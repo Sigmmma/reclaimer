@@ -82,7 +82,7 @@ class Mozzarilla(Binilla):
             label="Edit config", command=self.show_config_file)
         self.settings_menu.add_separator()
         self.settings_menu.add_command(
-            label="Load style", command=self.load_style)
+            label="Load style", command=self.apply_style)
         self.settings_menu.add_command(
             label="Save current style", command=self.make_style)
 
@@ -406,6 +406,23 @@ class Mozzarilla(Binilla):
             block.extend(len(block.NAME_MAP))
 
         self.update_config()
+
+        c_hotkeys = data.hotkeys
+        c_tag_window_hotkeys = data.tag_window_hotkeys
+
+        for k_set, b in ((default_hotkeys, c_hotkeys),
+                         (default_tag_window_hotkeys, c_tag_window_hotkeys)):
+            default_keys = k_set
+            hotkeys = b
+            for combo, method in k_set.items():
+                hotkeys.append()
+                keys = hotkeys[-1].combo
+
+                modifier, key = read_hotkey_string(combo)
+                keys.modifier.set_to(modifier)
+                keys.key.set_to(key)
+
+                hotkeys[-1].method.set_to(method)
 
     def apply_config(self):
         Binilla.apply_config(self)

@@ -1,7 +1,7 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-string_data_struct = rawdata_ref("string", FlStrUTF16, max_size=32768)
+string_data_struct = rawtext_ref("string", FlStrUTF16, max_size=32768)
 
 ustr_body = Struct("tagdata",
     reflexive("strings", string_data_struct, 32767),
