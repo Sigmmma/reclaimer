@@ -15,6 +15,11 @@ from ....misc.handler import MiscHaloLoader
 from .config_def import config_def, guerilla_workspace_def
 from .widget_picker import *
 
+default_hotkeys.update({
+    '<F2>': "set_tags_dir",
+    '<F3>': "show_dependency_viewer",
+    '<F4>': "show_tag_scanner",
+    })
 
 class Mozzarilla(Binilla):
     app_name = 'Mozzarilla'
@@ -424,7 +429,7 @@ class Mozzarilla(Binilla):
 
                 hotkeys[-1].method.set_to(method)
 
-    def apply_config(self):
+    def apply_config(self, e=None):
         Binilla.apply_config(self)
         config_data = self.config_file.data
 
@@ -474,62 +479,14 @@ class Mozzarilla(Binilla):
 
             tag_dirs[dir_name].path = handler.tagsdir = tags_dir
 
-    def scan_tags_dir(self):
-        handler = self.handler
-        log_name = "Tag Scanner debug log"
-
-        #this is the string to store the entire debug log
-        debuglog = "\n%s%s%s\n\n\n" % ("-"*30, log_name,
-                                       "-" * (50-len(log_name)))
-        get_nodes = handler.get_nodes_by_paths
-        get_tagref_invalid = handler.get_tagref_invalid
-
-        # make the debug string by scanning the tags directory
-        for def_id in sorted(handler.tag_ref_cache.keys()):
-            tag_ref_paths = handler.tag_ref_cache[def_id]
-
-            print("Scanning '%s' tags..." % def_id)
-            tags_coll = handler.tags[def_id]
-
-            for filepath in sorted(tags_coll.keys()):
-                tag = tags_coll[filepath]
-                self.current_tag = filepath
-
-                try:
-                    missed = get_nodes(tag_ref_paths, tag.data,
-                                       get_tagref_invalid)
-
-                    if not missed:
-                        continue
-
-                    debuglog += "\n\n%s\n" % filepath
-                    block_name = None
-
-                    for block in missed:
-                        if block.NAME != block_name:
-                            debuglog += '%s%s\n' % (' '*4, block.NAME)
-                            block_name = block.NAME
-                        try:
-                            ext = '.' + block.tag_class.enum_name
-                        except Exception:
-                            ext = ''
-                        debuglog += '%s%s\n' % (' '*8, block.STEPTREE + ext)
-
-                except Exception:
-                    print("    Could not scan '%s'" % tag.filepath)
-                    continue
-
-        # make and write to the logfile
-        handler.make_log_file(debuglog, "hek_tag_scanner.log")
-
-    def show_dependency_viewer(self):
+    def show_dependency_viewer(self, e=None):
         if self.dependency_window is not None:
             return
 
         self.dependency_window = DependencyWindow(self, app_root=self)
         self.place_window_relative(self.dependency_window, 30, 50)
 
-    def show_tag_scanner(self):
+    def show_tag_scanner(self, e=None):
         if self.tag_scanner_window is not None:
             return
 
