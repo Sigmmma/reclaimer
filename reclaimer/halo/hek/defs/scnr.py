@@ -162,7 +162,7 @@ function = Struct('function',
 comment = Struct("comment",
     QStruct("position", INCLUDE=xyz_float),
     Pad(16),
-    rawdata_ref("comment data", max_size=16384),
+    rawtext_ref("comment data", max_size=16384),
     SIZE=48
     )
 
@@ -472,7 +472,7 @@ reference = Struct("tag reference",
 
 source_file = Struct("source_file",
     ascii_str32("script name"),
-    rawdata_ref("source", max_size=262144),
+    rawtext_ref("source", StrRawLatin1, max_size=262144),
     SIZE=52
     )
 

@@ -1,10 +1,10 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
-string_data_struct = rawdata_ref("string", StrLatin1, max_size=4096)
+string_data_struct = rawtext_ref("string", StrLatin1, max_size=4096)
 
 str__body = Struct("tagdata",
-    reflexive("strings", string_data_struct, 32767),
+    reflexive("strings", string_data_struct, 32767, widget=TextFrame),
     SIZE=12,
     )
 

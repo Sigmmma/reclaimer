@@ -17,5 +17,6 @@ class GdlBinilla(Binilla):
     widget_picker = def_gdl_widget_picker
 
     def __init__(self, *args, **kwargs):
-        kwargs['handler'] = GdlHandler()
+        self.debug = kwargs.pop('debug', self.debug)
+        kwargs['handler'] = GdlHandler(debug=self.debug)
         Binilla.__init__(self, *args, **kwargs)
