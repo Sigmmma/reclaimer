@@ -1,4 +1,5 @@
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.apps.binilla.field_widgets import TextFrame
 from ..common_descs import *
 from ..field_types import *
 
@@ -50,8 +51,9 @@ def get_oe_offs_lump_size(node=None, parent=None, attr_index=None,
             end = len(rawdata)
     return (end - start)//4
 
-lump_kw         = {SIZE: lump_size,             POINTER: lump_pointer}
-text_lump_kw    = {SIZE: get_text_lump_size,    POINTER: lump_pointer}
+lump_kw      = {SIZE: lump_size, POINTER: lump_pointer}
+text_lump_kw = {SIZE: get_text_lump_size, POINTER: lump_pointer,
+                WIDGET: TextFrame}
 oe_offs_lump_kw = {SIZE: get_oe_offs_lump_size, POINTER: lump_pointer}
 
 #############################
@@ -91,8 +93,8 @@ font = Struct('font',
     LUInt32('font id', GUI_NAME='id of this font'),
     )
 
-text_data      = BytesRaw('text data',      **text_lump_kw)
-def_names_data = BytesRaw('def names data', **text_lump_kw)
+text_data      = StrRawAscii('text data',      **text_lump_kw)
+def_names_data = StrRawAscii('def names data', **text_lump_kw)
 
 
 '''lump block arrays'''

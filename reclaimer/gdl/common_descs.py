@@ -1,4 +1,5 @@
 from supyr_struct.defs.common_descs import *
+from supyr_struct.apps.binilla.field_widgets import *
 from supyr_struct.apps.binilla.constants import *
 from .field_types import *
 
@@ -84,8 +85,9 @@ effect = Struct('effect',
     LFloat('radius'),
     LFloat('scale'),
     QStruct('color',
-           UInt8('b'), UInt8('g'), UInt8('r'), UInt8('a'), ORIENT='h',
-           ),
+        UInt8('b'), UInt8('g'), UInt8('r'), UInt8('a'),
+        ORIENT='h', WIDGET=ColorPickerFrame,
+        ),
     SIZE=80,
     )
 

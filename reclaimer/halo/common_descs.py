@@ -1,5 +1,6 @@
 from copy import copy, deepcopy
 
+from .hek.programs.mozzarilla.field_widgets import *
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
 from .field_types import *
@@ -46,8 +47,24 @@ def rawdata_ref(name, f_type=Rawdata, max_size=None):
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
+
     return RawdataRef(name,
-        INCLUDE=ref_struct, STEPTREE=f_type("data", SIZE=".size"))
+        INCLUDE=ref_struct,STEPTREE=f_type("data", SIZE=".size"))
+
+
+def rawtext_ref(name, f_type=StrRawAscii, max_size=None, widget=TextFrame):
+    '''This function serves to macro the creation of a rawdata reference'''
+    ref_struct = dict(rawdata_ref_struct)
+    if max_size is not None:
+        ref_struct[0] = dict(ref_struct[0])
+        ref_struct[0][MAX] = max_size
+        ref_struct[0][VISIBLE] = False
+
+    return RawdataRef(name,
+        INCLUDE=ref_struct, GUI_NAME='',
+        STEPTREE=f_type("data",
+            SIZE=".size", GUI_NAME=name.replace('_', ' '), WIDGET=widget)
+            )
 
 
 def dependency(name='tag ref', valid_ids=None):
@@ -679,21 +696,21 @@ argb_float = QStruct('argb_float',
     Float("r", MIN=0.0, MAX=1.0),
     Float("g", MIN=0.0, MAX=1.0),
     Float("b", MIN=0.0, MAX=1.0),
-    ORIENT='h'
+    ORIENT='h', WIDGET=ColorPickerFrame
     )
 rgb_float = QStruct('rgb_float',
     Float("r", MIN=0.0, MAX=1.0),
     Float("g", MIN=0.0, MAX=1.0),
     Float("b", MIN=0.0, MAX=1.0),
-    ORIENT='h'
+    ORIENT='h', WIDGET=ColorPickerFrame
     )
 rgb_byte = QStruct('rgb_uint8',
     UInt8("r"), UInt8("g"), UInt8("b"),
-    ORIENT='h'
+    ORIENT='h', WIDGET=ColorPickerFrame
     )
 argb_byte = QStruct('argb_uint8',
     UInt8("a"), UInt8("r"), UInt8("g"), UInt8("b"),
-    ORIENT='h'
+    ORIENT='h', WIDGET=ColorPickerFrame
     )
 
 # rotations
