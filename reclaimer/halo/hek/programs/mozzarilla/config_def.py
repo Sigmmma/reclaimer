@@ -3,10 +3,32 @@ from supyr_struct.apps.binilla.constants import *
 from supyr_struct.field_types import *
 from supyr_struct.defs.tag_def import TagDef
 
+new_method_enums = (
+    {GUI_NAME:"open dependency scanner", NAME:"show_dependency_viewer"},
+    {GUI_NAME:"open tag scanner", NAME:"show_tag_scanner"},
+    {GUI_NAME:"choose tags directory", NAME:"set_tags_dir"},
+    )
+
+method_enums += new_method_enums
+
+hotkey = Struct("hotkey",
+    BitStruct("combo",
+        BitUEnum("modifier", GUI_NAME="", *modifier_enums, SIZE=4),
+        BitUEnum("key", GUI_NAME="and", *hotkey_enums, SIZE=28),
+        SIZE=4, ORIENT='h',
+        ),
+    UEnum32("method", *method_enums)
+    )
+
 config_header = Struct("header",
     LUEnum32("id", ('Moze', 'ezoM'), VISIBLE=False, DEFAULT='ezoM'),
     INCLUDE=config_header
     )
+
+hotkeys = Array("hotkeys", SUB_STRUCT=hotkey, SIZE=".array_counts.hotkey_count")
+
+tag_window_hotkeys = Array("tag_window_hotkeys", SUB_STRUCT=hotkey,
+                           SIZE=".array_counts.tag_window_hotkey_count")
 
 tag_dirs = Array("tag_dirs",
     SUB_STRUCT=filepath, SIZE=".mozzarilla.tag_dirs_count", MAX=4,
