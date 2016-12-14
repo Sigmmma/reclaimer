@@ -12,39 +12,47 @@ sgla_attrs = Struct("sgla attrs",
 
     Pad(42),
     #Background Tint Properties
-    QStruct("background tint color", INCLUDE=rgb_float),
-    BFloat("background tint map scale"),
-    dependency("background tint map", "bitm"),
+    Struct("background tint properties",
+        QStruct("color", INCLUDE=rgb_float),
+        BFloat("map scale"),
+        dependency("map", "bitm"),
+        ),
 
     Pad(22),
     #Reflection Properties
-    BSEnum16("reflection type",
-        "bumped cubemap",
-        "flat cubemap",
-        "dynamic mirror",
-        ),
-    BFloat("perpendicular brightness"),#[0,1]
-    QStruct("perpendicular tint color", INCLUDE=rgb_float),
-    BFloat("parallel brightness"),#[0,1]
-    QStruct("parallel tint color", INCLUDE=rgb_float),
-    dependency("reflection map", "bitm"),
+    Struct("reflection properties",
+        BSEnum16("type",
+            "bumped cubemap",
+            "flat cubemap",
+            "dynamic mirror",
+            ),
+        float_zero_to_one("perpendicular brightness"),  # [0,1]
+        QStruct("perpendicular tint color", INCLUDE=rgb_float),
+        float_zero_to_one("parallel brightness"),  # [0,1]
+        QStruct("parallel tint color", INCLUDE=rgb_float),
+        dependency("map", "bitm"),
 
-    BFloat("bump map scale"),
-    dependency("bump map", "bitm"),
+        BFloat("bump map scale"),
+        dependency("bump map", "bitm"),
+        ),
 
     Pad(132),
     #Diffuse Properties
-    BFloat("diffuse map scale"),
-    dependency("diffuse map", "bitm"),
-    BFloat("diffuse detail map scale"),
-    dependency("diffuse detail map", "bitm"),
+    Struct("diffuse properties",
+        BFloat("map scale"),
+        dependency("map", "bitm"),
+        BFloat("detail map scale"),
+        dependency("detail map", "bitm"),
+        ),
 
     Pad(32),
     #Specular Properties
-    BFloat("specular map scale"),
-    dependency("specular map", "bitm"),
-    BFloat("specular detail map scale"),
-    dependency("specular detail map", "bitm"),
+    Struct("specular properties",
+        BFloat("map scale"),
+        dependency("map", "bitm"),
+        BFloat("detail map scale"),
+        dependency("detail map", "bitm"),
+        ),
     SIZE=440
     )
 

@@ -11,10 +11,10 @@ reflection = Struct("reflection",
     Pad(2),
     BSInt16("bitmap index"),
     Pad(22),
-    BFloat("position"), # along flare axis
-    BFloat("rotation offset"), # degrees
+    BFloat("position", SIDETIP="along flare axis"), # along flare axis
+    float_deg("rotation offset"), # degrees
     Pad(4),
-    QStruct("radius", INCLUDE=from_to),  # world units
+    from_to_wu("radius"),  # world units
     BSEnum16("radius scaled by",
         "none",
         "rotation",
@@ -22,7 +22,7 @@ reflection = Struct("reflection",
         "distance from center",
         ),
     Pad(2),
-    QStruct("brightness", INCLUDE=from_to),  # world units
+    from_to_zero_to_one("brightness"),  # [0,1]
     BSEnum16("brightness scaled by",
         "none",
         "rotation",
@@ -40,8 +40,8 @@ reflection = Struct("reflection",
         QStruct("color upper bound", INCLUDE=argb_float),
         BBool16("flags", *blend_flags),
         BSEnum16("function", *animation_functions),
-        BFloat("period"),  # seconds
-        BFloat("phase"),  # seconds
+        float_sec("period"),  # seconds
+        float_sec("phase"),  # seconds
         ),
 
     SIZE=128
@@ -49,19 +49,19 @@ reflection = Struct("reflection",
 
 
 lens_body = Struct("tagdata",
-    BFloat("falloff angle"),  # radians
-    BFloat("cutoff angle"),  # radians
+    float_rad("falloff angle"),  # radians
+    float_rad("cutoff angle"),  # radians
     FlFloat("unknown1", DEFAULT=1.0),
     FlFloat("unknown2", DEFAULT=1.0),
-    BFloat("occlusion radius"),
+    float_wu("occlusion radius"),
     BSEnum16("occlusion offset direction",
         "toward viewer",
         "marker forward",
         "none",
         ),
     Pad(2),
-    BFloat("near fade distance"),
-    BFloat("far fade distance"),
+    float_wu("near fade distance"),
+    float_wu("far fade distance"),
     dependency("bitmap", "bitm"),
     BBool16("flags",
         "sun",
@@ -76,7 +76,7 @@ lens_body = Struct("tagdata",
         "translation",
         ),
     Pad(2),
-    BFloat("rotation function scale"),  # radians
+    float_rad("rotation function scale"),  # radians
     Pad(24),
     BFloat("horizontal scale"),
     BFloat("vertical scale"),

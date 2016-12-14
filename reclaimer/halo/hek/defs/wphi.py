@@ -251,8 +251,9 @@ screen_effect = Struct("screen effect",
             "only when zoomed"
             ),
         Pad(2),
-        QStruct("fov in bounds", INCLUDE=from_to),  # radians
-        QStruct("radius out bounds", INCLUDE=from_to)  # pixels
+        from_to_rad("fov in bounds"),  # radians
+        QStruct("radius out bounds",
+            INCLUDE=from_to, SIDETIP="pixels")  # pixels
         ),
 
     Pad(25),
@@ -262,8 +263,8 @@ screen_effect = Struct("screen effect",
             "connect to flashlight",
             "masked"
             ),
-        BSInt16("script source", MIN=0, MAX=3),
-        BFloat("intensity", MIN=0, MAX=1)
+        BSInt16("script source", MIN=0, MAX=3, SIDETIP="[0,3]"),
+        BFloat("intensity", MIN=0.0, MAX=1.0, SIDETIP="[0,1]")
         ),
 
     Pad(25),
@@ -274,8 +275,8 @@ screen_effect = Struct("screen effect",
             "additive",
             "masked"
             ),
-        BSInt16("script source", MIN=0, MAX=3),
-        BFloat("intensity", MIN=0, MAX=1),
+        BSInt16("script source", MIN=0, MAX=3, SIDETIP="[0,3]"),
+        BFloat("intensity", MIN=0.0, MAX=1.0, SIDETIP="[0,1]"),
         QStruct("tint", INCLUDE=rgb_float)
         ),
     SIZE=184

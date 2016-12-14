@@ -13,7 +13,8 @@ contact_point = Struct("contact point",
     )
 
 bipd_attrs = Struct("bipd attrs",
-    BFloat("moving turning speed"),  # radians
+    BFloat("moving turning speed",
+        SIDETIP="degrees/sec", UNIT_SCALE=180/pi),  # radians
     BBool32("flags",
         "turns without aiming",
         "uses player physics",
@@ -28,7 +29,7 @@ bipd_attrs = Struct("bipd attrs",
         "random speed increase",
         "uses old player physics",
         ),
-    BFloat("stationary turning threshold"),  # radians
+    float_rad("stationary turning threshold"),  # radians
 
     Pad(16),
     BSEnum16('A in', *biped_inputs),
@@ -38,27 +39,29 @@ bipd_attrs = Struct("bipd attrs",
     dependency('DONT USE', "jpt!"),
 
     QStruct("flying",
-        BFloat("bank angle"),  # radians
-        BFloat("bank apply time"),
-        BFloat("bank decay time"),
+        float_rad("bank angle"),  # radians
+        float_sec("bank apply time"),
+        float_sec("bank decay time"),
         BFloat("pitch ratio"),
-        BFloat("max velocity"),  # world units/second
-        BFloat("max sidestep velocity"),  # world units/second
-        BFloat("acceleration"),  # world units/second^2
-        BFloat("deceleration"),  # world units/second^2
-        BFloat("angular velocity maximum"),  # radians/second
-        BFloat("angular acceleration maximum"),  # radians/second^2
-        BFloat("crouch velocity modifier", MIN=0.0, MAX=1.0),
+        float_wu_sec("max velocity"),  # world units/second
+        float_wu_sec("max sidestep velocity"),  # world units/second
+        float_wu_sec_sq("acceleration"),  # world units/second^2
+        float_wu_sec_sq("deceleration"),  # world units/second^2
+        BFloat("angular velocity maximum",  # radians/second
+            SIDETIP="degrees/sec", UNIT_SCALE=180/pi),
+        BFloat("angular acceleration maximum",  # radians/second^2
+            SIDETIP="degrees/(sec^2)", UNIT_SCALE=180/pi),
+        float_zero_to_one("crouch velocity modifier"),
         ),
 
     Pad(8),
     Struct("movement",
-        BFloat("maximum slope angle"),  # radians
-        BFloat("downhill falloff angle"),  # radians
-        BFloat("downhill cutoff angle"),  # radians
+        float_rad("maximum slope angle"),  # radians
+        float_rad("downhill falloff angle"),  # radians
+        float_rad("downhill cutoff angle"),  # radians
         BFloat("downhill velocity scale"),
-        BFloat("uphill falloff angle"),  # radians
-        BFloat("uphill cutoff angle"),  # radians
+        float_rad("uphill falloff angle"),  # radians
+        float_rad("uphill cutoff angle"),  # radians
         BFloat("uphill velocity scale"),
 
         Pad(24),
@@ -67,29 +70,29 @@ bipd_attrs = Struct("bipd attrs",
 
     Pad(24),
     QStruct("jumping and landing",
-        BFloat("jump velocity"),
+        float_wu_sec("jump velocity"),
         Pad(28),
-        BFloat("maximum soft landing time"),
-        BFloat("maximum hard landing time"),
-        BFloat("minimum soft landing velocity"),  # world units/second
-        BFloat("minimum hard landing velocity"),  # world units/second
-        BFloat("maximum hard landing velocity"),  # world units/second
-        BFloat("death hard landing velocity"),  # world units/second
+        float_sec("maximum soft landing time"),
+        float_sec("maximum hard landing time"),
+        float_wu_sec("minimum soft landing velocity"),  # world units/second
+        float_wu_sec("minimum hard landing velocity"),  # world units/second
+        float_wu_sec("maximum hard landing velocity"),  # world units/second
+        float_wu_sec("death hard landing velocity"),  # world units/second
         ),
 
     Pad(20),
     QStruct("camera, collision, and autoaim",
-        BFloat("standing camera height"),
-        BFloat("crouching camera height"),
-        BFloat("crouch transition time"),
+        float_wu("standing camera height"),
+        float_wu("crouching camera height"),
+        float_sec("crouch transition time"),
 
         Pad(24),
-        BFloat("standing collision height"),
-        BFloat("crouching collision height"),
-        BFloat("collision radius"),
+        float_wu("standing collision height"),
+        float_wu("crouching collision height"),
+        float_wu("collision radius"),
 
         Pad(40),
-        BFloat("autoaim width"),
+        float_wu("autoaim width"),
         ),
 
     Pad(108),

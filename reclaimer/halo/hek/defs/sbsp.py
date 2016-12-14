@@ -306,8 +306,8 @@ leaf_map_portal = Struct("leaf map portal",
 
 sbsp_body = Struct("tagdata",
     dependency("lightmap bitmaps", 'bitm'),
-    BFloat("vehicle floor"),  # world units
-    BFloat("vehicle ceiling"),  # world units
+    float_wu("vehicle floor"),  # world units
+    float_wu("vehicle ceiling"),  # world units
 
     Pad(20),
     QStruct("default ambient color", INCLUDE=rgb_float),

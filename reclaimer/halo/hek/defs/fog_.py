@@ -11,13 +11,13 @@ fog__body = Struct("tagdata",
                    
     Pad(84),
     #Density
-    BFloat("maximum density"),
+    float_zero_to_one("maximum density"),
     Pad(4),
-    BFloat("opaque distance"),
+    float_wu("opaque distance"),
     Pad(4),
-    BFloat("opaque depth"),
+    float_wu("opaque depth"),
     Pad(8),
-    BFloat("distance to water plane"),
+    float_wu("distance to water plane"),
 
     #Color
     QStruct("fog color", INCLUDE=rgb_float),
@@ -29,18 +29,18 @@ fog__body = Struct("tagdata",
             "no model multipass",
             "no texture-based falloff",
             ),
-        BUInt16("layer count"),
+        BUInt16("layer count", SIDETIP="[0,4]", MIN=0, MAX=4),
 
-        QStruct("distance gradient", INCLUDE=from_to),
-        QStruct("density gradient",  INCLUDE=from_to),
+        from_to_wu("distance gradient"),
+        from_to_zero_to_one("density gradient"),
 
-        BFloat("start distance from fog plane"),
+        float_wu("start distance from fog plane"),
         Pad(5),
 
         QStruct("color", INCLUDE=rgb_byte),
-        BFloat("rotation multiplier"),
-        BFloat("strafing multiplier"),
-        BFloat("zoom multiplier"),
+        float_zero_to_one("rotation multiplier"),
+        float_zero_to_one("strafing multiplier"),
+        float_zero_to_one("zoom multiplier"),
         Pad(8),
         BFloat("map scale"),
         dependency("fog map", "bitm")
@@ -48,12 +48,12 @@ fog__body = Struct("tagdata",
 
     #Screen Layer Animation
     Struct("screen layer animation",
-        BFloat("animation period"),
+        float_sec("animation period"),
         Pad(4),
-        QStruct("wind velocity", INCLUDE=from_to),
-        QStruct("wind period",   INCLUDE=from_to),
-        BFloat("wind acceleration weight"),
-        BFloat("wind perpendicular weight")
+        from_to_wu_sec("wind velocity"),
+        from_to_sec("wind period"),
+        float_zero_to_one("wind acceleration weight"),
+        float_zero_to_one("wind perpendicular weight")
         ),
 
     Pad(8),

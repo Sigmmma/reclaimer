@@ -27,7 +27,7 @@ bitmap = Struct("bitmap",
 boolean = Struct("boolean",
     value_name,
     Pad(8),
-    UInt8("value", MIN=0, MAX=1),
+    UInt8("value", MIN=0, MAX=1, SIDETIP="[0 or 1]"),
 
     Pad(31),
     # Runtime value override

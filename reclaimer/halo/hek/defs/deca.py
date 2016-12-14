@@ -31,19 +31,19 @@ deca_body = Struct("tagdata",
     dependency("next decal in chain", "deca"),
 
     #Radius and color
-    Struct("radius", INCLUDE=from_to),  # world units
+    from_to_wu("radius"),  # world units
     Pad(12),
-    Struct("intensity", INCLUDE=from_to),  # [0,1]
+    from_to_zero_to_one("intensity"),  # [0,1]
     Struct("color lower bounds", INCLUDE=rgb_float),
     Struct("color upper bounds", INCLUDE=rgb_float),
     Pad(12),
 
     #Animation
     BSInt16("animation loop frame"),
-    BSInt16("animation speed"),
+    BSInt16("animation speed", MIN=1, MAX=120, SIDETIP="[1,120] ticks/frame"),
     Pad(28),
-    Struct("lifetime", INCLUDE=from_to),  # seconds
-    Struct("decay time", INCLUDE=from_to),  # seconds
+    from_to_sec("lifetime"),  # seconds
+    from_to_sec("decay time"),  # seconds
     Pad(56),
 
     #Shader
@@ -53,7 +53,7 @@ deca_body = Struct("tagdata",
 
     #Sprite info
     Pad(20),
-    BFloat("maximum sprite extent"),
+    BFloat("maximum sprite extent", SIDETIP="pixels"),
 
     SIZE=268,
     )

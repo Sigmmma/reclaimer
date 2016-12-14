@@ -6,8 +6,8 @@ efpp_attrs = Struct("efpp attrs",
     QStruct("quad tesselation",
         BSInt16("x"), BSInt16("y"), ORIENT='h'
         ),
-    QStruct("x screen bounds", INCLUDE=from_to, MIN=0.0, MAX=1.0),
-    QStruct("y screen bounds", INCLUDE=from_to, MIN=0.0, MAX=1.0),
+    from_to_zero_to_one("x screen bounds"),
+    from_to_zero_to_one("y screen bounds"),
     SIZE=60
     )
 
