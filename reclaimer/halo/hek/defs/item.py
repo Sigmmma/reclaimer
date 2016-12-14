@@ -28,7 +28,7 @@ item_attrs = Struct('item attrs',
 
     Pad(120),
 
-    Struct("detonation delay", INCLUDE=from_to),
+    from_to_sec("detonation delay"),
     dependency("detonating effect", "effe"),
     dependency("detonation effect", "effe"),
     SIZE=396,

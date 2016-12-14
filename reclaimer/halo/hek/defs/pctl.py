@@ -13,8 +13,8 @@ physics_constant = QStruct("physics constant",
 
 state = Struct("state",
     ascii_str32("name"),
-    QStruct("duration bounds", INCLUDE=from_to),
-    QStruct("transition time bounds", INCLUDE=from_to),
+    from_to_sec("duration bounds"),
+    from_to_sec("transition time bounds"),
 
     Pad(4),
     BFloat("scale multiplier"),
@@ -23,7 +23,7 @@ state = Struct("state",
     QStruct("color multiplier", INCLUDE=argb_float),
     BFloat("radius multiplier"),
     BFloat("minimum particle count"),
-    BFloat("particle creation rate"),  # particles/sec
+    BFloat("particle creation rate", SIDETIP="particles/sec"),  # particles/sec
 
     Pad(84),
     BSEnum16("particle creation physics", *particle_creation_physics),
@@ -34,16 +34,18 @@ state = Struct("state",
 
 particle_state = Struct("particle state",
     ascii_str32("name"),
-    QStruct("duration bounds", INCLUDE=from_to),
-    QStruct("transition time bounds", INCLUDE=from_to),
+    from_to_sec("duration bounds"),
+    from_to_sec("transition time bounds"),
 
     dependency("bitmaps", "bitm"),
     BSInt16("sequence index"),
 
     Pad(6),
-    QStruct("scale", INCLUDE=from_to),  # world units/sec
-    QStruct("animation rate", INCLUDE=from_to),  # frames/sec
-    QStruct("rotation rate", INCLUDE=from_to),  # radians/sec
+    QStruct("scale", INCLUDE=from_to,
+        UNIT_SCALE="world units/pixel"),  # world units/sec
+    QStruct("animation rate", INCLUDE=from_to,
+        UNIT_SCALE="frames/sec"),  # frames/sec
+    from_to_rad_sec("rotation rate"),  # radians/sec
     QStruct("color 1", INCLUDE=argb_float),
     QStruct("color 2", INCLUDE=argb_float),
     BFloat("radius multiplier"),
@@ -67,7 +69,7 @@ particle_state = Struct("particle state",
             ),
         Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
         Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
-        Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
+        Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca_rot),
         QStruct("rotation center", INCLUDE=xy_float),
         Pad(4),
         BFloat("zsprite radius scale"),
@@ -110,7 +112,7 @@ particle_type = Struct("particle type",
         ),
 
     Pad(2),
-    BFloat("radius"),
+    float_wu("radius"),
 
     Pad(36),
     BSEnum16("particle creation physics", *particle_creation_physics),

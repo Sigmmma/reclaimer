@@ -20,6 +20,7 @@ wdata_def = TagDef("wdata",
         LUInt32('lump headers pointer'),
         LUInt32('lump count', DEFAULT=8),
         Pad(8),
+        VISIBLE=False,
         ),
     lump_headers,
 

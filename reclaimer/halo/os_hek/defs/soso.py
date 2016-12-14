@@ -30,9 +30,9 @@ os_soso_ext = Struct("shader model extension",
 
     Pad(4),
     #Specular Tint Override
-    BFloat("perpendicular brightness", MIN=0.0, MAX=1.0),
+    float_zero_to_one("perpendicular brightness"),
     QStruct("perpendicular tint color", INCLUDE=rgb_float),
-    BFloat("parallel brightness", MIN=0.0, MAX=1.0),
+    float_zero_to_one("parallel brightness"),
     QStruct("parallel tint color", INCLUDE=rgb_float),
 
     Pad(8),

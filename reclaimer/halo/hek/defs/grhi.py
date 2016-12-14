@@ -44,8 +44,9 @@ effector = Struct("effector",
         ),
 
     Pad(2),
-    QStruct("in bounds", INCLUDE=from_to),  # source units
-    QStruct("out bounds", INCLUDE=from_to),  # pixels
+    QStruct("in bounds", INCLUDE=from_to,
+        SIDETIP="source units"),  # source units
+    QStruct("out bounds", INCLUDE=from_to, SIDETIP="pixels"),  # pixels
 
     Pad(64),
     QStruct("tint color lower bound", INCLUDE=rgb_float),

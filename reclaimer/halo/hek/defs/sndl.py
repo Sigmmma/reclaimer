@@ -3,7 +3,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 detail_sound = Struct("detail sound",
     dependency("sound", "snd!"),
-    QStruct('random period bounds', INCLUDE=from_to),
+    from_to_sec('random period bounds'),
     BFloat("gain"),
     BBool32("flags",
         "dont play with alternate",
@@ -11,9 +11,9 @@ detail_sound = Struct("detail sound",
         ),
 
     Pad(48),
-    QStruct('yaw bounds', INCLUDE=from_to),  # radians
-    QStruct('pitch bounds', INCLUDE=from_to),  # radians
-    QStruct('distance bounds', INCLUDE=from_to),
+    from_to_rad('yaw bounds'),  # radians
+    from_to_rad('pitch bounds'),  # radians
+    from_to_wu('distance bounds'),  # world units
 
     SIZE=104
     )
@@ -25,8 +25,8 @@ track = Struct("track",
         "fade in alternate",
         ),
     BFloat("gain"),
-    BFloat("fade in duration"),
-    BFloat("fade out duration"),
+    float_sec("fade in duration"),
+    float_sec("fade out duration"),
 
     Pad(32),
     dependency("start", "snd!"),

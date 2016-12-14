@@ -3,111 +3,123 @@ from supyr_struct.defs.tag_def import TagDef
 
 senv_attrs = Struct("senv attrs",
     #Environment Shader Properties
-    BBool16("environment shader flags",
-        "alpha tested",
-        "bump-map is specular mask",
-        "true atmospheric fog",
-        ),
-    BSEnum16("environment shader type",
-        "normal",
-        "blended",
-        "blended base specular",
+    Struct("environment shader",
+        BBool16("environment shader flags",
+            "alpha tested",
+            "bump-map is specular mask",
+            "true atmospheric fog",
+            ),
+        BSEnum16("environment shader type",
+            "normal",
+            "blended",
+            "blended base specular",
+            ),
         ),
 
     #Lens Flare
-    BFloat("lens flare spacing"),#world units
+    float_wu("lens flare spacing"),  # world units
     dependency("lens flare", "lens"),
     Pad(44),
 
     #Diffuse Properties
-    BBool16("diffuse flags",
-        "rescale detail maps",
-        "rescale bump maps",
+    Struct("diffuse",
+        BBool16("diffuse flags",
+            "rescale detail maps",
+            "rescale bump maps",
+            ),
+        Pad(26),
+        dependency("base map", "bitm"),
+                       
+        Pad(24),
+        BSEnum16("detail map function", *detail_map_functions),
+        Pad(2),
+
+        BFloat("primary detail map scale"),
+        dependency("primary detail map", "bitm"),
+        BFloat("secondary detail map scale"),
+        dependency("secondary detail map", "bitm"),
+
+        Pad(24),
+        BSEnum16("micro detail map function", *detail_map_functions),
+
+        Pad(2),
+        BFloat("micro detail map scale"),
+        dependency("micro detail map", "bitm"),
+        QStruct("material color", INCLUDE=rgb_float),
         ),
-    Pad(26),
-    dependency("base map", "bitm"),
-                   
-    Pad(24),
-    BSEnum16("detail map function", *detail_map_functions),
-    Pad(2),
-
-    BFloat("primary detail map scale"),
-    dependency("primary detail map", "bitm"),
-    BFloat("secondary detail map scale"),
-    dependency("secondary detail map", "bitm"),
-
-    Pad(24),
-    BSEnum16("micro detail map function", *detail_map_functions),
-
-    Pad(2),
-    BFloat("micro detail map scale"),
-    dependency("micro detail map", "bitm"),
-    QStruct("material color", INCLUDE=rgb_float),
 
     Pad(12),
     #Bump Properties
-    BFloat("bump map scale"),
-    dependency("bump map", "bitm"),
-    FlFloat("bump map scale x"),
-    FlFloat("bump map scale y"),
+    Struct("bump properties",
+        BFloat("map scale"),
+        dependency("map", "bitm"),
+        FlFloat("map scale x"),
+        FlFloat("map scale y"),
+        ),
 
     Pad(16),
     #Texture Animation
-    Struct("u-animation", INCLUDE=anim_func_per_sca),
-    Struct("V-animation", INCLUDE=anim_func_per_sca),
+    Struct("u-scrolling animation", INCLUDE=anim_func_per_sca),
+    Struct("v-scrolling animation", INCLUDE=anim_func_per_sca),
 
     Pad(52),
     #Self Illumination
-    QStruct("primary on-color",  INCLUDE=rgb_float),
-    QStruct("primary off-color", INCLUDE=rgb_float),
-    Struct("primary animation", INCLUDE=anim_func_per_pha),
+    Struct("self illumination",
+        QStruct("primary on-color",  INCLUDE=rgb_float),
+        QStruct("primary off-color", INCLUDE=rgb_float),
+        Struct("primary animation", INCLUDE=anim_func_per_pha),
 
-    Pad(24),
-    QStruct("secondary on-color",  INCLUDE=rgb_float),
-    QStruct("secondary off-color", INCLUDE=rgb_float),
-    Struct("secondary animation", INCLUDE=anim_func_per_pha),
+        Pad(24),
+        QStruct("secondary on-color",  INCLUDE=rgb_float),
+        QStruct("secondary off-color", INCLUDE=rgb_float),
+        Struct("secondary animation", INCLUDE=anim_func_per_pha),
 
-    Pad(24),
-    QStruct("plasma on-color",  INCLUDE=rgb_float),
-    QStruct("plasma off-color", INCLUDE=rgb_float),
-    Struct("plasma animation", INCLUDE=anim_func_per_pha),
+        Pad(24),
+        QStruct("plasma on-color",  INCLUDE=rgb_float),
+        QStruct("plasma off-color", INCLUDE=rgb_float),
+        Struct("plasma animation", INCLUDE=anim_func_per_pha),
 
-    Pad(24),
-    BFloat("illumination map scale"),
-    dependency("illumination map", "bitm"),
+        Pad(24),
+        BFloat("map scale"),
+        dependency("map", "bitm"),
+        ),
 
     Pad(24),
     #Specular Properties
-    BBool16("specular flags",
-        "overbright",
-        "extra-shiny",
-        "lightmap is specular"
-        ),
-    Pad(18),
-    BFloat("brightness"),#[0,1]
+    Struct("specular",
+        BBool16("specular flags",
+            "overbright",
+            "extra-shiny",
+            "lightmap is specular"
+            ),
+        Pad(18),
+        float_zero_to_one("brightness"),  # [0,1]
 
-    Pad(20),
-    QStruct("perpendicular color", INCLUDE=rgb_float),
-    QStruct("parallel color",      INCLUDE=rgb_float),
+        Pad(20),
+        QStruct("perpendicular color", INCLUDE=rgb_float),
+        QStruct("parallel color",      INCLUDE=rgb_float),
+        ),
 
     Pad(16),
     #Reflection Properties
-    BBool16("reflection flags",
-        "dynamic mirror",
-         ),
-    BSEnum16("reflection type",
-        "bumped cubemap",
-        "flat cubemap",
-        "bumped radiosity",
+    Struct("reflection",
+        BBool16("reflection flags",
+            "dynamic mirror",
+             ),
+        BSEnum16("reflection type",
+            "bumped cubemap",
+            "flat cubemap",
+            "bumped radiosity",
+            ),
+
+        float_zero_to_one("lightmap brightness scale"),  # [0,1]
+        Pad(28),
+        float_zero_to_one("perpendicular brightness"),  # [0,1]
+        float_zero_to_one("parallel brightness"),  # [0,1]
+
+        Pad(40),
+        dependency("cube map", "bitm"),
         ),
-
-    BFloat("lightmap brightness scale"),#[0,1]
-    Pad(28),
-    BFloat("perpendicular brightness"),#[0,1]
-    BFloat("parallel brightness"),#[0,1]
-
-    Pad(40),
-    dependency("reflection cube map", "bitm"),
     SIZE=796
     )
 

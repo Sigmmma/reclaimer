@@ -18,7 +18,7 @@ ctrl_attrs = Struct("ctrl attrs",
         'touched by player',
         'destroyed'
         ),
-    BFloat('call value', MIN=0.0, MAX=1.0),
+    float_zero_to_one('call value'),
 
     Pad(80),
     dependency("on", valid_event_effects),

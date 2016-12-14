@@ -20,22 +20,22 @@ look_function = Struct("look function",
     )
 
 player_control = Struct("player control",
-    BFloat('magnetism friction', MIN=0.0, MAX=1.0),
-    BFloat('magnetism adhesion', MIN=0.0, MAX=1.0),
-    BFloat('inconsequential target scale', MIN=0.0, MAX=1.0),
+    BFloat('magnetism friction'),
+    BFloat('magnetism adhesion'),
+    BFloat('inconsequential target scale'),
 
     Pad(52),
-    BFloat('look acceleration time'),
+    float_sec('look acceleration time'),
     BFloat('look acceleration scale'),
-    BFloat('look peg threshold', MIN=0.0, MAX=1.0),
-    BFloat('look default pitch rate'),  # radians
-    BFloat('look default yaw rate'),  # radians
+    float_zero_to_one('look peg threshold'),
+    float_deg('look default pitch rate'),  # degrees
+    float_deg('look default yaw rate'),  # degrees
     BFloat('look autolevelling scale'),
 
     Pad(20),
     BSInt16('minimum weapon swap ticks'),
     BSInt16('minimum autolevelling ticks'),
-    BFloat('minimum angle for vehicle flip'),  # radians
+    float_rad('minimum angle for vehicle flip'),  # radians
     reflexive("look function", look_function, 16),
 
     SIZE=128
@@ -145,10 +145,10 @@ rasterizer_data = Struct("rasterizer data",
         "tint edge density"
         ),
     Pad(2),
-    BFloat('refration amount'),  # pixels
+    BFloat('refration amount', SIDETIP="pixels"),  # pixels
     BFloat('distance falloff'),
     QStruct('tint color', INCLUDE=rgb_float),
-    BFloat('hyper-stealth refration amount'),  # pixels
+    BFloat('hyper-stealth refration amount', SIDETIP="pixels"),  # pixels
     BFloat('hyper-stealth distance falloff'),
     QStruct('hyper-stealth tint color', INCLUDE=rgb_float),
 
@@ -208,32 +208,32 @@ player_information = Struct("player information",
     dependency('unit', valid_units),
 
     Pad(28),
-    BFloat("walking speed"),  # world units/second
-    BFloat("double speed multiplier"),
-    BFloat("run forward"),  # world units/second
-    BFloat("run backward"),  # world units/second
-    BFloat("run sideways"),  # world units/second
-    BFloat("run acceleration"),  # world units/second^2
-    BFloat("sneak forward"),  # world units/second
-    BFloat("sneak backward"),  # world units/second
-    BFloat("sneak sideways"),  # world units/second
-    BFloat("sneak acceleration"),  # world units/second^2
-    BFloat("airborne acceleration"),  # world units/second^2
-    BFloat("speed multiplier"),  # multiplayer only
+    float_wu_sec("walking speed"),  # world units/second
+    BFloat("double speed multiplier", SIDETIP="[1.0,+inf]", MIN=1.0),
+    float_wu_sec("run forward"),  # world units/second
+    float_wu_sec("run backward"),  # world units/second
+    float_wu_sec("run sideways"),  # world units/second
+    float_wu_sec_sq("run acceleration"),  # world units/second^2
+    float_wu_sec("sneak forward"),  # world units/second
+    float_wu_sec("sneak backward"),  # world units/second
+    float_wu_sec("sneak sideways"),  # world units/second
+    float_wu_sec_sq("sneak acceleration"),  # world units/second^2
+    float_wu_sec_sq("airborne acceleration"),  # world units/second^2
+    BFloat("speed multiplier", SIDETIP="multiplayer only"),  # multiplayer only
 
     Pad(12),
     QStruct("grenade origin", INCLUDE=xyz_float),
 
     Pad(12),
-    BFloat("stun movement penalty", MIN=0.0, MAX=1.0),
-    BFloat("stun turning penalty", MIN=0.0, MAX=1.0),
-    BFloat("stun jumping penalty", MIN=0.0, MAX=1.0),
+    float_zero_to_one("stun movement penalty"),
+    float_zero_to_one("stun turning penalty"),
+    float_zero_to_one("stun jumping penalty"),
     BFloat("minimum stun time"),
     BFloat("maximum stun time"),
 
     Pad(8),
-    QStruct("first person idle time", INCLUDE=from_to),
-    BFloat("first person  skip fraction", MIN=0.0, MAX=1.0),
+    from_to_sec("first person idle time"),
+    float_zero_to_one("first person skip fraction"),
 
     Pad(16),
     dependency('coop respawn effect', "effe"),
@@ -275,14 +275,14 @@ falling_damage = Struct("falling_damage",
 particle_effect = Struct("particle effect",
     dependency('particle type', "part"),
     BBool32("flags", *blend_flags),
-    BFloat("density"),
+    float_wu("density"),
     QStruct("velocity scale", INCLUDE=from_to),
 
     Pad(4),
-    QStruct("angular velocity", INCLUDE=from_to),  # radians/second
+    from_to_rad_sec("angular velocity"),  # radians/second
 
     Pad(8),
-    QStruct("radius", INCLUDE=from_to),  # world units
+    from_to_wu("radius"),  # world units
 
     Pad(8),
     QStruct("tint lower bound", INCLUDE=argb_float),

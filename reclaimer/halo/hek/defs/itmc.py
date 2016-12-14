@@ -10,7 +10,7 @@ item_permutation = Struct("permutation",
 
 itmc_body = Struct("tagdata",
     reflexive("item permutations", item_permutation, 32767),
-    BSInt16("spawn time"),
+    BSInt16("spawn time", SIDETIP="seconds(0 = default)"),
     SIZE=92,
     )
 

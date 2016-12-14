@@ -75,6 +75,7 @@ shop_def = TagDef("shop",
         LUInt32('lump headers pointer'),
         LUInt32('lump count', DEFAULT=1),
         Pad(8),
+        VISIBLE=False,
         ),
     lump_headers,
 

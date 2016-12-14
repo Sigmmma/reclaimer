@@ -2,18 +2,18 @@ from ...hek.defs.scnr import *
 
 player_starting_profile = Struct("player starting profile",
     ascii_str32("name"),
-    BFloat("starting health modifier"),
-    BFloat("starting shield modifier"),
+    float_zero_to_one("starting health modifier"),
+    float_zero_to_one("starting shield modifier"),
     dependency("primary weapon", "weap"),
     BSInt16("primary rounds loaded"),
     BSInt16("primary rounds total"),
     dependency("secondary weapon", "weap"),
     BSInt16("secondary rounds loaded"),
     BSInt16("secondary rounds total"),
-    SInt8("starting frag grenade count"),
-    SInt8("starting plasma grenade count"),
-    SInt8("starting custom 2 grenade count"),
-    SInt8("starting custom 3 grenade count"),
+    SInt8("starting frag grenade count", MIN=0),
+    SInt8("starting plasma grenade count", MIN=0),
+    SInt8("starting custom 2 grenade count", MIN=0),
+    SInt8("starting custom 3 grenade count", MIN=0),
     SIZE=104
     )
 

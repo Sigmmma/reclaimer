@@ -30,18 +30,18 @@ ligh_body = Struct("tagdata",
         dependency("primary cube map", "bitm"),
         Pad(2),
         BSEnum16("texture animation function", *animation_functions),
-        BFloat("texture animation period"),
+        float_sec("texture animation period"),
 
         dependency("secondary cube map", "bitm"),
         Pad(2),
         BSEnum16("yaw animation function", *animation_functions),
-        BFloat("yaw animation period"),
+        float_sec("yaw animation period"),
         Pad(2),
         BSEnum16("roll animation function", *animation_functions),
-        BFloat("roll animation period"),
+        float_sec("roll animation period"),
         Pad(2),
         BSEnum16("pitch animation function", *animation_functions),
-        BFloat("pitch animation period"),
+        float_sec("pitch animation period"),
         Pad(8)
         ),
 
@@ -55,7 +55,7 @@ ligh_body = Struct("tagdata",
     Pad(16),
 
     #Effect parameters
-    BFloat("duration"),
+    float_sec("duration"),
     Pad(2),
     BSEnum16("falloff function", *fade_functions),
 

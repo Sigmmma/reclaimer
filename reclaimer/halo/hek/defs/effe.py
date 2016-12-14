@@ -50,10 +50,10 @@ part = Struct("part",
     dependency("type", valid_effect_events),
     Pad(24),
 
-    QStruct("velocity bounds", INCLUDE=from_to),
-    BFloat("velocity cone angle"),  # radians
-    QStruct("angular velocity bounds", INCLUDE=from_to),  # radians
-    QStruct("radius modifier bounds", INCLUDE=from_to),
+    from_to_wu_sec("velocity bounds"),  # world units/sec
+    float_rad("velocity cone angle"),  # radians
+    from_to_rad_sec("angular velocity bounds"),  # radians/sec
+    QStruct("radius modifier bounds"),
 
     BBool32("A scales values", *part_scale_modifiers),
     BBool32("B scales values", *part_scale_modifiers),
@@ -73,7 +73,7 @@ particle = Struct("particle",
     BSInt16("location"),
     Pad(2),
 
-    QStruct("relative direction", INCLUDE=yp_float),  # radians
+    yp_float_rad("relative direction"),  # radians
     QStruct("relative offset", INCLUDE=ijk_float),
     Pad(52),
 
@@ -96,15 +96,15 @@ particle = Struct("particle",
     Pad(2),
 
     QStruct("count", INCLUDE=from_to),
-    QStruct("distribution radius", INCLUDE=from_to),
+    from_to_wu("distribution radius"),
     Pad(12),
 
-    QStruct("velocity", INCLUDE=from_to),
-    BFloat("velocity cone angle"),  # radians
-    QStruct("angular velocity", INCLUDE=from_to),  # radians
+    from_to_wu_sec("velocity"),
+    float_rad("velocity cone angle"),  # radians
+    from_to_rad("angular velocity"),  # radians
     Pad(8),
 
-    QStruct("radius", INCLUDE=from_to),
+    from_to_wu("radius"),
     Pad(8),
 
     QStruct("tint lower bound", INCLUDE=argb_float),
@@ -124,8 +124,8 @@ location = Struct("location",
 event = Struct("event",
     Pad(4),
     BFloat("skip fraction"),
-    QStruct("delay bounds", INCLUDE=from_to),
-    QStruct("duration bounds", INCLUDE=from_to),
+    from_to_sec("delay bounds"),
+    from_to_sec("duration bounds"),
 
     Pad(20),
     reflexive("parts", part, 32),

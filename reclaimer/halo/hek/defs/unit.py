@@ -23,8 +23,8 @@ dialogue_variant = Struct('dialogue variant',
 
 powered_seat = Struct('powered seat',
     Pad(4),
-    BFloat('driver powerup time'),
-    BFloat('driver powerdown time'),
+    float_sec('driver powerup time'),
+    float_sec('driver powerdown time'),
     SIZE=68
     )
 
@@ -54,12 +54,12 @@ seat = Struct('seat',
     QStruct("acceleration scale", INCLUDE=ijk_float),
 
     Pad(12),
-    BFloat('yaw rate'),  # degrees per second
-    BFloat('pitch rate'),  # degrees per second
+    float_deg_sec('yaw rate'),  # degrees per second
+    float_deg_sec('pitch rate'),  # degrees per second
     ascii_str32('camera marker name'),
     ascii_str32('camera submerged marker name'),
-    BFloat('pitch auto-level'),  # radians
-    QStruct('pitch range', INCLUDE=from_to),  # radians
+    float_rad('pitch auto-level'),  # radians
+    from_to_rad('pitch range'),  # radians
 
     reflexive("camera tracks", camera_track, 2,
               'loose', 'tight'),
@@ -105,48 +105,48 @@ unit_attrs = Struct("unit attrs",
         ),
     BSEnum16('default team', *unit_teams),
     BSEnum16('constant sound volume', *sound_volumes),
-    BFloat('rider damage fraction'),
+    float_zero_to_inf('rider damage fraction'),
     dependency('integrated light toggle', "effe"),
     BSEnum16('A in', *unit_inputs),
     BSEnum16('B in', *unit_inputs),
     BSEnum16('C in', *unit_inputs),
     BSEnum16('D in', *unit_inputs),
-    BFloat('camera field of view'),  # radians
+    float_rad('camera field of view'),  # radians
     BFloat('camera stiffness'),
     ascii_str32('camera marker name'),
     ascii_str32('camera submerged marker name'),
-    BFloat('pitch auto-level'),  # radians
-    QStruct('pitch range', INCLUDE=from_to),  # radians
+    float_rad('pitch auto-level'),  # radians
+    from_to_rad('pitch range'),  # radians
     reflexive("camera tracks", camera_track, 2,
               'loose', 'tight'),
 
     #Miscellaneous
     QStruct("seat acceleration scale", INCLUDE=ijk_float),
     Pad(12),
-    BFloat('soft ping threshold', MIN=0.0, MAX=1.0),
-    BFloat('soft ping interrupt time'),  # seconds
-    BFloat('hard ping threshold', MIN=0.0, MAX=1.0),
-    BFloat('hard ping interrupt time'),  # seconds
-    BFloat('hard death threshold', MIN=0.0, MAX=1.0),
-    BFloat('hard death interrupt time'),  # seconds
-    BFloat('feign death time'),  # seconds
-    BFloat('distance of evade aim'),
-    BFloat('distance of dive aim'),
+    float_zero_to_one('soft ping threshold'),  # [0,1]
+    float_sec('soft ping interrupt time'),  # seconds
+    float_zero_to_one('hard ping threshold'),  # [0,1]
+    float_sec('hard ping interrupt time'),  # seconds
+    float_zero_to_one('hard death threshold'),  # [0,1]
+    float_zero_to_one('feign death threshold'),  # [0,1]
+    float_sec('feign death time'),  # seconds
+    float_wu('distance of evade aim'),  # world units
+    float_wu('distance of dive aim'),  # world units
 
     Pad(4),
-    BFloat('stunned movement threshold', MIN=0.0, MAX=1.0),
-    BFloat('feign death chance', MIN=0.0, MAX=1.0),
-    BFloat('feign repeat chance', MIN=0.0, MAX=1.0),
+    float_zero_to_one('stunned movement threshold'),  # [0,1]
+    float_zero_to_one('feign death chance'),  # [0,1]
+    float_zero_to_one('feign repeat chance'),  # [0,1]
     dependency('spawned actor', "actv"),
     QStruct("spawned actor count",
         BSInt16("from", GUI_NAME=""), BSInt16("to"), ORIENT='h',
         ),
     BFloat('spawned velocity'),
-    BFloat('aiming velocity maximum'),  # degrees/second
-    BFloat('aiming acceleration maximum'),  # degrees/second^2
-    BFloat('casual aiming modifier', MIN=0.0, MAX=1.0),
-    BFloat('looking velocity maximum'),  # degrees/second
-    BFloat('looking acceleration maximum'),  # degrees/second^2
+    float_rad_sec('aiming velocity maximum'),  # radians/second
+    float_rad_sec_sq('aiming acceleration maximum'),  # radians/second^2
+    float_zero_to_one('casual aiming modifier'),
+    float_rad_sec('looking velocity maximum'),  # radians/second
+    float_rad_sec_sq('looking acceleration maximum'),  # radians/second^2
 
     Pad(8),
     BFloat('ai vehicle radius'),
@@ -164,9 +164,9 @@ unit_attrs = Struct("unit attrs",
     reflexive("dialogue variants", dialogue_variant, 16),
 
     #Grenades
-    BFloat('grenade velocity'),
+    float_wu_sec('grenade velocity'),
     BSEnum16('grenade type', *grenade_types),
-    BSInt16('grenade count'),
+    BSInt16('grenade count', MIN=0),
 
     Pad(4),
     reflexive("powered seats", powered_seat, 2,

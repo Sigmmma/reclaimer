@@ -6,17 +6,20 @@ chicago_2_stage_maps = Struct("two stage map", INCLUDE=chicago_4_stage_maps)
 
 scex_attrs = Struct("scex attrs",
     # Shader Properties
-    UInt8("numeric counter limit"),#[0,255]
+    Struct("chicago shader extended",
+        UInt8("numeric counter limit",
+            MIN=0, MAX=255, SIDETIP="[0,255]"),  # [0,255]
 
-    Bool8("chicago shader flags", *trans_shdr_properties),
-    BSEnum16("first map type", *trans_shdr_first_map_type),
-    BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
-    BSEnum16("framebuffer fade mode", *render_fade_mode),
-    BSEnum16("framebuffer fade source", *function_outputs),
+        Bool8("chicago shader flags", *trans_shdr_properties),
+        BSEnum16("first map type", *trans_shdr_first_map_type),
+        BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
+        BSEnum16("framebuffer fade mode", *render_fade_mode),
+        BSEnum16("framebuffer fade source", *function_outputs),
+        Pad(2),
+        ),
 
-    Pad(2),
     #Lens Flare
-    BFloat("lens flare spacing"),#world units
+    float_wu("lens flare spacing"),  # world units
     dependency("lens flare", "lens"),
     reflexive("extra layers", extra_layers_block, 4),
     reflexive("four stage maps", chicago_4_stage_maps, 4),

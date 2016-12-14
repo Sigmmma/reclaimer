@@ -1,4 +1,5 @@
 from copy import copy, deepcopy
+from math import pi
 
 from .hek.programs.mozzarilla.field_widgets import *
 from supyr_struct.defs.common_descs import *
@@ -49,7 +50,8 @@ def rawdata_ref(name, f_type=Rawdata, max_size=None):
         ref_struct[0][MAX] = max_size
 
     return RawdataRef(name,
-        INCLUDE=ref_struct,STEPTREE=f_type("data", SIZE=".size"))
+        INCLUDE=ref_struct,
+        STEPTREE=f_type("data", GUI_NAME="", SIZE=".size"))
 
 
 def rawtext_ref(name, f_type=StrRawAscii, max_size=None, widget=TextFrame):
@@ -82,7 +84,8 @@ def dependency(name='tag ref', valid_ids=None):
         BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
-        STEPTREE=StringVarLen("filepath", GUI_NAME="", SIZE=tag_ref_size),
+        STEPTREE=StringVarLen(
+            "filepath", GUI_NAME="", SIZE=tag_ref_size, MAX=244),
         ORIENT='h'
         )
 
@@ -96,9 +99,126 @@ def blam_header(tagid, version=1):
     header_desc[5][DEFAULT] = version
     return header_desc
 
+irad = 180/pi
 
 def ascii_str32(name):
     return StrAscii(str(name), SIZE=32)
+
+def float_zero_to_one(name, *args, **kwargs):
+    return BFloat(name, *args, MIN=0.0, MAX=1.0, SIDETIP="[0,1]", **kwargs)
+def float_neg_one_to_one(name, *args, **kwargs):
+    return BFloat(name, *args, MIN=-1.0, MAX=1.0, SIDETIP="[-1,1]", **kwargs)
+
+def float_sec(name, *args, **kwargs):
+    return BFloat(name, *args, SIDETIP="seconds", **kwargs)
+
+def float_deg(name, *args, **kwargs):
+    return BFloat(name, *args, SIDETIP="degrees", **kwargs)
+def float_deg_sec(name, *args, **kwargs):
+    return BFloat(name, *args, SIDETIP="degrees/sec", **kwargs)
+
+def float_rad(name, *args, **kwargs):
+    return BFloat(name, *args, SIDETIP="degrees", UNIT_SCALE=irad, **kwargs)
+def float_rad_sec(name, *args, **kwargs):
+    return BFloat(name, *args, SIDETIP="degrees/sec", UNIT_SCALE=irad, **kwargs)
+def float_rad_sec_sq(name, *args, **kwargs):
+    return BFloat(
+        name, *args, SIDETIP="degrees/(sec^2)", UNIT_SCALE=irad, **kwargs)
+
+def float_wu(name, *args, **kwargs):
+    return BFloat(name, *args, SIDETIP="world units", **kwargs)
+def float_wu_sec(name, *args, **kwargs):
+    return BFloat(name, *args, SIDETIP="world units/sec", **kwargs)
+def float_wu_sec_sq(name, *args, **kwargs):
+    return BFloat(name, *args, SIDETIP="world units/(sec^2)", **kwargs)
+
+def float_zero_to_inf(name, *args, **kwargs):
+    return BFloat(name, *args, SIDETIP="[0,+inf]", **kwargs)
+
+
+def from_to_deg(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("from", GUI_NAME=''),
+        BFloat("to"), *args,
+        ORIENT='h', SIDETIP='degrees', **kwargs
+        )
+
+def from_to_rad(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("from", UNIT_SCALE=irad, GUI_NAME=''),
+        BFloat("to", UNIT_SCALE=irad), *args,
+        ORIENT='h', SIDETIP='degrees', **kwargs
+        )
+
+def from_to_rad_sec(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("from", UNIT_SCALE=irad, GUI_NAME=''),
+        BFloat("to", UNIT_SCALE=irad), *args,
+        ORIENT='h', SIDETIP='degrees/sec', **kwargs
+        )
+
+def from_to_sec(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("from", GUI_NAME=''),
+        BFloat("to"), *args,
+        ORIENT='h', SIDETIP='seconds', **kwargs
+        )
+
+def from_to_wu(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("from", GUI_NAME=''),
+        BFloat("to"), *args,
+        ORIENT='h', SIDETIP='world units', **kwargs
+        )
+
+def from_to_wu_sec(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("from", GUI_NAME=''),
+        BFloat("to"), *args,
+        ORIENT='h', SIDETIP='world units/sec', **kwargs
+        )
+
+def from_to_zero_to_one(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("from", MIN=0.0, MAX=1.0, GUI_NAME=''),
+        BFloat("to", MIN=0.0, MAX=1.0), *args,
+        ORIENT='h', SIDETIP='[0,1]', **kwargs
+        )
+
+def from_to_neg_one_to_one(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("from", MIN=-1.0, MAX=1.0, GUI_NAME=''),
+        BFloat("to", MIN=-1.0, MAX=1.0), *args,
+        ORIENT='h', SIDETIP='[-1,1]', **kwargs
+        )
+
+def yp_float_deg(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("y"), BFloat("p"), *args,
+        ORIENT='h', SIDETIP='degrees', **kwargs
+        )
+
+def ypr_float_deg(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("y"), BFloat("p"), BFloat("r"), *args,
+        ORIENT='h', SIDETIP='degrees', **kwargs
+        )
+
+def yp_float_rad(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("y", UNIT_SCALE=irad),
+        BFloat("p", UNIT_SCALE=irad), *args,
+        ORIENT='h', SIDETIP='degrees', **kwargs
+        )
+
+def ypr_float_rad(name, *args, **kwargs):
+    return QStruct(name,
+        BFloat("y", UNIT_SCALE=irad),
+        BFloat("p", UNIT_SCALE=irad),
+        BFloat("r", UNIT_SCALE=irad), *args,
+        ORIENT='h', SIDETIP='degrees', **kwargs
+        )
+
 
 valid_tags = tag_class(*tag_class_fcc_to_ext.keys())
 valid_models = tag_class('mode', 'mod2')
@@ -608,40 +728,39 @@ tag_header = Struct("blam header",
 anim_func_per_pha = Struct('',
     BSEnum16("function", *animation_functions),
     Pad(2),
-    BFloat("period"),  # seconds
-    BFloat("phase"),  # seconds
+    BFloat("period", SIDETIP='seconds'),  # seconds
+    BFloat("phase", SIDETIP='seconds'),  # seconds
     )
 anim_func_per_sca = Struct('',
     BSEnum16("function", *animation_functions),
     Pad(2),
-    BFloat("period"),  # seconds
-    BFloat("scale"),  # base map repeats
+    BFloat("period", SIDETIP='seconds'),  # seconds
+    BFloat("scale", SIDETIP='base map repeats'),  # base map repeats
     )
 anim_src_func_per_pha_sca = Struct('',
     BSEnum16("source", *function_outputs),
     BSEnum16("function", *animation_functions),
-    BFloat("period"),  # seconds
-    BFloat("phase"),  # seconds
-    BFloat("scale"),  # repeats
-    # when scale is for rotation, its actually in degrees, not radians. weird!
+    BFloat("period", SIDETIP='seconds'),  # seconds
+    BFloat("phase", SIDETIP='seconds'),  # seconds
+    BFloat("scale", SIDETIP='repeats'),  # repeats
+    )
+anim_src_func_per_pha_sca_rot = Struct('',
+    BSEnum16("source", *function_outputs),
+    BSEnum16("function", *animation_functions),
+    BFloat("period", SIDETIP='seconds'),  # seconds
+    BFloat("phase", SIDETIP='seconds'),  # seconds
+    BFloat("scale", SIDETIP='degrees'),  # repeats
     )
 from_to = QStruct('',
-    BFloat("from", GUI_NAME=''), BFloat("to"), ORIENT='h'
-    )
-from_to_degrees = QStruct('',
-    BFloat("from", GUI_NAME=''), BFloat("to"), ORIENT='h', SIDETIP='degrees'
-    )
-zero_to_one = QStruct('',
-    BFloat("from", GUI_NAME=''), BFloat("to"), ORIENT='h', SIDETIP='[0,1]'
-    )
-neg_one_to_one = QStruct('',
-    BFloat("from", GUI_NAME=''), BFloat("to"), ORIENT='h', SIDETIP='[-1,1]'
+    BFloat("from", GUI_NAME=''),
+    BFloat("to"),
+    ORIENT='h'
     )
 
 
 # This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
-    BSInt32("size", EDITABLE=False, GUI_NAME=""),
+    BSInt32("size", EDITABLE=False, GUI_NAME="", SIDETIP="bytes"),
     BSInt32("unknown 1", VISIBLE=False),  # 0x00 in tags(and meta it seems)
     BSInt32("unknown 2", VISIBLE=False),  # random(low number in meta)
     BSInt32("pointer", VISIBLE=False, DEFAULT=-1),
@@ -671,7 +790,7 @@ tag_index_ref_struct = dependency()
 extra_layers_block = dependency("extra layer", valid_shaders)
 
 damage_modifiers = QStruct("damage modifiers",
-    *(BFloat(material_name) for material_name in materials_list)
+    *(float_zero_to_inf(material_name) for material_name in materials_list)
     )
 
 # Miscellaneous shared descriptors
@@ -722,19 +841,18 @@ ijk_float = QStruct('ijk_float',
     Float("i"), Float("j"), Float("k"),
     ORIENT='h'
     )
-ypr_float = QStruct('ypr_float',
-    Float("y"), Float("p"), Float("r"),
-    ORIENT='h'
-    )
 ij_float = QStruct('ij_float',
     Float("i"), Float("j"),
     ORIENT='h'
     )
 yp_float = QStruct('yp_float',
-    Float("y"), Float("p"),
-    ORIENT='h'
+    BFloat("y"), BFloat("p"),
+    ORIENT='h',
     )
-
+ypr_float = QStruct('ypr_float',
+    BFloat("y"), BFloat("p"), BFloat("r"),
+    ORIENT='h',
+    )
 
 #############################
 # Open Sauce related things #
@@ -769,7 +887,8 @@ def dependency_os(name='tag ref', valid_ids=None):
         BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
-        STEPTREE=StringVarLen("filepath", GUI_NAME="", SIZE=tag_ref_size),
+        STEPTREE=StringVarLen(
+            "filepath", GUI_NAME="", SIZE=tag_ref_size, MAX=244),
         ORIENT='h'
         )
 

@@ -24,13 +24,13 @@ function = Struct('function',
         'additive',
         'always active',
         ),
-    BFloat('period'),
+    float_sec('period'),  # seconds
     BSEnum16('scale period by', *function_inputs_outputs),
     BSEnum16('function', *animation_functions),
     BSEnum16('scale function by', *function_inputs_outputs),
     BSEnum16('wobble function', *animation_functions),
-    BFloat('wobble period'),  # seconds
-    BFloat('wobble magnitude'),  # percent
+    float_sec('wobble period'),  # seconds
+    BFloat('wobble magnitude', SIDETIP="%"),  # percent
 
     BFloat('square wave threshold'),
     BSInt16('step count'),
@@ -98,7 +98,7 @@ obje_attrs = Struct('obje attrs',
         "plac",
         "ssce",
         ("obje", -1),
-        EDITABLE=False, DEFAULT=-1
+        VISIBLE=False, DEFAULT=-1
         ),
     BBool16('flags',
         'does not cast shadow',
@@ -108,10 +108,10 @@ obje_attrs = Struct('obje attrs',
         ('unknown0', 1<<8),
         ('unknown1', 1<<11),
         ),
-    BFloat('bounding radius'),
+    float_wu('bounding radius'),
     QStruct('bounding offset', INCLUDE=xyz_float),
     QStruct('origin offset', INCLUDE=xyz_float),
-    BFloat('acceleration scale'),
+    float_zero_to_inf('acceleration scale'),
 
     Pad(4),
     dependency('model', valid_models),
@@ -123,7 +123,7 @@ obje_attrs = Struct('obje attrs',
     dependency('modifier shader', valid_shaders),
     dependency('creation effect', "effe"),
     Pad(84),
-    BFloat('render bounding radius'),
+    float_wu('render bounding radius'),
 
     #Export to functions
     BSEnum16('A in', *object_export_to),

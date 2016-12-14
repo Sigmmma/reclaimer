@@ -165,12 +165,12 @@ coll_body = Struct("tagdata",
         BFloat("body system shock"),
 
         Pad(52),
-        BFloat("friendly damage resistance", MIN=0.0, MAX=1.0),
+        float_zero_to_one("friendly damage resistance"),
 
         Pad(40),
         dependency("localized damage effect", "effe"),
 
-        BFloat("area damage effect threshold", MIN=0.0, MAX=1.0),
+        float_zero_to_one("area damage effect threshold"),
         dependency("area damage effect", "effe"),
 
         BFloat("body damaged threshold"),
@@ -195,8 +195,8 @@ coll_body = Struct("tagdata",
 
         Pad(16),
         BFloat("minimum stun damage"),
-        BFloat("stun time"),
-        BFloat("recharge time"),
+        float_sec("stun time"),
+        float_sec("recharge time"),
 
         Pad(112),
         BFloat("shield damaged threshold"),

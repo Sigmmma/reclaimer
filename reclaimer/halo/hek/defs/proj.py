@@ -26,9 +26,9 @@ material_response = Struct("material response",
         BBool16("flags",
             "only against units",
             ),
-        BFloat("skip fraction", MIN=0.0, MAX=1.0),
-        QStruct("impact angle range", INCLUDE=from_to),  # radians
-        QStruct("impact velocity range", INCLUDE=from_to),  # world units/second
+        float_zero_to_one("skip fraction"),
+        from_to_rad("impact angle"),  # radians
+        from_to_wu_sec("impact velocity"),  # world units/second
         dependency('effect', "effe"),
         ),
 
@@ -38,8 +38,8 @@ material_response = Struct("material response",
         "angle",
         ),
     Pad(2),
-    BFloat("angular noise"),
-    BFloat("velocity noise"),
+    float_rad("angular noise"),
+    float_wu_sec("velocity noise"),
     dependency('detonation effect', "effe"),
 
     Pad(24),
@@ -75,26 +75,26 @@ proj_attrs = Struct("proj attrs",
     BSEnum16('C in', *projectile_inputs),
     BSEnum16('D in', *projectile_inputs),
     dependency('super detonation', "effe"),
-    BFloat("ai perception radius"),
-    BFloat("collision radius"),
+    float_wu("ai perception radius"),
+    float_wu("collision radius"),
 
     Struct("detonation",
-        BFloat("arming time"),
-        BFloat("danger radius"),
+        float_sec("arming time"),
+        float_wu("danger radius"),
         dependency('effect', "effe"),
-        QStruct("timer", INCLUDE=from_to),
-        BFloat("minimum velocity"),
-        BFloat("maximum range"),
+        from_to_sec("timer"),
+        float_wu_sec("minimum velocity"),
+        float_wu("maximum range"),
         ),
 
     Struct("physics",
         BFloat("air gravity scale"),
-        QStruct("air damage range", INCLUDE=from_to),
+        from_to_wu("air damage range"),
         BFloat("water gravity scale"),
-        QStruct("water damage range", INCLUDE=from_to),
-        BFloat("initial velocity"),
-        BFloat("final velocity"),
-        BFloat("guided angular velocity"),  # radians per second
+        from_to_wu("water damage range"),
+        float_wu_sec("initial velocity"),  # world units/sec
+        float_wu_sec("final velocity"),  # world units/sec
+        float_rad_sec("guided angular velocity"),  # radians/second
         BSEnum16('detonation noise', *sound_volumes),
 
         Pad(2),

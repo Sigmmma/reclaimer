@@ -132,13 +132,13 @@ function = Struct('function',
         'always active',
         ),
     ascii_str32('name'),
-    BFloat('period'),
+    float_sec('period'),  # seconds
     BSInt16('scale period by'),
     BSEnum16('function', *animation_functions),
     BSInt16('scale function by'),
     BSEnum16('wobble function', *animation_functions),
-    BFloat('wobble period'),  # seconds
-    BFloat('wobble magnitude'),  # percent
+    float_sec('wobble period'),  # seconds
+    BFloat('wobble magnitude', SIDETIP="%"),  # percent
     BFloat('square wave threshold'),
     BSInt16('step count'),
     BSEnum16('map to', *fade_functions),
@@ -176,7 +176,7 @@ scenery = object_reference("scenery", SIZE=72)
 
 biped = object_reference("biped",
     Pad(40),
-    BFloat("body vitality", MIN=0.0, MAX=1.0),
+    float_zero_to_one("body vitality"),
     BBool32("flags",
         "dead",
         ),
@@ -185,7 +185,7 @@ biped = object_reference("biped",
 
 vehicle = object_reference("vehicle",
     Pad(40),
-    BFloat("body vitality", MIN=0.0, MAX=1.0),
+    float_zero_to_one("body vitality"),
     BBool32("flags",
         "dead",
         ),
@@ -297,22 +297,22 @@ sound_scenery_palette = object_palette("sound scenery palette", "ssce")
 
 player_starting_profile = Struct("player starting profile",
     ascii_str32("name"),
-    BFloat("starting health modifier"),
-    BFloat("starting shield modifier"),
+    float_zero_to_one("starting health modifier"),
+    float_zero_to_one("starting shield modifier"),
     dependency("primary weapon", "weap"),
     BSInt16("primary rounds loaded"),
     BSInt16("primary rounds total"),
     dependency("secondary weapon", "weap"),
     BSInt16("secondary rounds loaded"),
     BSInt16("secondary rounds total"),
-    SInt8("starting frag grenade count"),
-    SInt8("starting plasma grenade count"),
+    SInt8("starting frag grenade count", MIN=0),
+    SInt8("starting plasma grenade count", MIN=0),
     SIZE=104
     )
 
 player_starting_location = Struct("player starting location",
     QStruct("position", INCLUDE=xyz_float),
-    BFloat("facing"),  # radians
+    float_rad("facing"),  # radians
     BSInt16("team index"),
     BSInt16("bsp index"),
     BSEnum16("type 0", *location_types),
@@ -349,7 +349,7 @@ recorded_animation = Struct("recorded animation",
     SInt8("raw animation data"),
     SInt8("unit control data version"),
     Pad(1),
-    BSInt16("length of animation"),  # ticks
+    BSInt16("length of animation", SIDETIP="ticks"),  # ticks
     Pad(6),
     rawdata_ref("recorded animation event stream", max_size=2097152),
     SIZE=64
@@ -357,7 +357,7 @@ recorded_animation = Struct("recorded animation",
 
 netgame_flag = Struct("netgame flag",
     QStruct("position", INCLUDE=xyz_float),
-    BFloat("facing"),  # radians
+    float_rad("facing"),  # radians
     BSEnum16("type",
         "ctf - flag",
         "ctf - vehicle",
@@ -383,11 +383,11 @@ netgame_equipment = Struct("netgame equipment",
     BSEnum16("type 2", *location_types),
     BSEnum16("type 3", *location_types),
     BSInt16("team index"),
-    BSInt16("spawn time"),  # seconds
+    BSInt16("spawn time", SIDETIP="seconds(0 = default)"),  # seconds
 
     Pad(48),
     QStruct("position", INCLUDE=xyz_float),
-    BFloat("facing"),  # radians
+    float_rad("facing"),  # radians
     dependency("item collection", "itmc"),
     SIZE=144
     )
@@ -519,9 +519,9 @@ cutscene_title = Struct("cutscene title",
     Pad(6),
     QStruct("text color", INCLUDE=argb_byte),
     QStruct("shadow color", INCLUDE=argb_byte),
-    BFloat("fade in time"),  # seconds
-    BFloat("up time"),  # seconds
-    BFloat("fade out time"),  # seconds
+    float_sec("fade in time"),  # seconds
+    float_sec("up time"),  # seconds
+    float_sec("fade out time"),  # seconds
     SIZE=96
     )
 
@@ -534,9 +534,9 @@ structure_bsp = Struct("structure bsp",
 
 move_position = Struct("move position",
     QStruct("position", INCLUDE=xyz_float),
-    BFloat("facing"),  # radians
+    float_rad("facing"),  # radians
     BFloat("weight"),
-    QStruct("time", INCLUDE=from_to),
+    from_to_sec("time"),
     BSInt16("animation"),
     SInt8("sequence id"),
 
@@ -547,7 +547,7 @@ move_position = Struct("move position",
 
 actor_starting_location = Struct("starting location",
     QStruct("position", INCLUDE=xyz_float),
-    BFloat("facing"),  # radians
+    float_rad("facing"),  # radians
     Pad(2),
     SInt8("sequence id"),
     Bool8("flags",
@@ -584,7 +584,7 @@ squad = Struct("squad",
 
     Pad(32),
     BSInt16("manuever to squad"),
-    BFloat("squad delay time"),  # seconds
+    float_rad("squad delay time"),  # seconds
     BBool32("attacking", *group_indices),
     BBool32("attacking search", *group_indices),
     BBool32("attacking guard", *group_indices),
@@ -610,7 +610,7 @@ squad = Struct("squad",
     BSInt16("respawn total"),
 
     Pad(2),
-    QStruct("respawn delay", INCLUDE=from_to),
+    from_to_sec("respawn delay"),
 
     Pad(48),
     reflexive("move positions", move_position, 31),
@@ -672,7 +672,7 @@ encounter = Struct("encounter",
         "tenacious"
         ),
     BSInt16("manual bsp index"),
-    QStruct("respawn delay", INCLUDE=from_to),
+    from_to_sec("respawn delay"),
 
     Pad(76),
     reflexive("squads", squad, 64),
@@ -794,8 +794,8 @@ ai_conversation = Struct("ai conversation",
         ),
 
     Pad(2),
-    BFloat("trigger distance"),
-    BFloat("run-to-player distance"),
+    float_wu("trigger distance"),
+    float_wu("run-to-player distance"),
 
     Pad(36),
     reflexive("participants", participant, 8),
@@ -818,7 +818,7 @@ scnr_body = Struct("tagdata",
         "use demo ui"
         ),
     reflexive("child scenarios", child_scenario, 16),
-    BFloat("local north"),  # radians
+    float_rad("local north"),  # radians
 
     Pad(156),
     reflexive("predicted resources", predicted_resource, 1024),

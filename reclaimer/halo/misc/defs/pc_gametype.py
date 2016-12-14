@@ -215,13 +215,13 @@ xbox_gametype_header = Struct("gametype header",
     objective_indicator,
     LUEnum32('odd man out', INCLUDE=enum_off_on),
 
-    LUInt32('respawn time growth'), #ticks
-    LUInt32('respawn time'),
+    LUInt32('respawn time growth', SIDETIP="ticks [30 == 1 second]"), #ticks
+    LUInt32('respawn time', SIDETIP="ticks [30 == 1 second]", MAX=300*30),
     #   ticks - 0 or less is "instant" (3 seconds)
     #   respawning caps at 300 seconds
-    LUInt32('respawn suicide penalty'), #ticks
-    LUInt32('lives'), #0 = unlimited
-    LFloat('health', MIN=0.5, MAX=4.0),
+    LUInt32('respawn suicide penalty', SIDETIP="ticks [30 == 1 second]"), #ticks
+    LUInt32('lives', SIDETIP='[0 == unlimited]'),
+    LFloat('health', MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
     LUInt32('score limit', MIN=1),
     #   ctf     = flags
     #   slayer  = kills
@@ -242,13 +242,13 @@ pc_gametype_header = Struct("gametype header",
     objective_indicator,
     LUEnum32('odd man out', INCLUDE=enum_off_on),
 
-    LUInt32('respawn time growth'), #ticks
-    LUInt32('respawn time'),
+    LUInt32('respawn time growth', SIDETIP="ticks [30 == 1 second]"), #ticks
+    LUInt32('respawn time', SIDETIP="ticks [30 == 1 second]", MAX=300*30),
     #   ticks - 0 or less is "instant" (3 seconds)
     #   respawning caps at 300 seconds
-    LUInt32('respawn suicide penalty'), #ticks
-    LUInt32('lives'), #0 = unlimited
-    LFloat('health', MIN=0.5, MAX=4.0),
+    LUInt32('respawn suicide penalty', SIDETIP="ticks [30 == 1 second]"), #ticks
+    LUInt32('lives', SIDETIP='[0 == unlimited]'),
+    LFloat('health', MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
     LUInt32('score limit', MIN=1),
     #   ctf     = flags
     #   slayer  = kills
@@ -260,11 +260,11 @@ pc_gametype_header = Struct("gametype header",
     LBitStruct('red vehicles',  INCLUDE=vehicle_spawn),
     LBitStruct('blue vehicles', INCLUDE=vehicle_spawn),
 
-    LUInt32('vehicle respawn time'), #ticks
+    LUInt32('vehicle respawn time', SIDETIP="ticks [30 == 1 second]"), #ticks
     friendly_fire,
-    LUInt32('respawn betrayal penalty'), #ticks
+    LUInt32('respawn betrayal penalty', SIDETIP="ticks [30 == 1 second]"), #ticks
     LUEnum32('auto team balance', INCLUDE=enum_off_on),
-    LUInt32('time limit'), #ticks
+    LUInt32('time limit', SIDETIP="ticks [30 == 1 second]"), #ticks
     SIZE=124,
     )
 

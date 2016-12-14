@@ -18,7 +18,7 @@ mach_attrs = Struct("mach attrs",
         'except when open',
         'elevator',
         ),
-    BFloat('door open time'),  # seconds
+    float_sec('door open time'),  # seconds
 
     Pad(80),
     BSEnum16('triggers when',

@@ -174,6 +174,7 @@ wad_header = QStruct('wad header',
     LUInt32('lump headers pointer'),
     LUInt32('lump count'),
     Pad(8),
+    VISIBLE=False,
     )
 
 lump_header = Struct('lump header',
@@ -227,4 +228,5 @@ lump_header = Struct('lump header',
 lump_headers = Array('lump headers',
     POINTER='.wad_header.lump_headers_pointer',
     SIZE='.wad_header.lump_count', SUB_STRUCT=lump_header,
+    VISIBLE=False,
     )

@@ -6,7 +6,7 @@ vertex = Struct("vertex",
 
     Pad(24),
     QStruct("angles", INCLUDE=yp_float),  # radians
-    BFloat("length"),
+    float_wu("length"),
     BSInt16("sequence index"),
 
     Pad(2),

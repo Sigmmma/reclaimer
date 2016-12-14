@@ -64,59 +64,59 @@ actr_body = Struct("tagdata",
 
     Pad(2),
     Struct("perception",
-        BFloat("max vision distance"),  # world units
-        BFloat("central vision angle"),  # radians
-        BFloat("max vision angle"),  # radians
+        float_wu("max vision distance"),  # world units
+        float_rad("central vision angle"),  # radians
+        float_rad("max vision angle"),  # radians
 
         Pad(4),
-        BFloat("peripheral vision angle"),  # radians
-        BFloat("peripheral distance"),  # world units
+        float_rad("peripheral vision angle"),  # radians
+        float_wu("peripheral distance"),  # world units
 
         Pad(4),
         QStruct("standing gun offset", INCLUDE=ijk_float),
         QStruct("crouching gun offset", INCLUDE=ijk_float),
-        BFloat("hearing distance"),  # world units
-        BFloat("notice projectile chance", MIN=0.0, MAX=1.0),
-        BFloat("notice vehicle chance", MIN=0.0, MAX=1.0),
+        float_wu("hearing distance"),  # world units
+        float_zero_to_one("notice projectile chance"),
+        float_zero_to_one("notice vehicle chance"),
 
         Pad(8),
-        BFloat("combat perception time"),  # seconds
-        BFloat("guard perception time"),  # seconds
-        BFloat("non-combat perception time"),  # seconds
+        float_sec("combat perception time"),  # seconds
+        float_sec("guard perception time"),  # seconds
+        float_sec("non-combat perception time"),  # seconds
         ),
 
     Pad(20),
     Struct("movement",
-        BFloat("dive into cover chance", MIN=0.0, MAX=1.0),
-        BFloat("emerge from cover chance", MIN=0.0, MAX=1.0),
-        BFloat("dive from grenade cover chance", MIN=0.0, MAX=1.0),
-        BFloat("pathfinding radius"),  # world units
-        BFloat("glass ignorance chance", MIN=0.0, MAX=1.0),
-        BFloat("stationary movement dist"),  # world units
-        BFloat("free-flying sidestep"),  # world units
-        BFloat("begin moving angle"),  # radians
+        float_zero_to_one("dive into cover chance"),
+        float_zero_to_one("emerge from cover chance"),
+        float_zero_to_one("dive from grenade cover chance"),
+        float_wu("pathfinding radius"),  # world units
+        float_zero_to_one("glass ignorance chance"),
+        float_wu("stationary movement dist"),  # world units
+        float_wu("free-flying sidestep"),  # world units
+        float_rad("begin moving angle"),  # radians
         ),
 
     Pad(4),
     Struct("looking",
-        QStruct("maximum aiming deviation", INCLUDE=yp_float),  # radians
-        QStruct("maximum looking deviation", INCLUDE=yp_float),  # radians
-        BFloat("noncombat look delta l"),  # radians
-        BFloat("noncombat look delta r"),  # radians
-        BFloat("combat look delta l"),  # radians
-        BFloat("combat look delta r"),  # radians
-        QStruct("idle aiming range", INCLUDE=from_to),  # radians
-        QStruct("idle looking range", INCLUDE=from_to),  # radians
+        yp_float_rad("maximum aiming deviation"),  # radians
+        yp_float_rad("maximum looking deviation"),  # radians
+        float_rad("noncombat look delta l"),  # radians
+        float_rad("noncombat look delta r"),  # radians
+        float_rad("combat look delta l"),  # radians
+        float_rad("combat look delta r"),  # radians
+        from_to_rad("idle aiming range"),  # radians
+        from_to_rad("idle looking range"),  # radians
         QStruct("event look time modifier", INCLUDE=from_to),
-        QStruct("noncombat idle facing", INCLUDE=from_to),  # seconds
-        QStruct("noncombat idle aiming", INCLUDE=from_to),  # seconds
-        QStruct("noncombat idle looking", INCLUDE=from_to),  # seconds
-        QStruct("guard idle facing", INCLUDE=from_to),  # seconds
-        QStruct("guard idle aiming", INCLUDE=from_to),  # seconds
-        QStruct("guard idle looking", INCLUDE=from_to),  # seconds
-        QStruct("combat idle facing", INCLUDE=from_to),  # seconds
-        QStruct("combat idle aiming", INCLUDE=from_to),  # seconds
-        QStruct("combat idle looking", INCLUDE=from_to),  # seconds
+        from_to_sec("noncombat idle facing"),  # seconds
+        from_to_sec("noncombat idle aiming"),  # seconds
+        from_to_sec("noncombat idle looking"),  # seconds
+        from_to_sec("guard idle facing"),  # seconds
+        from_to_sec("guard idle aiming"),  # seconds
+        from_to_sec("guard idle looking"),  # seconds
+        from_to_sec("combat idle facing"),  # seconds
+        from_to_sec("combat idle aiming"),  # seconds
+        from_to_sec("combat idle looking"),  # seconds
 
         Pad(24),
         dependency("DO NOT USE 1", "weap"),
@@ -131,33 +131,33 @@ actr_body = Struct("tagdata",
         BSEnum16("player danger trigger", *danger_triggers),
 
         Pad(2),
-        QStruct("danger trigger time", INCLUDE=from_to),  # seconds
+        from_to_sec("danger trigger time"),  # seconds
         BSInt16("friends killed trigger"),
         BSInt16("friends retreating trigger"),
 
         Pad(12),
-        QStruct("retreat time", INCLUDE=from_to),  # seconds
+        from_to_sec("retreat time"),  # seconds
         ),
 
     Pad(8),
     Struct("panic",
-        QStruct("cowering time", INCLUDE=from_to),  # seconds
-        BFloat("friend killed panic chance", MIN=0.0, MAX=1.0),
+        from_to_sec("cowering time"),  # seconds
+        float_zero_to_one("friend killed panic chance"),
         BSEnum16("leader type", *actor_types),
 
         Pad(2),
-        BFloat("leader killed panic chance", MIN=0.0, MAX=1.0),
-        BFloat("panic damage threshold", MIN=0.0, MAX=1.0),
-        BFloat("surprise distance"),  # world units
+        float_zero_to_one("leader killed panic chance"),
+        float_zero_to_one("panic damage threshold"),
+        float_wu("surprise distance"),  # world units
         ),
 
     Pad(28),
     Struct("defensive",
-        QStruct("hide behind cover time", INCLUDE=from_to),  # seconds
-        BFloat("hide target-not-visible time"),  # seconds
-        BFloat("hide shield fraction", MIN=0.0, MAX=1.0),
-        BFloat("attack shield fraction", MIN=0.0, MAX=1.0),
-        BFloat("pursue shield fraction", MIN=0.0, MAX=1.0),
+        from_to_sec("hide behind cover time"),  # seconds
+        float_sec("hide target-not-visible time"),  # seconds
+        float_zero_to_one("hide shield fraction"),
+        float_zero_to_one("attack shield fraction"),
+        float_zero_to_one("pursue shield fraction"),
 
         Pad(16),
         BSEnum16("defensive crouch type",
@@ -172,59 +172,59 @@ actr_body = Struct("tagdata",
         Pad(2),
         BFloat("attacking crouch threshold"),
         BFloat("defending crouch threshold"),
-        BFloat("mim stand time"),  # seconds
-        BFloat("mim crouch time"),  # seconds
+        float_sec("mim stand time"),  # seconds
+        float_sec("mim crouch time"),  # seconds
         BFloat("defending hide time modifier"),
         BFloat("attacking evasion threshold"),
         BFloat("defending evasion threshold"),
-        BFloat("evasion seek-cover chance", MIN=0.0, MAX=1.0),
-        BFloat("evasion delay time"),  # seconds
-        BFloat("max seek cover distance"),  # world units
-        BFloat("cover damage threshold", MIN=0.0, MAX=1.0),
-        BFloat("stalking discovery time"),  # seconds
-        BFloat("stalking max distance"),  # world units
-        BFloat("stationary facing angle"),  # radians
-        BFloat("change facing stand time"),  # seconds
+        float_zero_to_one("evasion seek-cover chance"),
+        float_sec("evasion delay time"),  # seconds
+        float_wu("max seek cover distance"),  # world units
+        float_zero_to_one("cover damage threshold"),
+        float_sec("stalking discovery time"),  # seconds
+        float_wu("stalking max distance"),  # world units
+        float_rad("stationary facing angle"),  # radians
+        float_sec("change facing stand time"),  # seconds
         ),
 
     Pad(4),
     Struct("pursuit",
-        QStruct("uncover delay time", INCLUDE=from_to),  # seconds
-        QStruct("target search time", INCLUDE=from_to),  # seconds
-        QStruct("pursuit position time", INCLUDE=from_to),  # seconds
+        from_to_sec("uncover delay time"),  # seconds
+        from_to_sec("target search time"),  # seconds
+        from_to_sec("pursuit position time"),  # seconds
         BSInt16("coordinated position count", MIN=0),
         BSInt16("normal position count", MIN=0),
         ),
 
     Pad(32),
     QStruct("berserk",
-        BFloat("melee attack delay"),  # seconds
-        BFloat("melee fudge factor"),  # world units
-        BFloat("melee charge time"),  # seconds
-        BFloat("melee leap range lower bound"),  # world units
-        BFloat("melee leap range upper bound"),  # world units
-        BFloat("melee leap velocity"),  # world units/tick
-        BFloat("melee leap chance", MIN=0.0, MAX=1.0),
-        BFloat("melee leap ballistic", MIN=0.0, MAX=1.0),
-        BFloat("berserk damage amount", MIN=0.0, MAX=1.0),
-        BFloat("berserk damage threshold", MIN=0.0, MAX=1.0),
-        BFloat("berserk proximity"),  # world units
-        BFloat("suicide sensing dist"),  # world units
-        BFloat("berserk grenade chance", MIN=0.0, MAX=1.0),
+        float_sec("melee attack delay"),  # seconds
+        float_wu("melee fudge factor"),  # world units
+        float_sec("melee charge time"),  # seconds
+        float_wu("melee leap range lower bound"),  # world units
+        float_wu("melee leap range upper bound"),  # world units
+        BFloat("melee leap velocity", SIDETIP="world units/tick"),  # world units/tick
+        float_zero_to_one("melee leap chance"),
+        float_zero_to_one("melee leap ballistic"),
+        float_zero_to_one("berserk damage amount"),
+        float_zero_to_one("berserk damage threshold"),
+        float_wu("berserk proximity"),  # world units
+        float_wu("suicide sensing dist"),  # world units
+        float_zero_to_one("berserk grenade chance"),
         ),
 
     Pad(12),
     Struct("firing positions",
-        QStruct("guard position time", INCLUDE=from_to),  # seconds
-        QStruct("combat position time", INCLUDE=from_to),  # seconds
+        from_to_sec("guard position time"),  # seconds
+        from_to_sec("combat position time"),  # seconds
         BFloat("old position avoid dist"),  # world units
         BFloat("friend avoid dist"),  # world units
         ),
 
     Pad(40),
     Struct("communication",
-        QStruct("noncombat idle speech time", INCLUDE=from_to),  # seconds
-        QStruct("combat idle speech time", INCLUDE=from_to),  # seconds
+        from_to_sec("noncombat idle speech time"),  # seconds
+        from_to_sec("combat idle speech time"),  # seconds
 
         Pad(176),
         dependency("DO NOT USE 3", "actr"),

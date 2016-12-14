@@ -4,11 +4,11 @@ from supyr_struct.defs.tag_def import TagDef
 def get(): return cont_def
 
 point_state = Struct("point state",
-    QStruct("state duration", INCLUDE=from_to),
-    QStruct("state transition duration", INCLUDE=from_to),
+    from_to_sec("state duration"),
+    from_to_sec("state transition duration"),
     dependency("physics", "pphy"),
     Pad(32),
-    BFloat("width"),
+    float_wu("width"),
     QStruct("color lower bound", INCLUDE=argb_float),
     QStruct("color upper bound", INCLUDE=argb_float),
     BBool32("scale flags",
@@ -45,9 +45,9 @@ cont_body = Struct("tagdata",
         ),
 
     Struct("point creation",
-        BFloat("generation rate"),
-        QStruct("veloctiy", INCLUDE=from_to),
-        BFloat("velocity cone angle"),
+        BFloat("generation rate", SIDETIP="points/sec"),
+        QStruct("veloctiy", INCLUDE=from_to, SIDETIP="world units/sec"),
+        float_rad("velocity cone angle"),
         BFloat("inherited velocity fraction"),
         ),
 
@@ -63,9 +63,9 @@ cont_body = Struct("tagdata",
         Pad(2),
         BFloat("texture repeats u"),
         BFloat("texture repeats v"),
-        BFloat("texture animation u"),  # repeats per second
-        BFloat("texture animation v"),  # repeats per second
-        BFloat("animation rate"),  # frames per second
+        BFloat("texture animation u", SIDETIP="repeats/sec"),  # repeats per second
+        BFloat("texture animation v", SIDETIP="repeats/sec"),  # repeats per second
+        BFloat("animation rate", SIDETIP="frames/sec"),  # frames per second
         dependency("bitmap", "bitm"),
         BSInt16("first sequence index"),
         BSInt16("sequence count"),
@@ -89,7 +89,7 @@ cont_body = Struct("tagdata",
 
         Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
         Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
-        Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
+        Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca_rot),
         QStruct("rotation center", INCLUDE=xy_float),
         Pad(4),
         BFloat("zsprite radius scale"),

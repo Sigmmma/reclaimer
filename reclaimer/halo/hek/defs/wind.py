@@ -2,8 +2,8 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 wind_body = Struct("tagdata",
-    QStruct("velocity",       INCLUDE=from_to),
-    QStruct("variation area", INCLUDE=yp_float),
+    from_to_wu("velocity"),
+    yp_float_rad("variation area"),
     BFloat("local variation weight"),
     BFloat("local variation rate"),
     BFloat("damping"),

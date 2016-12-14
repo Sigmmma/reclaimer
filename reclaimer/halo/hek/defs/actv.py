@@ -31,44 +31,45 @@ actv_body = Struct("tagdata",
             "switch types",
             ),
         Pad(2),
-        BFloat("initial crouch chance", MIN=0.0, MAX=1.0),
-        QStruct("crouch time", INCLUDE=from_to),
-        QStruct("run time", INCLUDE=from_to)
+        float_zero_to_one("initial crouch chance"),
+        from_to_sec("crouch time"),
+        from_to_sec("run time")
         ),
 
     #Ranged combat
     Struct("ranged combat",
         dependency("weapon", "weap"),
-        BFloat("maximum firing distance"),
+        float_wu("maximum firing distance"),
         BFloat("rate of fire"),
-        BFloat("projectile error"),  # radians
-        QStruct("first burst delay time", INCLUDE=from_to),  # seconds
+        float_rad("projectile error"),  # radians
+        from_to_sec("first burst delay time"),  # seconds
         BFloat("new-target firing pattern time"),
         BFloat("surprise delay time"),
         BFloat("surprise fire-wildly time"),
-        BFloat("death fire-wildly chance", MIN=0.0, MAX=1.0),
-        BFloat("death fire-wildly time"),  # seconds
-        QStruct("desired combat range", INCLUDE=from_to),
+        float_zero_to_one("death fire-wildly chance"),
+        float_sec("death fire-wildly time"),  # seconds
+        from_to_wu("desired combat range"),
         QStruct("custom stand gun offset", INCLUDE=ijk_float),
         QStruct("custom crouch gun offset", INCLUDE=ijk_float),
-        BFloat("target tracking"),
-        BFloat("target leading"),
+        float_zero_to_one("target tracking"),
+        float_zero_to_one("target leading"),
         BFloat("weapon damage modifier"),
         BFloat("damage per second")
         ),
 
     #Burst geometry
     Struct("burst geometry",
-        BFloat("burst origin radius"),
-        BFloat("burst origin angle"),  # radians
-        QStruct("burst return length", INCLUDE=from_to),
-        BFloat("burst return angle"),  # radians
-        QStruct("burst duration", INCLUDE=from_to),
-        QStruct("burst separation", INCLUDE=from_to),
-        BFloat("burst angular velocity"),  # radians/second
+        float_wu("burst origin radius"),
+        float_rad("burst origin angle"),  # radians
+        from_to_sec("burst return length"),
+        float_rad("burst return angle"),  # radians
+        from_to_sec("burst duration"),
+        from_to_sec("burst separation"),
+        BFloat("burst angular velocity",
+            SIDETIP="degrees/sec", UNIT_SCALE=180/pi),  # radians/second
         Pad(4),
-        BFloat("special damage modifier"),
-        BFloat("special projectile error")  # radians
+        float_zero_to_one("special damage modifier"),
+        float_rad("special projectile error")  # radians
         ),
 
     #Firing patterns"
@@ -108,17 +109,17 @@ actv_body = Struct("tagdata",
             "enemy out of sight",
             "strafing",
             ),
-        BFloat("special-fire chance"),
-        BFloat("special-fire delay")
+        float_zero_to_one("special-fire chance"),
+        float_sec("special-fire delay")
         ),
 
     #Berserking and melee
     Struct("berserking and melee",
-        BFloat("melee range"),
-        BFloat("melee abort range"),
-        QStruct("berserk firing ranges", INCLUDE=from_to),
-        BFloat("berserk melee range"),
-        BFloat("berserk melee abort range")
+        float_wu("melee range"),
+        float_wu("melee abort range"),
+        from_to_wu("berserk firing ranges", INCLUDE=from_to),
+        float_wu("berserk melee range"),
+        float_wu("berserk melee abort range")
         ),
 
     #Grenades
@@ -136,15 +137,15 @@ actv_body = Struct("tagdata",
             "seek cover",
             ),
         BSInt16("minimum enemy count"),
-        BFloat("enemy radius"),
+        float_wu("enemy radius"),
 
         Pad(4),
-        BFloat("grenade velocity"),
-        QStruct("grenade ranges", INCLUDE=from_to),
-        BFloat("collateral damage radius"),
-        BFloat("grenade chance", MIN=0.0, MAX=1.0),
-        BFloat("grenade check time"),
-        BFloat("encounter grenade timeout")
+        float_wu_sec("grenade velocity"),
+        from_to_wu("grenade ranges"),
+        float_wu("collateral damage radius"),
+        float_zero_to_one("grenade chance"),
+        float_sec("grenade check time"),
+        float_sec("encounter grenade timeout")
         ),
 
     #Items
@@ -154,10 +155,11 @@ actv_body = Struct("tagdata",
         QStruct("grenade count",
             BSInt16("from", GUI_NAME=""), BSInt16("to"), ORIENT='h'
             ),
-        BFloat("dont drop grenades chance", MIN=0.0, MAX=1.0),
+        float_zero_to_one("dont drop grenades chance"),
         QStruct("drop weapon loaded", INCLUDE=from_to),
         QStruct("drop weapon ammo",
-            BSInt16("from", GUI_NAME=""), BSInt16("to"), ORIENT='h'
+            BSInt16("from", GUI_NAME=""),
+            BSInt16("to"), ORIENT='h'
             )
         ),
 
@@ -166,7 +168,7 @@ actv_body = Struct("tagdata",
         Pad(28),
         BFloat("body vitality"),
         BFloat("shield vitality"),
-        BFloat("shield sapping radius"),
+        float_wu("shield sapping radius"),
         BSInt16("forced shader permutation"),
         ),
 

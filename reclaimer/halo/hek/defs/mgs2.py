@@ -3,13 +3,13 @@ from supyr_struct.defs.tag_def import TagDef
 
 frame = Struct("frame",
     Pad(16),
-    BFloat("offset from marker"),
+    float_wu("offset from marker"),
     BFloat("offset exponent"),
-    BFloat("length"),
+    float_wu("length"),
 
     Pad(32),
-    BFloat("radius hither"),
-    BFloat("radius yon"),
+    float_wu("radius hither"),
+    float_wu("radius yon"),
     BFloat("radius exponent"),
 
     Pad(32),
@@ -27,10 +27,10 @@ mgs2_body = Struct("tagdata",
     Pad(16),
 
     #Brightness scale
-    BFloat("near fade distance"),
-    BFloat("far fade distance"),
-    BFloat("perpendicular brightness scale"),
-    BFloat("parallel brightness scale"),
+    float_wu("near fade distance"),
+    float_wu("far fade distance"),
+    float_zero_to_one("perpendicular brightness scale"),
+    float_zero_to_one("parallel brightness scale"),
     BSEnum16("brightness scale source", *function_outputs),
     Pad(22),
 

@@ -1,41 +1,48 @@
 from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 
+noise_map = Struct("noise_map",
+    float_sec("animation period"),
+    QStruct("animation direction", INCLUDE=ijk_float),
+    BFloat("noise map scale"),
+    dependency("noise map", "bitm"),
+    )
+
 spla_attrs = Struct("spla attrs",
     Pad(4),
     #Intensity
-    BSEnum16("intensity source", *function_outputs),
-    Pad(2),
-    BFloat("intensity exponent"),
+    Struct("intensity",
+        BSEnum16("source", *function_outputs),
+        Pad(2),
+        BFloat("exponent"),
+        ),
 
     #Offset
-    BSEnum16("offset source", *function_outputs),
-    Pad(2),
-    BFloat("offset amount"),
-    BFloat("offset exponent"),
+    Struct("offset",
+        BSEnum16("source", *function_outputs),
+        Pad(2),
+        float_wu("amount"),
+        BFloat("exponent"),
+        ),
 
     Pad(32),
 
     #Color
-    BFloat("perpendicular brightness", MIN=0.0, MAX=1.0),
-    QStruct("perpendicular tint color", INCLUDE=rgb_float),
-    BFloat("parallel brightness", MIN=0.0, MAX=1.0),
-    QStruct("parallel tint color", INCLUDE=rgb_float),
-    BSEnum16("tint color source", *function_names),
+    Struct("color",
+        float_zero_to_one("perpendicular brightness"),
+        QStruct("perpendicular tint color", INCLUDE=rgb_float),
+        float_zero_to_one("parallel brightness"),
+        QStruct("parallel tint color", INCLUDE=rgb_float),
+        BSEnum16("tint color source", *function_names),
+        ),
 
     Pad(62),
     #Primary Noise Map
-    BFloat("primary animation period"),
-    QStruct("primary animation direction", INCLUDE=ijk_float),
-    BFloat("primary noise map scale"),
-    dependency("primary noise map", "bitm"),
+    Struct("primary noise map", INCLUDE=noise_map),
 
     Pad(36),
     #Secondary Noise Map
-    BFloat("secondary animation period"),
-    QStruct("secondary animation direction", INCLUDE=ijk_float),
-    BFloat("secondary noise map scale"),
-    dependency("secondary noise map", "bitm"),
+    Struct("secondary noise map", INCLUDE=noise_map),
     SIZE=292
     )
 
