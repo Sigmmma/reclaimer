@@ -10,7 +10,7 @@ shader_function = Struct('shader function',
 animation = Struct('animation',
     BSInt16('animation index'),
     Pad(2),
-    BFloat("period"),
+    float_sec("period"),
     SIZE=36
     )
 
@@ -26,7 +26,7 @@ light = Struct('light',
     BFloat("power"),
     BFloat("test distance"),
     Pad(4),
-    QStruct("direction", INCLUDE=yp_float),  # radians
+    yp_float_rad("direction"),  # radians
     BFloat("diameter"),  # radians (yeah, it sounds weird, but this
     #                      value is stored as a radian coefficient)
     SIZE=116
@@ -46,15 +46,15 @@ sky__body = Struct("tagdata",
 
     QStruct("outdoor fog color", INCLUDE=rgb_float),
     Pad(8),
-    BFloat("outdoor fog maximum density"),
-    BFloat("outdoor fog start distance"),
-    BFloat("outdoor fog opaque distance"),
+    float_zero_to_one("outdoor fog maximum density"),
+    float_wu("outdoor fog start distance"),
+    float_wu("outdoor fog opaque distance"),
 
     QStruct("indoor fog color", INCLUDE=rgb_float),
     Pad(8),
-    BFloat("indoor fog maximum density"),
-    BFloat("indoor fog start distance"),
-    BFloat("indoor fog opaque distance"),
+    float_zero_to_one("indoor fog maximum density"),
+    float_wu("indoor fog start distance"),
+    float_wu("indoor fog opaque distance"),
 
     dependency("indoor fog screen", "fog "),
     Pad(4),

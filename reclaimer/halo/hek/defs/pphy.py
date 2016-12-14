@@ -16,7 +16,7 @@ pphy_body = Struct("tagdata",
     FlFloat("wind sine modifier"),
     FlFloat("z translation rate"),
     Pad(16),
-    BFloat("density"),#g/mL
+    BFloat("density", SIDETIP="g/mL"),#g/mL
     BFloat("air friction"),
     BFloat("water friction"),
     BFloat("surface friction"),

@@ -51,7 +51,7 @@ glw__body = Struct("tagdata",
     Struct("particle size",
         BSEnum16("attachment", *function_outputs),
         Pad(2),
-        QStruct("size bounds", INCLUDE=from_to),  # world units
+        from_to_wu("size bounds"),  # world units
         QStruct("size attachment multiplier", INCLUDE=from_to),
         ),
 
@@ -66,9 +66,9 @@ glw__body = Struct("tagdata",
 
     BFloat("color rate of change"),
     BFloat("fading percentage of glow"),
-    BFloat("particle generation frequency"),  # Hz
-    BFloat("lifetime of trailing particles"),
-    BFloat("velocity of trailing particles"),
+    BFloat("particle generation frequency", SIDETIP="Hz"),  # Hz
+    BFloat("lifetime of trailing particles", SIDETIP="seconds"),
+    BFloat("velocity of trailing particles", SIDETIP="world units/sec"),
     BFloat("trailing particle min time"),
     BFloat("trailing particle max time"),
 

@@ -156,6 +156,7 @@ rom_def = TagDef("rom",
         LUInt32('lump headers pointer'),
         LUInt32('lump count', DEFAULT=9),
         Pad(8),
+        VISIBLE=False,
         ),
     lump_headers,
 

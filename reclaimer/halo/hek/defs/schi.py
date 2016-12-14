@@ -20,15 +20,15 @@ chicago_4_stage_maps = Struct("four stage map",
     BFloat("map v-scale"),
     BFloat("map u-offset"),
     BFloat("map v-offset"),
-    BFloat("map rotation"),#degrees
-    BFloat("map bias"),#[0,1]
+    float_deg("map rotation"),  # degrees
+    float_zero_to_one("map bias"),  # [0,1]
     dependency("bitmap", "bitm"),
 
     #shader animations
     Pad(40),
     Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
     Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
-    Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca),
+    Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca_rot),
 
     QStruct("rotation center", INCLUDE=xy_float),
     SIZE=220,
@@ -36,17 +36,20 @@ chicago_4_stage_maps = Struct("four stage map",
 
 schi_attrs = Struct("schi attrs",
     # Shader Properties
-    UInt8("numeric counter limit"),#[0,255]
+    Struct("chicago shader",
+        UInt8("numeric counter limit",
+            MIN=0, MAX=255, SIDETIP="[0,255]"),  # [0,255]
 
-    Bool8("chicago shader flags", *trans_shdr_properties),
-    BSEnum16("first map type", *trans_shdr_first_map_type),
-    BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
-    BSEnum16("framebuffer fade mode", *render_fade_mode),
-    BSEnum16("framebuffer fade source", *function_outputs),
+        Bool8("chicago shader flags", *trans_shdr_properties),
+        BSEnum16("first map type", *trans_shdr_first_map_type),
+        BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
+        BSEnum16("framebuffer fade mode", *render_fade_mode),
+        BSEnum16("framebuffer fade source", *function_outputs),
+        Pad(2),
+        ),
 
-    Pad(2),
     #Lens Flare
-    BFloat("lens flare spacing"),#world units
+    float_wu("lens flare spacing"),  # world units
     dependency("lens flare", "lens"),
     reflexive("extra layers", extra_layers_block, 4),
     reflexive("maps", chicago_4_stage_maps, 4),

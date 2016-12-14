@@ -70,6 +70,7 @@ pdata_def = TagDef("pdata",
         LUInt32('lump headers pointer'),
         LUInt32('lump count', DEFAULT=3),
         Pad(8),
+        VISIBLE=False,
         ),
     lump_headers,
 

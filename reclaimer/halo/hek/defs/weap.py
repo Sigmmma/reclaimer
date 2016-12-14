@@ -19,17 +19,17 @@ magazine = Struct("magazine",
         "wastes rounds when reloaded",
         "every round must be chambered"
         ),
-    BSInt16("rounds recharged"),
+    BSInt16("rounds recharged", SIDETIP="per second"),
     BSInt16("rounds total initial"),
     BSInt16("rounds total maximum"),
     BSInt16("rounds loaded maximum"),
 
     Pad(8),
-    BFloat("reload time"),
+    float_sec("reload time"),
     BSInt16("rounds reloaded"),
 
     Pad(2),
-    BFloat("chamber time"),
+    float_sec("chamber time"),
 
     Pad(24),
     dependency('reloading effect', valid_event_effects),
@@ -74,8 +74,8 @@ trigger = Struct("trigger",
         ),
     Struct("firing",
         QStruct("rounds per second", INCLUDE=from_to),
-        BFloat("acceleration time"),
-        BFloat("deceleration time"),
+        float_sec("acceleration time"),
+        float_sec("deceleration time"),
         BFloat("blurred rate of fire"),
 
         Pad(8),
@@ -90,15 +90,15 @@ trigger = Struct("trigger",
 
         Pad(6),
         BSEnum16("firing noise", *sound_volumes),
-        QStruct("error", INCLUDE=from_to),
-        BFloat("error acceleration time"),
-        BFloat("error deceleration time"),
+        from_to_zero_to_one("error"),
+        float_sec("error acceleration time"),
+        float_sec("error deceleration time"),
         ),
 
     Pad(8),
     Struct("charging",
-        BFloat("charging time"),
-        BFloat("charge hold time"),
+        float_sec("charging time"),
+        float_sec("charge hold time"),
         BSInt16("overcharged action",
             'none',
             'explode',
@@ -106,8 +106,8 @@ trigger = Struct("trigger",
             ),
 
         Pad(2),
-        BFloat("charged illumination", MIN=0.0, MAX=1.0),
-        BFloat("spew time"),
+        float_zero_to_one("charged illumination"),
+        float_sec("spew time"),
         dependency('charging effect', valid_event_effects),
         ),
 
@@ -117,29 +117,31 @@ trigger = Struct("trigger",
             'horizontal fan',
             ),
         BSInt16("projectiles per shot"),
-        BFloat("distribution angle"),  # degrees
+        float_deg("distribution angle"),  # degrees
 
         Pad(4),
-        BFloat("minimum error"),  # radians
-        QStruct("error angle", INCLUDE=from_to),  # radians
+        float_rad("minimum error"),  # radians
+        from_to_rad("error angle"),  # radians
         QStruct("first person offset", INCLUDE=xyz_float),
 
         Pad(4),
         dependency('projectile', valid_objects),
         ),
 
-    BFloat("ejection port recovery time"),
-    BFloat("illumination recovery time"),
+    Struct("misc",
+        BFloat("ejection port recovery time"),
+        BFloat("illumination recovery time"),
 
-    Pad(12),
-    BFloat("heat generated per round", MIN=0.0, MAX=1.0),
-    BFloat("age generated per round", MIN=0.0, MAX=1.0),
+        Pad(12),
+        float_zero_to_one("heat generated per round"),
+        float_zero_to_one("age generated per round"),
 
-    Pad(4),
-    BFloat("overload time"),
+        Pad(4),
+        BFloat("overload time"),
 
-    Pad(64),
-    reflexive("firing effects", firing_effect, 8),
+        Pad(64),
+        reflexive("firing effects", firing_effect, 8),
+        ),
 
     SIZE=276
     )
@@ -174,16 +176,16 @@ weap_attrs = Struct("weap attrs",
     BSEnum16('B in', *weapon_export_to),
     BSEnum16('C in', *weapon_export_to),
     BSEnum16('D in', *weapon_export_to),
-    BFloat("ready time"),
+    float_sec("ready time"),
     dependency('ready effect', valid_event_effects),
 
     Struct("heat",
-        BFloat("recovery threshold", MIN=0.0, MAX=1.0),
-        BFloat("overheated threshold", MIN=0.0, MAX=1.0),
-        BFloat("detonation threshold", MIN=0.0, MAX=1.0),
-        BFloat("detonation fraction", MIN=0.0, MAX=1.0),
-        BFloat("loss per second", MIN=0.0, MAX=1.0),
-        BFloat("illumination", MIN=0.0, MAX=1.0),
+        float_zero_to_one("recovery threshold"),
+        float_zero_to_one("overheated threshold"),
+        float_zero_to_one("detonation threshold"),
+        float_zero_to_one("detonation fraction"),
+        float_zero_to_one("loss per second"),
+        float_zero_to_one("illumination"),
 
         Pad(16),
         dependency('overheated', valid_event_effects),
@@ -198,18 +200,18 @@ weap_attrs = Struct("weap attrs",
     Pad(8),
     Struct("aiming",
         dependency("actor firing parameters", "actv"),
-        BFloat("near reticle range"),
-        BFloat("far reticle range"),
-        BFloat("intersection reticle range"),
+        float_wu("near reticle range"),  # world units
+        float_wu("far reticle range"),  # world units
+        float_wu("intersection reticle range"),  # world units
 
         Pad(2),
         BSInt16("zoom levels"),
         QStruct("zoom ranges", INCLUDE=from_to),
-        BFloat("autoaim angle"),  # radians
-        BFloat("autoaim range"),
-        BFloat("magnetism angle"),  # radians
-        BFloat("magnetism range"),
-        BFloat("deviation angle"),  # radians
+        float_rad("autoaim angle"),  # radians
+        float_wu("autoaim range"),  # world units
+        float_rad("magnetism angle"),  # radians
+        float_wu("magnetism range"),  # world units
+        float_rad("deviation angle"),  # radians
         ),
 
     Pad(4),
@@ -232,8 +234,8 @@ weap_attrs = Struct("weap attrs",
 
     Pad(4),
     Struct("light",
-        BFloat('power-on time'),
-        BFloat('power-off time'),
+        float_sec('power-on time'),
+        float_sec('power-off time'),
         dependency('power-on effect', valid_event_effects),
         dependency('power-off effect', valid_event_effects)
         ),
@@ -241,8 +243,8 @@ weap_attrs = Struct("weap attrs",
     Struct("age",
         BFloat("heat penalty"),
         BFloat("rate of fire penalty"),
-        BFloat("misfire start", MIN=0.0, MAX=1.0),
-        BFloat("misfire chance", MIN=0.0, MAX=1.0)
+        float_zero_to_one("misfire start"),
+        float_zero_to_one("misfire chance")
         ),
 
     Pad(12),

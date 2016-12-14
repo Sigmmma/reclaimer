@@ -22,9 +22,9 @@ marker = Struct("marker",
     BSInt16("octaves to next marker"),
 
     Pad(78),
-    QStruct("random position bounds", INCLUDE=ijk_float),
-    BFloat("random jitter"),
-    BFloat("thickness"),
+    QStruct("random position bounds", INCLUDE=ijk_float, SIDETIP="world units"),
+    float_wu("random jitter"),
+    float_wu("thickness"),
     QStruct("tint", INCLUDE=argb_float),
     SIZE=228
     )
@@ -34,8 +34,8 @@ elec_body = Struct("tagdata",
     BSInt16("count"),
 
     Pad(16),
-    BFloat("near fade distance"),
-    BFloat("far fade distance"),
+    float_wu("near fade distance"),
+    float_wu("far fade distance"),
 
     Pad(16),
     BSEnum16("jitter scale source", *function_outputs),

@@ -127,7 +127,7 @@ class Mozzarilla(Binilla):
     def load_guerilla_config(self):
         fp = askopenfilename(
             initialdir=self.last_load_dir, title="Select the tag to load",
-            filetypes=(('All', '*'), ('Guerilla config', '*.cfg')))
+            filetypes=(('Guerilla config', '*.cfg'), ('All', '*')))
 
         if not fp:
             return
@@ -432,7 +432,6 @@ class Mozzarilla(Binilla):
     def apply_config(self, e=None):
         Binilla.apply_config(self)
         config_data = self.config_file.data
-
         self._curr_handler_index = config_data.mozzarilla.selected_handler.data
         tag_dirs = config_data.tag_dirs
 

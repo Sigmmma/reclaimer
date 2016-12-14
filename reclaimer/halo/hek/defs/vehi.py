@@ -32,8 +32,8 @@ vehi_attrs = Struct("vehi attrs",
     BFloat("speed acceleration"),
     BFloat("speed deceleration"),
     BFloat("maximum left turn"),
-    BFloat("maximum right turn"),  # this should be negative
-    BFloat("wheel circumference"),  # world units
+    BFloat("maximum right turn", SIDETIP="(should be negative)"),
+    float_wu("wheel circumference"),  # world units
     BFloat("turn rate"),
     BFloat("blur speed"),
     BSEnum16('A in', *vehicle_inputs),
@@ -50,8 +50,8 @@ vehi_attrs = Struct("vehi attrs",
     BFloat("maximum flipping angular velocity"),
 
     Pad(24),
-    BFloat("fixed gun yaw"),  # degrees
-    BFloat("fixed gun pitch"),  # degrees
+    float_deg("fixed gun yaw"),  # degrees
+    float_deg("fixed gun pitch"),  # degrees
 
     Pad(24),
     Struct("ai",
@@ -61,8 +61,8 @@ vehi_attrs = Struct("vehi attrs",
         BFloat("pathfinding radius"),
         BFloat("charge repeat timeout"),
         BFloat("strafing abort range"),
-        QStruct("oversteering bounds", INCLUDE=from_to),  # radians
-        BFloat("steering maximum"),  # radians
+        from_to_rad("oversteering bounds"),  # radians
+        float_rad("steering maximum"),  # radians
         BFloat("throttle maximum"),
         BFloat("move-position time"),
         ),

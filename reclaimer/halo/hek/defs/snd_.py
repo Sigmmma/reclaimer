@@ -90,15 +90,15 @@ snd__body = Struct("tagdata",
         {NAME: "khz_22", GUI_NAME: "22kHz"},
         {NAME: "khz_44", GUI_NAME: "44kHz"},
         ),
-    BFloat("minimum distance"),
-    BFloat("maximum distance"),
-    BFloat("skip fraction", MIN=0.0, MAX=1.0),
+    float_wu("minimum distance"),
+    float_wu("maximum distance"),
+    float_zero_to_one("skip fraction"),
 
     #Randomization
     QStruct("random pitch bounds", INCLUDE=from_to),
-    BFloat("inner cone angle"),  # radians
-    BFloat("outer cone angle"),  # radians
-    BFloat("outer cone gain", MIN=0.0, MAX=1.0),
+    float_rad("inner cone angle"),  # radians
+    float_rad("outer cone angle"),  # radians
+    float_zero_to_one("outer cone gain"),
     BFloat("gain modifier"),
     BFloat("maximum bend per second"),
     Pad(12),
