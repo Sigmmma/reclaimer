@@ -1,10 +1,82 @@
 import tkinter as tk
 
+from os.path import dirname, exists, splitext
+from tkinter.filedialog import askopenfilename
+from traceback import format_exc
+
+from supyr_struct.defs.constants import PATHDIV
 from supyr_struct.apps.binilla import editor_constants
 from supyr_struct.apps.binilla.field_widgets import *
 
 
 class DependencyFrame(ContainerFrame):
+
+    def browse_tag(self):
+        tag_window = self.tag_window
+        app = tag_window.app_root
+        curr_handler = app.handler
+        new_handler = tag_window.handler
+
+        try:
+            app.set_handler(new_handler)
+
+            tags_dir = app.tags_dir
+            if not tags_dir.endswith(PATHDIV):
+                tags_dir += PATHDIV
+
+            init_dir = tags_dir
+            try: init_dir = tags_dir + dirname(self.node.filepath)
+            except Exception: pass
+
+            filetypes = []
+            for ext in sorted(self.node.tag_class.NAME_MAP):
+                if ext == 'NONE':
+                    continue
+                filetypes.append((ext, '*.%s' % ext))
+
+            filetypes.append(('All', '*'))
+            filepath = askopenfilename(
+                initialdir=init_dir, filetypes=filetypes, title="Select a tag")
+
+            if not filepath:
+                return
+
+            filepath = filepath.replace('/', '\\').replace('\\', PATHDIV)
+            tag_path, ext = splitext(filepath.split(tags_dir)[-1])
+            try:
+                self.node.tag_class.set_to(ext[1:])
+            except Exception:
+                self.node.tag_class.set_to('NONE')
+            self.node.filepath = tag_path
+            self.reload()
+        except Exception:
+            print(format_exc())
+
+        try: app.set_handler(curr_handler)
+        except Exception: pass
+
+    def open_tag(self):
+        tag_window = self.tag_window
+        app = tag_window.app_root
+        curr_handler = app.handler
+        new_handler = tag_window.handler
+
+        try:
+            app.set_handler(new_handler)
+            tags_dir = app.tags_dir
+            if not tags_dir.endswith(PATHDIV):
+                tags_dir += PATHDIV
+
+            self.flush()
+
+            rel_filepath = '%s.%s' % (self.node.filepath,
+                                      self.node.tag_class.enum_name)
+            app.load_tags(filepaths=tags_dir + rel_filepath)
+            app.set_handler(curr_handler)
+        except Exception:
+            print(format_exc())
+            try: app.set_handler(curr_handler)
+            except Exception: pass
 
     def populate(self):
         '''Destroys and rebuilds this widgets children.'''
@@ -20,10 +92,12 @@ class DependencyFrame(ContainerFrame):
                                bg=self.default_bg_color)
 
         self.content = content
-        f_widget_ids = self.f_widget_ids
-
         # clear the f_widget_ids list
-        del f_widget_ids[:]
+        del self.f_widget_ids[:]
+        del self.f_widget_ids_map
+
+        f_widget_ids = self.f_widget_ids
+        f_widget_ids_map = self.f_widget_ids_map = {}
 
         # destroy all the child widgets of the content
         for c in list(content.children.values()):
@@ -39,18 +113,28 @@ class DependencyFrame(ContainerFrame):
             if self.gui_name != '':
                 self.title_label.pack(fill="x", side="left")
 
+        btn_kwargs = dict(
+            bg=self.button_normal_color, fg=self.text_normal_color,
+            disabledforeground=self.text_disabled_color,
+            bd=self.button_depth)
+        self.browse_btn = tk.Button(
+            self, width=3, text='...', command=self.browse_tag, **btn_kwargs)
+        self.open_btn = tk.Button(
+            self, width=6, text='Open', command=self.open_tag, **btn_kwargs)
+
         node = self.node
         desc = node.desc
         picker = self.widget_picker
-        app_root = self.app_root
+        tag_window = self.tag_window
 
         field_indices = range(len(node))
         # if the node has a steptree node, include its index in the indices
         if hasattr(node, 'STEPTREE'):
             field_indices = tuple(field_indices) + ('STEPTREE',)
 
-        kwargs = dict(parent=node, app_root=app_root, disabled=self.disabled,
-                      f_widget_parent=self, vert_oriented=vertical)
+        kwargs = dict(parent=node, tag_window=tag_window,
+                      disabled=self.disabled, f_widget_parent=self,
+                      vert_oriented=vertical)
 
         all_visible = self.all_visible
         visible_count = self.visible_field_count
@@ -94,10 +178,46 @@ class DependencyFrame(ContainerFrame):
                                    attr_index=i, **kwargs)
 
             f_widget_ids.append(id(widget))
+            f_widget_ids_map[i] = id(widget)
+
+            if sub_desc.get('NAME') == 'filepath':
+                widget.data_entry.bind('<FocusIn>', self.validate_filepath)
+                widget.data_entry.bind('<Return>', self.validate_filepath)
+                widget.data_entry.bind('<FocusOut>', self.validate_filepath)
+                self.validate_filepath()
 
         # now that the field widgets are created, position them
         if self.show.get():
             self.pose_fields()
+
+    def validate_filepath(self, e=None):
+        desc = self.desc
+        widget_id = self.f_widget_ids_map.get(desc['NAME_MAP']['filepath'])
+        widget = self.content.children.get(str(widget_id))
+        if widget is None:
+            return
+
+        tags_dir = self.tag_window.handler.tagsdir
+        if not tags_dir.endswith(PATHDIV):
+            tags_dir += PATHDIV
+
+        filepath = '%s%s.%s' % (tags_dir, self.node.filepath,
+                                self.node.tag_class.enum_name)
+        filepath = filepath.replace('/', '\\').replace('\\', PATHDIV)
+        if exists(filepath):
+            widget.data_entry.config(fg=self.text_normal_color)
+        else:
+            widget.data_entry.config(fg=self.invalid_path_color)
+
+    def pose_fields(self):
+        ContainerFrame.pose_fields(self)
+        padx, pady, side= self.horizontal_padx, self.horizontal_pady, 'top'
+        if self.desc.get('ORIENT', 'v') in 'hH':
+            side = 'left'
+
+        self.browse_btn.pack(
+            fill='x', side=side, anchor='nw', padx=padx, pady=pady)
+        self.open_btn.pack(fill='x', side=side, anchor='nw', padx=padx)
 
     def reload(self):
         '''Resupplies the nodes to the widgets which display them.'''
@@ -111,11 +231,7 @@ class DependencyFrame(ContainerFrame):
             if hasattr(node, 'STEPTREE'):
                 field_indices = tuple(field_indices) + ('STEPTREE',)
 
-            f_widgets_by_i = {}
-            for wid in self.f_widget_ids:
-                w = f_widgets[str(wid)]
-                f_widgets_by_i[w.attr_index] = w
-
+            f_widget_ids_map = self.f_widget_ids_map
             all_visible = self.all_visible
 
             # if any of the descriptors are different between
@@ -131,14 +247,14 @@ class DependencyFrame(ContainerFrame):
                 if i == 0 and sub_desc['ENTRIES'] <= 2:
                     continue
 
-                w = f_widgets_by_i.get(i)
+                w = f_widgets.get(str(f_widget_ids_map.get(i)))
 
                 # if neither would be visible, dont worry about checking it
                 if not(sub_desc.get('VISIBLE',1) or all_visible) and w is None:
                     continue
 
                 # if the descriptors are different, gotta repopulate!
-                if w.desc is not sub_desc:
+                if not hasattr(w, 'desc') or w.desc is not sub_desc:
                     self.populate()
                     return
                 
@@ -147,5 +263,7 @@ class DependencyFrame(ContainerFrame):
 
                 w.parent, w.node = node, node[w.attr_index]
                 w.reload()
+
+            self.validate_filepath()
         except Exception:
             print(format_exc())

@@ -35,7 +35,8 @@ tag_dirs = Array("tag_dirs",
     NAME_MAP=(
         "halo_1_tags_dir", "halo_1_os_tags_dir",
         "halo_1_map_tags_dir", "halo_1_misc_tags_dir"
-        )
+        ),
+    EDITABLE=False
     )
 
 mozzarilla = Struct("mozzarilla",
@@ -46,6 +47,7 @@ mozzarilla = Struct("mozzarilla",
         "halo_1_os",
         "halo_1_map",
         "halo_1_misc",
+        EDITABLE=False
         ),
     Pad(64 - 2*2),
 
