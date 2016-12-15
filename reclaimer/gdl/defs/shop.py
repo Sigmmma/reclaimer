@@ -1,4 +1,6 @@
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.apps.binilla.field_widgets import TextFrame
+
 from ..common_descs import *
 from ..field_types import *
 
@@ -58,7 +60,7 @@ item_type = LUEnum32('type',
 
 item = Struct('item',
     StrLatin1('icon id',     SIZE=32),
-    StrLatin1('description', SIZE=32),
+    StrLatin1('description', SIZE=32, WIDGET=TextFrame),
     LFloat('scale', DEFAULT=1.0),
     item_type,
     LUInt32('price'),
