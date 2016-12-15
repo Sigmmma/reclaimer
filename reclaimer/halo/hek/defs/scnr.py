@@ -28,7 +28,7 @@ def object_palette(name, def_id, size=48):
 
 device_flags = (
     "initially open",  # value of 1.0
-    "initially off",  #  value of 0.0
+    "initially off",  # value of 0.0
     "can change only once",
     "position reversed",
     "not usable from any side"
@@ -218,7 +218,8 @@ equipment = object_reference("equipment",
     BBool32("misc flags",
         "initially at rest",
         # "obsolete",
-        ("does accelerate", 1<<2),  # moves due to explosions
+        {NAME: "can accelerate", VALUE: 1<<2,
+         GUI_NAME:"moves due to explosions"},
         ),
     SIZE=40
     )
@@ -230,14 +231,15 @@ weapon = object_reference("weapon",
     BBool16("flags",
         "initially at rest",
         # "obsolete",
-        ("does accelerate", 1<<2),  # moves due to explosions
+        {NAME: "can accelerate", VALUE: 1<<2,
+         GUI_NAME:"moves due to explosions"},
         ),
     SIZE=92
     )
 
 device_group = Struct("device group",
     ascii_str32("name"),
-    BFloat("initial value", MIN=0.0, MAX=1.0),
+    float_zero_to_one("initial value"),
     BBool32("flags",
         "can change only once"
         ),
