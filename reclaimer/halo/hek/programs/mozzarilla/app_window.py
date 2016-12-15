@@ -495,7 +495,7 @@ class Mozzarilla(Binilla):
         if self.dependency_window is not None:
             return
 
-        self.dependency_window = DependencyWindow(self, app_root=self)
+        self.dependency_window = DependencyWindow(self)
         self.place_window_relative(self.dependency_window, 30, 50)
 
     def show_tag_scanner(self, e=None):
@@ -506,7 +506,7 @@ class Mozzarilla(Binilla):
             print("Change the current tag set.")
             return
 
-        self.tag_scanner_window = TagScannerWindow(self, app_root=self)
+        self.tag_scanner_window = TagScannerWindow(self)
         self.place_window_relative(self.tag_scanner_window, 30, 50)
 
 
@@ -517,13 +517,12 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
 
     stop_zipping = False
 
-    def __init__(self, master, *args, **kwargs): 
-        self.app_root = kwargs.pop('app_root', self.app_root)
-        self.handler = self.app_root.handler
+    def __init__(self, app_root, *args, **kwargs): 
+        self.handler = app_root.handler
         kwargs.update(width=400, height=100)
-        tk.Toplevel.__init__(self, master, *args, **kwargs)
+        tk.Toplevel.__init__(self, app_root, *args, **kwargs)
         
-        tagset = self.app_root.handler_names[self.app_root._curr_handler_index]
+        tagset = app_root.handler_names[app_root._curr_handler_index]
         self.title("[%s] Tag dependency viewer" % tagset)
         self.minsize(width=400, height=100)
 
@@ -557,7 +556,7 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         self.filepath_frame.pack(fill='x', padx=1)
         self.button_frame.pack(fill='x', padx=1)
 
-        self.transient(self.master)
+        self.transient(app_root)
 
     def browse(self):
         filetypes = [('All', '*')]
@@ -579,7 +578,7 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
 
     def destroy(self):
         try:
-            self.master.dependency_window = None
+            self.app_root.dependency_window = None
         except AttributeError:
             pass
         self.stop_zipping = True
@@ -737,17 +736,16 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
 
     listbox_index_to_def_id = ()
 
-    def __init__(self, master, *args, **kwargs): 
-        self.app_root = kwargs.pop('app_root', self.app_root)
-        self.handler = handler = self.app_root.handler
-        tk.Toplevel.__init__(self, master, *args, **kwargs)
+    def __init__(self, app_root, *args, **kwargs): 
+        self.handler = handler = app_root.handler
+        tk.Toplevel.__init__(self, app_root, *args, **kwargs)
 
         ext_id_map = handler.ext_id_map
         self.listbox_index_to_def_id = [
             ext_id_map[ext] for ext in sorted(ext_id_map.keys())
             if ext_id_map[ext] in handler.tag_ref_cache]
 
-        tagset = self.app_root.handler_names[self.app_root._curr_handler_index]
+        tagset = app_root.handler_names[app_root._curr_handler_index]
 
         self.title("[%s] Tag directory scanner" % tagset)
         self.minsize(width=400, height=250)
@@ -826,7 +824,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
         self.logfile_frame.pack(fill='x', padx=1)
         self.def_ids_frame.pack(fill='x', padx=1, expand=True)
 
-        self.transient(self.master)
+        self.transient(app_root)
 
         self.directory_entry.insert(0, handler.tagsdir)
         self.logfile_entry.insert(0, handler.tagsdir + "tag_scanner.log")
@@ -885,7 +883,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
 
     def destroy(self):
         try:
-            self.master.tag_scanner_window = None
+            self.app_root.tag_scanner_window = None
         except AttributeError:
             pass
         self.stop_scanning = True
