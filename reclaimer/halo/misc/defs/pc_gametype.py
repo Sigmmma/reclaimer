@@ -206,6 +206,24 @@ race_settings = Struct('race settings',
     SIZE=28,
     )
 
+header_comment = \
+'''  The length of an Xbox gametypes name is capped at 11
+  characters, whereas a PC gametype name is capped at 22.
+
+  Respawn times of 0 are "instant", which is still 3 seconds
+  Respawn times cap at 300 seconds(5 minutes or 9000 ticks)
+
+  Health can be anywhere between 50% and 400%
+
+  For PC gametypes, the max spawn for each kind of vehicle is 7.
+
+  The score limit minimum is 1, and is measured in different
+  units depending on what gametype this is:
+      CTF -------- flags
+      Slayer ----- kills
+      King ------- minutes
+      Oddball ---- points/minutes
+      Race ------- laps'''
 
 xbox_gametype_header = Struct("gametype header",
     LStrUtf16('name', SIZE=24),
@@ -217,20 +235,13 @@ xbox_gametype_header = Struct("gametype header",
 
     LUInt32('respawn time growth', SIDETIP="ticks [30 == 1 second]"), #ticks
     LUInt32('respawn time', SIDETIP="ticks [30 == 1 second]", MAX=300*30),
-    #   ticks - 0 or less is "instant" (3 seconds)
-    #   respawning caps at 300 seconds
     LUInt32('respawn suicide penalty', SIDETIP="ticks [30 == 1 second]"), #ticks
     LUInt32('lives', SIDETIP='[0 == unlimited]'),
     LFloat('health', MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
     LUInt32('score limit', MIN=1),
-    #   ctf     = flags
-    #   slayer  = kills
-    #   king    = minutes
-    #   oddball = points/minutes
-    #   race    = laps
     weapon_type,
     vehicle_type,
-    SIZE=76,
+    SIZE=76, COMMENT=header_comment
     )
 
 
@@ -244,17 +255,10 @@ pc_gametype_header = Struct("gametype header",
 
     LUInt32('respawn time growth', SIDETIP="ticks [30 == 1 second]"), #ticks
     LUInt32('respawn time', SIDETIP="ticks [30 == 1 second]", MAX=300*30),
-    #   ticks - 0 or less is "instant" (3 seconds)
-    #   respawning caps at 300 seconds
     LUInt32('respawn suicide penalty', SIDETIP="ticks [30 == 1 second]"), #ticks
     LUInt32('lives', SIDETIP='[0 == unlimited]'),
     LFloat('health', MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
     LUInt32('score limit', MIN=1),
-    #   ctf     = flags
-    #   slayer  = kills
-    #   king    = minutes
-    #   oddball = points/minutes
-    #   race    = laps
     weapon_type,
 
     LBitStruct('red vehicles',  INCLUDE=vehicle_spawn),
@@ -265,7 +269,7 @@ pc_gametype_header = Struct("gametype header",
     LUInt32('respawn betrayal penalty', SIDETIP="ticks [30 == 1 second]"), #ticks
     LUEnum32('auto team balance', INCLUDE=enum_off_on),
     LUInt32('time limit', SIDETIP="ticks [30 == 1 second]"), #ticks
-    SIZE=124,
+    SIZE=124, COMMENT=header_comment
     )
 
 xbox_gametype_footer = Container('gametype footer',

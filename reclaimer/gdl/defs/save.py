@@ -36,7 +36,7 @@ def make_name_map(suffix=''):
 special_flags = xbe.special_types
 armor_flags   = xbe.armor_types
 weapon_flags  = xbe.weapon_types
-no_flags = LBool32('flags')
+no_flags = xbe.no_flags
 
 runes = (
     'blue 1',
@@ -100,20 +100,26 @@ p_powerup = Struct('character powerup',
         "speed",
         "magic",
         "special",
+        EDITABLE=False,
         ),
     Float('attribute add'),
     Union("flags",
         CASE='.type.enum_name',
-        CASES={'weapon': weapon_flags,
-               'armor': armor_flags,
-               'special': special_flags}
+        CASES={
+            'none': no_flags,
+            'speed': no_flags,
+            'magic': no_flags,
+            'weapon': weapon_flags,
+            'armor': armor_flags,
+            'special': special_flags,
+            }
         ),
     SIZE=16,
     )
 
 p_stuff = Container('character stuff',
-    SInt16('potions'),
-    SInt16('keys'),
+    SInt16('potions', MIN=0, MAX=9),
+    SInt16('keys', MIN=0, MAX=9),
     Bool16('shards',
         Pad(1),
         'lich shard',
