@@ -28,28 +28,6 @@ weapon_types = LBitStruct("weapon flags",
     SIZE=4,
     )
 
-weapon_types_simp = LBool32("weapon flags",
-    "fire",
-    "elec",
-    "acid",
-    Pad(1),
-    "knockback",
-    "knockdown",
-    Pad(10),
-    "whirlwind",
-    Pad(2),
-    "three way",
-    "super",
-    "reflect", 
-    "five way",
-    "heals",
-    Pad(1),
-    "turbo",
-    Pad(2),
-    "hammer",
-    "rapid",
-    )
-
 armor_types = LBool32("armor flags",
     "resist fire",
     "resist elec",
@@ -138,6 +116,7 @@ character = Struct("character",
     SIZE=36, ENDIAN='<',
     )
 
+no_flags = LBool32("flags")
 
 cheat = Struct("cheat",
     StrLatin1("code", SIZE=8, MAX=7),
@@ -153,14 +132,19 @@ cheat = Struct("cheat",
         "armor",
         Pad(2),
         "special",
+        EDITABLE=False,
         ),
     Float("add"),
     Union("flags",
         CASE='.type.enum_name',
-        CASES={'weapon':weapon_types_simp,
-               # 'weapon':weapon_types,
-               'armor':armor_types,
-               'special':special_types}
+        CASES={
+            'gold': no_flags,
+            'key': no_flags,
+            'potion': no_flags,
+            'weapon': weapon_types,
+            'armor': armor_types,
+            'special': special_types,
+            }
         ),
     SIZE=20, ENDIAN='<',
     )
@@ -178,10 +162,5 @@ GdlXbeDef = TagDef('xbe',
         SIZE=18, POINTER=1136064,
         SUB_STRUCT=cheat),
 
-    ext='.xbe', incomplete=True, endian='<',
-    subdefs = {'weapon_types': weapon_types_simp,
-               'special_types': special_types,
-               'armor_types': armor_types,
-               'no_types': Bool32("flags")
-               }
+    ext='.xbe', incomplete=True, endian='<'
     )
