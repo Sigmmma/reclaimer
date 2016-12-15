@@ -351,6 +351,19 @@ class Mozzarilla(Binilla):
         self.update_tag_window_title(w)
         return tag
 
+    def set_handler(self, handler=None, index=None, name=None):
+        if handler is not None:
+            handler_index = self.handlers.index(handler)
+            self._curr_handler_index = handler_index
+            self.handler = handler
+        elif index is not None:
+            self._curr_handler_index = handler_index
+            self.handler = self.handlers[handler_index]
+        elif name is not None:
+            handler_index = self.handler_names.index(name)
+            self._curr_handler_index = handler_index
+            self.handler = self.handlers[handler_index]
+
     def select_defs(self, menu_index=None, manual=True):
         names = self.handler_names
         if menu_index is None:
@@ -607,6 +620,8 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         return dependencies
 
     def populate_dependency_tree(self):
+        print('This button doesnt do anything yet.')
+        return
         filepath = self.tag_filepath.get()
         if not filepath:
             return
@@ -946,7 +961,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
         for def_id in sorted(all_tag_paths.keys()):
             tag_ref_paths = handler.tag_ref_cache[def_id]
 
-            print("Scanning '%s' tags..." % id_ext_map[def_id])
+            print("Scanning '%s' tags..." % id_ext_map[def_id][1:])
             try: app.io_text.update()
             except Exception: pass
             tags_coll = all_tag_paths[def_id]
