@@ -43,13 +43,13 @@ unit_weapon_desc = Struct("weapon",
     #Aiming screen bounds
 
     #pitch and yaw are saved in radians.
-    BFloat("right yaw per frame"),
-    BFloat("left yaw per frame"),
+    float_rad("right yaw per frame"),
+    float_rad("left yaw per frame"),
     BSInt16("right frame count"),
     BSInt16("left frame count"),
 
-    BFloat("down pitch per frame"),
-    BFloat("up pitch per frame"),
+    float_rad("down pitch per frame"),
+    float_rad("up pitch per frame"),
     BSInt16("down frame count"),
     BSInt16("up frame count"),
 
@@ -78,13 +78,13 @@ unit_desc = Struct("unit",
     #pitch and yaw are saved in radians.
                    
     #Looking screen bounds
-    BFloat("right yaw per frame"),
-    BFloat("left yaw per frame"),
+    float_rad("right yaw per frame"),
+    float_rad("left yaw per frame"),
     BSInt16("right frame count"),
     BSInt16("left frame count"),
 
-    BFloat("down pitch per frame"),
-    BFloat("up pitch per frame"),
+    float_rad("down pitch per frame"),
+    float_rad("up pitch per frame"),
     BSInt16("down frame count"),
     BSInt16("up frame count"),
 
@@ -123,13 +123,13 @@ vehicle_desc = Struct("vehicle desc",
     #pitch and yaw are saved in radians.
                       
     #Steering screen bounds
-    BFloat("right yaw per frame"),
-    BFloat("left yaw per frame"),
+    float_rad("right yaw per frame"),
+    float_rad("left yaw per frame"),
     BSInt16("right frame count"),
     BSInt16("left frame count"),
 
-    BFloat("down pitch per frame"),
-    BFloat("up pitch per frame"),
+    float_rad("down pitch per frame"),
+    float_rad("up pitch per frame"),
     BSInt16("down frame count"),
     BSInt16("up frame count"),
 
@@ -177,7 +177,7 @@ nodes_desc = Struct("node",
         "force idle compression",
         ),
     QStruct("base vector", INCLUDE=ijk_float),
-    BFloat("vector range"),
+    float_rad("vector range"),
     Pad(4),
     SIZE=64,
     )
