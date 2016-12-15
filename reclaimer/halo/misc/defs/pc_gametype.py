@@ -208,9 +208,9 @@ race_settings = Struct('race settings',
 
 header_comment = \
 '''  The length of an Xbox gametypes name is capped at 11
-  characters, whereas a PC gametype name is capped at 22.
+  characters, whereas a PC gametype name is capped at 23.
 
-  Respawn times of 0 are "instant", which is still 3 seconds
+  Respawn times of 0 are "instant", which is still 3 seconds.
   Respawn times cap at 300 seconds(5 minutes or 9000 ticks)
 
   Health can be anywhere between 50% and 400%
