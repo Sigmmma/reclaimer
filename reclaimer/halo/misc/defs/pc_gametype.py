@@ -108,7 +108,7 @@ game_type = LUEnum32('game type',
     ('oddball', 3),
     ('king', 4),
     ('race', 5),
-    DEFAULT=1, VISIBLE=False
+    DEFAULT=1
     )
 
 objective_indicator = LUEnum32('objective indicator',
@@ -297,6 +297,11 @@ header_switch = Switch('gametype header',
     CASES={True: xbox_gametype_header},
     )
 
+union_settings_comment = '''
+After you change these settings you'll still need to go into the
+header and choose this gametypes type(ctf, slayer, race, etc).
+'''
+
 settings = Union('gametype settings',
     CASE='.gametype_header.game_type.enum_name',
     CASES={
@@ -306,6 +311,7 @@ settings = Union('gametype settings',
         'king':king_settings,
         'race':race_settings,
         },
+    COMMENT=union_settings_comment
     )
 
 footer_switch = Switch('gametype footer',
