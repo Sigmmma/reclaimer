@@ -372,6 +372,12 @@ class Mozzarilla(Binilla):
         name = names[menu_index]
         handler = self.handlers[menu_index]
 
+        if name == "Halo 1 Map":
+            print("Loading and editing maps is not supported yet, " +
+                  "but it would be a pain to remove this button, " +
+                  "so I put in this message instead!")
+            return
+
         if handler is None or handler is self.handler:
             return
 
