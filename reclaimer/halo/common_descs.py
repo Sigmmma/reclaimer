@@ -85,8 +85,7 @@ def dependency(name='tag ref', valid_ids=None):
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
         STEPTREE=StringVarLen(
-            "filepath", SIZE=tag_ref_size,
-            GUI_NAME="", MAX=244, WIDGET_WIDTH=25),
+            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
         ORIENT='h'
         )
 
@@ -889,8 +888,7 @@ def dependency_os(name='tag ref', valid_ids=None):
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
         STEPTREE=StringVarLen(
-            "filepath", SIZE=tag_ref_size,
-            GUI_NAME="", MAX=244, WIDGET_WIDTH=25),
+            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
         ORIENT='h'
         )
 

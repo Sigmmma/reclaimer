@@ -503,6 +503,7 @@ class Mozzarilla(Binilla):
 
         self.dependency_window = DependencyWindow(self)
         self.place_window_relative(self.dependency_window, 30, 50)
+        self.dependency_window.focus_set()
 
     def show_tag_scanner(self, e=None):
         if self.tag_scanner_window is not None:
@@ -514,6 +515,7 @@ class Mozzarilla(Binilla):
 
         self.tag_scanner_window = TagScannerWindow(self)
         self.place_window_relative(self.tag_scanner_window, 30, 50)
+        self.tag_scanner_window.focus_set()
 
 
 class DependencyWindow(tk.Toplevel, BinillaWidget):
@@ -525,6 +527,7 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
 
     def __init__(self, app_root, *args, **kwargs): 
         self.handler = app_root.handler
+        self.app_root = app_root
         kwargs.update(width=400, height=100)
         tk.Toplevel.__init__(self, app_root, *args, **kwargs)
         
@@ -744,6 +747,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
 
     def __init__(self, app_root, *args, **kwargs): 
         self.handler = handler = app_root.handler
+        self.app_root = app_root
         tk.Toplevel.__init__(self, app_root, *args, **kwargs)
 
         ext_id_map = handler.ext_id_map
@@ -1034,7 +1038,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
         print("Could not create log. Printing log to console instead.\n\n")
         try: app.io_text.update()
         except Exception: pass
-        for line in debug_log.split('\n'):
+        for line in debuglog.split('\n'):
             try:
                 print(line)
             except Exception:
