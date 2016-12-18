@@ -4,6 +4,7 @@ import zipfile
 
 from os.path import dirname, splitext
 from time import time
+from threading import Thread
 from traceback import format_exc
 
 from supyr_struct.apps.binilla.app_window import *
@@ -544,6 +545,7 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
     app_root = None
     handler = None
 
+    zipping = False
     stop_zipping = False
 
     def __init__(self, app_root, *args, **kwargs): 
@@ -679,6 +681,23 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         print(tag)
 
     def recursive_zip(self):
+        if self.zipping:
+            return
+        try: self.zip_thread.join()
+        except Exception: pass
+        self.zip_thread = Thread(target=self._recursive_zip)
+        self.zip_thread.daemon = True
+        self.zip_thread.start()
+
+    def _recursive_zip(self):
+        self.zipping = True
+        try:
+            self.do_recursive_zip()
+        except Exception:
+            print(format_exc())
+        self.zipping = False
+
+    def do_recursive_zip(self):
         tag_path = self.tag_filepath.get()
         if not tag_path:
             return
@@ -734,6 +753,7 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
                     seen_tags.add(rel_tag_path)
 
                     try:
+                        print("Adding '%s' to zipfile" % rel_tag_path)
                         tag = self.get_tag(tag_path)
                         new_tags_to_zip.extend(self.get_dependencies(tag))
 
@@ -741,7 +761,6 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
                         del tag
 
                         tagzip.write(tag_path, arcname=rel_tag_path)
-                        print("Added '%s' to zipfile" % rel_tag_path)
                     except Exception:
                         print("    Could not add '%s' to zipfile." %
                               rel_tag_path)
@@ -761,6 +780,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
     app_root = None
     handler = None
 
+    scanning = False
     stop_scanning = False
     print_interval = 5
 
@@ -924,6 +944,23 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
         self.stop_scanning = True
 
     def scan_directory(self):
+        if self.scanning:
+            return
+        try: self.scan_thread.join()
+        except Exception: pass
+        self.scan_thread = Thread(target=self._scan_directory)
+        self.scan_thread.daemon = True
+        self.scan_thread.start()
+
+    def _scan_directory(self):
+        self.scanning = True
+        try:
+            self.scan()
+        except Exception:
+            print(format_exc())
+        self.scanning = False
+
+    def scan(self):
         app = self.app_root
         handler = self.handler
         sani = handler.sanitize_path
