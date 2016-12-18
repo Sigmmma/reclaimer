@@ -36,7 +36,7 @@ tag_dirs = Array("tag_dirs",
         "halo_1_tags_dir", "halo_1_os_tags_dir",
         "halo_1_map_tags_dir", "halo_1_misc_tags_dir"
         ),
-    EDITABLE=False
+    EDITABLE=False, VISIBLE=False
     )
 
 mozzarilla = Struct("mozzarilla",
@@ -47,11 +47,11 @@ mozzarilla = Struct("mozzarilla",
         "halo_1_os",
         "halo_1_map",
         "halo_1_misc",
-        EDITABLE=False
+        EDITABLE=False, VISIBLE=False
         ),
     Pad(64 - 2*2),
 
-    UInt32("tag_dirs_count", VISIBLE=False),
+    UInt32("tag_dirs_count", VISIBLE=False, VISIBLE=False),
     SIZE=128
     )
 
