@@ -86,8 +86,6 @@ class Mozzarilla(Binilla):
                                        command=self.set_tags_dir)
         self.settings_menu.add_separator()
         self.settings_menu.add_command(
-            label="Apply config", command=self.apply_config)
-        self.settings_menu.add_command(
             label="Edit config", command=self.show_config_file)
         self.settings_menu.add_separator()
         self.settings_menu.add_command(
@@ -126,6 +124,8 @@ class Mozzarilla(Binilla):
                 self.load_last_workspace()
         except Exception:
             pass
+
+        self.update_window_settings()
 
     @property
     def tags_dir(self):
@@ -539,6 +539,13 @@ class Mozzarilla(Binilla):
         self.place_window_relative(self.tag_scanner_window, 30, 50)
         self.tag_scanner_window.focus_set()
 
+    def update_window_settings(self):
+        Binilla.update_window_settings(self)
+        try:
+            for m in (self.defs_menu, self.tools_menu):
+                m.config(bg=self.default_bg_color, fg=self.text_normal_color)
+        except AttributeError: pass
+        except Exception: print(format_exc())
 
 class DependencyWindow(tk.Toplevel, BinillaWidget):
 
@@ -551,9 +558,10 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
     def __init__(self, app_root, *args, **kwargs): 
         self.handler = app_root.handler
         self.app_root = app_root
-        kwargs.update(width=400, height=100)
+        kwargs.update(width=400, height=100, bd=0,
+                      highlightthickness=0, bg=self.default_bg_color)
         tk.Toplevel.__init__(self, app_root, *args, **kwargs)
-        
+
         tagset = app_root.handler_names[app_root._curr_handler_index]
         self.title("[%s] Tag dependency viewer" % tagset)
         self.minsize(width=400, height=100)
@@ -562,21 +570,37 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         self.tag_filepath = tk.StringVar(self)
 
         # make the frames
-        self.filepath_frame = tk.LabelFrame(self, text="Select a tag")
-        self.button_frame = tk.LabelFrame(self, text="Actions")
+        self.filepath_frame = tk.LabelFrame(
+            self, text="Select a tag",
+            fg=self.text_normal_color, bg=self.default_bg_color)
+        self.button_frame = tk.LabelFrame(
+            self, text="Actions",
+            fg=self.text_normal_color, bg=self.default_bg_color)
 
+        btn_kwargs = dict(
+            bg=self.button_color, activebackground=self.button_color,
+            fg=self.text_normal_color, bd=self.button_depth,
+            disabledforeground=self.text_disabled_color,
+            )
         self.display_button = tk.Button(
             self.button_frame, width=25, text='Show dependencies',
-            command=self.populate_dependency_tree)
+            command=self.populate_dependency_tree, **btn_kwargs)
 
         self.zip_button = tk.Button(
             self.button_frame, width=25, text='Zip tag recursively',
-            command=self.recursive_zip)
+            command=self.recursive_zip, **btn_kwargs)
 
         self.filepath_entry = tk.Entry(
-            self.filepath_frame, textvariable=self.tag_filepath)
+            self.filepath_frame, textvariable=self.tag_filepath,
+            bd=self.entry_depth,
+            bg=self.entry_normal_color, fg=self.text_normal_color,
+            disabledbackground=self.entry_disabled_color,
+            disabledforeground=self.text_disabled_color,
+            selectbackground=self.entry_highlighted_color,
+            selectforeground=self.text_highlighted_color)
         self.browse_button = tk.Button(
-            self.filepath_frame, text="Browse", command=self.browse)
+            self.filepath_frame, text="Browse",
+            command=self.browse, **btn_kwargs)
 
         self.display_button.pack(padx=4, pady=2, side=tk.LEFT)
         self.zip_button.pack(padx=4, pady=2, side=tk.RIGHT)
@@ -789,6 +813,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
     def __init__(self, app_root, *args, **kwargs): 
         self.handler = handler = app_root.handler
         self.app_root = app_root
+        kwargs.update(bd=0, highlightthickness=0, bg=self.default_bg_color)
         tk.Toplevel.__init__(self, app_root, *args, **kwargs)
 
         ext_id_map = handler.ext_id_map
@@ -808,40 +833,67 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
 
         # make the frames
         self.directory_frame = tk.LabelFrame(
-            self, text="Directory to scan")
+            self, text="Directory to scan",
+            fg=self.text_normal_color, bg=self.default_bg_color)
         self.logfile_frame = tk.LabelFrame(
-            self, text="Output log filepath")
+            self, text="Output log filepath",
+            fg=self.text_normal_color, bg=self.default_bg_color)
         self.def_ids_frame = tk.LabelFrame(
-            self, text="Select which tag types to scan")
-        self.button_frame = tk.Frame(self.def_ids_frame)
+            self, text="Select which tag types to scan",
+            fg=self.text_normal_color, bg=self.default_bg_color)
+        self.button_frame = tk.Frame(
+            self.def_ids_frame,bg=self.default_bg_color)
+
+        btn_kwargs = dict(
+            bg=self.button_color, activebackground=self.button_color,
+            fg=self.text_normal_color, bd=self.button_depth,
+            disabledforeground=self.text_disabled_color,
+            )
 
         self.scan_button = tk.Button(
             self.button_frame, text='Scan directory', width=20,
-            command=self.scan_directory)
+            command=self.scan_directory, **btn_kwargs)
         self.cancel_button = tk.Button(
             self.button_frame, text='Cancel scan', width=20,
-            command=self.cancel_scan)
+            command=self.cancel_scan, **btn_kwargs)
         self.select_all_button = tk.Button(
             self.button_frame, text='Select all', width=20,
-            command=self.select_all)
+            command=self.select_all, **btn_kwargs)
         self.deselect_all_button = tk.Button(
             self.button_frame, text='Deselect all', width=20,
-            command=self.deselect_all)
+            command=self.deselect_all, **btn_kwargs)
 
         self.directory_entry = tk.Entry(
-            self.directory_frame, textvariable=self.directory_path)
+            self.directory_frame, textvariable=self.directory_path,
+            bd=self.entry_depth,
+            bg=self.entry_normal_color, fg=self.text_normal_color,
+            disabledbackground=self.entry_disabled_color,
+            disabledforeground=self.text_disabled_color,
+            selectbackground=self.entry_highlighted_color,
+            selectforeground=self.text_highlighted_color)
         self.dir_browse_button = tk.Button(
-            self.directory_frame, text="Browse", command=self.dir_browse)
+            self.directory_frame, text="Browse",
+            command=self.dir_browse, **btn_kwargs)
 
         self.logfile_entry = tk.Entry(
-            self.logfile_frame, textvariable=self.logfile_path)
+            self.logfile_frame, textvariable=self.logfile_path,
+            bd=self.entry_depth,
+            bg=self.entry_normal_color, fg=self.text_normal_color,
+            disabledbackground=self.entry_disabled_color,
+            disabledforeground=self.text_disabled_color,
+            selectbackground=self.entry_highlighted_color,
+            selectforeground=self.text_highlighted_color)
         self.log_browse_button = tk.Button(
-            self.logfile_frame, text="Browse", command=self.log_browse)
+            self.logfile_frame, text="Browse",
+            command=self.log_browse, **btn_kwargs)
 
         self.def_ids_scrollbar = tk.Scrollbar(
             self.def_ids_frame, orient="vertical")
         self.def_ids_listbox = tk.Listbox(
             self.def_ids_frame, selectmode=tk.MULTIPLE, highlightthickness=0,
+            bg=self.enum_normal_color, fg=self.text_normal_color,
+            selectbackground=self.enum_highlighted_color,
+            selectforeground=self.text_highlighted_color,
             yscrollcommand=self.def_ids_scrollbar.set)
         self.def_ids_scrollbar.config(command=self.def_ids_listbox.yview)
 
