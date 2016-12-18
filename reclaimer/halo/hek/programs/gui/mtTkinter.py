@@ -122,7 +122,7 @@ def _Tk__init__(self, *args, **kwargs):
     # doesn't expect, so separate those out before doing anything else.
     new_kwnames = ('mtCheckPeriod', 'mtDebug')
     new_kwargs = {}
-    for name, value in kwargs.items():
+    for name, value in tuple(kwargs.items()):
         if name in new_kwnames:
             new_kwargs[name] = value
             del kwargs[name]
