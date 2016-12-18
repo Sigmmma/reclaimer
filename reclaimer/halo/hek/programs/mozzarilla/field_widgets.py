@@ -114,7 +114,7 @@ class DependencyFrame(ContainerFrame):
                 self.title_label.pack(fill="x", side="left")
 
         btn_kwargs = dict(
-            bg=self.button_normal_color, fg=self.text_normal_color,
+            bg=self.button_color, fg=self.text_normal_color,
             disabledforeground=self.text_disabled_color,
             bd=self.button_depth)
         self.browse_btn = tk.Button(

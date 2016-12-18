@@ -25,7 +25,10 @@ class Mozzarilla(Binilla):
     app_name = 'Mozzarilla'
     log_filename = 'mozzarilla.log'
     debug = 0
-    
+
+    _mozzarilla_initialized = False
+
+    styles_dir = dirname(__file__) + s_c.PATHDIV + "styles"
     config_path = dirname(__file__) + '%smozzarilla.cfg' % PATHDIV
     config_def = config_def
 
@@ -115,9 +118,21 @@ class Mozzarilla(Binilla):
         if self.tags_dir is not None:
             print("Tags directory is currently:\n    %s\n" % self.tags_dir)
 
+        self._mozzarilla_initialized = True
+
+        try:
+            if self.config_file.data.header.flags.load_last_workspace:
+                self.load_last_workspace()
+        except Exception:
+            pass
+
     @property
     def tags_dir(self):
         return self.handlers[self._curr_handler_index].tagsdir
+
+    def load_last_workspace(self):
+        if self._mozzarilla_initialized:
+            Binilla.load_last_workspace(self)
 
     @tags_dir.setter
     def tags_dir(self, new_val):
@@ -300,6 +315,9 @@ class Mozzarilla(Binilla):
             if self.selected_tag is None:
                 return
             tag = self.selected_tag
+
+        if tag is self.config_file:
+            return self.save_config()
 
         # make sure the filepath is sanitized
         tag.filepath = self.handler.sanitize_path(tag.filepath)

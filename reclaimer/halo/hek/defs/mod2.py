@@ -84,20 +84,14 @@ triangle_union = Union('triangle',
     )
 
 
-marker_instance = QStruct('marker instance',
+marker_instance = Struct('marker instance',
     SInt8('region index'),
     SInt8('permutation index'),
     SInt8('node index'),
     Pad(1),
 
-    BFloat('translation x'),
-    BFloat('translation y'),
-    BFloat('translation z'),
-
-    BFloat('rotation i'),
-    BFloat('rotation j'),
-    BFloat('rotation k'),
-    BFloat('rotation w'),
+    QStruct('translation', INCLUDE=xyz_float),
+    QStruct('rotation', INCLUDE=ijkw_float),
     SIZE=32
     )
 
