@@ -199,7 +199,10 @@ class Mozzarilla(Binilla):
                 return
 
         if isinstance(filepaths, str):
-            filepaths = re.split("\}\W\{", filepaths[1:-1])
+            if filepaths.startswith('{'):
+                filepaths = re.split("\}\W\{", filepaths[1:-1])
+            else:
+                filepaths = (filepaths, )
 
         sani = self.handler.sanitize_path
         handler_name = self.handler_names[self._curr_handler_index]
