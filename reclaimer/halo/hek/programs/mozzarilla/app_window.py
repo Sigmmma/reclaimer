@@ -199,7 +199,7 @@ class Mozzarilla(Binilla):
                 return
 
         if isinstance(filepaths, str):
-            filepaths = (filepaths,)
+            filepaths = re.split("\}\W\{", filepaths[1:-1])
 
         sani = self.handler.sanitize_path
         handler_name = self.handler_names[self._curr_handler_index]
@@ -949,7 +949,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
         c_time = s_time
         p_int = self.print_interval
 
-        all_tag_paths = {self.listbox_index_to_def_id[i]: [] for i in
+        all_tag_paths = {self.listbox_index_to_def_id[int(i)]: [] for i in
                          self.def_ids_listbox.curselection()}
         ext_id_map = handler.ext_id_map
         id_ext_map = handler.id_ext_map
