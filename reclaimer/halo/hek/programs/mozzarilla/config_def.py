@@ -51,7 +51,7 @@ mozzarilla = Struct("mozzarilla",
         ),
     Pad(64 - 2*2),
 
-    UInt32("tag_dirs_count", VISIBLE=False, VISIBLE=False),
+    UInt32("tag_dirs_count", VISIBLE=False, EDITABLE=False),
     SIZE=128
     )
 
