@@ -41,7 +41,7 @@ create_in_mode = BSEnum16("create in mode",
 part = Struct("part",
     create_in_env,
     create_in_mode,
-    BSInt16("location"),
+    dyn_senum16("location"),
     BBool16("flags",
         {NAME:"face_down", GUI_NAME:"face down regardless of location(decals)"}
         ),
@@ -70,7 +70,7 @@ particle = Struct("particle",
         "first person if possible",
         ),
     Pad(2),
-    BSInt16("location"),
+    dyn_senum16("location"),
     Pad(2),
 
     yp_float_rad("relative direction"),  # radians
@@ -140,8 +140,8 @@ effe_body = Struct("tagdata",
         {NAME: "required", GUI_NAME: "required for gameplay(cannot optimize)"},
         'unknown'  # found only in map meta data
         ),
-    BSInt16("loop start event"),
-    BSInt16("loop stop event"),
+    dyn_senum16("loop start event"),
+    dyn_senum16("loop stop event"),
 
     Pad(32),
     reflexive("locations", location, 32),

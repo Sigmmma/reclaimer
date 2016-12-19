@@ -6,14 +6,14 @@ shader = Struct("shader",
     )
 
 shader_index = Struct("shader index",
-    BSInt32("shader"),
+    dyn_senum32("shader"),
     SIZE=4
     )
 
 exposed_parameter = Struct("exposed parameter",
     ascii_str32("exposed name"),
     ascii_str32("parameter name"),
-    BSInt32("shader index"),
+    dyn_senum32("shader index"),
     SIZE=80
     )
 

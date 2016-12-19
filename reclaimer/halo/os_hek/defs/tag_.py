@@ -2,7 +2,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 child_ids = Struct("child id",
-    BSInt32("entry reference"),
+    dyn_senum32("entry reference"),
     SIZE=4
     )
 

@@ -10,18 +10,18 @@ permutation = Struct('permutation',
         ),
     Pad(28),
 
-    BSInt16('superlow geometry block'),
-    BSInt16('low geometry block'),
-    BSInt16('medium geometry block'),
-    BSInt16('high geometry block'),
-    BSInt16('superhigh geometry block'),
+    dyn_senum16('superlow geometry block'),
+    dyn_senum16('low geometry block'),
+    dyn_senum16('medium geometry block'),
+    dyn_senum16('high geometry block'),
+    dyn_senum16('superhigh geometry block'),
     Pad(2),
     SIZE=88
     )
 
 part = Struct('part',
     Pad(5),
-    SInt8('shader index'),
+    dyn_senum8('shader index'),
     SInt8('previous part index'),
     SInt8('next part index'),
 
@@ -44,9 +44,9 @@ part = Struct('part',
 
 node = Struct('node',
     ascii_str32("name"),
-    BSInt16('next sibling node'),
-    BSInt16('first child node'),
-    BSInt16('parent node'),
+    dyn_senum16('next sibling node'),
+    dyn_senum16('first child node'),
+    dyn_senum16('parent node'),
     Pad(2),
 
     QStruct('translation', INCLUDE=xyz_float),

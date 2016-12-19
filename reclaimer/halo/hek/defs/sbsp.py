@@ -26,13 +26,13 @@ leaf = Struct("leaf",
     Pad(8),
     BSInt16("cluster"),
     BSInt16("surface reference count"),
-    BSInt32("surface references"),
+    dyn_senum32("surface references"),
     SIZE=16
     )
 
 leaf_surface = Struct("leaf surface",
-    BSInt32("surface"),
-    BSInt32("node"),
+    dyn_senum32("surface"),
+    dyn_senum32("node"),
     SIZE=8, ORIENT='h'
     )
 
@@ -50,7 +50,7 @@ material = Struct("material",
         "coplanar",
         "fog plane",
         ),
-    BSInt32("surfaces"),
+    dyn_senum32("surfaces"),
     BSInt32("surface count"),
     QStruct("centroid", INCLUDE=xyz_float),
     QStruct("ambient color", INCLUDE=rgb_float),
@@ -135,9 +135,9 @@ subcluster = Struct("subcluster",
 cluster = Struct("cluster",
     BSInt16('sky'),
     BSInt16('fog'),
-    BSInt16('background sound'),
-    BSInt16('sound environment'),
-    BSInt32('weather'),
+    dyn_senum16('background sound'),
+    dyn_senum16('sound environment'),
+    dyn_senum32('weather'),
 
     Pad(28),
     reflexive("predicted resources", predicted_resource, 1024),
@@ -173,7 +173,7 @@ breakable_surface = Struct("breakable surface",
     )
 
 fog_plane = Struct("fog plane",
-    BSInt16("front region"),
+    dyn_senum16("front region"),
     Pad(2),
     QStruct("plane", INCLUDE=plane),
     reflexive("vertices", vertex, 4096),
@@ -182,8 +182,8 @@ fog_plane = Struct("fog plane",
 
 fog_region = Struct("fog region",
     Pad(36),
-    BSInt16("fog palette"),
-    BSInt16("weather palette"),
+    dyn_senum16("fog palette"),
+    dyn_senum16("weather palette"),
     SIZE=40
     )
 
