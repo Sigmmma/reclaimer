@@ -2,7 +2,7 @@ import os
 import tkinter as tk
 import zipfile
 
-from os.path import dirname, splitext
+from os.path import dirname, splitext, realpath
 from time import time
 from threading import Thread
 from traceback import format_exc
@@ -127,18 +127,18 @@ class Mozzarilla(Binilla):
 
         self.update_window_settings()
 
-    @property
-    def tags_dir(self):
-        return self.handlers[self._curr_handler_index].tagsdir
-
     def load_last_workspace(self):
         if self._mozzarilla_initialized:
             Binilla.load_last_workspace(self)
 
+    @property
+    def tags_dir(self):
+        return self.handlers[self._curr_handler_index].tagsdir
+
     @tags_dir.setter
     def tags_dir(self, new_val):
         handler = self.handlers[self._curr_handler_index]
-        handler.tagsdir = self.handler.sanitize_path(new_val)
+        handler.tagsdir = handler.sanitize_path(new_val)
 
     def load_guerilla_config(self):
         fp = askopenfilename(
@@ -266,6 +266,12 @@ class Mozzarilla(Binilla):
 
         if not tags_dir:
             return
+
+        # lowercase the drive letter
+        tags_dir = tags_dir.split(':')
+        for i in range(len(tags_dir) - 1):
+            tags_dir[i] = tags_dir[i].lower() + ':'
+        tags_dir = ''.join(tags_dir)
 
         tags_dir = self.handler.sanitize_path(tags_dir)
         if tags_dir and not tags_dir.endswith(s_c.PATHDIV):

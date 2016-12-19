@@ -51,7 +51,8 @@ function = Struct('function',
         'B out',
         'C out',
         'D out',
-        ('NONE', -1)
+        ('NONE', -1),
+        DEFAULT=-1
         ),
     BFloat('scale by'),
 

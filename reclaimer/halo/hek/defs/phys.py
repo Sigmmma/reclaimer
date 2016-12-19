@@ -48,7 +48,7 @@ powered_mass_point = Struct("powered mass point",
 
 mass_point = Struct("mass point",
     ascii_str32("name"),
-    BSInt16("powered mass point"),
+    dyn_senum16("powered mass point"),
     BSInt16("model node"),
     BBool32('flags',
         'metallic',

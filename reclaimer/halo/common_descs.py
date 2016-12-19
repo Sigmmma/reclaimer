@@ -101,6 +101,15 @@ def blam_header(tagid, version=1):
 
 irad = 180/pi
 
+def dyn_senum8(name):
+    return SInt8(name, DEFAULT=-1)
+
+def dyn_senum16(name):
+    return BSInt16(name, DEFAULT=-1)
+
+def dyn_senum32(name):
+    return BSInt16(name, DEFAULT=-1)
+
 def ascii_str32(name):
     return StrAscii(str(name), SIZE=32)
 
@@ -853,6 +862,7 @@ ypr_float = QStruct('ypr_float',
     BFloat("y"), BFloat("p"), BFloat("r"),
     ORIENT='h',
     )
+
 
 #############################
 # Open Sauce related things #

@@ -8,7 +8,7 @@ infection_form = Struct("infection form",
 
 infectable_unit = Struct("infectable unit",
     Pad(2),
-    BSInt16("infection form"),
+    dyn_senum16("infection form"),
     dependency_os("infectable unit", valid_units),
     BFloat("health threshold"),
     dependency_os("infected unit", valid_units),
