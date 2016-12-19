@@ -2,7 +2,7 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 object_desc = Struct("object", 
-    BSInt16("animation"),
+    dyn_senum16("animation"),
     BSEnum16("function",
         "A out",
         "B out",
@@ -17,7 +17,7 @@ object_desc = Struct("object",
     )
 
 anim_enum_desc = QStruct("animation",
-    BSInt16("animation")
+    dyn_senum16("animation")
     )
 
 ik_point_desc = Struct("ik point", 
@@ -112,8 +112,8 @@ weapons_desc = Struct("weapons",
     )
 
 suspension_desc = QStruct("suspension animation", 
-    BSInt16("mass point index"),
-    BSInt16("animation"),
+    dyn_senum16("mass point index"),
+    dyn_senum16("animation"),
     BFloat("full extension ground depth"),
     BFloat("full compression ground depth"),
     SIZE=20,
@@ -168,9 +168,9 @@ sound_reference_desc = Struct("sound reference",
 
 nodes_desc = Struct("node", 
     ascii_str32("name"),
-    BSInt16("next sibling node index"),
-    BSInt16("first child node index"),
-    BSInt16("parent node index"),
+    dyn_senum16("next sibling node index"),
+    dyn_senum16("first child node index"),
+    dyn_senum16("parent node index"),
     Pad(2),
     BBool32("node joint flags",
         "compress all animations",
@@ -205,13 +205,13 @@ animation_desc = Struct("animation",
     BSInt16("key frame index"),
     BSInt16("second key frame index"),
 
-    BSInt16("next animation"),
+    dyn_senum16("next animation"),
     BBool16("flags",
         "compressed data",
         "world relative",
         { NAME:"pal", GUI_NAME:"25Hz(PAL)" },
         ),
-    BSInt16("sound"),
+    dyn_senum16("sound"),
     BSInt16("sound frame_index"),
     SInt8("left foot frame index"),
     SInt8("right foot frame index"),

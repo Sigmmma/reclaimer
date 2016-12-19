@@ -86,10 +86,10 @@ bsp = Struct("bsp",
 
 node = Struct("node",
     ascii_str32("name"),
-    BSInt16("region"),
-    BSInt16("parent node"),
-    BSInt16("next sibling node"),
-    BSInt16("first child node"),
+    dyn_senum16("region"),
+    dyn_senum16("parent node"),
+    dyn_senum16("next sibling node"),
+    dyn_senum16("first child node"),
 
     Pad(12),
     reflexive("bsps", bsp, 32),
@@ -97,7 +97,7 @@ node = Struct("node",
     )
 
 pathfinding_sphere = Struct("pathfinding sphere",
-    BSInt16("node"),
+    dyn_senum16("node"),
 
     Pad(14),
     QStruct("center", INCLUDE=xyz_float),
@@ -157,7 +157,7 @@ coll_body = Struct("tagdata",
         "only damaged by explosives",
         "only damaged while occupied",
         ),
-    BSInt16("indirect damage material"),
+    dyn_senum16("indirect damage material"),
     Pad(2),
 
     Struct("body",

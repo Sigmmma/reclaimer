@@ -29,7 +29,7 @@ activation_control = Struct("activation control",
 
 effect_instance = Struct("effect instance",
     ascii_str32("name"),
-    BSInt16("effect"),
+    dyn_senum16("effect"),
     BSEnum16("render stage",
         "after bsp - before blur",
         "after blur - before alphad faces",
