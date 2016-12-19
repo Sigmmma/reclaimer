@@ -1,4 +1,6 @@
 from ...common_descs import *
+from ...hek.programs.mozzarilla.field_widgets import SoundSampleFrame
+
 from supyr_struct.defs.tag_def import TagDef
 
 sound_classes = (
@@ -60,7 +62,7 @@ permutation = Struct('permutation',
     BSInt16("next permutation index"),
     Pad(20),
 
-    rawdata_ref("samples", max_size=4194304),
+    rawdata_ref("samples", max_size=4194304, widget=SoundSampleFrame),
     rawdata_ref("mouth data", max_size=8192),
     rawdata_ref("subtitle data", max_size=512),
 

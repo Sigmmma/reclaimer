@@ -1,10 +1,12 @@
 import tkinter as tk
 
 from os.path import dirname, exists, splitext
-from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import askopenfilename, asksaveasfilename
 from traceback import format_exc
 
+from supyr_struct.buffer import get_rawdata
 from supyr_struct.defs.constants import PATHDIV
+from supyr_struct.defs.audio.wav import wav_def
 from supyr_struct.apps.binilla import editor_constants
 from supyr_struct.apps.binilla.field_widgets import *
 
@@ -275,3 +277,152 @@ class DependencyFrame(ContainerFrame):
             self.validate_filepath()
         except Exception:
             print(format_exc())
+
+
+class SoundSampleFrame(RawdataFrame):
+
+    @property
+    def field_ext(self):
+        '''The export extension of this FieldWidget.'''
+        try:
+            if self.parent.parent.compression.enum_name == 'ogg':
+                return '.ogg'
+        except Exception:
+            pass
+        return '.wav'
+
+    def import_node(self):
+        '''Prompts the user for an exported node file.
+        Imports data into the node from the file.'''
+        try:
+            initialdir = self.tag_window.app_root.last_load_dir
+        except AttributeError:
+            initialdir = None
+
+        ext = self.field_ext
+
+        filepath = askopenfilename(
+            initialdir=initialdir, defaultextension=ext,
+            filetypes=[(self.name, "*" + ext), ('All', '*')],
+            title="Import sound data from...")
+
+        if not filepath:
+            return
+
+        curr_size = None
+        index = self.attr_index
+
+        try:
+            curr_size = self.parent.get_size(attr_index=index)
+            if ext == '.wav':
+                # if the file is wav, we need to give it a header
+                wav_file = wav_def.build(filepath=filepath)
+
+                sound_data = self.parent.get_root().data.tagdata
+                channel_count = sound_data.encoding.data + 1
+                sample_rate = 22050 * (sound_data.sample_rate.data + 1)
+                wav_fmt = wav_file.data.format
+
+                if wav_fmt.fmt.enum_name not in ('ima_adpcm', 'xbox_adpcm'):
+                    raise TypeError(
+                        "Wav file audio format must be either ImaADPCM " +
+                        "or XboxADPCM, not %s" % wav_fmt.fmt.enum_name)
+
+                if sound_data.encoding.data + 1 != wav_fmt.channels:
+                    raise TypeError(
+                        "Wav file channel count does not match this sound " +
+                        "tags channel count. Expected %s, not %s" %
+                        (channel_count, wav_fmt.channels))
+
+                if sample_rate != wav_fmt.sample_rate:
+                    raise TypeError(
+                        "Wav file sample rate does not match this sound " +
+                        "tags sample rate. Expected %skHz, not %skHz" %
+                        (sample_rate, wav_fmt.sample_rate))
+
+                if 36 * channel_count != wav_fmt.block_align:
+                    raise TypeError(
+                        "Wav file block size does not match this sound " +
+                        "tags block size. Expected %sbytes, not %sbytes" %
+                        (36 * channel_count, wav_fmt.block_align))
+
+                rawdata = wav_file.data.wav_data.audio_data
+                self.parent.set_size(len(rawdata), attr_index=index)
+                self.parent.parse(rawdata=rawdata, attr_index=index)
+                self.node = self.parent[index]
+            else:
+                rawdata = get_rawdata(filepath=filepath)
+                self.parent.set_size(len(rawdata), attr_index=index)
+                self.parent.parse(rawdata=rawdata, attr_index=index)
+                self.node = self.parent[index]
+
+            # until i come up with a better method, i'll have to rely on
+            # reloading the root field widget so stuff(sizes) will be updated
+            try:
+                self.f_widget_parent.reload()
+            except Exception:
+                print(format_exc())
+                print("Could not reload after importing sound data.")
+        except Exception:
+            print(format_exc())
+            print("Could not import sound data.")
+            try: self.parent.set_size(curr_size, attr_index=index)
+            except Exception: pass
+
+    def export_node(self):
+        try:
+            initialdir = self.tag_window.app_root.last_load_dir
+        except AttributeError:
+            initialdir = None
+
+        ext = self.field_ext
+
+        filepath = asksaveasfilename(
+            initialdir=initialdir, defaultextension=ext,
+            filetypes=[(self.name, "*" + ext), ('All', '*')],
+            title="Export sound data to...")
+
+        if not filepath:
+            return
+
+        if ext == '.wav':
+            # if the file is wav, we need to give it a header
+            try:
+                wav_file = wav_def.build()
+                wav_file.filepath = filepath
+                sound_data = self.parent.get_root().data.tagdata
+
+                wav_fmt = wav_file.data.format
+                wav_fmt.fmt.set_to('ima_adpcm')
+                wav_fmt.channels = sound_data.encoding.data + 1
+                wav_fmt.sample_rate = 22050 * (sound_data.sample_rate.data + 1)
+
+                wav_fmt.byte_rate = ((wav_fmt.sample_rate *
+                                      wav_fmt.bits_per_sample *
+                                      wav_fmt.channels) // 8)
+
+                wav_fmt.block_align = 36 * wav_fmt.channels
+
+                wav_file.data.wav_data.audio_data = self.node
+                wav_file.data.wav_header.filesize = wav_file.data.binsize - 12
+
+                wav_file.serialize(temp=False, backup=False, int_test=False)
+            except Exception:
+                print(format_exc())
+                print("Could not export sound data.")
+            return
+
+        try:
+            if hasattr(self.node, 'serialize'):
+                self.node.serialize(filepath=filepath, clone=self.export_clone,
+                                    calc_pointers=self.export_calc_pointers)
+            else:
+                # the node isnt a block, so we need to call its parents
+                # serialize method with the attr_index necessary to export.
+                self.parent.serialize(filepath=filepath,
+                                      clone=self.export_clone,
+                                      calc_pointers=self.export_calc_pointers,
+                                      attr_index=self.attr_index)
+        except Exception:
+            print(format_exc())
+            print("Could not export sound data.")
