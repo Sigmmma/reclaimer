@@ -9,5 +9,10 @@ try:
         main_window.mainloop()
 
 except Exception:
-    print(format_exc())
+    exception = format_exc()
+    print(exception)
+    try:
+        main_window.log_file.write('\n' + exception)
+    except Exception:
+        pass
     input()

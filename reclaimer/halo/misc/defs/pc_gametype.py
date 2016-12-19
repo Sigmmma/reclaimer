@@ -237,8 +237,9 @@ xbox_gametype_header = Struct("gametype header",
     LUInt32('respawn time', SIDETIP="ticks [30 == 1 second]", MAX=300*30),
     LUInt32('respawn suicide penalty', SIDETIP="ticks [30 == 1 second]"), #ticks
     LUInt32('lives', SIDETIP='[0 == unlimited]'),
-    LFloat('health', MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
-    LUInt32('score limit', MIN=1),
+    LFloat('health',
+        DEFAULT=0.5, MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
+    LUInt32('score limit', MIN=1, DEFAULT=1),
     weapon_type,
     vehicle_type,
     SIZE=76, COMMENT=header_comment
@@ -257,8 +258,9 @@ pc_gametype_header = Struct("gametype header",
     LUInt32('respawn time', SIDETIP="ticks [30 == 1 second]", MAX=300*30),
     LUInt32('respawn suicide penalty', SIDETIP="ticks [30 == 1 second]"), #ticks
     LUInt32('lives', SIDETIP='[0 == unlimited]'),
-    LFloat('health', MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
-    LUInt32('score limit', MIN=1),
+    LFloat('health',
+        DEFAULT=0.5, MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
+    LUInt32('score limit', MIN=1, DEFAULT=1),
     weapon_type,
 
     LBitStruct('red vehicles',  INCLUDE=vehicle_spawn),
