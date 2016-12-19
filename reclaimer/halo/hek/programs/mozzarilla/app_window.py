@@ -214,7 +214,7 @@ class Mozzarilla(Binilla):
         # to the current tags directory if they must be
         if handler_name in self.tags_dir_relative:
             for path in sanitized_paths:
-                if (not path) or len(path.split(tags_dir)) == 2:
+                if (not path) or len(path.lower().split(tags_dir.lower())) == 2:
                     continue
     
                 print("Specified tag(s) are not located in the tags directory")
@@ -266,12 +266,6 @@ class Mozzarilla(Binilla):
 
         if not tags_dir:
             return
-
-        # lowercase the drive letter
-        tags_dir = tags_dir.split(':')
-        for i in range(len(tags_dir) - 1):
-            tags_dir[i] = tags_dir[i].lower() + ':'
-        tags_dir = ''.join(tags_dir)
 
         tags_dir = self.handler.sanitize_path(tags_dir)
         if tags_dir and not tags_dir.endswith(s_c.PATHDIV):
