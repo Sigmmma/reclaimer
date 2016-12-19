@@ -33,8 +33,10 @@ class DependencyFrame(ContainerFrame):
                 if ext == 'NONE':
                     continue
                 filetypes.append((ext, '*.%s' % ext))
-
-            filetypes.append(('All', '*'))
+            if len(filetypes) > 1:
+                filetypes = (('All', '*'),) + tuple(filetypes)
+            else:
+                filetypes.append(('All', '*'))
             filepath = askopenfilename(
                 initialdir=init_dir, filetypes=filetypes, title="Select a tag")
 
@@ -42,11 +44,16 @@ class DependencyFrame(ContainerFrame):
                 return
 
             filepath = filepath.replace('/', '\\').replace('\\', PATHDIV)
-            tag_path, ext = splitext(filepath.split(tags_dir)[-1])
+            tag_path, ext = splitext(filepath.lower().split(tags_dir.lower())[-1])
             try:
                 self.node.tag_class.set_to(ext[1:])
             except Exception:
                 self.node.tag_class.set_to('NONE')
+                for filetype in filetypes:
+                    ext = filetype[1][1:]
+                    if exists(tags_dir + tag_path + ext):
+                        self.node.tag_class.set_to(ext[1:])
+                        break
             self.node.filepath = tag_path
             self.reload()
         except Exception:
