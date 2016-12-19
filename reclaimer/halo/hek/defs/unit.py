@@ -70,8 +70,8 @@ seat = Struct('seat',
     BSInt16("hud text message index"),
 
     Pad(2),
-    BFloat('yaw minimum'),
-    BFloat('yaw maximum'),
+    float_rad('yaw minimum'),  # radians
+    float_rad('yaw maximum'),  # radians
     dependency('built-in gunner', "actv"),
     SIZE=284
     )

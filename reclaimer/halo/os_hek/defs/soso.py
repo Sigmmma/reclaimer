@@ -43,7 +43,7 @@ os_soso_ext = Struct("shader model extension",
 
 # replace the padding with an open sauce shader model extension reflexive
 soso_attrs = dict(soso_attrs)
-soso_attrs[9] = reflexive("os shader model ext", os_soso_ext, 1)
+soso_attrs[7] = reflexive("os shader model ext", os_soso_ext, 1)
 
 soso_body = Struct("tagdata",
     shdr_attrs,
