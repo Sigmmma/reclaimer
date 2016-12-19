@@ -42,16 +42,20 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     return Reflexive(name, **desc)
 
 
-def rawdata_ref(name, f_type=Rawdata, max_size=None):
+def rawdata_ref(name, f_type=Rawdata, max_size=None, widget=None):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(rawdata_ref_struct)
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
 
+    kwargs = {}
+    if widget is not None:
+        kwargs[WIDGET] = widget
+
     return RawdataRef(name,
         INCLUDE=ref_struct,
-        STEPTREE=f_type("data", GUI_NAME="", SIZE=".size"))
+        STEPTREE=f_type("data", GUI_NAME="", SIZE=".size", **kwargs))
 
 
 def rawtext_ref(name, f_type=StrRawAscii, max_size=None, widget=TextFrame):
@@ -108,7 +112,7 @@ def dyn_senum16(name):
     return BSInt16(name, DEFAULT=-1)
 
 def dyn_senum32(name):
-    return BSInt16(name, DEFAULT=-1)
+    return BSInt32(name, DEFAULT=-1)
 
 def ascii_str32(name):
     return StrAscii(str(name), SIZE=32)
