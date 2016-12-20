@@ -4,7 +4,6 @@ from os.path import abspath, basename, normpath
 
 from supyr_struct.tests.test import TagTestHandler
 from ..field_types import *
-from .defs.objs.tag import MetaTag
 
 
 class MapLoader(TagTestHandler):

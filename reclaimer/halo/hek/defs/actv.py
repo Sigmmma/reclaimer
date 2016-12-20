@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 change_color = Struct("change_color",
@@ -185,5 +186,5 @@ actv_def = TagDef("actv",
     blam_header('actv'),
     actv_body,
 
-    ext=".actor_variant", endian=">"
+    ext=".actor_variant", endian=">", tag_cls=HekTag
     )

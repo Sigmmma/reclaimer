@@ -68,6 +68,10 @@ class Mozzarilla(Binilla):
     dependency_window = None
     tag_scanner_window = None
 
+    window_panes = None
+    hierarchy_frame = None
+    hierarchy_width = 200
+
     def __init__(self, *args, **kwargs):
         # gotta give it a default handler or else the
         # config file will fail to be created as updating
@@ -125,7 +129,13 @@ class Mozzarilla(Binilla):
         except Exception:
             pass
 
+        self.make_window_panes()
+        self.make_hierarchy_frame(self.window_panes)
+        self.make_io_text(self.window_panes)
+
         self.update_window_settings()
+        self.window_panes.add(self.hierarchy_frame)
+        self.window_panes.add(self.io_frame)
 
     def load_last_workspace(self):
         if self._mozzarilla_initialized:
@@ -357,17 +367,24 @@ class Mozzarilla(Binilla):
         else:
             filepath = tag.filepath
 
+        if not filepath:
+            return
+
         # make sure the filepath is sanitized
         filepath = self.handler.sanitize_path(filepath)
 
+        tags_dir = self.get_tag_window_by_tag(tag).handler.tagsdir
+        if not tags_dir.endswith(s_c.PATHDIV):
+            tags_dir += s_c.PATHDIV
+        rel_filepath = filepath.split(tags_dir)[-1]
+
+        if len(filepath.lower().split(tags_dir.lower())) != 2:
+            print("Cannot save outside the tags directory")
+            return
+
         Binilla.save_tag_as(self, tag, filepath)
 
-        # change the tags filepath to be relative to the current tags directory
-        if hasattr(tag, "rel_filepath"):
-            tags_dir = self.get_tag_window_by_tag(tag).handler.tagsdir
-            if not tags_dir.endswith(s_c.PATHDIV):
-                tags_dir += s_c.PATHDIV
-            tag.filepath = tags_dir + tag.rel_filepath
+        tag.rel_filepath = rel_filepath
 
         w = self.get_tag_window_by_tag(tag)
         self.update_tag_window_title(w)
@@ -436,6 +453,28 @@ class Mozzarilla(Binilla):
 
         self.config_file.data.mozzarilla.selected_handler.data = menu_index
 
+    def make_io_text(self, master=None):
+        if not self._initialized:
+            return
+        if master is None:
+            master = self.root_frame
+        Binilla.make_io_text(self, master)
+
+    def make_hierarchy_frame(self, master=None):
+        if not self._initialized:
+            return
+        if master is None:
+            master = self.root_frame
+        self.hierarchy_frame = HierarchyFrame(
+            self, width=self.hierarchy_width)
+        self.hierarchy_frame.pack(expand=True, fill='y')
+
+    def make_window_panes(self):
+        self.window_panes = tk.PanedWindow(
+            self.root_frame, sashrelief='raised', sashwidth=8,
+            bd=self.frame_depth, bg=self.frame_bg_color)
+        self.window_panes.pack(anchor='nw', fill='both', expand=True)
+
     def make_config(self, filepath=None):
         if filepath is None:
             filepath = self.config_path
@@ -447,7 +486,7 @@ class Mozzarilla(Binilla):
         data = self.config_file.data
 
         # make sure these have as many entries as they're supposed to
-        for block in (data.directory_paths, data.widget_depths, data.colors,
+        for block in (data.directory_paths, data.widgets.depths, data.colors,
                       data.tag_dirs):
             block.extend(len(block.NAME_MAP))
 
@@ -540,10 +579,17 @@ class Mozzarilla(Binilla):
         self.tag_scanner_window.focus_set()
 
     def update_window_settings(self):
+        if not self._initialized:
+            return
+
         Binilla.update_window_settings(self)
         try:
             for m in (self.defs_menu, self.tools_menu):
                 m.config(bg=self.default_bg_color, fg=self.text_normal_color)
+
+            self.window_panes.config(
+                bg=self.frame_bg_color, bd=self.frame_depth)
+            self.hierarchy_frame.update_window_settings()
         except AttributeError: pass
         except Exception: print(format_exc())
 
@@ -1157,3 +1203,89 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
             except Exception: pass
 
         print("Scan completed.\n")
+
+
+class HierarchyFrame(BinillaWidget, tk.Frame):
+
+    def __init__(self, master, *args, **kwargs):
+        kwargs.setdefault('app_root', master)
+        self.app_root = kwargs.pop('app_root')
+
+        kwargs.update(bd=0, highlightthickness=0, bg=self.default_bg_color)
+        tk.Frame.__init__(self, master, *args, **kwargs)
+
+        self.directory_frame = DirectoryFrame(self, app_root=self.app_root)
+        self.directory_frame.pack(fill='both', expand=True)
+
+
+class DirectoryFrame(BinillaWidget, tk.Frame):
+    tags_dir = None
+
+    def __init__(self, master, *args, **kwargs):
+        kwargs.setdefault('app_root', master)
+        self.app_root = kwargs.pop('app_root')
+
+        kwargs.update(bg=self.default_bg_color, bd=self.listbox_depth,
+            relief='sunken', highlightthickness=0)
+        tk.Frame.__init__(self, master, *args, **kwargs)
+
+        self.tags_dir = self.app_root.tags_dir
+
+        self.controls_frame = tk.Frame(self, highlightthickness=0, height=100)
+        self.directory_frame = tk.Frame(self, highlightthickness=0)
+
+        self.directory_tree = tk.ttk.Treeview(
+            self.directory_frame, selectmode='browse')
+        self.scrollbar_y = tk.Scrollbar(
+            self.directory_frame, orient='vertical',
+            command=self.directory_tree.yview)
+        self.directory_tree.config(yscrollcommand=self.scrollbar_y.set)
+
+        self.directory_tree.bind('<<TreeviewOpen>>', self.open_selected)
+        self.directory_tree.bind('<<TreeviewClose>>', self.close_selected)
+        self.directory_tree.bind('<Double-Button-1>', self.activate_item)
+
+        self.controls_frame.pack(fill='both')
+        self.directory_frame.pack(fill='both', expand=True)
+        self.directory_tree.pack(side='left', fill='both', expand=True)
+        self.scrollbar_y.pack(side='left', fill='both')
+        self.reload()
+
+    def reload(self):
+        dir_tree = self.directory_tree
+        # maybe another time
+        #dir_tree["columns"] = ("size")
+        #dir_tree.column("size", width=100)
+        #dir_tree.heading("size", text='Filesize')
+
+        dir_tree.heading("#0", text='Tagpath')
+        self.root_item = dir_tree.insert(
+            '', 'end', iid=self.tags_dir , text=self.tags_dir)
+        print(dir_tree.item(self.root_item))
+
+    def destroy_subitems(self, item):
+        pass
+
+    def generate_subitems(self, item):
+        return
+        # Log the location of every python file in the defs root
+        # search for possibly valid definitions in the defs folder
+        for root, directories, files in os.walk(self.defs_filepath):
+            for module_path in files:
+                base, ext = splitext(module_path)
+
+                fpath = root.split(self.defs_filepath)[-1]
+
+                # make sure the file name ends with .py and isnt already loaded
+                if ext.lower() in (".py", ".pyw") and base not in imp_paths:
+                    mod_name = (fpath + '.' + base).replace(PATHDIV, '.')
+                    imp_paths[mod_name] = join(root, base + ext)
+
+    def open_selected(self, e=None):
+        pass
+
+    def close_selected(self, e=None):
+        pass
+
+    def activate_item(self, e=None):
+        pass

@@ -1,3 +1,4 @@
+from .objs.tag import HekTag
 from .obje import *
 from .unit import *
 
@@ -128,5 +129,5 @@ bipd_def = TagDef("bipd",
     blam_header('bipd', 3),
     bipd_body,
 
-    ext=".biped", endian=">"
+    ext=".biped", endian=">", tag_cls=HekTag
     )
