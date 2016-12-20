@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 def get():
@@ -12,5 +13,5 @@ boom_def = TagDef("boom",
         BFloat('radius')
         ),
 
-    ext=".spheroid", endian=">"
+    ext=".spheroid", endian=">", tag_cls=HekTag
     )

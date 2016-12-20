@@ -27,7 +27,8 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     desc.update(
         INCLUDE=reflexive_struct,
         STEPTREE=Array(name + " array",
-            SIZE=".size", MAX=max_count, SUB_STRUCT=substruct,
+            SIZE=".size", MAX=max_count,
+            SUB_STRUCT=substruct, WIDGET=ReflexiveFrame
             ),
         SIZE=12
         )
@@ -824,10 +825,11 @@ xy_float = QStruct('xy_float',
 
 # colors
 argb_float = QStruct('argb_float',
-    Float("a", MIN=0.0, MAX=1.0),
     Float("r", MIN=0.0, MAX=1.0),
     Float("g", MIN=0.0, MAX=1.0),
     Float("b", MIN=0.0, MAX=1.0),
+    Float("a", MIN=0.0, MAX=1.0),  # seems the alpha is stored after rgb, even
+    #                                though guerilla displays it as before. huh
     ORIENT='h', WIDGET=ColorPickerFrame
     )
 rgb_float = QStruct('rgb_float',
