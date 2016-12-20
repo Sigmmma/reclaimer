@@ -439,14 +439,25 @@ class ReflexiveFrame(ArrayFrame):
             )
 
         self.import_all_btn = tk.Button(
-            self.buttons, width=10, text='Import all',
+            self.title, width=8, text='Import all',
             command=self.import_all_nodes, **btn_kwargs)
         self.export_all_btn = tk.Button(
-            self.buttons, width=10, text='Export all',
+            self.buttons, width=8, text='Export all',
             command=self.export_all_nodes, **btn_kwargs)
 
-        # pack the title, menu, and all the buttons
-        for w in (self.export_all_btn, self.import_all_btn):
+        # unpack all the buttons
+        for w in (self.export_btn, self.import_btn,
+                  self.shift_down_btn, self.shift_up_btn,
+                  self.delete_all_btn, self.delete_btn,
+                  self.duplicate_btn, self.insert_btn, self.add_btn):
+            w.forget()
+            
+        # pack and all the buttons
+        for w in (self.export_all_btn, self.import_all_btn,
+                  self.shift_down_btn, self.shift_up_btn,
+                  self.export_btn, self.import_btn,
+                  self.delete_all_btn, self.delete_btn,
+                  self.duplicate_btn, self.insert_btn, self.add_btn):
             w.pack(side="right", padx=(0, 4), pady=(2, 2))
 
     def set_import_all_disabled(self, disable=True):
