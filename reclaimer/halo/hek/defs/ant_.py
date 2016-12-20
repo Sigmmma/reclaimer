@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 vertex = Struct("vertex",
@@ -38,5 +39,5 @@ ant__def = TagDef("ant!",
     blam_header('ant!'),
     ant__body,
 
-    ext=".antenna", endian=">"
+    ext=".antenna", endian=">", tag_cls=HekTag
     )

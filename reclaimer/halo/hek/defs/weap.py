@@ -36,7 +36,7 @@ magazine = Struct("magazine",
     dependency('chambering effect', valid_event_effects),
 
     Pad(12),
-    reflexive("magazine item", magazine_item, 2,
+    reflexive("magazine items", magazine_item, 2,
         "primary", "secondary"),
     SIZE=112
     )

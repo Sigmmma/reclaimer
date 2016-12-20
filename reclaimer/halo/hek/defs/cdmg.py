@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 cdmg_body = Struct("tagdata",
@@ -74,5 +75,5 @@ cdmg_def = TagDef("cdmg",
     blam_header('cdmg'),
     cdmg_body,
 
-    ext=".continuous_damage_effect", endian=">",
+    ext=".continuous_damage_effect", endian=">", tag_cls=HekTag
     )

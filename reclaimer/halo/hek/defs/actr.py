@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 danger_triggers = (
@@ -240,5 +241,5 @@ actr_def = TagDef("actr",
     blam_header('actr'),
     actr_body,
 
-    ext=".actor", endian=">"
+    ext=".actor", endian=">", tag_cls=HekTag
     )

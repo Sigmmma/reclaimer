@@ -426,3 +426,47 @@ class SoundSampleFrame(RawdataFrame):
         except Exception:
             print(format_exc())
             print("Could not export sound data.")
+
+
+class ReflexiveFrame(ArrayFrame):
+    def __init__(self, *args, **kwargs):
+        ArrayFrame.__init__(self, *args, **kwargs)
+
+        btn_kwargs = dict(
+            bg=self.button_color, fg=self.text_normal_color,
+            disabledforeground=self.text_disabled_color,
+            bd=self.button_depth,
+            )
+
+        self.import_all_btn = tk.Button(
+            self.buttons, width=10, text='Import all',
+            command=self.import_all_nodes, **btn_kwargs)
+        self.export_all_btn = tk.Button(
+            self.buttons, width=10, text='Export all',
+            command=self.export_all_nodes, **btn_kwargs)
+
+        # pack the title, menu, and all the buttons
+        for w in (self.export_all_btn, self.import_all_btn):
+            w.pack(side="right", padx=(0, 4), pady=(2, 2))
+
+    def set_import_all_disabled(self, disable=True):
+        if disable: self.import_all_btn.config(state="disabled")
+        else:       self.import_all_btn.config(state="normal")
+
+    def set_export_all_disabled(self, disable=True):
+        if disable: self.export_all_btn.config(state="disabled")
+        else:       self.export_all_btn.config(state="normal")
+
+    def export_all_nodes(self):
+        try:
+            w = self.f_widget_parent
+        except Exception:
+            return
+        w.export_node()
+
+    def import_all_nodes(self):
+        try:
+            w = self.f_widget_parent
+        except Exception:
+            return
+        w.import_node()
