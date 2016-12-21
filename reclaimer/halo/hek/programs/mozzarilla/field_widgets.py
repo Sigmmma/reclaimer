@@ -14,15 +14,8 @@ from supyr_struct.apps.binilla.field_widgets import *
 class DependencyFrame(ContainerFrame):
 
     def browse_tag(self):
-        tag_window = self.tag_window
-        app = tag_window.app_root
-        curr_handler = app.handler
-        new_handler = tag_window.handler
-
         try:
-            app.set_handler(new_handler)
-
-            tags_dir = app.tags_dir
+            tags_dir = self.tag_window.tag.tags_dir
             if not tags_dir.endswith(PATHDIV):
                 tags_dir += PATHDIV
 
@@ -39,6 +32,7 @@ class DependencyFrame(ContainerFrame):
                 filetypes = (('All', '*'),) + tuple(filetypes)
             else:
                 filetypes.append(('All', '*'))
+
             filepath = askopenfilename(
                 initialdir=init_dir, filetypes=filetypes, title="Select a tag")
 
@@ -57,22 +51,19 @@ class DependencyFrame(ContainerFrame):
                         self.node.tag_class.set_to(ext[1:])
                         break
             self.node.filepath = tag_path
+            self.set_edited()
             self.reload()
         except Exception:
             print(format_exc())
 
-        try: app.set_handler(curr_handler)
-        except Exception: pass
-
     def open_tag(self):
-        tag_window = self.tag_window
-        app = tag_window.app_root
-        curr_handler = app.handler
-        new_handler = tag_window.handler
+        t_w = self.tag_window
+        tag, app = t_w.tag, t_w.app_root
+        cur_handler = app.handler
+        new_handler = t_w.handler
 
         try:
-            app.set_handler(new_handler)
-            tags_dir = app.tags_dir
+            tags_dir = tag.tags_dir
             if not tags_dir.endswith(PATHDIV):
                 tags_dir += PATHDIV
 
@@ -80,11 +71,12 @@ class DependencyFrame(ContainerFrame):
 
             rel_filepath = '%s.%s' % (self.node.filepath,
                                       self.node.tag_class.enum_name)
+            app.set_handler(new_handler)
             app.load_tags(filepaths=tags_dir + rel_filepath)
-            app.set_handler(curr_handler)
+            app.set_handler(cur_handler)
         except Exception:
             print(format_exc())
-            try: app.set_handler(curr_handler)
+            try: app.set_handler(cur_handler)
             except Exception: pass
 
     def populate(self):
@@ -207,7 +199,7 @@ class DependencyFrame(ContainerFrame):
         if widget is None:
             return
 
-        tags_dir = self.tag_window.handler.tagsdir
+        tags_dir = self.tag_window.tag.tags_dir
         if not tags_dir.endswith(PATHDIV):
             tags_dir += PATHDIV
 
@@ -360,6 +352,7 @@ class SoundSampleFrame(RawdataFrame):
             # reloading the root field widget so stuff(sizes) will be updated
             try:
                 self.f_widget_parent.reload()
+                self.set_edited()
             except Exception:
                 print(format_exc())
                 print("Could not reload after importing sound data.")
@@ -481,3 +474,4 @@ class ReflexiveFrame(ArrayFrame):
         except Exception:
             return
         w.import_node()
+        self.set_edited()
