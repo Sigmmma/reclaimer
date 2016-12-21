@@ -4,10 +4,15 @@ from supyr_struct.field_types import *
 from supyr_struct.defs.tag_def import TagDef
 
 new_method_enums = (
+    {GUI_NAME:"", NAME:"mozz_divider1", VALUE:(1<<1024) - 1},
+    {GUI_NAME:"MOZZARILLA METHODS", NAME:"mozz_divider2"},
     {GUI_NAME:"open dependency scanner", NAME:"show_dependency_viewer"},
     {GUI_NAME:"open tag scanner", NAME:"show_tag_scanner"},
+
     {GUI_NAME:"choose tags directory", NAME:"set_tags_dir"},
     {GUI_NAME:"switch tags directory", NAME:"switch_tags_dir"},
+    {GUI_NAME:"add tags directory",    NAME:"add_tags_dir"},
+    {GUI_NAME:"remove tags directory", NAME:"remove_tags_dir"},
     )
 
 method_enums += new_method_enums
