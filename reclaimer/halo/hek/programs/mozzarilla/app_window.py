@@ -2,7 +2,7 @@ import os
 import tkinter as tk
 import zipfile
 
-from os.path import dirname, splitext, realpath
+from os.path import dirname, isdir, splitext, realpath
 from time import time
 from threading import Thread
 from traceback import format_exc
@@ -15,12 +15,19 @@ from ....os_hek.handler import OsHaloHandler
 from ....misc.handler import MiscHaloLoader
 from .config_def import config_def, guerilla_workspace_def
 from .widget_picker import *
+from .tag_window import HaloTagWindow
 
 default_hotkeys.update({
-    '<F2>': "set_tags_dir",
-    '<F3>': "show_dependency_viewer",
-    '<F4>': "show_tag_scanner",
+    '<F1>': "show_dependency_viewer",
+    '<F2>': "show_tag_scanner",
+    '<F3>': "set_tags_dir",
+    '<F4>': "switch_tags_dir",
     })
+
+this_curr_dir = os.path.abspath(os.curdir)
+
+def sanitize_path(path):
+    return path.replace('\\', '/').replace('/', PATHDIV)
 
 class Mozzarilla(Binilla):
     app_name = 'Mozzarilla'
@@ -61,7 +68,10 @@ class Mozzarilla(Binilla):
         "Halo 1 OS",
         )
 
+    tags_dir = ()
+
     _curr_handler_index = 0
+    _curr_tags_dir_index = 0
 
     widget_picker = def_halo_widget_picker
 
@@ -77,8 +87,12 @@ class Mozzarilla(Binilla):
         # config file will fail to be created as updating
         # the config requires using methods in the handler.
         self.debug = kwargs.pop('debug', self.debug)
+
         kwargs['handler'] = MiscHaloLoader(debug=self.debug)
         self.tags_dir_relative = set(self.tags_dir_relative)
+        self.tags_dirs = ["%s%stags%s" % (
+            this_curr_dir, s_c.PATHDIV,  s_c.PATHDIV)]
+
         Binilla.__init__(self, *args, **kwargs)
 
         self.file_menu.insert_command("Exit", label="Load guerilla config",
@@ -88,6 +102,13 @@ class Mozzarilla(Binilla):
         self.settings_menu.delete(0, "end")  # clear the menu
         self.settings_menu.add_command(label="Set tags directory",
                                        command=self.set_tags_dir)
+        self.settings_menu.add_command(label="Add tags directory",
+                                       command=self.add_tags_dir)
+        self.settings_menu.add_command(label="Remove tags directory",
+                                       command=self.remove_tags_dir)
+        self.settings_menu.add_command(label="Switch tags directory",
+                                       command=self.switch_tags_dir)
+
         self.settings_menu.add_separator()
         self.settings_menu.add_command(
             label="Edit config", command=self.show_config_file)
@@ -118,9 +139,6 @@ class Mozzarilla(Binilla):
         self.handler_names = list(self.handler_names)
 
         self.select_defs(manual=False)
-        if self.tags_dir is not None:
-            print("Tags directory is currently:\n    %s\n" % self.tags_dir)
-
         self._mozzarilla_initialized = True
 
         try:
@@ -133,9 +151,9 @@ class Mozzarilla(Binilla):
         self.make_hierarchy_frame(self.window_panes)
         self.make_io_text(self.window_panes)
 
+        if self.hierarchy_frame is not None:
+            self.hierarchy_frame.highlight_tags_dir(self.tags_dir)
         self.update_window_settings()
-        self.window_panes.add(self.hierarchy_frame)
-        self.window_panes.add(self.io_frame)
 
     def load_last_workspace(self):
         if self._mozzarilla_initialized:
@@ -143,12 +161,16 @@ class Mozzarilla(Binilla):
 
     @property
     def tags_dir(self):
-        return self.handlers[self._curr_handler_index].tagsdir
+        try:
+            return self.tags_dirs[self._curr_tags_dir_index]
+        except IndexError:
+            return None
 
     @tags_dir.setter
     def tags_dir(self, new_val):
         handler = self.handlers[self._curr_handler_index]
-        handler.tagsdir = handler.sanitize_path(new_val)
+        new_val = sanitize_path(new_val)
+        self.tags_dirs[self._curr_tags_dir_index] = handler.tagsdir = new_val
 
     def load_guerilla_config(self):
         fp = askopenfilename(
@@ -215,7 +237,7 @@ class Mozzarilla(Binilla):
             else:
                 filepaths = (filepaths, )
 
-        sani = self.handler.sanitize_path
+        sani = sanitize_path
         handler_name = self.handler_names[self._curr_handler_index]
 
         sanitized_paths = [sani(path) for path in filepaths]
@@ -233,13 +255,8 @@ class Mozzarilla(Binilla):
         windows = Binilla.load_tags(self, sanitized_paths, def_id)
 
         if not windows:
-            print("Change the tag set to load these tag(s).")
+            print("You might need to change the tag set to load these tag(s).")
             return ()
-        tags_dir = self.handler.tagsdir
-
-        # Give the tag a filepath relative to the current tags directory
-        for w in windows:
-            w.tag.rel_filepath = sani(w.tag.filepath).split(tags_dir)[-1]
 
         return windows
 
@@ -266,29 +283,100 @@ class Mozzarilla(Binilla):
         self.def_selector_window = dsw
         self.place_window_relative(self.def_selector_window, 30, 50)
 
-    def set_tags_dir(self, e=None, *, tags_dir=None):
-        if self.tags_dir is None:
-            return
-
+    def set_tags_dir(self, e=None, tags_dir=None, manual=True):
         if tags_dir is None:
             tags_dir = askdirectory(initialdir=self.tags_dir,
-                                   title="Select the tags directory")
+                                    title="Select the tags directory to add")
 
         if not tags_dir:
             return
 
-        tags_dir = self.handler.sanitize_path(tags_dir)
+        tags_dir = sanitize_path(tags_dir).lower()
         if tags_dir and not tags_dir.endswith(s_c.PATHDIV):
             tags_dir += s_c.PATHDIV
-        self.tags_dir = self.last_load_dir = tags_dir
 
-        curr_index = self._curr_handler_index
-        name = self.handler_names[curr_index]
-        dir_name = self.handler_tags_dir_map[name]
+        if tags_dir in self.tags_dirs:
+            print("That tags directory already exists.")
+            return
 
-        print("Tags directory is currently:\n    %s\n" % tags_dir)
+        if self.hierarchy_frame is not None:
+            self.hierarchy_frame.set_root_dir(tags_dir)
+            self.hierarchy_frame.highlight_tags_dir(self.tags_dir)
+        self.tags_dir = tags_dir
 
-    def make_tag_window(self, tag, *, focus=True, window_cls=None):
+        if manual:
+            print("Tags directory is currently:\n    %s\n" % self.tags_dir)
+
+    def add_tags_dir(self, e=None, tags_dir=None, manual=True):
+        if tags_dir is None:
+            tags_dir = askdirectory(initialdir=self.tags_dir,
+                                    title="Select the tags directory to add")
+
+        if not tags_dir:
+            return
+
+        tags_dir = sanitize_path(tags_dir).lower()
+        if tags_dir and not tags_dir.endswith(s_c.PATHDIV):
+            tags_dir += s_c.PATHDIV
+
+        if tags_dir in self.tags_dirs:
+            if manual:
+                print("That tags directory already exists.")
+            return
+
+        self.tags_dirs.append(tags_dir)
+        self.switch_tags_dir(index=len(self.tags_dirs) - 1, manual=False)
+
+        if self.hierarchy_frame is not None:
+            self.hierarchy_frame.add_root_dir(tags_dir)
+
+        if manual:
+            self.last_load_dir = tags_dir
+            curr_index = self._curr_handler_index
+            print("Tags directory is currently:\n    %s\n" % self.tags_dir)
+
+    def remove_tags_dir(self, e=None, index=None, manual=True):
+        dirs_count = len(self.tags_dirs)
+        # need at least 2 tags dirs to delete one
+        if dirs_count < 2:
+            return
+
+        if index is None:
+            index = self._curr_tags_dir_index
+
+        new_index = self._curr_tags_dir_index
+        if index <= new_index:
+            new_index = max(0, new_index - 1)
+
+        tags_dir = self.tags_dirs[index]
+        del self.tags_dirs[index]
+        if self.hierarchy_frame is not None:
+            self.hierarchy_frame.del_root_dir(tags_dir)
+
+        self.switch_tags_dir(index=new_index, manual=False)
+
+        if manual:
+            print("Tags directory is currently:\n    %s\n" % self.tags_dir)
+
+    def switch_tags_dir(self, e=None, index=None, manual=True):
+        if index is None:
+            index = (self._curr_tags_dir_index + 1) % len(self.tags_dirs)
+        if self._curr_tags_dir_index == index:
+            return
+
+        self._curr_tags_dir_index = index
+        self.handler.tagsdir = self.tags_dir
+
+        if self.hierarchy_frame is not None:
+            self.hierarchy_frame.highlight_tags_dir(self.tags_dir)
+
+        if manual:
+            self.last_load_dir = self.tags_dir
+            print("Tags directory is currently:\n    %s\n" % self.tags_dir)
+
+    def make_tag_window(self, tag, focus=True, window_cls=None):
+        if window_cls is None:
+            window_cls = HaloTagWindow
         w = Binilla.make_tag_window(self, tag, focus=focus,
                                     window_cls=window_cls)
         self.update_tag_window_title(w)
@@ -305,19 +393,23 @@ class Mozzarilla(Binilla):
         self.place_window_relative(self.def_selector_window, 30, 50)
 
     def update_tag_window_title(self, window):
-        tags_dir = self.tags_dir
         if not hasattr(window, 'tag'):
             return
 
-        if window.tag is self.config_file or not tags_dir:
+        tag = window.tag
+        if tag is self.config_file:
+            window.update_title('%s %s config' % (self.app_name, self.version))
+        if not hasattr(tag, 'tags_dir'):
             return
 
-        window.tag.filepath = self.handler.sanitize_path(window.tag.filepath)
+        tags_dir = tag.tags_dir
 
-        title = window.tag.filepath.split(tags_dir)[-1]
+        if tag is self.config_file or not tags_dir:
+            return
         try:
             handler_i = self.handlers.index(window.handler)
-            title = "[%s] %s" % (self.handler_names[handler_i], title)
+            title = "[%s][%s] %s" % (
+                self.handler_names[handler_i], tags_dir[:-1], tag.rel_filepath)
         except Exception:
             pass
         window.update_title(title)
@@ -333,15 +425,9 @@ class Mozzarilla(Binilla):
         if tag is self.config_file:
             return self.save_config()
 
-        # make sure the filepath is sanitized
-        tag.filepath = self.handler.sanitize_path(tag.filepath)
-
         # change the tags filepath to be relative to the current tags directory
         if hasattr(tag, "rel_filepath"):
-            tags_dir = self.get_tag_window_by_tag(tag).handler.tagsdir
-            if not tags_dir.endswith(s_c.PATHDIV):
-                tags_dir += s_c.PATHDIV
-            tag.filepath = tags_dir + tag.rel_filepath
+            tag.filepath = tag.tags_dir + tag.rel_filepath
 
         Binilla.save_tag(self, tag)
         return tag
@@ -371,23 +457,16 @@ class Mozzarilla(Binilla):
             return
 
         # make sure the filepath is sanitized
-        filepath = self.handler.sanitize_path(filepath)
-
-        tags_dir = self.get_tag_window_by_tag(tag).handler.tagsdir
-        if not tags_dir.endswith(s_c.PATHDIV):
-            tags_dir += s_c.PATHDIV
-        rel_filepath = filepath.split(tags_dir)[-1]
-
-        if len(filepath.lower().split(tags_dir.lower())) != 2:
+        filepath = sanitize_path(filepath).lower()
+        if len(filepath.split(tag.tags_dir)) != 2:
             print("Cannot save outside the tags directory")
             return
 
+        tag.rel_filepath = filepath.split(tag.tags_dir)[-1]
+
         Binilla.save_tag_as(self, tag, filepath)
 
-        tag.rel_filepath = rel_filepath
-
-        w = self.get_tag_window_by_tag(tag)
-        self.update_tag_window_title(w)
+        self.update_tag_window_title(self.get_tag_window_by_tag(tag))
         return tag
 
     def set_handler(self, handler=None, index=None, name=None):
@@ -413,7 +492,7 @@ class Mozzarilla(Binilla):
 
         if name == "Halo 1 Map":
             print("Loading and editing maps is not supported yet, " +
-                  "but it would be a pain to remove this button, " +
+                  "but it would be annoying to remove this button, " +
                   "so I put in this message instead!")
             return
 
@@ -438,18 +517,6 @@ class Mozzarilla(Binilla):
             print("    Finished")
 
         self._curr_handler_index = menu_index
-        tags_dir = self.tags_dir
-
-        if tags_dir == '':
-            self.tags_dir = tags_dir = (
-                self.curr_dir + "%stags%s" % (s_c.PATHDIV,  s_c.PATHDIV))
-
-        if manual:
-            self.last_load_dir = tags_dir
-            print("Tags directory is currently:\n    %s" % tags_dir)
-
-        if manual:
-            print()
 
         self.config_file.data.mozzarilla.selected_handler.data = menu_index
 
@@ -465,9 +532,8 @@ class Mozzarilla(Binilla):
             return
         if master is None:
             master = self.root_frame
-        self.hierarchy_frame = HierarchyFrame(
-            self, width=self.hierarchy_width)
-        self.hierarchy_frame.pack(expand=True, fill='y')
+        self.hierarchy_frame = HierarchyFrame(self)
+        self.hierarchy_frame.pack(expand=True, fill='both')
 
     def make_window_panes(self):
         self.window_panes = tk.PanedWindow(
@@ -486,9 +552,13 @@ class Mozzarilla(Binilla):
         data = self.config_file.data
 
         # make sure these have as many entries as they're supposed to
-        for block in (data.directory_paths, data.widgets.depths, data.colors,
-                      data.tag_dirs):
+        for block in (data.directory_paths, data.widgets.depths, data.colors):
             block.extend(len(block.NAME_MAP))
+
+        tags_dirs = data.mozzarilla.tags_dirs
+        for tags_dir in self.tags_dirs:
+            tags_dirs.append()
+            tags_dirs[-1].path = tags_dir
 
         self.update_config()
 
@@ -513,20 +583,23 @@ class Mozzarilla(Binilla):
         Binilla.apply_config(self)
         config_data = self.config_file.data
         self._curr_handler_index = config_data.mozzarilla.selected_handler.data
-        tag_dirs = config_data.tag_dirs
+        tags_dirs = config_data.mozzarilla.tags_dirs
 
         try:
             self.select_defs()
         except Exception:
             pass
 
-        for i in range(len(self.handler_names)):
-            handler_name = self.handler_names[i]
-            dir_path = tag_dirs[self.handler_tags_dir_map[handler_name]].path
+        for i in range(len(self.tags_dirs)):
+            self.remove_tags_dir(i, manual=False)
 
-            # set the handlers tags_dir so tags are able to use it
-            # as a reference when setting/verifying a dependency.
-            self.handlers[i].tagsdir = dir_path
+        self._curr_tags_dir_index = 0
+        for tags_dir in tags_dirs:
+            self.add_tags_dir(tags_dir=tags_dir.path, manual=False)
+
+        if not self.tags_dir:
+            self.tags_dir = (
+                self.curr_dir + "%stags%s" % (s_c.PATHDIV,  s_c.PATHDIV))
 
     def update_config(self, config_file=None):
         if config_file is None:
@@ -535,28 +608,15 @@ class Mozzarilla(Binilla):
 
         config_data = config_file.data
         mozzarilla_data = config_data.mozzarilla
-        tag_dirs = config_data.tag_dirs
+        tags_dirs = mozzarilla_data.tags_dirs
 
         mozzarilla_data.selected_handler.data = self._curr_handler_index
 
-        for i in range(len(self.handler_names)):
-            handler = self.handlers[i]
-            dir_name = self.handler_tags_dir_map.get(self.handler_names[i])
-
-            if isinstance(handler, type):
-                # Since we dont load all the handlers right at the start, some
-                # may still just be the class objects rather than instances.
-                # This isnt going to change since making instances and loading
-                # all the tagdefs would take a long time, so instead just call
-                # the handlers class methods with None for the class instance.
-                tags_dir = handler.sanitize_path(None, handler.tagsdir)
-            else:
-                tags_dir = handler.sanitize_path(handler.tagsdir)
-
-            if tags_dir and not tags_dir.endswith(s_c.PATHDIV):
-                tags_dir += s_c.PATHDIV
-
-            tag_dirs[dir_name].path = handler.tagsdir = tags_dir
+        sani = self.handler.sanitize_path
+        del tags_dirs[:]
+        for tags_dir in self.tags_dirs:
+            tags_dirs.append()
+            tags_dirs[-1].path = sani(tags_dir)
 
     def show_dependency_viewer(self, e=None):
         if self.dependency_window is not None:
@@ -589,8 +649,26 @@ class Mozzarilla(Binilla):
 
             self.window_panes.config(
                 bg=self.frame_bg_color, bd=self.frame_depth)
-            self.hierarchy_frame.update_window_settings()
-        except AttributeError: pass
+            self.hierarchy_frame.apply_style()
+            if self.dependency_window is not None:
+                self.dependency_window.apply_style()
+            if self.tag_scanner_window is not None:
+                self.tag_scanner_window.apply_style()
+
+            try:
+                flags = self.config_file.data.mozzarilla.flags
+                self.window_panes.forget(self.hierarchy_frame)
+                self.window_panes.forget(self.io_frame)
+
+                if flags.show_hierarchy_window:
+                    self.hierarchy_frame.pack(fill='both', expand=True)
+                    self.window_panes.add(self.hierarchy_frame)
+                if flags.show_console_window:
+                    self.io_frame.pack(fill='both', expand=True)
+                    self.window_panes.add(self.io_frame)
+            except Exception:
+                print(format_exc())
+        except AttributeError: print(format_exc())
         except Exception: print(format_exc())
 
 class DependencyWindow(tk.Toplevel, BinillaWidget):
@@ -659,6 +737,25 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         self.button_frame.pack(fill='x', padx=1)
 
         self.transient(app_root)
+        self.apply_style()
+
+    def apply_style(self):
+        self.config(bg=self.default_bg_color)
+        for w in (self.filepath_frame, self.button_frame):
+            w.config(fg=self.text_normal_color, bg=self.default_bg_color)
+
+        for w in (self.display_button, self.zip_button, self.browse_button):
+            w.config(bg=self.button_color, activebackground=self.button_color,
+                     fg=self.text_normal_color, bd=self.button_depth,
+                     disabledforeground=self.text_disabled_color)
+
+        self.filepath_entry.config(
+            bd=self.entry_depth,
+            bg=self.entry_normal_color, fg=self.text_normal_color,
+            disabledbackground=self.entry_disabled_color,
+            disabledforeground=self.text_disabled_color,
+            selectbackground=self.entry_highlighted_color,
+            selectforeground=self.text_highlighted_color)
 
     def browse(self):
         filetypes = [('All', '*')]
@@ -672,7 +769,7 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         if not fp:
             return
 
-        fp = self.app_root.handler.sanitize_path(fp)
+        fp = sanitize_path(fp)
         self.app_root.last_load_dir = dirname(fp)
 
         self.filepath_entry.delete(0, tk.END)
@@ -687,12 +784,14 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         tk.Toplevel.destroy(self)
 
     def get_tag(self, filepath):
-        def_id = self.app_root.handler.get_def_id(filepath)
-        tag = self.app_root.get_tag(def_id, filepath)
+        handler = self.handler
+        def_id = handler.get_def_id(filepath)
+
+        tag = handler.tags.get(def_id, {}).get(handler.sanitize_path(filepath))
         if tag is not None:
             return tag
         try:
-            return self.app_root.handler.build_tag(filepath=filepath)
+            return handler.build_tag(filepath=filepath)
         except Exception:
             pass
 
@@ -729,7 +828,7 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
 
         app = self.app_root
         handler = self.handler = app.handler
-        sani = handler.sanitize_path
+        sani = sanitize_path
 
         handler_name = app.handler_names[app._curr_handler_index]
         if handler_name not in app.tags_dir_relative:
@@ -774,7 +873,7 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
 
         app = self.app_root
         handler = self.handler = app.handler
-        sani = handler.sanitize_path
+        sani = sanitize_path
 
         handler_name = app.handler_names[app._curr_handler_index]
         if handler_name not in app.tags_dir_relative:
@@ -977,6 +1076,33 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
 
         self.directory_entry.insert(0, handler.tagsdir)
         self.logfile_entry.insert(0, handler.tagsdir + "tag_scanner.log")
+        self.apply_style()
+
+    def apply_style(self):
+        self.config(bg=self.default_bg_color)        
+        for w in(self.directory_frame, self.logfile_frame, self.def_ids_frame):
+            w.config(fg=self.text_normal_color, bg=self.default_bg_color)
+
+        self.button_frame.config(bg=self.default_bg_color)
+
+        for w in (self.scan_button, self.cancel_button,
+                  self.select_all_button, self.deselect_all_button,
+                  self.dir_browse_button, self.log_browse_button):
+            w.config(bg=self.button_color, activebackground=self.button_color,
+                     fg=self.text_normal_color, bd=self.button_depth,
+                     disabledforeground=self.text_disabled_color)
+
+        for w in (self.directory_entry, self.logfile_entry):
+            w.config(bd=self.entry_depth,
+                bg=self.entry_normal_color, fg=self.text_normal_color,
+                disabledbackground=self.entry_disabled_color,
+                disabledforeground=self.text_disabled_color,
+                selectbackground=self.entry_highlighted_color,
+                selectforeground=self.text_highlighted_color)
+        self.def_ids_listbox.config(
+            bg=self.enum_normal_color, fg=self.text_normal_color,
+            selectbackground=self.enum_highlighted_color,
+            selectforeground=self.text_highlighted_color)
 
     def deselect_all(self):
         self.def_ids_listbox.select_clear(0, tk.END)
@@ -986,12 +1112,14 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
             self.def_ids_listbox.select_set(i)
 
     def get_tag(self, filepath):
-        def_id = self.app_root.handler.get_def_id(filepath)
-        tag = self.app_root.get_tag(def_id, filepath)
+        handler = self.handler
+        def_id = handler.get_def_id(filepath)
+
+        tag = handler.tags.get(def_id, {}).get(handler.sanitize_path(filepath))
         if tag is not None:
             return tag
         try:
-            return self.app_root.handler.build_tag(filepath=filepath)
+            return handler.build_tag(filepath=filepath)
         except Exception:
             pass
 
@@ -1003,7 +1131,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
         if not dirpath:
             return
 
-        dirpath = self.app_root.handler.sanitize_path(dirpath)
+        dirpath = sanitize_path(dirpath)
         if not dirpath.endswith(PATHDIV):
             dirpath += PATHDIV
 
@@ -1024,7 +1152,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
         if not filepath:
             return
 
-        filepath = self.app_root.handler.sanitize_path(filepath)
+        filepath = sanitize_path(filepath)
         self.app_root.last_load_dir = dirname(filepath)
 
         self.logfile_entry.delete(0, tk.END)
@@ -1061,7 +1189,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
     def scan(self):
         app = self.app_root
         handler = self.handler
-        sani = handler.sanitize_path
+        sani = sanitize_path
         self.stop_scanning = False
 
         tagsdir = self.handler.tagsdir
@@ -1216,10 +1344,27 @@ class HierarchyFrame(BinillaWidget, tk.Frame):
 
         self.directory_frame = DirectoryFrame(self, app_root=self.app_root)
         self.directory_frame.pack(fill='both', expand=True)
+        self.apply_style()
+
+    def set_root_dir(self, root_dir):
+        self.directory_frame.set_root_dir(root_dir)
+
+    def add_root_dir(self, root_dir):
+        self.directory_frame.add_root_dir(root_dir)
+
+    def del_root_dir(self, root_dir):
+        self.directory_frame.del_root_dir(root_dir)
+
+    def highlight_tags_dir(self, root_dir):
+        self.directory_frame.highlight_tags_dir(root_dir)
+
+    def apply_style(self):
+        self.directory_frame.apply_style()
 
 
 class DirectoryFrame(BinillaWidget, tk.Frame):
     tags_dir = None
+    tags_dir_items = ()
 
     def __init__(self, master, *args, **kwargs):
         kwargs.setdefault('app_root', master)
@@ -1231,61 +1376,170 @@ class DirectoryFrame(BinillaWidget, tk.Frame):
 
         self.tags_dir = self.app_root.tags_dir
 
-        self.controls_frame = tk.Frame(self, highlightthickness=0, height=100)
-        self.directory_frame = tk.Frame(self, highlightthickness=0)
+        self.controls_frame = tk.Frame(
+            self, highlightthickness=0, height=100)
+        self.tag_dirs_frame = tk.Frame(self, highlightthickness=0)
 
-        self.directory_tree = tk.ttk.Treeview(
-            self.directory_frame, selectmode='browse')
+        self.tag_dirs_tree = tk.ttk.Treeview(
+            self.tag_dirs_frame, selectmode='browse', padding=(0, 0))
         self.scrollbar_y = tk.Scrollbar(
-            self.directory_frame, orient='vertical',
-            command=self.directory_tree.yview)
-        self.directory_tree.config(yscrollcommand=self.scrollbar_y.set)
+            self.tag_dirs_frame, orient='vertical',
+            command=self.tag_dirs_tree.yview)
+        self.tag_dirs_tree.config(yscrollcommand=self.scrollbar_y.set)
 
-        self.directory_tree.bind('<<TreeviewOpen>>', self.open_selected)
-        self.directory_tree.bind('<<TreeviewClose>>', self.close_selected)
-        self.directory_tree.bind('<Double-Button-1>', self.activate_item)
+        self.tag_dirs_tree.bind('<<TreeviewOpen>>', self.open_selected)
+        self.tag_dirs_tree.bind('<<TreeviewClose>>', self.close_selected)
+        self.tag_dirs_tree.bind('<Double-Button-1>', self.activate_item)
+        self.tag_dirs_tree.bind('<Return>', self.activate_item)
 
         self.controls_frame.pack(fill='both')
-        self.directory_frame.pack(fill='both', expand=True)
-        self.directory_tree.pack(side='left', fill='both', expand=True)
-        self.scrollbar_y.pack(side='left', fill='both')
+        self.tag_dirs_frame.pack(fill='both', side='left', expand=True)
+
+        self.tag_dirs_tree.pack(side='left', fill='both', expand=True)
+        self.scrollbar_y.pack(side='right', fill='y')
+
         self.reload()
+        self.apply_style()
+
+    def apply_style(self):
+        self.controls_frame.config(bg=self.default_bg_color)
+        self.tag_dirs_frame.config(bg=self.default_bg_color)
+
+        dir_tree = self.tag_dirs_tree
+        dir_tree.tag_configure(
+            'item', background=self.entry_normal_color,
+            foreground=self.text_normal_color)
+        self.highlight_tags_dir()
 
     def reload(self):
-        dir_tree = self.directory_tree
-        # maybe another time
-        #dir_tree["columns"] = ("size")
-        #dir_tree.column("size", width=100)
-        #dir_tree.heading("size", text='Filesize')
-
+        dir_tree = self.tag_dirs_tree
         dir_tree.heading("#0", text='Tagpath')
-        self.root_item = dir_tree.insert(
-            '', 'end', iid=self.tags_dir , text=self.tags_dir)
-        print(dir_tree.item(self.root_item))
+        for tags_dir in self.tags_dir_items:
+            dir_tree.delete(tags_dir)
 
-    def destroy_subitems(self, item):
-        pass
+        self.tags_dir_items = []
 
-    def generate_subitems(self, item):
-        return
-        # Log the location of every python file in the defs root
-        # search for possibly valid definitions in the defs folder
-        for root, directories, files in os.walk(self.defs_filepath):
-            for module_path in files:
-                base, ext = splitext(module_path)
+        for tags_dir in self.app_root.tags_dirs:
+            self.add_root_dir(tags_dir)
 
-                fpath = root.split(self.defs_filepath)[-1]
+    def set_root_dir(self, root_dir):
+        dir_tree = self.tag_dirs_tree
+        curr_root_dir = self.app_root.tags_dir
 
-                # make sure the file name ends with .py and isnt already loaded
-                if ext.lower() in (".py", ".pyw") and base not in imp_paths:
-                    mod_name = (fpath + '.' + base).replace(PATHDIV, '.')
-                    imp_paths[mod_name] = join(root, base + ext)
+        tags_dir_index = dir_tree.index(curr_root_dir)
+        dir_tree.delete(curr_root_dir)
+        self.insert_root_dir(root_dir)
+
+    def add_root_dir(self, root_dir):
+        self.insert_root_dir(root_dir)
+
+    def insert_root_dir(self, root_dir, index='end'):
+        iid = self.tag_dirs_tree.insert(
+            '', index, iid=root_dir, text=root_dir[:-1],
+            tags=(root_dir, 'tagdir'))
+        self.tags_dir_items.append(iid)
+        self.destroy_subitems(iid)
+
+    def del_root_dir(self, root_dir):
+        self.tag_dirs_tree.delete(root_dir)
+
+    def destroy_subitems(self, directory):
+        '''
+        Destroys all the given items subitems and creates an empty
+        subitem so as to give the item the appearance of being expandable.
+        '''
+        dir_tree = self.tag_dirs_tree
+
+        for child in dir_tree.get_children(directory):
+            dir_tree.delete(child)
+
+        # add an empty node to make an "expand" button appear
+        dir_tree.insert(directory, 'end')
+
+    def generate_subitems(self, directory):
+        dir_tree = self.tag_dirs_tree
+
+        for root, subdirs, files in os.walk(directory):
+            for subdir in sorted(subdirs):
+                folderpath = directory + subdir + PATHDIV
+                dir_tree.insert(
+                    directory, 'end', text=subdir,
+                    iid=folderpath, tags=('item',))
+
+                # loop over each of the new items, give them
+                # at least one item so they can be expanded.
+                self.destroy_subitems(folderpath)
+            for file in sorted(files):
+                dir_tree.insert(directory, 'end', text=file,
+                                iid=directory + file, tags=('item',))
+
+            # just do the toplevel of the hierarchy
+            break
+
+    def get_item_tags_dir(self, iid):
+        '''Returns the tags directory of the given item'''
+        dir_tree = self.tag_dirs_tree
+        prev_parent = iid
+        parent = dir_tree.parent(prev_parent)
+        
+        while parent:
+            prev_parent = parent
+            parent = dir_tree.parent(prev_parent)
+
+        return prev_parent
 
     def open_selected(self, e=None):
-        pass
+        dir_tree = self.tag_dirs_tree
+        tag_path = dir_tree.focus()
+        for child in dir_tree.get_children(tag_path):
+            dir_tree.delete(child)
+
+        if tag_path is None:
+            return
+        self.generate_subitems(tag_path)
 
     def close_selected(self, e=None):
-        pass
+        dir_tree = self.tag_dirs_tree
+        tag_path = dir_tree.focus()
+        if tag_path is None:
+            return
+
+        if isdir(tag_path):
+            self.destroy_subitems(tag_path)
+
+    def highlight_tags_dir(self, tags_dir=None):
+        app = self.app_root
+        dir_tree = self.tag_dirs_tree
+        if tags_dir is None:
+              tags_dir = self.app_root.tags_dir
+        for td in app.tags_dirs:
+            if td == tags_dir:
+                dir_tree.tag_configure(
+                    td, background=self.entry_highlighted_color,
+                    foreground=self.text_highlighted_color)
+            else:
+                dir_tree.tag_configure(
+                    td, background=self.entry_normal_color,
+                    foreground=self.text_normal_color)
 
     def activate_item(self, e=None):
-        pass
+        dir_tree = self.tag_dirs_tree
+        tag_path = dir_tree.focus()
+        if tag_path is None:
+            return
+
+        try:
+            app = self.app_root
+            tags_dir = self.get_item_tags_dir(tag_path)
+            self.highlight_tags_dir(tags_dir)
+            app.switch_tags_dir(index=app.tags_dirs.index(tags_dir))
+        except Exception:
+            print(format_exc())
+
+        if isdir(tag_path):
+            return
+
+        try:
+            app.load_tags(filepaths=tag_path)
+        except Exception:
+            print(format_exc())

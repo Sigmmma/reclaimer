@@ -7,6 +7,7 @@ new_method_enums = (
     {GUI_NAME:"open dependency scanner", NAME:"show_dependency_viewer"},
     {GUI_NAME:"open tag scanner", NAME:"show_tag_scanner"},
     {GUI_NAME:"choose tags directory", NAME:"set_tags_dir"},
+    {GUI_NAME:"switch tags directory", NAME:"switch_tags_dir"},
     )
 
 method_enums += new_method_enums
@@ -30,17 +31,11 @@ hotkeys = Array("hotkeys", SUB_STRUCT=hotkey, SIZE=".array_counts.hotkey_count")
 tag_window_hotkeys = Array("tag_window_hotkeys", SUB_STRUCT=hotkey,
                            SIZE=".array_counts.tag_window_hotkey_count")
 
-tag_dirs = Array("tag_dirs",
-    SUB_STRUCT=filepath, SIZE=".mozzarilla.tag_dirs_count", MAX=4,
-    NAME_MAP=(
-        "halo_1_tags_dir", "halo_1_os_tags_dir",
-        "halo_1_map_tags_dir", "halo_1_misc_tags_dir"
-        ),
-    EDITABLE=False, VISIBLE=False
-    )
-
-mozzarilla = Struct("mozzarilla",
+mozzarilla = Container("mozzarilla",
     Bool16("flags",
+        "show_hierarchy_window",
+        "show_console_window",
+        DEFAULT=sum([1<<i for i in (0, 1)])
         ),
     UEnum16("selected_handler",
         "halo_1",
@@ -51,8 +46,10 @@ mozzarilla = Struct("mozzarilla",
         ),
     Pad(64 - 2*2),
 
-    UInt32("tag_dirs_count", VISIBLE=False, EDITABLE=False),
-    SIZE=128
+    UInt32("tags_dirs_count", VISIBLE=False, EDITABLE=False),
+    Pad(64 - 4*1),
+
+    Array("tags_dirs", SUB_STRUCT=filepath, SIZE=".tags_dirs_count")
     )
 
 config_def = TagDef("mozzarilla_config",
@@ -68,7 +65,6 @@ config_def = TagDef("mozzarilla_config",
     tag_window_hotkeys,
 
     mozzarilla,
-    tag_dirs,
     ENDIAN='<', ext=".cfg",
     )
 
