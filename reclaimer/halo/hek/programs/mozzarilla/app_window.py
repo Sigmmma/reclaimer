@@ -2,7 +2,7 @@ import os
 import tkinter as tk
 import zipfile
 
-from os.path import dirname, isdir, splitext, realpath
+from os.path import dirname, exists, isdir, splitext, realpath
 from time import time
 from threading import Thread
 from traceback import format_exc
@@ -775,6 +775,8 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
             disabledforeground=self.text_disabled_color,
             selectbackground=self.entry_highlighted_color,
             selectforeground=self.text_highlighted_color)
+        
+        self.dependency_window.apply_style()
 
     def browse(self):
         filetypes = [('All', '*')]
@@ -1593,6 +1595,12 @@ class DependencyFrame(HierarchyFrame):
         self.handler = self.app_root.handler
         self._initialized = True
 
+    def apply_style(self):
+        HierarchyFrame.apply_style(self)
+        self.tag_dirs_tree.tag_configure(
+            'badref', foreground=self.invalid_path_color,
+            background=self.entry_normal_color)
+
     def get_item_tags_dir(*args, **kwargs): pass
 
     def highlight_tags_dir(*args, **kwargs): pass
@@ -1625,7 +1633,15 @@ class DependencyFrame(HierarchyFrame):
 
         if not dependency_cache:
             return ()
-        return handler.get_nodes_by_paths(handler.tag_ref_cache[d_id], tag.data)
+
+        dependencies = []
+
+        for block in handler.get_nodes_by_paths(dependency_cache, tag.data):
+            # if the node's filepath is empty, just skip it
+            if not block.filepath:
+                continue
+            dependencies.append(block)
+        return dependencies
 
     def destroy_subitems(self, iid):
         '''
@@ -1638,7 +1654,10 @@ class DependencyFrame(HierarchyFrame):
             dir_tree.delete(child)
 
         # add an empty node to make an "expand" button appear
-        if self.get_dependencies(dir_tree.item(iid)['values'][-1]):
+        tag_path = dir_tree.item(iid)['values'][-1]
+        if not exists(tag_path):
+            dir_tree.item(iid, tags=('badref', ))
+        elif self.get_dependencies(tag_path):
             dir_tree.insert(iid, 'end')
 
     def close_selected(self, e=None):
@@ -1652,10 +1671,10 @@ class DependencyFrame(HierarchyFrame):
         dir_tree = self.tag_dirs_tree
         parent_tag_path = dir_tree.item(parent_iid)['values'][-1]
 
+        if not exists(parent_tag_path):
+            return
+
         for tag_ref_block in self.get_dependencies(parent_tag_path):
-            # if the node's filepath is empty, just skip it
-            if not tag_ref_block.filepath:
-                continue
             try:
                 ext = '.' + tag_ref_block.tag_class.enum_name
             except Exception:
@@ -1672,12 +1691,14 @@ class DependencyFrame(HierarchyFrame):
                     index = parent.index(last_block)
                     dependency_name = '[%s].%s' % (index, dependency_name)
                 elif name not in ('tagdata', 'data'):
-                    dependency_name = '%s.%s' % (name, dependency_name)
+                    if not last_block.TYPE.is_array:
+                        name += '.'
+                    dependency_name = name + dependency_name
                 last_block = parent
                 parent = last_block.parent
 
             # slice off the 4cc id and the period
-            dependency_name = dependency_name[5:]
+            dependency_name = dependency_name.split('.', 1)[-1]
 
             iid = dir_tree.insert(
                 parent_iid, 'end', text=tag_path, tags=('item',),
