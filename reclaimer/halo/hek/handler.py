@@ -16,6 +16,8 @@ class HaloHandler(TagTestHandler):
 
     tagsdir = "%s%stags%s" % (abspath(os.curdir), PATHDIV, PATHDIV)
 
+    treat_mode_as_mod2 = True
+
     def __init__(self, *args, **kwargs):
         TagTestHandler.__init__(self, *args, **kwargs)
 
@@ -161,7 +163,11 @@ class HaloHandler(TagTestHandler):
         filepath = self.tagsdir + node.filepath
         
         try:
-            filepath += '.' + node.tag_class.enum_name
+            ext = node.tag_class.enum_name
+            if (ext == 'model' and self.treat_mode_as_mod2 and
+                not exists(filepath + '.model')):
+                return not exists(filepath + '.gbxmodel')
+            filepath += '.' + ext
         except Exception:
             pass
         

@@ -95,7 +95,10 @@ particle = Struct("particle",
         ),
     Pad(2),
 
-    QStruct("count", INCLUDE=from_to),
+    QStruct("count",
+        BSInt16("from", GUI_NAME=""),
+        BSInt16("to"), ORIENT='h'
+        ),
     from_to_wu("distribution radius"),
     Pad(12),
 
