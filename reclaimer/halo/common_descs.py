@@ -39,7 +39,7 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
             name_map[e_name] = i
             
         desc[STEPTREE][NAME_MAP] = name_map
-        
+
     return Reflexive(name, **desc)
 
 
@@ -825,11 +825,10 @@ xy_float = QStruct('xy_float',
 
 # colors
 argb_float = QStruct('argb_float',
+    Float("a", MIN=0.0, MAX=1.0),
     Float("r", MIN=0.0, MAX=1.0),
     Float("g", MIN=0.0, MAX=1.0),
     Float("b", MIN=0.0, MAX=1.0),
-    Float("a", MIN=0.0, MAX=1.0),  # seems the alpha is stored after rgb, even
-    #                                though guerilla displays it as before. huh
     ORIENT='h', WIDGET=ColorPickerFrame
     )
 rgb_float = QStruct('rgb_float',
