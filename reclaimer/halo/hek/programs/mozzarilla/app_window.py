@@ -27,7 +27,7 @@ default_hotkeys.update({
     '<F8>': "remove_tags_dir",
     })
 
-this_curr_dir = os.path.abspath(os.curdir)
+this_curr_dir = os.path.abspath(os.curdir) + PATHDIV
 
 def sanitize_path(path):
     return path.replace('\\', '/').replace('/', PATHDIV)
@@ -93,8 +93,7 @@ class Mozzarilla(Binilla):
 
         kwargs['handler'] = MiscHaloLoader(debug=self.debug)
         self.tags_dir_relative = set(self.tags_dir_relative)
-        self.tags_dirs = [("%s%stags%s" % (
-            this_curr_dir, s_c.PATHDIV,  s_c.PATHDIV)).lower()]
+        self.tags_dirs = [("%stags%s" % (this_curr_dir,  s_c.PATHDIV)).lower()]
 
         Binilla.__init__(self, *args, **kwargs)
 
@@ -629,6 +628,12 @@ class Mozzarilla(Binilla):
 
     def show_dependency_viewer(self, e=None):
         if self.dependency_window is not None:
+            try: self.dependency_window.destroy()
+            except Exception: pass
+            return
+
+        if not hasattr(self.handler, 'tag_ref_cache'):
+            print("Change the current tag set.")
             return
 
         self.dependency_window = DependencyWindow(self)
@@ -637,6 +642,8 @@ class Mozzarilla(Binilla):
 
     def show_tag_scanner(self, e=None):
         if self.tag_scanner_window is not None:
+            try: self.tag_scanner_window.destroy()
+            except Exception: pass
             return
 
         if not hasattr(self.handler, 'tag_ref_cache'):
@@ -781,7 +788,7 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         if not fp:
             return
 
-        fp = sanitize_path(fp)
+        fp = sanitize_path(fp).lower()
         self.app_root.last_load_dir = dirname(fp)
 
         self.filepath_entry.delete(0, tk.END)
@@ -901,6 +908,8 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
             print("Specified tag is not located within the tags directory")
             return
 
+        self.app_root.update()
+        self.app_root.update_idletasks()
         tagzip_path = asksaveasfilename(
             initialdir=self.app_root.last_load_dir, title="Save zipfile to...",
             filetypes=(("zipfile", "*.zip"), ))
@@ -912,6 +921,8 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         if tag is None:
             print("Could not load tag:\n    %s" % tag_path)
             return
+        self.app_root.update()
+        self.app_root.update_idletasks()
 
         # make the zipfile to put everything in
         tagzip_path = splitext(tagzip_path)[0] + ".zip"
@@ -919,6 +930,8 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
         tags_to_zip = [tag_path.split(tags_dir)[-1]]
         new_tags_to_zip = []
         seen_tags = set()
+        self.app_root.update()
+        self.app_root.update_idletasks()
 
         with zipfile.ZipFile(tagzip_path, mode='w') as tagzip:
             # loop over all the tags and add them to the zipfile
@@ -928,6 +941,8 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
                     if self.stop_zipping:
                         print('Recursive zip operation cancelled.\n')
                         return
+                        self.app_root.update()
+                        self.app_root.update_idletasks()
 
                     if rel_tag_path in seen_tags:
                         continue
@@ -935,23 +950,30 @@ class DependencyWindow(tk.Toplevel, BinillaWidget):
 
                     try:
                         print("Adding '%s' to zipfile" % rel_tag_path)
+                        self.app_root.update()
+                        self.app_root.update_idletasks()
                         tag = self.get_tag(tag_path)
                         new_tags_to_zip.extend(self.get_dependencies(tag))
+                        self.app_root.update()
+                        self.app_root.update_idletasks()
 
                         # try to conserve memory a bit
                         del tag
 
                         tagzip.write(tag_path, arcname=rel_tag_path)
+                        self.app_root.update()
+                        self.app_root.update_idletasks()
                     except Exception:
                         print("    Could not add '%s' to zipfile." %
                               rel_tag_path)
-
-                    try: app.io_text.update()
-                    except Exception: pass
+                self.app_root.update()
+                self.app_root.update_idletasks()
 
                 # replace the tags to zip with the newly collected ones
                 tags_to_zip[:] = new_tags_to_zip
                 del new_tags_to_zip[:]
+                self.app_root.update()
+                self.app_root.update_idletasks()
 
         print("\nRecursive zip completed.\n")
 
@@ -1087,7 +1109,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
         self.transient(app_root)
 
         self.directory_entry.insert(0, handler.tagsdir)
-        self.logfile_entry.insert(0, handler.tagsdir + "tag_scanner.log")
+        self.logfile_entry.insert(0, this_curr_dir + "tag_scanner.log")
         self.apply_style()
 
     def apply_style(self):
@@ -1143,7 +1165,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
         if not dirpath:
             return
 
-        dirpath = sanitize_path(dirpath)
+        dirpath = sanitize_path(dirpath).lower()
         if not dirpath.endswith(PATHDIV):
             dirpath += PATHDIV
 
@@ -1189,6 +1211,7 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
         self.scan_thread = Thread(target=self._scan_directory)
         self.scan_thread.daemon = True
         self.scan_thread.start()
+        self.update()
 
     def _scan_directory(self):
         self.scanning = True
@@ -1248,8 +1271,8 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
                 if time() - c_time > p_int:
                     c_time = time()
                     print(' '*4 + filepath)
-                    try: app.io_text.update()
-                    except Exception: pass
+                self.app_root.update()
+                self.app_root.update_idletasks()
 
                 if self.stop_scanning:
                     print('Tag scanning operation cancelled.\n')
@@ -1266,8 +1289,8 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
             tag_ref_paths = handler.tag_ref_cache[def_id]
 
             print("Scanning '%s' tags..." % id_ext_map[def_id][1:])
-            try: app.io_text.update()
-            except Exception: pass
+            self.app_root.update()
+            self.app_root.update_idletasks()
             tags_coll = all_tag_paths[def_id]
 
             # always display the first tag's filepath
@@ -1282,8 +1305,8 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
                     c_time = time()
                     print(' '*4 + filepath)
 
-                try: app.io_text.update()
-                except Exception: pass
+                self.app_root.update()
+                self.app_root.update_idletasks()
 
                 tag = self.get_tag(tagsdir + filepath)
                 if tag is None:
@@ -1292,6 +1315,8 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
                 try:
                     missed = get_nodes(tag_ref_paths, tag.data,
                                        get_tagref_invalid)
+                    self.app_root.update()
+                    self.app_root.update_idletasks()
 
                     if not missed:
                         continue
@@ -1308,6 +1333,8 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
                         except Exception:
                             ext = ''
                         debuglog += '%s%s\n' % (' '*8, block.STEPTREE + ext)
+                        self.app_root.update()
+                        self.app_root.update_idletasks()
 
                 except Exception:
                     print("    Could not scan '%s'" % tag.filepath)
@@ -1319,9 +1346,9 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
                 break
 
         print("\nScanning took %s seconds." % int(time() - s_time))
-        print("Writing logfile...")
-        try: app.io_text.update()
-        except Exception: pass
+        print("Writing logfile to %s..." % logpath)
+        self.app_root.update()
+        self.app_root.update_idletasks()
 
         # make and write to the logfile
         try:
@@ -1332,15 +1359,15 @@ class TagScannerWindow(tk.Toplevel, BinillaWidget):
             pass
 
         print("Could not create log. Printing log to console instead.\n\n")
-        try: app.io_text.update()
-        except Exception: pass
+        self.app_root.update()
+        self.app_root.update_idletasks()
         for line in debuglog.split('\n'):
             try:
                 print(line)
             except Exception:
                 print("<COULD NOT PRINT THIS LINE>")
-            try: app.io_text.update()
-            except Exception: pass
+            self.app_root.update()
+            self.app_root.update_idletasks()
 
         print("Scan completed.\n")
 
