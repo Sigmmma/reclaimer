@@ -48,7 +48,8 @@ powered_mass_point = Struct("powered mass point",
 
 mass_point = Struct("mass point",
     ascii_str32("name"),
-    dyn_senum16("powered mass point"),
+    dyn_senum16("powered mass point",
+        DYN_NAME_PATH="tagdata.powered_mass_points.STEPTREE[DYN_I].name"),
     BSInt16("model node"),
     BBool32('flags',
         'metallic',
@@ -97,8 +98,10 @@ phys_body = Struct("tagdata",
     BFloat("zz moment"),
 
     reflexive("inertial matrix and inverse", inertial_matrix, 2),
-    reflexive("powered mass points", powered_mass_point, 32),
-    reflexive("mass points", mass_point, 32),
+    reflexive("powered mass points", powered_mass_point, 32,
+        DYN_NAME_PATH='.name'),
+    reflexive("mass points", mass_point, 32,
+        DYN_NAME_PATH='.name'),
     SIZE=128,
     )
 

@@ -44,7 +44,8 @@ vcky_body = Struct("tagdata",
     dependency("display font", "font"),
     dependency("background bitmap", "bitm"),
     dependency("special key labels string list", "ustr"),
-    reflexive("virtual keys", virtual_key, 44),
+    reflexive("virtual keys", virtual_key, 44,
+        DYN_NAME_PATH='.keyboard_key.enum_name'),
     SIZE=60,
     )
 

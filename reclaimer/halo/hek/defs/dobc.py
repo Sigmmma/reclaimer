@@ -33,7 +33,8 @@ dobc_body = Struct("tagdata",
         SIDETIP="applied to all these detail object so they dont float"),
     Pad(44),
     dependency("sprite plate", "bitm"),
-    reflexive("detail object types", detail_object_type, 16),
+    reflexive("detail object types", detail_object_type, 16,
+        DYN_NAME_PATH='.name'),
     SIZE=128,
     )
 

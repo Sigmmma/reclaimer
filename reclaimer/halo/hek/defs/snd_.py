@@ -77,7 +77,8 @@ pitch_range = Struct('pitch range',
     BSInt16("actual permutation count"),
     Pad(14),
 
-    reflexive("permutations", permutation, 256),
+    reflexive("permutations", permutation, 256,
+        DYN_NAME_PATH='.name'),
     SIZE=72,
     )
 
@@ -127,7 +128,8 @@ snd__body = Struct("tagdata",
     dependency("promotion sound", "snd!"),
     BSInt16("promotion count"),
     Pad(22),
-    reflexive("pitch ranges", pitch_range, 8),
+    reflexive("pitch ranges", pitch_range, 8,
+        DYN_NAME_PATH='.name'),
 
     SIZE=164,
     )

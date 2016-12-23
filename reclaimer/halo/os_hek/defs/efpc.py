@@ -10,7 +10,8 @@ script_variable = Struct("script variable",
 effect = Struct("effect",
     dependency_os("effect", "efpg"),
     ascii_str32("name"),
-    reflexive("script variables", script_variable, 32),
+    reflexive("script variables", script_variable, 32,
+        DYN_NAME_PATH='.script_variable_name'),
     SIZE=72
     )
 
@@ -29,7 +30,8 @@ activation_control = Struct("activation control",
 
 effect_instance = Struct("effect instance",
     ascii_str32("name"),
-    dyn_senum16("effect"),
+    dyn_senum16("effect",
+        DYN_NAME_PATH="tagdata.effects.STEPTREE[DYN_I].effect.filepath"),
     BSEnum16("render stage",
         "after bsp - before blur",
         "after blur - before alphad faces",
@@ -62,8 +64,10 @@ efpc_body = Struct("tagdata",
     # and leave this as a reminder that a reflexive might exist.
     #reflexive("unknown", void_desc, 0),
     Pad(12),
-    reflexive("effects", effect, 32),
-    reflexive("effect instances", effect_instance, 32),
+    reflexive("effects", effect, 32,
+        DYN_NAME_PATH='.name'),
+    reflexive("effect instances", effect_instance, 32,
+        DYN_NAME_PATH='.name'),
     SIZE=48
     )
 

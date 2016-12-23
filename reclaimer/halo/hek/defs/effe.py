@@ -41,7 +41,8 @@ create_in_mode = BSEnum16("create in mode",
 part = Struct("part",
     create_in_env,
     create_in_mode,
-    dyn_senum16("location"),
+    dyn_senum16("location",
+        DYN_NAME_PATH="........locations.locations_array[DYN_I].marker_name"),
     BBool16("flags",
         {NAME:"face_down", GUI_NAME:"face down regardless of location(decals)"}
         ),
@@ -70,7 +71,8 @@ particle = Struct("particle",
         "first person if possible",
         ),
     Pad(2),
-    dyn_senum16("location"),
+    dyn_senum16("location",
+        DYN_NAME_PATH="........locations.locations_array[DYN_I].marker_name"),
     Pad(2),
 
     yp_float_rad("relative direction"),  # radians
@@ -131,8 +133,8 @@ event = Struct("event",
     from_to_sec("duration bounds"),
 
     Pad(20),
-    reflexive("parts", part, 32),
-    reflexive("particles", particle, 32),
+    reflexive("parts", part, 32, DYN_NAME_PATH='.type.filepath'),
+    reflexive("particles", particle, 32, DYN_NAME_PATH='.particle_type.filepath'),
     SIZE=68
     )
 
@@ -143,11 +145,13 @@ effe_body = Struct("tagdata",
         {NAME: "required", GUI_NAME: "required for gameplay(cannot optimize)"},
         'unknown'  # found only in map meta data
         ),
-    dyn_senum16("loop start event"),
-    dyn_senum16("loop stop event"),
+    dyn_senum16("loop start event",
+        DYN_NAME_PATH=".events.events_array[DYN_I].NAME"),
+    dyn_senum16("loop stop event",
+        DYN_NAME_PATH=".events.events_array[DYN_I].NAME"),
 
     Pad(32),
-    reflexive("locations", location, 32),
+    reflexive("locations", location, 32, DYN_NAME_PATH='.marker_name'),
     reflexive("events", event, 32),
 
     SIZE=64,

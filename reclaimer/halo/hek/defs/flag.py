@@ -37,7 +37,8 @@ flag_body = Struct("tagdata",
     float_wu_sec("wind noise"),
     Pad(8),
     dependency("blue flag shader", valid_shaders),
-    reflexive("attachment points", attachment_point, 4),
+    reflexive("attachment points", attachment_point, 4,
+        DYN_NAME_PATH='.marker_name'),
     SIZE=96,
     )
 

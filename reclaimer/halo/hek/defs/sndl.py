@@ -53,7 +53,8 @@ sndl_body = Struct("tagdata",
     dependency("continuous damage effect", "cdmg"),
 
     reflexive("tracks", track, 4),
-    reflexive("detail sounds", detail_sound, 32),
+    reflexive("detail sounds", detail_sound, 32,
+        DYN_NAME_PATH='.sound.filepath'),
 
     SIZE=84,
     )

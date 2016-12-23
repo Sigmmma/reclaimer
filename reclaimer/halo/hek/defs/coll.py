@@ -86,10 +86,14 @@ bsp = Struct("bsp",
 
 node = Struct("node",
     ascii_str32("name"),
-    dyn_senum16("region"),
-    dyn_senum16("parent node"),
-    dyn_senum16("next sibling node"),
-    dyn_senum16("first child node"),
+    dyn_senum16("region",
+        DYN_NAME_PATH=".....regions.regions_array[DYN_I].name"),
+    dyn_senum16("parent node",
+        DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16("next sibling node",
+        DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16("first child node",
+        DYN_NAME_PATH="..[DYN_I].name"),
 
     Pad(12),
     reflexive("bsps", bsp, 32),
@@ -97,7 +101,8 @@ node = Struct("node",
     )
 
 pathfinding_sphere = Struct("pathfinding sphere",
-    dyn_senum16("node"),
+    dyn_senum16("node",
+        DYN_NAME_PATH=".....nodes.nodes_array[DYN_I].name"),
 
     Pad(14),
     QStruct("center", INCLUDE=xyz_float),
@@ -128,7 +133,7 @@ region = Struct("region",
 
     Pad(12),
     dependency("destroyed effect", "effe"),
-    reflexive("permutations", permutation, 32),
+    reflexive("permutations", permutation, 32, DYN_NAME_PATH='.name'),
     SIZE=84
     )
 
@@ -157,7 +162,8 @@ coll_body = Struct("tagdata",
         "only damaged by explosives",
         "only damaged while occupied",
         ),
-    dyn_senum16("indirect damage material"),
+    dyn_senum16("indirect damage material",
+        DYN_NAME_PATH=".materials.materials_array[DYN_I].name"),
     Pad(2),
 
     Struct("body",
@@ -206,8 +212,8 @@ coll_body = Struct("tagdata",
         ),
 
     Pad(124),
-    reflexive("materials", material, 32),
-    reflexive("regions", region, 8),
+    reflexive("materials", material, 32, DYN_NAME_PATH='.name'),
+    reflexive("regions", region, 8, DYN_NAME_PATH='.name'),
     # this reflexive is literally not allowed to have even a single
     # entry in guerilla, so im just gonna replace it with padding.
     Pad(12),
@@ -221,7 +227,7 @@ coll_body = Struct("tagdata",
         ),
 
     reflexive("pathfinding spheres", pathfinding_sphere, 32),
-    reflexive("nodes", node, 64),
+    reflexive("nodes", node, 64, DYN_NAME_PATH='.name'),
 
     SIZE=664,
     )

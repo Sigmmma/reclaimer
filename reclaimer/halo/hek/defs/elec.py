@@ -45,7 +45,7 @@ elec_body = Struct("tagdata",
     dependency("bitmap", "bitm"),
 
     Pad(84),
-    reflexive("markers", marker, 16),
+    reflexive("markers", marker, 16, DYN_NAME_PATH='.attachment_marker'),
     reflexive("shaders", shader, 1),
 
     SIZE=264,

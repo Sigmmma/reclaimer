@@ -7,7 +7,8 @@ ui_widget_def = Struct("ui widget definition",
     )
 
 soul_body = Struct("tagdata",
-    reflexive("ui widget definitions", ui_widget_def, 32),
+    reflexive("ui widget definitions", ui_widget_def, 32,
+        DYN_NAME_PATH='.ui_widget_definition.filepath'),
     SIZE=12,
     )
 
