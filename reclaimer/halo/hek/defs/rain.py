@@ -77,7 +77,7 @@ particle_type = Struct("particle_type",
 
 rain_body = Struct("tagdata",
     Pad(36),
-    reflexive("particle types", particle_type, 8),
+    reflexive("particle types", particle_type, 8, DYN_NAME_PATH='.name'),
 
     SIZE=48,
     )

@@ -34,12 +34,15 @@ reference = Struct("tag reference",
 scnr_body = dict(scnr_body)
 scnr_body[0] = dependency_os("project yellow definitions", 'yelo')
 scnr_body[35] = reflexive("player starting profiles",
-    player_starting_profile, 128)
-scnr_body[50] = reflexive("ai animation references", ai_anim_reference, 128)
+    player_starting_profile, 128, DYN_NAME_PATH='.name')
+scnr_body[50] = reflexive("ai animation references", ai_anim_reference, 128,
+        DYN_NAME_PATH='.animation_name')
 scnr_body[54] = rawdata_ref("script syntax data", max_size=570076)
 scnr_body[55] = rawdata_ref("script string data", max_size=393216)
-scnr_body[58] = reflexive("references", reference, 256)
-scnr_body[68] = reflexive("structure bsps", structure_bsp, 32)
+scnr_body[58] = reflexive("references", reference, 256,
+        DYN_NAME_PATH='.reference.filepath')
+scnr_body[68] = reflexive("structure bsps", structure_bsp, 32,
+        DYN_NAME_PATH='.structure_bsp.filepath')
 
 def get():
     return scnr_def

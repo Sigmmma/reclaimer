@@ -7,8 +7,13 @@ from time import time
 from threading import Thread
 from traceback import format_exc
 
+from ....constants import *
+
+# before we do anything, we need to inject these constants so any definitions
+# that are built that use them will have them in their descriptor entries.
+inject_halo_constants()
+
 from supyr_struct.apps.binilla.app_window import *
-from supyr_struct.defs.constants import *
 from ...handler import HaloHandler
 from ....meta.handler import MapLoader
 from ....os_hek.handler import OsHaloHandler
@@ -332,7 +337,7 @@ class Mozzarilla(Binilla):
 
         if manual:
             self.last_load_dir = tags_dir
-            curr_index = self._curr_handler_index
+            curr_index = self._curr_tags_dir_index
             print("Tags directory is currently:\n    %s\n" % self.tags_dir)
 
     def remove_tags_dir(self, e=None, index=None, manual=True):
@@ -586,8 +591,9 @@ class Mozzarilla(Binilla):
     def apply_config(self, e=None):
         Binilla.apply_config(self)
         config_data = self.config_file.data
-        self._curr_handler_index = config_data.mozzarilla.selected_handler.data
-        tags_dirs = config_data.mozzarilla.tags_dirs
+        mozz = config_data.mozzarilla
+        self._curr_handler_index = mozz.selected_handler.data
+        tags_dirs = mozz.tags_dirs
 
         try:
             self.select_defs()
@@ -597,9 +603,12 @@ class Mozzarilla(Binilla):
         for i in range(len(self.tags_dirs)):
             self.remove_tags_dir(i, manual=False)
 
+        
         self._curr_tags_dir_index = 0
         for tags_dir in tags_dirs:
             self.add_tags_dir(tags_dir=tags_dir.path, manual=False)
+        self.switch_tags_dir(
+            index=min(mozz.last_tags_dir, len(self.tags_dirs)), manual=False)
 
         if not self.tags_dir:
             self.tags_dir = (
@@ -615,10 +624,11 @@ class Mozzarilla(Binilla):
         Binilla.update_config(self, config_file)
 
         config_data = config_file.data
-        mozzarilla_data = config_data.mozzarilla
-        tags_dirs = mozzarilla_data.tags_dirs
+        mozz = config_data.mozzarilla
+        tags_dirs = mozz.tags_dirs
 
-        mozzarilla_data.selected_handler.data = self._curr_handler_index
+        mozz.selected_handler.data = self._curr_handler_index
+        mozz.last_tags_dir = self._curr_tags_dir_index
 
         sani = self.handler.sanitize_path
         del tags_dirs[:]

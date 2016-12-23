@@ -49,10 +49,11 @@ mozzarilla = Container("mozzarilla",
         "halo_1_misc",
         EDITABLE=False, VISIBLE=False
         ),
-    Pad(64 - 2*2),
+    UInt16("last_tags_dir", VISIBLE=False, EDITABLE=False),
+    Pad(64 - 2*3),
 
-    UInt32("tags_dirs_count", VISIBLE=False, EDITABLE=False),
-    Pad(64 - 4*1),
+    UInt16("tags_dirs_count", VISIBLE=False, EDITABLE=False),
+    Pad(64 - 2*1),
 
     Array("tags_dirs", SUB_STRUCT=filepath, SIZE=".tags_dirs_count")
     )
