@@ -148,7 +148,7 @@ bitm_body = Struct("tagdata",
        ),
     BUInt16("sprite spacing", SIDETIP="pixels"),
     Pad(2),
-    reflexive("sequences", sequence, 256),
+    reflexive("sequences", sequence, 256, DYN_NAME_PATH='.sequence_name'),
     reflexive("bitmaps", bitmap),
     SIZE=108,
     )

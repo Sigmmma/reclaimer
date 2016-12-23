@@ -109,7 +109,8 @@ bipd_attrs = Struct("bipd attrs",
         ENDIAN='<'
         ),
 
-    reflexive("contact points", contact_point, 2),
+    reflexive("contact points", contact_point, 2,
+        DYN_NAME_PATH='.marker_name'),
     
     SIZE=516
     )

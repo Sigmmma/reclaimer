@@ -7,7 +7,8 @@ tag_reference = Struct("tag reference",
     )
 
 tagc_body = Struct("tagdata",
-    reflexive("tag references", tag_reference, 200),
+    reflexive("tag references", tag_reference, 200,
+        DYN_NAME_PATH='.tag.filepath'),
     SIZE=12,
     )
 

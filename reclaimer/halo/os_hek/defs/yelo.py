@@ -43,8 +43,10 @@ new_global = Struct("new global",
     )
 
 yelo_scripting = Struct("yelo scripting",
-    reflexive("new functions", new_function),
-    reflexive("new globals", new_global),
+    reflexive("new functions", new_function,
+        DYN_NAME_PATH='.name1'),
+    reflexive("new globals", new_global,
+        DYN_NAME_PATH='.name1'),
     SIZE=24
     )
 
@@ -60,7 +62,8 @@ yelo_body = Struct("tagdata",
     reflexive("build info", build_info, 1),
 
     Pad(40),
-    reflexive("scripted ui widgets", scripted_ui_widget, 128),
+    reflexive("scripted ui widgets", scripted_ui_widget, 128,
+        DYN_NAME_PATH='.name'),
 
     Pad(16),
     # Physics

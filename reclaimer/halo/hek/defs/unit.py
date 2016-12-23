@@ -160,8 +160,9 @@ unit_attrs = Struct("unit attrs",
 
     Pad(14),
     reflexive("new hud interfaces", new_hud_interface, 2,
-              'default/solo', 'multiplayer'),
-    reflexive("dialogue variants", dialogue_variant, 16),
+        'default/solo', 'multiplayer'),
+    reflexive("dialogue variants", dialogue_variant, 16,
+        DYN_NAME_PATH='.dialogue.filepath'),
 
     #Grenades
     float_wu_sec('grenade velocity'),
@@ -171,8 +172,8 @@ unit_attrs = Struct("unit attrs",
     Pad(4),
     reflexive("powered seats", powered_seat, 2,
               "driver", "gunner"),
-    reflexive("weapons", weapon, 4),
-    reflexive("seats", seat, 16),
+    reflexive("weapons", weapon, 4, DYN_NAME_PATH='.weapon.filepath'),
+    reflexive("seats", seat, 16, DYN_NAME_PATH='.label'),
 
     SIZE=372
     )

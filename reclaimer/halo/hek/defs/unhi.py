@@ -171,7 +171,8 @@ unhi_body = Struct("tagdata",
     reflexive("auxilary overlays", auxilary_overlay, 16),
 
     Pad(16),
-    reflexive("warning sounds", warning_sound, 12),
+    reflexive("warning sounds", warning_sound, 12,
+        DYN_NAME_PATH='.sound.filepath'),
     reflexive("auxilary meters", auxilary_meter, 16),
 
     SIZE=1388

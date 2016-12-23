@@ -11,7 +11,7 @@ scenario_description = Struct("scenario description",
 
 mply_body = Struct("tagdata",
     reflexive("multiplayer scenario descriptions",
-              scenario_description, 32),
+        scenario_description, 32, DYN_NAME_PATH='.scenario_tag_directory_path'),
     SIZE=12,
     )
 

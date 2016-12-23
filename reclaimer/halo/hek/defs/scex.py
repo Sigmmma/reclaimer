@@ -21,9 +21,12 @@ scex_attrs = Struct("scex attrs",
     #Lens Flare
     float_wu("lens flare spacing"),  # world units
     dependency("lens flare", "lens"),
-    reflexive("extra layers", extra_layers_block, 4),
-    reflexive("four stage maps", chicago_4_stage_maps, 4),
-    reflexive("two stage maps", chicago_2_stage_maps, 2),
+    reflexive("extra layers", extra_layers_block, 4,
+        DYN_NAME_PATH='.extra_layer.filepath'),
+    reflexive("four stage maps", chicago_4_stage_maps, 4,
+        DYN_NAME_PATH='.bitmap.filepath'),
+    reflexive("two stage maps", chicago_2_stage_maps, 2,
+        DYN_NAME_PATH='.bitmap.filepath'),
     BBool32("extra flags",
         "dont fade active camouflage",
         "numeric countdown timer"

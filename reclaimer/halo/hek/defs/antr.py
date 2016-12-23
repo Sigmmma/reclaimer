@@ -2,8 +2,10 @@ from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
+dyn_anim_path = "tagdata.animations.animations_array[DYN_I].name"
+
 object_desc = Struct("object", 
-    dyn_senum16("animation"),
+    dyn_senum16("animation", DYN_NAME_PATH=dyn_anim_path),
     BSEnum16("function",
         "A out",
         "B out",
@@ -18,7 +20,7 @@ object_desc = Struct("object",
     )
 
 anim_enum_desc = QStruct("animation",
-    dyn_senum16("animation")
+    dyn_senum16("animation", DYN_NAME_PATH=dyn_anim_path)
     )
 
 ik_point_desc = Struct("ik point", 
@@ -69,8 +71,8 @@ unit_weapon_desc = Struct("weapon",
         'resurrect-front','resurrect-back','melee-continuous',
         'feeding','leap-start','leap-airborne','leap-melee',
         'zapping','unused1','unused2','unused3'),
-    reflexive("ik points", ik_point_desc, 4),
-    reflexive("weapon types", weapon_types_desc, 10),
+    reflexive("ik points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
+    reflexive("weapon types", weapon_types_desc, 10, DYN_NAME_PATH=".label"),
     SIZE=188,
     )
 
@@ -98,8 +100,8 @@ unit_desc = Struct("unit",
         'user5','user6','user7','user8','user9',
         'flying-front','flying-back','flying-left','flying-right',
         'opening','closing','hovering'),
-    reflexive("ik points", ik_point_desc, 4),
-    reflexive("weapon types", unit_weapon_desc, 16),
+    reflexive("ik points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
+    reflexive("weapon types", unit_weapon_desc, 16, DYN_NAME_PATH=".name"),
     SIZE=100,
     )
 
@@ -113,8 +115,8 @@ weapons_desc = Struct("weapons",
     )
 
 suspension_desc = QStruct("suspension animation", 
-    dyn_senum16("mass point index"),
-    dyn_senum16("animation"),
+    SInt16("mass point index"),
+    dyn_senum16("animation", DYN_NAME_PATH=dyn_anim_path),
     BFloat("full extension ground depth"),
     BFloat("full compression ground depth"),
     SIZE=20,
@@ -169,9 +171,12 @@ sound_reference_desc = Struct("sound reference",
 
 nodes_desc = Struct("node", 
     ascii_str32("name"),
-    dyn_senum16("next sibling node index"),
-    dyn_senum16("first child node index"),
-    dyn_senum16("parent node index"),
+    dyn_senum16("next sibling node index",
+        DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16("first child node index",
+        DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16("parent node index",
+        DYN_NAME_PATH="..[DYN_I].name"),
     Pad(2),
     BBool32("node joint flags",
         "compress all animations",
@@ -206,13 +211,16 @@ animation_desc = Struct("animation",
     BSInt16("key frame index"),
     BSInt16("second key frame index"),
 
-    dyn_senum16("next animation"),
+    dyn_senum16("next animation",
+        DYN_NAME_PATH="..[DYN_I].name"),
     BBool16("flags",
         "compressed data",
         "world relative",
         { NAME:"pal", GUI_NAME:"25Hz(PAL)" },
         ),
-    dyn_senum16("sound"),
+    dyn_senum16("sound",
+        DYN_NAME_PATH="tagdata.sound_references." +
+        "sound_references_array[DYN_I].sound.filepath"),
     BSInt16("sound frame_index"),
     SInt8("left foot frame index"),
     SInt8("right foot frame index"),
@@ -229,22 +237,23 @@ animation_desc = Struct("animation",
 
 antr_body = Struct("tagdata",
     reflexive("objects",  object_desc, 4),
-    reflexive("units",    unit_desc, 32),
+    reflexive("units",    unit_desc, 32, DYN_NAME_PATH=".label"),
     reflexive("weapons",  weapons_desc, 1),
     reflexive("vehicles", vehicle_desc, 1),
     reflexive("devices",  device_desc, 1),
     reflexive("unit damages", anim_enum_desc, 176),
     reflexive("fp animations", fp_animation_desc, 1),
     #i have no idea why they decided to cap it at 257 instead of 256....
-    reflexive("sound references", sound_reference_desc, 257),
+    reflexive("sound references", sound_reference_desc, 257,
+        DYN_NAME_PATH=".sound.filepath"),
     BFloat("limp body node radius"),
     BBool16("flags",
         "compress all animations",
         "force idle compression",
         ),
     Pad(2),
-    reflexive("nodes", nodes_desc, 64),
-    reflexive("animations", animation_desc, 256),
+    reflexive("nodes", nodes_desc, 64, DYN_NAME_PATH=".name"),
+    reflexive("animations", animation_desc, 256, DYN_NAME_PATH=".name"),
     SIZE=128,
     )
 

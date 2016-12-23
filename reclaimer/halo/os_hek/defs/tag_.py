@@ -2,7 +2,8 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 child_ids = Struct("child id",
-    dyn_senum32("entry reference"),
+    dyn_senum32("entry reference",
+        DYN_NAME_PATH="tagdata.entries.STEPTREE[DYN_I].name.data"),
     SIZE=4
     )
 
@@ -19,7 +20,7 @@ entry = Struct("entry",
     )
 
 tag__body = Struct("tagdata",
-    reflexive("entries", entry, 65536),
+    reflexive("entries", entry, 65536, DYN_NAME_PATH='.name.data'),
     SIZE=36
     )
 

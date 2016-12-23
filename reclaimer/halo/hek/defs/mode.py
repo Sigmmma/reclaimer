@@ -10,18 +10,24 @@ permutation = Struct('permutation',
         ),
     Pad(28),
 
-    dyn_senum16('superlow geometry block'),
-    dyn_senum16('low geometry block'),
-    dyn_senum16('medium geometry block'),
-    dyn_senum16('high geometry block'),
-    dyn_senum16('superhigh geometry block'),
+    dyn_senum16('superlow geometry block',
+        DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
+    dyn_senum16('low geometry block',
+        DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
+    dyn_senum16('medium geometry block',
+        DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
+    dyn_senum16('high geometry block',
+        DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
+    dyn_senum16('superhigh geometry block',
+        DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
     Pad(2),
     SIZE=88
     )
 
 part = Struct('part',
     Pad(5),
-    dyn_senum8('shader index'),
+    dyn_senum8('shader index',
+        DYN_NAME_PATH="tagdata.shaders.shaders_array[DYN_I].shader.filepath"),
     SInt8('previous part index'),
     SInt8('next part index'),
 
@@ -44,9 +50,9 @@ part = Struct('part',
 
 node = Struct('node',
     ascii_str32("name"),
-    dyn_senum16('next sibling node'),
-    dyn_senum16('first child node'),
-    dyn_senum16('parent node'),
+    dyn_senum16('next sibling node', DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16('first child node', DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16('parent node', DYN_NAME_PATH="..[DYN_I].name"),
     Pad(2),
 
     QStruct('translation', INCLUDE=xyz_float),
@@ -66,7 +72,7 @@ node = Struct('node',
 region = Struct('region',
     ascii_str32("name"),
     Pad(32),
-    reflexive("permutations", permutation, 32),
+    reflexive("permutations", permutation, 32, DYN_NAME_PATH=".name"),
     SIZE=76
     )
 
@@ -104,11 +110,11 @@ mode_body = Struct('tagdata',
 
     Pad(116),
 
-    reflexive("markers", marker, 256),
-    reflexive("nodes", node, 64),
-    reflexive("regions", region, 32),
+    reflexive("markers", marker, 256, DYN_NAME_PATH=".name"),
+    reflexive("nodes", node, 64, DYN_NAME_PATH=".name"),
+    reflexive("regions", region, 32, DYN_NAME_PATH=".name"),
     reflexive("geometries", geometry, 256),
-    reflexive("shaders", shader, 256),
+    reflexive("shaders", shader, 256, DYN_NAME_PATH=".shader.filepath"),
 
     SIZE=232
     )

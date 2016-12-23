@@ -240,8 +240,9 @@ sotr_attrs = Struct("sotr attrs",
     #Lens Flare
     float_wu("lens flare spacing"),  # world units
     dependency("lens flare", "lens"),
-    reflexive("extra layers", extra_layers_block, 4),
-    reflexive("maps", map, 4),
+    reflexive("extra layers", extra_layers_block, 4,
+        DYN_NAME_PATH='.extra_layer.filepath'),
+    reflexive("maps", map, 4, DYN_NAME_PATH='.bitmap.filepath'),
     reflexive("stages", stage, 7),
     SIZE=68
     )

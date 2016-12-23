@@ -8,7 +8,9 @@ infection_form = Struct("infection form",
 
 infectable_unit = Struct("infectable unit",
     Pad(2),
-    dyn_senum16("infection form"),
+    dyn_senum16("infection form",
+        DYN_NAME_PATH=".....infection_forms.STEPTREE" +
+        "[DYN_I].infection_form.filepath"),
     dependency_os("infectable unit", valid_units),
     BFloat("health threshold"),
     dependency_os("infected unit", valid_units),
@@ -22,8 +24,10 @@ infectable_unit = Struct("infectable unit",
 
 unit_infection = Struct("unit infection",
     Pad(4),
-    reflexive("infection forms", infection_form, 8),
-    reflexive("infectable units", infectable_unit, 64),
+    reflexive("infection forms", infection_form, 8,
+        DYN_NAME_PATH='.infection_form.filepath'),
+    reflexive("infectable units", infectable_unit, 64,
+        DYN_NAME_PATH='.infectable_unit.filepath'),
     SIZE=52
     )
 
@@ -43,7 +47,8 @@ boarding_seat = Struct("boarding seat",
 unit_external_upgrade = Struct("unit external upgrade",
     Pad(4),
     dependency_os("unit", valid_units),
-    reflexive("infectable units", boarding_seat, 32),
+    reflexive("boarding seats", boarding_seat, 32,
+        DYN_NAME_PATH='.seat_label'),
     SIZE=68
     )
 
@@ -53,7 +58,8 @@ gelc_body = Struct("tagdata",
         "allow unit infections during cinematics",
         ),
     reflexive("unit infections", unit_infection, 1),
-    reflexive("unit external upgrades", unit_external_upgrade, 64),
+    reflexive("unit external upgrades", unit_external_upgrade, 64,
+        DYN_NAME_PATH='.unit.filepath'),
     SIZE=172
     )
 

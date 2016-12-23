@@ -27,7 +27,7 @@ light = Struct('light',
     BFloat("test distance"),
     Pad(4),
     yp_float_rad("direction"),  # radians
-    BFloat("diameter"),  # radians (yeah, it sounds weird, but this
+    float_rad("diameter"),  # radians (yeah, it sounds weird, but this
     #                      value is stored as a radian coefficient)
     SIZE=116
     )
@@ -58,9 +58,11 @@ sky__body = Struct("tagdata",
 
     dependency("indoor fog screen", "fog "),
     Pad(4),
-    reflexive("shader functions", shader_function, 8),
+    reflexive("shader functions", shader_function, 8,
+        DYN_NAME_PATH='.global_function_name'),
     reflexive("animations", animation, 8),
-    reflexive("lights", light, 8),
+    reflexive("lights", light, 8,
+        DYN_NAME_PATH='.lens_flare.filepath'),
 
     SIZE=208,
     )

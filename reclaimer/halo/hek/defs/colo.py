@@ -9,7 +9,7 @@ color = Struct("color",
     )
 
 colo_body = Struct("tagdata",
-    reflexive("colors", color, 512),
+    reflexive("colors", color, 512, DYN_NAME_PATH='.name'),
     SIZE=12
     )
 

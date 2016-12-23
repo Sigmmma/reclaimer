@@ -119,8 +119,8 @@ particle_type = Struct("particle type",
 
     Pad(6),
     reflexive("physics constants", physics_constant, 16),
-    reflexive("states", state, 8),
-    reflexive("particle states", particle_state, 8),
+    reflexive("states", state, 8, DYN_NAME_PATH='.name'),
+    reflexive("particle states", particle_state, 8, DYN_NAME_PATH='.name'),
     SIZE=128
     )
 
@@ -133,7 +133,7 @@ pctl_body = Struct("tagdata",
         ),
     Pad(6),
     reflexive("physics constants", physics_constant, 16),
-    reflexive("particle types", particle_type, 4),
+    reflexive("particle types", particle_type, 4, DYN_NAME_PATH='.name'),
     SIZE=104,
     )
 

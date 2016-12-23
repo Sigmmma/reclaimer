@@ -246,7 +246,8 @@ DeLa_body = Struct("tagdata",
 
     reflexive("game data inputs", game_data_input, 64),
     reflexive("event handlers", event_handler, 32),
-    reflexive("search and replace references", s_and_r_reference, 32),
+    reflexive("search and replace references",
+        s_and_r_reference, 32, DYN_NAME_PATH='.search_string'),
 
     Pad(128),
     Struct("text box",
@@ -294,10 +295,12 @@ DeLa_body = Struct("tagdata",
         ),
 
     Pad(288),
-    reflexive("conditional widgets", conditional_widget, 32),
+    reflexive("conditional widgets", conditional_widget, 32,
+        DYN_NAME_PATH='.widget_tag.filepath'),
 
     Pad(256),
-    reflexive("child widgets", child_widget, 32),
+    reflexive("child widgets", child_widget, 32,
+        DYN_NAME_PATH='.widget_tag.filepath'),
 
     SIZE=1004
     )

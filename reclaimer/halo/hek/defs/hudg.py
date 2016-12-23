@@ -172,7 +172,7 @@ hudg_body = Struct("tagdata",
     dependency("hud messages", "hmt "),
     objective_colors,
     waypoint_parameters,
-    reflexive("waypoint arrows", waypoint_arrow, 16),
+    reflexive("waypoint arrows", waypoint_arrow, 16, DYN_NAME_PATH='.name'),
 
     Pad(80),
     hud_globals,

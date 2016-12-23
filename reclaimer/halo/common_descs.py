@@ -32,6 +32,8 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
             ),
         SIZE=12
         )
+    if DYN_NAME_PATH in desc:
+        desc[STEPTREE][DYN_NAME_PATH] = desc.pop(DYN_NAME_PATH)
     if names:
         name_map = {}
         for i in range(len(names)):
@@ -106,14 +108,20 @@ def blam_header(tagid, version=1):
 
 irad = 180/pi
 
-def dyn_senum8(name):
-    return SInt8(name, DEFAULT=-1)
+def dyn_senum8(name, *args, **kwargs):
+    kwargs.setdefault('DEFAULT', -1)
+    kwargs.setdefault('WIDGET', DynamicEnumFrame)
+    return SInt8(name, *args, **kwargs)
 
-def dyn_senum16(name):
-    return BSInt16(name, DEFAULT=-1)
+def dyn_senum16(name, *args, **kwargs):
+    kwargs.setdefault('DEFAULT', -1)
+    kwargs.setdefault('WIDGET', DynamicEnumFrame)
+    return BSInt16(name, *args, **kwargs)
 
-def dyn_senum32(name):
-    return BSInt32(name, DEFAULT=-1)
+def dyn_senum32(name, *args, **kwargs):
+    kwargs.setdefault('DEFAULT', -1)
+    kwargs.setdefault('WIDGET', DynamicEnumFrame)
+    return BSInt32(name, *args, **kwargs)
 
 def ascii_str32(name):
     return StrAscii(str(name), SIZE=32)
