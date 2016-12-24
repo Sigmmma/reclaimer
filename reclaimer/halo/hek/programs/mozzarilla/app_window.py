@@ -454,9 +454,8 @@ class Mozzarilla(Binilla):
 
         if filepath is None:
             ext = tag.ext
-            orig_filepath = tag.filepath
             filepath = asksaveasfilename(
-                initialdir=dirname(orig_filepath), defaultextension=ext,
+                initialdir=dirname(tag.filepath), defaultextension=ext,
                 title="Save tag as...", filetypes=[
                     (ext[1:], "*" + ext), ('All', '*')] )
         else:
@@ -1464,7 +1463,12 @@ class HierarchyFrame(BinillaWidget, tk.Frame):
 
     def reload(self):
         dir_tree = self.tag_dirs_tree
-        dir_tree.heading("#0", text='Filepath')
+        dir_tree['columns'] = ('size', )
+        dir_tree.heading("#0", text='path')
+        dir_tree.heading("size", text='filesize')
+        dir_tree.column("#0", minwidth=100, width=100)
+        dir_tree.column("size", minwidth=100, width=100, stretch=False)
+
         for tags_dir in self.tags_dir_items:
             dir_tree.delete(tags_dir)
 
@@ -1521,8 +1525,19 @@ class HierarchyFrame(BinillaWidget, tk.Frame):
                 # at least one item so they can be expanded.
                 self.destroy_subitems(folderpath)
             for file in sorted(files):
+                try:
+                    filesize = os.stat(directory + file).st_size
+                    if filesize < 1024:
+                        filesize = str(filesize) + " bytes"
+                    elif filesize < 1024**2:
+                        filesize = str(round(filesize/1024, 3)) + " Kb"
+                    else:
+                        filesize = str(round(filesize/(1024**2), 3)) + " Mb"
+                except Exception:
+                    filesize = 'COULDNT CALCULATE'
                 dir_tree.insert(directory, 'end', text=file,
-                                iid=directory + file, tags=('item',))
+                                iid=directory + file, tags=('item',),
+                values=(filesize, ))
 
             # just do the toplevel of the hierarchy
             break

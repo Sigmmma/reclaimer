@@ -41,7 +41,7 @@ scnr_body[54] = rawdata_ref("script syntax data", max_size=570076)
 scnr_body[55] = rawdata_ref("script string data", max_size=393216)
 scnr_body[58] = reflexive("references", reference, 256,
         DYN_NAME_PATH='.reference.filepath')
-scnr_body[68] = reflexive("structure bsps", structure_bsp, 32,
+scnr_body[69] = reflexive("structure bsps", structure_bsp, 32,
         DYN_NAME_PATH='.structure_bsp.filepath')
 
 def get():

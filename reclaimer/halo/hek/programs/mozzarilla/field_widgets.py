@@ -273,6 +273,11 @@ class DependencyFrame(ContainerFrame):
             print(format_exc())
 
 
+class HaloScriptSourceFrame(RawdataFrame):
+    @property
+    def field_ext(self): return '.hsc'
+
+
 class SoundSampleFrame(RawdataFrame):
 
     @property
