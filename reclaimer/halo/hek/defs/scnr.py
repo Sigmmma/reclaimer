@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.programs.mozzarilla.field_widgets import HaloScriptSourceFrame
 from supyr_struct.defs.tag_def import TagDef
 
 def object_reference(name, *args, **kwargs):
@@ -335,24 +336,19 @@ player_starting_location = Struct("player starting location",
     )
 
 trigger_volume = Struct("trigger volume",
-    Pad(4),
+    LUInt32("unknown", ENDIAN='<', DEFAULT=1, EDITABLE=False),
     ascii_str32("name"),
-    # find out what these fields actually are and name them
-    BFloat("field1"),
-    BFloat("field2"),
-    BFloat("field3"),
-    BFloat("field4", DEFAULT=1.0),
-    BFloat("field5"),
-    BFloat("field6"),
-    BFloat("field7", DEFAULT=-0.0),
-    BFloat("field8", DEFAULT=-0.0),
-    BFloat("field9", DEFAULT=1.0),
+    # find out what if these fields actually what i'm calling them
+    QStruct("normal",   INCLUDE=ijk_float),
+    QStruct("binormal", INCLUDE=ijk_float),
+    QStruct("tangent",  INCLUDE=ijk_float),
     QStruct("position", INCLUDE=xyz_float),
     QStruct("sides",
-        BFloat("width"), BFloat("length"), BFloat("height"),
+        BFloat("w"), BFloat("l"), BFloat("h"),
         ORIENT='h'
         ),
-    SIZE=96
+    SIZE=96,
+    COMMENT="I'm not sure if these are the actual names, but they seem to fit."
     )
 
 recorded_animation = Struct("recorded animation",
@@ -486,7 +482,7 @@ reference = Struct("tag reference",
 
 source_file = Struct("source_file",
     ascii_str32("source name"),
-    rawtext_ref("source", StrRawLatin1, max_size=262144),
+    rawdata_ref("source", max_size=262144, widget=HaloScriptSourceFrame),
     SIZE=52
     )
 
@@ -684,7 +680,7 @@ encounter = Struct("encounter",
         "8 / unused8",
         "9 / unused9"
         ),
-    Pad(2),
+    BSInt16('unknown'),
     BSEnum16("search behavior",
         "normal",
         "never",
@@ -832,8 +828,7 @@ scnr_body = Struct("tagdata",
     dependency("DONT USE", 'sbsp'),
     dependency("WONT USE", 'sbsp'),
     dependency("CANT USE", 'sky '),
-    reflexive("skies", sky, 8,
-        DYN_NAME_PATH='.sky.filepath'),
+    reflexive("skies", sky, 8, DYN_NAME_PATH='.sky.filepath'),
     BSEnum16("type",
         "singleplayer",
         "multiplayer",
@@ -933,8 +928,9 @@ scnr_body = Struct("tagdata",
     reflexive("cutscene camera points", cutscene_camera_point, 512,
         DYN_NAME_PATH='.name'),
     reflexive("cutscene titles", cutscene_title, 64, DYN_NAME_PATH='.name'),
+    Pad(12), # unknown reflexive
 
-    Pad(108),
+    Pad(96),
     dependency("custom object names", 'ustr'),
     dependency("ingame help text", 'ustr'),
     dependency("hud messages", 'hmt '),

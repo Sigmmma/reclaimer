@@ -4,8 +4,12 @@ from supyr_struct.apps.binilla.widgets import BinillaWidget
 from .field_widgets import *
 from ....field_types import *
 
-e_c.TITLE_WIDTH = 28
+e_c.TITLE_WIDTH = 26
+e_c.DEF_STRING_ENTRY_WIDTH = 30
+e_c.DEF_STRING_ENTRY_WIDTH = 30
 BinillaWidget.title_width = e_c.TITLE_WIDTH
+BinillaWidget.def_string_entry_width = e_c.DEF_STRING_ENTRY_WIDTH
+BinillaWidget.max_string_entry_width = e_c.MAX_STRING_ENTRY_WIDTH
 
 __all__ = ("WidgetPicker", "def_widget_picker", "add_widget",
            "MozzarillaWidgetPicker", "def_halo_widget_picker")

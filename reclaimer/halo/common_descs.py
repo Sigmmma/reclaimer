@@ -16,10 +16,11 @@ def tag_class(*args, **kwargs):
     for four_cc in args:
         classes.append((tag_class_fcc_to_ext[four_cc], four_cc))
 
-    return BUEnum32('tag_class',
-                    *(tuple(sorted(classes)) + (("NONE", 0xffffffff),) ),
-                    DEFAULT=0xffffffff, GUI_NAME='', WIDGET_WIDTH=20, **kwargs
-                    )
+    return BUEnum32(
+        'tag_class',
+        *(tuple(sorted(classes)) + (("NONE", 0xffffffff),) ),
+        DEFAULT=0xffffffff, GUI_NAME='', WIDGET_WIDTH=20, **kwargs
+        )
 
 
 def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
@@ -889,10 +890,11 @@ def tag_class_os(*args):
     for four_cc in sorted(args):
         classes.append((tag_class_fcc_to_ext_os[four_cc], four_cc))
 
-    return BUEnum32('tag_class',
-                    *(tuple(classes) + (("NONE", 0xffffffff),) ),
-                    DEFAULT=0xffffffff, GUI_NAME=''
-                    )
+    return BUEnum32(
+        'tag_class',
+        *(tuple(classes) + (("NONE", 0xffffffff),) ),
+        DEFAULT=0xffffffff, GUI_NAME=''
+        )
 
 
 def dependency_os(name='tag ref', valid_ids=None):
