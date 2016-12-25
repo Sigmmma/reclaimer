@@ -1,4 +1,13 @@
 import os
+import sys
+
+info = sys.version_info
+
+if info[0] < 3:
+    input(
+        "You must have python 3.3.0 or higher installed to run Mozzarilla.\n" +
+        "You currently have %s.%s.%s installed instead." % info[:3])
+    raise SystemExit(0)
 
 from datetime import datetime
 from traceback import format_exc
