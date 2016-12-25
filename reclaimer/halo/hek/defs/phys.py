@@ -38,9 +38,9 @@ mass_point = Struct("mass point",
         'metallic',
         ),
     BFloat("relative mass"),
-    BFloat("mass"),
+    BFloat("mass", VISIBLE=False),
     BFloat("relative density"),
-    BFloat("density"),
+    BFloat("density", VISIBLE=False),
     QStruct("position", INCLUDE=ijk_float),
     QStruct("forward", INCLUDE=ijk_float),
     QStruct("up", INCLUDE=ijk_float),
@@ -61,7 +61,7 @@ phys_body = Struct("tagdata",
     BFloat("radius"),
     BFloat("moment scale"),
     BFloat("mass"),
-    QStruct("center of mass", INCLUDE=xyz_float),
+    QStruct("center of mass", INCLUDE=xyz_float, VISIBLE=False),
     BFloat("density"),
     BFloat("gravity scale"),
     BFloat("ground friction"),
@@ -76,16 +76,22 @@ phys_body = Struct("tagdata",
     Pad(4),
     BFloat("air friction"),
     Pad(4),
-    BFloat("xx moment"),
-    BFloat("yy moment"),
-    BFloat("zz moment"),
+    BFloat("xx moment", VISIBLE=False),
+    BFloat("yy moment", VISIBLE=False),
+    BFloat("zz moment", VISIBLE=False),
 
-    reflexive("inertial matrix and inverse", inertial_matrix, 2),
+    reflexive("inertia matrices", inertial_matrix, 2,
+        "regular", "inverse", MIN=2, MAX=2, VISIBLE=False),
     reflexive("powered mass points", powered_mass_point, 32,
         DYN_NAME_PATH='.name'),
     reflexive("mass points", mass_point, 32,
         DYN_NAME_PATH='.name'),
     SIZE=128,
+    COMMENT="\
+Some fields have been hidden because you cant edit them.\n\n\
+This is because they are recalculated when you hit save.\n\
+The inertia matrices, xx, yy, and zz moments, as well as\n\
+the mass and density of each mass point are hidden."
     )
 
 

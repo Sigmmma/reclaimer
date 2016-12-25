@@ -120,6 +120,8 @@ for tag_cls in tag_class_fcc_to_ext:
 # Open Sauce related constants #
 ################################
 tag_class_fcc_to_ext_os = {
+    'avti': "actor_variant_transform_in",  # NEED
+    'avto': "actor_variant_transform_out", # NEED
     'efpp': "effect_postprocess",
     'efpc': "effect_postprocess_collection",
     'efpg': "effect_postprocess_generic",
