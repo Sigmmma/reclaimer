@@ -37,10 +37,10 @@ mass_point = Struct("mass point",
     BBool32('flags',
         'metallic',
         ),
-    BFloat("relative mass"),
-    BFloat("mass", VISIBLE=False),
-    BFloat("relative density"),
-    BFloat("density", VISIBLE=False),
+    BFloat("relative mass", MIN=0.0),
+    BFloat("mass", VISIBLE=False, MIN=0.0),
+    BFloat("relative density", MIN=0.0),
+    BFloat("density", VISIBLE=False, MIN=0.0),
     QStruct("position", INCLUDE=ijk_float),
     QStruct("forward", INCLUDE=ijk_float),
     QStruct("up", INCLUDE=ijk_float),
@@ -53,16 +53,16 @@ mass_point = Struct("mass point",
     Pad(2),
     BFloat("friction parallel scale"),
     BFloat("friction perpendicular scale"),
-    BFloat("radius"),
+    BFloat("radius", MIN=0.0, ALLOW_MIN=False),
     SIZE=128,
     )
 
 phys_body = Struct("tagdata",
     BFloat("radius"),
     BFloat("moment scale"),
-    BFloat("mass"),
+    BFloat("mass", MIN=0.0),
     QStruct("center of mass", INCLUDE=xyz_float, VISIBLE=False),
-    BFloat("density"),
+    BFloat("density", MIN=0.0),
     BFloat("gravity scale"),
     BFloat("ground friction"),
     BFloat("ground depth"),
@@ -90,8 +90,8 @@ phys_body = Struct("tagdata",
     COMMENT="\
 Some fields have been hidden because you cant edit them.\n\n\
 This is because they are recalculated when you hit save.\n\
-The inertia matrices, xx, yy, and zz moments, as well as\n\
-the mass and density of each mass point are hidden."
+The inertial matrices and xx/yy/zz moments are hidden as\n\
+well as the mass and density of the individual mass points."
     )
 
 

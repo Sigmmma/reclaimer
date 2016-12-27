@@ -17,3 +17,11 @@ class HaloTagWindow(TagWindow):
             print(format_exc())
 
         TagWindow.__init__(self, master, tag, *args, **kwargs)
+
+    def save(self, **kwargs):
+        '''Flushes any lingering changes in the widgets to the tag.'''
+        flags = self.app_root.config_file.data.mozzarilla.flags
+        if flags.calc_internal_data and hasattr(self.tag, 'calc_internal_data'):
+            self.tag.calc_internal_data()
+
+        TagWindow.save(self, **kwargs)
