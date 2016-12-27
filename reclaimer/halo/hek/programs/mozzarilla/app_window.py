@@ -245,7 +245,7 @@ class Mozzarilla(Binilla):
         sani = sanitize_path
         handler_name = self.handler_names[self._curr_handler_index]
 
-        sanitized_paths = [sani(path) for path in filepaths]
+        sanitized_paths = [sani(path).lower() for path in filepaths]
 
         # make sure all the chosen tag paths are relative
         # to the current tags directory if they must be
@@ -280,6 +280,8 @@ class Mozzarilla(Binilla):
 
         if not fp:
             return
+
+        fp = fp.lower()
 
         self.last_load_dir = dirname(fp)
         dsw = DefSelectorWindow(

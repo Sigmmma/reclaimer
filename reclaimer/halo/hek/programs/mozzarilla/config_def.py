@@ -40,7 +40,8 @@ mozzarilla = Container("mozzarilla",
     Bool16("flags",
         "show_hierarchy_window",
         "show_console_window",
-        DEFAULT=sum([1<<i for i in (0, 1)])
+        "calc_internal_data",
+        DEFAULT=sum([1<<i for i in (0, 1, 2)])
         ),
     UEnum16("selected_handler",
         "halo_1",

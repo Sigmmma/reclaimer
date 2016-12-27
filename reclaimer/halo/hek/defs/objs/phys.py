@@ -1,82 +1,6 @@
-from math import sqrt
+from math import log
 
 from .tag import *
-
-
-'''
-To calculate center of mass, add up all of the mass point
-position vectors multiplied by their relative mass, then
-divide the resulting vector by the number of mass points.
-
-This will give the center of mass as a vector.
-
-xx, yy, and zz moments are affected by mass point radius
-Remember that moments are the mass times the distance from
-the respective axis on a path perpendicular to the axis.
-
-This will mean doing sqrt(y^2+z^2) for xx,
-sqrt(x^2+z^2) for yy, and sqrt(x^2+y^2) for zz
-
-The second matrix is an inverse of the first matrix.
-Both matricies must exist.
-
-mass = total_mass * rel_mass/total_rel_mass
-density = ? * density * (rel_density/t_rel_density)
-
-gotta figure out what ? is. All densities are the same when
-they are multiplied by (t_rel_density/rel_density)
-I HAVE NO FUCKING CLUE WHAT IT COULD POSSIBLY BE RIGHT NOW
-
-RADIUS MODIFIERS
-
-1  = 0.4
-2  = 1.6
-3  = 3.6
-4  = 6.4
-5  = 10
-6  = 14.4
-7  = 19.6
-8  = 25.6
-9  = 32.4
-
-1    = 0.4    = 4*10^-1
-10   = 40     = 4*10^1
-100  = 4000   = 4*10^3
-1000 = 400000 = 4*10^5
-
-f(r)=4*10^(2*log10(r)-1)
-
-r = 1.58114 makes inertia = 1
-
-
-DISTANCE MODIFIERS
-
-0  = 1
-1  = 2
-2  = 5
-3  = 10
-4  = 17
-5  = 26
-6  = 37
-7  = 50
-8  = 65
-9  = 82
-10 = 101
-
-f(d)=d^2
-
-
-MASS IS A SCALAR MODIFIER
-
-f(m,d,r) = m*(d^2 + 4*10^(2*log10(r)-1))
-
-
-sum up mass points entered into above equation
-(distance is distance from center of mass)
-and divide by the number of mass points
-
-Equation is not complete
-'''
 
 
 class MatrixRow(list):
@@ -117,26 +41,26 @@ class PhysTag(HekTag):
         data = self.data.tagdata
         mass_points = data.mass_points.STEPTREE
 
-        total_mass = data.mass
-        total_rel_mass = sum([mp.relative_mass for mp in mass_points])
-        mass_center = [0,0,0]
-
         if not len(mass_points):
             data.center_of_mass[:] = mass_center
             return
 
-        for mass_point in mass_points:
-            rel_mass = mass_point.relative_mass
-            position = mass_point.position
+        total_mass = data.mass
+        total_rel_mass = sum([mp.relative_mass for mp in mass_points])
+        mass_center = [0,0,0]
 
-            mass_point.mass = total_mass*(rel_mass/total_rel_mass)
-            mass_center[0] += position[0]*rel_mass
-            mass_center[1] += position[1]*rel_mass
-            mass_center[2] += position[2]*rel_mass
+        for mp in mass_points:
+            rel_mass = mp.relative_mass
+            position = mp.position
 
-        mass_center[0] /= len(mass_points)
-        mass_center[1] /= len(mass_points)
-        mass_center[2] /= len(mass_points)
+            mp.mass = total_mass*(rel_mass/total_rel_mass)
+            mass_center[0] += position[0]*mp.mass
+            mass_center[1] += position[1]*mp.mass
+            mass_center[2] += position[2]*mp.mass
+
+        mass_center[0] /= total_mass
+        mass_center[1] /= total_mass
+        mass_center[2] /= total_mass
 
         data.center_of_mass[:] = mass_center
 
@@ -144,21 +68,42 @@ class PhysTag(HekTag):
         data = self.data.tagdata
         mass_points = data.mass_points.STEPTREE
 
+        if not len(mass_points):
+            return
+
         total_mass = data.mass
-        total_dens = data.density
-        total_rel_mass = sum([mp.relative_mass for mp in mass_points])
-        total_rel_dens = sum([mp.relative_density for mp in mass_points])
+        total_density = data.density
 
-        return
-        for mass_point in mass_points:
-            rel_mass = mass_point.relative_mass
+        densities = [mp.relative_density for mp in
+                     mass_points if mp.relative_density]
+        masses = [mp.relative_mass for mp in
+                  mass_points if mp.relative_mass]
+        if not densities or not masses:
+            for mp in mass_points:
+                mp.density = 0
+            return
 
-            # THIS IS INCOMPLETE
-            mass_point.density = total_dens * (
-                mass_point.relative_density/total_rel_dens)
+        den_min = max(float('1e-30'), min(densities))  # prevent division by 0
+        mass_min = max(float('1e-30'), min(masses))    # prevent division by 0
+        total_rel_mass = sum(mp.relative_mass for mp in mass_points)
+        average_rel_mass = total_rel_mass / len(mass_points)
+
+        #                    total_density      total_density
+        # density_scale = ------------------ = ----------------
+        #                  avg(mass/density)    avg( m^3   kg )
+        #                                          ( --- * -- )
+        #                                          ( kg    1  )
+        den_scale = sum(mp.relative_mass / mp.relative_density
+                        for mp in mass_points if mp.relative_density) * (
+                            total_density / len(mass_points))
+        mass_scale = 1 / average_rel_mass
+
+        for mp in mass_points:
+            mp.density = den_scale * mass_scale * mp.relative_density
 
     def calc_intertia_matricies(self):
         data = self.data.tagdata
+        scale = data.moment_scale
         matrices = data.inertia_matrices.STEPTREE
         com = data.center_of_mass
         mass_points = data.mass_points.STEPTREE
@@ -174,31 +119,35 @@ class PhysTag(HekTag):
         xx = yy = zz = float('1e-30')  # prevent division by 0
         neg_zx = neg_xy = neg_yz = 0
 
-        for mass_point in mass_points:
-            break
-            pos = mass_point.position
-            # THIS IS INCORRECT
-            dist_x = sqrt((com[1] - pos[1])**2 + (com[2] - pos[2])**2)
-            dist_y = sqrt((com[0] - pos[0])**2 + (com[2] - pos[2])**2)
-            dist_z = sqrt((com[0] - pos[0])**2 + (com[1] - pos[1])**2)
+        # calculate the moments for each mass point and add them up
+        for mp in mass_points:
+            pos = mp.position
 
-            xx += dist_x * mass_point.mass
-            yy += dist_y * mass_point.mass
-            zz += dist_z * mass_point.mass
-            neg_zx += dist_zx * mass_point.mass
-            neg_xy += dist_xy * mass_point.mass
-            neg_yz += dist_yz * mass_point.mass
+            dist_xx = (com[1] - pos[1])**2 + (com[2] - pos[2])**2
+            dist_yy = (com[0] - pos[0])**2 + (com[2] - pos[2])**2
+            dist_zz = (com[0] - pos[0])**2 + (com[1] - pos[1])**2
 
-        #print(xx, neg_xy, neg_zx, reg_yy_zz)
-        #print(neg_xy, yy, neg_yz, reg_zz_xx)
-        #print(neg_zx, neg_yz, zz, reg_xx_yy)
+            dist_zx = (com[0] - pos[0])*(com[2] - pos[2])
+            dist_xy = (com[0] - pos[0])*(com[1] - pos[1])
+            dist_yz = (com[1] - pos[1])*(com[2] - pos[2])
+
+            radius_term = 4*pow(10, (2*log(mp.radius, 10) - 1))
+            xx += (dist_xx + radius_term) * mp.mass
+            yy += (dist_yy + radius_term) * mp.mass
+            zz += (dist_zz + radius_term) * mp.mass
+            neg_zx -= dist_zx * mp.mass
+            neg_xy -= dist_xy * mp.mass
+            neg_yz -= dist_yz * mp.mass
+
+        xx, yy, zz = xx*scale, yy*scale, zz*scale
+        neg_zx, neg_xy, neg_yz = neg_zx*scale, neg_xy*scale, neg_yz*scale
 
         # place the calculated values into the matrix
-        #reg_yy_zz[:] = xx, neg_xy, neg_zx
-        #reg_zz_xx[:] = neg_xy, yy, neg_yz
-        #reg_xx_yy[:] = neg_zx, neg_yz, zz
+        reg_yy_zz[:] = xx, neg_xy, neg_zx
+        reg_zz_xx[:] = neg_xy, yy, neg_yz
+        reg_xx_yy[:] = neg_zx, neg_yz, zz
 
-        # calculate the remaining matrix values
+        # calculate the inverse inertia matrix values
 
         # the right side will be the inverse after row reduction
         # and the left side is the regular matrix to be reduced.
@@ -222,7 +171,9 @@ class PhysTag(HekTag):
         inv_yy_zz /= inv_yy_zz[0]
         inv_zz_xx /= inv_zz_xx[1]
 
-        # INCOMPLETE: NEED TO PLUG IN VALUES TO FIND OTHER VALUES
+        inv_zz_xx -= inv_yy_zz*inv_zz_xx[0]
+        inv_xx_yy -= inv_yy_zz*inv_xx_yy[0]
+        inv_xx_yy -= inv_zz_xx*inv_xx_yy[1]
 
         # place the inverse matrix into the tag
         inv.yy_zz[:] = inv_yy_zz[3:]
@@ -240,10 +191,10 @@ class PhysTag(HekTag):
         data.yy_moment = reg_zz_xx[1]
         data.zz_moment = reg_xx_yy[2]
 
-    def serialize(self, **kwargs):
-        return HekTag.serialize(self, **kwargs)
+    def calc_internal_data(self):
         self.calc_masses()
         self.calc_densities()
         self.calc_intertia_matricies()
 
+    def serialize(self, **kwargs):
         return HekTag.serialize(self, **kwargs)
