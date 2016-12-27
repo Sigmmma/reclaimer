@@ -159,6 +159,12 @@ def float_zero_to_inf(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="[0,+inf]", **kwargs)
 
 
+from_to = QStruct('',
+    BFloat("from", GUI_NAME=''),
+    BFloat("to"),
+    ORIENT='h'
+    )
+
 def from_to_deg(name, *args, **kwargs):
     return QStruct(name,
         BFloat("from", GUI_NAME=''),
@@ -639,8 +645,8 @@ unit_inputs = (
 unit_teams = (
     "none",
     "player",
-    "covenant",
     "human",
+    "covenant",
     "flood",
     "sentinel",
     "unused6",
@@ -773,11 +779,6 @@ anim_src_func_per_pha_sca_rot = Struct('',
     BFloat("period", SIDETIP='seconds'),  # seconds
     BFloat("phase", SIDETIP='seconds'),  # seconds
     BFloat("scale", SIDETIP='degrees'),  # repeats
-    )
-from_to = QStruct('',
-    BFloat("from", GUI_NAME=''),
-    BFloat("to"),
-    ORIENT='h'
     )
 
 
