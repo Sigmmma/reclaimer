@@ -3,6 +3,14 @@ from supyr_struct.apps.binilla.constants import *
 from supyr_struct.field_types import *
 from supyr_struct.defs.tag_def import TagDef
 
+mozz_flag_tooltips = (
+    "Whether to show the hierarchy window in the main window.",
+    "Whether to show the console output in the main window.",
+    ("Whether to recalculate certain hidden values when saving.\n" +
+     "For all intents and purposes, this should stay on unless\n" +
+     "you are doing some form of experimenting or debugging."),
+    )
+
 new_method_enums = (
     {GUI_NAME:"", NAME:"mozz_divider1", VALUE:(1<<1024) - 1},
     {GUI_NAME:"MOZZARILLA METHODS", NAME:"mozz_divider2"},
@@ -38,10 +46,9 @@ tag_window_hotkeys = Array("tag_window_hotkeys", SUB_STRUCT=hotkey,
 
 mozzarilla = Container("mozzarilla",
     Bool16("flags",
-        "show_hierarchy_window",
-        "show_console_window",
-        {NAME: "calc_internal_data",
-         TOOLTIP: "Whether to recalculate certain hidden values when saving"},
+        {NAME: "show_hierarchy_window", TOOLTIP: mozz_flag_tooltips[0]},
+        {NAME: "show_console_window", TOOLTIP: mozz_flag_tooltips[1]},
+        {NAME: "calc_internal_data", TOOLTIP: mozz_flag_tooltips[2]},
         DEFAULT=sum([1<<i for i in (0, 1, 2)])
         ),
     UEnum16("selected_handler",
@@ -54,10 +61,12 @@ mozzarilla = Container("mozzarilla",
     UInt16("last_tags_dir", VISIBLE=False, EDITABLE=False),
     Pad(64 - 2*3),
 
-    UInt16("tags_dirs_count", VISIBLE=False, EDITABLE=False),
+    UInt16("tags_dirs_count", VISIBLE=False, EDITABLE=False, MIN=1),
     Pad(64 - 2*1),
 
-    Array("tags_dirs", SUB_STRUCT=filepath, SIZE=".tags_dirs_count")
+    Array("tags_dirs", SUB_STRUCT=filepath,
+        SIZE=".tags_dirs_count", MIN=1),
+    COMMENT="\nThese are settings specific to Mozzarilla.\n"
     )
 
 config_def = TagDef("mozzarilla_config",
