@@ -195,6 +195,3 @@ class PhysTag(HekTag):
         self.calc_masses()
         self.calc_densities()
         self.calc_intertia_matricies()
-
-    def serialize(self, **kwargs):
-        return HekTag.serialize(self, **kwargs)

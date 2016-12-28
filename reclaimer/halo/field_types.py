@@ -8,7 +8,7 @@ from .constants import *
 
 '''These are varients of the standard FieldTypes that have been
 slightly modified based on how Halo needs to utilize them.'''
-StringVarLen = FieldType(
+HaloRefStr = FieldType(
     base=StrLatin1, name="HaloRefStr",
     encoder=encode_tag_ref_str, sizecalc=tag_ref_sizecalc)
 FlUTF16StrData = FieldType(
