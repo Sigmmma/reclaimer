@@ -92,7 +92,7 @@ def dependency(name='tag ref', valid_ids=None):
         BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
-        STEPTREE=StringVarLen(
+        STEPTREE=HaloRefStr(
             "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
         ORIENT='h'
         )
@@ -740,16 +740,18 @@ detail_mask = (
 # Descriptors
 tag_header = Struct("blam header",
     Pad(36),
-    BUEnum32("tag_class", GUI_NAME="tag class", INCLUDE=valid_tags),
-    LUInt32("base address", DEFAULT=0),  #random
-    LUInt32("header size",  DEFAULT=64),
+    BUEnum32("tag_class",
+        GUI_NAME="tag class", INCLUDE=valid_tags, EDITABLE=False
+        ),
+    LUInt32("base address", DEFAULT=0, EDITABLE=False, VISIBLE=False),  #random
+    LUInt32("header size",  DEFAULT=64, EDITABLE=False, VISIBLE=False),
     Pad(8),
-    LUInt16("version", DEFAULT=1),
-    LUInt16("unknown", DEFAULT=255),
+    LUInt16("version", DEFAULT=1, EDITABLE=False),
+    LUInt16("unknown", DEFAULT=255, EDITABLE=False, VISIBLE=False),
     LUEnum32("engine id",
         ("halo 1", 'blam'),
-        ("halo 2", 'BLM!'),
-        DEFAULT='blam'),
+        DEFAULT='blam', EDITABLE=False
+        ),
     VISIBLE=False, SIZE=64
     )
 
@@ -785,18 +787,18 @@ anim_src_func_per_pha_sca_rot = Struct('',
 # This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
     BSInt32("size", EDITABLE=False, GUI_NAME="", SIDETIP="bytes"),
-    BSInt32("unknown 1", VISIBLE=False),  # 0x00 in tags(and meta it seems)
-    BSInt32("unknown 2", VISIBLE=False),  # random(low number in meta)
-    BSInt32("pointer", VISIBLE=False, DEFAULT=-1),
-    BUInt32("id", VISIBLE=False),  # 0x00000000 in meta it seems,
+    BSInt32("unknown 1", EDITABLE=False, VISIBLE=False),  # 0x00 in tags(and meta it seems)
+    BSInt32("unknown 2", EDITABLE=False, VISIBLE=False),  # random(low number in meta)
+    BSInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),
+    BUInt32("id", EDITABLE=False, VISIBLE=False),  # 0x00000000 in meta it seems,
     ORIENT='h'
     )
 
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
-    BSInt32("size", VISIBLE=False),
-    BSInt32("pointer", DEFAULT=-1, VISIBLE=False),  # random
-    BUInt32("id", VISIBLE=False),  # 0x00000000 in meta it seems
+    BSInt32("size", EDITABLE=False, VISIBLE=False),
+    BSInt32("pointer", DEFAULT=-1, EDITABLE=False, VISIBLE=False),  # random
+    BUInt32("id", EDITABLE=False, VISIBLE=False),  # 0x00000000 in meta it seems
     )
 
 predicted_resource = Struct('predicted_resource',
@@ -913,7 +915,7 @@ def dependency_os(name='tag ref', valid_ids=None):
         BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
-        STEPTREE=StringVarLen(
+        STEPTREE=HaloRefStr(
             "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
         ORIENT='h'
         )
@@ -947,15 +949,18 @@ grenade_types_os = (
 # Descriptors
 tag_header_os = Struct("blam header",
     Pad(36),
-    valid_tags_os,
-    LUInt32("base address", DEFAULT=0),  #random
-    LUInt32("header size",  DEFAULT=64),
+    BUEnum32("tag_class",
+        GUI_NAME="tag class", INCLUDE=valid_tags_os, EDITABLE=False
+        ),
+    LUInt32("base address", DEFAULT=0, EDITABLE=False, VISIBLE=False),  #random
+    LUInt32("header size",  DEFAULT=64, EDITABLE=False, VISIBLE=False),
     Pad(8),
-    LUInt16("version", DEFAULT=1),
-    LUInt16("unknown", DEFAULT=255),
+    LUInt16("version", DEFAULT=1, EDITABLE=False),
+    LUInt16("unknown", DEFAULT=255, EDITABLE=False, VISIBLE=False),
     LUEnum32("engine id",
         ("halo 1", 'blam'),
-        DEFAULT='blam'),
+        DEFAULT='blam', EDITABLE=False
+        ),
     VISIBLE=False, SIZE=64
     )
 

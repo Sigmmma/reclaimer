@@ -19,7 +19,7 @@ class MozzarillaWidgetPicker(WidgetPicker):
 
 def_halo_widget_picker = dhwp = MozzarillaWidgetPicker()
 
-dhwp.add_widget(StringVarLen, EntryFrame)
+dhwp.add_widget(HaloRefStr, EntryFrame)
 dhwp.add_widget(TagIndexRef, DependencyFrame)
 
 dhwp.copy_widget(FlUTF16StrData, StrUtf16)
