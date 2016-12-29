@@ -3,13 +3,13 @@ import os
 from hashlib import md5
 from os.path import abspath, basename, exists, normpath, splitext
 
-from supyr_struct.tests.test import TagTestHandler
+from supyr_struct.apps.handler import Handler
 from supyr_struct.buffer import BytearrayBuffer
 from ..field_types import *
 from .defs.objs.tag import HekTag
 
 
-class HaloHandler(TagTestHandler):
+class HaloHandler(Handler):
     default_defs_path = "reclaimer.halo.hek.defs"
     tag_fcc_match_set = frozenset()
     tag_filepath_match_set = frozenset()
@@ -19,7 +19,7 @@ class HaloHandler(TagTestHandler):
     treat_mode_as_mod2 = True
 
     def __init__(self, *args, **kwargs):
-        TagTestHandler.__init__(self, *args, **kwargs)
+        Handler.__init__(self, *args, **kwargs)
 
         self.tag_fcc_match_set = set()
         self.tag_filepath_match_set = set()
