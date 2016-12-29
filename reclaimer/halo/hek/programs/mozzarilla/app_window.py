@@ -16,7 +16,8 @@ inject_halo_constants()
 from supyr_struct.apps.binilla.app_window import *
 from ...handler import HaloHandler
 from ....meta.handler import MapLoader
-from ....os_hek.handler import OsHaloHandler
+from ....os_v3_hek.handler import OsV3HaloHandler
+from ....os_v4_hek.handler import OsV4HaloHandler
 from ....misc.handler import MiscHaloLoader
 from .config_def import config_def, guerilla_workspace_def
 from .widget_picker import *
@@ -50,30 +51,25 @@ class Mozzarilla(Binilla):
 
     handlers = (
         HaloHandler,
-        OsHaloHandler,
+        OsV3HaloHandler,
+        OsV4HaloHandler,
         MapLoader,
         MiscHaloLoader,
         )
 
     handler_names = (
         "Halo 1",
-        "Halo 1 OS",
+        "Halo 1 OS v3",
+        "Halo 1 OS v4",
         "Halo 1 Map",
         "Halo 1 Misc",
         )
 
-    # maps the handler name to the tags_dir it uses
-    handler_tags_dir_map = {
-        "Halo 1": "halo_1_tags_dir",
-        "Halo 1 OS": "halo_1_os_tags_dir",
-        "Halo 1 Map": "halo_1_map_tags_dir",
-        "Halo 1 Misc": "halo_1_misc_tags_dir"
-        }
-
     # names of the handlers that MUST load tags from within their tags_dir
     tags_dir_relative = (
         "Halo 1",
-        "Halo 1 OS",
+        "Halo 1 OS v3",
+        "Halo 1 OS v4",
         )
 
     tags_dir = ()
@@ -500,7 +496,7 @@ class Mozzarilla(Binilla):
         name = names[menu_index]
         handler = self.handlers[menu_index]
 
-        if name == "Halo 1 Map":
+        if name == "Halo 1 Map" and manual:
             print("Loading and editing maps is not supported yet, " +
                   "but it would be annoying to remove this button, " +
                   "so I put in this message instead!")
