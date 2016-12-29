@@ -185,33 +185,35 @@ class DependencyFrame(ContainerFrame):
             f_widget_ids_map[i] = id(widget)
 
             if sub_desc.get('NAME') == 'filepath':
-                widget.data_entry.bind('<FocusIn>', self.validate_filepath)
-                widget.data_entry.bind('<Return>', self.validate_filepath)
-                widget.data_entry.bind('<FocusOut>', self.validate_filepath)
+                widget.entry_string.trace('w', self.validate_filepath)
                 self.validate_filepath()
 
         # now that the field widgets are created, position them
         if self.show.get():
             self.pose_fields()
 
-    def validate_filepath(self, e=None):
-        desc = self.desc
-        widget_id = self.f_widget_ids_map.get(desc['NAME_MAP']['filepath'])
-        widget = self.content.children.get(str(widget_id))
-        if widget is None:
-            return
+    def validate_filepath(self, *args):
+        try:
+            desc = self.desc
+            widget_id = self.f_widget_ids_map.get(desc['NAME_MAP']['filepath'])
+            widget = self.content.children.get(str(widget_id))
+            if widget is None:
+                return
 
-        tags_dir = self.tag_window.tag.tags_dir
-        if not tags_dir.endswith(PATHDIV):
-            tags_dir += PATHDIV
+            tags_dir = self.tag_window.tag.tags_dir
+            if not tags_dir.endswith(PATHDIV):
+                tags_dir += PATHDIV
 
-        filepath = '%s%s.%s' % (tags_dir, self.node.filepath,
-                                self.node.tag_class.enum_name)
-        filepath = filepath.replace('/', '\\').replace('\\', PATHDIV)
-        if exists(filepath):
-            widget.data_entry.config(fg=self.text_normal_color)
-        else:
-            widget.data_entry.config(fg=self.invalid_path_color)
+            filepath = '%s%s.%s' % (tags_dir, self.node.filepath,
+                                    self.node.tag_class.enum_name)
+
+            filepath = filepath.replace('/', '\\').replace('\\', PATHDIV)
+            if exists(filepath):
+                widget.data_entry.config(fg=self.text_normal_color)
+            else:
+                widget.data_entry.config(fg=self.invalid_path_color)
+        except Exception:
+            raise
 
     def pose_fields(self):
         ContainerFrame.pose_fields(self)
