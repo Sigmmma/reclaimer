@@ -70,16 +70,16 @@ object_block = Struct("object",
         {NAME:"dyn_lit",  VALUE:0x100000, DEFAULT:False},
         ),
 
-    SInt32('sub-objects count'),
+    SInt32('sub-objects count', EDITABLE=False),
     Struct("sub-object 0", INCLUDE=sub_object_block),
 
-    Pointer32('sub-objects pointer'),
-    Pointer32('sub-object models pointer'),
+    Pointer32('sub-objects pointer', EDITABLE=False),
+    Pointer32('sub-object models pointer', EDITABLE=False),
 
     #the number of unique verts in the object.
     #probably number of verts before compiling
-    SInt32("vert count"),#exactly the number of unique verts
-    SInt32("tri count"),#exactly the number of unique triangles
+    SInt32("vert count"),  # exactly the number of unique verts
+    SInt32("tri count"),  # exactly the number of unique triangles
     SInt32("id num"),
 
     #pointer to the obj def that this model uses
@@ -131,12 +131,12 @@ bitmap_block = Struct("bitmap",
     SInt8("lod k"),
     #mipmap_count does not include the largest size.
     #this means a texture without mipmaps will have a mipmap_count of 0
-    UInt8("mipmap count"),
+    UInt8("mipmap count", EDITABLE=False),
 
     #Width-64 == (width+63)//64
-    UInt8("width-64"),
-    UInt16("log2 of width"),
-    UInt16("log2 of height"),
+    UInt8("width-64", EDITABLE=False),
+    UInt16("log2 of width", EDITABLE=False),
+    UInt16("log2 of height", EDITABLE=False),
 
     Bool16("flags",
         ("halfres",   0x001),
@@ -151,7 +151,7 @@ bitmap_block = Struct("bitmap",
         ("dual tex",  0x200),
         ),
 
-    UInt16("tex palette index"),
+    UInt16("tex palette index", EDITABLE=False),
 
     #pointer to the texture in the BITMAPS.ps2
     #where the pixel texture data is located
@@ -173,8 +173,8 @@ bitmap_block = Struct("bitmap",
     #    to the base sequence.
     UInt16("frame count"),
 
-    UInt16("width"),
-    UInt16("height"),
+    UInt16("width", EDITABLE=False),
+    UInt16("height", EDITABLE=False),
 
     #related to resolution as a texture with half the
     #size of another texture has this int halved as well
@@ -201,10 +201,10 @@ objects_header = Struct('header',
     StrRawLatin1("model name", SIZE=32),
     UInt32("version", DEFAULT=0xF00B000D, EDITABLE=False),
 
-    UInt32("objects count", EDITABLE=False),
-    UInt32("bitmaps count", EDITABLE=False),
-    UInt32("object defs count", EDITABLE=False),
-    UInt32("bitmap defs count", EDITABLE=False),
+    UInt32("objects count", EDITABLE=False, VISIBLE=False),
+    UInt32("bitmaps count", EDITABLE=False, VISIBLE=False),
+    UInt32("object defs count", EDITABLE=False, VISIBLE=False),
+    UInt32("bitmap defs count", EDITABLE=False, VISIBLE=False),
 
     Pointer32("objects pointer", VISIBLE=False),
     Pointer32("bitmaps pointer", VISIBLE=False),
