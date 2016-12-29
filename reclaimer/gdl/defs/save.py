@@ -199,7 +199,7 @@ p_waves = Struct('levels',
     )
 
 gdl_savemeta_def = TagDef("save",
-    BytesRaw('hmac_sig', SIZE=20),
+    BytesRaw('hmac_sig', SIZE=20, VISIBLE=False),
     Container('save data',
         StrLatin1('name', SIZE=7, DEFAULT='PLAYER'),
         Pad(1),
@@ -269,8 +269,6 @@ gdl_savemeta_def = TagDef("save",
         #
         #These might be enumerators designating the display
         #status of each help hint text(invisible, visible, seen)
-        #
-        #New files have 
         UInt8Array('help disp', SIZE=256, DEFAULT=help_disp_default),
         ),
 
