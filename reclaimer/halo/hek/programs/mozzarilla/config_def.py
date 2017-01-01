@@ -35,7 +35,7 @@ hotkey = Struct("hotkey",
     )
 
 config_header = Struct("header",
-    LUEnum32("id", ('Moze', 'ezoM'), VISIBLE=False, DEFAULT='ezoM'),
+    LUEnum32("id", ('Mozz', 'zzoM'), VISIBLE=False, DEFAULT='ezoM'),
     INCLUDE=config_header
     )
 
@@ -57,6 +57,7 @@ mozzarilla = Container("mozzarilla",
         "halo_1_os_v4",
         "halo_1_map",
         "halo_1_misc",
+        "stubbs",
         EDITABLE=False, VISIBLE=False
         ),
     UInt16("last_tags_dir", VISIBLE=False, EDITABLE=False),

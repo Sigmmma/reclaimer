@@ -1,4 +1,5 @@
 from .mod2 import *
+from .objs.mode import ModeTag
 
 def get():
     return mode_def
@@ -61,11 +62,14 @@ node = Struct('node',
     Pad(32),
 
     # xbox specific values
-    LFloat('unknown', ENDIAN='<'),
-    QStruct('unknown normal', INCLUDE=ijk_float, ENDIAN='<'),
-    QStruct('unknown binormal', INCLUDE=ijk_float, ENDIAN='<'),
-    QStruct('unknown tangent', INCLUDE=ijk_float, ENDIAN='<'),
-    QStruct('unknown translation', INCLUDE=xyz_float, ENDIAN='<'),
+    LFloat('unknown', ENDIAN='<', DEFAULT=1.0),
+    QStruct("rot_jj_kk", GUI_NAME="[1-2j^2-2k^2]   2[ij+kw]   2[ik-jw]",
+        INCLUDE=ijk_float, ENDIAN='<'),
+    QStruct("rot_kk_ii", GUI_NAME="2[ij-kw]   [1-2k^2-2i^2]   2[jk+iw]",
+        INCLUDE=ijk_float, ENDIAN='<'),
+    QStruct("rot_ii_jj", GUI_NAME="2[ik+jw]   2[jk-iw]   [1-2i^2-2j^2]",
+        INCLUDE=ijk_float, ENDIAN='<'),
+    QStruct('translation to root', INCLUDE=xyz_float, ENDIAN='<'),
     SIZE=156,
     )
 
@@ -124,5 +128,5 @@ mode_def = TagDef("mode",
     blam_header('mode', 4),
     mode_body,
 
-    ext=".model", endian=">"
+    ext=".model", endian=">", tag_cls=ModeTag
     )

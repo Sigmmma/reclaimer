@@ -105,8 +105,8 @@ bipd_attrs = Struct("bipd attrs",
         FlFloat("unknown5", DEFAULT=-0.0),
         FlFloat("unknown6", DEFAULT=0.0),
         FlFloat("unknown7", DEFAULT=0.0),
-        FlSInt32("unknown8", DEFAULT=-1),
-        ENDIAN='<'
+        FlSInt16("unknown8", DEFAULT=-1),
+        FlSInt16("unknown9", DEFAULT=-1),
         ),
 
     reflexive("contact points", contact_point, 2,

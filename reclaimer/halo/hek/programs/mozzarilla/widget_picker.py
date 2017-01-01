@@ -4,7 +4,7 @@ from supyr_struct.apps.binilla.widgets import BinillaWidget
 from .field_widgets import *
 from ....field_types import *
 
-e_c.TITLE_WIDTH = 26
+e_c.TITLE_WIDTH = 28
 e_c.DEF_STRING_ENTRY_WIDTH = 30
 e_c.DEF_STRING_ENTRY_WIDTH = 30
 BinillaWidget.title_width = e_c.TITLE_WIDTH

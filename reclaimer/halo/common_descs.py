@@ -125,7 +125,9 @@ def dyn_senum32(name, *args, **kwargs):
     return BSInt32(name, *args, **kwargs)
 
 def ascii_str32(name):
-    return StrAscii(str(name), SIZE=32)
+    # encoding used is latin1 to take care of cases
+    # where the string has invalid characters in it
+    return StrLatin1(str(name), SIZE=32)
 
 def float_zero_to_one(name, *args, **kwargs):
     return BFloat(name, *args, MIN=0.0, MAX=1.0, SIDETIP="[0,1]", **kwargs)
@@ -669,24 +671,24 @@ vehicle_inputs = (
     "crouch",
     "jump",
     "walk",
-    "veolcity air",
-    "veolcity water",
-    "veolcity ground",
-    "veolcity forward",
-    "veolcity left",
-    "veolcity up",
+    "velocity air",
+    "velocity water",
+    "velocity ground",
+    "velocity forward",
+    "velocity left",
+    "velocity up",
     "left tread position",
     "right tread position",
-    "left tread veolcity",
-    "right tread veolcity",
+    "left tread velocity",
+    "right tread velocity",
     "front left tire position",
     "front right tire position",
     "back left tire position",
     "back right tire position",
-    "front left tire veolcity",
-    "front right tire veolcity",
-    "back left tire veolcity",
-    "back right tire veolcity",
+    "front left tire velocity",
+    "front right tire velocity",
+    "back left tire velocity",
+    "back right tire velocity",
     "wingtip contrail",
     "hover",
     "thrust",
@@ -743,7 +745,8 @@ tag_header = Struct("blam header",
     BUEnum32("tag_class",
         GUI_NAME="tag class", INCLUDE=valid_tags, EDITABLE=False
         ),
-    LUInt32("base address", DEFAULT=0, EDITABLE=False, VISIBLE=False),  #random
+    LUInt32("base address", DEFAULT=0x4D6F7A7A,
+        EDITABLE=False, VISIBLE=False),  #random
     LUInt32("header size",  DEFAULT=64, EDITABLE=False, VISIBLE=False),
     Pad(8),
     LUInt16("version", DEFAULT=1, EDITABLE=False),
@@ -952,7 +955,8 @@ tag_header_os = Struct("blam header",
     BUEnum32("tag_class",
         GUI_NAME="tag class", INCLUDE=valid_tags_os, EDITABLE=False
         ),
-    LUInt32("base address", DEFAULT=0, EDITABLE=False, VISIBLE=False),  #random
+    LUInt32("base address", DEFAULT=0x4D6F7A7A,
+        EDITABLE=False, VISIBLE=False),  #random
     LUInt32("header size",  DEFAULT=64, EDITABLE=False, VISIBLE=False),
     Pad(8),
     LUInt16("version", DEFAULT=1, EDITABLE=False),

@@ -165,7 +165,7 @@ class BitmTag(HekTag):
         for b_index in range(self.bitmap_count()):
             bitmap = self.data.tagdata.bitmaps.bitmaps_array[b_index]
             
-            bitmap.flags.set_to('made_by_arsenic', saveasxbox)
+            bitmap.flags.set_to('xbox_bitmap', saveasxbox)
 
             '''base_address is the ONLY discernable difference
             between a bitmap made by arsenic from a PC map, and

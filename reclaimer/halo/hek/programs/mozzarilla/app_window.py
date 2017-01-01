@@ -19,6 +19,7 @@ from ....meta.handler import MapLoader
 from ....os_v3_hek.handler import OsV3HaloHandler
 from ....os_v4_hek.handler import OsV4HaloHandler
 from ....misc.handler import MiscHaloLoader
+from ....stubbs.handler import StubbsHandler
 from .config_def import config_def, guerilla_workspace_def
 from .widget_picker import *
 from .tag_window import HaloTagWindow
@@ -55,6 +56,7 @@ class Mozzarilla(Binilla):
         OsV4HaloHandler,
         MapLoader,
         MiscHaloLoader,
+        StubbsHandler,
         )
 
     handler_names = (
@@ -63,6 +65,7 @@ class Mozzarilla(Binilla):
         "Halo 1 OS v4",
         "Halo 1 Map",
         "Halo 1 Misc",
+        "Stubbs the Zombie",
         )
 
     # names of the handlers that MUST load tags from within their tags_dir
@@ -70,6 +73,7 @@ class Mozzarilla(Binilla):
         "Halo 1",
         "Halo 1 OS v3",
         "Halo 1 OS v4",
+        "Stubbs the Zombie",
         )
 
     tags_dir = ()
@@ -87,11 +91,11 @@ class Mozzarilla(Binilla):
     directory_frame_width = 200
 
     def __init__(self, *args, **kwargs):
+        self.debug = kwargs.pop('debug', self.debug)
+
         # gotta give it a default handler or else the
         # config file will fail to be created as updating
         # the config requires using methods in the handler.
-        self.debug = kwargs.pop('debug', self.debug)
-
         kwargs['handler'] = MiscHaloLoader(debug=self.debug)
         self.tags_dir_relative = set(self.tags_dir_relative)
         self.tags_dirs = [("%stags%s" % (this_curr_dir,  s_c.PATHDIV)).lower()]
@@ -233,6 +237,7 @@ class Mozzarilla(Binilla):
                 return
 
         if isinstance(filepaths, str):
+            # account for a stupid bug with certain versions of windows
             if filepaths.startswith('{'):
                 filepaths = re.split("\}\W\{", filepaths[1:-1])
             else:
@@ -497,10 +502,15 @@ class Mozzarilla(Binilla):
         handler = self.handlers[menu_index]
 
         if name == "Halo 1 Map" and manual:
-            print("Loading and editing maps is not supported yet, " +
-                  "but it would be annoying to remove this button, " +
-                  "so I put in this message instead!")
-            return
+            try:
+                debug_mode = self.config_file.data.header.flags.debug_mode
+            except Exception:
+                debug_mode = True
+            if not debug_mode:
+                print("Loading and editing maps is not supported yet, " +
+                      "but it would be annoying to remove this button, " +
+                      "so I put in this message instead!")
+                return
 
         if handler is None or handler is self.handler:
             return
