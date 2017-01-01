@@ -50,20 +50,22 @@ def tag_index_parser(self, desc, node=None, parent=None, attr_index=None,
                      rawdata=None, root_offset=0, offset=0, **kwargs):
     if parent is not None:
         m_head = parent.map_header
-        kwargs['magic'] = PC_INDEX_MAGIC - m_head.tag_index_offset
+        root_tag = parent.get_root()
+        kwargs['magic'] = root_tag.index_magic - m_head.tag_index_offset
 
-    array_parser(self, desc, node, parent, attr_index,
-                 rawdata, root_offset, offset, **kwargs)
+    return array_parser(self, desc, node, parent, attr_index,
+                        rawdata, root_offset, offset, **kwargs)
 
 
 def tag_index_serializer(self, node, parent=None, attr_index=None,
                          writebuffer=None, root_offset=0, offset=0, **kwargs):
     if parent is not None:
         m_head = parent.map_header
-        kwargs['magic'] = PC_INDEX_MAGIC - m_head.tag_index_offset
+        root_tag = parent.get_root()
+        kwargs['magic'] = root_tag.index_magic - m_head.tag_index_offset
         
-    array_serializer(self, node, parent, attr_index,
-                     writebuffer, root_offset, offset, **kwargs)
+    return array_serializer(self, node, parent, attr_index,
+                            writebuffer, root_offset, offset, **kwargs)
 
 
 def rawdata_parser(self, desc, node=None, parent=None, attr_index=None,
@@ -71,8 +73,9 @@ def rawdata_parser(self, desc, node=None, parent=None, attr_index=None,
     if rawdata is not None:
         bytecount = parent.size
 
-        if 'magic' in kwargs:
-            offset = PC_TAG_INDEX_HEADER_SIZE + parent.pointer - kwargs['magic']
+        #root_tag = parent.get_root()
+        #if hasattr(root_tag, 'index_magic'):
+        #    return offset  # NOT READY TO DO THIS STUFF YET
         rawdata.seek(root_offset + offset)
         parent[attr_index] = self.node_cls(rawdata.read(bytecount))
         return offset + bytecount

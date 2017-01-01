@@ -1,9 +1,9 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from ...hek.defs import str_, ustr, hmt_, bitm, snd_, font
+from ...hek.programs.mozzarilla.field_widgets import ReflexiveFrame
 
 def get(): return resource_def
-
 
 def get_resource_tag_type(node=None, parent=None, attr_index=None,
                           rawdata=None, new_value=None, *args, **kwargs):
@@ -84,7 +84,9 @@ tag_header = QuickStruct("tag header",
     STEPTREE=tag_meta
     )
 
-tag_path = CStrLatin1("tag path")
+tag_path = Container("tag path",
+    CStrLatin1("tag path"),
+    )
 
 
 resource_def = TagDef("resource",
@@ -98,13 +100,12 @@ resource_def = TagDef("resource",
     LUInt32("tag count"),
     Array("tag paths",
         SIZE='.tag_count',
-        POINTER='.tag_paths_pointer',
-        SUB_STRUCT=tag_path,
+        SUB_STRUCT=tag_path, POINTER='.tag_paths_pointer',
+        WIDGET=ReflexiveFrame, DYN_NAME_PATH=".tag_path",
         ),
     Array("tag headers",
-        SIZE='.tag_count',
+        SIZE='.tag_count', SUB_STRUCT=tag_header,
         POINTER='.tag_headers_pointer',
-        SUB_STRUCT=tag_header,
         ),
 
     ext=".map", endian="<"
