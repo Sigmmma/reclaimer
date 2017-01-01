@@ -178,7 +178,7 @@ bitmap = Struct("bitmap",
         "swizzled",
         "linear",
         "v16u16",
-        ("made by arsenic", 1<<7)
+        ("xbox bitmap", 1<<7)
         ),
     BUInt16("registration point x"),
     BUInt16("registration point y"),

@@ -1,38 +1,5 @@
-from math import log
-
 from .tag import *
-
-
-class MatrixRow(list):
-    '''Implements the minimal methods required for row reduction'''
-    def __add__(self, other):
-        new = MatrixRow(self)
-        for i in range(len(other)): new[i] += other[i]
-        return new
-    def __sub__(self, other):
-        new = MatrixRow(self)
-        for i in range(len(other)): new[i] -= other[i]
-        return new
-    def __mul__(self, other):
-        new = MatrixRow(self)
-        for i in range(len(self)): new[i] *= other
-        return new
-    def __truediv__(self, other):
-        new = MatrixRow(self)
-        for i in range(len(self)): new[i] /= other
-        return new
-    def __iadd__(self, other):
-        for i in range(len(other)): self[i] += other[i]
-        return self
-    def __isub__(self, other):
-        for i in range(len(other)): self[i] -= other[i]
-        return self
-    def __imul__(self, other):
-        for i in range(len(self)): self[i] *= other
-        return self
-    def __itruediv__(self, other):
-        for i in range(len(self)): self[i] /= other
-        return self
+from .matrices import Matrix
 
 
 class PhysTag(HekTag):
@@ -147,44 +114,14 @@ class PhysTag(HekTag):
         reg_zz_xx[:] = neg_xy, yy, neg_yz
         reg_xx_yy[:] = neg_zx, neg_yz, zz
 
-        # calculate the inverse inertia matrix values
-
-        # the right side will be the inverse after row reduction
-        # and the left side is the regular matrix to be reduced.
-        inv_yy_zz = MatrixRow(tuple(reg_yy_zz) + (1.0, 0.0, 0.0))
-        inv_zz_xx = MatrixRow(tuple(reg_zz_xx) + (0.0, 1.0, 0.0))
-        inv_xx_yy = MatrixRow(tuple(reg_xx_yy) + (0.0, 0.0, 1.0))
-
-        # calculate the inverse matrix through row reduction
-        inv_yy_zz /= inv_yy_zz[0]
-        inv_zz_xx /= inv_zz_xx[1]
-        inv_xx_yy /= inv_xx_yy[2]
-
-        x1 = inv_xx_yy * inv_yy_zz[2]
-        x2 = inv_xx_yy * inv_zz_xx[2]
-
-        inv_yy_zz -= x1
-        inv_zz_xx -= x2
-
-        x3 = inv_zz_xx * inv_yy_zz[1] / inv_zz_xx[1]
-        inv_yy_zz -= x3
-        inv_yy_zz /= inv_yy_zz[0]
-        inv_zz_xx /= inv_zz_xx[1]
-
-        inv_zz_xx -= inv_yy_zz*inv_zz_xx[0]
-        inv_xx_yy -= inv_yy_zz*inv_xx_yy[0]
-        inv_xx_yy -= inv_zz_xx*inv_xx_yy[1]
+        # calculate the inverse inertia matrix
+        regular = Matrix((reg_yy_zz, reg_zz_xx, reg_xx_yy))
+        inverse = regular.inverse
 
         # place the inverse matrix into the tag
-        inv.yy_zz[:] = inv_yy_zz[3:]
-        inv.zz_xx[:] = inv_zz_xx[3:]
-        inv.xx_yy[:] = inv_xx_yy[3:]
-
-        # copy the calculated -xy, -zx, -yz from the top right
-        # corner of the inverse matrix to the bottom left corner
-        inv.zz_xx[0] = inv.yy_zz[1]
-        inv.xx_yy[0] = inv.yy_zz[2]
-        inv.xx_yy[1] = inv.zz_xx[2]
+        inv.yy_zz[:] = inverse[0][:]
+        inv.zz_xx[:] = inverse[1][:]
+        inv.xx_yy[:] = inverse[2][:]
 
         # copy the xx, yy, and zz moments form the matrix into the tag body
         data.xx_moment = reg_yy_zz[0]

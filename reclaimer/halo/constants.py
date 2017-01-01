@@ -6,8 +6,10 @@ XBOX_TAG_INDEX_HEADER_SIZE = 36
 
 XBOX_BSP_MAGIC = 2174377984
 
-XBOX_INDEX_MAGIC = 2151309348
-PC_INDEX_MAGIC   = 1078198312
+PC_INDEX_MAGIC     = 1078198312  # default value for the pc halo 1 index magic
+XBOX_INDEX_MAGIC   = 2151309348  # default value for the xbox halo 1 index magic
+STUBBS_INDEX_MAGIC = 2151198756  # default value for the xbox stubbs index magic
+
 
 #I cant imagine Halo allowing any one field even close to this many
 #indices, though I have seen some open sauce stuff go over 180,000.
@@ -120,8 +122,9 @@ for tag_cls in tag_class_fcc_to_ext:
 # Open Sauce related constants #
 ################################
 tag_class_fcc_to_ext_os = {
-    'avti': "actor_variant_transform_in",  # NEED
-    'avto': "actor_variant_transform_out", # NEED
+    'avti': "actor_variant_transform_in",
+    'avto': "actor_variant_transform_out",
+    'avtc': "actor_variant_transform_collection",
     'efpp': "effect_postprocess",
     'efpc': "effect_postprocess_collection",
     'efpg': "effect_postprocess_generic",

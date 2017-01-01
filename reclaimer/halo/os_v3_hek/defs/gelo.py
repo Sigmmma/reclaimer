@@ -1,7 +1,7 @@
 from .yelo import *
 
 gelo_body = Struct("tagdata",
-    BSInt16("version"),
+    BSInt16("version", DEFAULT=1),
     BBool16("flags",
         "hide health when zoomed",
         "hide shield when zoomed",

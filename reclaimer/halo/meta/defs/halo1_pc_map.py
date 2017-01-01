@@ -1,9 +1,8 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
-from ...hek.defs import bitm, boom, colo, devc, devi, effe, flag, fog_, foot,\
-     jpt_, hmt_, hud_, item, itmc, metr, mply, ngpr, pphy, scex, schi, senv,\
-     sgla, shdr, smet, snde, snd_, soso, sotr, Soul, spla, str_, swat, tagc,\
-     trak, ustr, wind
+from ...hek.defs.meta_descs import meta_cases
+from ...hek.programs.mozzarilla.field_widgets import ReflexiveFrame
+from . objs.map import MapTag
 
 ################################################################
 ################################################################
@@ -33,15 +32,16 @@ def tag_path_pointer(node=None, parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
     t_head = parent.parent
+    m_head = t_head.parent.parent.map_header
     magic = kwargs.get('magic')
     if magic is None:
-        m_head = t_head.parent.parent.map_header
-        magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
+        magic = PC_INDEX_MAGIC - m_head.tag_index_offset
 
     #NEED TO FINISH THIS SO IT CAN SET THE PATH POINTER
 
-    if new_value is None:
-        return PC_TAG_INDEX_HEADER_SIZE + t_head.path_offset - magic
+    if new_value is not None:
+        return
+    return PC_TAG_INDEX_HEADER_SIZE + t_head.path_offset - magic
 
 
 def tag_meta_data_pointer(node=None, parent=None, new_value=None, **kwargs):
@@ -49,14 +49,16 @@ def tag_meta_data_pointer(node=None, parent=None, new_value=None, **kwargs):
         raise KeyError()
 
     t_head = parent.parent
+    m_head = t_head.parent.parent.map_header
     magic = kwargs.get('magic')
     if magic is None:
-        m_head = t_head.parent.parent.map_header
-        magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
+        magic =  - m_head.tag_index_offset
+
     #NEED TO FINISH THIS SO IT CAN SET THE META POINTER
 
-    if new_value is None:
-        return PC_TAG_INDEX_HEADER_SIZE + t_head.meta_offset - magic
+    if new_value is not None:
+        return
+    return PC_TAG_INDEX_HEADER_SIZE + t_head.meta_offset - magic
 
 
 def tag_meta_case(node=None, parent=None, new_value=None, **kwargs):
@@ -70,11 +72,10 @@ def tag_meta_case(node=None, parent=None, new_value=None, **kwargs):
         return
 
     magic = kwargs.get('magic')
+    m_head = t_head.parent.parent.map_header
     if magic is None:
-        m_head = t_head.parent.parent.map_header
-        magic  = PC_INDEX_MAGIC - m_head.tag_index_offset
+        magic = PC_INDEX_MAGIC - m_head.tag_index_offset
 
-    offset = PC_TAG_INDEX_HEADER_SIZE + t_head.meta_offset - magic
     return t_head.class_1.data
     
 
@@ -87,56 +88,14 @@ def tag_index_array_pointer(node=None, parent=None, new_value=None, **kwargs):
     if magic is None:
         magic = PC_INDEX_MAGIC - b_parent.map_header.tag_index_offset
 
-    if new_value is None:
-        return (PC_TAG_INDEX_HEADER_SIZE +
-                b_parent.tag_index_header.index_magic - magic)
-
-# sound tags actually located in the sound cache
-# still have part of the tag exist in the map.
-indexed_sound = dict(snd_.snd__def.descriptor[1])
-indexed_sound[18] = reflexive_struct
+    if new_value is not None:
+        return
+    return (PC_TAG_INDEX_HEADER_SIZE +
+            b_parent.tag_index_header.index_magic - magic)
 
 tag_meta = Switch("tag meta",
     CASE=tag_meta_case,
-    CASES={
-        map_fcc('bitm'):bitm.bitm_def.descriptor[1],
-        map_fcc('boom'):boom.boom_def.descriptor[1],
-        map_fcc('colo'):colo.colo_def.descriptor[1],
-        map_fcc('devc'):devc.devc_def.descriptor[1],
-        map_fcc('devi'):devi.devi_def.descriptor[1],
-        map_fcc('effe'):effe.effe_def.descriptor[1],
-        map_fcc('flag'):flag.flag_def.descriptor[1],
-        map_fcc('fog '):fog_.fog__def.descriptor[1],
-        map_fcc('foot'):foot.foot_def.descriptor[1],
-        map_fcc('hmt '):hmt_.hmt__def.descriptor[1],
-        map_fcc('hud#'):hud_.hud__def.descriptor[1],
-        map_fcc('item'):item.item_def.descriptor[1],
-        map_fcc('itmc'):itmc.itmc_def.descriptor[1],
-        map_fcc('jpt!'):jpt_.jpt__def.descriptor[1],
-        map_fcc('metr'):metr.metr_def.descriptor[1],
-        map_fcc('mply'):mply.mply_def.descriptor[1],
-        map_fcc('ngpr'):ngpr.ngpr_def.descriptor[1],
-        map_fcc('pphy'):pphy.pphy_def.descriptor[1],
-        map_fcc('scex'):scex.scex_def.descriptor[1],
-        map_fcc('schi'):schi.schi_def.descriptor[1],
-        map_fcc('senv'):senv.senv_def.descriptor[1],
-        map_fcc('sgla'):sgla.sgla_def.descriptor[1],
-        map_fcc('shdr'):shdr.shdr_def.descriptor[1],
-        map_fcc('smet'):smet.smet_def.descriptor[1],
-        map_fcc('snde'):snde.snde_def.descriptor[1],
-        map_fcc('snd!'):snd_.snd__def.descriptor[1],
-        map_fcc('soso'):soso.soso_def.descriptor[1],
-        map_fcc('sotr'):sotr.sotr_def.descriptor[1],
-        map_fcc('Soul'):Soul.soul_def.descriptor[1],
-        map_fcc('spla'):spla.spla_def.descriptor[1],
-        map_fcc('str#'):str_.str__def.descriptor[1],
-        map_fcc('swat'):swat.swat_def.descriptor[1],
-        map_fcc('tagc'):tagc.tagc_def.descriptor[1],
-        map_fcc('trak'):trak.trak_def.descriptor[1],
-        map_fcc('ustr'):ustr.ustr_def.descriptor[1],
-        map_fcc('wind'):wind.wind_def.descriptor[1],
-        'indexed_snd!':indexed_sound,
-        },
+    CASES={map_fcc(k): meta_cases[k] for k in meta_cases if len(k) == 4},
     POINTER=tag_meta_data_pointer,
     )
 
@@ -151,8 +110,8 @@ tag_header = Struct("tag header",
     LUEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_tags),
     LUEnum32("class 3", GUI_NAME="tertiary tag class", INCLUDE=valid_tags),
     LUInt32("id"),
-    LSInt32("path offset"),
-    LSInt32("meta offset"),
+    LUInt32("path offset"),
+    LUInt32("meta offset"),
     LUInt32("indexed"),
     # if indexed is 1, the meta_offset is the literal index in the
     # bitmaps, sounds, or loc cache that the meta data is located in.
@@ -160,6 +119,10 @@ tag_header = Struct("tag header",
     STEPTREE=tag_data,
     )
 
+#Apparently the Halo Demo maps have a different
+#header as there are 704 bytes #before the header
+#that appear to be garbage AND garbage filling
+#all the headers null padding.
 map_header = Struct("map header",
     LUEnum32('head', ('head', 'head'), EDITABLE=False, DEFAULT='head'),
     LSEnum32("version",
@@ -174,13 +137,7 @@ map_header = Struct("map header",
     LUInt32("tag index meta len"),
     Pad(8),
     ascii_str32("map name"),
-    StrLatin1Enum("build date",
-        ("xbox", "01.10.12.2276"),
-        ("demo", "01.00.00.0576"),
-        ("pc",   "01.00.00.0564"),
-        ("ce",   "01.00.00.0609"),
-        SIZE=32,
-        ),
+    StrLatin1("build date", DEFAULT="01.00.00.0609", EDITABLE=False, SIZE=32),
     LUEnum32("map type",
         ("sp", 0),
         ("mp", 1),
@@ -191,12 +148,8 @@ map_header = Struct("map header",
     LUEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
     )
 
-#Apparently the Halo Demo maps have a different
-#header as there are 704 bytes #before the header
-#that appear to be garbage AND garbage filling
-#all the headers null padding.
-tag_index_header = Struct("tag index header",
-    LUInt32("index magic"),
+tag_index_header_pc = Struct("tag index header",
+    LUInt32("index magic", DEFAULT=PC_INDEX_MAGIC),
     LUInt32("base magic"),
     LUInt32("map id"),
     LUInt32("tag count"),
@@ -206,17 +159,16 @@ tag_index_header = Struct("tag index header",
 
     LUInt32("indices object count"),
     LUInt32("indices offset"),
-
     LUInt32("model raw data size"),
     LUEnum32("tag sig", ('tags', 'tags'), EDITABLE=False, DEFAULT='tags'),
 
-    POINTER='.map_header.tag_index_offset'
+    POINTER='.map_header.tag_index_offset', SIZE=40
     )
 
 tag_index = TagIndex("tag index",
     SIZE=".tag_index_header.tag_count",
-    SUB_STRUCT=tag_header,
-    POINTER=tag_index_array_pointer
+    WIDGET=ReflexiveFrame, DYN_NAME_PATH=".STEPTREE.tag_path",
+    SUB_STRUCT=tag_header, POINTER=tag_index_array_pointer
     )
 
 subdefs = {}
@@ -225,10 +177,12 @@ for key in tag_meta[CASES]:
     subdefs[key] = dict(tag_meta[CASES][key])
     subdefs[key][POINTER] = tag_meta[POINTER]
         
-map_def = TagDef("map",
+map_def = TagDef("halo1_pc_map",
     map_header,
-    tag_index_header,
+    tag_index_header_pc,
     tag_index,
 
-    ext=".map", endian="<"
+    ext=".map", endian="<", tag_cls=MapTag
     )
+
+map_def.index_magic = PC_INDEX_MAGIC

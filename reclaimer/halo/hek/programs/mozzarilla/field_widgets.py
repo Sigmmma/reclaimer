@@ -469,8 +469,8 @@ class ReflexiveFrame(ArrayFrame):
         node, desc = self.node, self.desc
         dyn_name_path = desc.get(DYN_NAME_PATH)
 
+        options = {}
         if dyn_name_path:
-            options = {}
             try:
                 if dyn_name_path.endswith('.filepath'):
                     # if it is a dependency filepath
@@ -491,7 +491,9 @@ class ReflexiveFrame(ArrayFrame):
 
         if not dyn_name_path:
             # sort the options by value(values are integers)
-            options = {i: n for n, i in self.desc.get('NAME_MAP', {}).items()}
+            options.update({i: n for n, i in
+                            self.desc.get('NAME_MAP', {}).items()
+                            if i not in options})
             sub_desc = desc['SUB_STRUCT']
             def_struct_name = sub_desc.get('GUI_NAME', sub_desc['NAME'])
 

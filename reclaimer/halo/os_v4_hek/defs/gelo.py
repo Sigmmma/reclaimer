@@ -11,6 +11,7 @@ gelo_body = Struct("tagdata",
     BSInt32("base address"),
     ascii_str32("mod name"),
     dependency_os("global explicit references", "tagc"),
+    #dependency_os("chokin victim globals", "gelc"),
     Pad(16),  # removed chokin victim globals
 
     Pad(16),
