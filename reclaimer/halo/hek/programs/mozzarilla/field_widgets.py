@@ -430,9 +430,9 @@ class SoundSampleFrame(RawdataFrame):
             print("Could not export sound data.")
 
 
-class ReflexiveFrame(ArrayFrame):
+class ReflexiveFrame(DynamicArrayFrame):
     def __init__(self, *args, **kwargs):
-        ArrayFrame.__init__(self, *args, **kwargs)
+        DynamicArrayFrame.__init__(self, *args, **kwargs)
 
         btn_kwargs = dict(
             bg=self.button_color, fg=self.text_normal_color,
@@ -461,9 +461,6 @@ class ReflexiveFrame(ArrayFrame):
                   self.delete_all_btn, self.delete_btn,
                   self.duplicate_btn, self.insert_btn, self.add_btn):
             w.pack(side="right", padx=(0, 4), pady=(2, 2))
-
-        self.sel_menu.bind('<FocusIn>', self.set_not_sane)
-        self.sel_menu.arrow_button.bind('<FocusIn>', self.set_not_sane)
 
     def cache_options(self):
         node, desc = self.node, self.desc
@@ -517,9 +514,6 @@ class ReflexiveFrame(ArrayFrame):
         self.option_cache = options
         self.sel_menu.update_label()
 
-    def set_not_sane(self, e=None):
-        self.options_sane = self.sel_menu.options_sane = False
-
     def set_import_all_disabled(self, disable=True):
         if disable: self.import_all_btn.config(state="disabled")
         else:       self.import_all_btn.config(state="normal")
@@ -544,55 +538,8 @@ class ReflexiveFrame(ArrayFrame):
         self.set_edited()
 
 
-class DynamicEnumFrame(EnumFrame):
-    options_sane = False
-
-    # make options not sane once focus is given to the enum's sel_menu
-
-    def __init__(self, *args, **kwargs):
-        kwargs.update(relief='flat', bd=0, highlightthickness=0,
-                      bg=self.default_bg_color)
-        DataFrame.__init__(self, *args, **kwargs)
-
-        label_width = self.widget_width
-        if not label_width:
-            label_width = self.enum_menu_width
-            for s in self.options.values():
-                label_width = max(label_width, len(s))
-
-        # make the widgets
-        self.content = tk.Frame(self, relief='flat', bd=0,
-                                bg=self.default_bg_color)
-
-        self.title_label = tk.Label(
-            self.content, text=self.gui_name,
-            justify='left', anchor='w', width=self.title_size,
-            bg=self.default_bg_color, fg=self.text_normal_color,
-            disabledforeground=self.text_disabled_color)
-        self.sel_menu = ScrollMenu(
-            self.content, f_widget_parent=self, menu_width=label_width,
-            sel_index=self.node + 1, max_index=0,
-            disabled=self.disabled, default_entry_text="<INVALID>")
-        self.sel_menu.bind('<FocusIn>', self.set_not_sane)
-        self.sel_menu.arrow_button.bind('<FocusIn>', self.set_not_sane)
-
-        if self.gui_name != '':
-            self.title_label.pack(side="left", fill="x")
-        self.content.pack(fill="x", expand=True)
-        self.sel_menu.pack(side="left", fill="x")
-        self.reload()
-        self.initialized = True
-
-    @property
-    def options(self):
-        if not self.options_sane:
-            self.cache_options()
-            self.options_sane = True
-        return self.option_cache
-
-    def set_not_sane(self, e=None):
-        if self.desc.get(DYN_NAME_PATH):
-            self.options_sane = self.sel_menu.options_sane = False
+# replace the DynamicEnumFrame with one that has a specialized option generator
+class DynamicEnumFrame(DynamicEnumFrame):
 
     def cache_options(self):
         desc = self.desc
@@ -633,32 +580,3 @@ class DynamicEnumFrame(EnumFrame):
         except Exception:
             pass
         self.option_cache = options
-
-    def reload(self):
-        try:
-            self.options_sane = False
-            if self.disabled == self.sel_menu.disabled:
-                pass
-            elif self.disabled:
-                self.sel_menu.disable()
-            else:
-                self.sel_menu.enable()
-
-            self.cache_options()
-            self.sel_menu.sel_index = self.node + 1
-            self.sel_menu.update_label()
-        except Exception:
-            print(format_exc())
-
-    def select_option(self, opt_index=None):
-        if opt_index is None:
-            return
-
-        self.sel_menu.sel_index = opt_index
-
-        # since the node value is actually signed and can be -1, we'll
-        # set entry 0 to be a node value of -1 and all other values
-        # are one less than the entry index they are located in.
-        self.node = self.parent[self.attr_index] = opt_index - 1
-        self.sel_menu.update_label()
-        self.set_edited()

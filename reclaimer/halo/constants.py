@@ -159,15 +159,6 @@ for tag_cls in tag_class_fcc_to_ext_os:
     tag_class_fcc_to_le_int_os[tag_cls] = fcc(tag_cls)
     tag_class_le_int_to_fcc_os[fcc(tag_cls)] = tag_cls
 
-# a nodepath that points to some attribute in a node tree that
-# contains the name for an enumerator option or reflexive entry
-DYN_NAME_PATH = "DYN_NAME_PATH"
-
-# the string used to designate at what point in the
-# DYN_NAME_PATH that an array exists which should be
-# iterated over to retrieve a name for each enum value
-DYN_I = "[DYN_I]"
-
 def inject_halo_constants():
     # add the new descriptor keywords to the sets
-    add_desc_keywords(DYN_NAME_PATH)
+    add_desc_keywords()

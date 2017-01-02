@@ -824,9 +824,12 @@ damage_modifiers = QStruct("damage modifiers",
 
 # Miscellaneous shared descriptors
 compressed_normal_32 = BitStruct('compressed_norm32',
-    Bit1SInt("i", SIZE=11),
-    Bit1SInt("j", SIZE=11),
-    Bit1SInt("k", SIZE=10),
+    Bit1SInt("i",
+        SIZE=11, UNIT_SCALE=1/1023, MIN=-1023, MAX=1023, WIDGET_WIDTH=10),
+    Bit1SInt("j",
+        SIZE=11, UNIT_SCALE=1/1023, MIN=-1023, MAX=1023, WIDGET_WIDTH=10),
+    Bit1SInt("k",
+        SIZE=10, UNIT_SCALE=1/511, MIN=-511, MAX=511, WIDGET_WIDTH=10),
     ORIENT='h'
     )
 
