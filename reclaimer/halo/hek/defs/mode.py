@@ -42,8 +42,8 @@ part = Struct('part',
 
     #reflexive("compressed vertices", compressed_vertex_union, 65535),
     #reflexive("triangles", triangle_union, 65535),
-    reflexive("compressed vertices", compressed_vertex, 65535),
-    reflexive("triangles", triangle, 65535),
+    reflexive("compressed vertices", compressed_vertex_union, 65535),
+    reflexive("triangles", triangle_union, 65535),
 
     SIZE=104
     )

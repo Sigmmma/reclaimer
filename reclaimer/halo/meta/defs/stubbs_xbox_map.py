@@ -1,7 +1,7 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from ...stubbs.defs.meta_descs import meta_cases
-from ...hek.programs.mozzarilla.field_widgets import ReflexiveFrame
+from ...hek.programs.mozzarilla.field_widgets import DynamicArrayFrame
 from . objs.map import MapTag
 
 
@@ -143,7 +143,7 @@ tag_index_header_xbox = Struct("tag index header",
 
 tag_index = TagIndex("tag index",
     SIZE=".tag_index_header.tag_count",
-    WIDGET=ReflexiveFrame, DYN_NAME_PATH=".STEPTREE.tag_path",
+    WIDGET=DynamicArrayFrame, DYN_NAME_PATH=".STEPTREE.tag_path",
     SUB_STRUCT=tag_header, POINTER=tag_index_array_pointer
     )
 

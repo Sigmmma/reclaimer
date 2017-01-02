@@ -15,62 +15,76 @@ local_marker = Struct('local marker',
     SIZE=80
     )
 
-uncompressed_vertex = QStruct('uncompressed vertex',
-    BFloat('position x'),
-    BFloat('position y'),
-    BFloat('position z'),
+fast_uncompressed_vertex = QStruct('uncompressed vertex',
+    BFloat('position x'), BFloat('position y'), BFloat('position z'),
+    BFloat('normal i'), BFloat('normal j'), BFloat('normal k'),
+    BFloat('binormal i'), BFloat('binormal j'), BFloat('binormal k'),
+    BFloat('tangent i'), BFloat('tangent j'), BFloat('tangent k'),
 
-    BFloat('normal i'),
-    BFloat('normal j'),
-    BFloat('normal k'),
+    BFloat('tex coord u'), BFloat('tex coord v'),
 
-    BFloat('binormal i'),
-    BFloat('binormal j'),
-    BFloat('binormal k'),
+    BSInt16('node 0 index'), BSInt16('node 1 index'),
+    BFloat('node 0 weight'), BFloat('node 1 weight'),
+    SIZE=68
+    )
 
-    BFloat('tangent i'),
-    BFloat('tangent j'),
-    BFloat('tangent k'),
+fast_compressed_vertex = QStruct('compressed vertex',
+    BFloat('position x'), BFloat('position y'), BFloat('position z'),
+    BUInt32('normal'),
+    BUInt32('binormal'),
+    BUInt32('tangent'),
+
+    BSInt16('tex coord u'), BSInt16('tex coord v'),
+
+    SInt8('node 0 index'), SInt8('node 1 index'),
+    BSInt16('node 0 weight'),
+    SIZE=32
+    )
+
+uncompressed_vertex = Struct('uncompressed vertex',
+    QStruct("position", INCLUDE=xyz_float),
+    QStruct("normal", INCLUDE=ijk_float),
+    QStruct("binormal", INCLUDE=ijk_float),
+    QStruct("tangent", INCLUDE=ijk_float),
 
     BFloat('tex coord u'),
     BFloat('tex coord v'),
 
-    BSInt16('node 0 index'),
-    BSInt16('node 1 index'),
+    BSInt16('node 0 index',
+        TOOLTIP="If local nodes are used, this is a local index"),
+    BSInt16('node 1 index',
+        TOOLTIP="If local nodes are used, this is a local index"),
     BFloat('node 0 weight'),
     BFloat('node 1 weight'),
     SIZE=68
     )
 
-compressed_vertex = QStruct('compressed vertex',
-    BFloat('position x'),
-    BFloat('position y'),
-    BFloat('position z'),
+compressed_vertex = Struct('compressed vertex',
+    QStruct("position", INCLUDE=xyz_float),
 
     # These wont work in a QStruct, so make sure not to use them with it.
-    #BBitStruct('normal',   INCLUDE=compressed_normal_32, SIZE=4),
-    #BBitStruct('binormal', INCLUDE=compressed_normal_32, SIZE=4),
-    #BBitStruct('tangent',  INCLUDE=compressed_normal_32, SIZE=4),
-    BUInt32('normal'),
-    BUInt32('binormal'),
-    BUInt32('tangent'),
+    BBitStruct('normal',   INCLUDE=compressed_normal_32, SIZE=4),
+    BBitStruct('binormal', INCLUDE=compressed_normal_32, SIZE=4),
+    BBitStruct('tangent',  INCLUDE=compressed_normal_32, SIZE=4),
 
-    BSInt16('tex coord u'),
-    BSInt16('tex coord v'),
+    BSInt16('tex coord u',
+        UNIT_SCALE=1/32767, MIN=-32767, MAX=32767, WIDGET_WIDTH=10),
+    BSInt16('tex coord v',
+        UNIT_SCALE=1/32767, MIN=-32767, MAX=32767, WIDGET_WIDTH=10),
 
-    SInt8('node 0 index'),
-    SInt8('node 1 index'),
-    BSInt16('node 0 weight'),
+    SInt8('node 0 index',
+        UNIT_SCALE=1/3, MIN=0, MAX=127, WIDGET_WIDTH=10),
+    SInt8('node 1 index',
+        UNIT_SCALE=1/3, MIN=0, MAX=127, WIDGET_WIDTH=10),
+    BSInt16('node 0 weight',
+        UNIT_SCALE=1/32767, MIN=0, MAX=32767, WIDGET_WIDTH=10),
     SIZE=32
     )
 
 triangle = QStruct('triangle',
-    BSInt16('vert 0 index'),
-    BSInt16('vert 1 index'),
-    BSInt16('vert 2 index'),
-    SIZE=6
+    BSInt16('v0 index'), BSInt16('v1 index'), BSInt16('v2 index'),
+    SIZE=6, ORIENT='h'
     )
-
 
 uncompressed_vertex_union = Union('uncompressed vertex',
     CASES={'uncompressed_vertex': uncompressed_vertex},
@@ -139,16 +153,17 @@ part = Struct('part',
 
     QStruct('centroid translation', INCLUDE=xyz_float),
 
-    #reflexive("uncompressed vertices", uncompressed_vertex_union, 65535),
-    #reflexive("compressed vertices", compressed_vertex_union, 65535),
-    #reflexive("triangles", triangle_union, 65535),
-    reflexive("uncompressed vertices", uncompressed_vertex, 65535),
-    reflexive("compressed vertices", compressed_vertex, 65535),
-    reflexive("triangles", triangle, 65535),
-    Pad(40),
+    reflexive("uncompressed vertices", uncompressed_vertex_union, 65535),
+    reflexive("compressed vertices", compressed_vertex_union, 65535),
+    reflexive("triangles", triangle_union, 65535),
+    Pad(36),
 
-    UInt8('local node count'),
-    UInt8Array('local nodes', SIZE=20),
+    BSInt32('local node count', MIN=0, MAX=21),
+    UInt8Array('local nodes', SIZE=21),
+
+    # this COULD be 3 more potential local nodes, but i've seen the game
+    # split models when they reach 21 nodes, so im assuming 21 is the max
+    Pad(3),
     SIZE=132
     )
 

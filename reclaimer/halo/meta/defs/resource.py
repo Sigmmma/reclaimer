@@ -1,7 +1,7 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from ...hek.defs import str_, ustr, hmt_, bitm, snd_, font
-from ...hek.programs.mozzarilla.field_widgets import ReflexiveFrame
+from ...hek.programs.mozzarilla.field_widgets import DynamicArrayFrame
 
 def get(): return resource_def
 
@@ -101,7 +101,7 @@ resource_def = TagDef("resource",
     Array("tag paths",
         SIZE='.tag_count',
         SUB_STRUCT=tag_path, POINTER='.tag_paths_pointer',
-        WIDGET=ReflexiveFrame, DYN_NAME_PATH=".tag_path",
+        WIDGET=DynamicArrayFrame, DYN_NAME_PATH=".tag_path",
         ),
     Array("tag headers",
         SIZE='.tag_count', SUB_STRUCT=tag_header,
