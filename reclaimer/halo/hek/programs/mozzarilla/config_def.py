@@ -39,10 +39,13 @@ config_header = Struct("header",
     INCLUDE=config_header
     )
 
-hotkeys = Array("hotkeys", SUB_STRUCT=hotkey, SIZE=".array_counts.hotkey_count")
+hotkeys = Array(
+    "hotkeys", SUB_STRUCT=hotkey, DYN_NAME_PATH='.method.enum_name',
+    SIZE=".array_counts.hotkey_count", WIDGET=DynamicArrayFrame)
 
-tag_window_hotkeys = Array("tag_window_hotkeys", SUB_STRUCT=hotkey,
-                           SIZE=".array_counts.tag_window_hotkey_count")
+tag_window_hotkeys = Array(
+    "tag_window_hotkeys", SUB_STRUCT=hotkey, DYN_NAME_PATH='.method.enum_name',
+    SIZE=".array_counts.tag_window_hotkey_count", WIDGET=DynamicArrayFrame)
 
 mozzarilla = Container("mozzarilla",
     Bool16("flags",
