@@ -46,7 +46,7 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     return Reflexive(name, **desc)
 
 
-def rawdata_ref(name, f_type=Rawdata, max_size=None, widget=None):
+def rawdata_ref(name, f_type=Rawdata, max_size=None, widget=HaloRawdataFrame):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(rawdata_ref_struct)
     if max_size is not None:

@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.programs.mozzarilla.field_widgets import EntryFrame
 from supyr_struct.defs.tag_def import TagDef
 
 child_ids = Struct("child id",
@@ -10,7 +11,7 @@ child_ids = Struct("child id",
 referenced_by = Struct("referenced by", INCLUDE=child_ids)
 
 entry = Struct("entry",
-    rawtext_ref("name", StrUtf8, max_size=256),
+    rawtext_ref("name", StrUtf8, max_size=256, widget=EntryFrame),
     BUEnum32("group tag", INCLUDE=valid_tags_os, GUI_NAME="group tag"),
     BSInt32("handle data"),
     BSInt32("flags"),

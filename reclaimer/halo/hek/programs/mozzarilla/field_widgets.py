@@ -40,9 +40,9 @@ class DependencyFrame(ContainerFrame):
             if not filepath:
                 return
 
-
             filepath = filepath.replace('/', '\\').replace('\\', PATHDIV)
             tag_path, ext = splitext(filepath.lower().split(tags_dir.lower())[-1])
+            orig_tag_class = self.node.tag_class.__copy__()
             try:
                 self.node.tag_class.set_to(ext[1:])
             except Exception:
@@ -52,6 +52,14 @@ class DependencyFrame(ContainerFrame):
                     if exists(tags_dir + tag_path + ext):
                         self.node.tag_class.set_to(ext[1:])
                         break
+
+            self.edit_create(
+                attr_index=('tag_class', 'filepath'),
+                redo_node=dict(
+                    tag_class=self.node.tag_class, filepath=tag_path),
+                undo_node=dict(
+                    tag_class=orig_tag_class, filepath=self.node.filepath))
+
             self.node.filepath = tag_path
             self.set_edited()
             self.reload()
@@ -98,12 +106,15 @@ class DependencyFrame(ContainerFrame):
         # clear the f_widget_ids list
         del self.f_widget_ids[:]
         del self.f_widget_ids_map
+        del self.f_widget_ids_map_inv
 
+        self.f_widgets = self.content.children
         f_widget_ids = self.f_widget_ids
         f_widget_ids_map = self.f_widget_ids_map = {}
+        f_widget_ids_map_inv = self.f_widget_ids_map_inv = {}
 
         # destroy all the child widgets of the content
-        for c in list(content.children.values()):
+        for c in list(self.f_widgets.values()):
             c.destroy()
 
         # if the orientation is horizontal, remake its label
@@ -181,8 +192,10 @@ class DependencyFrame(ContainerFrame):
                 widget = NullFrame(content, node=sub_node,
                                    attr_index=i, **kwargs)
 
-            f_widget_ids.append(id(widget))
-            f_widget_ids_map[i] = id(widget)
+            wid = id(widget)
+            f_widget_ids.append(wid)
+            f_widget_ids_map[i] = wid
+            f_widget_ids_map_inv[wid] = i
 
             if sub_desc.get('NAME') == 'filepath':
                 widget.entry_string.trace('w', self.validate_filepath)
@@ -196,7 +209,7 @@ class DependencyFrame(ContainerFrame):
         try:
             desc = self.desc
             widget_id = self.f_widget_ids_map.get(desc['NAME_MAP']['filepath'])
-            widget = self.content.children.get(str(widget_id))
+            widget = self.f_widgets.get(str(widget_id))
             if widget is None:
                 return
 
@@ -230,7 +243,7 @@ class DependencyFrame(ContainerFrame):
         try:
             node = self.node
             desc = self.desc
-            f_widgets = self.content.children
+            f_widgets = self.f_widgets
 
             field_indices = range(len(node))
             # if the node has a steptree node, include its index in the indices
@@ -275,12 +288,39 @@ class DependencyFrame(ContainerFrame):
             print(format_exc())
 
 
-class HaloScriptSourceFrame(RawdataFrame):
+class HaloRawdataFrame(RawdataFrame):
+
+    def edit_apply(self=None, *, edit_state, undo=True):
+        attr_index = edit_state.attr_index
+
+        w_parent, parent = FieldWidget.get_widget_and_node(
+            nodepath=edit_state.nodepath, tag_window=edit_state.tag_window)
+
+        if undo:
+            parent[attr_index] = edit_state.undo_node
+        else:
+            parent[attr_index] = edit_state.redo_node
+
+        if w_parent is not None:
+            try:
+                w = w_parent.f_widgets[
+                    str(w_parent.f_widget_ids_map[attr_index])]
+                if w.desc is not edit_state.desc:
+                    return
+
+                w.node = parent[attr_index]
+                w.set_edited()
+                w.f_widget_parent.reload()
+            except Exception:
+                print(format_exc())
+
+
+class HaloScriptSourceFrame(HaloRawdataFrame):
     @property
     def field_ext(self): return '.hsc'
 
 
-class SoundSampleFrame(RawdataFrame):
+class SoundSampleFrame(HaloRawdataFrame):
 
     @property
     def field_ext(self):
@@ -315,6 +355,7 @@ class SoundSampleFrame(RawdataFrame):
 
         try:
             curr_size = self.parent.get_size(attr_index=index)
+
             if ext == '.wav':
                 # if the file is wav, we need to give it a header
                 wav_file = wav_def.build(filepath=filepath)
@@ -348,14 +389,15 @@ class SoundSampleFrame(RawdataFrame):
                         (36 * channel_count, wav_fmt.block_align))
 
                 rawdata = wav_file.data.wav_data.audio_data
-                self.parent.set_size(len(rawdata), attr_index=index)
-                self.parent.parse(rawdata=rawdata, attr_index=index)
-                self.node = self.parent[index]
             else:
                 rawdata = get_rawdata(filepath=filepath)
-                self.parent.set_size(len(rawdata), attr_index=index)
-                self.parent.parse(rawdata=rawdata, attr_index=index)
-                self.node = self.parent[index]
+
+            undo_node = self.node
+            self.parent.set_size(len(rawdata), attr_index=index)
+            self.parent.parse(rawdata=rawdata, attr_index=index)
+            self.node = self.parent[index]
+
+            self.edit_create(undo_node=undo_node, redo_node=self.node)
 
             # until i come up with a better method, i'll have to rely on
             # reloading the root field widget so stuff(sizes) will be updated
