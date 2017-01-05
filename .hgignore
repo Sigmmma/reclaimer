@@ -57,3 +57,6 @@ reclaimer/halo/misc/__pycache__/
 reclaimer/halo/misc/defs/__pycache__/
 reclaimer/halo/misc/defs/objs/__pycache__/
 new_os_guerilla
+reclaimer/halo/stubbs/__pycache__
+reclaimer/halo/os_v3_hek/__pycache__
+reclaimer/halo/os_v4_hek/__pycache__

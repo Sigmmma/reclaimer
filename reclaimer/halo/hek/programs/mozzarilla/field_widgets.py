@@ -35,7 +35,8 @@ class DependencyFrame(ContainerFrame):
                 filetypes.append(('All', '*'))
 
             filepath = askopenfilename(
-                initialdir=init_dir, filetypes=filetypes, title="Select a tag")
+                initialdir=init_dir, filetypes=filetypes,
+                title="Select a tag", parent=self)
 
             if not filepath:
                 return
@@ -345,7 +346,7 @@ class SoundSampleFrame(HaloRawdataFrame):
         filepath = askopenfilename(
             initialdir=initialdir, defaultextension=ext,
             filetypes=[(self.name, "*" + ext), ('All', '*')],
-            title="Import sound data from...")
+            title="Import sound data from...", parent=self)
 
         if not filepath:
             return
@@ -424,7 +425,7 @@ class SoundSampleFrame(HaloRawdataFrame):
         filepath = asksaveasfilename(
             initialdir=initialdir, defaultextension=ext,
             filetypes=[(self.name, "*" + ext), ('All', '*')],
-            title="Export sound data to...")
+            title="Export sound data to...", parent=self)
 
         if not filepath:
             return
