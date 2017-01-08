@@ -55,7 +55,8 @@ part_body = Struct("tagdata",
     BBool16("map flags",
         "unfiltered"
         ),
-    Pad(28),
+    Pad(12),  # OS v4 sahder extension padding
+    Pad(16),
 
     #Secondary map
     Struct("secondary map",

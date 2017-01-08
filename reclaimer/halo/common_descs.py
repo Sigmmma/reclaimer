@@ -972,3 +972,12 @@ tag_header_os = Struct("blam header",
     )
 
 valid_model_animations_yelo = tag_class_os('antr', 'magy')
+
+particle_shader_extension = Struct("particle shader extension",
+    Struct("fade controls",
+        Float("depth fade distance"),
+        Float("camera fade distance"),
+        COMMENT="Controls the softness of an effect"
+        ),
+    SIZE=48
+    )
