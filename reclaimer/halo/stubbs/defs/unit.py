@@ -30,7 +30,7 @@ unit_attrs[0] = BBool32("flags",
     "integrated light lasts forever",
     )
 unit_attrs[1] = BSEnum16('default team', *unit_teams)
-unit_attrs[48] = BSEnum16('grenade type', *grenade_types)
+unit_attrs[49] = BSEnum16('grenade type', *grenade_types)
 
 unit_body = Struct('tagdata',
     unit_attrs,

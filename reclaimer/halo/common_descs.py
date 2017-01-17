@@ -981,3 +981,18 @@ particle_shader_extension = Struct("particle shader extension",
         ),
     SIZE=48
     )
+
+actor_states = (
+    'none',
+    'sleeping',
+    'alert',
+    'moving repeat same position',
+    'moving loop',
+    'moving loop back and forth',
+    'moving loop randomly',
+    'moving randomly',
+    'guarding',
+    'guarding at guard position',
+    'searching',
+    'fleeing'
+    )
