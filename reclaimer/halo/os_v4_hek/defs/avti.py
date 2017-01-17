@@ -6,21 +6,6 @@ Played immediately after the old unit's transform out animation.
 The new actor is braindead during the animation, and is invincible until it ends.
 """
 
-state_overrides = (
-    'none',
-    'sleeping',
-    'alert',
-    'moving repeat same position',
-    'moving loop',
-    'moving loop back and forth',
-    'moving loop randomly',
-    'moving randomly',
-    'guarding',
-    'guarding at guard position',
-    'searching',
-    'fleeing'
-    )
-
 vitality_inheritance_overrides = (
     'neither',
     'both',
@@ -83,13 +68,13 @@ transform_in_target = Struct("transform in target",
             'inherit',
             'override',
             ),
-        BSEnum16("initial state override", *state_overrides),
+        BSEnum16("initial state override", *actor_states),
         BSEnum16("return state handling",
             'inherit',
             'override',
             'actor default',
             ),
-        BSEnum16("return state override", *state_overrides),
+        BSEnum16("return state override", *actor_states),
         Pad(4),
         ),
 
