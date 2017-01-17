@@ -73,6 +73,7 @@ seat = Struct('seat',
     float_rad('yaw minimum'),  # radians
     float_rad('yaw maximum'),  # radians
     dependency('built-in gunner', "actv"),
+    Pad(12),  # open sauce seat extension padding
     SIZE=284
     )
 
@@ -158,7 +159,8 @@ unit_attrs = Struct("unit attrs",
         "large",
         ),
 
-    Pad(14),
+    Pad(2),
+    Pad(12),  # open sauce unit extension padding
     reflexive("new hud interfaces", new_hud_interface, 2,
         'default/solo', 'multiplayer'),
     reflexive("dialogue variants", dialogue_variant, 16,

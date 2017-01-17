@@ -2,7 +2,7 @@ from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
-dyn_anim_path = "tagdata.animations.animations_array[DYN_I].name"
+dyn_anim_path = "tagdata.animations.STEPTREE[DYN_I].name"
 
 object_desc = Struct("object", 
     dyn_senum16("animation", DYN_NAME_PATH=dyn_anim_path),
