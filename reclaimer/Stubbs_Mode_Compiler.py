@@ -26,14 +26,14 @@ PATHDIV = PATHDIV
 curr_dir = os.path.abspath(os.curdir) + PATHDIV
 
 
-def make_model_tag(meta_path, tags_dir=curr_dir + "tags" + PATHDIV):
-    model_tag = mode_def.build()
+def make_mode_tag(meta_path, tags_dir=curr_dir + "tags" + PATHDIV):
+    mode_tag = mode_def.build()
     try:
         # force reading in little endian since meta data is ALL little endian
         force_little()
 
         # make a new tag
-        tagdata = model_tag.data.tagdata
+        tagdata = mode_tag.data.tagdata
 
         # populate that new tag with the meta data
         tagdata.parse(filepath=meta_path)
@@ -44,7 +44,7 @@ def make_model_tag(meta_path, tags_dir=curr_dir + "tags" + PATHDIV):
         tag_paths = get_tag_paths(meta_path + '.data')
 
         # replace the filepath
-        model_tag.filepath = tags_dir + tag_paths[0] + ".model"
+        mode_tag.filepath = tags_dir + tag_paths[0] + ".model"
 
         geoms = tagdata.geometries.STEPTREE
         shaders = tagdata.shaders.STEPTREE
@@ -86,7 +86,7 @@ def make_model_tag(meta_path, tags_dir=curr_dir + "tags" + PATHDIV):
                     part.compressed_vertices.STEPTREE = raw_block
                 else:
                     print("Could not locate vertices for '%s' in %s" %
-                          (key, model_tag.filepath))
+                          (key, mode_tag.filepath))
 
                 if key in tris:
                     raw_data = tris[key]
@@ -103,7 +103,7 @@ def make_model_tag(meta_path, tags_dir=curr_dir + "tags" + PATHDIV):
                     part.triangles.STEPTREE = raw_block
                 else:
                     print("Could not locate triangles for '%s' in %s" %
-                          (key, model_tag.filepath))
+                          (key, mode_tag.filepath))
 
         # insert the shader dependency strings
         for i in range(len(shaders)):
@@ -118,7 +118,7 @@ def make_model_tag(meta_path, tags_dir=curr_dir + "tags" + PATHDIV):
         force_normal()
         raise
 
-    return model_tag
+    return mode_tag
 
 
 def get_verts_and_tris(data_dir):
@@ -173,11 +173,11 @@ def get_tag_paths(data_path):
     return tag_paths
 
 
-class StubbsModelCompiler(Tk):
+class StubbsModeCompiler(Tk):
     def __init__(self, *args, **kwargs):
         Tk.__init__(self, *args, **kwargs)
 
-        self.title("Stubbs model tag compiler v1.0")
+        self.title("Stubbs mode tag compiler v1.0")
         self.geometry("400x120+0+0")
         self.resizable(0, 0)
 
@@ -250,12 +250,12 @@ class StubbsModelCompiler(Tk):
 
                 print('Compiling %s' % filepath.split(meta_dir)[-1])
 
-                tag = make_model_tag(filepath, tags_dir)
+                tag = make_mode_tag(filepath, tags_dir)
                 tag.serialize(temp=False, backup=False)
         print('\nFinished. Took %s seconds' % (time() - start))
 
 try:
-    compiler = StubbsModelCompiler()
+    compiler = StubbsModeCompiler()
     compiler.mainloop()
 except Exception:
     print(format_exc())
