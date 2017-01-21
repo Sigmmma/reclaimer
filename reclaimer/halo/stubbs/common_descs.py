@@ -115,3 +115,49 @@ weapon_types = (
 damage_modifiers = QStruct("damage modifiers",
     *(float_zero_to_inf(material_name) for material_name in materials_list)
     )
+
+
+def tag_class_stubbs(*args):
+    classes = []
+    for four_cc in sorted(args):
+        classes.append((tag_class_fcc_to_ext_stubbs[four_cc], four_cc))
+
+    return BUEnum32(
+        'tag_class',
+        *(tuple(classes) + (("NONE", 0xffffffff),) ),
+        DEFAULT=0xffffffff, GUI_NAME=''
+        )
+
+
+def dependency_stubbs(name='tag ref', valid_ids=None):
+    '''This function serves to macro the creation of a tag dependency'''
+    if isinstance(valid_ids, tuple):
+        valid_ids = tag_class_stubbs(*valid_ids)
+    elif isinstance(valid_ids, str):
+        valid_ids = tag_class_stubbs(valid_ids)
+    elif valid_ids is None:
+        valid_ids = valid_tags_stubbs
+
+    return TagIndexRef(name,
+        valid_ids,
+        BSInt32("path pointer", VISIBLE=False, EDITABLE=False),
+        BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
+        BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
+
+        STEPTREE=HaloRefStr(
+            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
+        ORIENT='h'
+        )
+
+
+def blam_header_stubbs(tagid, version=1):
+    '''This function serves to macro the creation of a tag header'''
+    header_desc= dict(tag_header_stubbs)
+    header_desc[1] = dict(header_desc[1])
+    header_desc[5] = dict(header_desc[5])
+    header_desc[1][DEFAULT] = tagid
+    header_desc[5][DEFAULT] = version
+    return header_desc
+
+
+valid_tags_os = tag_class_stubbs(*tag_class_fcc_to_ext_stubbs.keys())

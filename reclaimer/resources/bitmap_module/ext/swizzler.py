@@ -3,6 +3,12 @@ from math import ceil
 from traceback import format_exc
 import time
 
+try:
+    from . import swizzler_ext 
+    fast_swizzler = True
+except Exception:
+    fast_swizzler = False
+
 logs_of_2 = {}
 
 for log in range(64):
@@ -168,9 +174,18 @@ class Swizzler():
         y_block_offs = array("I", map(bit_swizzler, range(height), (y_mask,)*height))
         z_block_offs = array("I", map(bit_swizzler, range(depth), (z_mask,)*depth))
         
-        ######################
-        '''NEEDS MORE SPEED'''
-        ######################
+        if fast_swizzler:
+            if swizzler_mode:
+                swizzler_ext.swizzle_array(
+                    c_block_offs, x_block_offs, y_block_offs, z_block_offs,
+                    swizzled_array, orig_array)
+            else:
+                swizzler_ext.unswizzle_array(
+                    c_block_offs, x_block_offs, y_block_offs, z_block_offs,
+                    swizzled_array, orig_array)
+
+            return
+
         array_idx = 0
         #swizzler_mode: True = Swizzle    False = Deswizzle
         if swizzler_mode:
