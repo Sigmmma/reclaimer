@@ -43,7 +43,7 @@ mode_body = Struct('tagdata',
     BFloat('base map v scale'),
 
     Pad(104),
-    reflexive("unknown", unknown_struct),
+    reflexive("unknown", unknown_struct, DYN_NAME_PATH=".name"),
 
     reflexive("markers", marker, 256, DYN_NAME_PATH=".name"),
     reflexive("nodes", node, 64, DYN_NAME_PATH=".name"),
