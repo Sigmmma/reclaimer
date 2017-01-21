@@ -162,3 +162,28 @@ for tag_cls in tag_class_fcc_to_ext_os:
 def inject_halo_constants():
     # add the new descriptor keywords to the sets
     add_desc_keywords()
+
+
+#######################################
+# Stubbs the Zombie related constants #
+#######################################
+tag_class_fcc_to_ext_stubbs = {
+    'imef': "image_effect",
+    }
+
+tag_class_fcc_to_ext_stubbs.update(tag_class_fcc_to_ext)
+
+# maps open sauce tag class four character codes(fccs)
+# in their string encoding to their int encoding.
+tag_class_fcc_to_be_int_stubbs = {}
+tag_class_fcc_to_le_int_stubbs = {}
+# maps open sauce tag class four character codes(fccs)
+# in their int encoding to their string encoding.
+tag_class_be_int_to_fcc_stubbs = {}
+tag_class_le_int_to_fcc_stubbs = {}
+
+for tag_cls in tag_class_fcc_to_ext_stubbs:
+    tag_class_fcc_to_be_int_stubbs[tag_cls] = fcc(tag_cls, 'big')
+    tag_class_be_int_to_fcc_stubbs[fcc(tag_cls, 'big')] = tag_cls
+    tag_class_fcc_to_le_int_stubbs[tag_cls] = fcc(tag_cls)
+    tag_class_le_int_to_fcc_stubbs[fcc(tag_cls)] = tag_cls
