@@ -218,12 +218,12 @@ class StubbsModelCompiler(Tk):
         self.compile_btn.pack(fill='both', padx=5, pady=5)
 
     def meta_dir_browse(self):
-        dirpath = askdirectory(initialdir=self.meta_dir_entry.get())
+        dirpath = askdirectory(initialdir=self.meta_dir.get())
         if dirpath:
             self.meta_dir.set(dirpath)
         
     def tags_dir_browse(self):
-        dirpath = askdirectory(initialdir=self.meta_dir_entry.get())
+        dirpath = askdirectory(initialdir=self.tags_dir.get())
         if dirpath:
             self.tags_dir.set(dirpath)
 
@@ -252,7 +252,7 @@ class StubbsModelCompiler(Tk):
 
                 tag = make_model_tag(filepath, tags_dir)
                 tag.serialize(temp=False, backup=False)
-        print('Finished. Took %s seconds' % (time() - start))
+        print('\nFinished. Took %s seconds' % (time() - start))
 
 try:
     compiler = StubbsModelCompiler()

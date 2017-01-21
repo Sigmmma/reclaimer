@@ -153,15 +153,18 @@ part = Struct('part',
 
     QStruct('centroid translation', INCLUDE=xyz_float),
 
-    reflexive("uncompressed vertices", uncompressed_vertex_union, 65535),
-    reflexive("compressed vertices", compressed_vertex_union, 65535),
-    reflexive("triangles", triangle_union, 65535),
+    #reflexive("uncompressed vertices", uncompressed_vertex_union, 65535),
+    #reflexive("compressed vertices", compressed_vertex_union, 65535),
+    #reflexive("triangles", triangle_union, 65535),
+    reflexive("uncompressed vertices", fast_uncompressed_vertex, 65535),
+    reflexive("compressed vertices", fast_compressed_vertex, 65535),
+    reflexive("triangles", triangle, 65535),
     Pad(36),
 
     BSInt32('local node count', MIN=0, MAX=21),
     UInt8Array('local nodes', SIZE=21),
 
-    # this COULD be 3 more potential local nodes, but i've seen the game
+    # this COULD be 3 more potential local nodes, but i've seen tool
     # split models when they reach 21 nodes, so im assuming 21 is the max
     Pad(3),
     SIZE=132

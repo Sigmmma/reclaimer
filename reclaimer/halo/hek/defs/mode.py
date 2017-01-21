@@ -26,7 +26,11 @@ permutation = Struct('permutation',
     )
 
 part = Struct('part',
-    Pad(5),
+    BBool32('flags',
+        'stripped',
+        'ZONER',
+        ),
+    Pad(1),
     dyn_senum8('shader index',
         DYN_NAME_PATH="tagdata.shaders.shaders_array[DYN_I].shader.filepath"),
     SInt8('previous part index'),
@@ -42,8 +46,8 @@ part = Struct('part',
 
     #reflexive("compressed vertices", compressed_vertex_union, 65535),
     #reflexive("triangles", triangle_union, 65535),
-    reflexive("compressed vertices", compressed_vertex_union, 65535),
-    reflexive("triangles", triangle_union, 65535),
+    reflexive("compressed vertices", fast_compressed_vertex, 65535),
+    reflexive("triangles", triangle, 65535),
 
     SIZE=104
     )
