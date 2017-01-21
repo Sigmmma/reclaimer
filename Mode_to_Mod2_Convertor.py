@@ -13,9 +13,6 @@ from supyr_struct.defs.block_def import BlockDef
 from reclaimer.halo.hek.defs.mod2 import mod2_def
 from reclaimer.halo.stubbs.defs.mode import mode_def
 
-force_little = FieldType.force_little
-force_normal = FieldType.force_normal
-
 def undef_size(node, *a, **kwa):
     if node is None:
         return 0
