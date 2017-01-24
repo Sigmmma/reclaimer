@@ -47,8 +47,7 @@ soso_attrs[7] = reflexive("os shader model ext", os_soso_ext, 1)
 
 soso_body = Struct("tagdata",
     shdr_attrs,
-    soso_attrs,
-    SIZE=440
+    soso_attrs
     )
 
 def get():

@@ -1,6 +1,66 @@
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.defs.block_def import BlockDef
+
+def frame_info_size2(parent, *a, **kwa): return len(parent.parent.size) // 2
+
+def frame_info_size3(parent, *a, **kwa): return len(parent.parent.size) // 3
+
+def frame_info_size4(parent, *a, **kwa): return len(parent.parent.size) // 4
+
+def default_data_size(parent, *a, **kwa):
+    return len(parent.parent.parent.frame_count)
+
+frame_info_dxdy_node = QStruct("frame info node",
+    BFloat("dx"), BFloat("dy"), ORIENT='h'
+    )
+
+frame_info_dxdydyaw_node = QStruct("frame info node",
+    BFloat("dx"), BFloat("dy"), BFloat("dyaw"), ORIENT='h'
+    )
+
+frame_info_dxdydzdyaw_node = QStruct("frame info node",
+    BFloat("dx"), BFloat("dy"), BFloat("dz"), BFloat("dyaw"), ORIENT='h'
+    )
+
+default_node = Struct("default node",
+    QStruct("rotation",
+        BSInt16("i", UNIT_SCALE=1/32767),
+        BSInt16("j", UNIT_SCALE=1/32767),
+        BSInt16("k", UNIT_SCALE=1/32767),
+        BSInt16("w", UNIT_SCALE=1/32767),
+        ORIENT="h"
+        ),
+    QStruct("translation", INCLUDE=xyz_float),
+    BSInt16("scale"),
+    SIZE=24
+    )
+
+
+frame_info_dxdy_def = BlockDef("frame info",
+    TYPE=Array, SUB_STRUCT=frame_info_dxdy_node, SIZE=frame_info_size2
+    )
+
+frame_info_dxdydyaw_def = BlockDef("frame info",
+    TYPE=Array, SUB_STRUCT=frame_info_dxdydyaw_node, SIZE=frame_info_size3
+    )
+
+frame_info_dxdydzdyaw_def = BlockDef("frame info",
+    TYPE=Array, SUB_STRUCT=frame_info_dxdydzdyaw_node, SIZE=frame_info_size4
+    )
+
+# the default position of the nodes. one of these structs per node
+default_data_def = BlockDef("default data",
+    TYPE=Array, SUB_STRUCT=default_node, SIZE=default_data_size
+    )
+
+# a frame data definition would be too slow when written due to the
+# way the animation data is stored. If every node had every kind of
+# piece of animation data, it would look exactly like a default_node
+#frame_data_def = BlockDef("frame data",
+#    )
+
 
 dyn_anim_path = "tagdata.animations.STEPTREE[DYN_I].name"
 
@@ -101,7 +161,7 @@ unit_desc = Struct("unit",
         'flying-front','flying-back','flying-left','flying-right',
         'opening','closing','hovering'),
     reflexive("ik points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
-    reflexive("weapon types", unit_weapon_desc, 16, DYN_NAME_PATH=".name"),
+    reflexive("weapons", unit_weapon_desc, 16, DYN_NAME_PATH=".name"),
     SIZE=100,
     )
 
@@ -122,7 +182,7 @@ suspension_desc = QStruct("suspension animation",
     SIZE=20,
     )
 
-vehicle_desc = Struct("vehicle desc",
+vehicle_desc = Struct("vehicle",
     #pitch and yaw are saved in radians.
                       
     #Steering screen bounds
@@ -171,16 +231,14 @@ sound_reference_desc = Struct("sound reference",
 
 nodes_desc = Struct("node", 
     ascii_str32("name"),
-    dyn_senum16("next sibling node index",
-        DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16("first child node index",
-        DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16("parent node index",
-        DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16("next sibling node index", DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16("first child node index", DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16("parent node index", DYN_NAME_PATH="..[DYN_I].name"),
     Pad(2),
     BBool32("node joint flags",
-        "compress all animations",
-        "force idle compression",
+        "ball-socket",
+        "hinge",
+        "no movement",
         ),
     QStruct("base vector", INCLUDE=ijk_float),
     float_rad("vector range"),
@@ -228,7 +286,21 @@ animation_desc = Struct("animation",
     LFloat("unknown float", ENDIAN='<'),
 
     rawdata_ref("frame info", max_size=32768),
-    BytesRaw("unknown bytes", SIZE=44),
+
+    # each of the bits in these flags determines whether
+    # or not the frame data stores info for each nodes
+    # translation, rotation, and scale.
+    # This info was discovered by looking at TheGhost's
+    # animation importer script, so thank him for that.
+    BUInt32("trans flags0"),
+    BUInt32("trans flags1"),
+    Pad(8),
+    BUInt32("rot flags0"),
+    BUInt32("rot flags1"),
+    Pad(8),
+    BUInt32("scale flags0"),
+    BUInt32("scale flags1"),
+    Pad(4),
     BSInt32("offset to compressed data"),
     rawdata_ref("default data", max_size=16384),
     rawdata_ref("frame data", max_size=1048576),

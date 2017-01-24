@@ -790,10 +790,10 @@ anim_src_func_per_pha_sca_rot = Struct('',
 # This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
     BSInt32("size", EDITABLE=False, GUI_NAME="", SIDETIP="bytes"),
-    BSInt32("unknown 1", EDITABLE=False, VISIBLE=False),  # 0x00 in tags(and meta it seems)
-    BSInt32("unknown 2", EDITABLE=False, VISIBLE=False),  # random(low number in meta)
+    BSInt32("unknown", EDITABLE=False, VISIBLE=False),  # 0x00 in tags(and meta it seems)
+    BSInt32("raw pointer", EDITABLE=False, VISIBLE=False),  # doesnt use magic
     BSInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),
-    BUInt32("id", EDITABLE=False, VISIBLE=False),  # 0x00000000 in meta it seems,
+    BSInt32("id", EDITABLE=False, VISIBLE=False),
     ORIENT='h'
     )
 

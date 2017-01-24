@@ -1,6 +1,51 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
+body = Struct("body",
+    BFloat("maximum body vitality"),
+    BFloat("body system shock"),
+
+    Pad(52),
+    float_zero_to_one("friendly damage resistance"),
+
+    Pad(40),
+    dependency("localized damage effect", "effe"),
+
+    float_zero_to_one("area damage effect threshold"),
+    dependency("area damage effect", "effe"),
+
+    BFloat("body damaged threshold"),
+    dependency("body damaged effect", "effe"),
+    dependency("body depleted effect", "effe"),
+    BFloat("body destroyed threshold"),
+    dependency("body destroyed effect", "effe"),
+    )
+
+shield = Struct("shield",
+    BFloat("maximum shield vitality"),
+
+    Pad(2),
+    BSEnum16("shield material type", *materials_list),
+
+    Pad(24),
+    BSEnum16("shield failure function", *fade_functions),
+
+    Pad(2),
+    BFloat("shield failure threshold"),
+    BFloat("shield failing leak fraction"),
+
+    Pad(16),
+    BFloat("minimum stun damage"),
+    float_sec("stun time"),
+    float_sec("recharge time"),
+
+    Pad(112),
+    BFloat("shield damaged threshold"),
+    dependency("shield damaged effect", "effe"),
+    dependency("shield depleted effect", "effe"),
+    dependency("shield recharging effect", "effe"),
+    )
+
 bsp3d_node = QStruct("bsp3d node",
     BSInt32("plane"),
     BSInt32("back child"),
@@ -166,50 +211,8 @@ coll_body = Struct("tagdata",
         DYN_NAME_PATH=".materials.materials_array[DYN_I].name"),
     Pad(2),
 
-    Struct("body",
-        BFloat("maximum body vitality"),
-        BFloat("body system shock"),
-
-        Pad(52),
-        float_zero_to_one("friendly damage resistance"),
-
-        Pad(40),
-        dependency("localized damage effect", "effe"),
-
-        float_zero_to_one("area damage effect threshold"),
-        dependency("area damage effect", "effe"),
-
-        BFloat("body damaged threshold"),
-        dependency("body damaged effect", "effe"),
-        dependency("body depleted effect", "effe"),
-        BFloat("body destroyed threshold"),
-        dependency("body destroyed effect", "effe"),
-        ),
-
-    Struct("shield",
-        BFloat("maximum shield vitality"),
-
-        Pad(2),
-        BSEnum16("shield material type", *materials_list),
-
-        Pad(24),
-        BSEnum16("shield failure function", *fade_functions),
-
-        Pad(2),
-        BFloat("shield failure threshold"),
-        BFloat("shield failing leak fraction"),
-
-        Pad(16),
-        BFloat("minimum stun damage"),
-        float_sec("stun time"),
-        float_sec("recharge time"),
-
-        Pad(112),
-        BFloat("shield damaged threshold"),
-        dependency("shield damaged effect", "effe"),
-        dependency("shield depleted effect", "effe"),
-        dependency("shield recharging effect", "effe"),
-        ),
+    body,
+    shield,
 
     Pad(124),
     reflexive("materials", material, 32, DYN_NAME_PATH='.name'),

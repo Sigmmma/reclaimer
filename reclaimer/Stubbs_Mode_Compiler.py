@@ -165,7 +165,7 @@ def get_tag_paths(data_path):
                 if line.lower().startswith('filename'):
                     tag_paths[0] = line.split('|')[-1].split('\n')[0]
                 elif line.lower().startswith('dependency'):
-                    tag_path, tag_class = line.split('\n')[0].split('|')[-2:]
+                    tag_path, tag_class = line.split('\n')[0].split('|')[2:]
                     tag_class = fcc(tag_class[:4], 'big')
                     tag_paths.append((tag_path, tag_class))
     except Exception:

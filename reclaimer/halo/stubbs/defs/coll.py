@@ -2,6 +2,27 @@ from ...hek.defs.coll import *
 from ..common_descs import *
 from .objs.tag import StubbsTag
 
+shield = dict(shield)
+shield[2] = BSEnum16("shield material type", *materials_list)
+
+node = Struct("node",
+    ascii_str32("name"),
+    dyn_senum16("region",
+        DYN_NAME_PATH=".....regions.regions_array[DYN_I].name"),
+    dyn_senum16("parent node",
+        DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16("next sibling node",
+        DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16("first child node",
+        DYN_NAME_PATH="..[DYN_I].name"),
+
+    Pad(8),
+    BSInt16("unknown"),
+    Pad(2),
+    reflexive("bsps", bsp, 32),
+    SIZE=64
+    )
+
 material = Struct("material",
     ascii_str32("name"),
     BBool32("flags",
@@ -17,10 +38,43 @@ material = Struct("material",
     SIZE=72
     )
 
-coll_body = dict(coll_body)
-coll_body[4] = dict(coll_body[4])
-coll_body[4][2] = BSEnum16("shield material type", *materials_list)
-coll_body[6] = reflexive("materials", material, 32, DYN_NAME_PATH='.name')
+coll_body = Struct("tagdata",
+    BBool32("flags",
+        "takes shield damage for children",
+        "takes body damage for children",
+        "always shields friendly damage",
+        "passes area damage to children",
+        "parent never takes body damage for us",
+        "only damaged by explosives",
+        "only damaged while occupied",
+        ),
+    dyn_senum16("indirect damage material",
+        DYN_NAME_PATH=".materials.materials_array[DYN_I].name"),
+    Pad(2),
+
+    body,
+    shield,
+
+    Pad(124),
+    reflexive("materials", material, 32, DYN_NAME_PATH='.name'),
+    reflexive("regions", region, 8, DYN_NAME_PATH='.name'),
+    # this reflexive is literally not allowed to have even a single
+    # entry in guerilla, so im just gonna replace it with padding.
+    Pad(12),
+    #reflexive("modifiers", modifier, 0),
+
+    Pad(16),
+    Struct("pathfinding box",
+        QStruct("x", INCLUDE=from_to),
+        QStruct("y", INCLUDE=from_to),
+        QStruct("z", INCLUDE=from_to),
+        ),
+
+    reflexive("pathfinding spheres", pathfinding_sphere, 32),
+    reflexive("nodes", node, 64, DYN_NAME_PATH='.name'),
+
+    SIZE=664,
+    )
 
 def get():
     return coll_def
