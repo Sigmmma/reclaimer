@@ -68,16 +68,16 @@ compressed_vertex = Struct('compressed vertex',
     BBitStruct('tangent',  INCLUDE=compressed_normal_32, SIZE=4),
 
     BSInt16('tex coord u',
-        UNIT_SCALE=1/32767, MIN=-32767, MAX=32767, WIDGET_WIDTH=10),
+        UNIT_SCALE=1/32767, MIN=-32767,WIDGET_WIDTH=10),
     BSInt16('tex coord v',
-        UNIT_SCALE=1/32767, MIN=-32767, MAX=32767, WIDGET_WIDTH=10),
+        UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
 
     SInt8('node 0 index',
-        UNIT_SCALE=1/3, MIN=0, MAX=127, WIDGET_WIDTH=10),
+        UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
     SInt8('node 1 index',
-        UNIT_SCALE=1/3, MIN=0, MAX=127, WIDGET_WIDTH=10),
+        UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
     BSInt16('node 0 weight',
-        UNIT_SCALE=1/32767, MIN=0, MAX=32767, WIDGET_WIDTH=10),
+        UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
     SIZE=32
     )
 
