@@ -37,6 +37,16 @@ def mode_to_mod2(mode_path):
     # move the first 14 header fields from mode into mod2
     for i in range(14):
         mod2_data[i] = mode_data[i]
+    # fix the fact the mode and mod2 store stuff related to lods in reverse
+    mod2_data.superhigh_lod_cutoff = mode_data.superhigh_lod_cutoff
+    mod2_data.high_lod_cutoff = mode_data.high_lod_cutoff
+    mod2_data.low_lod_cutoff = mode_data.low_lod_cutoff
+    mod2_data.superlow_lod_cutoff = mode_data.superlow_lod_cutoff
+
+    mod2_data.superhigh_lod_nodes = mode_data.superhigh_lod_nodes
+    mod2_data.high_lod_nodes = mode_data.high_lod_nodes
+    mod2_data.low_lod_nodes = mode_data.low_lod_nodes
+    mod2_data.superlow_lod_nodes = mode_data.superlow_lod_nodes
 
     # move the markers, nodes, regions, and shaders, from mode into mod2
     mod2_data.markers = mode_data.markers

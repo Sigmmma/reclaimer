@@ -47,13 +47,7 @@ def tag_meta_case(node=None, parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
 
-    t_head = parent.parent
-    magic = kwargs.get('magic')
-    m_head = t_head.parent.parent.map_header
-    if magic is None:
-        magic = STUBBS_INDEX_MAGIC - m_head.tag_index_offset
-
-    return t_head.class_1.data
+    return parent.parent.class_1.data
     
 
 def tag_index_array_pointer(node=None, parent=None, new_value=None, **kwargs):
@@ -123,6 +117,7 @@ map_header = Struct("map header",
     LUInt32("crc32"),
     Pad(1940),
     LUEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
+    SIZE=2048
     )
 
 tag_index_header_xbox = Struct("tag index header",

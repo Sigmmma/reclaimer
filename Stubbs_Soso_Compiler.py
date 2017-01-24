@@ -8,15 +8,13 @@ from traceback import format_exc
 from supyr_struct.field_types import FieldType, BytearrayRaw
 from supyr_struct.defs.constants import fcc, PATHDIV
 from supyr_struct.defs.block_def import BlockDef
-from reclaimer.halo.stubbs.defs.soso import soso_def
+from reclaimer.halo.os_v3_hek.defs.soso import soso_def
 
 force_little = FieldType.force_little
 force_normal = FieldType.force_normal
 
 PATHDIV = PATHDIV
 curr_dir = os.path.abspath(os.curdir) + PATHDIV
-
-bitm_fcc = fcc('bitm', 'big')
 
 def make_soso_tag(meta_path, tags_dir=curr_dir + "tags" + PATHDIV):
     soso_tag = soso_def.build()
@@ -33,19 +31,31 @@ def make_soso_tag(meta_path, tags_dir=curr_dir + "tags" + PATHDIV):
         with open(meta_path, 'rb') as f:
             meta_data = bytearray(f.read())
 
+        make_ext = False
         # insert the bitmap dependency strings
         for tag_path in tag_paths[1:]:
             offset = int(tag_path[0]) - 4
-            path = tag_path[1].encode()
-            if path:
-                meta_data[offset:offset+4] = struct.pack('<I', len(path))
-                meta_data += path + b'\x00'
+            path = tag_path[1]
+            if offset == 400:  # offset of the bump map reference
+                make_ext = True
+                bump_scale = struct.unpack("<f", meta_data[388:392])[0]
+                bump_path = path
+            elif path:
+                meta_data[offset:offset+4] = struct.pack('<i', len(path))
+                meta_data += path.encode() + b'\x00'
 
         # populate that new tag with the meta data
         tagdata.parse(rawdata=meta_data)
 
+        if make_ext:
+            # make a new shader extension for the bump map
+            soso_ext = tagdata.soso_attrs.os_shader_model_ext.STEPTREE
+            soso_ext.extend(1)
+            soso_ext[0].base_normal_coefficient = bump_scale
+            soso_ext[0].base_normal_map.filepath = bump_path
+
         # replace the filepath
-        soso_tag.filepath = tags_dir + tag_paths[0] + ".stubbs_shader_model"
+        soso_tag.filepath = tags_dir + tag_paths[0] + ".shader_model"
 
         # force fix the endianness
         force_normal()

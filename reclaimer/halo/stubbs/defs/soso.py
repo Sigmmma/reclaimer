@@ -35,13 +35,12 @@ soso_attrs = Struct("soso attrs",
 
     Pad(16),
     bump_properties,
-    SIZE=400
+    SIZE=440
     )
 
 soso_body = Struct("tagdata",
     shdr_attrs,
-    soso_attrs,
-    SIZE=440
+    soso_attrs
     )
 
 def get():
