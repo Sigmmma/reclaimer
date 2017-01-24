@@ -47,6 +47,10 @@ def clean_antr_meta(meta):
     sound_ref_ct = get_int(meta, 84)
     node_ct = get_int(meta, 104)
     anim_ct = get_int(meta, 116)
+
+    # set the number of damages to zero
+    pack_into("<i", meta, 60, 0)
+
     off = 128
 
     # skip the objects
@@ -217,9 +221,8 @@ def clean_antr_meta(meta):
         meta = remove_pad2(meta, off, devi_anim_ct)
 
 
-    # skip the damages
-    off += 2*damage_ct
-    meta = remove_pad2(meta, off, damage_ct)
+    # remove the damages
+    meta = slice_out(meta, off, 2*(damage_ct + ((2-(damage_ct)%2)%2)))
 
 
     fp_anim_cts = [None]*fp_anim_ct
@@ -288,8 +291,9 @@ def make_antr_tag(meta_path, tags_dir, map_data):
         try:
             meta_data = clean_antr_meta(meta_data)
         except Exception:
-            print("Could not parse meta! Tell Moses and send him these:\n",
-                  '   ', meta_path, '\n   ', meta_path + '.data')
+            print(format_exc())
+            print("Could not parse meta! Tell Moses and send him these:\n" +
+                  '    %s\n    %s%s' % (meta_path , meta_path, '.data'))
             return
 
         # populate that new tag with the meta data
