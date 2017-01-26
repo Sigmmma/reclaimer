@@ -305,6 +305,12 @@ def make_antr_tag(meta_path, tags_dir, map_data):
             input()
 
         sounds = tagdata.sound_references.STEPTREE
+
+        # replace the filepath
+        fp = tags_dir + tag_paths[0] + ".model_animations"
+        fp = fp.replace('\\', '/').replace('/', PATHDIV)
+        antr_tag.filepath = fp
+
         # insert the dependency strings
         for i in range(len(tag_paths)-1):
             reference = sounds[i]
@@ -387,7 +393,48 @@ def make_antr_tag(meta_path, tags_dir, map_data):
             if f_data_size > 0 and f_data_off > 0 and f_data_off < map_len:
                 raw = map_data[f_data_off:f_data_off + f_data_size]
                 if compressed:
-                    f_data.STEPTREE = raw
+                    rot_def_off = get_int(raw, 4)
+                    trans_def_off = get_int(raw, 20)
+                    scale_def_off = get_int(raw, 32)
+
+                    rot_end = get_int(raw, 12)
+                    trans_end = get_int(raw, 28)
+                    scale_end = len(raw)
+
+                    largest_off = max(
+                        rot_def_off, trans_def_off, scale_def_off,
+                        rot_end, trans_end, scale_end)
+
+                    if largest_off > 0x100000:  # max frame data size
+                        print("    Error: compressed animation frame data " +
+                              "seems to be corrupted in '%s'" % anim.name)
+                        continue
+
+                    f_data.STEPTREE = swapped = bytearray(raw)
+
+                    try:
+                        # byteswap the animation default data and node data
+                        for i in range(rot_def_off, rot_end, 6):
+                            swapped[i] = raw[i+1]
+                            swapped[i+1] = raw[i]
+                            swapped[i+2] = raw[i+3]
+                            swapped[i+3] = raw[i+2]
+                            # DONT byteswap the last 2 bytes(they seem to be LE)
+
+                        for i in range(trans_def_off, trans_end, 4):
+                            swapped[i] = raw[i+3]
+                            swapped[i+1] = raw[i+2]
+                            swapped[i+2] = raw[i+1]
+                            swapped[i+3] = raw[i]
+
+                        for i in range(scale_def_off, scale_end, 4):
+                            swapped[i] = raw[i+3]
+                            swapped[i+1] = raw[i+2]
+                            swapped[i+2] = raw[i+1]
+                            swapped[i+3] = raw[i]
+                    except Exception:
+                        print("    Error: Could not byteswap the compressed " +
+                              " animation frame data in '%s'" % anim.name)
                     continue
 
                 # byteswap the data
@@ -418,9 +465,6 @@ def make_antr_tag(meta_path, tags_dir, map_data):
 
             elif f_data_size:
                 f_data.size = 0
-
-        # replace the filepath
-        antr_tag.filepath = tags_dir + tag_paths[0] + ".model_animations"
 
         # force fix the endianness
         force_normal()
