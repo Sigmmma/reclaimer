@@ -62,6 +62,51 @@ default_data_def = BlockDef("default data",
 #    )
 
 
+# initial_frame seems to be one entry for each node
+# regardless of whether or not they are specified as
+# being animated by the flags in the animation block
+compressed_frame_data = Container("compressed_frame_data",
+    QStruct("rotation_ends",
+        BSInt32("frame_info"),
+        BSInt32("frame_nums"),
+        BSInt32("initial_frame"),
+        BSInt32("frame_data"),
+        ),
+    QStruct("translation_ends",
+        BSInt32("frame_info"),
+        BSInt32("frame_nums"),
+        BSInt32("initial_frame"),
+        BSInt32("frame_data"),
+        ),
+    QStruct("scale_ends",
+        BSInt32("frame_info"),
+        BSInt32("frame_nums"),
+        BSInt32("initial_frame"),
+        # frame_data end for scale is inferred
+        # from the size of the data stream
+        ),
+
+    Container("rotation",
+        BytesRaw("frame_info", SIZE=0),
+        BytesRaw("frame_nums", SIZE=0),
+        BytesRaw("initial_frame", SIZE=0),
+        BytesRaw("frame_data", SIZE=0),
+        ),
+    Container("translation",
+        BytesRaw("frame_info", SIZE=0),
+        BytesRaw("frame_nums", SIZE=0),
+        BytesRaw("initial_frame", SIZE=0),
+        BytesRaw("frame_data", SIZE=0),
+        ),
+    Container("scale",
+        BytesRaw("frame_info", SIZE=0),
+        BytesRaw("frame_nums", SIZE=0),
+        BytesRaw("initial_frame", SIZE=0),
+        BytesRaw("frame_data", SIZE=0),
+        )
+    )
+
+
 dyn_anim_path = "tagdata.animations.STEPTREE[DYN_I].name"
 
 object_desc = Struct("object", 
