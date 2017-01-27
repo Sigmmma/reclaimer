@@ -184,5 +184,5 @@ antr_def = TagDef("antr",
     blam_header('antr', 4),
     antr_body,
 
-    ext=".model_animations", endian=">", tag_cls=HekTag
+    ext=".model_animations", endian=">", tag_cls=AntrTag
     )

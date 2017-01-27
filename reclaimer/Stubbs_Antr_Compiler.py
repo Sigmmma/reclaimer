@@ -392,10 +392,12 @@ def make_antr_tag(meta_path, tags_dir, map_data):
 
             if f_data_size > 0 and f_data_off > 0 and f_data_off < map_len:
                 raw = map_data[f_data_off:f_data_off + f_data_size]
+                corrupt = False
+
                 if compressed:
                     rot_def_off = get_int(raw, 4)
                     trans_def_off = get_int(raw, 20)
-                    scale_def_off = get_int(raw, 32)
+                    scale_def_off = get_int(raw, 36)
 
                     rot_end = get_int(raw, 12)
                     trans_end = get_int(raw, 28)
@@ -405,21 +407,21 @@ def make_antr_tag(meta_path, tags_dir, map_data):
                         rot_def_off, trans_def_off, scale_def_off,
                         rot_end, trans_end, scale_end)
 
-                    if largest_off > 0x100000:  # max frame data size
+                    if largest_off > len(raw):
                         print("    Error: compressed animation frame data " +
                               "seems to be corrupted in '%s'" % anim.name)
-                        continue
+                        f_data.STEPTREE = raw
+                        corrupt = True
 
+                if compressed and not corrupt:
                     f_data.STEPTREE = swapped = bytearray(raw)
 
                     try:
                         # byteswap the animation default data and node data
                         for i in range(rot_def_off, rot_end, 6):
-                            swapped[i] = raw[i+1]
-                            swapped[i+1] = raw[i]
-                            swapped[i+2] = raw[i+3]
-                            swapped[i+3] = raw[i+2]
-                            # DONT byteswap the last 2 bytes(they seem to be LE)
+                            swapped[i] = raw[i+1];   swapped[i+1] = raw[i]
+                            swapped[i+2] = raw[i+3]; swapped[i+3] = raw[i+2]
+                            swapped[i+4] = raw[i+5]; swapped[i+5] = raw[i+4]
 
                         for i in range(trans_def_off, trans_end, 4):
                             swapped[i] = raw[i+3]
@@ -432,9 +434,18 @@ def make_antr_tag(meta_path, tags_dir, map_data):
                             swapped[i+1] = raw[i+2]
                             swapped[i+2] = raw[i+1]
                             swapped[i+3] = raw[i]
+
                     except Exception:
                         print("    Error: Could not byteswap the compressed " +
-                              " animation frame data in '%s'" % anim.name)
+                              "animation frame data in '%s'" % anim.name)
+                        corrupt = True
+
+                if corrupt:
+                    # change a few things so it doesnt crash the hek
+                    anim.flags.compressed_data = False
+                    anim.name = ('CORRUPT_' + anim.name)[:31]
+                    continue
+                elif compressed:
                     continue
 
                 # byteswap the data
@@ -442,12 +453,13 @@ def make_antr_tag(meta_path, tags_dir, map_data):
                 f_data.STEPTREE = swapped = bytearray(raw)
                 for f in range(frame_count):
                     for n in range(node_count):
-                        if rot_flags&(1<<n):
-                            swapped[i] = raw[i+1];   swapped[i+1] = raw[i]
-                            swapped[i+2] = raw[i+3]; swapped[i+3] = raw[i+2]
-                            swapped[i+4] = raw[i+5]; swapped[i+5] = raw[i+4]
-                            swapped[i+6] = raw[i+7]; swapped[i+7] = raw[i+6]
-                            i += 8
+                        # dont need to byteswap rotations
+                        #if rot_flags&(1<<n):
+                        #    swapped[i] = raw[i+1];   swapped[i+1] = raw[i]
+                        #    swapped[i+2] = raw[i+3]; swapped[i+3] = raw[i+2]
+                        #    swapped[i+4] = raw[i+5]; swapped[i+5] = raw[i+4]
+                        #    swapped[i+6] = raw[i+7]; swapped[i+7] = raw[i+6]
+                        #    i += 8
 
                         if trans_flags&(1<<n):
                             swapped[i] = raw[i+3];   swapped[i+1] = raw[i+2]
