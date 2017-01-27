@@ -1,5 +1,5 @@
 from os.path import splitext
-from math import sqrt, sin
+from math import sqrt, acos, sin
 from array import array
 from struct import pack_into
 
@@ -220,18 +220,18 @@ class AntrTag(HekTag):
             rot[1] = ((comp_rot>>22)&511)/511
             rot[2] = ((comp_rot>>11)&1023)/1023
             rot[3] = (comp_rot&2047)/2047
-            length = sq(rot[0]**2+rot[1]**2+rot[2]**2+rot[3]**2)/32767
-            if length:
-                rot[0] = int(rot[0]/length)
-                rot[1] = int(rot[1]/length)
-                rot[2] = int(rot[2]/length)
-                rot[3] = int(rot[3]/length)
-                if comp_rot&0x80000000: rot[1] = rot[1]-32768
-                if comp_rot&0x00200000: rot[2] = rot[2]-32768
+            length = sq(rot[0]**2+rot[1]**2+rot[2]**2+rot[3]**2)
+            if sum(rot):
+                if comp_rot&0x80000000: rot[1] = rot[1]-1
+                if comp_rot&0x00200000: rot[2] = rot[2]-1
+                length = sq(rot[0]**2+rot[1]**2+rot[2]**2+rot[3]**2)
+                rot[0] /= length
+                rot[1] /= length
+                rot[2] /= length
+                rot[3] /= length
             else:
                 # avoid division by zero
-                rot[0] = rot[1] = rot[2] = 0
-                rot[3] = 32767
+                rot[3] = 1
 
             # translation
             trans[0] = trans_begin[i*3]
@@ -275,16 +275,16 @@ class AntrTag(HekTag):
                 rot[2] = ((comp_rot>>11)&1023)/1023
                 rot[3] = (comp_rot&2047)/2047
                 if sum(rot):
-                    length = sq(rot[0]**2+rot[1]**2+rot[2]**2+rot[3]**2)/32767
-                    rot[0] = int(rot[0]/length)
-                    rot[1] = int(rot[1]/length)
-                    rot[2] = int(rot[2]/length)
-                    rot[3] = int(rot[3]/length)
-                    if comp_rot&0x80000000: rot[1] = rot[1]-32768
-                    if comp_rot&0x00200000: rot[2] = rot[2]-32768
+                    if comp_rot&0x80000000: rot[1] = rot[1]-1
+                    if comp_rot&0x00200000: rot[2] = rot[2]-1
+                    length = sq(rot[0]**2+rot[1]**2+rot[2]**2+rot[3]**2)
+                    rot[0] /= length
+                    rot[1] /= length
+                    rot[2] /= length
+                    rot[3] /= length
                 else:
                     # avoid division by zero
-                    rot[3] = 32767
+                    rot[3] = 1
 
                 ri += 3
 
@@ -302,19 +302,48 @@ class AntrTag(HekTag):
         for n in range(node_count):
             node = node_frames[n]
             f0 = node[0][0]
+            i0 = f0[0]
+            j0 = f0[1]
+            k0 = f0[2]
+            w0 = f0[3]
             last_num = 0
 
             # interpolate the rotations
             for next_num in node_rot_nums[n]:
                 f1 = node[next_num][0]
+                i1 = f1[0]
+                j1 = f1[1]
+                k1 = f1[2]
+                w1 = f1[3]
                 num_dist = next_num - last_num
+
+                cos_half_theta = i0*i1 + j0*j1 + k0*k1 + w0*w1
+                if abs(cos_half_theta) >= 1.0:
+                    half_theta = 0.0
+                else:
+                    half_theta = acos(cos_half_theta)
+                sin_half_theta = sqrt(max(1 - cos_half_theta**2, 0))
+
+                # angle is not well defined in floating point when this small
+                if sin_half_theta <= 0.000001:
+                    r0 = r1 = 0.5
                 for i in range(1, num_dist):
-                    node[last_num+i][0][0] = f0[0]
-                    node[last_num+i][0][1] = f0[1]
-                    node[last_num+i][0][2] = f0[2]
-                    node[last_num+i][0][3] = f0[3]
+                    f = node[last_num+i][0]
+                    i = i/num_dist
+
+                    if sin_half_theta > 0.000001:
+                        r0 = sin((1 - i)*half_theta) / sin_half_theta
+                        r1 = sin(i*half_theta) / sin_half_theta
+                    f[0] = i0*r0 + i1*r1
+                    f[1] = j0*r0 + j1*r1
+                    f[2] = k0*r0 + k1*r1
+                    f[3] = w0*r0 + w1*r1
 
                 f0 = f1
+                i0 = i1
+                j0 = j1
+                k0 = k1
+                w0 = w1
                 last_num = next_num
 
             # repeat the last frame to the end
@@ -322,17 +351,26 @@ class AntrTag(HekTag):
                 node[i][0] = f0
 
             f0 = node[0][1]
+            x0 = f0[0]
+            y0 = f0[1]
+            z0 = f0[2]
             last_num = 0
             # interpolate the translations
             for next_num in node_trans_nums[n]:
                 f1 = node[next_num][1]
+                x1 = f1[0]
+                y1 = f1[1]
+                z1 = f1[2]
                 num_dist = next_num - last_num
                 for i in range(1, num_dist):
-                    node[last_num+i][1][0] = (f0[0]*(num_dist-i) + f1[0]*i) / num_dist
-                    node[last_num+i][1][1] = (f0[1]*(num_dist-i) + f1[1]*i) / num_dist
-                    node[last_num+i][1][2] = (f0[2]*(num_dist-i) + f1[2]*i) / num_dist
+                    f = node[last_num+i][1]
+                    f[0] = (x0*(num_dist-i) + x1*i) / num_dist
+                    f[1] = (y0*(num_dist-i) + y1*i) / num_dist
+                    f[2] = (z0*(num_dist-i) + z1*i) / num_dist
 
-                f0 = f1
+                x0 = x1
+                y0 = y1
+                z0 = z1
                 last_num = next_num
 
             # repeat the last frame to the end
@@ -370,7 +408,10 @@ class AntrTag(HekTag):
                 if node is None:
                     continue
                 if rot_flags&(1<<n):
-                    pack_into('>hhhh', new_frame_data, i, *node[0])
+                    rot = node[0]
+                    pack_into('>hhhh', new_frame_data, i,
+                              int(rot[0]*32767), int(rot[1]*32767),
+                              int(rot[2]*32767), int(rot[3]*32767))
                     i += 8
                 if trans_flags&(1<<n):
                     pack_into('>fff', new_frame_data, i, *node[1])
