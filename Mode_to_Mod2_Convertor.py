@@ -154,7 +154,7 @@ class ModeToMod2Convertor(Tk):
         self.tags_dir.set(curr_dir + 'tags' + PATHDIV)
 
         # make the frame
-        self.tags_dir_frame = LabelFrame(self, text="Output tags directory")
+        self.tags_dir_frame = LabelFrame(self, text="Tags directory")
         
         # add the filepath boxes
         self.tags_dir_entry = Entry(

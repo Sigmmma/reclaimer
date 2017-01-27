@@ -1,16 +1,6 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.antr import AntrTag
 from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.defs.block_def import BlockDef
-
-def frame_info_size2(parent, *a, **kwa): return len(parent.parent.size) // 2
-
-def frame_info_size3(parent, *a, **kwa): return len(parent.parent.size) // 3
-
-def frame_info_size4(parent, *a, **kwa): return len(parent.parent.size) // 4
-
-def default_data_size(parent, *a, **kwa):
-    return len(parent.parent.parent.frame_count)
 
 frame_info_dxdy_node = QStruct("frame info node",
     BFloat("dx"), BFloat("dy"), ORIENT='h'
@@ -35,75 +25,6 @@ default_node = Struct("default node",
     QStruct("translation", INCLUDE=xyz_float),
     BSInt16("scale"),
     SIZE=24
-    )
-
-
-frame_info_dxdy_def = BlockDef("frame info",
-    TYPE=Array, SUB_STRUCT=frame_info_dxdy_node, SIZE=frame_info_size2
-    )
-
-frame_info_dxdydyaw_def = BlockDef("frame info",
-    TYPE=Array, SUB_STRUCT=frame_info_dxdydyaw_node, SIZE=frame_info_size3
-    )
-
-frame_info_dxdydzdyaw_def = BlockDef("frame info",
-    TYPE=Array, SUB_STRUCT=frame_info_dxdydzdyaw_node, SIZE=frame_info_size4
-    )
-
-# the default position of the nodes. one of these structs per node
-default_data_def = BlockDef("default data",
-    TYPE=Array, SUB_STRUCT=default_node, SIZE=default_data_size
-    )
-
-# a frame data definition would be too slow when written due to the
-# way the animation data is stored. If every node had every kind of
-# piece of animation data, it would look exactly like a default_node
-#frame_data_def = BlockDef("frame data",
-#    )
-
-
-# initial_frame seems to be one entry for each node
-# regardless of whether or not they are specified as
-# being animated by the flags in the animation block
-compressed_frame_data = Container("compressed_frame_data",
-    QStruct("rotation_ends",
-        BSInt32("frame_info"),
-        BSInt32("frame_nums"),
-        BSInt32("initial_frame"),
-        BSInt32("frame_data"),
-        ),
-    QStruct("translation_ends",
-        BSInt32("frame_info"),
-        BSInt32("frame_nums"),
-        BSInt32("initial_frame"),
-        BSInt32("frame_data"),
-        ),
-    QStruct("scale_ends",
-        BSInt32("frame_info"),
-        BSInt32("frame_nums"),
-        BSInt32("initial_frame"),
-        # frame_data end for scale is inferred
-        # from the size of the data stream
-        ),
-
-    Container("rotation",
-        BytesRaw("frame_info", SIZE=0),
-        BytesRaw("frame_nums", SIZE=0),
-        BytesRaw("initial_frame", SIZE=0),
-        BytesRaw("frame_data", SIZE=0),
-        ),
-    Container("translation",
-        BytesRaw("frame_info", SIZE=0),
-        BytesRaw("frame_nums", SIZE=0),
-        BytesRaw("initial_frame", SIZE=0),
-        BytesRaw("frame_data", SIZE=0),
-        ),
-    Container("scale",
-        BytesRaw("frame_info", SIZE=0),
-        BytesRaw("frame_nums", SIZE=0),
-        BytesRaw("initial_frame", SIZE=0),
-        BytesRaw("frame_data", SIZE=0),
-        )
     )
 
 
@@ -382,5 +303,5 @@ antr_def = TagDef("antr",
     blam_header('antr', 4),
     antr_body,
 
-    ext=".model_animations", endian=">", tag_cls=HekTag
+    ext=".model_animations", endian=">", tag_cls=AntrTag
     )

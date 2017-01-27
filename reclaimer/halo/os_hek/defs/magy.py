@@ -1,3 +1,4 @@
+from .objs.magy import MagyTag
 from ...hek.defs.antr import *
 
 magy_body = Struct("tagdata",
@@ -31,5 +32,5 @@ magy_def = TagDef("magy",
     blam_header_os('magy', 0),
     magy_body,
 
-    ext=".model_animations_yelo", endian=">"
+    ext=".model_animations_yelo", endian=">", tag_cls=MagyTag
     )
