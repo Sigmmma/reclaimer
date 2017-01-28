@@ -41,7 +41,7 @@ def sanitize_path(path):
 
 class Mozzarilla(Binilla):
     app_name = 'Mozzarilla'
-    version = '0.9.2.D'
+    version = '0.9.2.E'
     log_filename = 'mozzarilla.log'
     debug = 0
 
