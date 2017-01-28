@@ -90,6 +90,7 @@ class AnimationDecompressor(Tk):
                         decomp_count += antr_tag.decompress_anim(i)
                     except Exception:
                         anims[i].flags.compressed_data = False
+                        print(format_exc())
                         print("    Could not decompress %s" % anims[i].name)
                         anims[i].name = ('CORRUPT_' + anims[i].name)[:31]
 

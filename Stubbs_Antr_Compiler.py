@@ -395,6 +395,7 @@ def make_antr_tag(meta_path, tags_dir, map_data):
                 corrupt = False
 
                 if compressed:
+                    f_data.STEPTREE = raw
                     rot_def_off = get_int(raw, 4)
                     trans_def_off = get_int(raw, 20)
                     scale_def_off = get_int(raw, 36)
@@ -404,41 +405,15 @@ def make_antr_tag(meta_path, tags_dir, map_data):
                     scale_end = len(raw)
 
                     largest_off = max(
-                        rot_def_off, trans_def_off, scale_def_off,
-                        rot_end, trans_end, scale_end)
+                        rot_def_off, get_int(raw, 8), rot_end, get_int(raw, 16),
+                        trans_def_off, get_int(raw, 24), trans_end,
+                        get_int(raw, 32), scale_def_off, get_int(raw, 40))
 
                     if largest_off > len(raw):
                         print("    Error: compressed animation frame data " +
                               "seems to be corrupted in '%s'" % anim.name)
-                        f_data.STEPTREE = raw
                         corrupt = True
 
-                if compressed and not corrupt:
-                    f_data.STEPTREE = swapped = bytearray(raw)
-
-                    try:
-                        # byteswap the animation default data and node data
-                        for i in range(rot_def_off, rot_end, 6):
-                            swapped[i] = raw[i+1];   swapped[i+1] = raw[i]
-                            swapped[i+2] = raw[i+3]; swapped[i+3] = raw[i+2]
-                            swapped[i+4] = raw[i+5]; swapped[i+5] = raw[i+4]
-
-                        for i in range(trans_def_off, trans_end, 4):
-                            swapped[i] = raw[i+3]
-                            swapped[i+1] = raw[i+2]
-                            swapped[i+2] = raw[i+1]
-                            swapped[i+3] = raw[i]
-
-                        for i in range(scale_def_off, scale_end, 4):
-                            swapped[i] = raw[i+3]
-                            swapped[i+1] = raw[i+2]
-                            swapped[i+2] = raw[i+1]
-                            swapped[i+3] = raw[i]
-
-                    except Exception:
-                        print("    Error: Could not byteswap the compressed " +
-                              "animation frame data in '%s'" % anim.name)
-                        corrupt = True
 
                 if corrupt:
                     # change a few things so it doesnt crash the hek
@@ -453,13 +428,12 @@ def make_antr_tag(meta_path, tags_dir, map_data):
                 f_data.STEPTREE = swapped = bytearray(raw)
                 for f in range(frame_count):
                     for n in range(node_count):
-                        # dont need to byteswap rotations
-                        #if rot_flags&(1<<n):
-                        #    swapped[i] = raw[i+1];   swapped[i+1] = raw[i]
-                        #    swapped[i+2] = raw[i+3]; swapped[i+3] = raw[i+2]
-                        #    swapped[i+4] = raw[i+5]; swapped[i+5] = raw[i+4]
-                        #    swapped[i+6] = raw[i+7]; swapped[i+7] = raw[i+6]
-                        #    i += 8
+                        if rot_flags&(1<<n):
+                            swapped[i] = raw[i+1];   swapped[i+1] = raw[i]
+                            swapped[i+2] = raw[i+3]; swapped[i+3] = raw[i+2]
+                            swapped[i+4] = raw[i+5]; swapped[i+5] = raw[i+4]
+                            swapped[i+6] = raw[i+7]; swapped[i+7] = raw[i+6]
+                            i += 8
 
                         if trans_flags&(1<<n):
                             swapped[i] = raw[i+3];   swapped[i+1] = raw[i+2]
