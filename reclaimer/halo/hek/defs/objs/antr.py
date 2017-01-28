@@ -1,34 +1,44 @@
-from os.path import splitext
+from os.path import splitext, dirname
 from math import sqrt, acos, sin
 from array import array
-from struct import pack_into
+from tkinter.filedialog import askopenfilename
+from struct import pack_into, unpack
 
 from .tag import *
+from ..mod2 import mod2_def
 from supyr_struct.field_types import *
 from supyr_struct.field_type_methods import byteorder_char
 from supyr_struct.defs.block_def import BlockDef
 
 
+# these structure definitions aren't really used in the code below, but
+# are a good way to illustrate the structure of the compressed data.
 frame_header = BlockDef("frame_header",
     BitUInt("frames_count", SIZE=12),
     BitUInt("frames_offset", SIZE=20),
     SIZE=4, TYPE=BitStruct
     )
 
-# Translation is not compressed, and is still an xyz float.
-# Scale is also not compressed, and is a single float.
-compressed_rotation = BlockDef("compressed_rotation",
-    BSInt16("i"),
-    BitStruct("compressed components",
-        BitUInt("w", SIZE=11),
-        Bit1SInt("k", SIZE=11),
-        Bit1SInt("j", SIZE=10)
-        ),
-    SIZE=6
+# compressed quaternion rotation
+rot_def = BlockDef("comp_rotation",
+    Bit1SInt("w", SIZE=12),
+    Bit1SInt("k", SIZE=12),
+    Bit1SInt("j", SIZE=12),
+    Bit1SInt("i", SIZE=12),
+    # yes, they are stored in this order
+    SIZE=6, TYPE=BitStruct
     )
-# need to swap first 2 bytes with last 2 bytes like so:
-# data = data[2:] + data[:2]
-# after decompressing, the components need to be normalized
+# you'll need to read the 6 bytes as 3 little endian ints, then bit shift
+# them together like so:    compressed_quat = int2 + (int1<<16) + (int0<<32)
+
+# Translation is not compressed, and is still an xyz float triple.
+trans_def = BlockDef("translation",
+    Float("x"),
+    Float("y"),
+    Float("z"),
+    )
+
+# Scale is also not compressed, and is a single float.
 
 
 def stream_size(node=None, parent=None, attr_index=None,
@@ -54,7 +64,7 @@ def stream_size(node=None, parent=None, attr_index=None,
     if transform_index != 0 or attr_index != 0:
         offset = comp_frame[transform_index][attr_index]
 
-    # looking for the NEXT offset
+    # looking for the NEXT streams offset
     attr_index += 1
 
     if attr_index <= 3:
@@ -68,21 +78,30 @@ def stream_size(node=None, parent=None, attr_index=None,
 
 
 # frame_head:
-# Contains the frame count for each frame as well as an
-# unknown increasing 16 or 24 bit number(buffer end?).
+# Contains information on which frames are stored for each
+# node and where to jump to in the frame_nums to read them.
+# Look at the above frame_header struct for exact specifications.
 
 # frame_nums:
-# An array of arrays of UInt16s that specify the frames
-# that are actually stored in the frame_data for each node.
+# An array of arrays of UInt16s. The outer array stores one array
+# of UInt16s for each node being rotated, translated, or scaled.
+# Each of these UInt16 arrays stores the frame numbers that specify
+# which frames have been stored in frame_data(the missing frames
+# will need to be recreated by interpolating between stored frames).
 
 # begin_frame:
-# The initial rotation/translation/scale for each of
-# the nodes, even ones that arent being animatied.
+# An array of transformation data(rotation, translation, or scale) for
+# each nodes initial state(Maybe use this to remake the default_data).
+# The array has one entry for each node in the animation, and the data
+# in it is given by either rot_def(rotation), trans_def(translation),
+# or is a single float(scale).  Scale doesnt seem to be stored here if
+# a nodes scale isnt animated, so assume the scale is 1.0 for those.
 
 # frame_data:
-# Contains the data for each node for each frame. The data is
-# different depending on if it is rotation, translation, or scale.
-# Frame data is NOT guaranteed to contain the final keyframe.
+# Contains the data for each node for each stored frame.
+# The data is different depending on the transformation
+# type(follows the same rules as begin_frame) and should NOT
+# be expected to contain the final frame in the animation.
 
 compressed_frames = BlockDef("compressed frames",
     Struct("rotation_offsets",
@@ -115,14 +134,14 @@ compressed_frames = BlockDef("compressed frames",
     Container("translation",
         UInt32Array("frame_head", SIZE=stream_size),
         SInt16Array("frame_nums", SIZE=stream_size),
-        FloatArray("begin_frame", SIZE=stream_size, ENDIAN='>'),
-        FloatArray("frame_data", SIZE=stream_size, ENDIAN='>'),
+        FloatArray("begin_frame", SIZE=stream_size),
+        FloatArray("frame_data", SIZE=stream_size),
         ),
     Container("scale",
         UInt32Array("frame_head", SIZE=stream_size),
         SInt16Array("frame_nums", SIZE=stream_size),
-        FloatArray("begin_frame", SIZE=stream_size, ENDIAN='>'),
-        FloatArray("frame_data", SIZE=stream_size, ENDIAN='>'),
+        FloatArray("begin_frame", SIZE=stream_size),
+        FloatArray("frame_data", SIZE=stream_size),
         ),
     endian='<'
     )
@@ -155,6 +174,7 @@ class AntrTag(HekTag):
 
         offset = anim.offset_to_compressed_data
         comp_data = anim.frame_data.STEPTREE
+        def_data = anim.default_data.STEPTREE
         if offset > 0:
             comp_data = comp_data[offset:]
 
@@ -177,8 +197,8 @@ class AntrTag(HekTag):
             scale_count += has_scale
 
             # the node stores rotation, translation, and scale
-            frames = [ [[None, None, None, None],
-                        [None, None, None], None]
+            frames = [ [[0.0, 0.0, 0.0, 1.0],
+                        [0.0, 0.0, 0.0], 1.0]
                        for j in range(frame_count) ]
 
             node_frames.append(frames)
@@ -207,7 +227,7 @@ class AntrTag(HekTag):
         scale_data  = scale.frame_data
 
         # decompress the first frames data
-        i = 0
+        n = si = 0
         sq = sqrt  # local reference
         for node in node_frames:
             frame0 = node[0]
@@ -215,15 +235,16 @@ class AntrTag(HekTag):
             trans = frame0[1]
 
             # rotation
-            comp_rot = (rot_begin[i*3 + 1] << 16) + rot_begin[i*3 + 2]
-            rot[0] = rot_begin[i*3]/32767
-            rot[1] = ((comp_rot>>22)&511)/511
-            rot[2] = ((comp_rot>>11)&1023)/1023
+            comp_rot = rot_begin[n*3+2]+(rot_begin[n*3+1]<<16)+(rot_begin[n*3]<<32)
             rot[3] = (comp_rot&2047)/2047
-            length = sq(rot[0]**2+rot[1]**2+rot[2]**2+rot[3]**2)
+            rot[2] = ((comp_rot>>12)&2047)/2047
+            rot[1] = ((comp_rot>>24)&2047)/2047
+            rot[0] = ((comp_rot>>36)&2047)/2047
             if sum(rot):
-                if comp_rot&0x80000000: rot[1] = rot[1]-1
-                if comp_rot&0x00200000: rot[2] = rot[2]-1
+                if comp_rot&0x800: rot[3] = rot[3]-1
+                if comp_rot&0x800000: rot[2] = rot[2]-1
+                if comp_rot&0x800000000: rot[1] = rot[1]-1
+                if comp_rot&0x800000000000: rot[0] = rot[0]-1
                 length = sq(rot[0]**2+rot[1]**2+rot[2]**2+rot[3]**2)
                 rot[0] /= length
                 rot[1] /= length
@@ -234,15 +255,77 @@ class AntrTag(HekTag):
                 rot[3] = 1
 
             # translation
-            trans[0] = trans_begin[i*3]
-            trans[1] = trans_begin[i*3+1]
-            trans[2] = trans_begin[i*3+2]
+            trans[0] = trans_begin[n]
+            trans[1] = trans_begin[n+1]
+            trans[2] = trans_begin[n+2]
 
             # scale
-            if scale_flags&(1<<i):
-                frame0[2] = scale_begin[i]
+            if scale_flags&(1<<n):
+                frame0[2] = scale_begin[si]
+                si += 1  # for scale, only nodes with keyframes are
+                #          stored in the first frame, not every node
 
-            i += 1
+            n += 1
+
+
+        # if the default data is all empty, try to extract
+        # it from the gbxmodel that this animation goes to.
+        if not sum(def_data):
+            def_data = bytearray()
+            try:
+                # try to get a cached default_data from
+                # a previous animation looking for it.
+                mod2_nodes = self.gbxmodel_nodes
+            except AttributeError:
+                mod2_nodes = None
+
+            if mod2_nodes is None:
+                print("    This animation is missing its default_data, " +
+                      "which will prevent it from being imported properly.\n" +
+                      "    Select the gbxmodel that it animates to extract it.")
+                print("    WARNING!: If multiple model are animated by this " +
+                      "animation(such as with first person weapon anims) " +
+                      "then this will not work.\n    I think you can export " +
+                      "a gbxmodel with all the pieces to animate parented " +
+                      "together in their default positions and use that.\n" +
+                      "    That might work, but honestly I don't know...")
+                mod2_tag = None
+                while mod2_tag is None or len(mod2_nodes) != node_count:
+                    if mod2_tag is not None:
+                        print("Gbxmodel node count did not match " +
+                              "the node count in this animation.")
+                    mod2_path = askopenfilename(
+                        initialdir=dirname(self.filepath), filetypes=(
+                            ('Gbxmodel', '*.gbxmodel'), ('All', '*')),
+                        title="Select a Gbxmodel tag")
+                    try:
+                        mod2_tag = mod2_def.build(filepath=mod2_path)
+                        mod2_nodes = mod2_tag.data.tagdata.nodes.STEPTREE
+                    except Exception:
+                        print(format_exc())
+                        mod2_tag = None
+
+            # cache the default data in case another animation needs it
+            self.gbxmodel_nodes = mod2_nodes
+
+            i = 0
+            for n in range(node_count):
+                rot   = mod2_nodes[n].rotation
+                trans = mod2_nodes[n].translation
+                if not (rot_flags&(1<<n)):
+                    def_data += b'\x00'*8
+                    pack_into('>hhhh', def_data, i,
+                              int(rot[0]*32767), int(rot[1]*32767),
+                              int(rot[2]*32767), int(rot[3]*32767))
+                    i += 8
+                if not (trans_flags&(1<<n)):
+                    def_data += b'\x00'*12
+                    pack_into('>fff', def_data, i, *trans)
+                    i += 12
+                if not (scale_flags&(1<<n)):
+                    def_data += b'\x00'*4
+                    pack_into('>f', def_data, i, 1.0)
+                    i += 4
 
         # decompress the transforms
         ri = ti = si = 0
@@ -269,14 +352,16 @@ class AntrTag(HekTag):
             # rotation
             for f in rot_frames:
                 rot = node_frames[n][f][0]
-                comp_rot = rot_data[ri+2] + (rot_data[ri+1] << 16)
-                rot[0] = rot_data[ri]/32767
-                rot[1] = ((comp_rot>>22)&511)/511
-                rot[2] = ((comp_rot>>11)&1023)/1023
+                comp_rot = rot_data[ri+2]+(rot_data[ri+1]<<16)+(rot_data[ri]<<32)
                 rot[3] = (comp_rot&2047)/2047
+                rot[2] = ((comp_rot>>12)&2047)/2047
+                rot[1] = ((comp_rot>>24)&2047)/2047
+                rot[0] = ((comp_rot>>36)&2047)/2047
                 if sum(rot):
-                    if comp_rot&0x80000000: rot[1] = rot[1]-1
-                    if comp_rot&0x00200000: rot[2] = rot[2]-1
+                    if comp_rot&0x800: rot[3] = rot[3]-1
+                    if comp_rot&0x800000: rot[2] = rot[2]-1
+                    if comp_rot&0x800000000: rot[1] = rot[1]-1
+                    if comp_rot&0x800000000000: rot[0] = rot[0]-1
                     length = sq(rot[0]**2+rot[1]**2+rot[2]**2+rot[3]**2)
                     rot[0] /= length
                     rot[1] /= length
@@ -298,10 +383,20 @@ class AntrTag(HekTag):
                 node_frames[n][f][2] = scale_data[si]
                 si += 1
 
+
         # interpolate over the given frames to fill in the missing ones
         for n in range(node_count):
             node = node_frames[n]
+
             f0 = node[0][0]
+            # copy the first frames to frame[0]
+            if node_rot_nums[n]:
+                node[0][0] = node[node_rot_nums[n][0]][0]
+            if node_trans_nums[n]:
+                node[0][1] = node[node_trans_nums[n][0]][1]
+            if node_scale_nums[n]:
+                node[0][2] = node[node_scale_nums[n][0]][2]
+
             i0 = f0[0]
             j0 = f0[1]
             k0 = f0[2]
@@ -318,22 +413,36 @@ class AntrTag(HekTag):
                 num_dist = next_num - last_num
 
                 cos_half_theta = i0*i1 + j0*j1 + k0*k1 + w0*w1
+                # this probably shouldnt be re-enabled. It modifies the
+                # rotation vector so it points the opposite direction if
+                # the rotation would be > 180 degrees, causing it to go
+                # the other way around and ensuring the rotation is <= 180
+                #if cos_half_theta < 0:
+                #    cos_half_theta = -cos_half_theta
+                #    f1[0] = i1 = -i1
+                #    f1[1] = j1 = -j1
+                #    f1[2] = k1 = -k1
+                #    f1[3] = w1 = -w1
+                    
                 if abs(cos_half_theta) >= 1.0:
                     half_theta = 0.0
                 else:
                     half_theta = acos(cos_half_theta)
+                    
                 sin_half_theta = sqrt(max(1 - cos_half_theta**2, 0))
 
-                # angle is not well defined in floating point when this small
-                if sin_half_theta <= 0.000001:
-                    r0 = r1 = 0.5
                 for i in range(1, num_dist):
                     f = node[last_num+i][0]
                     i = i/num_dist
 
-                    if sin_half_theta > 0.000001:
+                    # angle is not well defined in floating point at this point
+                    if sin_half_theta <= 0.000001:
+                        r0 = 1 - i
+                        r1 = i
+                    else:
                         r0 = sin((1 - i)*half_theta) / sin_half_theta
                         r1 = sin(i*half_theta) / sin_half_theta
+
                     f[0] = i0*r0 + i1*r1
                     f[1] = j0*r0 + j1*r1
                     f[2] = k0*r0 + k1*r1
@@ -368,6 +477,7 @@ class AntrTag(HekTag):
                     f[1] = (y0*(num_dist-i) + y1*i) / num_dist
                     f[2] = (z0*(num_dist-i) + z1*i) / num_dist
 
+                f0 = f1
                 x0 = x1
                 y0 = y1
                 z0 = z1
@@ -393,13 +503,15 @@ class AntrTag(HekTag):
             for i in range(last_num, frame_count):
                 node[i][2] = f0
 
-
         # make sure the frame_size is accurate and uncheck the compressed flag
         anim.frame_size = rot_count*8 + trans_count*12 + scale_count*4
+        anim.default_data.STEPTREE = def_data
+        anim.frame_data.STEPTREE = new_frame_data = bytearray(
+            b'\x00'*anim.frame_size*frame_count)
+        anim.offset_to_compressed_data = 0
         anim.flags.compressed_data = False
 
         # write the rotations, translations, and scales to the new_frame_data
-        new_frame_data = bytearray(b'\x00'*anim.frame_size*frame_count)
         i = 0
         node_range = range(node_count)
         for f in range(frame_count):
@@ -419,7 +531,5 @@ class AntrTag(HekTag):
                 if scale_flags&(1<<n):
                     pack_into('>f', new_frame_data, i, node[2])
                     i += 4
-
-        anim.frame_data.STEPTREE = new_frame_data
 
         return True

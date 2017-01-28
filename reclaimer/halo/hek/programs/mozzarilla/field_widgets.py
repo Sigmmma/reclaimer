@@ -291,6 +291,20 @@ class DependencyFrame(ContainerFrame):
 
 class HaloRawdataFrame(RawdataFrame):
 
+    def delete_node(self):
+        undo_node = self.node
+        self.node = self.parent[self.attr_index] = self.node[0:0]
+        self.edit_create(undo_node=undo_node, redo_node=self.node)
+
+        # until i come up with a better method, i'll have to rely on
+        # reloading the root field widget so sizes will be updated
+        try:
+            self.f_widget_parent.reload()
+            self.set_edited()
+        except Exception:
+            print(format_exc())
+            print("Could not reload after deleting data.")
+
     def edit_apply(self=None, *, edit_state, undo=True):
         attr_index = edit_state.attr_index
 
@@ -401,7 +415,7 @@ class SoundSampleFrame(HaloRawdataFrame):
             self.edit_create(undo_node=undo_node, redo_node=self.node)
 
             # until i come up with a better method, i'll have to rely on
-            # reloading the root field widget so stuff(sizes) will be updated
+            # reloading the root field widget so sizes will be updated
             try:
                 self.f_widget_parent.reload()
                 self.set_edited()
