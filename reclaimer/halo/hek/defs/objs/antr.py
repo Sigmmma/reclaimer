@@ -406,6 +406,13 @@ class AntrTag(HekTag):
             # interpolate the rotations
             for next_num in node_rot_nums[n]:
                 f1 = node[next_num][0]
+                ######################################################
+                #
+                #    NOTE: Some of the frame numbers are out of order.
+                #    This might be what I'm missing, and might help me
+                #    finally be able to fully decode these animations.
+                #
+                ######################################################
                 i1 = f1[0]
                 j1 = f1[1]
                 k1 = f1[2]
@@ -413,17 +420,19 @@ class AntrTag(HekTag):
                 num_dist = next_num - last_num
 
                 cos_half_theta = i0*i1 + j0*j1 + k0*k1 + w0*w1
-                # this probably shouldnt be re-enabled. It modifies the
-                # rotation vector so it points the opposite direction if
-                # the rotation would be > 180 degrees, causing it to go
+                # This probably shouldnt NEED to be enabled. It modifies
+                # the rotation vector so it points the opposite direction
+                # if the rotation would be > 180 degrees, causing it to go
                 # the other way around and ensuring the rotation is <= 180
-                #if cos_half_theta < 0:
-                #    cos_half_theta = -cos_half_theta
-                #    f1[0] = i1 = -i1
-                #    f1[1] = j1 = -j1
-                #    f1[2] = k1 = -k1
-                #    f1[3] = w1 = -w1
-                    
+                if cos_half_theta < 0:
+                    cos_half_theta = -cos_half_theta
+                    f1[0] = i1 = -i1
+                    f1[1] = j1 = -j1
+                    f1[2] = k1 = -k1
+                    f1[3] = w1 = -w1
+
+                # slerp interpolation code
+                '''
                 if abs(cos_half_theta) >= 1.0:
                     half_theta = 0.0
                 else:
@@ -447,6 +456,24 @@ class AntrTag(HekTag):
                     f[1] = j0*r0 + j1*r1
                     f[2] = k0*r0 + k1*r1
                     f[3] = w0*r0 + w1*r1
+                '''
+                # nlerp interpolation code
+                di = (i1 - i0) / num_dist
+                dj = (j1 - j0) / num_dist
+                dk = (k1 - k0) / num_dist
+                dw = (w1 - w0) / num_dist
+                for i in range(1, num_dist):
+                    f = node[last_num+i][0]
+
+                    f[0] = i0 + di*i
+                    f[1] = j0 + dj*i
+                    f[2] = k0 + dk*i
+                    f[3] = w0 + dw*i
+                    length = sqrt(f[0]**2 + f[1]**2 + f[2]**2 + f[3]**2)
+                    f[0] /= length
+                    f[1] /= length
+                    f[2] /= length
+                    f[3] /= length
 
                 f0 = f1
                 i0 = i1
