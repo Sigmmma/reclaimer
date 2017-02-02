@@ -43,23 +43,3 @@ def dock_window_movement(parent_window, child_windows):
                 child_window.geometry(child_dim)
 
     parent_window.window_docking_updating = False
-
-
-
-def mini_maxi_with_parent(parent_window, child_windows, new_state):
-    '''this function will make the supplied child windows
-    minimize and maximize with the parent window and vice versa'''
-    if not parent_window.mini_maxi_state_changing:
-        parent_window.mini_maxi_state_changing = True
-
-        if new_state == "MAX":
-            parent_window.wm_state('normal')
-            for window in child_windows:
-                window.wm_state('normal')
-        else:
-            parent_window.wm_state('iconic')
-            for window in child_windows:
-                window.wm_state('iconic')
-            
-        parent_window.mini_maxi_state_changing = False
-        
