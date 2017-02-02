@@ -157,8 +157,8 @@ class AntrTag(HekTag):
 
         return decompressed_indices
 
-    def decompress_anim(self, i):
-        anim = self.data.tagdata.animations.STEPTREE[i]
+    def decompress_anim(self, anim_index):
+        anim = self.data.tagdata.animations.STEPTREE[anim_index]
 
         if not anim.flags.compressed_data:
             return False
@@ -402,6 +402,10 @@ class AntrTag(HekTag):
             k0 = f0[2]
             w0 = f0[3]
             last_num = 0
+            reverse_orient = False
+            if n == 1 and anim_index == 1:
+                print(node_rot_nums[n])
+                print(0, f0)
 
             # interpolate the rotations
             for next_num in node_rot_nums[n]:
@@ -420,16 +424,19 @@ class AntrTag(HekTag):
                 num_dist = next_num - last_num
 
                 cos_half_theta = i0*i1 + j0*j1 + k0*k1 + w0*w1
-                # This probably shouldnt NEED to be enabled. It modifies
-                # the rotation vector so it points the opposite direction
-                # if the rotation would be > 180 degrees, causing it to go
-                # the other way around and ensuring the rotation is <= 180
-                if cos_half_theta < 0:
-                    cos_half_theta = -cos_half_theta
-                    f1[0] = i1 = -i1
-                    f1[1] = j1 = -j1
-                    f1[2] = k1 = -k1
-                    f1[3] = w1 = -w1
+                #if (cos_half_theta < 0) != reverse_orient:
+                #    reverse_orient = not reverse_orient
+                #    cos_half_theta *= -1
+
+                #if reverse_orient:
+                #    # need to change the vector rotations to be 2pi - rot
+                #    f1[0] = i1 = -i1
+                #    f1[1] = j1 = -j1
+                #    f1[2] = k1 = -k1
+                #    f1[3] = w1 = -w1
+
+                if n == 1 and anim_index == 1:
+                    print(next_num, reverse_orient, cos_half_theta, f1)
 
                 # slerp interpolation code
                 '''
@@ -457,23 +464,24 @@ class AntrTag(HekTag):
                     f[2] = k0*r0 + k1*r1
                     f[3] = w0*r0 + w1*r1
                 '''
-                # nlerp interpolation code
-                di = (i1 - i0) / num_dist
-                dj = (j1 - j0) / num_dist
-                dk = (k1 - k0) / num_dist
-                dw = (w1 - w0) / num_dist
-                for i in range(1, num_dist):
-                    f = node[last_num+i][0]
+                if num_dist:
+                    # nlerp interpolation code
+                    di = (i1 - i0) / num_dist
+                    dj = (j1 - j0) / num_dist
+                    dk = (k1 - k0) / num_dist
+                    dw = (w1 - w0) / num_dist
+                    for i in range(1, num_dist):
+                        f = node[last_num+i][0]
 
-                    f[0] = i0 + di*i
-                    f[1] = j0 + dj*i
-                    f[2] = k0 + dk*i
-                    f[3] = w0 + dw*i
-                    length = sqrt(f[0]**2 + f[1]**2 + f[2]**2 + f[3]**2)
-                    f[0] /= length
-                    f[1] /= length
-                    f[2] /= length
-                    f[3] /= length
+                        f[0] = i0 + di*i
+                        f[1] = j0 + dj*i
+                        f[2] = k0 + dk*i
+                        f[3] = w0 + dw*i
+                        length = sqrt(f[0]**2 + f[1]**2 + f[2]**2 + f[3]**2)
+                        f[0] /= length
+                        f[1] /= length
+                        f[2] /= length
+                        f[3] /= length
 
                 f0 = f1
                 i0 = i1

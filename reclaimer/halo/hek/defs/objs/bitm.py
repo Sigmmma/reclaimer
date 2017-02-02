@@ -34,7 +34,6 @@ BITMAP_PADDING = 512
 #each sub-bitmap(cubemap face) must be a multiple of 128 bytes
 CUBEMAP_PADDING = 128
 
-        
 
 class BitmTag(HekTag):
     
@@ -78,9 +77,8 @@ class BitmTag(HekTag):
         bitmap = self.data.tagdata.bitmaps.bitmaps_array[b_index]
         if new_value is None:
             return(bitmap.width, bitmap.height, bitmap.depth)
-        bitmap.width, bitmap.height, bitmap.depth = (new_value[0],
-                                                     new_value[1],
-                                                     new_value[2])
+        bitmap.width, bitmap.height, bitmap.depth = (
+            new_value[0], new_value[1], new_value[2])
 
     def bitmap_flags(self, b_index=0, new_value=None):
         if new_value is None:
@@ -88,18 +86,16 @@ class BitmTag(HekTag):
         self.data.tagdata.bitmaps.bitmaps_array[b_index].flags = new_value
         
     def bitmap_base_address(self, b_index=0, new_value=None):
+        bitm = self.data.tagdata.bitmaps.bitmaps_array[b_index]
         if new_value is None:
-            return(self.data.tagdata.bitmaps.bitmaps_array[b_index].\
-                   base_address)
-        self.data.tagdata.bitmaps.bitmaps_array[b_index].base_address=new_value
+            return(bitm.base_address)
+        bitm.base_address=new_value
 
     def bitmap_data_offset(self, b_index=0, new_value=None):
+        bitm = self.data.tagdata.bitmaps.bitmaps_array[b_index]
         if new_value is None:
-            return(self.data.tagdata.bitmaps.\
-                   bitmaps_array[b_index].pixels_offset)
-        self.data.tagdata.bitmaps.bitmaps_array[b_index].pixels_offset=new_value
-
-
+            return(bitm.pixels_offset)
+        bitm.pixels_offset=new_value
 
     def registration_point_x(self, b_index=0, new_value=None):
         bitm = self.data.tagdata.bitmaps.bitmaps_array[b_index]
@@ -121,7 +117,6 @@ class BitmTag(HekTag):
         bitm.registration_point_x, bitm.registration_point_y = new_value[0],\
                                                                new_value[1]
 
-
     @property
     def is_xbox_bitmap(self):
         #we only need to check the first bitmap
@@ -131,7 +126,6 @@ class BitmTag(HekTag):
         if new_flag is None:
             return self.data.tagdata.flags.processed_by_reclaimer
         self.data.tagdata.flags.processed_by_reclaimer = new_flag
-        
 
     def is_power_of_2_bitmap(self, b_index=0):
         return self.bitmap_flags(b_index).power_of_2_dim
@@ -143,21 +137,16 @@ class BitmTag(HekTag):
         if new_flag is None:
             return self.bitmap_flags(b_index).swizzled
         self.bitmap_flags(b_index).swizzled = new_flag
-    
 
     def color_plate_data_bytes_size(self, new_value=None):
         if new_value is None:
             return(self.data.tagdata.compressed_color_plate_data.size)
         self.data.tagdata.compressed_color_plate_data.size = new_value
-    
 
     def pixel_data_bytes_size(self, new_value=None):
         if new_value is None:
             return self.data.tagdata.processed_pixel_data.size
         self.data.tagdata.processed_pixel_data.size = new_value
-
-
-
 
     def set_platform(self, saveasxbox):
         '''changes different things to set the platform to either PC or Xbox'''
@@ -178,23 +167,23 @@ class BitmTag(HekTag):
             else:
                 bitmap.base_address = 0
 
+        if not saveasxbox:
+            return
 
-        if saveasxbox:
-            #if Xbox, reset these structure variable's all to 0
-            #since xbox doesn't like them being non-zero
-            tagdata = self.data.tagdata
-            for i in (1,2,3):
-                tagdata.compressed_color_plate_data[i] = 0
-                tagdata.processed_pixel_data[i] = 0
+        #if Xbox, reset these structure variable's all to 0
+        #since xbox doesn't like them being non-zero
+        tagdata = self.data.tagdata
+        for i in (1,2,3):
+            tagdata.compressed_color_plate_data[i] = 0
+            tagdata.processed_pixel_data[i] = 0
 
-            for i in (1,2):
-                tagdata.sequences[i] = 0
-                tagdata.bitmaps[i] = 0
-                    
-            #swap the order of the cubemap faces
-            #and mipmaps if saving to xbox format
-            self.change_sub_bitmap_ordering(saveasxbox)
-
+        for i in (1,2):
+            tagdata.sequences[i] = 0
+            tagdata.bitmaps[i] = 0
+                
+        #swap the order of the cubemap faces
+        #and mipmaps if saving to xbox format
+        self.change_sub_bitmap_ordering(saveasxbox)
 
     def change_sub_bitmap_ordering(self, saveasxbox):
         '''Used to change the mipmap and cube face ordering.
@@ -229,9 +218,8 @@ class BitmTag(HekTag):
                     for mip in range(0, mipmap_count*6, 6):
                         '''get the block we want from the original
                         layout and place it in its new position'''
-                        if saveasxbox:#True = Xbox, False = PC
+                        if saveasxbox:
                             tex_block[i] = template[mip + face]
                         else:
                             tex_block[mip + face] = template[i]
                         i += 1
-                    

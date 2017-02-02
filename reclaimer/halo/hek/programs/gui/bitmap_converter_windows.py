@@ -44,6 +44,8 @@ def get_will_be_processed(tag, conv_flags):
 '''ENTER A DESCRIPTION FOR THIS CLASS WHEN I HAVE TIME'''
 class BitmapConverterMainWindow(Tk):
 
+    help_window = None
+
     def __init__(self, handler, **options):
         Tk.__init__(self, **options )
         
@@ -63,7 +65,6 @@ class BitmapConverterMainWindow(Tk):
         self.window_docking_interval = 0.1
         
         self.dock_window_movement = dock_window_movement
-        self.mini_maxi_state_changing = True
 
         
         self.save_all_tags_as = True
@@ -138,7 +139,7 @@ class BitmapConverterMainWindow(Tk):
         #Make the menu bar
         self.menubar = Menu(self)
         self.menubar.add_command(label="Useful help",
-                                 command=self.show_bitmap_converter_help)
+                                 command=self.show_help)
         self.menubar.add_command(label="Toggle all tags to Xbox",
                                  command=self.set_save_all_tags_as)
         self.menubar.add_command(label="Un-dock windows",
@@ -553,22 +554,11 @@ class BitmapConverterMainWindow(Tk):
         
         self.disable_settings_window_buttons()
         self.tag_list_window = BitmapConverterListWindow(handler, self)
-        self.help_window = BitmapConverterHelpWindow(self)
         
         self.tag_data_canvas = BitmapConverterDataWindow(handler, self)
         self.tag_data_canvas.place(x=495, y=2, anchor=NW)
 
         self.child_windows = (self.tag_list_window,)
-        self.close_help()
-
-        self.bind("<Map>", self._maximize_children)
-        self.bind("<Unmap>", self._minimize_children)
-
-        self.tag_list_window.bind("<Map>",
-                                  self.tag_list_window._maximize_parent)
-        self.tag_list_window.bind("<Unmap>",
-                                  self.tag_list_window._minimize_parent)
-
 
         #Create and start the window update thread
         self.window_docking_thread = threading.Thread(
@@ -581,14 +571,6 @@ class BitmapConverterMainWindow(Tk):
             target=self._main_window_update)
         self.window_update_thread.daemon = True
         self.window_update_thread.start()
-
-        self.mini_maxi_state_changing = False
-
-
-    def _minimize_children(self, *args):
-        mini_maxi_with_parent(self, self.child_windows, "MIN")
-    def _maximize_children(self, *args):
-        mini_maxi_with_parent(self, self.child_windows, "MAX")
 
 
     def window_docking_daemon(self):
@@ -669,15 +651,16 @@ class BitmapConverterMainWindow(Tk):
                 self.tags_directory_field.config(state=DISABLED)
 
 
-    def show_bitmap_converter_help(self):
+    def show_help(self):
         try:
-            self.help_window.update()
-            self.help_window.deiconify()
+            if self.help_window is None:
+                self.help_window = BitmapConverterHelpWindow(self)
         except Exception:
             pass
 
     def close_help(self):
-        try: self.help_window.withdraw()
+        try:
+            self.help_window.destroy()
         except Exception:
             pass
             
@@ -1265,7 +1248,7 @@ class BitmapConverterListWindow(Toplevel):
         self.initialize_tag_sort_mappings()
         
         self.protocol("WM_DELETE_WINDOW", self.parent.close_main_window)
-        self.title("tag List")
+        self.title("Tag List")
 
         self.prev_pos_x = 0
         self.prev_pos_y = 457
@@ -1337,12 +1320,7 @@ class BitmapConverterListWindow(Toplevel):
                                    self.set_selected_tags_list )
         self.tag_data_listbox.bind('<<ListboxSelect>>',
                                    self.move_selection_to_paths_list )
-
-
-    def _minimize_parent(self, *args):
-        mini_maxi_with_parent(self.parent, self.parent.child_windows, "MIN")
-    def _maximize_parent(self, *args):
-        mini_maxi_with_parent(self.parent, self.parent.child_windows, "MAX")
+        self.transient(self.parent)
 
 
     def reset_lists(self):
@@ -1624,17 +1602,11 @@ class BitmapConverterHelpWindow(Toplevel):
 
         self.help_window_scrollbar_y.pack(side="right", fill="y")
         self.displayed_help_text_box.pack(side="left",fill="both", expand=True)
+        self.transient(self.parent)
 
-
-
-    def _minimize_parent(self, *args):
-        mini_maxi_with_parent(self.parent, self.parent.child_windows, "MIN")
-        
-    def _maximize_parent(self, *args):
-        mini_maxi_with_parent(self.parent, self.parent.child_windows, "MAX")
-        
     def close_help(self):
-        self.withdraw()
+        self.parent.help_window = None
+        Toplevel.destroy(self)
     
     def change_displayed_help(self, help_type):
         self.displayed_help_text_box.delete('0.0', END)
