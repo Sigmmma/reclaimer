@@ -4,7 +4,7 @@ from math import sqrt
 
 #this will be the reference to the bitmap convertor module.
 #once the module loads this will become the reference to it.
-bc = None
+ab = None
 
 def combine(main_dict, *dicts):        
     for dct in dicts:
@@ -22,52 +22,52 @@ def initialize():
     """FOR DXT FORMATS, ALPHA CHANNELS ARE TREATED SPECIALLY, BUT ARE EXPLICITELY
     PLACED HERE TO MAKE SURE THEY DONT CAUSE THE CHANNEL MAP SWAPPING PROBLEMS"""
     
-    bc.FORMAT_DXT1 = "DXT1"
-    bc.FORMAT_DXT2 = "DXT2"
-    bc.FORMAT_DXT3 = "DXT3"
-    bc.FORMAT_DXT4 = "DXT4"
-    bc.FORMAT_DXT5 = "DXT5"
+    ab.FORMAT_DXT1 = "DXT1"
+    ab.FORMAT_DXT2 = "DXT2"
+    ab.FORMAT_DXT3 = "DXT3"
+    ab.FORMAT_DXT4 = "DXT4"
+    ab.FORMAT_DXT5 = "DXT5"
 
-    bc.FORMAT_DXT3A = "DXT3A"           #NOT YET IMPLEMENTED
-    bc.FORMAT_DXT3A1111 = "DXT3A1111"   #NOT YET IMPLEMENTED
+    ab.FORMAT_DXT3A = "DXT3A"           #NOT YET IMPLEMENTED
+    ab.FORMAT_DXT3A1111 = "DXT3A1111"   #NOT YET IMPLEMENTED
     
-    bc.FORMAT_DXT5NM = "DXT5NM"         #NOT YET IMPLEMENTED
-    bc.FORMAT_DXN = "DXN"
-    bc.FORMAT_DXT5A = "DXT5A"           #NOT YET IMPLEMENTED
-    bc.FORMAT_DXT5Y = "DXT5Y"           #NOT YET IMPLEMENTED
-    bc.FORMAT_DXT5AY = "DXT5AY"         #NOT YET IMPLEMENTED
+    ab.FORMAT_DXT5NM = "DXT5NM"         #NOT YET IMPLEMENTED
+    ab.FORMAT_DXN = "DXN"
+    ab.FORMAT_DXT5A = "DXT5A"           #NOT YET IMPLEMENTED
+    ab.FORMAT_DXT5Y = "DXT5Y"           #NOT YET IMPLEMENTED
+    ab.FORMAT_DXT5AY = "DXT5AY"         #NOT YET IMPLEMENTED
     
-    bc.FORMAT_CXT1 = "CXT1"             #NOT YET IMPLEMENTED
-    bc.FORMAT_U8V8 = "U8V8"             #NOT YET IMPLEMENTED
+    ab.FORMAT_CXT1 = "CXT1"             #NOT YET IMPLEMENTED
+    ab.FORMAT_U8V8 = "U8V8"             #NOT YET IMPLEMENTED
 
     dxt_specifications = {'compressed':True, 'dds_format':True,
                           'min_width':4, 'min_height':4,
-                          'data_size':'I', 'channel_count':4,
+                          'data_size':'L', 'channel_count':4,
                           'channel_offsets':(0,11,5,0),
                           'channel_masks':(0,63488,2016,31)}
 
 
-    bc.define_format(**combine({'format_id':bc.FORMAT_DXT1, 'bpp':4,
+    ab.define_format(**combine({'format_id':ab.FORMAT_DXT1, 'bpp':4,
                                 'channel_depths':(1,5,6,5),
                                 'unpacker':unpack_dxt1,
                                 'packer':pack_dxt1},
                                dxt_specifications) )
     
-    for FORMAT in (bc.FORMAT_DXT2, bc.FORMAT_DXT3):
-        bc.define_format(**combine({'format_id':FORMAT, 'bpp':8,
+    for FORMAT in (ab.FORMAT_DXT2, ab.FORMAT_DXT3):
+        ab.define_format(**combine({'format_id':FORMAT, 'bpp':8,
                                     'channel_depths':(4,5,6,5),
                                     'unpacker':unpack_dxt2_3,
                                     'packer':pack_dxt2_3},
                                    dxt_specifications) )
         
-    for FORMAT in (bc.FORMAT_DXT4, bc.FORMAT_DXT5):
-        bc.define_format(**combine({'format_id':FORMAT, 'bpp':8,
+    for FORMAT in (ab.FORMAT_DXT4, ab.FORMAT_DXT5):
+        ab.define_format(**combine({'format_id':FORMAT, 'bpp':8,
                                     'channel_depths':(8,5,6,5),
                                     'unpacker':unpack_dxt4_5,
                                     'packer':pack_dxt4_5},
                                    dxt_specifications) )
         
-    bc.define_format(**combine({'format_id':bc.FORMAT_DXN, 'bpp':8,
+    ab.define_format(**combine({'format_id':ab.FORMAT_DXN, 'bpp':8,
                                 'channel_depths':(0,8,8,8),
                                 'unpacker':unpack_dxn,
                                 'packer':pack_dxn,
@@ -76,14 +76,14 @@ def initialize():
                                 'channel_masks':(0,16711680,65280,255)},
                                dxt_specifications) )
     
-    bc.define_format(format_id=bc.FORMAT_U8V8, bpp=16, channel_count=4,
+    ab.define_format(format_id=ab.FORMAT_U8V8, bpp=16, channel_count=4,
                      unpacker=unpack_u8v8, packer=pack_u8v8,
                      channel_depths=(0,8,8,8), dds_format=True,
                      channel_offsets=(0,0,8,0), channel_masks=(0,255,65280,0))
 
 
 #used to make dxt1 deciphering faster
-DXT1_INDEXING_MASKS = array("I", [])
+DXT1_INDEXING_MASKS = array("L", [])
 DXT1_INDEXING_BIT_SHIFTS = range(0, 32, 2)
 
 #used to make dxt3 deciphering faster
@@ -155,7 +155,7 @@ def unpack_dxt1(self, bitmap_index, width, height, depth=1):
     channel_3 = self.channel_mapping.index(3)
         
     #this is how many texels wide/tall the texture is
-    texel_width, texel_height, _ = bc.dimension_lower_bound_check(width//4, height//4)
+    texel_width, texel_height, _ = ab.clip_dimensions(width//4, height//4)
 
     #used to know where each pixel from the 4x4 texel should be placed into the unpacked pixel array
     texel_pixel_mapping = get_texel_mapping(width, height)
@@ -247,7 +247,7 @@ def unpack_dxt2_3(self, bitmap_index, width, height, depth=1):
     channel_3 = self.channel_mapping.index(3)
         
     #this is how many texels wide/tall the texture is
-    texel_width, texel_height, _ = bc.dimension_lower_bound_check(width//4, height//4)
+    texel_width, texel_height, _ = ab.clip_dimensions(width//4, height//4)
 
     #used to know where each pixel from the 4x4 texel should be placed into the unpacked pixel array
     texel_pixel_mapping = get_texel_mapping(width, height)
@@ -335,7 +335,7 @@ def unpack_dxt4_5(self, bitmap_index, width, height, depth=1):
     channel_3 = self.channel_mapping.index(3)
         
     #this is how many texels wide/tall the texture is
-    texel_width, texel_height, _ = bc.dimension_lower_bound_check(width//4, height//4)
+    texel_width, texel_height, _ = ab.clip_dimensions(width//4, height//4)
 
     #used to know where each pixel from the 4x4 texel should be placed into the unpacked pixel array
     texel_pixel_mapping = get_texel_mapping(width, height)
@@ -436,7 +436,7 @@ def unpack_dxn(self, bitmap_index, width, height, depth=1):
     channel_3 = self.channel_mapping.index(3)
         
     #this is how many texels wide/tall the texture is
-    texel_width, texel_height, _ = bc.dimension_lower_bound_check(width//4, height//4)
+    texel_width, texel_height, _ = ab.clip_dimensions(width//4, height//4)
 
     #used to know where each pixel from the 4x4 texel should be placed into the unpacked pixel array
     texel_pixel_mapping = get_texel_mapping(width, height)
@@ -579,25 +579,25 @@ def pack_dxt1(self, unpacked_pixel_array, width, height, depth=1):
     '''NEEDS MORE SPEED'''
     ######################
     
-    if not self._UNPACK_FORMAT == bc.FORMAT_A8R8G8B8:
+    if not self._UNPACK_FORMAT == ab.FORMAT_A8R8G8B8:
         print("ERROR: TO CONVERT TO DXT1 THE UNPACK FORMAT MUST BE A8R8G8B8")
         return
     
     dxt1_transparency = self.color_key_transparency
         
     #this is how many texels wide/tall the texture is
-    texel_width, texel_height, _ = bc.dimension_lower_bound_check(width//4, height//4)
+    texel_width, texel_height, _ = ab.clip_dimensions(width//4, height//4)
         
     #create a new array to hold the texels after we repack them
     """there are 16 pixels per texel. multiply the
     number of texels by the number of entries per texel"""
-    repacked_pixel_array = array("I", [0]*texel_width*texel_height*2 )
+    repacked_pixel_array = array("L", [0]*texel_width*texel_height*2 )
 
     """If the texture is more than 1 texel wide we need to have the swizzler
     rearrange the pixels so that each texel's pixels are adjacent each other.
     This will allow us to easily group each texel's pixels nicely together."""
     if texel_width > 1:
-        dxt_swizzler = bc.swizzler.Swizzler(texture_converter = self, mask_type = "DXT_CALC")
+        dxt_swizzler = ab.swizzler.Swizzler(texture_converter = self, mask_type = "DXT_CALC")
         unpacked_pixel_array = dxt_swizzler.swizzle_single_array(unpacked_pixel_array, True,
                                                                  4, width, height)
 
@@ -682,7 +682,8 @@ def pack_dxt1(self, unpacked_pixel_array, width, height, depth=1):
             if include_transparency == (COLOR_0 > COLOR_1):
                 color_0, color_1 = color_1, color_0
                 rpa[txl_i] = (COLOR_0<<16) + COLOR_1
-            else: rpa[txl_i] = (COLOR_1<<16) + COLOR_0
+            else:
+                rpa[txl_i] = (COLOR_1<<16) + COLOR_0
         
             #6: calculate the intermediate colors
             """If the target format is DXT2/3/4/5 then no CK transparency will be used.
@@ -713,13 +714,13 @@ def pack_dxt1(self, unpacked_pixel_array, width, height, depth=1):
                                         ((upa[pxl_i+2+i]-color_2[2])**2)+
                                         ((upa[pxl_i+3+i]-color_2[3])**2))): #closest to color 2
                             rpa[txl_i+1] += 2<<(i//2)
-                    else: #closer to color 1
-                        if (dists[1] < (((upa[pxl_i+1+i]-color_3[1])**2)+
-                                        ((upa[pxl_i+2+i]-color_3[2])**2)+
-                                        ((upa[pxl_i+3+i]-color_3[3])**2))): #closest to color 1
-                            rpa[txl_i+1] += 1<<(i//2)
-                        else: #closest to color 3
-                            rpa[txl_i+1] += 3<<(i//2)
+                    elif (dists[1] < (((upa[pxl_i+1+i]-color_3[1])**2)+
+                                      ((upa[pxl_i+2+i]-color_3[2])**2)+
+                                      ((upa[pxl_i+3+i]-color_3[3])**2))):
+                        #closest to color 1
+                        rpa[txl_i+1] += 1<<(i//2)
+                    else: #closest to color 3
+                        rpa[txl_i+1] += 3<<(i//2)
             else:
                 color_2[1] = (color_0[1]+color_1[1])//2
                 color_2[2] = (color_0[2]+color_1[2])//2
@@ -742,14 +743,15 @@ def pack_dxt1(self, unpacked_pixel_array, width, height, depth=1):
                         if (dists[1] < dists[0] and
                            (dists[1] < ((upa[pxl_i+1+i]-color_2[1])**2+
                                         (upa[pxl_i+2+i]-color_2[2])**2+
-                                        (upa[pxl_i+3+i]-color_2[3])**2))):#closest to color 1
-                                rpa[txl_i+1] += 1<<(i//2)
-                        else: #closer to color 2
-                            if (dists[2] < dists[0] and
+                                        (upa[pxl_i+3+i]-color_2[3])**2))):
+                            #closest to color 1
+                            rpa[txl_i+1] += 1<<(i//2)
+                        elif (dists[2] < dists[0] and
                                (dists[1] >= ((upa[pxl_i+1+i]-color_2[1])**2+
                                              (upa[pxl_i+2+i]-color_2[2])**2+
-                                             (upa[pxl_i+3+i]-color_2[3])**2))):#closest to color 2
-                                rpa[txl_i+1] += 2<<(i//2)
+                                             (upa[pxl_i+3+i]-color_2[3])**2))):
+                            #closest to color 2
+                            rpa[txl_i+1] += 2<<(i//2)
             
     return repacked_pixel_array
 
@@ -761,24 +763,24 @@ def pack_dxt2_3(self, unpacked_pixel_array, width, height, depth=1):
     '''NEEDS MORE SPEED'''
     ######################
     
-    if not self._UNPACK_FORMAT == bc.FORMAT_A8R8G8B8:
+    if not self._UNPACK_FORMAT == ab.FORMAT_A8R8G8B8:
         print("ERROR: TO CONVERT TO DXT2/3 THE UNPACK FORMAT MUST BE A8R8G8B8")
         return
         
     #this is how many texels wide/tall the texture is
-    texel_width, texel_height, _ = bc.dimension_lower_bound_check(width//4, height//4)
+    texel_width, texel_height, _ = ab.clip_dimensions(width//4, height//4)
         
     #create a new array to hold the texels after we repack them
     """there are 16 pixels per texel. multiply the
     number of texels by the number of entries per texel"""
-    repacked_pixel_array = array("I", [0]*texel_width*texel_height*4 )
+    repacked_pixel_array = array("L", [0]*texel_width*texel_height*4 )
 
     """If the texture is more than 1 texel wide we need to have the swizzler
     rearrange the pixels so that each texel's pixels are adjacent each other.
     This will allow us to easily group each texel's pixels nicely together."""
     
     if texel_width > 1:
-        dxt_swizzler = bc.swizzler.Swizzler(texture_converter = self, mask_type = "DXT_CALC")
+        dxt_swizzler = ab.swizzler.Swizzler(texture_converter = self, mask_type = "DXT_CALC")
         unpacked_pixel_array = dxt_swizzler.swizzle_single_array(unpacked_pixel_array, True,
                                                                  4, width, height)
 
@@ -825,8 +827,8 @@ def pack_dxt2_3(self, unpacked_pixel_array, width, height, depth=1):
         for i in range_pixels:
             for j in pixel_comp_slices[i//4]:
                 dists[1] = (((upa[pxl_i+1+i]-upa[pxl_i+1+j])**2)+
-                                ((upa[pxl_i+2+i]-upa[pxl_i+2+j])**2)+
-                                ((upa[pxl_i+3+i]-upa[pxl_i+3+j])**2))
+                            ((upa[pxl_i+2+i]-upa[pxl_i+2+j])**2)+
+                            ((upa[pxl_i+3+i]-upa[pxl_i+3+j])**2))
                 if dists[1] > dists[0]:
                     dists[0] = dists[1]
                     furthest_colors[0] = i
@@ -876,16 +878,16 @@ def pack_dxt2_3(self, unpacked_pixel_array, width, height, depth=1):
                 #7: add appropriate indexing value to array
                 if dists[0] <= dists[1]: #closer to color 0
                     if (dists[0] > (((upa[pxl_i+1+i]-color_2[1])**2)+
-                                        ((upa[pxl_i+2+i]-color_2[2])**2)+
-                                        ((upa[pxl_i+3+i]-color_2[3])**2))): #closest to color 2
+                                    ((upa[pxl_i+2+i]-color_2[2])**2)+
+                                    ((upa[pxl_i+3+i]-color_2[3])**2))): #closest to color 2
                         rpa[txl_i+3] += 2<<(i//2)
-                else: #closer to color 1
-                    if (dists[1] < (((upa[pxl_i+1+i]-color_3[1])**2)+
-                                        ((upa[pxl_i+2+i]-color_3[2])**2)+
-                                        ((upa[pxl_i+3+i]-color_3[3])**2))): #closest to color 1
-                        rpa[txl_i+3] += 1<<(i//2)
-                    else: #closest to color 3
-                        rpa[txl_i+3] += 3<<(i//2)
+                elif (dists[1] < (((upa[pxl_i+1+i]-color_3[1])**2)+
+                                  ((upa[pxl_i+2+i]-color_3[2])**2)+
+                                  ((upa[pxl_i+3+i]-color_3[3])**2))):
+                    #closest to color 1
+                    rpa[txl_i+3] += 1<<(i//2)
+                else: #closest to color 3
+                    rpa[txl_i+3] += 3<<(i//2)
 
         #8: calculate alpha channel for DXT 2/3/4/5
         for i in dxt3_range_pixels_0:
@@ -904,24 +906,24 @@ def pack_dxt4_5(self, unpacked_pixel_array, width, height, depth=1):
     '''NEEDS MORE SPEED'''
     ######################
     
-    if not self._UNPACK_FORMAT == bc.FORMAT_A8R8G8B8:
+    if not self._UNPACK_FORMAT == ab.FORMAT_A8R8G8B8:
         print("ERROR: TO CONVERT TO DXT4/5 THE UNPACK FORMAT MUST BE A8R8G8B8")
         return
         
     #this is how many texels wide/tall the texture is
-    texel_width, texel_height, _ = bc.dimension_lower_bound_check(width//4, height//4)
+    texel_width, texel_height, _ = ab.clip_dimensions(width//4, height//4)
         
     #create a new array to hold the texels after we repack them
     """there are 16 pixels per texel. multiply the
     number of texels by the number of entries per texel"""
-    repacked_pixel_array = array("I", [0]*texel_width*texel_height*4 )
+    repacked_pixel_array = array("L", [0]*texel_width*texel_height*4 )
 
     """If the texture is more than 1 texel wide we need to have the swizzler
     rearrange the pixels so that each texel's pixels are adjacent each other.
     This will allow us to easily group each texel's pixels nicely together."""
     
     if texel_width > 1:
-        dxt_swizzler = bc.swizzler.Swizzler(texture_converter = self, mask_type = "DXT_CALC")
+        dxt_swizzler = ab.swizzler.Swizzler(texture_converter = self, mask_type = "DXT_CALC")
         unpacked_pixel_array = dxt_swizzler.swizzle_single_array(unpacked_pixel_array, True,
                                                                  4, width, height)
 
@@ -966,8 +968,8 @@ def pack_dxt4_5(self, unpacked_pixel_array, width, height, depth=1):
         for i in range_pixels:
             for j in pixel_comp_slices[i//4]:
                 dists[1] = (((upa[pxl_i+1+i]-upa[pxl_i+1+j])**2)+
-                                ((upa[pxl_i+2+i]-upa[pxl_i+2+j])**2)+
-                                ((upa[pxl_i+3+i]-upa[pxl_i+3+j])**2))
+                            ((upa[pxl_i+2+i]-upa[pxl_i+2+j])**2)+
+                            ((upa[pxl_i+3+i]-upa[pxl_i+3+j])**2))
                 if dists[1] > dists[0]:
                     dists[0] = dists[1]
                     furthest_colors[0] = i
@@ -994,7 +996,8 @@ def pack_dxt4_5(self, unpacked_pixel_array, width, height, depth=1):
             if COLOR_0 < COLOR_1:
                 color_0, color_1 = color_1, color_0
                 rpa[txl_i+2] = (COLOR_0<<16) + COLOR_1
-            else: rpa[txl_i+2] = (COLOR_1<<16) + COLOR_0
+            else:
+                rpa[txl_i+2] = (COLOR_1<<16) + COLOR_0
             
             #5: calculate the intermediate colors
             color_2[1] = (color_0[1]*2+color_1[1])//3
@@ -1018,15 +1021,16 @@ def pack_dxt4_5(self, unpacked_pixel_array, width, height, depth=1):
                 if dists[0] <= dists[1]: #closer to color 0
                     if (dists[0] > (((upa[pxl_i+1+i]-color_2[1])**2)+
                                     ((upa[pxl_i+2+i]-color_2[2])**2)+
-                                    ((upa[pxl_i+3+i]-color_2[3])**2))): #closest to color 2
+                                    ((upa[pxl_i+3+i]-color_2[3])**2))):
+                        #closest to color 2
                         rpa[txl_i+3] += 2<<(i//2)
-                else: #closer to color 1
-                    if (dists[1] < (((upa[pxl_i+1+i]-color_3[1])**2)+
-                                    ((upa[pxl_i+2+i]-color_3[2])**2)+
-                                    ((upa[pxl_i+3+i]-color_3[3])**2))): #closest to color 1
-                        rpa[txl_i+3] += 1<<(i//2)
-                    else: #closest to color 3
-                        rpa[txl_i+3] += 3<<(i//2)
+                elif (dists[1] < (((upa[pxl_i+1+i]-color_3[1])**2)+
+                                  ((upa[pxl_i+2+i]-color_3[2])**2)+
+                                  ((upa[pxl_i+3+i]-color_3[3])**2))):
+                    #closest to color 1
+                    rpa[txl_i+3] += 1<<(i//2)
+                else: #closest to color 3
+                    rpa[txl_i+3] += 3<<(i//2)
 
         #8: find the most extreme values
         dxt5_values[0] = max(map(lambda i: upa[pxl_i+i], range_pixels))
@@ -1090,8 +1094,8 @@ def pack_dxt4_5(self, unpacked_pixel_array, width, height, depth=1):
                     else:
                         #calculate how far between both colors that the value is as a 0 to 5 int
                         dxt5_tmp_val = ( ((upa[pxl_i+i]-dxt5_values[0])*5 +
-                                             ((dxt5_values[1]-dxt5_values[0])//2) )//
-                                            (dxt5_values[1]-dxt5_values[0])  )
+                                       ((dxt5_values[1]-dxt5_values[0])//2) )//
+                                        (dxt5_values[1]-dxt5_values[0])  )
                         if dxt5_tmp_val == 5:
                             dxt5_alpha_data += 1<<((i//4)*3 + 16)
                         elif dxt5_tmp_val > 0:
@@ -1113,17 +1117,17 @@ def pack_dxn(self, unpacked_pixel_array, width, height, depth=1):
     '''NEEDS MORE SPEED'''
     ######################
 
-    if not self._UNPACK_FORMAT == bc.FORMAT_A8R8G8B8:
+    if not self._UNPACK_FORMAT == ab.FORMAT_A8R8G8B8:
         print("ERROR: TO CONVERT TO DXN THE UNPACK FORMAT MUST BE A8R8G8B8")
         return
         
     #this is how many texels wide/tall the texture is
-    texel_width, texel_height, _ = bc.dimension_lower_bound_check(width//4, height//4)
+    texel_width, texel_height, _ = ab.clip_dimensions(width//4, height//4)
     
-    repacked_pixel_array = array("I", [0]*texel_width*texel_height*4 )
+    repacked_pixel_array = array("L", [0]*texel_width*texel_height*4 )
     
     if texel_width > 1:
-        dxt_swizzler = bc.swizzler.Swizzler(texture_converter=self, mask_type="DXT_CALC")
+        dxt_swizzler = ab.swizzler.Swizzler(texture_converter=self, mask_type="DXT_CALC")
         unpacked_pixel_array = dxt_swizzler.swizzle_single_array(unpacked_pixel_array, True, 4, width, height)
 
     #shorthand names
@@ -1166,8 +1170,10 @@ def pack_dxn(self, unpacked_pixel_array, width, height, depth=1):
                               ((red_values[0]-red_values[1])//2) )//
                              (red_values[0]-red_values[1])  )
                     """Because the colors are stored in opposite order, we need to invert the index"""
-                    if tmp == 0:  red_indexing += 1<<((i//4)*3 + 16)
-                    elif tmp < 7: red_indexing += (8-tmp)<<((i//4)*3 + 16)
+                    if tmp == 0:
+                        red_indexing += 1<<((i//4)*3 + 16)
+                    elif tmp < 7:
+                        red_indexing += (8-tmp)<<((i//4)*3 + 16)
         else:
             """In this mode, value_0 must be less than or equal to value_1"""
             #if the most extreme values ARE 0 and 255 though, then
@@ -1185,15 +1191,19 @@ def pack_dxn(self, unpacked_pixel_array, width, height, depth=1):
                 #calculate and store which interpolated index each alpha value is closest to
                 for i in range_pixels:
                     
-                    if upa[pxl_i+1+i] == 0: red_indexing += 6<<((i//4)*3 + 16)
-                    elif upa[pxl_i+1+i] == 255: red_indexing += 7<<((i//4)*3 + 16)
+                    if upa[pxl_i+1+i] == 0:
+                        red_indexing += 6<<((i//4)*3 + 16)
+                    elif upa[pxl_i+1+i] == 255:
+                        red_indexing += 7<<((i//4)*3 + 16)
                     else:
                         #calculate how far between both colors that the value is as a 0 to 5 int
                         tmp = ( ((upa[pxl_i+1+i]-red_values[0])*5 +
                                   ((red_values[1]-red_values[0])//2) )//
                                  (red_values[1]-red_values[0])  )
-                        if tmp == 5: red_indexing += 1<<((i//4)*3 + 16)
-                        elif tmp > 0: red_indexing += (tmp+1)<<((i//4)*3 + 16)
+                        if tmp == 5:
+                            red_indexing += 1<<((i//4)*3 + 16)
+                        elif tmp > 0:
+                            red_indexing += (tmp+1)<<((i//4)*3 + 16)
 
         
         #if the most extreme values are NOT 0 and 255, use them as the interpolation values
@@ -1208,8 +1218,10 @@ def pack_dxn(self, unpacked_pixel_array, width, height, depth=1):
                               ((green_values[0]-green_values[1])//2) )//
                              (green_values[0]-green_values[1])  )
                     """Because the colors are stored in opposite order, we need to invert the index"""
-                    if tmp == 0:  green_indexing += 1<<((i//4)*3 + 16)
-                    elif tmp < 7: green_indexing += (8-tmp)<<((i//4)*3 + 16)
+                    if tmp == 0:
+                        green_indexing += 1<<((i//4)*3 + 16)
+                    elif tmp < 7:
+                        green_indexing += (8-tmp)<<((i//4)*3 + 16)
         else:
             """In this mode, value_0 must be less than or equal to value_1"""
             #if the most extreme values ARE 0 and 255 though, then
@@ -1227,15 +1239,19 @@ def pack_dxn(self, unpacked_pixel_array, width, height, depth=1):
                 #calculate and store which interpolated index each alpha value is closest to
                 for i in range_pixels:
                     
-                    if upa[pxl_i+2+i] == 0: green_indexing += 6<<((i//4)*3 + 16)
-                    elif upa[pxl_i+2+i] == 255: green_indexing += 7<<((i//4)*3 + 16)
+                    if upa[pxl_i+2+i] == 0:
+                        green_indexing += 6<<((i//4)*3 + 16)
+                    elif upa[pxl_i+2+i] == 255:
+                        green_indexing += 7<<((i//4)*3 + 16)
                     else:
                         #calculate how far between both colors that the value is as a 0 to 5 int
                         tmp = ( ((upa[pxl_i+2+i]-green_values[0])*5 +
                                   ((green_values[1]-green_values[0])//2) )//
                                  (green_values[1]-green_values[0])  )
-                        if tmp == 5: green_indexing += 1<<((i//4)*3 + 16)
-                        elif tmp > 0: green_indexing += (tmp+1)<<((i//4)*3 + 16)
+                        if tmp == 5:
+                            green_indexing += 1<<((i//4)*3 + 16)
+                        elif tmp > 0:
+                            green_indexing += (tmp+1)<<((i//4)*3 + 16)
                       
         '''indexing is pre-shifted left by 2 bytes and as such
         just needs to be masked and summed with the channel values'''
@@ -1292,21 +1308,21 @@ def get_texel_mapping(w, h):
                               6,7) ))
         elif w == 1:
             lst =(array("B", (0,
-                               1,
-                               2,
-                               3) ))
+                              1,
+                              2,
+                              3) ))
     elif w > 2:
         if h == 2:
             lst =(array("h", (0, 1,   2,   3,
                               w, 1+w, 2+w, 3+w) ))
         elif h == 1:
-            lst =(array("B", (0,1,2,3) ))
+            lst =array("B", (0,1,2,3) )
             
     elif w == 2 and h == 2:
         lst =(array("B", (0,1,
                           2,3) ))
     else:
-        lst =(array("B", (0,) ))
+        lst =array("B", (0,) )
 
     #because there are 4 channels per pixel we can speed things up a little by adjusting for that in here
     lst = array(lst.typecode, map(lambda x: x*4, lst))
@@ -1328,4 +1344,4 @@ def get_texel_pixel_count(width, height):
     else:
         texel_pixel_count *= height
     
-    return(texel_pixel_count)
+    return texel_pixel_count

@@ -9,186 +9,191 @@ import mmap
 
 #this will be the reference to the bitmap convertor module.
 #once the module loads this will become the reference to it.
-bc = None
+ab = None
 
-DXT_FORMAT_STRINGS = {"DXT1":"DXT1",
-                      "DXT2":"DXT2", "DXT3":"DXT3",
-                      "DXT4":"DXT4", "DXT5":"DXT5",
-                      "DXN":"ATI2"}
-DXT_FORMAT_STRINGS_I = {"DXT1":"DXT1",
-                        "DXT2":"DXT2", "DXT3":"DXT3",
-                        "DXT4":"DXT4", "DXT5":"DXT5",
-                        "ATI2":"DXN"}
+DXT_FORMAT_STRINGS = {
+    "DXT1":"DXT1",
+    "DXT2":"DXT2", "DXT3":"DXT3",
+    "DXT4":"DXT4", "DXT5":"DXT5",
+    "DXN":"ATI2"}
+DXT_FORMAT_STRINGS_I = {
+    "DXT1":"DXT1",
+    "DXT2":"DXT2", "DXT3":"DXT3",
+    "DXT4":"DXT4", "DXT5":"DXT5",
+    "ATI2":"DXN"}
 
-DXT_TEXTURE_TYPE_MAP = {"2D":0, "FLAT":0,
-                        "3D":1, "VOLUME":1, "VOL":1, "DEPTH":0,
-                        "CUBE":2, "CUBEMAP":2, "CUBE MAP":2, "CUBE_MAP":2}
+DXT_TEXTURE_TYPE_MAP = {
+    "2D":0, "FLAT":0,
+    "3D":1, "VOLUME":1, "VOL":1, "DEPTH":0,
+    "CUBE":2, "CUBEMAP":2, "CUBE MAP":2, "CUBE_MAP":2}
 
-DXT_VAR_OFFSETS = {0:0, 1:4, 2:8, 3:12, 4:16, 5:20, 6:24, 7:28,
-                   8:76, 9:80, 10:84, 11:88, 12:92, 13:96, 14:100, 15:104,
-                   16:108, 17:112, 18:116, 19:120, 20:124}
+DXT_VAR_OFFSETS = {
+    0:0, 1:4, 2:8, 3:12, 4:16, 5:20, 6:24, 7:28,
+    8:76, 9:80, 10:84, 11:88, 12:92, 13:96, 14:100, 15:104,
+    16:108, 17:112, 18:116, 19:120, 20:124}
 
-DXT_VAR_DEFAULTS = {0:"DDS ".encode('UTF-8'), 1:124, 2:4103, 3:0, 4:0, 5:0,
-                    6:0, 7:0, 8:32, 9:0, 10:b'\x00\x00\x00\x00', 11:0,
-                    12:0, 13:0, 14:0, 15:0, 16:4096, 17:0, 18:0, 19:0, 20:0}
+DXT_VAR_DEFAULTS = {
+    0:"DDS ".encode('UTF-8'), 1:124, 2:4103, 3:0, 4:0, 5:0,
+    6:0, 7:0, 8:32, 9:0, 10:b'\x00\x00\x00\x00', 11:0,
+    12:0, 13:0, 14:0, 15:0, 16:4096, 17:0, 18:0, 19:0, 20:0}
 
 DXT_FORMAT_ID_BLANK = b'\x00\x00\x00\x00'.decode('Latin-1')
 
-DXT_HEADER_VAR_NAMES = {0:"dds_format_name", 1:"header_size", 2:"flags",
-                        3:"height", 4:"width", 5:"pitch_or_linear_size",
-                        6:"depth", 7:"mipmap_count", 8:"pixel_struct_size",
-                        9:"pixel_format_flags", 10:"dxt_format_id", 11:"bpp",
-                        12:"r_mask", 13:"g_mask", 14:"b_mask", 15:"a_mask",
-                        16:"caps_1", 17:"caps_2",
-                        18:"reserved_0", 19:"reserved_1", 20:"reserved_2"}
+DXT_HEADER_VAR_NAMES = {
+    0:"dds_format_name", 1:"header_size", 2:"flags",
+    3:"height", 4:"width", 5:"pitch_or_linear_size",
+    6:"depth", 7:"mipmap_count", 8:"pixel_struct_size",
+    9:"pixel_format_flags", 10:"dxt_format_id", 11:"bpp",
+    12:"r_mask", 13:"g_mask", 14:"b_mask", 15:"a_mask",
+    16:"caps_1", 17:"caps_2",
+    18:"reserved_0", 19:"reserved_1", 20:"reserved_2"}
 
-TGA_IMAGE_TYPES = { 0:"BLANK",
-                    1:"COLOR_MAPPED", 9:"RLE_COLOR_MAPPED",
-                    2:"TRUE_COLOR",  10:"RLE_TRUE_COLOR",
-                    3:"MONOCHROME",  11:"RLE_MONOCHROME"}
+TGA_IMAGE_TYPES = {
+    0:"BLANK",
+    1:"COLOR_MAPPED", 9:"RLE_COLOR_MAPPED",
+    2:"TRUE_COLOR",  10:"RLE_TRUE_COLOR",
+    3:"MONOCHROME",  11:"RLE_MONOCHROME"}
 
         
-def save_to_tga_file(convertor, ext, output_path, **kwargs):
+def save_to_tga_file(convertor, output_path, ext, **kwargs):
     """Saves the currently loaded texture to a TGA file"""
-    f = convertor.format
+    conv = convertor
+    f = conv.format
     
-    if ( f in (bc.FORMAT_R5G6B5, bc.FORMAT_A4R4G4B4,
-               bc.FORMAT_A8Y8, bc.FORMAT_U8V8) or f in bc.COMPRESSED_FORMATS):
+    if ( f in (ab.FORMAT_R5G6B5, ab.FORMAT_A4R4G4B4,
+               ab.FORMAT_A8Y8, ab.FORMAT_U8V8) or f in ab.COMPRESSED_FORMATS):
         print("CANNOT EXTRACT THIS FORMAT TO TGA. EXTRACTING TO DDS INSTEAD.")
-        save_to_dds_file(convertor, "dds", output_path, **kwargs)
+        save_to_dds_file(conv, "dds", output_path, **kwargs)
         return
     
-    if bc.BITS_PER_PIXEL[f] > 32:
+    if ab.BITS_PER_PIXEL[f] > 32:
         print("ERROR: CANNOT SAVE BITMAP OF HIGHER THAN 32 BIT "+
               "COLOR DEPTH TO DDS.\nCANCELLING TGA SAVE.")
         return
     
-    texture_description = {"width":convertor.width,
-                           "height":convertor.height*convertor.depth,
-                           "image_type":2, "palettized":False}
+    tex_desc = {"width":conv.width,
+                "height":conv.height*conv.depth,
+                "image_type":2, "palettized":False}
 
-    channel_count = bc.FORMAT_CHANNEL_COUNTS[f]
+    channel_count = ab.FORMAT_CHANNEL_COUNTS[f]
     
-    texture_description["image_desc"] = bc.FORMAT_CHANNEL_DEPTHS[f][0]
-    texture_description["bpp"] = bc.BITS_PER_PIXEL[f]
+    tex_desc["image_desc"] = ab.FORMAT_CHANNEL_DEPTHS[f][0]
+    tex_desc["bpp"] = ab.BITS_PER_PIXEL[f]
 
     if channel_count in (1,2):
-        texture_description["image_type"] = 3
+        tex_desc["image_type"] = 3
     
-    if convertor.is_palettized():
-        texture_description["palettized"] = True
-        texture_description["color_map_type"] = 1
-        texture_description["image_type"] = 1
-        texture_description["color_map_origin"] = 0
-        texture_description["color_map_length"] = 2**convertor.indexing_size
-        texture_description["color_map_depth"] = bc.BITS_PER_PIXEL[f]
-        texture_description["image_desc"] = 0
+    if conv.is_palettized():
+        tex_desc["palettized"] = True
+        tex_desc["color_map_type"] = 1
+        tex_desc["image_type"] = 1
+        tex_desc["color_map_origin"] = 0
+        tex_desc["color_map_length"] = 2**conv.indexing_size
+        tex_desc["color_map_depth"] = ab.BITS_PER_PIXEL[f]
+        tex_desc["image_desc"] = 0
+        tex_desc["bpp"] = 8
             
-        if convertor.target_indexing_size < 8:
-            texture_description["bpp"] = 8
-        else:
-            texture_description["bpp"] = convertor.indexing_size
+        if conv.target_indexing_size > 8:
+            tex_desc["bpp"] = conv.indexing_size
 
     final_output_path = output_path
-    width = convertor.width
-    height = convertor.height
+    width = conv.width
+    height = conv.height
+    pals = conv.palette
+    tex_block = conv.texture_block
 
-    for sub_bitmap in range(convertor.sub_bitmap_count):                
+    for sb in range(conv.sub_bitmap_count):                
         if not os.path.exists(os.path.dirname(output_path)):
             os.makedirs(os.path.dirname(output_path))
             
-        if convertor.sub_bitmap_count > 1:
-            final_output_path = output_path+"_tex"+str(sub_bitmap)
+        if conv.sub_bitmap_count > 1:
+            final_output_path = "%s_tex%s" % (output_path, sb)
         
-        with open(final_output_path+"."+ext, 'w+b') as tga_file:
+        with open("%s.%s" % (final_output_path, ext), 'w+b') as tga_file:
             #write the header and get the offset
             #to start writing the pixel data
-            pixel_start_offset = write_tga_header(tga_file,
-                                                  **texture_description)
-
-            tga_file.seek(pixel_start_offset)
+            pix_off = write_tga_header(tga_file, **tex_desc)
+            tga_file.seek(pix_off)
             
-            if texture_description["palettized"]:
-                palette = packed_palette = convertor.palette[sub_bitmap]
-                indexing = packed_indexing = convertor.texture_block[sub_bitmap]
+            if tex_desc["palettized"]:
+                pal = packed_pal = pals[sb]
+                idx = packed_idx = tex_block[sb]
                 
-                if not convertor.palette_packed:
-                    packed_palette = convertor.palette_packer(palette)
+                if not conv.palette_packed:
+                    packed_pal = conv.palette_packer(pal)
                     
-                temp = convertor.target_indexing_size
+                temp = conv.target_indexing_size
                 '''need to pack the indexing and make sure it's 8-bit
                    since TGA doesn't support less than 8 bit indexing'''
-                if convertor.indexing_size < 8:
-                    convertor.target_indexing_size = 8
-                    if convertor.packed:
-                        packed_indexing = convertor.indexing_packer(
-                            convertor.indexing_unpacker(packed_indexing))
+                if conv.indexing_size < 8:
+                    conv.target_indexing_size = 8
+                    if conv.packed:
+                        packed_idx = conv.indexing_packer(
+                            conv.indexing_unpacker(packed_idx))
     
-                if not convertor.packed:
-                    packed_indexing = convertor.indexing_packer(indexing)
+                if not conv.packed:
+                    packed_idx = conv.indexing_packer(idx)
                     
-                convertor.target_indexing_size = temp
+                conv.target_indexing_size = temp
                         
-                tga_file.write(packed_palette)
-                tga_file.write(packed_indexing)
+                tga_file.write(packed_pal)
+                tga_file.write(packed_idx)
+                continue
+            elif conv.packed:
+                pixel_array = tex_block[sb]
             else:
-                if convertor.packed:
-                    pixel_array = convertor.texture_block[sub_bitmap]
-                else:
-                    pixel_array = convertor.pack(convertor.texture_block\
-                                             [sub_bitmap], width, height, 0)
-                    width, height, _ = bc.dimension_lower_bound_check(width//2,
-                                                                      height//2)
-                    if pixel_array is None:
-                        print("ERROR: UNABLE TO PACK IMAGE DATA.\n"+
-                              "CANCELLING TGA SAVE.")
-                        return
+                pixel_array = conv.pack(
+                    tex_block [sb], width, height, 0)
+                width, height, _ = ab.clip_dimensions(width//2, height//2)
+                if pixel_array is None:
+                    print("ERROR: UNABLE TO PACK IMAGE DATA.\n"+
+                          "CANCELLING TGA SAVE.")
+                    return
+
+            if ab.BITS_PER_PIXEL[f] == 24:
+                pixel_array = unpad_24bit_array(pixel_array)
                 
-                if bc.BITS_PER_PIXEL[f] == 24:
-                    pixel_array = unpad_24bit_array(pixel_array)
-                    
-                tga_file.write(pixel_array)
+            tga_file.write(pixel_array)
 
-
-def save_to_dds_file(convertor, ext, output_path, **kwargs):
+def save_to_dds_file(convertor, output_path, ext, **kwargs):
     """Saves the currently loaded texture to a DDS file"""
     f = convertor.format
 
-    if bc.BITS_PER_PIXEL[f] > 32:
+    if ab.BITS_PER_PIXEL[f] > 32:
         print("ERROR: CANNOT SAVE BITMAP OF HIGHER THAN 32 BIT "+
               "COLOR DEPTH TO DDS.\nCANCELLING DDS SAVE.")
         return
 
-    texture_description = {"width":convertor.width, "height":convertor.height,
+    tex_desc = {"width":convertor.width, "height":convertor.height,
         "depth":convertor.depth, "mipmap_count":convertor.mipmap_count,
         "palettized":False, "format":f, "texture_type":convertor.texture_type}
         
     channel_count = 3
-    if f not in bc.THREE_CHANNEL_FORMATS:
-        channel_count = bc.FORMAT_CHANNEL_COUNTS[f]
+    if f not in ab.THREE_CHANNEL_FORMATS:
+        channel_count = ab.FORMAT_CHANNEL_COUNTS[f]
     
     if f in DXT_FORMAT_STRINGS:
-        texture_description["compressed"] = True
-        texture_description["dxt_format_id"] = DXT_FORMAT_STRINGS[f]
+        tex_desc["compressed"] = True
+        tex_desc["dxt_format_id"] = DXT_FORMAT_STRINGS[f]
     else:
-        texture_description["compressed"] = False
-        texture_description["bpp"] = bc.BITS_PER_PIXEL[f]
+        tex_desc["compressed"] = False
+        tex_desc["bpp"] = ab.BITS_PER_PIXEL[f]
         
         if channel_count == 1:
-            if texture_description["format"] == bc.FORMAT_A8:
-                texture_description["a_mask"] = bc.FORMAT_CHANNEL_MASKS[f][0]
+            if tex_desc["format"] == ab.FORMAT_A8:
+                tex_desc["a_mask"] = ab.FORMAT_CHANNEL_MASKS[f][0]
             else:
-                texture_description["r_mask"] = bc.FORMAT_CHANNEL_MASKS[f][0]
+                tex_desc["r_mask"] = ab.FORMAT_CHANNEL_MASKS[f][0]
         elif channel_count == 2:
-            texture_description["a_mask"] = bc.FORMAT_CHANNEL_MASKS[f][0]
-            texture_description["r_mask"] = bc.FORMAT_CHANNEL_MASKS[f][1]
+            tex_desc["a_mask"] = ab.FORMAT_CHANNEL_MASKS[f][0]
+            tex_desc["r_mask"] = ab.FORMAT_CHANNEL_MASKS[f][1]
         else:
-            texture_description["a_mask"] = bc.FORMAT_CHANNEL_MASKS[f][0]
-            texture_description["r_mask"] = bc.FORMAT_CHANNEL_MASKS[f][1]
-            texture_description["g_mask"] = bc.FORMAT_CHANNEL_MASKS[f][2]
-            texture_description["b_mask"] = bc.FORMAT_CHANNEL_MASKS[f][3]
+            tex_desc["a_mask"] = ab.FORMAT_CHANNEL_MASKS[f][0]
+            tex_desc["r_mask"] = ab.FORMAT_CHANNEL_MASKS[f][1]
+            tex_desc["g_mask"] = ab.FORMAT_CHANNEL_MASKS[f][2]
+            tex_desc["b_mask"] = ab.FORMAT_CHANNEL_MASKS[f][3]
             
-    texture_description["channel_count"] = channel_count
+    tex_desc["channel_count"] = channel_count
     
     final_output_path = output_path
     width = convertor.width
@@ -198,12 +203,12 @@ def save_to_dds_file(convertor, ext, output_path, **kwargs):
     if not os.path.exists(os.path.dirname(output_path)):
         os.makedirs(os.path.dirname(output_path))
 
-    if convertor.texture_type == bc.TYPE_CUBEMAP:
+    if convertor.texture_type == ab.TYPE_CUBEMAP:
         with open(final_output_path+"."+ext, 'w+b') as dds_file:
             #write the header and get the offset
             #to start writing the pixel data
             pixel_start_offset = write_dds_header(dds_file,
-                                                  **texture_description)
+                                                  **tex_desc)
             dds_file.seek(pixel_start_offset)
             
             #write each of the pixel arrays into the bitmap
@@ -234,14 +239,14 @@ def save_to_dds_file(convertor, ext, output_path, **kwargs):
                     else:
                         pixel_array = convertor.pack(convertor.texture_block\
                                         [bitmap_index], width, height, depth)
-                        width, height, depth = bc.dimension_lower_bound_check(
+                        width, height, depth = ab.clip_dimensions(
                             width//2, height//2, depth//2)
                         if pixel_array is None:
                             print("ERROR: UNABLE TO PACK IMAGE DATA.\n"+
                                   "CANCELLING DDS SAVE.")
                             return
                         
-                    if bc.BITS_PER_PIXEL[f] == 24:
+                    if ab.BITS_PER_PIXEL[f] == 24:
                         pixel_array = unpad_24bit_array(pixel_array)
                     dds_file.write(pixel_array)
         return
@@ -253,8 +258,8 @@ def save_to_dds_file(convertor, ext, output_path, **kwargs):
         with open(final_output_path+".dds", 'w+b') as dds_file:
             #write the header and get the offset
             #to start writing the pixel data
-            pixel_start_offset = write_dds_header(dds_file,
-                                                  **texture_description)
+            pixel_start_offset = write_dds_header(
+                dds_file, **tex_desc)
             dds_file.seek(pixel_start_offset)
             
             #write each of the pixel arrays into the bitmap
@@ -280,19 +285,19 @@ def save_to_dds_file(convertor, ext, output_path, **kwargs):
                 else:
                     pixel_array = convertor.pack(convertor.texture_block\
                                          [bitmap_index], width, height, depth)
-                    width, height, depth = bc.dimension_lower_bound_check(
+                    width, height, depth = ab.clip_dimensions(
                         width//2, height//2, depth//2)
                     if pixel_array is None:
                         print("ERROR: UNABLE TO PACK IMAGE DATA.\n"+
                               "CANCELLING DDS SAVE.")
                         return()
                     
-                if bc.BITS_PER_PIXEL[f] == 24:
+                if ab.BITS_PER_PIXEL[f] == 24:
                     pixel_array = unpad_24bit_array(pixel_array)
                 dds_file.write(pixel_array)
 
 
-def save_to_rawdata_file(convertor, ext, output_path, **kwargs):
+def save_to_rawdata_file(convertor, output_path, ext, **kwargs):
     """Saves the currently loaded texture to a raw bin file.
     The file has no header and in most cases wont be able
     to be directly opened be applications."""
@@ -326,9 +331,9 @@ def save_to_rawdata_file(convertor, ext, output_path, **kwargs):
                     if not convertor.packed:
                         packed_indexing = convertor.indexing_packer(indexing)
                         
-                    if bc.BITS_PER_PIXEL[f] == 24:
+                    if ab.BITS_PER_PIXEL[f] == 24:
                         packed_palette = unpad_24bit_array(packed_palette)
-                    elif bc.BITS_PER_PIXEL[f] == 48:
+                    elif ab.BITS_PER_PIXEL[f] == 48:
                         packed_palette = unpad_48bit_array(packed_palette)
                         
                     bin_file.write(packed_palette)
@@ -340,27 +345,27 @@ def save_to_rawdata_file(convertor, ext, output_path, **kwargs):
                         pixel_array = convertor.pack(convertor.texture_block\
                                                      [bitmap_index],
                                                      width, height, depth)
-                        width, height, depth = bc.dimension_lower_bound_check(
+                        width, height, depth = ab.clip_dimensions(
                             width//2, height//2, depth//2)
                         if pixel_array is None:
                             print("ERROR: UNABLE TO PACK IMAGE DATA.\n"+
                                   "CANCELLING DDS SAVE.")
                             return()
                     
-                    if bc.BITS_PER_PIXEL[f] == 24:
+                    if ab.BITS_PER_PIXEL[f] == 24:
                         pixel_array = unpad_24bit_array(pixel_array)
-                    elif bc.BITS_PER_PIXEL[f] == 48:
+                    elif ab.BITS_PER_PIXEL[f] == 48:
                         pixel_array = unpad_48bit_array(pixel_array)
                     bin_file.write(pixel_array)
 
             
 
                 
-def load_from_tga_file(convertor, ext, input_path, **kwargs):
+def load_from_tga_file(convertor, input_path, ext, **kwargs):
     """Loads a TGA file into the convertor. Currently doesn't
     support correcting the upside down nature of Truevision
     images. If an image is Truevision, it will be upside down."""
-    final_input_path = input_path+"."+ext
+    final_input_path = "%s.%s" % (input_path, ext)
     unable_to_load = False
     
     try:
@@ -407,21 +412,21 @@ def load_from_tga_file(convertor, ext, input_path, **kwargs):
             #figure out what color format we've got
             if color_mapped:
                 if color_map_depth == 8:
-                    texture_info["format"] = bc.FORMAT_Y8
+                    texture_info["format"] = ab.FORMAT_Y8
                 elif color_map_depth == 15:
-                    texture_info["format"] = bc.FORMAT_R5G6B5
+                    texture_info["format"] = ab.FORMAT_R5G6B5
                 elif color_map_depth == 16:
-                    texture_info["format"] = bc.FORMAT_A1R5G5B5
+                    texture_info["format"] = ab.FORMAT_A1R5G5B5
                 elif color_map_depth == 24:
-                    texture_info["format"] = bc.FORMAT_R8G8B8
+                    texture_info["format"] = ab.FORMAT_R8G8B8
                 elif color_map_depth == 32:
-                    texture_info["format"] = bc.FORMAT_A8R8G8B8
+                    texture_info["format"] = ab.FORMAT_A8R8G8B8
                 else:
                     print("Unable to load Targa images with",
                           color_map_depth,"bit color palette.")
                     unable_to_load = True
             elif bpp == 1:
-                texture_info["format"] = bc.FORMAT_STENCIL
+                texture_info["format"] = ab.FORMAT_STENCIL
                 #NOT YET SUPPORTED
                 
                 print("Not yet able to load black and "+
@@ -429,27 +434,27 @@ def load_from_tga_file(convertor, ext, input_path, **kwargs):
                 unable_to_load = True
             elif bpp == 8:
                 if alpha_depth == 8:
-                    texture_info["format"] = bc.FORMAT_A8
+                    texture_info["format"] = ab.FORMAT_A8
                 else:
-                    texture_info["format"] = bc.FORMAT_Y8
+                    texture_info["format"] = ab.FORMAT_Y8
             elif bpp == 15:
-                texture_info["format"] = bc.FORMAT_R5G6B5
+                texture_info["format"] = ab.FORMAT_R5G6B5
             elif bpp == 16:
                 if alpha_depth == 0:
-                    texture_info["format"] = bc.FORMAT_R5G6B5
+                    texture_info["format"] = ab.FORMAT_R5G6B5
                 elif alpha_depth == 1:
-                    texture_info["format"] = bc.FORMAT_A1R5G5B5
+                    texture_info["format"] = ab.FORMAT_A1R5G5B5
                 elif alpha_depth == 4:
-                    texture_info["format"] = bc.FORMAT_A4R4G4B4
+                    texture_info["format"] = ab.FORMAT_A4R4G4B4
                 else:
-                    texture_info["format"] = bc.FORMAT_A8Y8
+                    texture_info["format"] = ab.FORMAT_A8Y8
             elif bpp == 24:
-                texture_info["format"] = bc.FORMAT_R8G8B8
+                texture_info["format"] = ab.FORMAT_R8G8B8
             elif bpp == 32:
                 if alpha_depth == 0:
-                    texture_info["format"] = bc.FORMAT_X8R8G8B8
+                    texture_info["format"] = ab.FORMAT_X8R8G8B8
                 else:
-                    texture_info["format"] = bc.FORMAT_A8R8G8B8
+                    texture_info["format"] = ab.FORMAT_A8R8G8B8
             else:
                 print("Unable to load", bpp, "bit color Targa images.")
                 unable_to_load = True
@@ -485,11 +490,11 @@ def load_from_tga_file(convertor, ext, input_path, **kwargs):
             
 
             if color_mapped:
-                if bc.BITS_PER_PIXEL[texture_info["format"]] == 24:
+                if ab.BITS_PER_PIXEL[texture_info["format"]] == 24:
                     palette = pad_24bit_array(tga_data[palette_start:
                                                        image_start])
                 else:
-                    palette = array(bc.FORMAT_DATA_SIZES\
+                    palette = array(ab.FORMAT_DATA_SIZES\
                                     [texture_info["format"]],
                                     tga_data[palette_start:image_start])
                 
@@ -529,7 +534,7 @@ def load_from_tga_file(convertor, ext, input_path, **kwargs):
 
 
 
-def load_from_dds_file(convertor, ext, input_path, **kwargs):
+def load_from_dds_file(convertor, input_path, ext, **kwargs):
     """Loads a DDS file into the convertor."""
     final_input_path = input_path+"."+ext
     unable_to_load = False
@@ -538,28 +543,28 @@ def load_from_dds_file(convertor, ext, input_path, **kwargs):
         with open(final_input_path, 'r+b') as dds_file:
             dds_data = mmap.mmap(dds_file.fileno(), 0, access=mmap.ACCESS_READ)
             
-            height = unpack_from("<I", dds_data, 12)[0]
-            width  = unpack_from("<I", dds_data, 16)[0]
-            depth  = unpack_from("<I", dds_data, 28)[0]
+            height = unpack_from("<L", dds_data, 12)[0]
+            width  = unpack_from("<L", dds_data, 16)[0]
+            depth  = unpack_from("<L", dds_data, 28)[0]
             
             depth += int(depth == 0)
-            b_type = bc.TYPE_2D
+            b_type = ab.TYPE_2D
             sub_bitmap_count = 1
             
-            linear_size  = unpack_from("<I", dds_data, 20)[0]
-            mipmap_count = unpack_from("<I", dds_data, 24)[0]
-            format_flags = unpack_from("<I", dds_data, 80)[0]
+            linear_size  = unpack_from("<L", dds_data, 20)[0]
+            mipmap_count = unpack_from("<L", dds_data, 24)[0]
+            format_flags = unpack_from("<L", dds_data, 80)[0]
             
             dxt_format_id = dds_data[84:88].decode('Latin-1')
 
-            bpp = unpack_from("<I", dds_data, 88)[0]
-            r_mask = unpack_from("<I", dds_data, 92)[0]
-            g_mask = unpack_from("<I", dds_data, 96)[0]
-            b_mask = unpack_from("<I", dds_data, 100)[0]
-            a_mask = unpack_from("<I", dds_data, 104)[0]
+            bpp = unpack_from("<L", dds_data, 88)[0]
+            r_mask = unpack_from("<L", dds_data, 92)[0]
+            g_mask = unpack_from("<L", dds_data, 96)[0]
+            b_mask = unpack_from("<L", dds_data, 100)[0]
+            a_mask = unpack_from("<L", dds_data, 104)[0]
 
-            caps_1 = unpack_from("<I", dds_data, 108)[0]
-            caps_2 = unpack_from("<I", dds_data, 112)[0]
+            caps_1 = unpack_from("<L", dds_data, 108)[0]
+            caps_2 = unpack_from("<L", dds_data, 112)[0]
 
             if dxt_format_id == "DX10":
                 #there is a DDS_HEADER_DXT10 extended header present...... shit
@@ -568,18 +573,18 @@ def load_from_dds_file(convertor, ext, input_path, **kwargs):
 
             #check if the texture is a cubemap and get how many faces exist
             if caps_2&512:
-                b_type = bc.TYPE_CUBEMAP
+                b_type = ab.TYPE_CUBEMAP
                 sub_bitmap_count = ((caps_2&1024)//1024  +(caps_2&2048)//2048 +
                                     (caps_2&4096)//4096  +(caps_2&8192)//8192 +
                                     (caps_2&16384)//16384+(caps_2&32768)//32768)
 
             #check if the texture is volumetric
             if caps_2&2097152 and depth > 1:
-                if b_type == bc.TYPE_CUBEMAP:
+                if b_type == ab.TYPE_CUBEMAP:
                     print("ERROR: DDS HEADER INVALID. TEXTURE "+
                           "SPECIFIED AS BOTH CUBEMAP AND VOLUMETRIC.")
                     return
-                b_type = bc.TYPE_3D
+                b_type = ab.TYPE_3D
                 
             if format_flags&4 and dxt_format_id != DXT_FORMAT_ID_BLANK:
                 #if the texture has a compression method
@@ -591,32 +596,32 @@ def load_from_dds_file(convertor, ext, input_path, **kwargs):
                     return
             else:
                 if format_flags&2:
-                    format = bc.FORMAT_A8
+                    format = ab.FORMAT_A8
                 elif format_flags&64:
                     if format_flags&1:
-                        format = bc.FORMAT_A8R8G8B8
+                        format = ab.FORMAT_A8R8G8B8
                     else:
-                        format = bc.FORMAT_R8G8B8
+                        format = ab.FORMAT_R8G8B8
                 elif format_flags&512:
-                    format = bc.FORMAT_Y8U8V8
+                    format = ab.FORMAT_Y8U8V8
                 elif format_flags&131072:
                     if format_flags&1:
-                        format = bc.FORMAT_A8Y8
+                        format = ab.FORMAT_A8Y8
                     else:
-                        format = bc.FORMAT_Y8
+                        format = ab.FORMAT_Y8
                 elif format_flags&524288:
-                    format = bc.FORMAT_U8V8
+                    format = ab.FORMAT_U8V8
                 else:
                     print("UNABLE TO DETERMINE DDS FORMAT."+
                           "\nUNABLE TO LAOD DDS TEXTURE")
                     return
 
 
-                if bc.FORMAT_CHANNEL_COUNTS[format] > 1:
+                if ab.FORMAT_CHANNEL_COUNTS[format] > 1:
                     #create a channel mapping to shift around the
                     #channels according to the masks in the header
                     channel_mapping = []
-                    channel_count = bc.FORMAT_CHANNEL_COUNTS[format]
+                    channel_count = ab.FORMAT_CHANNEL_COUNTS[format]
 
             #im not sure if it's photoshop doing this, but it's weird....
             if mipmap_count >= 1: mipmap_count -= 1
@@ -638,11 +643,11 @@ def load_from_dds_file(convertor, ext, input_path, **kwargs):
                 
                 for mipmap in range(mipmap_count+1):
                     bitmap_index = cube_face + mipmap*sub_bitmap_count
-                    data_offset = bitmap_bytes_to_array(dds_data, data_offset,
-                                                        texture_block, format,
-                                                        width, height, depth)
+                    data_offset = bitmap_bytes_to_array(
+                        dds_data, data_offset, texture_block,
+                        format, width, height, depth)
 
-                    mip_w, mip_h, mip_d = bc.dimension_lower_bound_check(
+                    mip_w, mip_h, mip_d = ab.clip_dimensions(
                         mip_w//2, mip_h//2, mip_d//2)
             convertor.load_new_texture(texture_block=texture_block,
                                        texture_info=texture_info)
@@ -651,17 +656,15 @@ def load_from_dds_file(convertor, ext, input_path, **kwargs):
 
 
 def get_size_of_pixel_bytes(format, width, height, depth=1):
-    pixel_size = bc.PIXEL_ENCODING_SIZES[bc.FORMAT_DATA_SIZES[format]]
+    pixel_size = ab.PIXEL_ENCODING_SIZES[ab.FORMAT_DATA_SIZES[format]]
 
     #make sure the dimensions for the format are correct
-    width, height, depth = bc.dimension_lower_bound_check(width, height,
-                                                          depth, format)
+    width, height, depth = ab.clip_dimensions(width, height, depth, format)
     
-    bitmap_size = bc.pixel_count_to_array_length(height*width*depth,
-                                                 pixel_size, format)*pixel_size
+    bitmap_size = ab.pixel_count_to_array_length(
+        height*width*depth, pixel_size, format)*pixel_size
 
     return bitmap_size
-
 
 
 def bitmap_bytes_to_array(rawdata, offset, texture_block,
@@ -671,25 +674,23 @@ def bitmap_bytes_to_array(rawdata, offset, texture_block,
     This function will return the offset of the end of the pixel data so that
     textures following the current one can be found."""
     #get the texture encoding
-    encoding = bc.FORMAT_DATA_SIZES[format]
+    encoding = ab.FORMAT_DATA_SIZES[format]
 
-    pixel_size = bc.PIXEL_ENCODING_SIZES[encoding]
+    pixel_size = ab.PIXEL_ENCODING_SIZES[encoding]
 
     #get how many bytes the texture is going to be
-    bitmap_size = bitmap_data_end = get_size_of_pixel_bytes(format, width,
-                                                            height, depth)
+    bitmap_size = bitmap_data_end = get_size_of_pixel_bytes(
+        format, width, height, depth)
 
     #if the data is compressed,we need to uncompress it
-    if "compression" in kwargs and kwargs["compression"] is not None:
-        compression_type = kwargs["compression"].lower()
-        if compression_type in decompressors:
-            rawdata, bitmap_data_end = decompressors[compression_type]\
-                                       (rawdata, format,width, height, depth)
-        else:
-            print("ERROR: CANNOT FIND SPECIFIED DECOMPRESOR FOR "+
-                  "SUPPLIED PIXEL DATA. COMPRESSION TYPE SPECIFIED IS:",
-                  compression_type)
-            crash
+    comp_type = kwargs.get("compression", '').lower()
+    if comp_type in decompressors:
+        rawdata, bitmap_data_end = decompressors[compression_type]\
+                                   (rawdata, format, width, height, depth)
+    elif comp_type:
+        raise TypeError(
+            "CANNOT FIND SPECIFIED DECOMPRESOR FOR SUPPLIED " +
+            "PIXEL DATA. COMPRESSION TYPE SPECIFIED IS: %s" % comp_type)
     
     '''24 bit images are handled a bit differently since lots of
     things work on whole powers of 2. "2" can not be raised to an
@@ -697,28 +698,29 @@ def bitmap_bytes_to_array(rawdata, offset, texture_block,
     To fix this, the bitmap will be padded with an alpha channel on
     loading and ignored on saving. This will bring the 24 bit image
     up to 32 bit and make everything work just fine.'''
-    if bc.BITS_PER_PIXEL[format] == 24:
+    if ab.BITS_PER_PIXEL[format] == 24:
         #if R8G8B8, need to unpack each byte
         #individually and shift and add them together
-        pixel_array = pad_24bit_array(rawdata[offset:offset+
-                                              (height*width*depth*3)])
-    elif bc.BITS_PER_PIXEL[format] == 48:
+        pixel_array = pad_24bit_array(rawdata[
+            offset: offset + (height*width*depth*3)])
+    elif ab.BITS_PER_PIXEL[format] == 48:
         #if R16G16B16, need to unpack each short
         #individually and shift and add them together
-        pixel_array = pad_48bit_array(rawdata[offset:offset+
-                                              (height*width*depth*3)])
+        pixel_array = pad_48bit_array(rawdata[
+            offset: offset + (height*width*depth*3)])
     else:
         #stream the start and end of the pixels
         #from the raw_bitmap_data into an array
-        pixel_array = array(encoding, rawdata[offset:offset+bitmap_size])
+        pixel_array = array(encoding, rawdata[
+            offset: offset + bitmap_size])
 
     #if not enough pixel data was supplied, extra will be added
     if len(pixel_array)*pixel_size < bitmap_size:
         print("WARNING: PIXEL DATA SUPPLIED DID NOT MEET "+
               "THE SIZE EXPECTED. PADDING WITH ZEROS.")
-        pixel_array.extend(array(pixel_array.typecode,
-                                 [0]*( (bitmap_size//pixel_size) -
-                                       len(pixel_array)) ))
+        pixel_array.extend(
+            array(pixel_array.typecode,
+                  [0]*((bitmap_size//pixel_size) - len(pixel_array))))
     
     #add the pixel array to the current texture block
     texture_block.append(pixel_array)
@@ -726,12 +728,11 @@ def bitmap_bytes_to_array(rawdata, offset, texture_block,
     return offset + bitmap_data_end
 
 
-
 def bitmap_palette_to_array(rawdata, offset, palette_block,
                             format, palette_count):
-    return(bitmap_bytes_to_array(rawdata, offset, palette_block,
-                                 format, palette_count, 1))
-    
+    return bitmap_bytes_to_array(rawdata, offset, palette_block,
+                                 format, palette_count, 1)
+
 
 def bitmap_indexing_to_array(rawdata, offset, indexing_block,
                              width, height, depth=1):
@@ -740,113 +741,115 @@ def bitmap_indexing_to_array(rawdata, offset, indexing_block,
        than 8 bit, we won't worry about higher bit counts. Appends indexing
        array to supplied indexing_block and returns the end offset
     """
-    indexing_block.append(array("B",rawdata[offset:offset+width*height*depth]) )
-    return offset+width*height*depth
+    indexing_block.append(array("B", rawdata[offset:offset+width*height*depth]))
+    return offset + width*height*depth
 
 
-
-def pad_24bit_array(unpadded_pixel_array):
+def pad_24bit_array(unpadded_pixels):
     ######################
     '''NEEDS MORE SPEED'''
     ######################
     
-    padded_pixel_array = array("I",map(lambda x:(unpadded_pixel_array[x] +
-                                               (unpadded_pixel_array[x+1]<<8)+
-                                               (unpadded_pixel_array[x+2]<<16)),
-                                        range(0,len(unpadded_pixel_array), 3)))
-    return padded_pixel_array
+    padded_pixels = array(
+        "L", map(lambda x:(unpadded_pixels[x] +
+                          (unpadded_pixels[x+1]<<8)+
+                          (unpadded_pixels[x+2]<<16)),
+                 range(0, len(unpadded_pixels), 3)))
+    return padded_pixels
 
 
-def pad_48bit_array(unpadded_pixel_array):
+def pad_48bit_array(unpadded_pixels):
     ######################
     '''NEEDS MORE SPEED'''
     ######################
     
-    padded_pixel_array = array("Q",map(lambda x:(unpadded_pixel_array[x] +
-                                               (unpadded_pixel_array[x+1]<<16)+
-                                               (unpadded_pixel_array[x+2]<<32)),
-                                        range(0,len(unpadded_pixel_array), 3)))
-    return padded_pixel_array
+    padded_pixels = array(
+        "Q", map(lambda x:(unpadded_pixels[x] +
+                          (unpadded_pixels[x+1]<<16)+
+                          (unpadded_pixels[x+2]<<32)),
+                 range(0, len(unpadded_pixels), 3)))
+    return padded_pixels
 
 
-
-def unpad_24bit_array(pixel_array):
+def unpad_24bit_array(pixels):
     """given a 24BPP pixel data array that has been padded to
-    32BPP, this will return an unpadded byte-size array copy.
+    32BPP, this will return an unpadded, unpacked, array copy.
     The endianness of the data will be little."""
     
     ######################
     '''NEEDS MORE SPEED'''
     ######################
     
-    if pixel_array.typecode == "I":
-        unpadded_pixel_array = array("B", [0]*len(pixel_array)*3)
-        for i in range(len(pixel_array)):
-            unpadded_pixel_array[i*3] = pixel_array[i]&255
-            unpadded_pixel_array[i*3+1] = (pixel_array[i]&65280)>>8
-            unpadded_pixel_array[i*3+2] = (pixel_array[i]&16711680)>>16
-    elif pixel_array.typecode == "B":
-        unpadded_pixel_array = array("B", [0]*(len(pixel_array)//4)*3 )
-        for i in range(len(pixel_array)//4):
-            unpadded_pixel_array[i*3] = pixel_array[i*4+1]
-            unpadded_pixel_array[i*3+1] = pixel_array[i*4+2]
-            unpadded_pixel_array[i*3+2] = pixel_array[i*4+3]
+    if pixels.typecode == "L":
+        # pixels have been packed
+        unpadded_pixels = array("B", [0]*len(pixels)*3)
+        for i in range(len(pixels)):
+            unpadded_pixels[i*3] = pixels[i]&255
+            unpadded_pixels[i*3+1] = (pixels[i]&65280)>>8
+            unpadded_pixels[i*3+2] = (pixels[i]&16711680)>>16
+    elif pixels.typecode == "B":
+        # pixels have NOT been packed
+        unpadded_pixels = array("B", [0]*(len(pixels)//4)*3 )
+        for i in range(len(pixels)//4):
+            unpadded_pixels[i*3] = pixels[i*4+1]
+            unpadded_pixels[i*3+1] = pixels[i*4+2]
+            unpadded_pixels[i*3+2] = pixels[i*4+3]
     else:
         print("ERROR: BAD TYPECODE FOR 24BIT PADDED ARRAY.")
         return
         
-    return unpadded_pixel_array
+    return unpadded_pixels
 
 
-
-def unpad_48bit_array(pixel_array):
+def unpad_48bit_array(pixels):
     """given a 48BPP pixel data array that has been padded to
-    64BPP, this will return an unpadded byte-size array copy.
+    64BPP, this will return an unpadded, unpacked, array copy.
     The endianness of the data will be little."""
     
     ######################
     '''NEEDS MORE SPEED'''
     ######################
     
-    if pixel_array.typecode == "Q":
-        unpadded_pixel_array = array("H", [0]*len(pixel_array)*3)
-        for i in range(len(pixel_array)):
-            unpadded_pixel_array[i*3] = pixel_array[i]&65535
-            unpadded_pixel_array[i*3+1] = (pixel_array[i]&4294901760)>>16
-            unpadded_pixel_array[i*3+2] = (pixel_array[i]&281470681743360)>>32
-    elif pixel_array.typecode == "H":
-        unpadded_pixel_array = array("H", [0]*(len(pixel_array)//4)*3 )
-        for i in range(len(pixel_array)//4):
-            unpadded_pixel_array[i*3] = pixel_array[i*4+1]
-            unpadded_pixel_array[i*3+1] = pixel_array[i*4+2]
-            unpadded_pixel_array[i*3+2] = pixel_array[i*4+3]
+    if pixels.typecode == "Q":
+        # pixels have been packed
+        unpadded_pixels = array("H", [0]*len(pixels)*3)
+        for i in range(len(pixels)):
+            j = i*3
+            unpadded_pixels[j] = pixels[i]&65535
+            unpadded_pixels[j+1] = (pixels[i]&4294901760)>>16
+            unpadded_pixels[j+2] = (pixels[i]&281470681743360)>>32
+    elif pixels.typecode == "H":
+        # pixels have NOT been packed
+        unpadded_pixels = array("H", [0]*(len(pixels)//4)*3 )
+        for i in range(len(pixels)//4):
+            j = i*3
+            i *= 4
+            unpadded_pixels[j] = pixels[i+1]
+            unpadded_pixels[j+1] = pixels[i+2]
+            unpadded_pixels[j+2] = pixels[i+3]
     else:
         print("ERROR: BAD TYPECODE FOR 48BIT PADDED ARRAY.")
         return
         
-    return unpadded_pixel_array
-
+    return unpadded_pixels
 
 
 def uncompress_rle(comp_bytes, format, width, height, depth=1):
     """given an array compressed with run length encoding, this
-    function will uncompress it so it and return the uncompressed array"""
+    function will uncompress it and return the uncompressed array"""
 
     #get the texture encoding
-    encoding = bc.FORMAT_DATA_SIZES[format]
-    bpp = bc.BITS_PER_PIXEL[format]
+    encoding = ab.FORMAT_DATA_SIZES[format]
+    bpp = ab.BITS_PER_PIXEL[format]
 
     #make sure the dimensions for the format are correct
-    width, height, depth = bc.dimension_lower_bound_check(width, height,
-                                                          depth, format)
+    w, h, d = ab.clip_dimensions(width, height, depth, format)
 
     #get how many bytes the texture is going to be
-    uncomp_bytes_size = get_size_of_pixel_bytes(format, width,
-                                                height, depth)
-    uncomp_bytes = bytearray(b'\x00'*uncomp_bytes_size)
+    uncomp = bytearray(b'\x00'*get_size_of_pixel_bytes(format, w, h, d))
 
-    pix_byte_count = width*height*depth*(bpp//8)
-    curr_pix_byte = 0
+    pix_byte_count = w*h*d*(bpp//8)
+    i = 0
     pos = 0
     
     ######################
@@ -854,68 +857,74 @@ def uncompress_rle(comp_bytes, format, width, height, depth=1):
     ######################
     try:
         if bpp == 32:
-            while curr_pix_byte < pix_byte_count:
+            while i < pix_byte_count:
                 #if this packet is compressed with RLE
                 if comp_bytes[pos]&128:
                     for i in range(0, (comp_bytes[pos]-127)*4, 4):
-                        uncomp_bytes[curr_pix_byte+i]   = comp_bytes[pos+1]
-                        uncomp_bytes[curr_pix_byte+i+1] = comp_bytes[pos+2]
-                        uncomp_bytes[curr_pix_byte+i+2] = comp_bytes[pos+3]
-                        uncomp_bytes[curr_pix_byte+i+3] = comp_bytes[pos+4]
-                    curr_pix_byte += (comp_bytes[pos]-127)*4
+                        j = i*2
+                        uncomp[j]   = comp_bytes[pos+1]
+                        uncomp[j+1] = comp_bytes[pos+2]
+                        uncomp[j+2] = comp_bytes[pos+3]
+                        uncomp[j+3] = comp_bytes[pos+4]
+                    i += (comp_bytes[pos]-127)*4
                     pos += 5
                 else:#if it's a raw packet
                     for i in range(0, (comp_bytes[pos]+1)*4, 4):
-                        uncomp_bytes[curr_pix_byte+i]   = comp_bytes[pos+i+1]
-                        uncomp_bytes[curr_pix_byte+i+1] = comp_bytes[pos+i+2]
-                        uncomp_bytes[curr_pix_byte+i+2] = comp_bytes[pos+i+3]
-                        uncomp_bytes[curr_pix_byte+i+3] = comp_bytes[pos+i+4]
-                    curr_pix_byte += (comp_bytes[pos]+1)*4
+                        j = i*2
+                        uncomp[j]   = comp_bytes[pos+i+1]
+                        uncomp[j+1] = comp_bytes[pos+i+2]
+                        uncomp[j+2] = comp_bytes[pos+i+3]
+                        uncomp[j+3] = comp_bytes[pos+i+4]
+                    i += (comp_bytes[pos]+1)*4
                     pos += (comp_bytes[pos]+1)*4+1
         elif bpp == 24:
-            while curr_pix_byte < pix_byte_count:
+            while i < pix_byte_count:
                 #if this packet is compressed with RLE
                 if comp_bytes[pos]&128:
                     for i in range(0, (comp_bytes[pos]-127)*3, 3):
-                        uncomp_bytes[curr_pix_byte+i]   = comp_bytes[pos+1]
-                        uncomp_bytes[curr_pix_byte+i+1] = comp_bytes[pos+2]
-                        uncomp_bytes[curr_pix_byte+i+2] = comp_bytes[pos+3]
-                    curr_pix_byte += (comp_bytes[pos]-127)*3
+                        j = i*2
+                        uncomp[j]   = comp_bytes[pos+1]
+                        uncomp[j+1] = comp_bytes[pos+2]
+                        uncomp[j+2] = comp_bytes[pos+3]
+                    i += (comp_bytes[pos]-127)*3
                     pos += 4
                 else:#if it's a raw packet
                     for i in range(0, (comp_bytes[pos]+1)*3, 3):
-                        uncomp_bytes[curr_pix_byte+i]   = comp_bytes[pos+i+1]
-                        uncomp_bytes[curr_pix_byte+i+1] = comp_bytes[pos+i+2]
-                        uncomp_bytes[curr_pix_byte+i+2] = comp_bytes[pos+i+3]
-                    curr_pix_byte += (comp_bytes[pos]+1)*3
+                        j = i*2
+                        uncomp[j]   = comp_bytes[pos+i+1]
+                        uncomp[j+1] = comp_bytes[pos+i+2]
+                        uncomp[j+2] = comp_bytes[pos+i+3]
+                    i += (comp_bytes[pos]+1)*3
                     pos += (comp_bytes[pos]+1)*3+1
         elif bpp == 16:
-            while curr_pix_byte < pix_byte_count:
+            while i < pix_byte_count:
                 #if this packet is compressed with RLE
                 if comp_bytes[pos]&128:
                     for i in range(0, (comp_bytes[pos]-127)*2, 2):
-                        uncomp_bytes[curr_pix_byte+i]   = comp_bytes[pos+1]
-                        uncomp_bytes[curr_pix_byte+i+1] = comp_bytes[pos+2]
-                    curr_pix_byte += (comp_bytes[pos]-127)*2
+                        j = i*2
+                        uncomp[j]   = comp_bytes[pos+1]
+                        uncomp[j+1] = comp_bytes[pos+2]
+                    i += (comp_bytes[pos]-127)*2
                     pos += 3
                 else:#if it's a raw packet
                     for i in range(0, (comp_bytes[pos]+1)*2, 2):
-                        uncomp_bytes[curr_pix_byte+i]   = comp_bytes[pos+i+1]
-                        uncomp_bytes[curr_pix_byte+i+1] = comp_bytes[pos+i+2]
-                    curr_pix_byte += (comp_bytes[pos]+1)*2
+                        j = i*2
+                        uncomp[j]   = comp_bytes[pos+i+1]
+                        uncomp[j+1] = comp_bytes[pos+i+2]
+                    i += (comp_bytes[pos]+1)*2
                     pos += (comp_bytes[pos]+1)*2+1
         else:
-            while curr_pix_byte < pix_byte_count:
+            while i < pix_byte_count:
                 #if this packet is compressed with RLE
                 if comp_bytes[pos]&128:
                     for i in range(comp_bytes[pos]-127):
-                        uncomp_bytes[curr_pix_byte+i]   = comp_bytes[pos+1]
-                    curr_pix_byte += comp_bytes[pos]-127
+                        uncomp[i*2] = comp_bytes[pos+1]
+                    i += comp_bytes[pos]-127
                     pos += 2
                 else:#if it's a raw packet
                     for i in range(comp_bytes[pos]+1):
-                        uncomp_bytes[curr_pix_byte+i] = comp_bytes[pos+i+1]
-                    curr_pix_byte += comp_bytes[pos]+1
+                        uncomp[i*2] = comp_bytes[pos+i+1]
+                    i += comp_bytes[pos]+1
                     pos += comp_bytes[pos]+2
     except IndexError:
         #index errors can be silently passed since the bytes
@@ -926,7 +935,7 @@ def uncompress_rle(comp_bytes, format, width, height, depth=1):
         else:
             pos += (comp_bytes[pos]+1)*(bpp//8)+1
 
-    return(uncomp_bytes, pos)
+    return(uncomp, pos)
 
 
 
@@ -1073,19 +1082,19 @@ def write_dds_header(dds_file, **kwargs):
             kwargs["flags"] = (kwargs["flags"] & 4294443007) + 524288
         else:
             if kwargs["channel_count"] == 1:
-                if kwargs["format"] == bc.FORMAT_A8:
+                if kwargs["format"] == ab.FORMAT_A8:
                     kwargs["pixel_format_flags"] = 2
                 else:
                     kwargs["pixel_format_flags"] = 131072
             elif kwargs["channel_count"] == 2:
                 kwargs["pixel_format_flags"] = 131073
             elif kwargs["channel_count"] == 3:
-                if kwargs["format"] == bc.FORMAT_Y8U8V8:
+                if kwargs["format"] == ab.FORMAT_Y8U8V8:
                     kwargs["pixel_format_flags"] = 512
                 else:
                     kwargs["pixel_format_flags"] = 64
             elif kwargs["channel_count"] == 4:
-                if kwargs["format"] == bc.FORMAT_U8V8:
+                if kwargs["format"] == ab.FORMAT_U8V8:
                     kwargs["pixel_format_flags"] = 524288
                 else:
                     kwargs["pixel_format_flags"] = 65
@@ -1110,7 +1119,7 @@ def write_dds_header(dds_file, **kwargs):
                               DXT_VAR_OFFSETS[i]+b,
                               kwargs[DXT_HEADER_VAR_NAMES[i]][b] )
             else:
-                pack_into('<I', header_buffer, DXT_VAR_OFFSETS[i],
+                pack_into('<L', header_buffer, DXT_VAR_OFFSETS[i],
                           kwargs[DXT_HEADER_VAR_NAMES[i]])
             
         dds_file.write(header_buffer)
