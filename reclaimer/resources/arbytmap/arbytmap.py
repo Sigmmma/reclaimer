@@ -175,6 +175,13 @@ class Arbytmap():
                     "IF YOU WISH TO USE THIS FORMAT YOU MUST " +
                     "INCOROPRATE IT YOURSELF.")
 
+            max_bpc = max(FORMAT_CHANNEL_DEPTHS[texture_info["format"]])
+            unpack_bpc = PIXEL_ENCODING_SIZES[self._UNPACK_ARRAY_CODE]
+            if max_bpc > 8*unpack_bpc:
+                raise TypeError(
+                    "Format channel depth is larger than unpack " +
+                    "channel depth. Change the unpack format to convert.")
+
             #if provided with just a pixel data array
             #we will need to put it inside a list
             if isinstance(texture_block, array):
@@ -283,6 +290,13 @@ class Arbytmap():
             
             if kwargs.get("target_format") in VALID_FORMATS:
                 self.target_format = kwargs["target_format"]
+
+            max_bpc = max(FORMAT_CHANNEL_DEPTHS[self.target_format])
+            unpack_bpc = PIXEL_ENCODING_SIZES[self._UNPACK_ARRAY_CODE]
+            if max_bpc > 8*unpack_bpc:
+                raise TypeError(
+                    "Target format channel depth is larger than unpack " +
+                    "channel depth. Change the unpack format to convert.")
             
             if self.target_format in DDS_FORMATS and swizzler is None:
                 print("ERROR: SWIZZLER MODULE NOT LOADED. CANNOT COMPRESS " +
@@ -729,9 +743,10 @@ class Arbytmap():
                 output_path = splitpath[0]
                 ext = splitpath[1][1:].lower()
 
+            ext = ext.lower()
+
             if ext not in bitmap_io.file_writers:
-                raise TypeError(
-                    "Unknown bitmap file export format", ext.lower())
+                raise TypeError("Unknown bitmap file export format '%s'" % ext)
 
             bitmap_io.file_writers[ext](self, output_path, ext.lower(), *kwargs)
         except:
@@ -757,10 +772,11 @@ class Arbytmap():
                 splitpath = path.splitext(input_path)
                 input_path = splitpath[0]
                 ext = splitpath[1][1:].lower()
+
+            ext = ext.lower()
             
             if ext not in bitmap_io.file_readers:
-                raise TypeError(
-                    "Unknown bitmap file import format", ext.lower())
+                raise TypeError("Unknown bitmap file import format '%s'" % ext)
             
             bitmap_io.file_readers[ext](self, input_path, ext.lower(), *kwargs)
         except:
@@ -1042,9 +1058,12 @@ class Arbytmap():
         unpalettized version and returns it. palette and
         indexing provided must be in an unpacked format"""
         ucc = self.unpacked_channel_count
-        
-        depalettized_bitmap = array(self._UNPACK_ARRAY_CODE,
-                                    [0]*(ucc*len(unpacked_indexing)))
+
+        # create a new array to hold the pixels after we unpack them
+        channel_size = 2 if self._UNPACK_ARRAY_CODE == 'H' else 1
+        depalettized_bitmap = array(
+            self._UNPACK_ARRAY_CODE,
+            bytearray(ucc*channel_size*len(unpacked_indexing) ))
 
         if fast_arbytmap:
             arbytmap_ext.depalettize_bitmap(
@@ -1106,8 +1125,10 @@ class Arbytmap():
             2**(log_w-log_new_w), 2**(log_h-log_new_h), 2**(log_d-log_new_d))
 
         # The new array to place the downsampled pixels into
-        downsamp = array(self._UNPACK_ARRAY_CODE,
-                         [0]*(new_width*new_height*new_depth*ucc) )
+        channel_size = 2 if self._UNPACK_ARRAY_CODE == 'H' else 1
+        downsamp = array(
+            self._UNPACK_ARRAY_CODE,
+            bytearray(channel_size*new_width*new_height*new_depth*ucc ))
         
         # The number of pixels from are being merged into one
         pmio = merge_x * merge_y * merge_z
@@ -1255,7 +1276,7 @@ class Arbytmap():
             return array("B", packed_indexing)
 
         pixel_count = (len(packed_indexing)*8) // self.indexing_size
-        unpacked_indexing = array('B', [0]*pixel_count)
+        unpacked_indexing = array('B', bytearray(pixel_count))
 
         if fast_raw_unpacker:
             raw_unpacker_ext.unpack_indexing(
@@ -1350,9 +1371,11 @@ class Arbytmap():
                                               upscale[2], upscale[3])
         
         # create a new array to hold the pixels after we unpack them
-        unpacked_array = array(self._UNPACK_ARRAY_CODE,
-                               [fill_value]*len(packed_array)*
-                               self.unpacked_channel_count )
+        channel_size = 2 if self._UNPACK_ARRAY_CODE == 'H' else 1
+        unpacked_array = array(
+            self._UNPACK_ARRAY_CODE,
+            bytes([fill_value])*len(packed_array)*
+            self.unpacked_channel_count*channel_size )
         
         if fast_raw_unpacker:
             raw_unpacker_ext.unpack_raw_4_channel(
@@ -1376,11 +1399,13 @@ class Arbytmap():
         a_shift, i_shift = offsets[0], offsets[1]
         a_mask,  i_mask  = masks[0],   masks[1]
         a_scale, i_scale = upscale[0], upscale[1]
-            
+
         # create a new array to hold the pixels after we unpack them
-        unpacked_array = array(self._UNPACK_ARRAY_CODE,
-                               [fill_value]*len(packed_array)*
-                               self.unpacked_channel_count )
+        channel_size = 2 if self._UNPACK_ARRAY_CODE == 'H' else 1
+        unpacked_array = array(
+            self._UNPACK_ARRAY_CODE,
+            bytes([fill_value])*len(packed_array)*
+            self.unpacked_channel_count*channel_size )
 
         if fast_raw_unpacker:
             raw_unpacker_ext.unpack_raw_2_channel(
@@ -1398,11 +1423,13 @@ class Arbytmap():
     def _unpack_raw_1_channel(self, packed_array, offsets,
                               masks, upscale, fill_value=0):
         shift, mask, scale = offsets[0], masks[0], upscale[0]
-            
+
         # create a new array to hold the pixels after we unpack them
-        unpacked_array = array(self._UNPACK_ARRAY_CODE,
-                               [fill_value]*len(packed_array)*
-                               self.unpacked_channel_count)
+        channel_size = 2 if self._UNPACK_ARRAY_CODE == 'H' else 1
+        unpacked_array = array(
+            self._UNPACK_ARRAY_CODE,
+            bytes([fill_value])*len(packed_array)*
+            self.unpacked_channel_count*channel_size )
         
         if fast_raw_unpacker:
             raw_unpacker_ext.unpack_raw_1_channel(
@@ -1460,7 +1487,7 @@ class Arbytmap():
 
         upi = unpacked_indexing
         packed_count = (len(upi) * self.target_indexing_size)//8
-        packed_indexing = array("B", [0]*packed_count)
+        packed_indexing = array("B", bytearray(packed_count))
         
         if fast_raw_packer:
             raw_packer_ext.pack_indexing(
@@ -1541,8 +1568,9 @@ class Arbytmap():
     def _pack_raw_4_channel(self, upa, downscale, ucc, off):        
         # create the array to hold the pixel data after
         # it's been repacked in the target format
-        packed_array = array(FORMAT_DATA_SIZES[self.target_format],
-                             [0]*(len(upa)//ucc))
+        typecode = FORMAT_DATA_SIZES[self.target_format]
+        packed_array = array(
+            typecode, bytearray(PIXEL_ENCODING_SIZES[typecode]*len(upa)//ucc ))
         
         a_shift, r_shift, g_shift, b_shift = (off[0], off[1], off[2], off[3])
         a_scale, r_scale, g_scale, b_scale = (downscale[0], downscale[1],
@@ -1566,8 +1594,9 @@ class Arbytmap():
     def _pack_raw_2_channel(self, upa, downscale, ucc, off):
         # create the array to hold the pixel data after
         # it's been repacked in the target format
-        packed_array = array(FORMAT_DATA_SIZES[self.target_format],
-                             [0]*(len(upa)//ucc))
+        typecode = FORMAT_DATA_SIZES[self.target_format]
+        packed_array = array(
+            typecode, bytearray(PIXEL_ENCODING_SIZES[typecode]*len(upa)//ucc ))
             
         a_shift, i_shift = off[0], off[1]
         a_scale, i_scale = downscale[0], downscale[1]
@@ -1586,8 +1615,9 @@ class Arbytmap():
     def _pack_raw_1_channel(self, upa, downscale, ucc, off=None):
         # create the array to hold the pixel data after
         # it's been repacked in the target format
-        packed_array = array(FORMAT_DATA_SIZES[self.target_format],
-                             [0]*(len(upa)//ucc))
+        typecode = FORMAT_DATA_SIZES[self.target_format]
+        packed_array = array(
+            typecode, bytearray(PIXEL_ENCODING_SIZES[typecode]*len(upa)//ucc ))
         
         scale = downscale[0]
         
@@ -1603,8 +1633,9 @@ class Arbytmap():
     def _pack_raw_4_channel_merge(self, upa, downscale, ucc, cmm, off, cmd):
         # create the array to hold the pixel data
         # after it's been repacked in the target format
-        packed_array = array(FORMAT_DATA_SIZES[self.target_format],
-                             [0]*(len(upa)//ucc))
+        typecode = FORMAT_DATA_SIZES[self.target_format]
+        packed_array = array(
+            typecode, bytearray(PIXEL_ENCODING_SIZES[typecode]*len(upa)//ucc ))
         
         a_t, r_t, g_t, b_t = cmm[0], cmm[1], cmm[2], cmm[3]
         a_shift, r_shift, g_shift, b_shift = (off[a_t], off[r_t],
@@ -1639,8 +1670,9 @@ class Arbytmap():
     def _pack_raw_2_channel_merge(self, upa, downscale, ucc, cmm, off, cmd):
         # create the array to hold the pixel data after
         # it's been repacked in the target format
-        packed_array = array(FORMAT_DATA_SIZES[self.target_format],
-                             [0]*(len(upa)//ucc))
+        typecode = FORMAT_DATA_SIZES[self.target_format]
+        packed_array = array(
+            typecode, bytearray(PIXEL_ENCODING_SIZES[typecode]*len(upa)//ucc ))
         
         a_target, i_target = cmm[0], cmm[1]
         a_shift, i_shift = off[a_target], off[i_target]

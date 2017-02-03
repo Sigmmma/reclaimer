@@ -49,9 +49,13 @@ FORMAT_A32R32G32B32F = "A32R32G32B32F"
 C_ORDER_ARGB = "ARGB"
 C_ORDER_ABGR = "ABGR"
 C_ORDER_RGBA = "RGBA"
-C_ORDER_BGRA = "BGRA" #<---DEFAULT
+C_ORDER_BGRA = "BGRA"  # <---DEFAULT
 
 #Default pixel storing order for most image formats is little endian BGRA
+'''The format Arbytmap will store pixels in will ALWAYS be ARGB.
+   In the future I intend to make it so you can specify which format
+   to load from/save to, but the internal format will always be ARGB.
+'''
 C_ORDER_DEFAULT = C_ORDER_BGRA
 
 

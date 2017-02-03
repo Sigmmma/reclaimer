@@ -1,11 +1,17 @@
 import os
 import time
+import mmap
 
 from struct import pack_into, unpack_from, unpack
 from array import array
 from traceback import format_exc
 
-import mmap
+try:
+    from . import bitmap_io_ext 
+    fast_bitmap_io = True
+except Exception:
+    fast_bitmap_io = False
+
 
 #this will be the reference to the bitmap convertor module.
 #once the module loads this will become the reference to it.
@@ -63,7 +69,7 @@ def save_to_tga_file(convertor, output_path, ext, **kwargs):
     if ( f in (ab.FORMAT_R5G6B5, ab.FORMAT_A4R4G4B4,
                ab.FORMAT_A8Y8, ab.FORMAT_U8V8) or f in ab.COMPRESSED_FORMATS):
         print("CANNOT EXTRACT THIS FORMAT TO TGA. EXTRACTING TO DDS INSTEAD.")
-        save_to_dds_file(conv, "dds", output_path, **kwargs)
+        save_to_dds_file(conv, output_path, "dds", **kwargs)
         return
     
     if ab.BITS_PER_PIXEL[f] > 32:
@@ -298,7 +304,7 @@ def save_to_dds_file(convertor, output_path, ext, **kwargs):
 
 
 def save_to_rawdata_file(convertor, output_path, ext, **kwargs):
-    """Saves the currently loaded texture to a raw bin file.
+    """Saves the currently loaded texture to a raw file.
     The file has no header and in most cases wont be able
     to be directly opened be applications."""
 
@@ -320,7 +326,7 @@ def save_to_rawdata_file(convertor, output_path, ext, **kwargs):
             if convertor.mipmap_count:
                 final_output_path = output_path+"_mip"+str(mipmap)
         
-            with open(final_output_path+".bin", 'w+b') as bin_file:
+            with open(final_output_path+".raw", 'w+b') as raw_file:
                 if convertor.is_palettized():
                     palette = packed_palette = convertor.palette[bitmap_index]
                     packed_indexing = convertor.texture_block[bitmap_index]
@@ -336,8 +342,8 @@ def save_to_rawdata_file(convertor, output_path, ext, **kwargs):
                     elif ab.BITS_PER_PIXEL[f] == 48:
                         packed_palette = unpad_48bit_array(packed_palette)
                         
-                    bin_file.write(packed_palette)
-                    bin_file.write(packed_indexing)
+                    raw_file.write(packed_palette)
+                    raw_file.write(packed_indexing)
                 else:
                     if convertor.packed:
                         pixel_array = convertor.texture_block[bitmap_index]
@@ -356,7 +362,7 @@ def save_to_rawdata_file(convertor, output_path, ext, **kwargs):
                         pixel_array = unpad_24bit_array(pixel_array)
                     elif ab.BITS_PER_PIXEL[f] == 48:
                         pixel_array = unpad_48bit_array(pixel_array)
-                    bin_file.write(pixel_array)
+                    raw_file.write(pixel_array)
 
             
 
@@ -397,7 +403,6 @@ def load_from_tga_file(convertor, input_path, ext, **kwargs):
 
             #Image descriptor properties
             alpha_depth = image_desc & 15
-            image_h_flip = bool(image_desc & 16)
             image_v_flip = not bool(image_desc & 32)
             
             interleave_order = (image_desc & 192) >> 6
@@ -475,15 +480,6 @@ def load_from_tga_file(convertor, input_path, ext, **kwargs):
                 print("Targa image is specified as blank in "+
                       "the header. Nothing to load.")
                 unable_to_load = True
-
-            if image_h_flip:
-                print("WARNING: TGA image header says the bitmap is "+
-                      "flipped horizontally.\nThis library doesnt currently "+
-                      "support re-orienting it properly.")
-            if image_v_flip:
-                print("WARNING: TGA image header says the bitmap is "+
-                      "flipped vertically.\nThis library doesnt currently "+
-                      "support re-orienting it properly.")
                 
             if unable_to_load:
                 return
@@ -494,9 +490,9 @@ def load_from_tga_file(convertor, input_path, ext, **kwargs):
                     palette = pad_24bit_array(tga_data[palette_start:
                                                        image_start])
                 else:
-                    palette = array(ab.FORMAT_DATA_SIZES\
-                                    [texture_info["format"]],
-                                    tga_data[palette_start:image_start])
+                    palette = array(
+                        ab.FORMAT_DATA_SIZES[texture_info["format"]],
+                        tga_data[palette_start:image_start])
                 
                 #if the color map doesn't start at zero
                 #then we need to shift around the palette
@@ -507,8 +503,8 @@ def load_from_tga_file(convertor, input_path, ext, **kwargs):
                     
                     color_map_origin = 0
 
-                indexing = array("B", tga_data[image_start:
-                                               image_start+width*height])
+                indexing = array(
+                    "B", tga_data[image_start: image_start+width*height])
                 
                 texture_info["palette"] = [palette]
                 texture_info["palettize"] = True
@@ -529,9 +525,26 @@ def load_from_tga_file(convertor, input_path, ext, **kwargs):
                 
                 convertor.load_new_texture(texture_block=texture_block,
                                            texture_info=texture_info)
+
+            if image_v_flip:
+                stride = width
+                pixels = texture_block[0]
+
+                if isinstance(pixels, bytearray):
+                    stride *= ab.BITS_PER_PIXEL[texture_info["format"]]//8
+                    if convertor._UNPACK_ARRAY_CODE == "H":
+                        stride *= 2
+                    flipped_pixels = bytearray()
+                else:
+                    flipped_pixels = array(pixels.typecode)
+
+                # reassemble the image upside down
+                for x in range((height-1)*stride, -1, -1*stride):
+                    flipped_pixels += pixels[x:x+stride]
+                texture_block[0] = flipped_pixels
+
     except:
         print(format_exc())
-
 
 
 def load_from_dds_file(convertor, input_path, ext, **kwargs):
@@ -683,10 +696,11 @@ def bitmap_bytes_to_array(rawdata, offset, texture_block,
         format, width, height, depth)
 
     #if the data is compressed,we need to uncompress it
-    comp_type = kwargs.get("compression", '').lower()
+    comp_type = kwargs.get("compression")
+    if comp_type: comp_type = comp_type.lower()
     if comp_type in decompressors:
-        rawdata, bitmap_data_end = decompressors[compression_type]\
-                                   (rawdata, format, width, height, depth)
+        rawdata, bitmap_data_end = decompressors[compression_type](
+            rawdata, format, width, height, depth)
     elif comp_type:
         raise TypeError(
             "CANNOT FIND SPECIFIED DECOMPRESOR FOR SUPPLIED " +
@@ -720,7 +734,7 @@ def bitmap_bytes_to_array(rawdata, offset, texture_block,
               "THE SIZE EXPECTED. PADDING WITH ZEROS.")
         pixel_array.extend(
             array(pixel_array.typecode,
-                  [0]*((bitmap_size//pixel_size) - len(pixel_array))))
+                  bytearray((bitmap_size//pixel_size) - len(pixel_array))))
     
     #add the pixel array to the current texture block
     texture_block.append(pixel_array)
@@ -745,93 +759,119 @@ def bitmap_indexing_to_array(rawdata, offset, indexing_block,
     return offset + width*height*depth
 
 
-def pad_24bit_array(unpadded_pixels):
-    ######################
-    '''NEEDS MORE SPEED'''
-    ######################
-    
-    padded_pixels = array(
-        "L", map(lambda x:(unpadded_pixels[x] +
-                          (unpadded_pixels[x+1]<<8)+
-                          (unpadded_pixels[x+2]<<16)),
-                 range(0, len(unpadded_pixels), 3)))
-    return padded_pixels
+def pad_24bit_array(unpadded):
+    if (not hasattr(unpadded, 'typecode')) or unpadded.typecode != 'B':
+        raise TypeError(
+            "Bad typecode for unpadded 24bit array. Expected B, got %s" %
+            unpadded.typecode)
+    if fast_bitmap_io:
+        print("fast pad 24")
+        padded = array("L", bytearray(len(unpadded)//3) )
+        bitmap_io_ext.pad_24bit_array(padded, unpadded)
+    else:
+        padded = array(
+            "L", map(lambda x:(unpadded[x] +
+                              (unpadded[x+1]<<8)+
+                              (unpadded[x+2]<<16)),
+                     range(0, len(unpadded), 3)))
+    return padded
 
 
-def pad_48bit_array(unpadded_pixels):
-    ######################
-    '''NEEDS MORE SPEED'''
-    ######################
-    
-    padded_pixels = array(
-        "Q", map(lambda x:(unpadded_pixels[x] +
-                          (unpadded_pixels[x+1]<<16)+
-                          (unpadded_pixels[x+2]<<32)),
-                 range(0, len(unpadded_pixels), 3)))
-    return padded_pixels
+def pad_48bit_array(unpadded):
+    if (not hasattr(unpadded, 'typecode')) or unpadded.typecode != 'H':
+        raise TypeError(
+            "Bad typecode for unpadded 48bit array. Expected H, got %s" %
+            unpadded.typecode)
+    if fast_bitmap_io:
+        print("fast pad 48")
+        padded = array("Q", bytearray(len(unpadded)//3) )
+        bitmap_io_ext.pad_48bit_array(padded, unpadded)
+    else:
+        padded = array(
+            "Q", map(lambda x:(unpadded[x] +
+                              (unpadded[x+1]<<16)+
+                              (unpadded[x+2]<<32)),
+                     range(0, len(unpadded), 3)))
+    return padded
 
 
-def unpad_24bit_array(pixels):
+def unpad_24bit_array(padded):
     """given a 24BPP pixel data array that has been padded to
     32BPP, this will return an unpadded, unpacked, array copy.
     The endianness of the data will be little."""
     
-    ######################
-    '''NEEDS MORE SPEED'''
-    ######################
-    
-    if pixels.typecode == "L":
+    if padded.typecode == "L":
         # pixels have been packed
-        unpadded_pixels = array("B", [0]*len(pixels)*3)
-        for i in range(len(pixels)):
-            unpadded_pixels[i*3] = pixels[i]&255
-            unpadded_pixels[i*3+1] = (pixels[i]&65280)>>8
-            unpadded_pixels[i*3+2] = (pixels[i]&16711680)>>16
-    elif pixels.typecode == "B":
+        unpadded = array("B", bytearray(len(padded)*3) )
+        if fast_bitmap_io:
+            bitmap_io_ext.unpad_24bit_array(unpadded, padded)
+        else:
+            for i in range(len(padded)):
+                unpadded[i*3] = padded[i]&255
+                unpadded[i*3+1] = (padded[i]&65280)>>8
+                unpadded[i*3+2] = (padded[i]&16711680)>>16
+    elif padded.typecode == "B":
         # pixels have NOT been packed
-        unpadded_pixels = array("B", [0]*(len(pixels)//4)*3 )
-        for i in range(len(pixels)//4):
-            unpadded_pixels[i*3] = pixels[i*4+1]
-            unpadded_pixels[i*3+1] = pixels[i*4+2]
-            unpadded_pixels[i*3+2] = pixels[i*4+3]
+
+        # Because they havent been packed, it should be assumed
+        # the channel order is the default one, namely ARGB.
+        # Since we are removing the alpha channel, remove
+        # the first byte from each pixel
+        unpadded = array("B", bytearray((len(padded)//4)*3) )
+        if fast_bitmap_io:
+            bitmap_io_ext.unpad_24bit_array(unpadded, padded)
+        else:
+            for i in range(len(padded)//4):
+                unpadded[i*3] = padded[i*4+1]
+                unpadded[i*3+1] = padded[i*4+2]
+                unpadded[i*3+2] = padded[i*4+3]
     else:
-        print("ERROR: BAD TYPECODE FOR 24BIT PADDED ARRAY.")
-        return
+        raise TypeError(
+            "Bad typecode for padded 24bit array. Expected H or Q, got %s" %
+            padded.typecode)
         
-    return unpadded_pixels
+    return unpadded
 
 
-def unpad_48bit_array(pixels):
+def unpad_48bit_array(padded):
     """given a 48BPP pixel data array that has been padded to
     64BPP, this will return an unpadded, unpacked, array copy.
     The endianness of the data will be little."""
     
-    ######################
-    '''NEEDS MORE SPEED'''
-    ######################
-    
-    if pixels.typecode == "Q":
+    if padded.typecode == "Q":
         # pixels have been packed
-        unpadded_pixels = array("H", [0]*len(pixels)*3)
-        for i in range(len(pixels)):
-            j = i*3
-            unpadded_pixels[j] = pixels[i]&65535
-            unpadded_pixels[j+1] = (pixels[i]&4294901760)>>16
-            unpadded_pixels[j+2] = (pixels[i]&281470681743360)>>32
-    elif pixels.typecode == "H":
+        unpadded = array("H", bytearray(len(padded)*6))
+        if fast_bitmap_io:
+            bitmap_io_ext.unpad_48bit_array(unpadded, padded)
+        else:
+            for i in range(len(padded)):
+                j = i*3
+                unpadded[j] = padded[i]&65535
+                unpadded[j+1] = (padded[i]&4294901760)>>16
+                unpadded[j+2] = (padded[i]&281470681743360)>>32
+    elif padded.typecode == "H":
         # pixels have NOT been packed
-        unpadded_pixels = array("H", [0]*(len(pixels)//4)*3 )
-        for i in range(len(pixels)//4):
-            j = i*3
-            i *= 4
-            unpadded_pixels[j] = pixels[i+1]
-            unpadded_pixels[j+1] = pixels[i+2]
-            unpadded_pixels[j+2] = pixels[i+3]
+
+        # Because they havent been packed, it should be assumed
+        # the channel order is the default one, namely ARGB.
+        # Since we are removing the alpha channel, remove
+        # the first two bytes from each pixel
+        unpadded = array("H", bytearray((len(padded)//4)*6) )
+        if fast_bitmap_io:
+            bitmap_io_ext.unpad_48bit_array(unpadded, padded)
+        else:
+            for i in range(len(padded)//4):
+                j = i*3
+                i *= 4
+                unpadded[j] = padded[i+1]
+                unpadded[j+1] = padded[i+2]
+                unpadded[j+2] = padded[i+3]
     else:
-        print("ERROR: BAD TYPECODE FOR 48BIT PADDED ARRAY.")
-        return
+        raise TypeError(
+            "Bad typecode for padded 48bit array. Expected H or Q, got %s" %
+            padded.typecode)
         
-    return unpadded_pixels
+    return unpadded
 
 
 def uncompress_rle(comp_bytes, format, width, height, depth=1):
@@ -846,7 +886,7 @@ def uncompress_rle(comp_bytes, format, width, height, depth=1):
     w, h, d = ab.clip_dimensions(width, height, depth, format)
 
     #get how many bytes the texture is going to be
-    uncomp = bytearray(b'\x00'*get_size_of_pixel_bytes(format, w, h, d))
+    uncomp = bytearray(get_size_of_pixel_bytes(format, w, h, d))
 
     pix_byte_count = w*h*d*(bpp//8)
     i = 0
@@ -940,7 +980,7 @@ def uncompress_rle(comp_bytes, format, width, height, depth=1):
 
 
 file_writers = {"tga":save_to_tga_file, "dds":save_to_dds_file,
-                "bin":save_to_rawdata_file}
+                "raw":save_to_rawdata_file}
 file_readers = {"tga":load_from_tga_file, "dds":load_from_dds_file}
 decompressors = {"rle":uncompress_rle}
 
@@ -963,35 +1003,23 @@ def write_tga_header(tga_file, **kwargs):
         image_desc---(BYTE)
     '''
 
-    header_buffer = array("B",[0]*18)
-    
-    id_length = kwargs.get("id_length",0)
-    color_map_type = kwargs.get("color_map_type",0)
-    image_type = kwargs.get("image_type",2)
-    color_map_origin = kwargs.get("color_map_origin",0)
-    color_map_length = kwargs.get("color_map_length",0)
-    color_map_depth = kwargs.get("color_map_depth",0)
-    image_origin = kwargs.get("image_origin",(0,0))
-    width = kwargs.get("width",0)
-    height = kwargs.get("height",0)
-    bpp = kwargs.get("bpp",32)
-    image_desc = 32 + (kwargs.get("image_desc",0)&223)
+    buf = array("B",bytearray(18))
         
-    pack_into('B',  header_buffer, 0,  id_length)
-    pack_into('B',  header_buffer, 1,  color_map_type)
-    pack_into('B',  header_buffer, 2,  image_type)
-    pack_into('<H', header_buffer, 3,  color_map_origin)
-    pack_into('<H', header_buffer, 5,  color_map_length)
-    pack_into('B',  header_buffer, 7,  color_map_depth)
-    pack_into('<H', header_buffer, 8,  image_origin[0])
-    pack_into('<H', header_buffer, 10, image_origin[1])
+    pack_into('B',  buf, 0,  kwargs.get("id_length",0))
+    pack_into('B',  buf, 1,  kwargs.get("color_map_type",0))
+    pack_into('B',  buf, 2,  kwargs.get("image_type",2))
+    pack_into('<H', buf, 3,  kwargs.get("color_map_origin",0))
+    pack_into('<H', buf, 5,  kwargs.get("color_map_length",0))
+    pack_into('B',  buf, 7,  kwargs.get("color_map_depth",0))
+    pack_into('<H', buf, 8,  kwargs.get("image_origin", (0,0))[0])
+    pack_into('<H', buf, 10, kwargs.get("image_origin", (0,0))[1])
     
-    pack_into('<H', header_buffer, 12, width)
-    pack_into('<H', header_buffer, 14, height)
-    pack_into('B',  header_buffer, 16, bpp)
-    pack_into('B',  header_buffer, 17, image_desc)
-    
-    tga_file.write(header_buffer)
+    pack_into('<H', buf, 12, kwargs.get("width",0))
+    pack_into('<H', buf, 14, kwargs.get("height",0))
+    pack_into('B',  buf, 16, kwargs.get("bpp",0))
+    pack_into('B',  buf, 17, 32 + (kwargs.get("image_desc",0)&223))
+
+    tga_file.write(buf)
     return 18
 
 
@@ -1016,7 +1044,7 @@ def write_dds_header(dds_file, **kwargs):
 
 
     if kwargs is not None:
-        header_buffer = array("B",[0]*128)
+        buf = array("B", bytearray(128))
 
         for i in range(len(DXT_VAR_OFFSETS)):
             #fill in any missing variables
@@ -1115,14 +1143,14 @@ def write_dds_header(dds_file, **kwargs):
             #Write the variable to the header
             if isinstance(kwargs[DXT_HEADER_VAR_NAMES[i]], bytes):
                 for b in range(len(kwargs[DXT_HEADER_VAR_NAMES[i]])):
-                    pack_into('B', header_buffer,
+                    pack_into('B', buf,
                               DXT_VAR_OFFSETS[i]+b,
                               kwargs[DXT_HEADER_VAR_NAMES[i]][b] )
             else:
-                pack_into('<L', header_buffer, DXT_VAR_OFFSETS[i],
+                pack_into('<L', buf, DXT_VAR_OFFSETS[i],
                           kwargs[DXT_HEADER_VAR_NAMES[i]])
             
-        dds_file.write(header_buffer)
+        dds_file.write(buf)
         #return the offset that we are currently at
         return 128
     else:
