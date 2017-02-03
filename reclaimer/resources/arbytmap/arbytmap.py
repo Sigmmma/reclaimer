@@ -9,8 +9,8 @@ from os import path
 from copy import deepcopy
 from decimal import Decimal
 
-from .ext.format_defs import *
-from .ext import swizzler, bitmap_io, dds_defs
+from .format_defs import *
+from . import swizzler, bitmap_io, dds_defs
 
 bitmap_io.ab = dds_defs.ab = sys.modules[__name__]
 dds_defs.initialize()

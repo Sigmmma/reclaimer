@@ -1,7 +1,10 @@
 from distutils.core import setup, Extension
 
 setup(name="arbytmap", version="1.0",
-    packages=['arbytmap'],
+    packages=[
+        'arbytmap',
+        'arbytmap.ext',
+        ],
     ext_modules = [
         Extension("arbytmap.ext.bitmap_io_ext", ["arbytmap\\src\\bitmap_io_ext.c"]),
         Extension("arbytmap.ext.arbytmap_ext", ["arbytmap\\src\\arbytmap_ext.c"]),

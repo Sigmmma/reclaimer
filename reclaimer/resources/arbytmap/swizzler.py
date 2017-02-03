@@ -4,7 +4,7 @@ from traceback import format_exc
 import time
 
 try:
-    from . import swizzler_ext 
+    from .ext import swizzler_ext 
     fast_swizzler = True
 except Exception:
     fast_swizzler = False
