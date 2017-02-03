@@ -63,7 +63,7 @@ class Swizzler():
                             swizzled_pixels = array(
                                 orig_pixels.typecode, orig_pixels)
                         elif isinstance(orig_pixels, bytearray):
-                            swizzled_pixels = bytearray(orig_pixels)
+                            swizzled_pixels = bytearray(len(orig_pixels))
                         else:
                             raise TypeError(
                                 'Pixel array is not the proper type. ' +
@@ -112,7 +112,7 @@ class Swizzler():
             if isinstance(orig_array, array):
                 swizzled_array = array(orig_array.typecode, orig_array)
             elif isinstance(orig_array, bytearray):
-                swizzled_array = bytearray(orig_array)
+                swizzled_array = bytearray(len(orig_array))
             else:
                 raise TypeError('Array is not the proper type. ' +
                                 'Expected array.array or bytearray, got %s'
@@ -146,7 +146,7 @@ class Swizzler():
         #these are the masks that will be used
         #for calculating the swizzled offsets.
         c_mask, x_mask, y_mask, z_mask = (
-            array("B",[]), array("B",[]), array("B",[]), array("B",[]))
+            array("B"), array("B"), array("B"), array("B"))
         
         #generate the mask for the swizzler pattern
         self.swizzler_mask.mask_set(c_blocks, x_blocks, y_blocks, z_blocks,
