@@ -11,7 +11,8 @@ from .tag import *
 from ...field_types import *
 from supyr_struct.defs.block_def import BlockDef
 
-MONOCHROME_FORMATS = set(("A_4_IDX_4", "I_4_IDX_4", "A_8_IDX_8", "I_8_IDX_8"))
+MONOCHROME_FORMATS = set(
+    ("A_4_IDX_4", "I_4_IDX_4", "A_8_IDX_8", "I_8_IDX_8"))
 
 PALETTE_PACK_CHARS = {
     "ABGR_1555_IDX_4":'H',
@@ -104,7 +105,7 @@ UNPACK_CHARS[109] = 'h'
 UNPACK_CHARS[111] = 'H'
 
 #i dont imagine there ever being a use for even a 1024 texture
-VALID_DIMS = set([1,2,4,8,16,32,64,128,256,512,1024,2048,4096,8192,16384,32768])
+VALID_DIMS = set(1<<i for i in range(16))
 
 if BYTEORDER == 'little':
     BYTEORDER = '<'
