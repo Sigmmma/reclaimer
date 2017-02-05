@@ -40,11 +40,6 @@ except:
     fast_bitmap_io = False
 
 
-#speed things up by caching these so we don't have to
-#calculate them on the fly or constantly remake them
-range_16 = range(16)
-
-
 '''when constructing this class you must provide the
 nested list containing the textures and a dictionary which
 contains the texture's height, width, type, and format.
@@ -547,7 +542,8 @@ class Arbytmap():
         #make sure all the downscale arrays use the same encoding.
         array_enc = INVERSE_PIXEL_ENCODING_SIZES[
             int(max(self.target_depths)/8.0)]
-        for i in range(len(self.target_depths)):
+
+        for i in range(min(len(self.target_depths), len(self.unpacked_depths))):
             #make a new array to map the target
             #values to their downscaled values
             self.channel_downscalers.append(array(array_enc, []))
@@ -635,14 +631,14 @@ class Arbytmap():
 
         '''if this is a DDS format we need to unpack it to 4
         channels no matter what. in order for that to work we
-        need to pad the channel mapping and the merge mapping'''
+        need to pad the channel mapping and the merge mapping
         if self.format in DDS_FORMATS and self.unpacked_channel_count < 4:
             # pad the channel mapping
             for i in range(self.unpacked_channel_count, 4):
                 self.channel_mapping.append(i)
                 
             # check if there is a merge mapping
-            if "channel_merge_mapping" in kwargs:
+            if kwargs.get("channel_merge_mapping"):
                 # pad the merge mapping
                 self.channel_merge_mapping = array(
                     "b", kwargs["channel_merge_mapping"])
@@ -658,6 +654,7 @@ class Arbytmap():
                         self.channel_merge_mapping[i] = -1
 
             self.unpacked_channel_count = 4
+        '''
 
 
     def _set_channel_merge_mapping(self, **kwargs):
@@ -684,12 +681,13 @@ class Arbytmap():
         # the target format then we need to merge some
         if ucc <= self.target_channel_count:
             self.channel_merge_mapping = cmm = None
+            self.channel_merge_divisors = cmd = None
         elif "channel_merge_mapping" not in kwargs:
             self.texture_block = None
             raise TypeError((
                 "ERROR: CONVERTING FROM FORMAT WITH %s CHANNELS TO " +
                 "FORMAT WITH %s CHANNELS.\nA MAPPING IS NEEDED TO " +
-                "SPECIFY WHAT SHOULD BE MERGED WITH WHAT.\n",
+                "SPECIFY WHAT SHOULD BE MERGED WITH WHAT.\n" +
                 "DEREFERENCING TEXTURE BLOCK FROM BITMAP " +
                 "CONVERTER TO PREVENT UNSTABLE CONVERSION.") % (
                     self.source_channel_count, self.target_channel_count))
@@ -707,7 +705,7 @@ class Arbytmap():
             self.channel_merge_divisors = cmd = array(
                 "l", [0]*self.target_channel_count)
 
-        if cmm is not None:
+        if cmd is not None:
             # loop through the length of the convert channel mapping
             for i in cmm:
                 """WHAT WE ARE DOING HERE IS ADDING 1 TO EACH
@@ -880,7 +878,7 @@ class Arbytmap():
                 for m in range(self.mipmap_count+1):
                     for sb in range(self.sub_bitmap_count):
                         # get the index of the bitmap we'll be working with
-                        i = sb + (m*self.sub_bitmap_count)
+                        i = m*self.sub_bitmap_count + sb
                         
                         if self.is_palettized(i):
                             # unpack the bitmap's palette and indexing
@@ -952,6 +950,8 @@ class Arbytmap():
                     # Loop for each mipmap we need to make
                     for m in range(self.mipmap_count, new_mip_count):
                         for sb in range(self.sub_bitmap_count):
+                            # get the index of the bitmap we'll be working with
+                            i = m*self.sub_bitmap_count + sb
                             if self.is_palettized(sb):
                                 ##############################################
                                 """ NEED ROUTINE FOR MAKING PALETTIZED MIPS"""
@@ -963,7 +963,7 @@ class Arbytmap():
                                 continue
 
                             # get the array of packed pixels to work with
-                            mip_pixels = tex_block[m*self.sub_bitmap_count + sb]
+                            mip_pixels = tex_block[i]
 
                             mip_pixels, _, __, ___ = self._downsample_bitmap(
                                 mip_pixels, 1, mw, mh, md)
@@ -995,7 +995,7 @@ class Arbytmap():
                 for m in range(self.mipmap_count+1):
                     for sb in range(self.sub_bitmap_count):
                         # get the index of the bitmap we'll be working with
-                        i = sb + (m*self.sub_bitmap_count)
+                        i = m*self.sub_bitmap_count + sb
 
                         if not self.palettize:
                             repacked_pixel_array = self.pack(
@@ -1536,7 +1536,7 @@ class Arbytmap():
                 "Arbytmap cannot pack raw pixels to sizes " +
                 "other than 8, 16, 24, 32, 48, or 64 bit.")
 
-        # If the nubmer of unpacked channels is just 1 it
+        # If the number of unpacked channels is just 1 it
         # means we can just use the original array as it is
         if ucc != 1 or self.target_channel_count != 1:
             off = FORMAT_CHANNEL_OFFSETS[self.target_format]
@@ -1551,17 +1551,23 @@ class Arbytmap():
                 elif ucc == 2:
                     packed_array = self._pack_raw_2_channel_merge(
                         unpacked_array, downscale, ucc, cmm, off, cmd)
+                else:
+                    packed_array = self._pack_raw_1_channel(
+                        unpacked_array, downscale, ucc, off)
             elif ucc == 4:
                 packed_array = self._pack_raw_4_channel(
                     unpacked_array, downscale, ucc, off)
             elif ucc == 2:
                 packed_array = self._pack_raw_2_channel(
                     unpacked_array, downscale, ucc, off)
+            else:
+                packed_array = self._pack_raw_1_channel(
+                    unpacked_array, downscale, ucc, off)
         elif BITS_PER_PIXEL[self.target_format] == 8:
             packed_array = unpacked_array
         else:
             packed_array = self._pack_raw_1_channel(
-                unpacked_array, downscale, ucc)
+                unpacked_array, downscale, ucc, off)
 
         return packed_array
 
@@ -1612,7 +1618,7 @@ class Arbytmap():
         return packed_array
 
 
-    def _pack_raw_1_channel(self, upa, downscale, ucc, off=None):
+    def _pack_raw_1_channel(self, upa, downscale, ucc, off):
         # create the array to hold the pixel data after
         # it's been repacked in the target format
         typecode = FORMAT_DATA_SIZES[self.target_format]
@@ -1620,12 +1626,13 @@ class Arbytmap():
             typecode, bytearray(PIXEL_ENCODING_SIZES[typecode]*len(upa)//ucc ))
         
         scale = downscale[0]
+        shift = off[0]
         
         if fast_raw_packer:
-            raw_packer_ext.pack_raw_1_channel(packed_array, upa, scale)
+            raw_packer_ext.pack_raw_1_channel(packed_array, upa, scale, shift)
         else:
             for i in range(len(packed_array)):
-                packed_array[i] = scale[upa[i]]
+                packed_array[i] = scale[upa[i]]<<shift
 
         return packed_array
 
