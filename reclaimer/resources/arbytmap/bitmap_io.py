@@ -21,12 +21,18 @@ DXT_FORMAT_STRINGS = {
     "DXT1":"DXT1",
     "DXT2":"DXT2", "DXT3":"DXT3",
     "DXT4":"DXT4", "DXT5":"DXT5",
-    "DXN":"ATI2"}
+    "CTX1":"CTX1", "DXN":"ATI2", 
+    "DXT5A":"DX5A", "DXT5I":"DX5I"  # these 2 are my own typecodes. remove
+    #                                 them when the dx10 header can be read
+    }
 DXT_FORMAT_STRINGS_I = {
     "DXT1":"DXT1",
     "DXT2":"DXT2", "DXT3":"DXT3",
     "DXT4":"DXT4", "DXT5":"DXT5",
-    "ATI2":"DXN"}
+    "CTX1":"CTX1", "ATI2":"DXN",
+    "DX5A":"DXT5A", "DX5I":"DXT5I"  # these 2 are my own typecodes. remove
+    #                                 them when the dx10 header can be read
+    }
 
 DXT_TEXTURE_TYPE_MAP = {
     "2D":0, "FLAT":0,
@@ -107,6 +113,7 @@ def save_to_tga_file(convertor, output_path, ext, **kwargs):
     height = conv.height
     pals = conv.palette
     tex_block = conv.texture_block
+    mip_count = convertor.mipmap_count+1
 
     for sb in range(conv.sub_bitmap_count):                
         if not os.path.exists(os.path.dirname(output_path)):
@@ -213,22 +220,20 @@ def save_to_dds_file(convertor, output_path, ext, **kwargs):
         with open(final_output_path+"."+ext, 'w+b') as dds_file:
             #write the header and get the offset
             #to start writing the pixel data
-            pixel_start_offset = write_dds_header(dds_file,
-                                                  **tex_desc)
+            pixel_start_offset = write_dds_header(dds_file, **tex_desc)
             dds_file.seek(pixel_start_offset)
             
             #write each of the pixel arrays into the bitmap
-            for sub_bitmap in range(convertor.sub_bitmap_count):
+            for sb in range(convertor.sub_bitmap_count):
                 #write each of the pixel arrays into the bitmap
-                for mipmap in range(convertor.mipmap_count+1):
-                    bitmap_index = sub_bitmap + mipmap*convertor.\
-                                   sub_bitmap_count
+                for m in range(convertor.mipmap_count+1):
+                    # get the index of the bitmap we'll be working with
+                    i = m*convertor.sub_bitmap_count + sb
+                    pixel_array = convertor.texture_block[i]
                     
                     if convertor.is_palettized():
-                        palette = unpacked_palette = convertor.palette\
-                                  [bitmap_index]
-                        indexing = unpacked_indexing = convertor.texture_block\
-                                   [bitmap_index]
+                        palette = unpacked_palette = convertor.palette[i]
+                        indexing = unpacked_indexing = pixel_array
                         
                         if convertor.palette_packed:
                             unpacked_palette = convertor.palette_unpacker(
@@ -240,13 +245,9 @@ def save_to_dds_file(convertor, output_path, ext, **kwargs):
                         unpacked_pixel_array = convertor.depalettize_bitmap(
                             unpacked_palette, unpacked_indexing)
                         pixel_array = convertor.pack_raw(unpacked_pixel_array)
-                    elif convertor.packed:
-                        pixel_array = convertor.texture_block[bitmap_index]
-                    else:
-                        pixel_array = convertor.pack(convertor.texture_block\
-                                        [bitmap_index], width, height, depth)
-                        width, height, depth = ab.clip_dimensions(
-                            width//2, height//2, depth//2)
+                    elif not convertor.packed:
+                        pixel_array = convertor.pack(
+                            pixel_array, width, height, depth)
                         if pixel_array is None:
                             print("ERROR: UNABLE TO PACK IMAGE DATA.\n"+
                                   "CANCELLING DDS SAVE.")
@@ -255,28 +256,29 @@ def save_to_dds_file(convertor, output_path, ext, **kwargs):
                     if ab.BITS_PER_PIXEL[f] == 24:
                         pixel_array = unpad_24bit_array(pixel_array)
                     dds_file.write(pixel_array)
+
+                width, height, depth = ab.clip_dimensions(
+                    width//2, height//2, depth//2)
         return
     
-    for sub_bitmap in range(convertor.sub_bitmap_count):
+    for sb in range(convertor.sub_bitmap_count):
         if convertor.sub_bitmap_count > 1:
-            final_output_path = output_path+"_"+str(sub_bitmap)
+            final_output_path = output_path+"_"+str(sb)
         
         with open(final_output_path+".dds", 'w+b') as dds_file:
             #write the header and get the offset
             #to start writing the pixel data
-            pixel_start_offset = write_dds_header(
-                dds_file, **tex_desc)
+            pixel_start_offset = write_dds_header(dds_file, **tex_desc)
             dds_file.seek(pixel_start_offset)
             
             #write each of the pixel arrays into the bitmap
-            for mipmap in range(convertor.mipmap_count+1):
-                bitmap_index = sub_bitmap+mipmap*convertor.sub_bitmap_count
+            for m in range(convertor.mipmap_count+1):
+                # get the index of the bitmap we'll be working with
+                i = m*convertor.sub_bitmap_count + sb
                 
                 if convertor.is_palettized():
-                    palette = unpacked_palette = convertor.palette\
-                              [bitmap_index]
-                    indexing = unpacked_indexing = convertor.texture_block\
-                               [bitmap_index]
+                    palette = unpacked_palette = convertor.palette[i]
+                    indexing = unpacked_indexing = convertor.texture_block[i]
                         
                     if convertor.palette_packed:
                        unpacked_palette = convertor.palette_unpacker(palette)
@@ -287,10 +289,10 @@ def save_to_dds_file(convertor, output_path, ext, **kwargs):
                                      depalettize_bitmap(unpacked_palette,
                                                         unpacked_indexing))
                 elif convertor.packed:
-                        pixel_array = convertor.texture_block[bitmap_index]
+                        pixel_array = convertor.texture_block[i]
                 else:
                     pixel_array = convertor.pack(convertor.texture_block\
-                                         [bitmap_index], width, height, depth)
+                                         [i], width, height, depth)
                     width, height, depth = ab.clip_dimensions(
                         width//2, height//2, depth//2)
                     if pixel_array is None:
@@ -315,21 +317,21 @@ def save_to_rawdata_file(convertor, output_path, ext, **kwargs):
     if not os.path.exists(os.path.dirname(output_path)):
         os.makedirs(os.path.dirname(output_path))
         
-    for sub_bitmap in range(convertor.sub_bitmap_count):
+    for sb in range(convertor.sub_bitmap_count):
         if convertor.sub_bitmap_count > 1:
-            final_output_path = output_path+"_tex"+str(sub_bitmap)
+            final_output_path = output_path+"_tex"+str(sb)
                 
         #write each of the pixel arrays into the bitmap
-        for mipmap in range(convertor.mipmap_count+1):
-            bitmap_index = sub_bitmap + mipmap*convertor.sub_bitmap_count
+        for m in range(convertor.mipmap_count+1):
+            i = m*convertor.sub_bitmap_count + sb
             
             if convertor.mipmap_count:
-                final_output_path = output_path+"_mip"+str(mipmap)
+                final_output_path = output_path+"_mip"+str(m)
         
             with open(final_output_path+".raw", 'w+b') as raw_file:
                 if convertor.is_palettized():
-                    palette = packed_palette = convertor.palette[bitmap_index]
-                    packed_indexing = convertor.texture_block[bitmap_index]
+                    palette = packed_palette = convertor.palette[i]
+                    packed_indexing = convertor.texture_block[i]
                     indexing = packed_indexing
                     
                     if not convertor.palette_packed:
@@ -346,10 +348,9 @@ def save_to_rawdata_file(convertor, output_path, ext, **kwargs):
                     raw_file.write(packed_indexing)
                 else:
                     if convertor.packed:
-                        pixel_array = convertor.texture_block[bitmap_index]
+                        pixel_array = convertor.texture_block[i]
                     else:
-                        pixel_array = convertor.pack(convertor.texture_block\
-                                                     [bitmap_index],
+                        pixel_array = convertor.pack(convertor.texture_block[i],
                                                      width, height, depth)
                         width, height, depth = ab.clip_dimensions(
                             width//2, height//2, depth//2)
@@ -363,8 +364,6 @@ def save_to_rawdata_file(convertor, output_path, ext, **kwargs):
                     elif ab.BITS_PER_PIXEL[f] == 48:
                         pixel_array = unpad_48bit_array(pixel_array)
                     raw_file.write(pixel_array)
-
-            
 
                 
 def load_from_tga_file(convertor, input_path, ext, **kwargs):
@@ -558,14 +557,14 @@ def load_from_dds_file(convertor, input_path, ext, **kwargs):
             
             height = unpack_from("<L", dds_data, 12)[0]
             width  = unpack_from("<L", dds_data, 16)[0]
-            depth  = unpack_from("<L", dds_data, 28)[0]
+            depth  = unpack_from("<L", dds_data, 24)[0]
             
             depth += int(depth == 0)
             b_type = ab.TYPE_2D
             sub_bitmap_count = 1
             
             linear_size  = unpack_from("<L", dds_data, 20)[0]
-            mipmap_count = unpack_from("<L", dds_data, 24)[0]
+            mipmap_count = max(unpack_from("<L", dds_data, 28)[0], 1)
             format_flags = unpack_from("<L", dds_data, 80)[0]
             
             dxt_format_id = dds_data[84:88].decode('Latin-1')
@@ -599,7 +598,7 @@ def load_from_dds_file(convertor, input_path, ext, **kwargs):
                     return
                 b_type = ab.TYPE_3D
                 
-            if format_flags&4 and dxt_format_id != DXT_FORMAT_ID_BLANK:
+            if format_flags&4 or dxt_format_id != DXT_FORMAT_ID_BLANK:
                 #if the texture has a compression method
                 if dxt_format_id in DXT_FORMAT_STRINGS_I:
                     format = DXT_FORMAT_STRINGS_I[dxt_format_id]
@@ -626,7 +625,7 @@ def load_from_dds_file(convertor, input_path, ext, **kwargs):
                     format = ab.FORMAT_U8V8
                 else:
                     print("UNABLE TO DETERMINE DDS FORMAT."+
-                          "\nUNABLE TO LAOD DDS TEXTURE")
+                          "\nUNABLE TO LOAD DDS TEXTURE")
                     return
 
 
@@ -639,31 +638,45 @@ def load_from_dds_file(convertor, input_path, ext, **kwargs):
             #im not sure if it's photoshop doing this, but it's weird....
             if mipmap_count >= 1: mipmap_count -= 1
             
-            texture_info = {"width":width, "height":height, "depth":depth,
-                            "texture_type":b_type, "mipmap_count":mipmap_count,
-                            "sub_bitmap_count":sub_bitmap_count,
-                            "format":format, "filepath":input_path}
+            tex_info = {"width":width, "height":height, "depth":depth,
+                        "texture_type":b_type, "mipmap_count":mipmap_count,
+                        "sub_bitmap_count":sub_bitmap_count,
+                        "format":format, "filepath":input_path}
             
-            texture_block = []
+            tmp_tex_block = []
             data_offset = 128
+            bitmap_size = None
             
-            #loop over each cube face and mipmap
+            #loop over each mipmap and cube face
             #and turn them into pixel arrays
-            for cube_face in range(sub_bitmap_count):
+            for sb in range(sub_bitmap_count):
                 mip_w = width
                 mip_h = height
                 mip_d = depth
-                
-                for mipmap in range(mipmap_count+1):
-                    bitmap_index = cube_face + mipmap*sub_bitmap_count
+                for m in range(mipmap_count+1):
+                    if format == 'DXN':
+                        bitmap_size = max(mip_w*mip_h//8, 1)*8
+                    elif format in ('DXT1', 'DXT5A', 'DXT5Y'):
+                        bitmap_size = max(mip_w*mip_h//16, 1)*8
+                    elif format in ('DXT2', 'DXT3', 'DXT4', 'DXT5', 'DXT5AY'):
+                        bitmap_size = max(mip_w*mip_h//16, 1)*16
+
                     data_offset = bitmap_bytes_to_array(
-                        dds_data, data_offset, texture_block,
-                        format, width, height, depth)
+                        dds_data, data_offset, tmp_tex_block,
+                        format, width, height, depth, bitmap_size)
 
                     mip_w, mip_h, mip_d = ab.clip_dimensions(
-                        mip_w//2, mip_h//2, mip_d//2)
-            convertor.load_new_texture(texture_block=texture_block,
-                                       texture_info=texture_info)
+                        mip_w//2, mip_h//2, mip_d//2, format)
+
+            # rearrange the images so they are sorted by [mip][bitmap]
+            tex_block = [None]*len(tmp_tex_block)
+            for m in range(mipmap_count+1):
+                for sb in range(sub_bitmap_count):
+                    tex_block[m*sub_bitmap_count + sb] = tmp_tex_block[
+                        sb*(mipmap_count+1) + m]
+
+            convertor.load_new_texture(texture_block=tex_block,
+                                       texture_info=tex_info)
     except:
         print(format_exc())
 
@@ -680,8 +693,8 @@ def get_size_of_pixel_bytes(format, width, height, depth=1):
     return bitmap_size
 
 
-def bitmap_bytes_to_array(rawdata, offset, texture_block,
-                          format, width, height, depth=1, **kwargs):
+def bitmap_bytes_to_array(rawdata, offset, texture_block, format,
+                          width, height, depth=1, bitmap_size=None, **kwargs):
     """This function will create an array of pixels of width*height*depth from
     an iterable, sliceable, object, and append it to the supplied texture_block.
     This function will return the offset of the end of the pixel data so that
@@ -692,8 +705,10 @@ def bitmap_bytes_to_array(rawdata, offset, texture_block,
     pixel_size = ab.PIXEL_ENCODING_SIZES[encoding]
 
     #get how many bytes the texture is going to be
-    bitmap_size = bitmap_data_end = get_size_of_pixel_bytes(
-        format, width, height, depth)
+    if bitmap_size is None:
+        bitmap_size = bitmap_data_end = get_size_of_pixel_bytes(
+            format, width, height, depth)
+    bitmap_data_end = bitmap_size
 
     #if the data is compressed,we need to uncompress it
     comp_type = kwargs.get("compression")
@@ -738,7 +753,6 @@ def bitmap_bytes_to_array(rawdata, offset, texture_block,
     
     #add the pixel array to the current texture block
     texture_block.append(pixel_array)
-    
     return offset + bitmap_data_end
 
 
@@ -770,9 +784,8 @@ def pad_24bit_array(unpadded):
         bitmap_io_ext.pad_24bit_array(padded, unpadded)
     else:
         padded = array(
-            "L", map(lambda x:(unpadded[x] +
-                              (unpadded[x+1]<<8)+
-                              (unpadded[x+2]<<16)),
+            "L", map(lambda x:(
+                unpadded[x] + (unpadded[x+1]<<8)+ (unpadded[x+2]<<16)),
                      range(0, len(unpadded), 3)))
     return padded
 
@@ -788,9 +801,8 @@ def pad_48bit_array(unpadded):
         bitmap_io_ext.pad_48bit_array(padded, unpadded)
     else:
         padded = array(
-            "Q", map(lambda x:(unpadded[x] +
-                              (unpadded[x+1]<<16)+
-                              (unpadded[x+2]<<32)),
+            "Q", map(lambda x:(
+                unpadded[x] + (unpadded[x+1]<<16)+ (unpadded[x+2]<<32)),
                      range(0, len(unpadded), 3)))
     return padded
 
@@ -1108,25 +1120,25 @@ def write_dds_header(dds_file, **kwargs):
         if kwargs["compressed"]:
             kwargs["pixel_format_flags"] = 4
             kwargs["flags"] = (kwargs["flags"] & 4294443007) + 524288
-        else:
-            if kwargs["channel_count"] == 1:
-                if kwargs["format"] == ab.FORMAT_A8:
-                    kwargs["pixel_format_flags"] = 2
-                else:
-                    kwargs["pixel_format_flags"] = 131072
-            elif kwargs["channel_count"] == 2:
-                kwargs["pixel_format_flags"] = 131073
-            elif kwargs["channel_count"] == 3:
-                if kwargs["format"] == ab.FORMAT_Y8U8V8:
-                    kwargs["pixel_format_flags"] = 512
-                else:
-                    kwargs["pixel_format_flags"] = 64
-            elif kwargs["channel_count"] == 4:
-                if kwargs["format"] == ab.FORMAT_U8V8:
-                    kwargs["pixel_format_flags"] = 524288
-                else:
-                    kwargs["pixel_format_flags"] = 65
+        elif kwargs["channel_count"] == 1:
+            if kwargs["format"] == ab.FORMAT_A8:
+                kwargs["pixel_format_flags"] = 2
+            else:
+                kwargs["pixel_format_flags"] = 131072
+        elif kwargs["channel_count"] == 2:
+            kwargs["pixel_format_flags"] = 131073
+        elif kwargs["channel_count"] == 3:
+            if kwargs["format"] == ab.FORMAT_Y8U8V8:
+                kwargs["pixel_format_flags"] = 512
+            else:
+                kwargs["pixel_format_flags"] = 64
+        elif kwargs["channel_count"] == 4:
+            if kwargs["format"] == ab.FORMAT_U8V8:
+                kwargs["pixel_format_flags"] = 524288
+            else:
+                kwargs["pixel_format_flags"] = 65
                 
+        if not kwargs["compressed"]:
             kwargs["pitch_or_linear_size"] = kwargs["width"]*(kwargs["bpp"]//8)\
                                              *kwargs["channel_count"]
 
