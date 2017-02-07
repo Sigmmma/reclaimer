@@ -20,6 +20,10 @@ pc to xbox format and vice versa from 4 channel source to 4 channel target"""
 PC_ARGB_TO_XBOX_ARGB = (1, 3, 2, 0)
 XBOX_ARGB_TO_PC_ARGB = (3, 0, 2, 1)
 
+MONO_TO_AY_COMBO = (0,)
+AY_COMBO_TO_AY   = ( 0, 0 )
+AY_COMBO_TO_ARGB = ( 0,  0,  0,  0)
+
 FORMAT_NAME_MAP = {
     -1:None,
     0:"A8", 1:"Y8", 2:"AY8", 3:"A8Y8",
@@ -50,12 +54,9 @@ ab.FORMAT_P8 = "P8-BUMP"
 
 """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
 ab.define_format(
-    format_id=ab.FORMAT_P8,
-    raw_format=True,
-    channel_count=4,
-    channel_depths=(8,8,8,8),
-    channel_masks=(4278190080, 16711680, 65280, 255),
-    channel_offsets=(24,16,8,0))
+    format_id=ab.FORMAT_P8, raw_format=True, channel_count=4,
+    depths=(8,8,8,8), offsets=(24,16,8,0)
+    masks=(4278190080, 16711680, 65280, 255))
 
 '''Constants that determine which index
 each of the flags are in per tag'''
@@ -621,18 +622,18 @@ def get_channel_mappings(format, mono_swap, target_format,
             FROM A 4 CHANNEL FORMAT TO MONOCHROME"""
             if channel_to_keep:
                 #keep the alpha channel
-                channel_mapping = ab.ANYTHING_TO_A8
+                channel_mapping = ab.ANYTHING_TO_A
                 if format == ab.FORMAT_P8:
-                    channel_merge_mapping = ab.M_ARGB_TO_A8
+                    channel_merge_mapping = ab.M_ARGB_TO_A
             else:
                 #keep the intensity channel
-                channel_merge_mapping = ab.M_ARGB_TO_Y8
+                channel_merge_mapping = ab.M_ARGB_TO_Y
 
         elif target_format == ab.FORMAT_A8Y8:
             if mono_swap:
-                channel_merge_mapping = ab.M_ARGB_TO_Y8A8
+                channel_merge_mapping = ab.M_ARGB_TO_YA
             else:
-                channel_merge_mapping = ab.M_ARGB_TO_A8Y8
+                channel_merge_mapping = ab.M_ARGB_TO_AY
 
     elif channel_count == 2:
         """THIS TAKES CARE OF CONVERTING FROM A
@@ -641,43 +642,43 @@ def get_channel_mappings(format, mono_swap, target_format,
         if format == ab.FORMAT_A8Y8:
             if mono_swap:
                 if target_format == ab.FORMAT_A8Y8:
-                    channel_mapping = ab.A8Y8_TO_Y8A8
+                    channel_mapping = ab.AY_TO_YA
                     
                 elif target_channel_count == 4:
-                    channel_mapping = ab.Y8A8_TO_ARGB
+                    channel_mapping = ab.YA_TO_ARGB
                 
             elif target_channel_count == 4:
-                channel_mapping = ab.A8Y8_TO_ARGB
+                channel_mapping = ab.AY_TO_ARGB
                 
             elif target_format in (ab.FORMAT_A8, ab.FORMAT_Y8, ab.FORMAT_AY8):
                 if channel_to_keep:
                     #keep the alpha channel
-                    channel_mapping = ab.ANYTHING_TO_A8
+                    channel_mapping = ab.ANYTHING_TO_A
                 else:
                     #keep the intensity channel
-                    channel_mapping = ab.A8Y8_TO_Y8
+                    channel_mapping = ab.AY_TO_Y
     
     elif channel_count == 1:
         """THIS TAKES CARE OF CONVERTING FROM A
         1 CHANNEL FORMAT TO OTHER FORMATS"""
         if target_channel_count == 4:
             if format == ab.FORMAT_A8:
-                channel_mapping = ab.A8_TO_ARGB
+                channel_mapping = ab.A_TO_ARGB
                     
             elif format == ab.FORMAT_Y8:
-                channel_mapping = ab.Y8_TO_ARGB
+                channel_mapping = ab.Y_TO_ARGB
                     
             elif format == ab.FORMAT_AY8:
-                channel_mapping = ab.AY8_TO_ARGB
+                channel_mapping = ab.AY_COMBO_TO_ARGB
                 
         elif target_channel_count == 2:
             if format == ab.FORMAT_A8:
-                channel_mapping = ab.A8_TO_A8Y8
+                channel_mapping = ab.A_TO_AY
                 
             elif format == ab.FORMAT_Y8:
-                channel_mapping = ab.Y8_TO_A8Y8
+                channel_mapping = ab.Y_TO_AY
                 
             elif format == ab.FORMAT_AY8:
-                channel_mapping = ab.AY8_TO_A8Y8
+                channel_mapping = ab.AY_COMBO_TO_AY
                 
     return(channel_mapping, channel_merge_mapping, target_format)
