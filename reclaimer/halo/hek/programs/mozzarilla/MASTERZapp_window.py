@@ -7,6 +7,7 @@ from time import time
 from threading import Thread
 from traceback import format_exc
 
+from ..gui import mtTkinter
 from ....constants import *
 
 # before we do anything, we need to inject these constants so any definitions
