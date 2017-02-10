@@ -4,7 +4,8 @@ from supyr_struct.defs.tag_def import TagDef
 string_data_struct = rawtext_ref("string", FlStrUTF16, max_size=32768)
 
 ustr_body = Struct("tagdata",
-    reflexive("strings", string_data_struct, 32767),
+    reflexive("strings", string_data_struct, 32767,
+        DYN_NAME_PATH='.data'),
     SIZE=12,
     )
 

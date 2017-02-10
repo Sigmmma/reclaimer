@@ -530,14 +530,16 @@ class ReflexiveFrame(DynamicArrayFrame):
                     # if it is a dependency filepath
                     for i in range(len(node)):
                         name = str(node[i].get_neighbor(dyn_name_path))\
-                                     .replace('/', '\\').split('\\')[-1]
+                               .replace('/', '\\').split('\\')[-1]\
+                               .split('\n')[0]
                         if name:
                             options[i] = name
                 else:
                     for i in range(len(node)):
                         name = str(node[i].get_neighbor(dyn_name_path))
                         if name:
-                            options[i] = name
+                            options[i] = name.split('\n')[0]
+                            
             except Exception:
                 print(format_exc())
                 print("Guess something got mistyped. Tell Moses about it.")
