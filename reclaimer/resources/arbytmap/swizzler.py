@@ -4,7 +4,10 @@ from traceback import format_exc
 import time
 
 try:
-    from .ext import swizzler_ext 
+    try:
+        from .ext import swizzler_ext
+    except Exception:
+        from ext import swizzler_ext
     fast_swizzler = True
 except Exception:
     fast_swizzler = False
@@ -15,15 +18,16 @@ class Swizzler():
     AND EXPECTS IT TO CONTAIN CERTAIN VARIABLES.
     This module was split to make it easier to
     navigate the bitmap convertor and swizzler'''
+    converter = None
 
     def __init__(self, **kwargs):
-        if "texture_converter" in kwargs and "mask_type" in kwargs:
-            self.converter = kwargs["texture_converter"]
-            self.swizzler_mask = SwizzlerMask(**kwargs)
-        else:
-            self.converter = None
+        if "converter" not in kwargs or "mask_type" not in kwargs:
+            return
 
-    def swizzle_texture(self, force_swizzle=False, delete_old_array=True):
+        self.converter = kwargs["converter"]
+        self.swizzler_mask = SwizzlerMask(**kwargs)
+
+    def swizzle_texture(self, force=False, delete_old=True):
         '''this is the function to call if you want to swizzle or
         unswizzle an entire texture, mipmaps, cube faces and all'''
         conv = self.converter
@@ -32,106 +36,104 @@ class Swizzler():
 
         tex_block = conv.texture_block
         
-        if tex_block is not None:
-            '''if we are forcing the texture to be swizzled or
-            deswizzled then we set the swizzle mode to the
-            inverse of whether or not it is swizzled'''
-            mode = conv.swizzler_mode
-            if force_swizzle:
-                mode = not(conv.swizzled)
-
-            #only run if the texture is swizzled and we want to
-            #unswizzle it or vice versa. this prevents it from
-            #unswizzling a bitmap that's unswizzled and vice versa.
-            #also check that that the bitmap is being saved to
-            #a format that supports swizzling.
-            if mode != conv.swizzled:
-                #used to keep track of which pixel array we are reading
-                i = 0
-                w, h, d = (conv.width, conv.height, conv.depth)
-                ucc = 1
-                if not conv.packed:
-                    ucc = conv.unpacked_channel_count
-
-                for m in range(conv.mipmap_count + 1):
-                    for s in range(conv.sub_bitmap_count):
-                        #get the pixel array to be swizzled/unswizzled
-                        orig_pixels = tex_block[i]
-                        
-                        #make the new array to place the swizzled data into
-                        if isinstance(orig_pixels, array):
-                            swizzled_pixels = array(
-                                orig_pixels.typecode, orig_pixels)
-                        elif isinstance(orig_pixels, bytearray):
-                            swizzled_pixels = bytearray(len(orig_pixels))
-                        else:
-                            raise TypeError(
-                                'Pixel array is not the proper type. ' +
-                                'Expected array.array or bytearray, got %s'
-                                % type(orig_pixels))
-
-                        self._swizzle_block(
-                            mode, orig_pixels, swizzled_pixels,
-                            ucc, w, h, d)
-
-                        #replace the old pixels with the new swizzled one
-                        tex_block[i] = swizzled_pixels
-
-                        #delete the old pixel array
-                        if delete_old_array:
-                            #delete the old pixel array
-                            del orig_pixels[:]
-                            
-                        i += 1
-
-                    #we're going to the next lowest mipmap
-                    #level so we halve the resolution
-                    w = int(ceil(w/2))
-                    h = int(ceil(h/2))
-                    d = int(ceil(d/2))
-    
-                #now that we're done (un)swizzling
-                #the bitmap we invert the boolean
-                conv.swizzled = not(conv.swizzled)
-        else:
-            print("ERROR: NO TEXTURE LOADED. CANNOT PREFORM "+
+        if tex_block is None:
+            print("ERROR: NO TEXTURE LOADED. CANNOT PREFORM " +
                   "SWIZZLE OPERATION WITHOUT A LOADED TEXTURE")
             return False
+
+        '''if we are forcing the texture to be swizzled or
+        deswizzled then we set the swizzle mode to the
+        inverse of whether or not it is swizzled'''
+        mode = conv.swizzle_mode
+        if force:
+            mode = not(conv.swizzled)
+
+        #only run if the texture is swizzled and we want to
+        #unswizzle it or vice versa. this prevents it from
+        #unswizzling a bitmap that's unswizzled and vice versa.
+        #also check that that the bitmap is being saved to
+        #a format that supports swizzling.
+        if mode == conv.swizzled:
+            return True
+
+        #used to keep track of which pixel array we are reading
+        i = 0
+        width, height, depth = (conv.width, conv.height, conv.depth)
+        ucc = 1
+        if not conv.packed:
+            ucc = conv.unpacked_channel_count
+
+        for m in range(conv.mipmap_count + 1):
+            for s in range(conv.sub_bitmap_count):
+                #get the pixel array to be swizzled/unswizzled
+                pixels = tex_block[i]
+                
+                #make the new array to place the swizzled data into
+                if isinstance(pixels, array):
+                    swizzled = array(pixels.typecode, pixels)
+                elif isinstance(pixels, bytearray):
+                    swizzled = bytearray(len(pixels))
+                else:
+                    raise TypeError(
+                        'Pixel array is not the proper type. Expected ' +
+                        'array.array or bytearray, got %s' % type(pixels))
+
+                self._swizzle_block(mode, pixels, swizzled, ucc,
+                                    width, height, depth)
+
+                #replace the old pixels with the new swizzled one
+                tex_block[i] = swizzled
+
+                #delete the old pixel array
+                if delete_old:
+                    #delete the old pixel array
+                    del pixels[:]
+                    
+                i += 1
+
+            #we're going to the next lowest mipmap
+            #level so we halve the resolution
+            width  = int(ceil(width/2))
+            height = int(ceil(height/2))
+            depth  = int(ceil(depth/2))
+
+        #now that we're done (un)swizzling
+        #the bitmap we invert the boolean
+        conv.swizzled = not(conv.swizzled)
         
         #no errors occurred so we return a success
         return True
 
-    def swizzle_single_array(self, orig_array, swizzler_mode,
-                             channel_count, w, h, d=1,
-                             delete_old_array=True):
+    def swizzle_single_array(self, pixels, mode, channels,
+                             width, height, depth=1, delete_old=True):
         '''this is the function to call if you just
         want to swizzle or unswizzle a single array
-        swizzler_mode: True = Swizzle    False = Deswizzle'''
+        mode: True = Swizzle    False = Deswizzle'''
         try:
             #make the new array to place the swizzled data into
-            if isinstance(orig_array, array):
-                swizzled_array = array(orig_array.typecode, orig_array)
-            elif isinstance(orig_array, bytearray):
-                swizzled_array = bytearray(len(orig_array))
+            if isinstance(pixels, array):
+                swizzled = array(pixels.typecode, pixels)
+            elif isinstance(pixels, bytearray):
+                swizzled = bytearray(len(pixels))
             else:
                 raise TypeError('Array is not the proper type. ' +
                                 'Expected array.array or bytearray, got %s'
-                                % type(orig_array))
+                                % type(pixels))
 
-            self._swizzle_block(swizzler_mode, orig_array,
-                                swizzled_array, channel_count, w, h, d)
-            
-            if delete_old_array:
+            self._swizzle_block(mode, pixels, swizzled, channels,
+                                width, height, depth)
+
+            if delete_old:
                 #delete the old pixel array
-                del orig_array[:]
+                del pixels[:]
 
-            return swizzled_array
+            return swizzled
         except Exception:
             print("ERROR OCCURRED WHILE TRYING TO SWIZZLE ARRAY")
             print(format_exc())
             return False
 
-    def _swizzle_block(self, swizzler_mode, orig_array, swizzled_array,
+    def _swizzle_block(self, mode, pixels, swizzled,
                        channels, width, height, depth):
         '''this function should only be called by one of the
         above two functions. this swizzler only works with
@@ -162,41 +164,41 @@ class Swizzler():
         z_block_offs = array("L", map(bs, range(depth), (z_mask,)*depth))
         
         if fast_swizzler:
-            if swizzler_mode:
+            if mode:
                 swizzler_ext.swizzle_array(
                     c_block_offs, x_block_offs, y_block_offs, z_block_offs,
-                    swizzled_array, orig_array)
+                    swizzled, pixels)
             else:
                 swizzler_ext.unswizzle_array(
                     c_block_offs, x_block_offs, y_block_offs, z_block_offs,
-                    swizzled_array, orig_array)
+                    swizzled, pixels)
 
             return
 
         i = 0
-        #swizzler_mode: True = Swizzle    False = Deswizzle
-        if swizzler_mode and channels == 1:
+        #mode: True = Swizzle    False = Deswizzle
+        if mode and channels == 1:
             for z in z_block_offs:
                 for y in y_block_offs:
                     zy = z+y
                     for x in x_block_offs:
-                        swizzled_array[zy+x] = orig_array[i]
+                        swizzled[zy+x] = pixels[i]
                         i += 1
-        elif swizzler_mode:
+        elif mode:
             for z in z_block_offs:
                 for y in y_block_offs:
                     zy = z+y
                     for x in x_block_offs:
                         zyx = zy+x
                         for c in c_block_offs:
-                            swizzled_array[zyx+c] = orig_array[i]
+                            swizzled[zyx+c] = pixels[i]
                             i += 1
         elif channels == 1:
             for z in z_block_offs:
                 for y in y_block_offs:
                     zy = z+y
                     for x in x_block_offs:
-                        swizzled_array[i] = orig_array[zy+x]
+                        swizzled[i] = pixels[zy+x]
                         i += 1
         else:
             for z in z_block_offs:
@@ -205,7 +207,7 @@ class Swizzler():
                     for x in x_block_offs:
                         zyx = zy+x                       
                         for c in c_block_offs:
-                            swizzled_array[i] = orig_array[zyx+c]
+                            swizzled[i] = pixels[zyx+c]
                             i += 1
     
     def _bit_swizzler(self, axis_offset, axis_mask):
@@ -249,7 +251,7 @@ class SwizzlerMask():
         Default is z-order curve, or morton order'''
         self.masks = {"DEFAULT": self._z_order_mask_set,
                       "MORTON": self._z_order_mask_set,
-                      "DXT_CALC": self._dxt_calculation_mask_set,
+                      "DXT": self._dxt_mask_set,
                       "DOWNSAMPLER": self._pixel_merge_mask_set}
         
         self.swizzler_settings = kwargs
@@ -286,8 +288,8 @@ class SwizzlerMask():
                 i += 1
             i -= 1
 
-    def _dxt_calculation_mask_set(self, log_c,  log_x,  log_y,  log_z,
-                                  c_mask, x_mask, y_mask, z_mask):
+    def _dxt_mask_set(self, log_c,  log_x,  log_y,  log_z,
+                      c_mask, x_mask, y_mask, z_mask):
         """THIS FUNCTION WILL SWIZZLE AN ARRAY OF X,
         Y, Z, AND CHANNEL OFFSETS TOGETHER SO THAT
         ALL PIXELS PER DXT TEXEL ARE ADJACENT.

@@ -46,17 +46,19 @@ FORMAT_A32R32G32B32F = "A32R32G32B32F"
    So for example, in C_ORDER_BGRA, B is the first byte, and if the
    pixel were read as a 32 bit integer, B's bits would be values 0-255
 """
-C_ORDER_ARGB = "ARGB"
+C_ORDER_ARGB = "ARGB"  # <---THE ORDER Arbytmap UNPACKS TO
 C_ORDER_ABGR = "ABGR"
 C_ORDER_RGBA = "RGBA"
-C_ORDER_BGRA = "BGRA"  # <---DEFAULT
+C_ORDER_BGRA = "BGRA"  # <---DEFAULT FOR MOST IMAGE FORMATS
 
 #Default pixel storing order for most image formats is little endian BGRA
 '''The format Arbytmap will store pixels in will ALWAYS be ARGB.
+   This does NOT apply to 1 and 2 channel formats though, so they are
+   instead always unpacked to AY or A.
    In the future I intend to make it so you can specify which format
    to load from/save to, but the internal format will always be ARGB.
 '''
-C_ORDER_DEFAULT = C_ORDER_BGRA
+C_ORDER_DEFAULT = C_ORDER_ARGB
 
 
 #The texture_info is a dictionary which serves the purpose of describing
@@ -73,7 +75,7 @@ swizzled - whether or not the texture is swizzled
 swizzler - the type of swizzler method to use to swizzle or deswizzle texture
 '''
 
-PIXEL_ENCODING_SIZES = {"B":1, "H":2, "L":4, "Q":8}
+PIXEL_ENCODING_SIZES = {"B":1, "H":2, "L":4, "Q":8, "b":1, "h":2, "l":4, "q":8}
 INVERSE_PIXEL_ENCODING_SIZES = {
     0:"B", 1:"B",
     2:"H",
@@ -85,7 +87,7 @@ PIXEL_ENCODING_SIZES_F = {"f":2, "F":4}
 INVERSE_PIXEL_ENCODING_SIZES_F = {2:"f", 4:"F"}
 
 
-VALID_FORMATS = [
+VALID_FORMATS = set([
     FORMAT_A4, FORMAT_A8,
     FORMAT_Y4, FORMAT_Y8,
     FORMAT_AY8,  FORMAT_A8Y8,
@@ -94,9 +96,9 @@ VALID_FORMATS = [
     FORMAT_A1R5G5B5, FORMAT_A4R4G4B4,
     FORMAT_X8R8G8B8, FORMAT_A8R8G8B8,
     FORMAT_STENCIL,
-    FORMAT_R16G16B16, FORMAT_A16R16G16B16]
+    FORMAT_R16G16B16, FORMAT_A16R16G16B16])
 
-RAW_FORMATS = [
+RAW_FORMATS = set([
     FORMAT_A4, FORMAT_A8,
     FORMAT_Y4, FORMAT_Y8,
     FORMAT_AY8,  FORMAT_A8Y8,
@@ -105,19 +107,19 @@ RAW_FORMATS = [
     FORMAT_A1R5G5B5, FORMAT_A4R4G4B4,
     FORMAT_X8R8G8B8, FORMAT_A8R8G8B8,
     FORMAT_STENCIL,
-    FORMAT_R16G16B16, FORMAT_A16R16G16B16]
+    FORMAT_R16G16B16, FORMAT_A16R16G16B16])
+
+COMPRESSED_FORMATS = set()
+
+DDS_FORMATS = set()
+
+THREE_CHANNEL_FORMATS = set([
+    FORMAT_R3G3B2, FORMAT_R5G6B5, FORMAT_R8G8B8,
+    FORMAT_R16G16B16, FORMAT_Y8U8V8])
 
 FORMAT_UNPACKERS = {}
 
 FORMAT_PACKERS = {}
-
-COMPRESSED_FORMATS = []
-
-DDS_FORMATS = []
-
-THREE_CHANNEL_FORMATS = [
-    FORMAT_R3G3B2, FORMAT_R5G6B5, FORMAT_R8G8B8,
-    FORMAT_R16G16B16, FORMAT_Y8U8V8]
 
 SUB_BITMAP_COUNTS = {TYPE_2D:1, TYPE_3D:1, TYPE_CUBEMAP:6}
 
@@ -166,8 +168,8 @@ BITS_PER_PIXEL = {
     FORMAT_STENCIL:1, 
     FORMAT_R16G16B16:48, FORMAT_A16R16G16B16:64}
 
-# this is the data type that each format's pixel data array will hold
-FORMAT_DATA_SIZES = {
+# this is the typecode that each format's pixel data array will use
+FORMAT_PACKED_TYPECODES = {
     FORMAT_A4:"B", FORMAT_A8:"B",
     FORMAT_Y4:"B", FORMAT_Y8:"B",
     FORMAT_AY8:"B",  FORMAT_A8Y8:"H",
@@ -177,37 +179,6 @@ FORMAT_DATA_SIZES = {
     FORMAT_X8R8G8B8:"L", FORMAT_A8R8G8B8:"L",
     FORMAT_STENCIL:"B", 
     FORMAT_R16G16B16:"Q", FORMAT_A16R16G16B16:"Q"}
-
-# this is the mask of each channel in each format
-FORMAT_CHANNEL_MASKS = {
-    FORMAT_A4:(15,), FORMAT_A8:(255,),
-    FORMAT_Y4:(15,), FORMAT_Y8:(255,),
-    FORMAT_AY8:(255,),  FORMAT_A8Y8:(65280,255),
-    FORMAT_R3G3B2:(0,192,56,7),
-    FORMAT_R5G6B5:(0,63488,2016,31),
-    FORMAT_A1R5G5B5:(32768, 31744, 992, 31),
-    FORMAT_R8G8B8:(0, 16711680, 65280, 255),
-    FORMAT_Y8U8V8:(0, 16711680, 65280, 255),
-    FORMAT_A4R4G4B4:(61440, 3840, 240, 15),
-    FORMAT_X8R8G8B8:(4278190080, 16711680, 65280, 255),
-    FORMAT_A8R8G8B8:(4278190080, 16711680, 65280, 255),
-    FORMAT_STENCIL:(1,),
-    FORMAT_R16G16B16:(0, 2**48-2**32, 4294901760, 65535),
-    FORMAT_A16R16G16B16:(2**64-2**48, 2**48-2**32, 4294901760, 65535)}
-
-
-# this is how many bits the depth of each channel is for each raw format
-FORMAT_CHANNEL_DEPTHS = {
-    FORMAT_A4:(4,), FORMAT_A8:(8,),
-    FORMAT_Y4:(4,), FORMAT_Y8:(8,),
-    FORMAT_AY8:(8,), FORMAT_A8Y8:(8,8),
-    FORMAT_R3G3B2:(0,2,3,3), FORMAT_R5G6B5:(0,5,6,5),
-    FORMAT_R8G8B8:(0,8,8,8), FORMAT_Y8U8V8:(0,8,8,8),
-    FORMAT_A1R5G5B5:(1,5,5,5), FORMAT_A4R4G4B4:(4,4,4,4),
-    FORMAT_X8R8G8B8:(8,8,8,8), FORMAT_A8R8G8B8:(8,8,8,8),
-    FORMAT_STENCIL:(1,),
-    FORMAT_R16G16B16:(0,16,16,16),
-    FORMAT_A16R16G16B16:(16,16,16,16)}
 
 # the number of channels possible in each format,
 # regardless of whether or not they are raw formats
@@ -222,6 +193,36 @@ FORMAT_CHANNEL_COUNTS = {
     FORMAT_STENCIL:1,
     FORMAT_R16G16B16:4, FORMAT_A16R16G16B16:4}
 
+# this is how many bits the depth of each channel is for each raw format
+FORMAT_CHANNEL_DEPTHS = {
+    FORMAT_A4:(4,), FORMAT_A8:(8,),
+    FORMAT_Y4:(4,), FORMAT_Y8:(8,),
+    FORMAT_AY8:(8,), FORMAT_A8Y8:(8,8),
+    FORMAT_R3G3B2:(0,2,3,3), FORMAT_R5G6B5:(0,5,6,5),
+    FORMAT_R8G8B8:(0,8,8,8), FORMAT_Y8U8V8:(0,8,8,8),
+    FORMAT_A1R5G5B5:(1,5,5,5), FORMAT_A4R4G4B4:(4,4,4,4),
+    FORMAT_X8R8G8B8:(0,8,8,8), FORMAT_A8R8G8B8:(8,8,8,8),
+    FORMAT_STENCIL:(1,),
+    FORMAT_R16G16B16:(0,16,16,16),
+    FORMAT_A16R16G16B16:(16,16,16,16)}
+
+# this is the mask of each channel in each format
+FORMAT_CHANNEL_MASKS = {
+    FORMAT_A4:(15,), FORMAT_A8:(255,),
+    FORMAT_Y4:(15,), FORMAT_Y8:(255,),
+    FORMAT_AY8:(255,),  FORMAT_A8Y8:(65280,255),
+    FORMAT_R3G3B2:(0,192,56,7),
+    FORMAT_R5G6B5:(0,63488,2016,31),
+    FORMAT_A1R5G5B5:(32768, 31744, 992, 31),
+    FORMAT_R8G8B8:(0, 16711680, 65280, 255),
+    FORMAT_Y8U8V8:(0, 16711680, 65280, 255),
+    FORMAT_A4R4G4B4:(61440, 3840, 240, 15),
+    FORMAT_X8R8G8B8:(0, 16711680, 65280, 255),
+    FORMAT_A8R8G8B8:(4278190080, 16711680, 65280, 255),
+    FORMAT_STENCIL:(1,),
+    FORMAT_R16G16B16:(0, 2**48-2**32, 4294901760, 65535),
+    FORMAT_A16R16G16B16:(2**64-2**48, 2**48-2**32, 4294901760, 65535)}
+
 # this is how far right the channel is shifted when
 # unpacked and left when repacked
 FORMAT_CHANNEL_OFFSETS = {
@@ -231,7 +232,7 @@ FORMAT_CHANNEL_OFFSETS = {
     FORMAT_R3G3B2:(0,6,3,0), FORMAT_R5G6B5:(0,11,5,0),
     FORMAT_R8G8B8:(0,16,8,0), FORMAT_Y8U8V8:(0,16,8,0),
     FORMAT_A1R5G5B5:(15,10,5,0), FORMAT_A4R4G4B4:(12,8,4,0),
-    FORMAT_X8R8G8B8:(24,16,8,0), FORMAT_A8R8G8B8:(24,16,8,0),
+    FORMAT_X8R8G8B8:(0,16,8,0), FORMAT_A8R8G8B8:(24,16,8,0),
     FORMAT_STENCIL:(0,),
     FORMAT_R16G16B16:(0,32,16,0), FORMAT_A16R16G16B16:(48,32,16,0)}
 
@@ -249,7 +250,7 @@ ALL_FORMAT_COLLECTIONS = {
     "RAW_FORMAT":RAW_FORMATS, "THREE_CHANNEL_FORMAT":THREE_CHANNEL_FORMATS,
     "COMPRESSED_FORMAT":COMPRESSED_FORMATS, "DDS_FORMAT":DDS_FORMATS,
     "MINIMUM_W":MINIMUM_W, "MINIMUM_H":MINIMUM_H, "MINIMUM_D":MINIMUM_D,
-    "DATA_SIZE":FORMAT_DATA_SIZES, "UNPACKER":FORMAT_UNPACKERS,
+    "PACKED_TYPECODES":FORMAT_PACKED_TYPECODES, "UNPACKER":FORMAT_UNPACKERS,
     "CHANNEL_COUNT":FORMAT_CHANNEL_COUNTS, "PACKER":FORMAT_PACKERS,
     "CHANNEL_OFFSETS":FORMAT_CHANNEL_OFFSETS,
     "CHANNEL_MASKS":FORMAT_CHANNEL_MASKS,
@@ -280,31 +281,27 @@ ALL_FORMAT_COLLECTIONS = {
 
 """these channel mappings are used to swap ALPHA AND
 INTENSITY, but ONLY if the source bitmap is A8Y8"""
-#              ( A, Y )
-A8Y8_TO_Y8A8 = ( 1, 0 )
-AY8_TO_A8Y8 =  ( 0, 0 )
-A8_TO_A8Y8 =   ( 0,-1 )
-Y8_TO_A8Y8 =   (-1, 0 )
+#                ( A, Y )
+AY_TO_YA = ( 1, 0 )
+A_TO_AY  = ( 0,-1 )
+Y_TO_AY  = (-1, 0 )
 
 """these channel mappings are used to convert different
 formats to Y8 and A8. these are also used for converting to AY8.
 just use the one that preserves the channel you want to keep"""
-#                (A)
-ANYTHING_TO_A8 = (0,)
-#            (Y)
-A8Y8_TO_Y8 = (1,)
-#             (AY)
-MONO_TO_AY8 = (0,)
+#               (A)
+ANYTHING_TO_A = (0,)
+#         (Y)
+AY_TO_Y = (1,)
 
 """these channel mappings are to convert
-A8, Y8, AY8, and A8Y8 to A8R8G8B8 and X8R8G8B8"""
-#              ( A,  R,  G,  B)
-A8_TO_ARGB =   ( 0, -1, -1, -1)
-Y8_TO_ARGB =   (-1,  0,  0,  0)
-AY8_TO_ARGB =  ( 0,  0,  0,  0)
+A8, Y8, AY, and YA to A8R8G8B8 and X8R8G8B8"""
+#                  ( A,  R,  G,  B)
+A_TO_ARGB = ( 0, -1, -1, -1)
+Y_TO_ARGB = (-1,  0,  0,  0)
 
-A8Y8_TO_ARGB = ( 0,  1,  1,  1)
-Y8A8_TO_ARGB = ( 1,  0,  0,  0)
+AY_TO_ARGB = ( 0,  1,  1,  1)
+YA_TO_ARGB = ( 1,  0,  0,  0)
 
 
 """########################"""
@@ -321,83 +318,59 @@ Y8A8_TO_ARGB = ( 1,  0,  0,  0)
 #which channel in the target format to merge the channel from the source into.
 #Ex: merging ARGB's 4 channel into A8Y8 would be (0, 1, 1, 1)
 
-#                ( A,  R,  G,  B )
-M_ARGB_TO_A8Y8 = ( 0,  1,  1,  1 )
-M_ARGB_TO_Y8A8 = ( 1,  0,  0,  0 )
-M_ARGB_TO_Y8 =   ( -1, 0,  0,  0 )
-M_ARGB_TO_A8 =   ( 0, -1, -1, -1 )
+#              ( A,  R,  G,  B )
+M_ARGB_TO_AY = ( 0,  1,  1,  1 )
+M_ARGB_TO_YA = ( 1,  0,  0,  0 )
+M_ARGB_TO_Y  = ( -1, 0,  0,  0 )
+M_ARGB_TO_A  = ( 0, -1, -1, -1 )
 
 
 def define_format(**kwargs):
     """THIS FUNCTION CAN BE CALLED TO DEFINE A NEW FORMAT TYPE"""
     try:
-        if "format_id" not in kwargs:
+        f_id = kwargs.get("format_id")
+        bpp = kwargs.get("bpp", sum(kwargs.get("depths", ())))
+
+        if f_id is None:
             raise TypeError(
-                "No identifier supplied for format.\n",
+                "No identifier supplied for format.\n" +
                 "This must be a hashable type, such as an int or str.")
+        elif f_id in VALID_FORMATS:
+            raise TypeError((
+                "Cannot add '%s' format definition to Arbytmap as " +
+                "that format identifier is already in use.") % fid)
+        elif not bpp:
+            raise TypeError((
+                "Cannot define '%s' format without a given bits per " +
+                "pixel or specifying each channels bit depths.") % fid)
 
-        f_id = kwargs["format_id"]
+        VALID_FORMATS.add(f_id)
 
-        if kwargs.get("remove_format"):
-            return remove_bitmap_format(f_id)
-        elif kwargs.get("format_id") in VALID_FORMATS:
-            raise TypeError(
-                "Cannot add '%s' format definition to Arbytmap as ",
-                "that format identifier is already in use.")
+        if kwargs.get("raw_format"): RAW_FORMATS.add(f_id)
+        if kwargs.get("compressed"): COMPRESSED_FORMATS.add(f_id)
+        if kwargs.get("dds_format"): DDS_FORMATS.add(f_id)
+        if kwargs.get("three_channels"): THREE_CHANNEL_FORMATS.add(f_id)
 
-        VALID_FORMATS.append(f_id)
+        FORMAT_UNPACKERS[f_id] = kwargs.get("unpacker")
+        FORMAT_PACKERS[f_id] = kwargs.get("packer")
 
-        if kwargs.get("raw_format"): RAW_FORMATS.append(f_id)
-        if kwargs.get("compressed"): COMPRESSED_FORMATS.append(f_id)
-        if kwargs.get("dds_format"): DDS_FORMATS.append(f_id)
-        if kwargs.get("three_channels"):
-            THREE_CHANNEL_FORMATS.append(f_id)
+        MINIMUM_W[f_id] = kwargs.get("min_width", 1)
+        MINIMUM_H[f_id] = kwargs.get("min_height", 1)
+        MINIMUM_D[f_id] = kwargs.get("min_depth", 1)
 
-
-        if kwargs.get("unpacker"):
-            FORMAT_UNPACKERS[f_id] = kwargs["unpacker"]
-        if kwargs.get("packer"):
-            FORMAT_PACKERS[f_id] = kwargs["packer"]
-
-        MINIMUM_W[f_id] = 1
-        MINIMUM_H[f_id] = 1
-        MINIMUM_D[f_id] = 1
-
-        if kwargs.get("min_width"):
-            MINIMUM_W[f_id] = kwargs["min_width"]            
-        if kwargs.get("min_height"):
-            MINIMUM_H[f_id] = kwargs["min_height"]            
-        if kwargs.get("min_depth"):
-            MINIMUM_D[f_id] = kwargs["min_depth"]
-        
-        if kwargs.get("bpp"):
-            BITS_PER_PIXEL[f_id] = kwargs["bpp"]
-        elif "channel_depths" in kwargs:
-            BITS_PER_PIXEL[f_id] = sum(kwargs["channel_depths"])
-        else:
-            print("ERROR: CANNOT DEFINE BITMAP FORMAT "+
-                  "WITHOUT A KNOWN\nBITS PER PIXEL OR A "+
-                  "DESCRIPTION OF EACH CHANNEL'S DEPTHS")
-            remove_bitmap_format(f_id)
-        
-        if kwargs.get("data_size"):
-            FORMAT_DATA_SIZES[f_id] = kwargs["data_size"]
-
+        BITS_PER_PIXEL[f_id] = bpp
         FORMAT_CHANNEL_COUNTS[f_id] = 1
-        FORMAT_DATA_SIZES[f_id] = INVERSE_PIXEL_ENCODING_SIZES[
-            BITS_PER_PIXEL.get(f_id, 0)//8]
+        packed_typecode = kwargs.get(
+            "packed_typecode", INVERSE_PIXEL_ENCODING_SIZES[bpp//8])
 
-        if kwargs.get("channel_count"):
-            FORMAT_CHANNEL_COUNTS[f_id] = kwargs["channel_count"]
-        if kwargs.get("channel_masks"):
-            FORMAT_CHANNEL_MASKS[f_id] = kwargs["channel_masks"]
-        if kwargs.get("channel_depths"):
-            FORMAT_CHANNEL_DEPTHS[f_id] = kwargs["channel_depths"]
-        if kwargs.get("channel_offsets"):
-            FORMAT_CHANNEL_OFFSETS[f_id] = kwargs["channel_offsets"]
+        FORMAT_PACKED_TYPECODES[f_id] = packed_typecode
+        FORMAT_CHANNEL_COUNTS[f_id] = kwargs.get("channel_count")
+        FORMAT_CHANNEL_MASKS[f_id] = kwargs.get("masks")
+        FORMAT_CHANNEL_DEPTHS[f_id] = kwargs.get("depths")
+        FORMAT_CHANNEL_OFFSETS[f_id] = kwargs.get("offsets")
 
     except:
-        print("Error occurred while trying to defien new texture format.")
+        print("Error occurred while trying to define new texture format.")
         print(format_exc())
 
 
@@ -416,7 +389,8 @@ def print_format(format_id, printout=True):
         print(out_str)
     return out_str
 
-def remove_bitmap_format(format_id):
+
+def remove_format(format_id):
     for val in ALL_FORMAT_COLLECTIONS.values():
         if format_id not in val:
             continue

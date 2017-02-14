@@ -138,8 +138,10 @@ def _Tk__init__(self, *args, **kwargs):
     self.after_idle(_CheckEvents, self)
 
 # Replace Tk's original __init__ with the hook.
-Tk.__original__init__mtTkinter = Tk.__init__
-Tk.__init__ = _Tk__init__
+if not(hasattr(Tk, "mtTk_hooked") and Tk.mtTk_hooked): 
+    Tk.__original__init__mtTkinter = Tk.__init__
+    Tk.__init__ = _Tk__init__
+    Tk.mtTk_hooked = True
 
 def _CheckEvents(tk):
     "Event checker event."
