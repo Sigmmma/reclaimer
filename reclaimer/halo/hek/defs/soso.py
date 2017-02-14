@@ -89,7 +89,7 @@ soso_attrs = Struct("soso attrs",
     Pad(8),
     #Reflection Properties
     reflection_properties,
-    SIZE=440
+    SIZE=400
     )
 
 
