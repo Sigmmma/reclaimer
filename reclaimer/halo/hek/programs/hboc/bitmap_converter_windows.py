@@ -1,3 +1,7 @@
+'''
+This whole module is a horrid mess from years back. I want to throw it all
+away and replace it, but that would be a lot of effort, and this DOES work
+'''
 from .mtTkinter import *
 
 import threading

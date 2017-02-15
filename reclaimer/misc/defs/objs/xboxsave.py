@@ -15,17 +15,12 @@ class XboxSaveTag(Tag):
     data_end   = 0
     
     def __init__(self, **kwargs):
-        if 'sigkey' in kwargs:
-            self.sigkey = kwargs['sigkey']
-        if 'authkey' in kwargs:
-            self.authkey = kwargs['authkey']
-        if 'xboxkey' in kwargs:
-            self.xboxkey = kwargs['xboxkey']
-            
-        if 'data_start' in kwargs:
-            self.data_start = kwargs['data_start']
-        if 'data_len' in kwargs:
-            self.data_len = kwargs['data_len']
+        self.sigkey  = kwargs.get('sigkey',  self.sigkey)
+        self.authkey = kwargs.get('authkey', self.authkey)
+        self.xboxkey = kwargs.get('xboxkey', self.xboxkey)
+        self.data_start = kwargs.get('data_start', self.data_start)
+        self.data_end = kwargs.get('data_end', self.data_end)
+        self.sigkey   = kwargs.get('sigkey',   self.sigkey)
             
         Tag.__init__(self, **kwargs)
 
@@ -39,11 +34,9 @@ class XboxSaveTag(Tag):
         return authkey
 
     def calc_hmac_sig(self, rawdata, authkey=None):
+        authkey = self.authkey if authkey is None else authkey
         if authkey is None:
-            if self.authkey is None:
-                authkey = self.calc_authkey(self.sigkey)
-            else:
-                authkey = self.authkey
+            authkey = self.calc_authkey(self.sigkey)
         return hmac.new(authkey, rawdata, hashlib.sha1).digest()
 
     def xbox_sign(self, rawdata=None, authkey=None):

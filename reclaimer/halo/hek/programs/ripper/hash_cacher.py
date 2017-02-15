@@ -2,7 +2,7 @@ from os.path import dirname
 from string import digits, ascii_letters
 from traceback import format_exc
 
-from ..hek_tag_scanner import HekTagScanner
+from ...handler import HaloHandler
 from supyr_struct.apps.handler import Handler
 from supyr_struct.tag import Tag
 
@@ -22,7 +22,7 @@ class HashCacher(Handler):
         Handler.__init__(self, **kwargs)
         self.tagsdir = dirname(__file__)+"\\hash_caches\\"
         
-        self.tag_lib = HekTagScanner()
+        self.tag_lib = HaloHandler()
         self.tag_lib.print_to_console = True
         self.tag_lib.feedback_interval = 5
 

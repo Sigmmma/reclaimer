@@ -163,9 +163,9 @@ def _CheckEvents(tk):
                 used = True
                 try:
                     responseQueue.put((False, method(*args, **kwargs)))
-                except (SystemExit):
-                    raise (SystemExit)
-                except (Exception):
+                except SystemExit:
+                    raise SystemExit
+                except Exception:
                     # Calling the event caused an exception; return the
                     # exception back to the caller so that it can be raised
                     # in the caller's thread.
