@@ -1,13 +1,31 @@
-﻿import threading
+﻿from .mtTkinter import *
+
+import threading
 import tkinter.filedialog
 
 from time import time, sleep
 from os.path import basename, normpath
-from .mtTkinter import *
+from ...defs.objs.bitm import *
 
-from .common_window_functions import *
-from ...tag_editing.bitm import *
-
+'''Constants that determine which index
+each of the flags are in per tag'''
+PRUNE_TIFF = 0
+RENAME_OLD = 1
+READ_ONLY = 2
+WRITE_LOG = 3
+PLATFORM = 4
+SWIZZLED = 5
+DOWNRES = 6
+MULTI_SWAP = 7
+CUTOFF_BIAS = 8
+P8_MODE = 9
+MONO_KEEP = 10
+MONO_SWAP = 11
+CK_TRANS = 12
+NEW_FORMAT = 13
+MIP_GEN = 14
+GAMMA = 15
+EXTRACT_TO = 16
 
 #used when displaying the format and type in windows
 BITMAP_TYPE_STRINGS = ("2D Texture", "3D Texture", "Cubemap", "????")
@@ -27,6 +45,32 @@ BITMAP_TYPE_LITERALS = ("2D Bitmap   ", "3D Bitmap   ",
                         "Cube Map    ", "White      ")
 
 
+def extracting_texture(tag):
+    '''determines if a texture extraction is to take place'''
+    return tag.tag_conversion_settings[EXTRACT_TO] != " "
+
+def process_bitmap_tag(tag):
+    '''this function will return whether or not the conversion
+    routine below should be run on a bitmap based on its format,
+    type, etc and how they compare to the conversion variablers'''
+    
+    flags = tag.tag_conversion_settings
+    
+    #check if the bitmap has already been processed, or
+    #is a PC bitmap or if we are just creating a debug log
+    if tag.processed_by_reclaimer or not(tag.is_xbox_bitmap):
+        format = tag.bitmap_format()
+
+        #if all these are true we skip the tag
+        if ( flags[DOWNRES]=='0' and flags[MULTI_SWAP] == 0 and
+             flags[NEW_FORMAT] == FORMAT_NONE and flags[MIP_GEN]== False and
+             tag.is_xbox_bitmap == flags[PLATFORM] and
+             (flags[MONO_SWAP] == False or format!= FORMAT_A8Y8) and
+             (tag.swizzled() == flags[SWIZZLED] or
+              FORMAT_NAME_MAP[format] in ab.DDS_FORMATS) ):
+            return False
+    return True
+
 #compares all the conversion settings of the tag
 #with the tag's data to tell if it will be processed
 """THIS IS USED TO DETERMINE IF THE Convert_Bitmap_Tags SHOULD EVEN BE RUN"""
@@ -35,10 +79,7 @@ def get_will_be_processed(tag, conv_flags):
     if (tag.bitmap_count()==0) or conv_flags[READ_ONLY]:
         return False
     
-    if conv_flags[DONT_REPROCESS]:
-        return process_bitmap_tag(tag) or extracting_texture(tag)
-    
-    return True
+    return conv_flags[PRUNE_TIFF] or (process_bitmap_tag(tag) or extracting_texture(tag))
 
 
 '''ENTER A DESCRIPTION FOR THIS CLASS WHEN I HAVE TIME'''
@@ -63,8 +104,6 @@ class BitmapConverterMainWindow(Tk):
         
         self.window_update_interval = 0.33
         self.window_docking_interval = 0.1
-        
-        self.dock_window_movement = dock_window_movement
 
         
         self.save_all_tags_as = True
@@ -109,7 +148,7 @@ class BitmapConverterMainWindow(Tk):
         #between user input and giving to the program
         self.tk_tags_directory = StringVar(self)
         
-        self.tk_dont_reprocess_tags = IntVar(self)
+        self.tk_prune_tiff = IntVar(self)
         self.tk_backup_edited_tags = IntVar(self)
         self.tk_read_only = IntVar(self)
         self.tk_write_debug_log = IntVar(self)
@@ -189,11 +228,11 @@ class BitmapConverterMainWindow(Tk):
         self.global_param_root.config(bd=2, relief=GROOVE)
 
         #Create the GLOBAL PARAMETERS check buttons
-        self.checkbox_dont_reprocess_tags = Checkbutton(
+        self.checkbox_prune_tiff = Checkbutton(
             self.global_param_root, 
-            variable=self.tk_dont_reprocess_tags,
-            onvalue=1, offvalue=0, text="Dont reprocess tags",
-            command=self.set_dont_reprocess_tags_variable)
+            variable=self.tk_prune_tiff,
+            onvalue=1, offvalue=0, text="Prune Tiff data",
+            command=self.set_prune_tiff_variable)
         
         self.checkbox_backup_old_tags = Checkbutton(
             self.global_param_root,
@@ -213,11 +252,10 @@ class BitmapConverterMainWindow(Tk):
             onvalue=1, offvalue=0, text="Write debug log",
             command=self.set_write_debug_log_variable)
 
-        self.checkbox_dont_reprocess_tags.select()
         self.checkbox_backup_old_tags.select()
         self.checkbox_write_debug_log.select()
         
-        self.checkbox_dont_reprocess_tags.place(x=4, y=23, anchor=NW)
+        self.checkbox_prune_tiff.place(x=4, y=23, anchor=NW)
         self.checkbox_backup_old_tags.place(x=4, y=41, anchor=NW)
         self.checkbox_read_only.place(x=4, y=59, anchor=NW)
         self.checkbox_write_debug_log.place(x=4, y=77, anchor=NW)
@@ -583,9 +621,46 @@ class BitmapConverterMainWindow(Tk):
             #calls a function to lock the position of the
             #provided child windows to the provided parent window
             if not(self.window_docking_updating):
-                self.after(0, (lambda:(self.dock_window_movement(self,
-                                                         self.child_windows))))
+                self.after(0, (lambda:(self.dock_window_movement(
+                    self.child_windows))))
 
+    def dock_window_movement(self, child_windows):
+        self.window_docking_updating = True
+        
+        #the .geometry() returns the dimensions as a string that looks like
+        #"widthxheight+posx+posy". an example would be "200x200+50+50".
+        #Because of that we need to split them apart at the x and +
+        root_dim = self.geometry().split('+')
+        
+        #we want to move the child windows with the main,
+        #but keep their relative position to the main
+        if ((int(root_dim[1]) != self.prev_pos_x) or
+            (int(root_dim[2]) != self.prev_pos_y)):
+            
+            #get the amount that the main window has been moved
+            root_x_shift = (int(root_dim[1]) - self.prev_pos_x)
+            root_y_shift = (int(root_dim[2]) - self.prev_pos_y)
+
+            #set the new parent window's location
+            self.prev_pos_x = int(root_dim[1])
+            self.prev_pos_y = int(root_dim[2])
+
+            if self.docking_state:
+                
+                #move each of the child windows with the parent
+                for child_window in child_windows:
+                    child_dim = child_window.geometry().split('+')
+                    
+                    child_window.prev_pos_x = int(child_dim[1])
+                    child_window.prev_pos_y = int(child_dim[2])
+                    
+                    child_dim = ("%s+%s+%s" % (child_dim[0],
+                                 str(root_x_shift+child_window.prev_pos_x),
+                                 str(root_y_shift+child_window.prev_pos_y)))
+                    
+                    child_window.geometry(child_dim)
+
+        self.window_docking_updating = False
 
     def _main_window_update(self):
         '''AFTER THE WINDOW IS CREATED THIS FUNCTION WILL
@@ -777,13 +852,13 @@ class BitmapConverterMainWindow(Tk):
         self.conversion_cancelled = True
 
     def disable_global_settings(self):
-        for widget in(self.checkbox_dont_reprocess_tags,
+        for widget in(self.checkbox_prune_tiff,
                       self.checkbox_backup_old_tags,
                       self.checkbox_read_only, self.checkbox_write_debug_log):
             widget.config(state=DISABLED)
             
     def enable_global_settings(self):
-        for widget in(self.checkbox_dont_reprocess_tags,
+        for widget in(self.checkbox_prune_tiff,
                       self.checkbox_backup_old_tags,
                       self.checkbox_read_only, self.checkbox_write_debug_log):
             widget.config(state=NORMAL)
@@ -967,9 +1042,9 @@ class BitmapConverterMainWindow(Tk):
     """
 
 
-    def set_dont_reprocess_tags_variable(self):
+    def set_prune_tiff_variable(self):
         self.handler.default_conversion_flags["bitm"][
-            DONT_REPROCESS] = self.tk_dont_reprocess_tags.get()
+            PRUNE_TIFF] = self.tk_prune_tiff.get()
         self._set_selection_color(range(len(
             self.tag_list_window.displayed_tag_index_mapping)))
         
@@ -1622,15 +1697,11 @@ class BitmapConverterHelpWindow(Toplevel):
                                "located and the tag list will be cleared. The log's name will be the timestamp of when it was created.")
 
         elif help_type == 1:
-            new_help_string = ("---Don't reprocess tags---\n   Tells the program to ignore tags that have already been processed and to ignore"+
-                               ' tags that have no conversion settings different than how the tag currently is. This box is checked by default and'+
-                               ' unchecking it should only be done if you want all the tags to be processed.\n\n   Unchecking the "' + "Don't" +
-                               ' reprocess tags" box can be useful if you wish to prune the uncompressed original TIFF data from the tag to' +
+            new_help_string = ("---Prune Tiff data---\n   Removes the uncompressed original TIFF data from the tag to" +
                                ' reduce its size. This data is pruned by tool when the tag is compiled into a map, but if you wish to reduce'+
                                ' the size of your tags folder or reduce the size of tags you upload to Halomaps, then this may come of use.'+
                                '\n\n\n---Backup old tags---\n   Tells the program to rename the tag being modified with a ".backup" extension' +
-                               ' after it has completely written the new, modified tag. Only the oldest backup will be kept; reprocessing' +
-                               ' a tag will not edit the .backup file.'+
+                               ' after it has completely written the new, modified tag. Only the oldest backup will be kept.'+
                                '\n\n\n---Read only mode---\n   Prevents the program from making edits to tags. Instead, a detailed log will be' +
                                ' created containing a list of all the bitmaps located in the folder that was specified. The bitmaps will be sorted' +
                                ' by type(2d, 3d, cubemap), then format(r5g6b5, dxt1, a8r8g8b8, etc), then the number of bytes the pixel data takes up.'+
