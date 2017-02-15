@@ -144,7 +144,7 @@ class HaloHandler(Handler):
             b.id = b.pointer = 0
             
         for b in self.get_nodes_by_paths(raw_data_paths, data):
-            b.unknown_1 = b.unknown_2 = b.pointer = b.id = 0
+            b.unknown = b.raw_pointer = b.pointer = b.id = 0
 
         #serialize the tag data to the hash buffer
         data.TYPE.serializer(data, writebuffer=hash_buffer)
@@ -164,8 +164,8 @@ class HaloHandler(Handler):
         
         try:
             ext = node.tag_class.enum_name
-            if (ext == 'model' and self.treat_mode_as_mod2 and
-                not exists(filepath + '.model')):
+            if (self.treat_mode_as_mod2 and (ext == 'model' and
+                not exists(filepath + '.model'))):
                 return not exists(filepath + '.gbxmodel')
             filepath += '.' + ext
         except Exception:
