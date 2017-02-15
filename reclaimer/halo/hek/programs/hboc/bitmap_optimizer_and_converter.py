@@ -11,10 +11,6 @@ from ...defs.bitm import bitm_def
 
 from ....field_types import *
 from .bitmap_converter_windows import *
-from . import p8_palette
-
-#load the palette for p-8 bump maps
-P8_PALETTE = p8_palette.load_palette()
 
 
 """##################"""
@@ -128,8 +124,8 @@ class BitmapConverter(HaloHandler):
                 if (self.default_conversion_flags["bitm"][READ_ONLY]):
                     #used below for writing the results of the scan
                     logstr = self.make_log_of_all_bitmaps()
-                    self.current_tag = ("Detailed log of all bitmaps "+
-                                        "created successfully.")
+                    self.current_tag = (
+                        "Log of all bitmaps created successfully.")
                 else:
                     """SPLIT OFF INTO THE MAIN PROCESSING ROUTINE"""
                     logstr = self.process_bitmap_tags()
@@ -157,8 +153,6 @@ class BitmapConverter(HaloHandler):
     def create_initial_tag_list(self):
         self.root_window.tag_list_window.sort_displayed_tags_by(0)
 
-
-
     def make_default_flags(self):
         '''
         If no settings have been defined specifically
@@ -167,7 +161,7 @@ class BitmapConverter(HaloHandler):
         the first 4 conversion flags are global conversion
         flags and aren't assigned on a per-tag basis
 
-          PRUNE_TIFF: Prune the compressed tiff data from the tags
+          PRUNE TIFF: Prune the compressed tiff data from the tags
           RENAME OLD: Rename old tags instead of deleting them
           READ ONLY: compiles a list of all bitmaps and what their types, 
                     sizes, etc are instead of converting in any way
@@ -354,7 +348,6 @@ class BitmapConverter(HaloHandler):
 
         #add dicts for all three types to the tag_info_strings
         for b_type in (0, 1, 2):
-            
             formatted_strs[b_type] = ['']*18
             tag_info_strs[b_type]  = ['']*18
 
@@ -461,7 +454,7 @@ def convert_bitmap_tag(tag, **kwargs):
         load_status = False
     else:
         '''CONVERT THE RAW PIXEL DATA INTO ORGANIZED ARRAYS OF PIXELS'''
-        load_status = parse_bitmap_blocks(tag)
+        load_status = tag.parse_bitmap_blocks()
 
     #If an error was encountered during the load
     #attempt or the conversion was cancelled we quit
@@ -640,97 +633,6 @@ def convert_bitmap_tag(tag, **kwargs):
     
     conversion_report[tagpath] = None
     return None
-
-
-def parse_bitmap_blocks(tag):
-    '''converts the raw pixel data into arrays of pixel
-    data and replaces the raw data in the tag with them'''
-    pixel_data = tag.data.tagdata.processed_pixel_data
-    rawdata = pixel_data.data
-
-    tagsdir = tag.handler.tagsdir
-    datadir = tag.handler.datadir
-    tex_infos = tag.tex_infos = []
-    
-    #this is the block that will hold all of the bitmap blocks
-    root_tex_block = tag.definition.subdefs['pixel_root'].build()
-
-    is_xbox = tag.is_xbox_bitmap
-    get_mip_dims = ab.get_mipmap_dimensions
-    bytes_to_array = ab.bitmap_io.bitmap_bytes_to_array
-    
-    #Read the pixel data blocks for each bitmap
-    for i in range(tag.bitmap_count()):
-        #since we need this information to read the bitmap we extract it
-        mw, mh, md, = tag.bitmap_width_height_depth(i)
-        type         = tag.bitmap_type(i)
-        format       = FORMAT_NAME_MAP[tag.bitmap_format(i)]
-        mipmap_count = tag.bitmap_mipmaps_count(i) + 1
-        sub_bitmap_count = ab.SUB_BITMAP_COUNTS[TYPE_NAME_MAP[type]]
-
-        #Get the offset of the pixel data for
-        #this bitmap within the raw pixel data
-        off = tag.bitmap_data_offset(i)
-
-        #this texture info is used in manipulating the texture data
-        tex_infos.append(dict(
-            width=mw, height=mh, depth=md, format=format,
-            mipmap_count=(mipmap_count-1), sub_bitmap_count=sub_bitmap_count,
-            swizzled=tag.swizzled(), texture_type=TYPE_NAME_MAP[type],
-            filepath=splitext(tag.filepath.replace(tagsdir,datadir))[0]))
-        
-        """IF THE TEXTURE IS IN P-8 FORMAT THEN WE NEED TO
-        PROVIDE THE PALETTE AND SOME INFORMATION ABOUT IT"""
-        if format == ab.FORMAT_P8:
-            tex_infos[-1]["palette"] = [
-                P8_PALETTE.p8_palette_32bit_packed[0]]*mipmap_count
-
-            # set it to packed since if we need to drop channels
-            # then it needs to be unpacked with channels dropped
-            tex_infos[-1]["palette_packed"] = True
-            tex_infos[-1]["indexing_size"] = 8
-        
-        '''this is the block that will hold each mipmap,
-        texture slice, and cube face of the bitmap'''
-        root_tex_block.append()
-        tex_block = root_tex_block[-1]
-
-        # xbox bitmaps are stored all mip level faces first, then
-        # the next mip level, whereas pc is the other way. Xbox
-        # bitmaps also have padding between each mipmap and bitmap.
-        dim0 = sub_bitmap_count if is_xbox else mipmap_count
-        dim1 = mipmap_count if is_xbox else sub_bitmap_count
-        for j in range(dim0):
-            if not is_xbox: w, h, d = get_mip_dims(mw, mh, md, j, format)
-
-            for k in range(dim1):
-                if is_xbox: w, h, d = get_mip_dims(mw, mh, md, k, format)
-
-                if format == ab.FORMAT_P8:
-                    pixel_count = w*h
-                    tex_block.append(array('B', rawdata[off: off+pixel_count]))
-                    off += pixel_count
-                    continue
-
-                off = bytes_to_array(rawdata, off, tex_block, format, w, h, d)
-            
-            # skip the xbox alignment padding to get to the next texture
-            if is_xbox:
-                tex_pad, sub_tex_pad = tag.get_padding_size(i)
-                off += sub_tex_pad
-                if j + 1 == dim0:
-                    off += tex_pad
-
-    pixel_data.data = root_tex_block
-    '''now that we've successfully built the bitmap
-    blocks from the raw data we replace the raw data'''
-    if is_xbox:
-        '''it's easier to work with bitmaps in one format so
-        we'll switch the mipmaps from XBOX to PC ordering'''
-        tag.change_sub_bitmap_ordering(False)
-
-    return True
-
 
 def get_channel_mappings(format, mono_swap, target_format,
                          multi_swap, channel_to_keep):

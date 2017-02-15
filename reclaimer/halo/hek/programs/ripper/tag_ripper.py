@@ -231,7 +231,7 @@ class TagRipper(MapLoader):
                 b.id = b.pointer = 0
         if rawdata_paths:
             for b in get_nodes(rawdata_paths[1], tag_meta):
-                b.unknown_1 = b.unknown_2 = b.pointer = b.id = 0
+                b.unknown = b.raw_pointer = b.pointer = b.id = 0
 
         #write the tag data to the hash buffer
         tag_buffer = BytearrayBuffer()
