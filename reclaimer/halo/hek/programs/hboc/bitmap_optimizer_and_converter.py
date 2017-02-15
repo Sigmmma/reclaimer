@@ -1,12 +1,20 @@
+import gc
 
 from array import array
-from os.path import splitext
+from os.path import getsize, splitext
+from threading import Thread
+from time import sleep, time
+from traceback import format_exc
 
-from ...field_types import *
-from ..defs.objs.bitm import *
+from ...handler import HaloHandler
+from ...defs.bitm import bitm_def
 
-from reclaimer.resources.arbytmap import arbytmap as ab
-from reclaimer.resources import p8_palette
+from ....field_types import *
+from .bitmap_converter_windows import *
+from . import p8_palette
+
+#load the palette for p-8 bump maps
+P8_PALETTE = p8_palette.load_palette()
 
 
 """##################"""
@@ -23,15 +31,6 @@ XBOX_ARGB_TO_PC_ARGB = (3, 0, 2, 1)
 AY_COMBO_TO_AY   = ( 0, 0 )
 AY_COMBO_TO_ARGB = ( 0,  0,  0,  0)
 
-FORMAT_NAME_MAP = {
-    -1:None,
-    0:"A8", 1:"Y8", 2:"AY8", 3:"A8Y8",
-    4:"UNUSED1",5:"UNUSED2",
-    6:"R5G6B5", 7:"UNUSED3", 8:"A1R5G5B5", 9:"A4R4G4B4",
-    10:"X8R8G8B8", 11:"A8R8G8B8",
-    12:"UNUSED4", 13:"UNUSED5",
-    14:"DXT1", 15:"DXT3", 16:"DXT5", 17:"P8-BUMP"}
-
 I_FORMAT_NAME_MAP = {
     "A8":0, "Y8":1, "AY8":2, "A8Y8":3,
     "UNUSED1":4, "UNUSED2":5,
@@ -40,83 +39,385 @@ I_FORMAT_NAME_MAP = {
     "UNUSED4":12, "UNUSED5":13,
     "DXT1":14, "DXT3":15, "DXT5":16, "P8-BUMP":17}
 
-TYPE_NAME_MAP = ["2D", "3D", "CUBE"]
 
-global tex_infos
-tex_infos = []
+class BitmapConverter(HaloHandler):
 
-
-#load the palette for p-8 bump maps
-P8_PALETTE = p8_palette.load_palette()
-
-ab.FORMAT_P8 = "P8-BUMP"
-
-"""ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
-ab.define_format(
-    format_id=ab.FORMAT_P8, raw_format=True, channel_count=4,
-    depths=(8,8,8,8), offsets=(24,16,8,0),
-    masks=(4278190080, 16711680, 65280, 255))
-
-'''Constants that determine which index
-each of the flags are in per tag'''
-DONT_REPROCESS = 0
-RENAME_OLD = 1
-READ_ONLY = 2
-WRITE_LOG = 3
-PLATFORM = 4
-SWIZZLED = 5
-DOWNRES = 6
-MULTI_SWAP = 7
-CUTOFF_BIAS = 8
-P8_MODE = 9
-MONO_KEEP = 10
-MONO_SWAP = 11
-CK_TRANS = 12
-NEW_FORMAT = 13
-MIP_GEN = 14
-GAMMA = 15
-EXTRACT_TO = 16
-
-def process_bitmap_tag(tag):
-    '''this function will return whether or not the conversion
-    routine below should be run on a bitmap based on its format,
-    type, etc and how they compare to the conversion variablers'''
+    log_filename = "Bitmap_Converter.log"
+    default_defs_path = ''
     
-    flags = tag.tag_conversion_settings
+    close_program = False #if set to True the program will close
+    main_delay = 0.03 #determines how often the main loop is run
     
-    #check if the bitmap has already been processed, or
-    #is a PC bitmap or if we are just creating a debug log
-    if tag.processed_by_reclaimer or not(tag.is_xbox_bitmap):
-        format = tag.bitmap_format()
+    def __init__(self, **kwargs):
+        HaloHandler.__init__(self, valid_def_ids=(), **kwargs)
+        self.add_def(bitm_def)
+        
+        self.default_conversion_flags["bitm"] = self.make_default_flags()
+        self.root_window = BitmapConverterMainWindow(self)
 
-        #if all these are true we skip the tag
-        if ( flags[DOWNRES]=='0' and flags[MULTI_SWAP] == 0 and
-             flags[NEW_FORMAT] == FORMAT_NONE and flags[MIP_GEN]== False and
-             tag.is_xbox_bitmap == flags[PLATFORM] and
-             (flags[MONO_SWAP] == False or format!= FORMAT_A8Y8) and
-             (tag.swizzled() == flags[SWIZZLED] or
-              FORMAT_NAME_MAP[format] in ab.DDS_FORMATS) ):
-            return False
-    return True
+        #Create and start the tag scanning and editing thread
+        self.conversion_main_thread = Thread(target=self.conversion_main)
+        self.conversion_main_thread.daemon = True
+        self.conversion_main_thread.start()
+        
+        #loop the main window
+        self.root_window.mainloop()
+
+        
+    #the main loop for continuous function handeling
+    #add all continuous, non-self-looping, periodic functions here
+    def _main_loop(self):
+        while not hasattr(self, "root_window"):
+            pass
+        
+        while not self.close_program:
+            #we don't want it to run too often or it'll be laggy
+            sleep(self.main_delay)
+            self.root_window.total_bitmaps = (len(self.tags["bitm"]) -
+                                              self.root_window.bad_bitmaps)
+            
+            #If the program is being told to close then close
+            if self.close_program:
+                raise SystemExit(0)
+            
+
+    def conversion_main(self):
+        rw = self.root_window
+        while True:
+            #we don't want it to run too often or it'll be laggy
+            sleep(self.main_delay)
+
+            #if the tags havent been loaded and we are
+            #telling the program to continue with conversion
+            if (not rw.tags_loaded) and rw.proceed_with_conversion:
+                #reset the status variables
+                rw.total_pixel_data_to_process     = 0
+                rw.remaining_pixel_data_to_process = 0
+                rw.bitmaps_found_2d = rw.bitmaps_found_3d = rw.cubemaps_found=0
+                rw.elapsed_time  = rw.estimated_time_remaining = 0.0
+                rw.total_bitmaps = rw.remaining_bitmaps = rw.bad_bitmaps = 0
+                rw.scan_start_time = time()
+
+                if self.index_tags():
+                    rw.tags_indexed = True
+
+                    self.load_tags()
+                    
+                    rw.tags_loaded = True
+                    tags = self.tags['bitm']
+                    def_flags = self.default_conversion_flags['bitm']
+
+                    #we need to build the list of conversion flags for each tag
+                    for filepath in tags:
+                        tags[filepath].tag_conversion_settings = list(def_flags)
+                        
+                    self.initialize_window_variables()
+                else:
+                    self.current_tag = "No tags found in selected directory."
+                    rw.finish_conversion()
+                    
+                
+            elif rw.tags_loaded and rw.proceed_with_conversion:
+                #reset the status variables
+                rw.elapsed_time = rw.estimated_time_remaining = 0.0
+                rw.scan_start_time = time()
+                rw.remaining_pixel_data_to_process = rw.total_pixel_data_to_process
+                rw.remaining_bitmaps = rw.total_bitmaps
+                
+                #are we just scanning the folder or are we doing shiz
+                if (self.default_conversion_flags["bitm"][READ_ONLY]):
+                    #used below for writing the results of the scan
+                    logstr = self.make_log_of_all_bitmaps()
+                    self.current_tag = ("Detailed log of all bitmaps "+
+                                        "created successfully.")
+                else:
+                    """SPLIT OFF INTO THE MAIN PROCESSING ROUTINE"""
+                    logstr = self.process_bitmap_tags()
+                
+                #to keep from bloating the RAM, we delete all loaded bitmap tags
+                for filepath in tuple(self.tags['bitm']):
+                    del self.tags['bitm'][filepath]
+                gc.collect()
+
+                #since we are done with the conversion we write
+                #the debug log and change the window variables
+                if not rw.conversion_cancelled:
+                    if (self.default_conversion_flags["bitm"]
+                        [WRITE_LOG] and not self.debug >= 1):
+                        self.make_log_file(logstr) #save the debug log to a file
+                    else:
+                        #if we are debugging we don't want to clutter
+                        #the folder with lots of logs, so we just print it
+                        print(logstr)
+
+                    rw.finish_conversion()
 
 
-def extracting_texture(tag):
-    '''determines if a texture extraction is to take place'''
-    return tag.tag_conversion_settings[EXTRACT_TO] != " "
+    #run the list update function on the main thread
+    def create_initial_tag_list(self):
+        self.root_window.tag_list_window.sort_displayed_tags_by(0)
+
+
+
+    def make_default_flags(self):
+        '''
+        If no settings have been defined specifically
+        for a tag then the flags below will be used
+        
+        the first 4 conversion flags are global conversion
+        flags and aren't assigned on a per-tag basis
+
+          PRUNE_TIFF: Prune the compressed tiff data from the tags
+          RENAME OLD: Rename old tags instead of deleting them
+          READ ONLY: compiles a list of all bitmaps and what their types, 
+                    sizes, etc are instead of converting in any way
+          WRITE LOG: Write debug Log
+        
+          PLATFORM: Platform to save as(True = Xbox, False = PC)
+          SWIZZLED: True = save as swizzled, False = save as deswizzled
+          DOWNRES: Number of times to cut resolution in half
+          MULTI SWAP: 0 = don't swap multipurpose channels,
+                      1 = swap for xbox,  2= swap for pc
+          CUTOFF BIAS: when reducing a channel to 1 bit, values above
+                       this are snapped to 1 and below it are snapped to 0
+          P8 MODE: P8-Bump Conversion Mode (True = Average Bias Mode,
+                                            False = Auto Bias Mode)
+          MONO KEEP: Channel to keep when converting to A8 or Y8
+                     (True = Alpha, False = Intensity)
+          MONO SWAP: Swap Alpha and Intensity (Only for A8Y8)
+          CK TRANS: Preserve Color Key transparency  (A transparent pixel
+                         in DXT1 has black for it's Red, Green, and Blue)
+          MIP GEN: Generate mipmaps if a texture doesn't have them down to 1x1
+          GAMMA: The gamma exponent to use when downressing
+                 a bitmap by merging pixels
+          NEW FORMAT: -1=unchanged, 0=A8, 1=Y8, 2=AY8, 3=A8Y8,
+                       6=R5G6B5 8=A1R5G5B5, 9=A4R4G4B4, 14=DXT1,
+                       15=DXT3, 16=DXT5, 17=P8/A8R8G8B8/X8R8G8B8
+        '''
+        
+        flags = [False, True, False, True, False, False,
+                 '0', 0, '127', False, False, False,
+                 False, FORMAT_NONE, False, 1.0, " "]
+
+        return flags
+
+
+    def initialize_window_variables(self):
+        rw = self.root_window
+        rw.bitmaps_found_2d  = rw.bitmaps_found_3d = 0
+        rw.cubemaps_found    = rw.total_bitmaps    = 0
+        rw.remaining_bitmaps = rw.bad_bitmaps      = 0
+        
+        tags_to_remove = []
+
+        #for the conversion variables we want to return
+        #a count on how many bitmaps are of what type
+        for filepath in self.tags['bitm']:
+
+            #only run if the bitmap contains bitmaps
+            tag = self.tags['bitm'][filepath]
+            if tag.bitmap_count() and tag.is_power_of_2_bitmap():
+                
+                b_type = tag.bitmap_type()
+                b_format = tag.bitmap_format()
+                if b_type == 2:
+                    rw.cubemaps_found += 1
+                elif b_type == 1:
+                    rw.bitmaps_found_3d += 1
+                else:
+                    rw.bitmaps_found_2d += 1
+                
+                rw.total_pixel_data_to_process += tag.pixel_data_bytes_size()
+            else:
+                if tag.bitmap_count():
+                    print("Non power-of-2 bitmap found.\n%s\n\n"%tag.filepath)
+                else:
+                    print("Bitmap with no bitmap data found.\n%s\n\n"%
+                          tag.filepath)
+                tags_to_remove.append(filepath)
+                rw.bad_bitmaps += 1
+                
+            rw.total_bitmaps += 1
+
+        for filepath in tags_to_remove:
+            del self.tags['bitm'][filepath]
+        del tags_to_remove
+            
+        rw.tag_list_window.build_tag_sort_mappings()
+        
+        #set the status variables
+        rw.remaining_pixel_data_to_process = rw.total_pixel_data_to_process
+        rw.remaining_bitmaps = len(self.tags['bitm']) - rw.bad_bitmaps
+        
+        self.current_tag = ("Tags loaded... Please select tags in the "+
+                            "tags list window and specify\nthe conversion "+
+                            "settings for them in this window.\nWhen you "+
+                            'are finished hit "Convert"')
+        
+        #set up the hack to allow the tag list to
+        #be displayed instantly on loading a tagset
+        rw.after(0, self.create_initial_tag_list)
+        rw.finish_scanning()
+
+
+
+    #this function is called by the conversion_main and
+    #will loop through all the tags in the collection and
+    #process them however each tag's conversion flags say to.
+    def process_bitmap_tags(self):
+        rw = None
+        if hasattr(self, "root_window"):
+            rw = self.root_window
+        
+        #used below for debug writing
+        logstr = "Debug log for Halo Bitmap Converter\n"
+        def_flags = self.default_conversion_flags['bitm']
+        conversion_report = {'bitm':{}}
+
+        #loop through each tag
+        for filepath in sorted(self.tags['bitm']):
+            tag = self.tags['bitm'][filepath]
+            
+            if rw is not None and rw.conversion_cancelled:
+                break
+            
+            self.current_tag = filepath
+
+            #this may change after the below function
+            #so we get it before that happens
+            tagsize = tag.pixel_data_bytes_size()
+            if get_will_be_processed(tag, def_flags):
+                """DO THE CONVERSION NOW"""
+                try:
+                    convert_bitmap_tag(tag, root_window=rw, filepath=filepath,
+                                   conversion_report=conversion_report['bitm'], 
+                                   prune_tiff=def_flags[PRUNE_TIFF])
+                except:
+                    print(format_exc())
+                    conversion_report['bitm'][filepath] = False
+            else:
+                conversion_report['bitm'][filepath] = None
+            rw.remaining_pixel_data_to_process -= tagsize
+            rw.remaining_bitmaps -= 1
+
+
+        if rw is not None and rw.conversion_cancelled:
+            self.current_tag = "Conversion cancelled."
+            
+            rw.display_new_text = True
+            rw.btn_start.config(text="Convert")
+            rw.enable_global_settings()
+            rw.conversion_cancelled = False
+            logstr += "Conversion Cancelled."
+        else:
+            try:
+                backup = self.default_conversion_flags['bitm'][RENAME_OLD]
+                '''depending on the conversion settings we
+                either rename or delete the original files'''
+                logstr += self.make_write_log(conversion_report, backup=backup)
+            except:
+                print("ERROR OCCURRED WHILE TRYING TO WRITE "+
+                      "DEBUG LOG AND/OR RENAME TEMP FILES")
+                print(format_exc())
+            
+            self.current_tag = "Finished converting tags"
+
+        return logstr
+
+
+
+    #used when doing a read-only scan of a tagset to figure out what's what
+    def make_log_of_all_bitmaps(self):
+        logstr = ("CE-XBOX Bitmap Converter: tagset scan results\n\n\n"+
+                  "These are the bitmaps located in the tags folder "+
+                  "organized by type and then by format.\n\n")
+        
+        valid_formats = (0,1,2,3,6,8,9,10,11,14,15,16,17)
+
+        base_str = "Bitmap %s --- WxHxD: %sx%sx%s --- Mipmaps: %s\n"
+
+        tag_counts = [0, 0, 0]
+
+        formatted_strs = {}
+        tag_header_strs = ["\n\n2D Textures:\n    Count = ",
+                           "\n\n3D Textures:\n    Count = ",
+                           "\n\nCubemaps:\n    Count = "]
+        format_names = ["A8", "Y8", "AY8", "A8Y8", '', '',
+                        "R5G6B5", '', "A1R5G6B5", "A4R4G4B4",
+                        "X8R8G8B8", "A8R8G8B8", '', '', "DXT1",
+                        "DXT3", "DXT5", "P8-Bump"]
+
+        #so we can sort bitmaps by filesize we'll create a dict to hold all
+        #the strings before we concate them so we can sort them later by size
+        tag_info_strs = {}
+
+
+        #add dicts for all three types to the tag_info_strings
+        for b_type in (0, 1, 2):
+            
+            formatted_strs[b_type] = ['']*18
+            tag_info_strs[b_type]  = ['']*18
+
+            #and add the formats to each of these new dicts
+            for b_format in valid_formats:
+                formatted_strs[b_type][b_format] = ("\n\n"+" "*4+"%s Format" %
+                                                    format_names[b_format])
+                tag_info_strs[b_type][b_format] = {}
+
+
+        #loop through each tag and create a
+        #string that details each bitmap in it
+        for filepath in self.tags['bitm']:
+            tag = self.tags['bitm'][filepath]
+            filesize = (getsize(tag.filepath)-
+                        tag.color_plate_data_bytes_size())//1024
+            tagstrs  = tag_info_strs[tag.bitmap_type()][tag.bitmap_format()]
+            
+            #this is the string that holds the data pertaining to this tag
+            tagstr = ("\n"+" "*8+filepath+" "*8+"Compiled tag size = %sKB\n" %
+                      {True:"less than 1", False:str(filesize)}[filesize <= 0])
+
+            for i in range(tag.bitmap_count()):
+                tagstr += (" "*12 + base_str %
+                           (i, tag.bitmap_width(i), tag.bitmap_height(i),
+                            tag.bitmap_depth(i), tag.bitmap_mipmaps_count(i)) )
+
+            #check if the strings list exists in the spot with 
+            if filesize in tagstrs:
+                tagstrs[filesize].append(tagstr)
+            else:
+                tagstrs[filesize] = [tagstr]
+
+
+        #Take all the tag strings generated above and concatenate them
+        #to the appropriate b_format string under the appropriate b_type
+        for b_type in (0, 1, 2):
+            for b_format in valid_formats:
+                for b_size in reversed(sorted(tag_info_strs[b_type][b_format])):
+                    for tagstr in tag_info_strs[b_type][b_format][b_size]:
+                        tag_counts[b_type] += 1
+                        formatted_strs[b_type][b_format] += tagstr
+
+
+        #concate all the strings to the
+        #log in order of b_type and b_format
+        for b_type in (0, 1, 2):
+            logstr += (tag_header_strs[b_type] + str(tag_counts[b_type]) +
+                       "\n" + ''.join(formatted_strs[b_type]))
+
+        return logstr
 
 
 def convert_bitmap_tag(tag, **kwargs):
     '''tons of possibilities here. not gonna try to name
     them. Basically this is the main conversion routine'''
-    del tex_infos[:]
-
     conversion_flags = tag.tag_conversion_settings
     tagsdir = tag.handler.tagsdir
 
     root_window = kwargs.get("root_window",None)
     tagpath = kwargs.get("tagpath",tag.filepath.split(tagsdir)[-1])
     conversion_report = kwargs.get("conversion_report",{})
-    reprocess = kwargs.get("reprocess", False)
+    prune_tiff = kwargs.get("prune_tiff", False)
     
     '''if ANY of the bitmaps does not have a power of 2
     dimensions height/width/depth then we need to break
@@ -150,7 +451,7 @@ def convert_bitmap_tag(tag, **kwargs):
 
     '''BEFORE WE TRY TO LOAD THE PIXEL DATA WE NEED TO
     MAKE SURE THE DESCRIPTION OF EACH BITMAP IS WORKABLE'''
-    bad_bitmaps = fix_mipmap_counts(tag)
+    bad_bitmaps = tag.sanitize_mipmap_counts()
 
     if len(bad_bitmaps) > 0:
         print("WARNING: BAD BITMAP BLOCK INFORMATION ENCOUNTERED "+
@@ -177,7 +478,7 @@ def convert_bitmap_tag(tag, **kwargs):
 
         #get the texture block to be loaded
         tex_block = list(tag.data.tagdata.processed_pixel_data.data[i])
-        tex_info = tex_infos[i]
+        tex_info = tag.tex_infos[i]
 
         """MAKE SOME CHECKS TO FIGURE OUT WHICH FORMAT WE ARE
         REALLY CONVERTING TO (IT'S NOT STRAIGHTFORWARD)"""
@@ -288,7 +589,7 @@ def convert_bitmap_tag(tag, **kwargs):
         """IF THE CONVERSION WAS SUCCESSFUL WE UPDATE THE
         TAG'S DATA TO THE NEW FORMAT AND SWIZZLE MODE.
         IF WE WERE ONLY EXTRACTING THE TEXTURE WE DON'T RESAVE THE TAG"""
-        if status and (processing or reprocess):
+        if status and processing:
             tex_root = tag.data.tagdata.processed_pixel_data.data[i]
 
             #set the data block to the newly converted one
@@ -300,16 +601,20 @@ def convert_bitmap_tag(tag, **kwargs):
 
             #change the bitmap format to the new format
             tag.bitmap_format(i, I_FORMAT_NAME_MAP[target_format])
-        elif not extracting_texture(tag):
+        elif not (extracting_texture(tag) or prune_tiff):
             print("Error occurred while attempting to convert the tag:")
             print(tagpath+"\n")
             conversion_report[tagpath] = False
             return False
-        
-    if processing or reprocess:
+
+    #Prune the original TIFF data from the tag
+    if prune_tiff:
+        tag.data.tagdata.compressed_color_plate_data.data = bytearray()
+
+    if processing:
         """RECALCULATE THE BITMAP HEADER AND FOOTER
         DATA AFTER POSSIBLY CHANGING IT ABOVE"""
-        bitmap_sanitize(tag)
+        tag.sanitize_bitmaps()
         
         #SET THE TAG'S CHARACTERISTICS TO XBOX OR PC FORMAT
         tag.set_platform(save_as_xbox)
@@ -318,8 +623,10 @@ def convert_bitmap_tag(tag, **kwargs):
         tag.processed_by_reclaimer(True)
         
         #IF THE FORMAT IS P8 OR PLATFORM IS XBOX WE NEED TO ADD PADDING
-        add_bitmap_padding(tag, save_as_xbox)
-        """FINISH BY RESAVING THE TAG"""
+        tag.add_bitmap_padding(save_as_xbox)
+
+    """FINISH BY RESAVING THE TAG"""
+    if processing or prune_tiff:
         try:
             save_status = tag.serialize()
             conversion_report[tagpath] = True
@@ -338,12 +645,12 @@ def convert_bitmap_tag(tag, **kwargs):
 def parse_bitmap_blocks(tag):
     '''converts the raw pixel data into arrays of pixel
     data and replaces the raw data in the tag with them'''
-    
     pixel_data = tag.data.tagdata.processed_pixel_data
     rawdata = pixel_data.data
 
     tagsdir = tag.handler.tagsdir
     datadir = tag.handler.datadir
+    tex_infos = tag.tex_infos = []
     
     #this is the block that will hold all of the bitmap blocks
     root_tex_block = tag.definition.subdefs['pixel_root'].build()
@@ -409,7 +716,7 @@ def parse_bitmap_blocks(tag):
             
             # skip the xbox alignment padding to get to the next texture
             if is_xbox:
-                tex_pad, sub_tex_pad = calc_padding_size(tag, i)
+                tex_pad, sub_tex_pad = tag.get_padding_size(i)
                 off += sub_tex_pad
                 if j + 1 == dim0:
                     off += tex_pad
@@ -423,174 +730,6 @@ def parse_bitmap_blocks(tag):
         tag.change_sub_bitmap_ordering(False)
 
     return True
-
-
-
-def fix_mipmap_counts(tag):
-    '''Some original xbox bitmaps have fudged up mipmap counts and cause issues.
-    This function will scan through all a bitmap's bitmaps and check that they
-    fit within their calculated pixel data bounds. This is done by checking if
-    a bitmap's calculated size is both within the side of the total pixel data
-    and less than the next bitmap's pixel data start'''
-    
-    bad_bitmap_index_list = []
-    bitmap_count = tag.bitmap_count()
-    
-    for i in range(bitmap_count):
-
-        #if this is the last bitmap
-        if i + 1 == bitmap_count:
-            #this is how many bytes of texture data there is total
-            max_size = tag.pixel_data_bytes_size()
-        else:
-            #this is the start of the next bitmap's pixel data
-            max_size = tag.bitmap_data_offset(i+1)
-        
-        while True:
-            mipmap_count = tag.bitmap_mipmaps_count(i)
-            curr_size = calc_bitmap_size(tag, i) + tag.bitmap_data_offset(i)
-
-            if curr_size <= max_size:
-                break
-
-            tag.bitmap_mipmaps_count(i, mipmap_count - 1)
-
-            #the mipmap count is zero and the bitmap still will
-            #not fit within the space provided. Something's wrong
-            if mipmap_count == 0:
-                bad_bitmap_index_list.append(i)
-                break
-
-    return bad_bitmap_index_list
-
-
-def add_bitmap_padding(tag, save_as_xbox):
-    '''Given a tag, this function will create and apply padding to
-    each of the bitmaps in it to make it XBOX compatible. This function
-    will also add the number of bytes of padding to the internal offsets'''
-
-    """The offset of each bitmap's pixel data needs to be increased by
-    the padding of all the bitmaps before it. This variable will be
-    used for knowing the total amount of padding before each bitmap.
-
-    DO NOT RUN IF A BITMAP ALREADY HAS PADDING."""
-    total_data_size = 0
-
-    for i in range(tag.bitmap_count()):
-        sub_bitmap_count = 1
-        if tag.bitmap_type(i) == TYPE_CUBEMAP:
-            sub_bitmap_count = 6
-            
-        pixel_data_block = tag.data.tagdata.processed_pixel_data.data[i]
-
-        """BECAUSE THESE OFFSETS ARE THE BEGINNING OF THE PIXEL
-        DATA WE ADD THE NUMBER OF BYTES OF PIXEL DATA BEFORE
-        WE CALCULATE THE NUMBER OF BYTES OF THIS ONE"""
-        #apply the offset to the tag
-        tag.bitmap_data_offset(i, total_data_size)
-
-        """ONLY ADD PADDING IF THE BITMAP IS P8 FORMAT OR GOING ON XBOX"""
-        if save_as_xbox or tag.bitmap_format(i) == ab.FORMAT_P8:
-            #calculate how much padding to add to the xbox bitmaps
-            bitmap_pad, cubemap_pad = calc_padding_size(tag, i)
-            
-            #add the number of bytes of padding to the total
-            total_data_size += bitmap_pad + cubemap_pad*sub_bitmap_count
-
-            #if this bitmap has padding on each of the sub-bitmaps
-            if cubemap_pad:
-                mipmap_count = tag.bitmap_mipmaps_count(i) + 1
-                for j in range(0, 6*(mipmap_count + 1), mipmap_count + 1):
-                    pad = bytearray(cubemap_pad)
-                    if isinstance(pixel_data_block[0], array):
-                        pad = array('B', pad)
-                    pixel_data_block.insert(j + mipmap_count, pad)
-                    
-            #add the main padding to the end of the bitmap block
-            pad = bytearray(bitmap_pad)
-            if isinstance(pixel_data_block[0], array):
-                pad = array('B', pad)
-            pixel_data_block.append(pad)
-
-        #add the number of bytes this bitmap is to the
-        #total bytes so far(multiple by sub-bitmap count)
-        total_data_size += calc_bitmap_size(tag, i)*sub_bitmap_count
-
-    #update the total number of bytes of pixel data
-    #in the tag by all the padding that was added
-    tag.pixel_data_bytes_size(total_data_size)
-
-
-def calc_bitmap_size(tag, b_index):
-    '''Given a bitmap index and a tag, this function
-    will calculate how many bytes the data takes up.
-    THIS FUNCTION WILL NOT TAKE INTO ACCOUNT THE NUMBER OF SUB-BITMAPS'''
-
-    #since we need this information to read the bitmap we extract it
-    mw, mh, md, = tag.bitmap_width_height_depth(b_index)
-    format = FORMAT_NAME_MAP[tag.bitmap_format(b_index)]
-
-    #this is used to hold how many pixels in
-    #total all this bitmaps mipmaps add up to
-    pixel_count = 0
-    
-    for mipmap in range(tag.bitmap_mipmaps_count(b_index) + 1):
-        w, h, d = ab.get_mipmap_dimensions(mw, mh, md, mipmap, format)
-        pixel_count += w*h*d
-
-    bytes_count = pixel_count
-    #based on the format, each pixel takes up a different amount of bytes
-    if format != ab.FORMAT_P8:
-        bytes_count = (bytes_count * ab.BITS_PER_PIXEL[format])//8
-
-    return bytes_count
-            
-
-
-def calc_padding_size(tag, b_index):
-    '''Calculates how many bytes of padding need to be added
-    to a bitmap to properly align it in the texture cache'''
-
-    #first we need to know how many bytes the bitmap data takes up
-    bytes_count = calc_bitmap_size(tag, b_index)
-    cubemap_pad = 0
-
-    #if there are sub-bitmaps we calculate the amount of padding for them
-    if tag.bitmap_type(b_index) == TYPE_CUBEMAP:
-        cubemap_pad = ((CUBEMAP_PADDING - (bytes_count % CUBEMAP_PADDING))
-                       % CUBEMAP_PADDING)
-        bytes_count = (bytes_count + cubemap_pad) * 6
-
-    bitmap_pad = (BITMAP_PADDING - (bytes_count%BITMAP_PADDING))%BITMAP_PADDING
-    
-    return (bitmap_pad, cubemap_pad)
-
-
-def bitmap_sanitize(tag):
-    '''after we've edited with the bitmap in whatever ways we did this will
-    tie up all the loose ends and recalculate all the offsets and stuff'''
-    
-    #Prune the original TIFF data from the tag
-    tag.data.tagdata.compressed_color_plate_data.data = bytearray()
-
-    #Read the pixel data blocks for each bitmap
-    for i in range(tag.bitmap_count()):
-        format = FORMAT_NAME_MAP[tag.bitmap_format(i)]
-        flags = tag.bitmap_flags(i)
-        old_w, old_h, _ = tag.bitmap_width_height_depth(i)
-        
-        reg_point_x, reg_point_y = tag.registration_point_xy(i)
-        texinfo = tex_infos[i]
-        
-        #set the flags to the new value
-        flags.palletized = (format == ab.FORMAT_P8)
-        flags.compressed = (format in ab.COMPRESSED_FORMATS)
-        
-        tag.bitmap_width_height_depth(
-            i, (texinfo["width"], texinfo["height"], texinfo["depth"]))
-        tag.bitmap_mipmaps_count(i, texinfo["mipmap_count"])
-        tag.registration_point_xy(i, (texinfo["width"]*reg_point_x//old_w,
-                                      texinfo["height"]*reg_point_y//old_h))
 
 
 def get_channel_mappings(format, mono_swap, target_format,
