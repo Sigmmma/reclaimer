@@ -1,5 +1,4 @@
 from ...common_descs import *
-from ...hek.programs.mozzarilla.field_widgets import HaloScriptSourceFrame
 from supyr_struct.defs.tag_def import TagDef
 
 def object_reference(name, *args, **kwargs):

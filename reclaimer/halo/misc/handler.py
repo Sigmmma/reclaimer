@@ -2,7 +2,7 @@ import os
 
 from os.path import abspath, basename, normpath
 
-from supyr_struct.apps.handler import Handler
+from binilla.handler import Handler
 from ..field_types import *
 
 

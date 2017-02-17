@@ -1,7 +1,13 @@
 from copy import copy, deepcopy
 from math import pi
 
-from ..hek.programs.mozzarilla.field_widgets import *
+
+try:
+    from mozzarilla.field_widgets import *
+except Exception:
+    ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
+                     EntryFrame = HaloScriptSourceFrame = SoundSampleFrame =\
+                     DynamicArrayFrame = None
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
 from ..field_types import *

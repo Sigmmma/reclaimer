@@ -1,5 +1,5 @@
-from supyr_struct.apps.binilla.widget_picker import *
-from supyr_struct.apps.binilla.field_widgets import *
+from binilla.widget_picker import *
+from binilla.field_widgets import *
 from ..field_types import *
 
 __all__ = ("WidgetPicker", "def_widget_picker", "add_widget",

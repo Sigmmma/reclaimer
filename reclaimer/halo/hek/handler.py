@@ -1,9 +1,10 @@
 import os
 
 from hashlib import md5
-from os.path import abspath, basename, exists, normpath, splitext
+from datetime import datetime
+from os.path import abspath, basename, exists, isfile, normpath, splitext
 
-from supyr_struct.apps.handler import Handler
+from binilla.handler import Handler
 from supyr_struct.buffer import BytearrayBuffer
 from ..field_types import *
 from .defs.objs.tag import HekTag
@@ -197,3 +198,141 @@ class HaloHandler(Handler):
         return (bool(node.filepath) and (
             node.filepath in self.tag_filepath_match_set and
             node.tag_class.data in self.tag_fcc_match_set))
+
+    def make_log_file(self, logstr, logpath=None):
+        '''
+        Writes the supplied string to a log file.
+
+        Required arguments:
+            logstr(str)
+
+        If self.log_filename is a non-blank string it will be used as the
+        log filename. Otherwise the current timestamp will be used as the
+        filename in the format "YY-MM-DD  HH:MM SS".
+        If the file already exists it will be appended to with the current
+        timestamp separating each write. Otherwise the file will be created.
+        '''
+        # get the timestamp for the debug log's name
+        timestamp = datetime.now().strftime("%Y-%m-%d  %H:%M:%S")
+
+        if logpath:
+            pass
+        elif isinstance(self.log_filename, str) and self.log_filename:
+            logpath = self.tagsdir + self.log_filename
+            logstr = '\n' + '-'*80 + '\n' + timestamp + '\n' + logstr
+        else:
+            logpath = self.tagsdir + timestamp.replace(':', '.') + ".log"
+
+        mode = 'w'
+        if isfile(logpath):
+            mode = 'a'
+
+        # open a debug file and write the debug string to it
+        with open(logpath, mode) as logfile:
+            logfile.write(logstr)
+
+    def make_write_log(self, all_successes, rename=True, backup=None):
+        '''
+        Creates a log string of all tags that were saved and renames
+        the tags from their temp filepaths to their original filepaths.
+        Returns the created log string
+        Raises TypeError if the Tag's status is not in (True,False,None)
+
+        Renaming is done by removing '.temp' from the end of all files
+        mentioned in 'all_successes' having a value of True.
+        The log consists of a section showing which tags were properly
+        loaded and processed, a section showing tags were either not
+        properly loaded or not properly processed, and a section showing
+        which tags were either not loaded or ignored during processing.
+
+        Required arguments:
+            all_successes(dict)
+        Optional arguments:
+            rename(bool)
+            backup(bool)
+
+        'all_successes' must be a dict with the same structure
+        as self.tags, but with bools instead of tags.
+        all_successes[def_id][filepath] = True/False/None
+
+        True  = Tag was properly loaded and processed
+        False = Tag was not properly loaded or not properly processed
+        None  = Tag was not loaded or ignored during processing
+
+        If 'backup' is True and a file already exists with the name
+        that a temp file is going to be renamed to, the currently
+        existing filename will be appended with '.backup'
+
+        If 'rename' is True then the tags are expected to be in a
+        temp file form where their filename ends with '.temp'
+        Attempts to os.remove '.temp' from all tags if 'rename' == True
+
+        The 'filepath' key of each entry in all_successes[def_id]
+        are expected to be the original, non-temp filepaths. The
+        temp filepaths are assumed to be (filepath + '.temp').
+        '''
+        if backup is None:
+            backup = self.backup
+
+        error_str = success_str = ignored_str = "\n\nThese tags were "
+
+        error_str += "improperly loaded or processed:\n"
+        success_str += "properly loaded and processed:\n"
+        ignored_str += "not loaded or ignored during processing:\n"
+
+        # loop through each tag
+        for def_id in sorted(all_successes):
+            write_successes = all_successes[def_id]
+
+            error_str += "\n" + def_id
+            success_str += "\n" + def_id
+            ignored_str += "\n" + def_id
+
+            for filepath in sorted(write_successes):
+                status = write_successes[filepath]
+
+                # if we had no errors trying to convert the tag
+                if status is False:
+                    error_str += "\n    " + filepath
+                    continue
+                elif status is None:
+                    ignored_str += "\n    " + filepath
+                    continue
+
+                success_str += "\n    " + filepath
+                filepath = self.tagsdir + filepath
+
+                if not rename:
+                    continue
+
+                if not backup or isfile(filepath + ".backup"):
+                    # try to delete the tag if told to not backup tags
+                    # OR if there's already a backup with its name
+                    try:
+                        os.remove(filepath)
+                    except Exception:
+                        success_str += ('\n        Could not ' +
+                                        'delete original file.')
+                else:
+                    # Otherwise try to os.rename the old
+                    # files to the backup file names
+                    try:
+                        os.rename(filepath, filepath + ".backup")
+                    except Exception:
+                        success_str += ('\n        Could not ' +
+                                        'backup original file.')
+
+                # Try to os.rename the temp file
+                try:
+                    os.rename(filepath + ".temp", filepath)
+                except Exception:
+                    success_str += ("\n        Could not os.remove " +
+                                    "'temp' from filename.")
+                    # restore the backup
+                    try:
+                        if backup:
+                            os.rename(filepath + ".backup", filepath)
+                    except Exception:
+                        pass
+
+        return success_str + error_str + ignored_str + '\n'

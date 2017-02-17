@@ -1,5 +1,4 @@
 from ...common_descs import *
-from ...hek.programs.mozzarilla.field_widgets import EntryFrame
 from supyr_struct.defs.tag_def import TagDef
 
 child_ids = Struct("child id",

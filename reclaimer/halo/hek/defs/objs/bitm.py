@@ -1,10 +1,10 @@
 from os.path import splitext
 from array import array
 from .tag import *
-from ...programs.hboc import p8_palette
+from .p8_palette import load_palette
 
 #load the palette for p-8 bump maps
-P8_PALETTE = p8_palette.load_palette()
+P8_PALETTE = load_palette()
 
 import arbytmap as ab
 

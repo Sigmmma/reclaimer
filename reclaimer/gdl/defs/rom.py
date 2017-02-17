@@ -1,5 +1,5 @@
 from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.apps.binilla.field_widgets import TextFrame
+from binilla.field_widgets import TextFrame
 from ..common_descs import *
 from ..field_types import *
 

@@ -1,7 +1,6 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from ...stubbs.defs.meta_descs import meta_cases
-from ...hek.programs.mozzarilla.field_widgets import DynamicArrayFrame
 from . objs.map import MapTag
 
 

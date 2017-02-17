@@ -1,6 +1,4 @@
 from ...common_descs import *
-from ...hek.programs.mozzarilla.field_widgets import SoundSampleFrame
-
 from supyr_struct.defs.tag_def import TagDef
 
 sound_classes = (

@@ -1,5 +1,5 @@
 from supyr_struct.defs.constants import *
-from supyr_struct.apps.binilla.constants import *
+from binilla.constants import *
 
 PC_TAG_INDEX_HEADER_SIZE   = 40
 XBOX_TAG_INDEX_HEADER_SIZE = 36

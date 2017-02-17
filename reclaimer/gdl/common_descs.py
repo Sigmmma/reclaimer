@@ -1,6 +1,6 @@
 from supyr_struct.defs.common_descs import *
-from supyr_struct.apps.binilla.field_widgets import *
-from supyr_struct.apps.binilla.constants import *
+from binilla.field_widgets import *
+from binilla.constants import *
 from .field_types import *
 
 def lump_fcc(value):
