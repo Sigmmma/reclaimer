@@ -11,7 +11,7 @@ import binascii
 
 from struct import unpack
 
-from ..xboxsave import *
+from .xboxsave import *
 from ....field_types import *
 from supyr_struct.buffer import *
 from supyr_struct.tag import *
