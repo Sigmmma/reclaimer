@@ -34,10 +34,12 @@ fast_compressed_vertex = QStruct('compressed vertex',
     BUInt32('binormal'),
     BUInt32('tangent'),
 
-    BSInt16('tex coord u'), BSInt16('tex coord v'),
+    BSInt16('tex coord u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    BSInt16('tex coord v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
 
-    SInt8('node 0 index'), SInt8('node 1 index'),
-    BSInt16('node 0 weight'),
+    SInt8('node 0 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
+    SInt8('node 1 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
+    BSInt16('node 0 weight', UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
     SIZE=32
     )
 
@@ -67,17 +69,12 @@ compressed_vertex = Struct('compressed vertex',
     BBitStruct('binormal', INCLUDE=compressed_normal_32, SIZE=4),
     BBitStruct('tangent',  INCLUDE=compressed_normal_32, SIZE=4),
 
-    BSInt16('tex coord u',
-        UNIT_SCALE=1/32767, MIN=-32767,WIDGET_WIDTH=10),
-    BSInt16('tex coord v',
-        UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    BSInt16('tex coord u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    BSInt16('tex coord v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
 
-    SInt8('node 0 index',
-        UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
-    SInt8('node 1 index',
-        UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
-    BSInt16('node 0 weight',
-        UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
+    SInt8('node 0 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
+    SInt8('node 1 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
+    BSInt16('node 0 weight', UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
     SIZE=32
     )
 
