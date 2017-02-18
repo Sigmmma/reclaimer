@@ -53,4 +53,4 @@ bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
 
 ## Who do I talk to?
 
-* [Devin Bobadilla](mosesbobadilla@gmail.com)(Author of reclaimer)
+* Devin Bobadilla (Author of binilla) mosesbobadilla@gmail.com
