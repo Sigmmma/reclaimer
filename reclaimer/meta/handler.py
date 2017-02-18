@@ -7,6 +7,6 @@ from ..field_types import *
 
 
 class MapLoader(Handler):
-    default_defs_path = "reclaimer.halo.meta.defs"
+    default_defs_path = "reclaimer.meta.defs"
 
     tagsdir = "%s%stags%s" % (abspath(os.curdir), PATHDIV, PATHDIV)

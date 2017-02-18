@@ -11,7 +11,7 @@ from .defs.objs.tag import HekTag
 
 
 class HaloHandler(Handler):
-    default_defs_path = "reclaimer.halo.hek.defs"
+    default_defs_path = "reclaimer.hek.defs"
     tag_fcc_match_set = frozenset()
     tag_filepath_match_set = frozenset()
 
