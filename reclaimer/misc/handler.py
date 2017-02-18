@@ -7,7 +7,7 @@ from ..field_types import *
 
 
 class MiscHaloLoader(Handler):
-    default_defs_path = "reclaimer.halo.misc.defs"
+    default_defs_path = "reclaimer.misc.defs"
 
     tagsdir = "%s%stags%s" % (abspath(os.curdir), PATHDIV, PATHDIV)
 
