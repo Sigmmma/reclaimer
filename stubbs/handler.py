@@ -5,7 +5,7 @@ from os.path import abspath
 from ..hek.handler import *
 
 
-class OsV4HaloHandler(HaloHandler):
-    default_defs_path = "reclaimer.halo.os_v4_hek.defs"
+class StubbsHandler(HaloHandler):
+    default_defs_path = "reclaimer.stubbs.defs"
 
     tagsdir = "%s%stags%s" % (abspath(os.curdir), PATHDIV, PATHDIV)
