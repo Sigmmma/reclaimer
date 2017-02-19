@@ -12,14 +12,17 @@ release_date = "2017.02.15"
 version = (1, 0, 0)
 
 try:
-    long_desc = open(join(curr_dir, "readme.md")).read()
+    try:
+        long_desc = open(join(curr_dir, "readme.rst")).read()
+    except Exception:
+        long_desc = open(join(curr_dir, "readme.md")).read()
 except Exception:
-    long_desc = ''
+    long_desc = 'Could not read long description from readme.'
 
 setup(
     name='reclaimer',
     description='A libray of SupyrStruct structures and objects for \
-games built with the Blam engine.',
+games built with the Blam engine',
     long_description=long_desc,
     version='1.0.0',
     url='https://bitbucket.org/Moses_of_Egypt/reclaimer',
