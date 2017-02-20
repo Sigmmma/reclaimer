@@ -8,13 +8,22 @@
 
 ## Getting Started
 
-* Install any version of Python 3(The newest version is recommended).
-* Extract a copy of the repository into a directory titled "reclaimer".
-* Move the file "setup.py" into the directory containing "reclaimer".
-* Open a command prompt, navigate to the directory containing setup.py, and execute:```python setup.py install```
-* During install, python should try to download and install [supyr_struct](https://bitbucket.org/moses_of_egypt/supyr_struct). If it fails to, you must install that as well.
-* Once the install finishes, reclaimer should be ready to use.
-* There are currently no test cases, but you should be able to directly import any tag definition from the python interpreter, build it, give it a filepath, and serialize it as shown below:
+First install any version of Python 3(The newest version is recommended).
+
+There are two ways to install reclaimer from this point:
+
+*    Open a command prompt and execute ```pip install reclaimer```
+
+or
+
+*    Extract a copy of the repository into a directory titled "reclaimer".
+*    Move the file "setup.py" into the directory containing "reclaimer".
+*    Open a command prompt, navigate to the directory containing setup.py, and execute:```python setup.py install```
+*    During install, python should try to download and install [supyr_struct](https://bitbucket.org/moses_of_egypt/supyr_struct). If it fails to, you must install that as well.
+
+Once the install finishes, reclaimer should be ready to use.
+
+There are currently no test cases, but you should be able to directly import any tag definition from the python interpreter, build it, give it a filepath, and serialize it as shown below:
 ```
 >>> from reclaimer.hek.defs.pphy import pphy_def
 >>> asdf = pphy_def.build()
