@@ -6,7 +6,7 @@
 
 * Reclaimer is a library of [supyr_struct](https://bitbucket.org/moses_of_egypt/supyr_struct) structure descriptors and tag definitions for creating and modifying data files for video games utilizing the Blam engine. These descriptors and definitions are currently limited to Halo 1(xbox, custom edition, and the community made "open sauce" variant) with some support for Stubbs the Zombie. There are plans to branch into Halo 2, though for now the "he2k" sub-module is just a placeholder. Some of the tag definitions have an accompanying object class with methods for manipulating the tag(recalculating inertial matrices in physics tags for example).
 
-## Getting Started
+## Installing
 
 First install any version of Python 3(The newest version is recommended).
 
