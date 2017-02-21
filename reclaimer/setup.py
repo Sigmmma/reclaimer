@@ -8,8 +8,8 @@ except ImportError:
 curr_dir = dirname(__file__)
 
 #               YYYY.MM.DD
-release_date = "2017.02.15"
-version = (1, 0, 0)
+release_date = "2017.02.20"
+version = (1, 0, 2)
 
 try:
     try:
@@ -24,7 +24,7 @@ setup(
     description='A libray of SupyrStruct structures and objects for \
 games built with the Blam engine',
     long_description=long_desc,
-    version='1.0.0',
+    version='%s.%s.%s' % version,
     url='https://bitbucket.org/Moses_of_Egypt/reclaimer',
     author='Devin Bobadilla',
     author_email='MosesBobadilla@gmail.com',
@@ -62,8 +62,8 @@ games built with the Blam engine',
         },
     platforms=["POSIX", "Windows"],
     keywords="reclaimer, halo",
-    install_requires=['supyr_struct'],
-    requires=['supyr_struct'],
+    install_requires=['supyr_struct'],#, 'arbytmap'],
+    requires=['supyr_struct'],#, 'arbytmap'],
     provides=['reclaimer'],
     classifiers=[
         "Development Status :: 4 - Beta",

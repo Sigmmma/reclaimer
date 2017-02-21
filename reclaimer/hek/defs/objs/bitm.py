@@ -6,15 +6,18 @@ from .p8_palette import load_palette
 #load the palette for p-8 bump maps
 P8_PALETTE = load_palette()
 
-import arbytmap as ab
+try:
+    import arbytmap as ab
 
-ab.FORMAT_P8 = "P8-BUMP"
+    ab.FORMAT_P8 = "P8-BUMP"
 
-"""ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
-ab.define_format(
-    format_id=ab.FORMAT_P8, raw_format=True, channel_count=4,
-    depths=(8,8,8,8), offsets=(24,16,8,0),
-    masks=(4278190080, 16711680, 65280, 255))
+    """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
+    ab.define_format(
+        format_id=ab.FORMAT_P8, raw_format=True, channel_count=4,
+        depths=(8,8,8,8), offsets=(24,16,8,0),
+        masks=(4278190080, 16711680, 65280, 255))
+except ImportError:
+    ab = None
 
 #in a bitmap tag this number designates the type
 TYPE_2D = 0
