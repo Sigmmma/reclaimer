@@ -871,7 +871,7 @@ argb_byte = QStruct('argb_uint8',
 
 # rotations
 ijkw_float = QStruct('ijkw_float',
-    Float("i"), Float("j"), Float("k"), Float("w"),
+    Float("i"), Float("j"), Float("k"), Float("w", DEFAULT=1.0),
     ORIENT='h'
     )
 ijk_float = QStruct('ijk_float',

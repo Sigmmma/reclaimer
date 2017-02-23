@@ -67,6 +67,8 @@ class Matrix(list):
         self.width = -1
 
         for row in matrix:
+            if not hasattr(row, '__iter__'):
+                row = [row]
             self.width = max(self.width, len(row))
             assert self.width and len(row) == self.width
             matrix_rows.append(MatrixRow(row[:]))
