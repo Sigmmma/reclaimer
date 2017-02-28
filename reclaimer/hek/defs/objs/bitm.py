@@ -240,8 +240,8 @@ class BitmTag(HekTag):
                 i = 0
                 
                 '''since we also want to swap the second and third
-                cubemap faces we can do that easily like this xbox
-                has the second and third cubemap faces transposed
+                cubemap faces we can do that easily like this.
+                xbox has the second and third cubemap faces swapped
                 with each other compared to pc. IDFKY'''
                 for face in (0, 2, 1, 3, 4, 5):
                     for mip in range(0, mipmap_count*6, 6):

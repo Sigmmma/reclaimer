@@ -76,7 +76,7 @@ def rawtext_ref(name, f_type=StrRawAscii, max_size=None, widget=TextFrame):
         ref_struct[0][VISIBLE] = False
 
     return RawdataRef(name,
-        INCLUDE=ref_struct, GUI_NAME='',
+        INCLUDE=ref_struct, ORIENT="v",
         STEPTREE=f_type("data",
             SIZE=".size", GUI_NAME=name.replace('_', ' '), WIDGET=widget)
             )
@@ -105,7 +105,7 @@ def dependency(name='tag ref', valid_ids=None):
 
 def blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
-    header_desc= dict(tag_header)
+    header_desc = dict(tag_header)
     header_desc[1] = dict(header_desc[1])
     header_desc[5] = dict(header_desc[5])
     header_desc[1][DEFAULT] = tagid
