@@ -10,7 +10,7 @@ child_ids = Struct("child id",
 referenced_by = Struct("referenced by", INCLUDE=child_ids)
 
 entry = Struct("entry",
-    rawtext_ref("name", StrUtf8, max_size=256),
+    rawtext_ref("name", StrUtf8, max_size=256, widget=EntryFrame),
     BUEnum32("group tag", INCLUDE=valid_tags_os, GUI_NAME="group tag"),
     BSInt32("handle data"),
     BSInt32("flags"),
