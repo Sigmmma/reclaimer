@@ -241,11 +241,16 @@ animation_desc = Struct("animation",
         "compressed data",
         "world relative",
         { NAME:"pal", GUI_NAME:"25Hz(PAL)" },
+        { NAME:"fps_60", GUI_NAME:"60fps(ONLY used by fps converter)" },
+        { GUI_NAME:"special overlay(ONLY used by fps converter)",
+          NAME:"special", TOOLTIP:"whether or not this animation " +
+          "serves a special function where it doesnt\nlinearly animate, " +
+          "such as tire suspension or unit aiming."},
         ),
     dyn_senum16("sound",
         DYN_NAME_PATH="tagdata.sound_references." +
         "sound_references_array[DYN_I].sound.filepath"),
-    BSInt16("sound frame_index"),
+    BSInt16("sound frame index"),
     SInt8("left foot frame index"),
     SInt8("right foot frame index"),
     LSInt16("unknown sint16", ENDIAN='<'),
