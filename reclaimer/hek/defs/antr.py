@@ -246,6 +246,10 @@ animation_desc = Struct("animation",
           NAME:"special", TOOLTIP:"whether or not this animation " +
           "serves a special function where it doesnt\nlinearly animate, " +
           "such as tire suspension or unit aiming."},
+        { GUI_NAME:"final velocity is important(ONLY used by fps converter)",
+          NAME:"final velocity kept", TOOLTIP:"whether or not the " +
+          "velocity of the final frame of the animation is given to the\n" +
+          "object when the animation ends(jumping, exiting vehicle, etc)"}
         ),
     dyn_senum16("sound",
         DYN_NAME_PATH="tagdata.sound_references." +
