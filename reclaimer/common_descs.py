@@ -112,7 +112,35 @@ def blam_header(tagid, version=1):
     header_desc[5][DEFAULT] = version
     return header_desc
 
+
+_func_unit_scales = {}  # holds created unit_scales for reuse
+
+def get_unit_scale(val30=1, val60=0.5):
+    """
+    Returns a function to be used in the UNIT_SCALE of a descriptor that
+    will change the scale depending on if the 60fps flag is set or not.
+    """
+    key = (val30, val60)
+    if key in _func_unit_scales:
+        return _func_unit_scales[key]
+
+    def unit_scale(*args, **kwargs):
+        f_widget = kwargs.get('f_widget')
+        if f_widget is None or not (f_widget.tag_window.app_root.\
+                                    config_file.data.mozzarilla.flags.fps_60):
+            return val30
+        return val60
+
+    _func_unit_scales[key] = unit_scale
+    return unit_scale
+
+# typical unit_scales for seconds and seconds squared fields
+sec_unit_scale    = get_unit_scale(1, 2)
+sec_sq_unit_scale = get_unit_scale(1, 4)
+
 irad = 180/pi
+irad_sec_unit_scale    = get_unit_scale(irad, 2*irad)
+irad_sec_sq_unit_scale = get_unit_scale(irad, 4*irad)
 
 def dyn_senum8(name, *args, **kwargs):
     kwargs.setdefault('DEFAULT', -1)
@@ -140,27 +168,33 @@ def float_neg_one_to_one(name, *args, **kwargs):
     return BFloat(name, *args, MIN=-1.0, MAX=1.0, SIDETIP="[-1,1]", **kwargs)
 
 def float_sec(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="seconds", **kwargs)
+    return BFloat(name, *args, SIDETIP="seconds",
+                  UNIT_SCALE=sec_unit_scale, **kwargs)
 
 def float_deg(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="degrees", **kwargs)
 def float_deg_sec(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="degrees/sec", **kwargs)
+    return BFloat(name, *args, SIDETIP="degrees/sec",
+                  UNIT_SCALE=sec_unit_scale, **kwargs)
 
 def float_rad(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="degrees", UNIT_SCALE=irad, **kwargs)
+    return BFloat(name, *args, SIDETIP="degrees",
+                  UNIT_SCALE=irad, **kwargs)
 def float_rad_sec(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="degrees/sec", UNIT_SCALE=irad, **kwargs)
+    return BFloat(name, *args, SIDETIP="degrees/sec",
+                  UNIT_SCALE=irad_sec_unit_scale,  **kwargs)
 def float_rad_sec_sq(name, *args, **kwargs):
-    return BFloat(
-        name, *args, SIDETIP="degrees/(sec^2)", UNIT_SCALE=irad, **kwargs)
+    return BFloat(name, *args, SIDETIP="degrees/(sec^2)",
+                  UNIT_SCALE=irad_sec_sq_unit_scale, **kwargs)
 
 def float_wu(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="world units", **kwargs)
 def float_wu_sec(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="world units/sec", **kwargs)
+    return BFloat(name, *args, SIDETIP="world units/sec",
+                  UNIT_SCALE=sec_unit_scale, **kwargs)
 def float_wu_sec_sq(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="world units/(sec^2)", **kwargs)
+    return BFloat(name, *args, SIDETIP="world units/(sec^2)",
+                  UNIT_SCALE=sec_sq_unit_scale, **kwargs)
 
 def float_zero_to_inf(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="[0,+inf]", **kwargs)
@@ -182,21 +216,21 @@ def from_to_deg(name, *args, **kwargs):
 def from_to_rad(name, *args, **kwargs):
     return QStruct(name,
         BFloat("from", UNIT_SCALE=irad, GUI_NAME=''),
-        BFloat("to", UNIT_SCALE=irad), *args,
+        BFloat("to",   UNIT_SCALE=irad), *args,
         ORIENT='h', SIDETIP='degrees', **kwargs
         )
 
 def from_to_rad_sec(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", UNIT_SCALE=irad, GUI_NAME=''),
-        BFloat("to", UNIT_SCALE=irad), *args,
+        BFloat("from", UNIT_SCALE=irad_sec_unit_scale, GUI_NAME=''),
+        BFloat("to",   UNIT_SCALE=irad_sec_unit_scale), *args,
         ORIENT='h', SIDETIP='degrees/sec', **kwargs
         )
 
 def from_to_sec(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", GUI_NAME=''),
-        BFloat("to"), *args,
+        BFloat("from", UNIT_SCALE=sec_unit_scale, GUI_NAME=''),
+        BFloat("to",   UNIT_SCALE=sec_unit_scale), *args,
         ORIENT='h', SIDETIP='seconds', **kwargs
         )
 
@@ -209,8 +243,8 @@ def from_to_wu(name, *args, **kwargs):
 
 def from_to_wu_sec(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", GUI_NAME=''),
-        BFloat("to"), *args,
+        BFloat("from", UNIT_SCALE=sec_unit_scale, GUI_NAME=''),
+        BFloat("to",   UNIT_SCALE=sec_unit_scale), *args,
         ORIENT='h', SIDETIP='world units/sec', **kwargs
         )
 

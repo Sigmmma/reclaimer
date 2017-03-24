@@ -7,6 +7,7 @@ class PhysTag(HekTag):
     def calc_masses(self):
         data = self.data.tagdata
         mass_points = data.mass_points.STEPTREE
+        mass_center = [0,0,0]
 
         if not len(mass_points):
             data.center_of_mass[:] = mass_center
@@ -14,7 +15,6 @@ class PhysTag(HekTag):
 
         total_mass = data.mass
         total_rel_mass = sum([mp.relative_mass for mp in mass_points])
-        mass_center = [0,0,0]
 
         for mp in mass_points:
             rel_mass = mp.relative_mass
@@ -116,7 +116,10 @@ class PhysTag(HekTag):
 
         # calculate the inverse inertia matrix
         regular = Matrix((reg_yy_zz, reg_zz_xx, reg_xx_yy))
-        inverse = regular.inverse
+        try:
+            inverse = regular.inverse
+        except ZeroDivisionError:
+            inverse = Matrix((1, 0, 0), (0, 1, 0), (0, 0, 1))
 
         # place the inverse matrix into the tag
         inv.yy_zz[:] = inverse[0][:]
