@@ -115,11 +115,13 @@ def blam_header(tagid, version=1):
 
 _func_unit_scales = {}  # holds created unit_scales for reuse
 
-def get_unit_scale(val30=1, val60=0.5):
+def get_unit_scale(val30, val60):
     """
     Returns a function to be used in the UNIT_SCALE of a descriptor that
     will change the scale depending on if the 60fps flag is set or not.
     """
+    assert 0 not in (val30, val60), "Neither unit_scale may be 0."
+
     key = (val30, val60)
     if key in _func_unit_scales:
         return _func_unit_scales[key]
@@ -135,12 +137,14 @@ def get_unit_scale(val30=1, val60=0.5):
     return unit_scale
 
 # typical unit_scales for seconds and seconds squared fields
+per_sec_unit_scale    = get_unit_scale(1, 1/2)
+per_sec_sq_unit_scale = get_unit_scale(1, 1/4)
 sec_unit_scale    = get_unit_scale(1, 2)
 sec_sq_unit_scale = get_unit_scale(1, 4)
 
 irad = 180/pi
-irad_sec_unit_scale    = get_unit_scale(irad, 2*irad)
-irad_sec_sq_unit_scale = get_unit_scale(irad, 4*irad)
+irad_per_sec_unit_scale    = get_unit_scale(irad, irad/2)
+irad_per_sec_sq_unit_scale = get_unit_scale(irad, irad/4)
 
 def dyn_senum8(name, *args, **kwargs):
     kwargs.setdefault('DEFAULT', -1)
@@ -175,26 +179,26 @@ def float_deg(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="degrees", **kwargs)
 def float_deg_sec(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="degrees/sec",
-                  UNIT_SCALE=sec_unit_scale, **kwargs)
+                  UNIT_SCALE=per_sec_unit_scale, **kwargs)
 
 def float_rad(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="degrees",
                   UNIT_SCALE=irad, **kwargs)
 def float_rad_sec(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="degrees/sec",
-                  UNIT_SCALE=irad_sec_unit_scale,  **kwargs)
+                  UNIT_SCALE=irad_per_sec_unit_scale,  **kwargs)
 def float_rad_sec_sq(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="degrees/(sec^2)",
-                  UNIT_SCALE=irad_sec_sq_unit_scale, **kwargs)
+                  UNIT_SCALE=irad_per_sec_sq_unit_scale, **kwargs)
 
 def float_wu(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="world units", **kwargs)
 def float_wu_sec(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="world units/sec",
-                  UNIT_SCALE=sec_unit_scale, **kwargs)
+                  UNIT_SCALE=per_sec_unit_scale, **kwargs)
 def float_wu_sec_sq(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="world units/(sec^2)",
-                  UNIT_SCALE=sec_sq_unit_scale, **kwargs)
+                  UNIT_SCALE=per_sec_sq_unit_scale, **kwargs)
 
 def float_zero_to_inf(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="[0,+inf]", **kwargs)
@@ -222,8 +226,8 @@ def from_to_rad(name, *args, **kwargs):
 
 def from_to_rad_sec(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", UNIT_SCALE=irad_sec_unit_scale, GUI_NAME=''),
-        BFloat("to",   UNIT_SCALE=irad_sec_unit_scale), *args,
+        BFloat("from", UNIT_SCALE=irad_per_sec_unit_scale, GUI_NAME=''),
+        BFloat("to",   UNIT_SCALE=irad_per_sec_unit_scale), *args,
         ORIENT='h', SIDETIP='degrees/sec', **kwargs
         )
 
@@ -243,8 +247,8 @@ def from_to_wu(name, *args, **kwargs):
 
 def from_to_wu_sec(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", UNIT_SCALE=sec_unit_scale, GUI_NAME=''),
-        BFloat("to",   UNIT_SCALE=sec_unit_scale), *args,
+        BFloat("from", UNIT_SCALE=per_sec_unit_scale, GUI_NAME=''),
+        BFloat("to",   UNIT_SCALE=per_sec_unit_scale), *args,
         ORIENT='h', SIDETIP='world units/sec', **kwargs
         )
 
@@ -801,27 +805,27 @@ tag_header = Struct("blam header",
 anim_func_per_pha = Struct('',
     BSEnum16("function", *animation_functions),
     Pad(2),
-    BFloat("period", SIDETIP='seconds'),  # seconds
-    BFloat("phase", SIDETIP='seconds'),  # seconds
+    BFloat("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
+    BFloat("phase", SIDETIP='seconds',  UNIT_SCALE=sec_unit_scale),
     )
 anim_func_per_sca = Struct('',
     BSEnum16("function", *animation_functions),
     Pad(2),
-    BFloat("period", SIDETIP='seconds'),  # seconds
+    BFloat("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
     BFloat("scale", SIDETIP='base map repeats'),  # base map repeats
     )
 anim_src_func_per_pha_sca = Struct('',
     BSEnum16("source", *function_outputs),
     BSEnum16("function", *animation_functions),
-    BFloat("period", SIDETIP='seconds'),  # seconds
-    BFloat("phase", SIDETIP='seconds'),  # seconds
+    BFloat("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
+    BFloat("phase", SIDETIP='seconds',  UNIT_SCALE=sec_unit_scale),
     BFloat("scale", SIDETIP='repeats'),  # repeats
     )
 anim_src_func_per_pha_sca_rot = Struct('',
     BSEnum16("source", *function_outputs),
     BSEnum16("function", *animation_functions),
-    BFloat("period", SIDETIP='seconds'),  # seconds
-    BFloat("phase", SIDETIP='seconds'),  # seconds
+    BFloat("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
+    BFloat("phase", SIDETIP='seconds',  UNIT_SCALE=sec_unit_scale),
     BFloat("scale", SIDETIP='degrees'),  # repeats
     )
 
@@ -829,7 +833,7 @@ anim_src_func_per_pha_sca_rot = Struct('',
 # This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
     BSInt32("size", EDITABLE=False, GUI_NAME="", SIDETIP="bytes"),
-    BSInt32("unknown", EDITABLE=False, VISIBLE=False),  # 0x00 in tags(and meta it seems)
+    BSInt32("unknown", EDITABLE=False, VISIBLE=False),  # 0 in tags(and meta!?)
     BSInt32("raw pointer", EDITABLE=False, VISIBLE=False),  # doesnt use magic
     BSInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),
     BSInt32("id", EDITABLE=False, VISIBLE=False),
@@ -840,7 +844,7 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
 reflexive_struct = Reflexive('reflexive',
     BSInt32("size", EDITABLE=False, VISIBLE=False),
     BSInt32("pointer", DEFAULT=-1, EDITABLE=False, VISIBLE=False),  # random
-    BUInt32("id", EDITABLE=False, VISIBLE=False),  # 0x00000000 in meta it seems
+    BUInt32("id", EDITABLE=False, VISIBLE=False),  # 0 in meta it seems
     )
 
 predicted_resource = Struct('predicted_resource',
