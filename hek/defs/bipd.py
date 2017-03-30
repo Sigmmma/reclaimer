@@ -119,7 +119,12 @@ bipd_attrs = Struct("bipd attrs",
         FlFloat("unknown7", DEFAULT=0.0),
         FlSInt16("unknown8", DEFAULT=-1),
         FlSInt16("unknown9", DEFAULT=-1),
-        COMMENT="\nI think these are physics values, but I havent experimented.\n"
+        COMMENT=(
+            "\nI think these are physics values, but I havent experimented.\n" +
+            "If they are, they probably include a normal k0 and k1 like\n" +
+            "you'd find oin a physics tag, which determine the maximum\n" +
+            "angles the biped can go up a slope before sliding.\n"
+            )
         ),
 
     reflexive("contact points", contact_point, 2,

@@ -9,13 +9,8 @@ from .unit import *
 obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=1)
 
-vehi_body = Struct("tagdata",
-    obje_attrs,
-    unit_attrs,
-    vehi_attrs,
-    SIZE=1008,
-    )
-
+vehi_body = dict(vehi_body)
+vehi_body[0] = obje_attrs
 
 def get():
     return vehi_def
