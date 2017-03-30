@@ -9,7 +9,7 @@ bitm_body[3] = BBool16("flags",
     "disable height map compression",
     "uniform sprite sequences",
     "sprite bug fix",
-    "processed by reclaimer",
+    "processed by hboc",
     ("never share resources", 1<<13)
     )
 

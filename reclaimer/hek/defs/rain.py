@@ -25,9 +25,11 @@ particle_type = Struct("particle_type",
     dependency("physics", "pphy"),
 
     Pad(16),
-    QStruct("acceleration magnitude", INCLUDE=from_to),
-    BFloat("acceleration turning rate"),  # radians
-    BFloat("acceleration change rate"),
+    Struct("acceleration",
+        QStruct("magnitude", INCLUDE=from_to),
+        float_rad("turning rate"),  # radians
+        BFloat("change rate"),
+        ),
 
     Pad(32),
     from_to_wu("particle radius"),
