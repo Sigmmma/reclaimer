@@ -390,7 +390,8 @@ netgame_equipment = Struct("netgame equipment",
     BSEnum16("type 2", *location_types),
     BSEnum16("type 3", *location_types),
     BSInt16("team index"),
-    BSInt16("spawn time", SIDETIP="seconds(0 = default)"),  # seconds
+    BSInt16("spawn time", SIDETIP="seconds(0 = default)",
+            UNIT_SCALE=sec_unit_scale),  # seconds
 
     Pad(48),
     QStruct("position", INCLUDE=xyz_float),
@@ -598,7 +599,7 @@ squad = Struct("squad",
 
     Pad(32),
     dyn_senum16("manuever to squad", DYN_NAME_PATH="..[DYN_I].name"),
-    float_rad("squad delay time"),  # seconds
+    float_sec("squad delay time"),  # seconds
     BBool32("attacking", *group_indices),
     BBool32("attacking search", *group_indices),
     BBool32("attacking guard", *group_indices),

@@ -208,17 +208,27 @@ player_information = Struct("player information",
     dependency('unit', valid_units),
 
     Pad(28),
+    ####################################################
+    #####                   IMPORTANT              #####
+    ##### Because of how halo handles some things, #####
+    ##### the below accelerations unit scales for  #####
+    ##### 60fps must be cut by 2 rather than 4     #####
+    ####################################################
+
     float_wu_sec("walking speed"),  # world units/second
     BFloat("double speed multiplier", SIDETIP="[1.0,+inf]", MIN=1.0),
     float_wu_sec("run forward"),  # world units/second
     float_wu_sec("run backward"),  # world units/second
     float_wu_sec("run sideways"),  # world units/second
-    float_wu_sec_sq("run acceleration"),  # world units/second^2
+    float_wu_sec_sq("run acceleration",
+                    UNIT_SCALE=per_sec_unit_scale),  # world units/second^2
     float_wu_sec("sneak forward"),  # world units/second
     float_wu_sec("sneak backward"),  # world units/second
     float_wu_sec("sneak sideways"),  # world units/second
-    float_wu_sec_sq("sneak acceleration"),  # world units/second^2
-    float_wu_sec_sq("airborne acceleration"),  # world units/second^2
+    float_wu_sec_sq("sneak acceleration",
+                    UNIT_SCALE=per_sec_unit_scale),  # world units/second^2
+    float_wu_sec_sq("airborne acceleration",
+                    UNIT_SCALE=per_sec_unit_scale),  # world units/second^2
     BFloat("speed multiplier", SIDETIP="multiplayer only"),  # multiplayer only
 
     Pad(12),
@@ -299,7 +309,7 @@ material = Struct("material",
     BFloat("ground depth scale"),
     BFloat("ground damp fraction scale"),
 
-    # Breakable surfaceparameters
+    # Breakable surface parameters
     Pad(556),
     BFloat("maximum vitality"),
 

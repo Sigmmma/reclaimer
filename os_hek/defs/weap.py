@@ -3,6 +3,11 @@ from ...hek.defs.weap import *
 #import and use the open saucified obje attrs
 from .obje import *
 
+# replace the object_type enum one that uses
+# the correct default value for this object
+obje_attrs = dict(obje_attrs)
+obje_attrs[0] = dict(obje_attrs[0], DEFAULT=2)
+
 weap_body = dict(weap_body)
 weap_body[0] = obje_attrs
 
