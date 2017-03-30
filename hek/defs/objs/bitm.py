@@ -151,10 +151,10 @@ class BitmTag(HekTag):
         #we only need to check the first bitmap
         return self.bitmap_base_address() == 1073751810
         
-    def processed_by_reclaimer(self, new_flag=None):
+    def processed_by_hboc(self, new_flag=None):
         if new_flag is None:
-            return self.data.tagdata.flags.processed_by_reclaimer
-        self.data.tagdata.flags.processed_by_reclaimer = new_flag
+            return self.data.tagdata.flags.processed_by_hboc
+        self.data.tagdata.flags.processed_by_hboc = new_flag
 
     def is_power_of_2_bitmap(self, b_index=0):
         return self.bitmap_flags(b_index).power_of_2_dim
