@@ -81,9 +81,12 @@ actr_body = Struct("tagdata",
         float_zero_to_one("notice vehicle chance"),
 
         Pad(8),
-        float_sec("combat perception time"),  # seconds
-        float_sec("guard perception time"),  # seconds
-        float_sec("non-combat perception time"),  # seconds
+        float_sec("combat perception time",
+                  UNIT_SCALE=sec_unit_scale),  # seconds
+        float_sec("guard perception time",
+                  UNIT_SCALE=sec_unit_scale),  # seconds
+        float_sec("non-combat perception time",
+                  UNIT_SCALE=sec_unit_scale),  # seconds
         ),
 
     Pad(20),
@@ -155,7 +158,8 @@ actr_body = Struct("tagdata",
     Pad(28),
     Struct("defensive",
         from_to_sec("hide behind cover time"),  # seconds
-        float_sec("hide target-not-visible time"),  # seconds
+        float_sec("hide target-not-visible time",
+                  UNIT_SCALE=sec_unit_scale),  # seconds
         float_zero_to_one("hide shield fraction"),
         float_zero_to_one("attack shield fraction"),
         float_zero_to_one("pursue shield fraction"),
@@ -173,19 +177,21 @@ actr_body = Struct("tagdata",
         Pad(2),
         BFloat("attacking crouch threshold"),
         BFloat("defending crouch threshold"),
-        float_sec("mim stand time"),  # seconds
-        float_sec("mim crouch time"),  # seconds
+        float_sec("mim stand time",  UNIT_SCALE=sec_unit_scale),  # seconds
+        float_sec("mim crouch time", UNIT_SCALE=sec_unit_scale),  # seconds
         BFloat("defending hide time modifier"),
         BFloat("attacking evasion threshold"),
         BFloat("defending evasion threshold"),
         float_zero_to_one("evasion seek-cover chance"),
-        float_sec("evasion delay time"),  # seconds
+        float_sec("evasion delay time", UNIT_SCALE=sec_unit_scale),  # seconds
         float_wu("max seek cover distance"),  # world units
         float_zero_to_one("cover damage threshold"),
-        float_sec("stalking discovery time"),  # seconds
+        float_sec("stalking discovery time",
+                  UNIT_SCALE=sec_unit_scale),  # seconds
         float_wu("stalking max distance"),  # world units
         float_rad("stationary facing angle"),  # radians
-        float_sec("change facing stand time"),  # seconds
+        float_sec("change facing stand time",
+                  UNIT_SCALE=sec_unit_scale),  # seconds
         ),
 
     Pad(4),
@@ -199,12 +205,13 @@ actr_body = Struct("tagdata",
 
     Pad(32),
     QStruct("berserk",
-        float_sec("melee attack delay"),  # seconds
+        float_sec("melee attack delay", UNIT_SCALE=sec_unit_scale),  # seconds
         float_wu("melee fudge factor"),  # world units
-        float_sec("melee charge time"),  # seconds
+        float_sec("melee charge time",  UNIT_SCALE=sec_unit_scale),  # seconds
         float_wu("melee leap range lower bound"),  # world units
         float_wu("melee leap range upper bound"),  # world units
-        BFloat("melee leap velocity", SIDETIP="world units/tick"),  # world units/tick
+        BFloat("melee leap velocity", SIDETIP="world units/tick",
+               UNIT_SCALE=per_sec_unit_scale),  # world units/tick
         float_zero_to_one("melee leap chance"),
         float_zero_to_one("melee leap ballistic"),
         float_zero_to_one("berserk damage amount"),

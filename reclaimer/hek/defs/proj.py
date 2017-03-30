@@ -44,12 +44,12 @@ material_response = Struct("material response",
 
     Pad(24),
     # Penetration
-    BFloat("initial friction"),
+    BFloat("initial friction", UNIT_SCALE=per_sec_unit_scale),
     BFloat("maximum distance"),
 
     # Reflection
-    BFloat("parallel refriction"),
-    BFloat("perpendicular friction"),
+    BFloat("parallel refriction",    UNIT_SCALE=per_sec_unit_scale),
+    BFloat("perpendicular friction", UNIT_SCALE=per_sec_unit_scale),
 
     SIZE=160
     )

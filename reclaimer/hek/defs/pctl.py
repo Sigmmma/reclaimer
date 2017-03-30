@@ -8,7 +8,7 @@ particle_creation_physics = (
     )
 
 physics_constant = QStruct("physics constant",
-    BFloat("k"),
+    BFloat("k", UNIT_SCALE=per_sec_unit_scale),
     )
 
 state = Struct("state",
@@ -23,7 +23,8 @@ state = Struct("state",
     QStruct("color multiplier", INCLUDE=argb_float),
     BFloat("radius multiplier"),
     BFloat("minimum particle count"),
-    BFloat("particle creation rate", SIDETIP="particles/sec"),  # particles/sec
+    BFloat("particle creation rate",
+           SIDETIP="particles/sec", UNIT_SCALE=per_sec_unit_scale),
 
     Pad(84),
     BSEnum16("particle creation physics", *particle_creation_physics),
@@ -39,12 +40,13 @@ particle_state = Struct("particle state",
 
     dependency("bitmaps", "bitm"),
     BSInt16("sequence index"),
-
     Pad(6),
-    QStruct("scale", INCLUDE=from_to,
-        UNIT_SCALE="world units/pixel"),  # world units/sec
-    QStruct("animation rate", INCLUDE=from_to,
-        UNIT_SCALE="frames/sec"),  # frames/sec
+    QStruct("scale", INCLUDE=from_to, SIDETIP="world units/pixel"),
+    QStruct("animation rate",
+        BFloat("from", UNIT_SCALE=per_sec_unit_scale, GUI_NAME=''),
+        BFloat("to",   UNIT_SCALE=per_sec_unit_scale),
+        ORIENT='h', SIDETIP="frames/sec"
+        ),
     from_to_rad_sec("rotation rate"),  # radians/sec
     QStruct("color 1", INCLUDE=argb_float),
     QStruct("color 2", INCLUDE=argb_float),

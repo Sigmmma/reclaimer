@@ -4,10 +4,17 @@ from ...hek.defs.bipd import *
 from .obje import *
 from .unit import *
 
-bipd_body = dict(bipd_body)
-bipd_body[0] = obje_attrs
-bipd_body[1] = unit_attrs
+# replace the object_type enum one that uses
+# the correct default value for this object
+obje_attrs = dict(obje_attrs)
+obje_attrs[0] = dict(obje_attrs[0], DEFAULT=0)
 
+bipd_body = Struct("tagdata",
+    obje_attrs,
+    unit_attrs,
+    bipd_attrs,
+    SIZE=1268,
+    )
 
 def get():
     return bipd_def

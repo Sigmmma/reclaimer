@@ -77,7 +77,7 @@ yelo_body = Struct("tagdata",
 
     Pad(20),
     reflexive("yelo scripting", yelo_scripting, 1),
-    #reflexive("unknown", void_desc),
+    Pad(12),#reflexive("unknown", void_desc),
 
     SIZE=312
     )

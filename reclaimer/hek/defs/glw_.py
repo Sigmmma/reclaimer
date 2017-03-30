@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 velocity_properties = Struct("velocity properties",
     BSEnum16("attachment", *function_outputs),
     Pad(2),
-    BFloat("velocity"),
+    BFloat("velocity", UNIT_SCALE=per_sec_unit_scale),
     BFloat("low multiplier"),
     BFloat("high multiplier")
     )
@@ -58,19 +58,20 @@ glw__body = Struct("tagdata",
     Struct("particle color",
         BSEnum16("attachment", *function_outputs),
         Pad(2),
-        QStruct("color bound 0", INCLUDE=argb_float),
-        QStruct("color bound 1", INCLUDE=argb_float),
-        QStruct("scale color 0", INCLUDE=argb_float),
-        QStruct("scale color 1", INCLUDE=argb_float)
+        QStruct("lower bound", INCLUDE=argb_float),
+        QStruct("upper bound", INCLUDE=argb_float),
+        QStruct("lower scale", INCLUDE=argb_float),
+        QStruct("upper scale", INCLUDE=argb_float)
         ),
 
     BFloat("color rate of change"),
     BFloat("fading percentage of glow"),
-    BFloat("particle generation frequency", SIDETIP="Hz"),  # Hz
-    BFloat("lifetime of trailing particles", SIDETIP="seconds"),
-    BFloat("velocity of trailing particles", SIDETIP="world units/sec"),
-    BFloat("trailing particle min time"),
-    BFloat("trailing particle max time"),
+    BFloat("particle generation frequency",
+           SIDETIP="Hz", UNIT_SCALE=per_sec_unit_scale),
+    float_sec("lifetime of trailing particles"),
+    float_wu_sec("velocity of trailing particles"),
+    float_sec("trailing particle min time"),
+    float_sec("trailing particle max time"),
 
     Pad(52),
     dependency("texture",  "bitm"),

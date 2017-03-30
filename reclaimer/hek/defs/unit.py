@@ -54,15 +54,14 @@ seat = Struct('seat',
     QStruct("acceleration scale", INCLUDE=ijk_float),
 
     Pad(12),
-    float_deg_sec('yaw rate'),  # degrees per second
-    float_deg_sec('pitch rate'),  # degrees per second
+    float_deg_sec('yaw rate',   UNIT_SCALE=per_sec_unit_scale),  # degrees/sec
+    float_deg_sec('pitch rate', UNIT_SCALE=per_sec_unit_scale),  # degrees/sec
     ascii_str32('camera marker name'),
     ascii_str32('camera submerged marker name'),
     float_rad('pitch auto-level'),  # radians
     from_to_rad('pitch range'),  # radians
 
-    reflexive("camera tracks", camera_track, 2,
-              'loose', 'tight'),
+    reflexive("camera tracks", camera_track, 2, 'loose', 'tight'),
     reflexive("new hud interfaces", new_hud_interface, 2,
               'default/solo', 'multiplayer'),
 
@@ -125,12 +124,12 @@ unit_attrs = Struct("unit attrs",
     QStruct("seat acceleration scale", INCLUDE=ijk_float),
     Pad(12),
     float_zero_to_one('soft ping threshold'),  # [0,1]
-    float_sec('soft ping interrupt time'),  # seconds
+    float_sec('soft ping interrupt time', UNIT_SCALE=sec_unit_scale),  # seconds
     float_zero_to_one('hard ping threshold'),  # [0,1]
-    float_sec('hard ping interrupt time'),  # seconds
+    float_sec('hard ping interrupt time', UNIT_SCALE=sec_unit_scale),  # seconds
     float_zero_to_one('hard death threshold'),  # [0,1]
     float_zero_to_one('feign death threshold'),  # [0,1]
-    float_sec('feign death time'),  # seconds
+    float_sec('feign death time', UNIT_SCALE=sec_unit_scale),  # seconds
     float_wu('distance of evade aim'),  # world units
     float_wu('distance of dive aim'),  # world units
 
@@ -142,12 +141,16 @@ unit_attrs = Struct("unit attrs",
     QStruct("spawned actor count",
         BSInt16("from", GUI_NAME=""), BSInt16("to"), ORIENT='h',
         ),
-    BFloat('spawned velocity'),
-    float_rad_sec('aiming velocity maximum'),  # radians/second
-    float_rad_sec_sq('aiming acceleration maximum'),  # radians/second^2
+    float_wu_sec('spawned velocity'),  
+    float_rad_sec('aiming velocity maximum',
+                  UNIT_SCALE=irad_per_sec_unit_scale),  # radians/sec
+    float_rad_sec_sq('aiming acceleration maximum',
+                     UNIT_SCALE=irad_per_sec_sq_unit_scale),  # radians/sec^2
     float_zero_to_one('casual aiming modifier'),
-    float_rad_sec('looking velocity maximum'),  # radians/second
-    float_rad_sec_sq('looking acceleration maximum'),  # radians/second^2
+    float_rad_sec('looking velocity maximum',
+                  UNIT_SCALE=irad_per_sec_unit_scale),  # radians/sec
+    float_rad_sec_sq('looking acceleration maximum',
+                     UNIT_SCALE=irad_per_sec_sq_unit_scale),  # radians/sec^2
 
     Pad(8),
     BFloat('ai vehicle radius'),
@@ -158,8 +161,8 @@ unit_attrs = Struct("unit attrs",
         "small",
         "large",
         ),
-
     Pad(2),
+
     Pad(12),  # open sauce unit extension padding
     reflexive("new hud interfaces", new_hud_interface, 2,
         'default/solo', 'multiplayer'),

@@ -37,8 +37,8 @@ boolean = Struct("boolean",
     animation_function,
     animation_flags1,
     Pad(1),
-    BFloat("animation duration"),
-    BFloat("animation rate"),
+    float_sec("animation duration"),
+    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
@@ -57,8 +57,8 @@ integer = Struct("integer",
     animation_function,
     animation_flags1,
     Pad(1),
-    BFloat("animation duration"),
-    BFloat("animation rate"),
+    float_sec("animation duration"),
+    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
@@ -78,8 +78,8 @@ float_1d = Struct("float 1d",
     animation_function,
     animation_flags1,
     Pad(1),
-    BFloat("animation duration"),
-    BFloat("animation rate"),
+    float_sec("animation duration"),
+    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
@@ -99,8 +99,8 @@ float_2d = Struct("float 2d",
     animation_function,
     animation_flags2,
     Pad(1),
-    BFloat("animation duration"),
-    BFloat("animation rate"),
+    float_sec("animation duration"),
+    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
@@ -120,8 +120,8 @@ float_3d = Struct("float 3d",
     animation_function,
     animation_flags2,
     Pad(1),
-    BFloat("animation duration"),
-    BFloat("animation rate"),
+    float_sec("animation duration"),
+    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
@@ -139,8 +139,8 @@ float_4d = Struct("float 4d",
     animation_function,
     animation_flags2,
     Pad(1),
-    BFloat("animation duration"),
-    BFloat("animation rate"),
+    float_sec("animation duration"),
+    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
@@ -165,8 +165,8 @@ color = Struct("color",
         "ignore alpha",
         ),
     Pad(1),
-    BFloat("animation duration"),
-    BFloat("animation rate"),
+    float_sec("animation duration"),
+    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
@@ -176,22 +176,14 @@ shpg_attrs = Struct("shpg attrs",
 
     # whatever this is, each is 116 bytes
     Pad(12),#reflexive("unknown", void_desc),
-    reflexive("bitmaps", bitmap, 16,
-        DYN_NAME_PATH='.value_name'),
-    reflexive("booleans", boolean, 16,
-        DYN_NAME_PATH='.value_name'),
-    reflexive("integers", integer, 16,
-        DYN_NAME_PATH='.value_name'),
-    reflexive("float 1d", float_1d, 16,
-        DYN_NAME_PATH='.value_name'),
-    reflexive("float 2d", float_2d, 16,
-        DYN_NAME_PATH='.value_name'),
-    reflexive("float 3d", float_3d, 16,
-        DYN_NAME_PATH='.value_name'),
-    reflexive("float 4d", float_4d, 16,
-        DYN_NAME_PATH='.value_name'),
-    reflexive("colors", color, 16,
-        DYN_NAME_PATH='.value_name'),
+    reflexive("bitmaps", bitmap, 16,    DYN_NAME_PATH='.value_name'),
+    reflexive("booleans", boolean, 16,  DYN_NAME_PATH='.value_name'),
+    reflexive("integers", integer, 16,  DYN_NAME_PATH='.value_name'),
+    reflexive("float 1d", float_1d, 16, DYN_NAME_PATH='.value_name'),
+    reflexive("float 2d", float_2d, 16, DYN_NAME_PATH='.value_name'),
+    reflexive("float 3d", float_3d, 16, DYN_NAME_PATH='.value_name'),
+    reflexive("float 4d", float_4d, 16, DYN_NAME_PATH='.value_name'),
+    reflexive("colors", color, 16,      DYN_NAME_PATH='.value_name'),
     SIZE=164
     )
 

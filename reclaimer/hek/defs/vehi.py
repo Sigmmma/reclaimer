@@ -26,16 +26,22 @@ vehi_attrs = Struct("vehi attrs",
         ),
     BSEnum16('type', *vehicle_types),
 
+    ####################################################
+    #####                   IMPORTANT              #####
+    ##### Because of how halo handles some things, #####
+    ##### the below accelerations unit scales for  #####
+    ##### 60fps must be cut by 2 rather than 4     #####
+    ####################################################
     Pad(2),
-    BFloat("maximum forward speed"),
-    BFloat("maximum reverse speed"),
-    BFloat("speed acceleration"),
-    BFloat("speed deceleration"),
+    float_wu_sec("maximum forward speed"),
+    float_wu_sec("maximum reverse speed"),
+    float_wu_sec_sq("speed acceleration", UNIT_SCALE=per_sec_unit_scale),
+    float_wu_sec_sq("speed deceleration", UNIT_SCALE=per_sec_unit_scale),
     BFloat("maximum left turn"),
     BFloat("maximum right turn", SIDETIP="(should be negative)"),
     float_wu("wheel circumference"),  # world units
-    BFloat("turn rate"),
-    BFloat("blur speed"),
+    BFloat("turn rate",  UNIT_SCALE=per_sec_unit_scale),
+    BFloat("blur speed", UNIT_SCALE=per_sec_unit_scale),
     BSEnum16('A in', *vehicle_inputs),
     BSEnum16('B in', *vehicle_inputs),
     BSEnum16('C in', *vehicle_inputs),
@@ -44,10 +50,10 @@ vehi_attrs = Struct("vehi attrs",
     Pad(12),
     BFloat("maximum left slide"),
     BFloat("maximum right slide"),
-    BFloat("slide acceleration"),
-    BFloat("slide deceleration"),
-    BFloat("minimum flipping angular velocity"),
-    BFloat("maximum flipping angular velocity"),
+    BFloat("slide acceleration", UNIT_SCALE=per_sec_unit_scale),
+    BFloat("slide deceleration", UNIT_SCALE=per_sec_unit_scale),
+    BFloat("minimum flipping angular velocity", UNIT_SCALE=per_sec_unit_scale),
+    BFloat("maximum flipping angular velocity", UNIT_SCALE=per_sec_unit_scale),
 
     Pad(24),
     float_deg("fixed gun yaw"),  # degrees
@@ -59,12 +65,12 @@ vehi_attrs = Struct("vehi attrs",
         BFloat("destination radius"),
         BFloat("avoidance distance"),
         BFloat("pathfinding radius"),
-        BFloat("charge repeat timeout"),
+        float_sec("charge repeat timeout"),
         BFloat("strafing abort range"),
         from_to_rad("oversteering bounds"),  # radians
         float_rad("steering maximum"),  # radians
         BFloat("throttle maximum"),
-        BFloat("move-position time"),
+        float_sec("move-position time"),
         ),
 
     Pad(4),

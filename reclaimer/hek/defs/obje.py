@@ -24,12 +24,12 @@ function = Struct('function',
         'additive',
         'always active',
         ),
-    float_sec('period'),  # seconds
+    float_sec('period', UNIT_SCALE=sec_unit_scale),  # seconds
     BSEnum16('scale period by', *function_inputs_outputs),
     BSEnum16('function', *animation_functions),
     BSEnum16('scale function by', *function_inputs_outputs),
     BSEnum16('wobble function', *animation_functions),
-    float_sec('wobble period'),  # seconds
+    float_sec('wobble period', UNIT_SCALE=sec_unit_scale),  # seconds
     BFloat('wobble magnitude', SIDETIP="%"),  # percent
 
     BFloat('square wave threshold'),
@@ -105,7 +105,7 @@ obje_attrs = Struct('obje attrs',
     float_wu('bounding radius'),
     QStruct('bounding offset', INCLUDE=xyz_float),
     QStruct('origin offset', INCLUDE=xyz_float),
-    float_zero_to_inf('acceleration scale'),
+    float_zero_to_inf('acceleration scale', UNIT_SCALE=per_sec_unit_scale),
 
     Pad(4),
     dependency('model', valid_models),

@@ -33,29 +33,33 @@ actv_body = Struct("tagdata",
             ),
         Pad(2),
         float_zero_to_one("initial crouch chance"),
-        from_to_sec("crouch time"),
-        from_to_sec("run time")
+        from_to_sec("crouch time", UNIT_SCALE=sec_unit_scale),  # seconds
+        from_to_sec("run time",    UNIT_SCALE=sec_unit_scale)   # seconds
         ),
 
     #Ranged combat
     Struct("ranged combat",
         dependency("weapon", "weap"),
         float_wu("maximum firing distance"),
-        BFloat("rate of fire"),
+        BFloat("rate of fire", UNIT_SCALE=per_sec_unit_scale),  # rounds/sec
         float_rad("projectile error"),  # radians
-        from_to_sec("first burst delay time"),  # seconds
-        BFloat("new-target firing pattern time"),
-        BFloat("surprise delay time"),
-        BFloat("surprise fire-wildly time"),
+        from_to_sec("first burst delay time",
+                    UNIT_SCALE=sec_unit_scale),  # seconds
+        BFloat("new-target firing pattern time",
+               UNIT_SCALE=sec_unit_scale),  # seconds
+        BFloat("surprise delay time", UNIT_SCALE=sec_unit_scale),  # seconds
+        BFloat("surprise fire-wildly time",
+               UNIT_SCALE=sec_unit_scale),  # seconds
         float_zero_to_one("death fire-wildly chance"),
-        float_sec("death fire-wildly time"),  # seconds
+        float_sec("death fire-wildly time",
+                  UNIT_SCALE=sec_unit_scale),  # seconds
         from_to_wu("desired combat range"),
         QStruct("custom stand gun offset", INCLUDE=ijk_float),
         QStruct("custom crouch gun offset", INCLUDE=ijk_float),
         float_zero_to_one("target tracking"),
         float_zero_to_one("target leading"),
         BFloat("weapon damage modifier"),
-        BFloat("damage per second")
+        BFloat("damage per second", UNIT_SCALE=per_sec_unit_scale),  # seconds
         ),
 
     #Burst geometry
@@ -64,10 +68,10 @@ actv_body = Struct("tagdata",
         float_rad("burst origin angle"),  # radians
         from_to_sec("burst return length"),
         float_rad("burst return angle"),  # radians
-        from_to_sec("burst duration"),
+        from_to_sec("burst duration", UNIT_SCALE=sec_unit_scale),  # seconds
         from_to_sec("burst separation"),
-        BFloat("burst angular velocity",
-            SIDETIP="degrees/sec", UNIT_SCALE=180/pi),  # radians/second
+        BFloat("burst angular velocity", SIDETIP="degrees/sec",
+               UNIT_SCALE=irad_per_sec_unit_scale), # radians/second
         Pad(4),
         float_zero_to_one("special damage modifier"),
         float_rad("special projectile error")  # radians
@@ -77,19 +81,19 @@ actv_body = Struct("tagdata",
     Struct("firing patterns",
         BFloat("new-target burst duration"),
         BFloat("new-target burst separation"),
-        BFloat("new-target rate of fire"),
+        BFloat("new-target rate of fire", UNIT_SCALE=per_sec_unit_scale),
         BFloat("new-target projectile error"),
 
         Pad(8),
         BFloat("moving burst duration"),
         BFloat("moving burst separation"),
-        BFloat("moving rate of fire"),
+        BFloat("moving rate of fire", UNIT_SCALE=per_sec_unit_scale),
         BFloat("moving projectile error"),
 
         Pad(8),
         BFloat("berserk burst duration"),
         BFloat("berserk burst separation"),
-        BFloat("berserk rate of fire"),
+        BFloat("berserk rate of fire", UNIT_SCALE=per_sec_unit_scale),
         BFloat("berserk projectile error")
         ),
 
@@ -111,7 +115,7 @@ actv_body = Struct("tagdata",
             "strafing",
             ),
         float_zero_to_one("special-fire chance"),
-        float_sec("special-fire delay")
+        float_sec("special-fire delay", UNIT_SCALE=sec_unit_scale)
         ),
 
     #Berserking and melee
@@ -141,12 +145,12 @@ actv_body = Struct("tagdata",
         float_wu("enemy radius"),
 
         Pad(4),
-        float_wu_sec("grenade velocity"),
+        float_wu_sec("grenade velocity", UNIT_SCALE=per_sec_unit_scale),
         from_to_wu("grenade ranges"),
         float_wu("collateral damage radius"),
         float_zero_to_one("grenade chance"),
-        float_sec("grenade check time"),
-        float_sec("encounter grenade timeout")
+        float_sec("grenade check time", UNIT_SCALE=sec_unit_scale),
+        float_sec("encounter grenade timeout", UNIT_SCALE=sec_unit_scale)
         ),
 
     #Items

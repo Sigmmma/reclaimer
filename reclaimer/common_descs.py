@@ -115,12 +115,14 @@ def blam_header(tagid, version=1):
 
 _func_unit_scales = {}  # holds created unit_scales for reuse
 
-def get_unit_scale(val30, val60):
+def get_unit_scale(scale60, val30=1):
     """
     Returns a function to be used in the UNIT_SCALE of a descriptor that
     will change the scale depending on if the 60fps flag is set or not.
     """
-    assert 0 not in (val30, val60), "Neither unit_scale may be 0."
+    assert 0 not in (val30, scale60), ("60fps scale and default 30fps " +
+                                       "value must both be non-zero.")
+    val60 = val30*scale60
 
     key = (val30, val60)
     if key in _func_unit_scales:
@@ -137,14 +139,14 @@ def get_unit_scale(val30, val60):
     return unit_scale
 
 # typical unit_scales for seconds and seconds squared fields
-per_sec_unit_scale    = get_unit_scale(1, 1/2)
-per_sec_sq_unit_scale = get_unit_scale(1, 1/4)
-sec_unit_scale    = get_unit_scale(1, 2)
-sec_sq_unit_scale = get_unit_scale(1, 4)
+per_sec_unit_scale    = get_unit_scale(2)
+per_sec_sq_unit_scale = get_unit_scale(4)
+sec_unit_scale    = get_unit_scale(1/2)
+sec_sq_unit_scale = get_unit_scale(1/4)
 
 irad = 180/pi
-irad_per_sec_unit_scale    = get_unit_scale(irad, irad/2)
-irad_per_sec_sq_unit_scale = get_unit_scale(irad, irad/4)
+irad_per_sec_unit_scale = get_unit_scale(1/2, irad)
+irad_per_sec_sq_unit_scale = get_unit_scale(1/4, irad)
 
 def dyn_senum8(name, *args, **kwargs):
     kwargs.setdefault('DEFAULT', -1)
@@ -172,33 +174,44 @@ def float_neg_one_to_one(name, *args, **kwargs):
     return BFloat(name, *args, MIN=-1.0, MAX=1.0, SIDETIP="[-1,1]", **kwargs)
 
 def float_sec(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="seconds",
-                  UNIT_SCALE=sec_unit_scale, **kwargs)
+    kwargs.setdefault('SIDETIP', "seconds")
+    kwargs.setdefault('UNIT_SCALE', sec_unit_scale)
+    return BFloat(name, *args, **kwargs)
 
 def float_deg(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="degrees", **kwargs)
+    kwargs.setdefault('SIDETIP', "degrees")
+    return BFloat(name, *args, **kwargs)
+
 def float_deg_sec(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="degrees/sec",
-                  UNIT_SCALE=per_sec_unit_scale, **kwargs)
+    kwargs.setdefault('SIDETIP', "degrees/sec")
+    kwargs.setdefault('UNIT_SCALE', per_sec_unit_scale)
+    return BFloat(name, *args, **kwargs)
 
 def float_rad(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="degrees",
                   UNIT_SCALE=irad, **kwargs)
 def float_rad_sec(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="degrees/sec",
-                  UNIT_SCALE=irad_per_sec_unit_scale,  **kwargs)
+    kwargs.setdefault('SIDETIP', "degrees/sec")
+    kwargs.setdefault('UNIT_SCALE', irad_per_sec_unit_scale)
+    return BFloat(name, *args, **kwargs)
 def float_rad_sec_sq(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="degrees/(sec^2)",
-                  UNIT_SCALE=irad_per_sec_sq_unit_scale, **kwargs)
+    # yes, keep this as per_sec and not per_sec_sq.
+    # this is because of how halo uses these values.
+    kwargs.setdefault('SIDETIP', "degrees/(sec^2)")
+    kwargs.setdefault('UNIT_SCALE', irad_per_sec_unit_scale)
+    return BFloat(name, *args, **kwargs)
 
 def float_wu(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="world units", **kwargs)
+    kwargs.setdefault('SIDETIP', "world units")
+    return BFloat(name, *args, **kwargs)
 def float_wu_sec(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="world units/sec",
-                  UNIT_SCALE=per_sec_unit_scale, **kwargs)
+    kwargs.setdefault('SIDETIP', "world units/sec")
+    kwargs.setdefault('UNIT_SCALE', per_sec_unit_scale)
+    return BFloat(name, *args, **kwargs)
 def float_wu_sec_sq(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="world units/(sec^2)",
-                  UNIT_SCALE=per_sec_sq_unit_scale, **kwargs)
+    kwargs.setdefault('SIDETIP', "world units/(sec^2)")
+    kwargs.setdefault('UNIT_SCALE', per_sec_sq_unit_scale)
+    return BFloat(name, *args, **kwargs)
 
 def float_zero_to_inf(name, *args, **kwargs):
     return BFloat(name, *args, SIDETIP="[0,+inf]", **kwargs)
@@ -791,7 +804,10 @@ tag_header = Struct("blam header",
     LUInt32("base address", DEFAULT=0x4D6F7A7A,
         EDITABLE=False, VISIBLE=False),  #random
     LUInt32("header size",  DEFAULT=64, EDITABLE=False, VISIBLE=False),
-    Pad(8),
+    BBool64("flags",
+        "edited with mozz",
+        {GUI_NAME: "60fps", NAME: "fps_60", VALUE: 1<<8},
+        ),
     LUInt16("version", DEFAULT=1, EDITABLE=False),
     LUInt16("unknown", DEFAULT=255, EDITABLE=False, VISIBLE=False),
     LUEnum32("engine id",
@@ -1004,7 +1020,10 @@ tag_header_os = Struct("blam header",
     LUInt32("base address", DEFAULT=0x4D6F7A7A,
         EDITABLE=False, VISIBLE=False),  #random
     LUInt32("header size",  DEFAULT=64, EDITABLE=False, VISIBLE=False),
-    Pad(8),
+    BBool64("flags",
+        "edited with mozz",
+        {GUI_NAME: "60fps", NAME: "fps_60", VALUE: 1<<8},
+        ),
     LUInt16("version", DEFAULT=1, EDITABLE=False),
     LUInt16("unknown", DEFAULT=255, EDITABLE=False, VISIBLE=False),
     LUEnum32("engine id",

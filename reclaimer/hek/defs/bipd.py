@@ -39,19 +39,27 @@ bipd_attrs = Struct("bipd attrs",
     BSEnum16('D in', *biped_inputs),
     dependency('DONT USE', "jpt!"),
 
+    ####################################################
+    #####                   IMPORTANT              #####
+    ##### Because of how halo handles some things, #####
+    ##### the below accelerations unit scales for  #####
+    ##### 60fps must be cut by 2 rather than 4     #####
+    ####################################################
     QStruct("flying",
         float_rad("bank angle"),  # radians
-        float_sec("bank apply time"),
-        float_sec("bank decay time"),
+        float_sec("bank apply time", UNIT_SCALE=sec_unit_scale),  # seconds
+        float_sec("bank decay time", UNIT_SCALE=sec_unit_scale),  # seconds
         BFloat("pitch ratio"),
-        float_wu_sec("max velocity"),  # world units/second
-        float_wu_sec("max sidestep velocity"),  # world units/second
-        float_wu_sec_sq("acceleration"),  # world units/second^2
-        float_wu_sec_sq("deceleration"),  # world units/second^2
-        BFloat("angular velocity maximum",  # radians/second
-            SIDETIP="degrees/sec", UNIT_SCALE=180/pi),
-        BFloat("angular acceleration maximum",  # radians/second^2
-            SIDETIP="degrees/(sec^2)", UNIT_SCALE=180/pi),
+        float_wu_sec("max velocity",
+                     UNIT_SCALE=per_sec_unit_scale),  # world units/second
+        float_wu_sec("max sidestep velocity",
+                     UNIT_SCALE=per_sec_unit_scale),  # world units/second
+        float_wu_sec_sq("acceleration",
+                        UNIT_SCALE=per_sec_unit_scale),  # world units/second^2
+        float_wu_sec_sq("deceleration",
+                        UNIT_SCALE=per_sec_unit_scale),  # world units/second^2
+        float_rad_sec("angular velocity maximum"),  # radians/second
+        float_rad_sec_sq("angular acceleration maximum"),  # radians/second^2
         float_zero_to_one("crouch velocity modifier"),
         ),
 
@@ -71,21 +79,25 @@ bipd_attrs = Struct("bipd attrs",
 
     Pad(24),
     QStruct("jumping and landing",
-        float_wu_sec("jump velocity"),
+        float_wu_sec("jump velocity", UNIT_SCALE=per_sec_unit_scale),
         Pad(28),
-        float_sec("maximum soft landing time"),
-        float_sec("maximum hard landing time"),
-        float_wu_sec("minimum soft landing velocity"),  # world units/second
-        float_wu_sec("minimum hard landing velocity"),  # world units/second
-        float_wu_sec("maximum hard landing velocity"),  # world units/second
-        float_wu_sec("death hard landing velocity"),  # world units/second
+        float_sec("maximum soft landing time", UNIT_SCALE=sec_unit_scale),
+        float_sec("maximum hard landing time", UNIT_SCALE=sec_unit_scale),
+        float_wu_sec("minimum soft landing velocity",
+                     UNIT_SCALE=per_sec_unit_scale),  # world units/second
+        float_wu_sec("minimum hard landing velocity",
+                     UNIT_SCALE=per_sec_unit_scale),  # world units/second
+        float_wu_sec("maximum hard landing velocity",
+                     UNIT_SCALE=per_sec_unit_scale),  # world units/second
+        float_wu_sec("death hard landing velocity",
+                     UNIT_SCALE=per_sec_unit_scale),  # world units/second
         ),
 
     Pad(20),
     QStruct("camera, collision, and autoaim",
         float_wu("standing camera height"),
         float_wu("crouching camera height"),
-        float_sec("crouch transition time"),
+        float_sec("crouch transition time", UNIT_SCALE=sec_unit_scale),
 
         Pad(24),
         float_wu("standing collision height"),
@@ -107,6 +119,7 @@ bipd_attrs = Struct("bipd attrs",
         FlFloat("unknown7", DEFAULT=0.0),
         FlSInt16("unknown8", DEFAULT=-1),
         FlSInt16("unknown9", DEFAULT=-1),
+        COMMENT="\nI think these are physics values, but I havent experimented.\n"
         ),
 
     reflexive("contact points", contact_point, 2,
