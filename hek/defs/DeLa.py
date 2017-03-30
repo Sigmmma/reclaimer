@@ -240,14 +240,14 @@ DeLa_body = Struct("tagdata",
         "dont push history",
         "force handle mouse"
         ),
-    BSInt32("milliseconds to auto close"),
-    BSInt32("milliseconds to auto close fade time"),
+    BSInt32("auto close time", SIDETIP="milliseconds"),
+    BSInt32("auto close fade time", SIDETIP="milliseconds"),
     dependency("background bitmap", "bitm"),
 
     reflexive("game data inputs", game_data_input, 64),
     reflexive("event handlers", event_handler, 32),
     reflexive("search and replace references",
-        s_and_r_reference, 32, DYN_NAME_PATH='.search_string'),
+              s_and_r_reference, 32, DYN_NAME_PATH='.search_string'),
 
     Pad(128),
     Struct("text box",

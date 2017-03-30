@@ -12,4 +12,4 @@ __all__ = (
 
     # open sauce
     "efpc", "efpg", "efpp", "eqhi", "gelc", "gelo", "magy", "shpg", "shpp",
-    "sidy", "sily", "sppg", "tag+", "unic", "yelo")
+    "sidy", "sily", "sppg", "tag_", "unic", "yelo")

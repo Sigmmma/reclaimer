@@ -11,7 +11,8 @@ item_permutation = Struct("permutation",
 itmc_body = Struct("tagdata",
     reflexive("item permutations", item_permutation, 32767,
         DYN_NAME_PATH='.item.filepath'),
-    BSInt16("spawn time", SIDETIP="seconds(0 = default)"),
+    BSInt16("spawn time", SIDETIP="seconds(0 = default)",
+            UNIT_SCALE=per_sec_unit_scale),
     SIZE=92,
     )
 

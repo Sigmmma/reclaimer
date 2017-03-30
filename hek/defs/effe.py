@@ -106,7 +106,7 @@ particle = Struct("particle",
 
     from_to_wu_sec("velocity"),
     float_rad("velocity cone angle"),  # radians
-    from_to_rad("angular velocity"),  # radians
+    from_to_rad_sec("angular velocity"),  # radians
     Pad(8),
 
     from_to_wu("radius"),

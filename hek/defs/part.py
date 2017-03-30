@@ -23,8 +23,8 @@ part_body = Struct("tagdata",
 
     Pad(4),
     from_to_sec("lifespan"),
-    BFloat("fade in time"),
-    BFloat("fade out time"),
+    float_sec("fade in time"),
+    float_sec("fade out time"),
 
     dependency("collision effect", valid_event_effects),
     dependency("death effect", valid_event_effects),
@@ -32,9 +32,12 @@ part_body = Struct("tagdata",
 
     Pad(8),
     QStruct("radius animation", INCLUDE=from_to),
-
     Pad(4),
-    QStruct("animation rate", INCLUDE=from_to, SIDETIP="frames/sec"),
+    QStruct("animation rate",
+        BFloat("from", UNIT_SCALE=per_sec_unit_scale, GUI_NAME=''),
+        BFloat("to",   UNIT_SCALE=per_sec_unit_scale),
+        ORIENT='h', SIDETIP='frames/sec'
+        ),
     BFloat("contact deterioration"),
     BFloat("fade start size", SIDETIP="pixels"),
     BFloat("fade end size", SIDETIP="pixels"),

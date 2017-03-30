@@ -4,6 +4,11 @@ from ...os_v3_hek.defs.bipd import *
 from .obje import *
 from .unit import *
 
+# replace the object_type enum one that uses
+# the correct default value for this object
+obje_attrs = dict(obje_attrs)
+obje_attrs[0] = dict(obje_attrs[0], DEFAULT=0)
+
 bipd_body = Struct("tagdata",
     obje_attrs,
     unit_attrs,

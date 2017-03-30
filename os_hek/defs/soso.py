@@ -41,9 +41,32 @@ os_soso_ext = Struct("shader model extension",
     SIZE=192,
     )
 
-# replace the padding with an open sauce shader model extension reflexive
-soso_attrs = dict(soso_attrs)
-soso_attrs[7] = reflexive("os shader model ext", os_soso_ext, 1)
+soso_attrs = Struct("soso attrs",
+    #Model Shader Properties
+    model_shader,
+
+    Pad(16),
+    #Color-Change
+    BSEnum16("color change source", *function_names),
+
+    Pad(30),
+    #Self-Illumination
+    self_illumination,
+
+    Pad(12),
+    #Diffuse, Multipurpose, and Detail Maps
+    maps,
+
+    reflexive("os shader model ext", os_soso_ext, 1),
+
+    #Texture Scrolling Animation
+    texture_scrolling,
+
+    Pad(8),
+    #Reflection Properties
+    reflection_properties,
+    SIZE=400
+    )
 
 soso_body = Struct("tagdata",
     shdr_attrs,

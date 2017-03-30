@@ -45,8 +45,9 @@ cont_body = Struct("tagdata",
         ),
 
     Struct("point creation",
-        BFloat("generation rate", SIDETIP="points/sec"),
-        QStruct("veloctiy", INCLUDE=from_to, SIDETIP="world units/sec"),
+        BFloat("generation rate",
+               SIDETIP="points/sec", UNIT_SCALE=per_sec_unit_scale),
+        from_to_wu_sec("velocity"),
         float_rad("velocity cone angle"),
         BFloat("inherited velocity fraction"),
         ),
@@ -63,9 +64,11 @@ cont_body = Struct("tagdata",
         Pad(2),
         BFloat("texture repeats u"),
         BFloat("texture repeats v"),
-        BFloat("texture animation u", SIDETIP="repeats/sec"),  # repeats per second
-        BFloat("texture animation v", SIDETIP="repeats/sec"),  # repeats per second
-        BFloat("animation rate", SIDETIP="frames/sec"),  # frames per second
+
+        # according to michelle, these dont need to be given a 60fps unit scale
+        BFloat("texture animation u", SIDETIP="repeats/sec"),
+        BFloat("texture animation v", SIDETIP="repeats/sec"),
+        BFloat("animation rate", SIDETIP="frames/sec"),
         dependency("bitmap", "bitm"),
         BSInt16("first sequence index"),
         BSInt16("sequence count"),

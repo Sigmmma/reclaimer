@@ -175,7 +175,7 @@ seat_damage = Struct("seat damage",
             "custom grenade 1",
             "custom grenade 2",
             ),
-        float_zero_to_inf("detonation time"),
+        float_zero_to_inf("detonation time", UNIT_SCALE=sec_unit_scale),
         ascii_str32("attach marker"),
         ),
 

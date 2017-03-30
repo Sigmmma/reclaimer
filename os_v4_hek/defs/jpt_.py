@@ -1,1 +1,1 @@
-from ...hek.defs.jpt_ import *
+from ...os_v3_hek.defs.jpt_ import *
