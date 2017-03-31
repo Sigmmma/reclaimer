@@ -18,7 +18,7 @@ def object_reference(name, *args, **kwargs):
             ),
         BSInt16('desired permutation'),
         QStruct("position", INCLUDE=xyz_float),
-        QStruct("rotation", INCLUDE=ypr_float),
+        ypr_float_rad("rotation"),
         *args,
         **kwargs
         )
@@ -490,7 +490,7 @@ cutscene_flag = Struct("cutscene flag",
     Pad(4),
     ascii_str32("name"),
     QStruct("position", INCLUDE=xyz_float),
-    QStruct("facing", INCLUDE=yp_float),  # radians
+    yp_float_rad("facing"),  # radians
     SIZE=92
     )
 
@@ -499,8 +499,8 @@ cutscene_camera_point = Struct("cutscene camera point",
     ascii_str32("name"),
     Pad(4),
     QStruct("position", INCLUDE=xyz_float),
-    QStruct("orientation", INCLUDE=ypr_float),  # radians
-    BFloat("field of view"),  # radians
+    ypr_float_rad("orientation"),  # radians
+    float_rad("field of view"),  # radians
     SIZE=104
     )
 
