@@ -92,7 +92,7 @@ vehicle_spawn = LBitStruct("vehicle spawn",
     SIZE=4,
     )
 
-player_setting = LBool32("player setting",
+player_settings = LBool32("player settings",
     'radar enabled',
     'friend on hud',
     'infinite grenades',
@@ -165,7 +165,7 @@ ctf_settings = Struct('ctf settings',
         ('flag must reset', 1<<16),
         ('flag must be at home', 1<<24),
         ),
-    LUInt32('single_flag_time'),# ticks
+    LUInt32('single_flag_time', SIDETIP="seconds", UNIT_SCALE=1/30),
     SIZE=28,
     )
 
@@ -211,7 +211,7 @@ header_comment = \
   characters, whereas a PC gametype name is capped at 23.
 
   Respawn times of 0 are "instant", which is still 3 seconds.
-  Respawn times cap at 300 seconds(5 minutes or 9000 ticks)
+  Respawn times cap at 300 seconds
 
   Health can be anywhere between 50% and 400%
 
@@ -229,13 +229,13 @@ xbox_gametype_header = Struct("gametype header",
     LStrUtf16('name', SIZE=24),
     game_type,
     LUEnum32('teamplay', INCLUDE=enum_off_on),
-    player_setting,
+    player_settings,
     objective_indicator,
     LUEnum32('odd man out', INCLUDE=enum_off_on),
 
-    LUInt32('respawn time growth', SIDETIP="ticks [30 == 1 second]"), #ticks
-    LUInt32('respawn time', SIDETIP="ticks [30 == 1 second]", MAX=300*30),
-    LUInt32('respawn suicide penalty', SIDETIP="ticks [30 == 1 second]"), #ticks
+    LUInt32('respawn time growth', SIDETIP="seconds", UNIT_SCALE=1/30),
+    LUInt32('respawn time', MAX=300*30, SIDETIP="seconds", UNIT_SCALE=1/30),
+    LUInt32('respawn suicide penalty',  SIDETIP="seconds", UNIT_SCALE=1/30),
     LUInt32('lives', SIDETIP='[0 == unlimited]'),
     LFloat('health',
         DEFAULT=0.5, MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
@@ -250,13 +250,13 @@ pc_gametype_header = Struct("gametype header",
     LStrUtf16('name', SIZE=48),
     game_type,
     LUEnum32('teamplay', INCLUDE=enum_off_on),
-    player_setting,
+    player_settings,
     objective_indicator,
     LUEnum32('odd man out', INCLUDE=enum_off_on),
 
-    LUInt32('respawn time growth', SIDETIP="ticks [30 == 1 second]"), #ticks
-    LUInt32('respawn time', SIDETIP="ticks [30 == 1 second]", MAX=300*30),
-    LUInt32('respawn suicide penalty', SIDETIP="ticks [30 == 1 second]"), #ticks
+    LUInt32('respawn time growth', SIDETIP="seconds", UNIT_SCALE=1/30),
+    LUInt32('respawn time', MAX=300*30, SIDETIP="seconds", UNIT_SCALE=1/30),
+    LUInt32('respawn suicide penalty',  SIDETIP="seconds", UNIT_SCALE=1/30),
     LUInt32('lives', SIDETIP='[0 == unlimited]'),
     LFloat('health',
         DEFAULT=0.5, MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
@@ -266,11 +266,11 @@ pc_gametype_header = Struct("gametype header",
     LBitStruct('red vehicles',  INCLUDE=vehicle_spawn),
     LBitStruct('blue vehicles', INCLUDE=vehicle_spawn),
 
-    LUInt32('vehicle respawn time', SIDETIP="ticks [30 == 1 second]"), #ticks
+    LUInt32('vehicle respawn time', SIDETIP="seconds", UNIT_SCALE=1/30),
     friendly_fire,
-    LUInt32('respawn betrayal penalty', SIDETIP="ticks [30 == 1 second]"), #ticks
+    LUInt32('respawn betrayal penalty', SIDETIP="seconds", UNIT_SCALE=1/30),
     LUEnum32('auto team balance', INCLUDE=enum_off_on),
-    LUInt32('time limit', SIDETIP="ticks [30 == 1 second]"), #ticks
+    LUInt32('time limit', SIDETIP="seconds", UNIT_SCALE=1/30),
     SIZE=124, COMMENT=header_comment
     )
 
