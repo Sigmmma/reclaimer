@@ -164,11 +164,11 @@ class HaloHandler(Handler):
         filepath = self.tagsdir + node.filepath
         
         try:
-            ext = node.tag_class.enum_name
-            if (self.treat_mode_as_mod2 and (ext == 'model' and
-                not exists(filepath + '.model'))):
+            ext = '.' + node.tag_class.enum_name
+            if (self.treat_mode_as_mod2 and (
+                ext == '.model' and not exists(filepath + ext))):
                 return not exists(filepath + '.gbxmodel')
-            filepath += '.' + ext
+            filepath += ext
         except Exception:
             pass
         
@@ -180,7 +180,11 @@ class HaloHandler(Handler):
         filepath = self.tagsdir + node.filepath
         
         try:
-            filepath += '.' + node.tag_class.enum_name
+            ext = '.' + node.tag_class.enum_name
+            if (self.treat_mode_as_mod2 and (
+                ext == '.model' and not exists(filepath + ext))):
+                return exists(filepath + '.gbxmodel')
+            filepath += ext
         except Exception:
             pass
         
