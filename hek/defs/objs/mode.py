@@ -6,6 +6,8 @@ from .matrices import quaternion_to_matrix, Matrix
 class ModeTag(HekTag):
 
     def calc_internal_data(self):
+        HekTag.calc_internal_data()
+
         # THIS SHIT DONT WORK YET
         return
         nodes = self.data.tagdata.nodes.STEPTREE
