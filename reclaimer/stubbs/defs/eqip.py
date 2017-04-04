@@ -2,6 +2,11 @@ from ...hek.defs.eqip import *
 from .obje import *
 from .objs.tag import StubbsTag
 
+# replace the object_type enum one that uses
+# the correct default value for this object
+obje_attrs = dict(obje_attrs)
+obje_attrs[0] = dict(obje_attrs[0], DEFAULT=3)
+
 eqip_attrs = dict(eqip_attrs)
 eqip_attrs[1] = BSEnum16('grenade type', *grenade_types)
 
