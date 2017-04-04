@@ -132,6 +132,7 @@ class PhysTag(HekTag):
         data.zz_moment = reg_xx_yy[2]
 
     def calc_internal_data(self):
+        HekTag.calc_internal_data()
         self.calc_masses()
         self.calc_densities()
         self.calc_intertia_matricies()

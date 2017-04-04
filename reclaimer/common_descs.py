@@ -798,18 +798,18 @@ detail_mask = (
 # Descriptors
 tag_header = Struct("blam header",
     Pad(36),
-    BUEnum32("tag_class",
+    BUEnum32("tag class",
         GUI_NAME="tag class", INCLUDE=valid_tags, EDITABLE=False
         ),
-    LUInt32("base address", DEFAULT=0x4D6F7A7A,
-        EDITABLE=False, VISIBLE=False),  #random
-    LUInt32("header size",  DEFAULT=64, EDITABLE=False, VISIBLE=False),
+    LUInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
+    LUInt32("header size",  DEFAULT=64, EDITABLE=False),
     BBool64("flags",
         "edited with mozz",
         {GUI_NAME: "60fps", NAME: "fps_60", VALUE: 1<<8},
+        EDITABLE=False
         ),
     LUInt16("version", DEFAULT=1, EDITABLE=False),
-    LUInt16("unknown", DEFAULT=255, EDITABLE=False, VISIBLE=False),
+    LUInt16("unknown", DEFAULT=255, EDITABLE=False),
     LUEnum32("engine id",
         ("halo 1", 'blam'),
         DEFAULT='blam', EDITABLE=False
@@ -1017,15 +1017,15 @@ tag_header_os = Struct("blam header",
     BUEnum32("tag_class",
         GUI_NAME="tag class", INCLUDE=valid_tags_os, EDITABLE=False
         ),
-    LUInt32("base address", DEFAULT=0x4D6F7A7A,
-        EDITABLE=False, VISIBLE=False),  #random
-    LUInt32("header size",  DEFAULT=64, EDITABLE=False, VISIBLE=False),
+    LUInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False), 
+    LUInt32("header size",  DEFAULT=64, EDITABLE=False),
     BBool64("flags",
         "edited with mozz",
         {GUI_NAME: "60fps", NAME: "fps_60", VALUE: 1<<8},
+        EDITABLE=False
         ),
     LUInt16("version", DEFAULT=1, EDITABLE=False),
-    LUInt16("unknown", DEFAULT=255, EDITABLE=False, VISIBLE=False),
+    LUInt16("unknown", DEFAULT=255, EDITABLE=False),
     LUEnum32("engine id",
         ("halo 1", 'blam'),
         DEFAULT='blam', EDITABLE=False
