@@ -1,3 +1,9 @@
+'''
+Names for the "physics" struct in the biped tag are courtesy of Sparky.
+The source files where the information was taken from are here:
+
+https://github.com/LiquidLightning/infernal/blob/master/infernal/inf_bipd.h
+'''
 from .objs.tag import HekTag
 from .obje import *
 from .unit import *
@@ -109,22 +115,27 @@ bipd_attrs = Struct("bipd attrs",
         ),
 
     Pad(108),
-    QStruct("unknown struct",
-        FlFloat("unknown1", DEFAULT=1.0),
-        FlFloat("unknown2", DEFAULT=1.0),
-        FlFloat("unknown3", DEFAULT=1.0),
-        FlFloat("unknown4", DEFAULT=-0.0),
-        FlFloat("unknown5", DEFAULT=-0.0),
-        FlFloat("unknown6", DEFAULT=0.0),
-        FlFloat("unknown7", DEFAULT=0.0),
-        FlSInt16("unknown8", DEFAULT=-1),
-        FlSInt16("unknown9", DEFAULT=-1),
+    QStruct("physics",
+        FlFloat("ground camera contact multiplier",  DEFAULT=1.0),
+        FlFloat("crouch camera velocity multiplier", DEFAULT=1.0),
+        FlFloat("ground surface height", DEFAULT=1.0,
+                TOOLTIP=("negative is walking on walls.\n >0.707107 is " +
+                         "floating with contact points off the ground")),
+        FlFloat("ground accel modifier inverse", DEFAULT=-0.0),
+        FlFloat("unknown", DEFAULT=-0.0, TOOLTIP="autoaim related?"),
+        FlFloat("ground accel modifier fp", DEFAULT=0.0),
+        FlFloat("ground accel modifier 3p", DEFAULT=0.0,
+                TOOLTIP="does the same thing as the fp accel modifier?"),
+        FlSInt32("camera mass", DEFAULT=-1, TOOLTIP="unused?"),
         COMMENT=(
-            "\nI think these are physics values, but I havent experimented.\n" +
-            "If they are, they probably include a normal k0 and k1 like\n" +
-            "you'd find oin a physics tag, which determine the maximum\n" +
-            "angles the biped can go up a slope before sliding.\n"
-            )
+            "\nNames for these values are courtesy of Sparky.\n" +
+            "I'm not sure you can really do anything with these values though,\n" +
+            "since I believe they are recalculated when compiled into a map.\n" +
+            "I believe this because tags that shipped with the HEK have these\n" +
+            "values in big endian, while guerilla writes them in little endian.\n" +
+            "This endianness difference causes tags that shipped with the HEK\n" +
+            "to have absurd values, yet they work fine if compiled into a map.\n"
+            ),
         ),
 
     reflexive("contact points", contact_point, 2,

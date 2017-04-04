@@ -245,7 +245,7 @@ def get():
     return actr_def
 
 actr_def = TagDef("actr",
-    blam_header('actr'),
+    blam_header('actr', 2),
     actr_body,
 
     ext=".actor", endian=">", tag_cls=HekTag
