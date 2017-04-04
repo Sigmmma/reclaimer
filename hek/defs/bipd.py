@@ -126,7 +126,7 @@ bipd_attrs = Struct("bipd attrs",
         FlFloat("ground accel modifier inverse", DEFAULT=-0.3420201241970062),#DEFAULT=-0.0),
         FlFloat("unknown", TOOLTIP="autoaim related?", DEFAULT=-0.7071067690849304),#DEFAULT=-0.0),
         FlFloat("ground accel modifier fp", DEFAULT=0.3420201241970062),#DEFAULT=0.0),
-        FlFloat("ground accel modifier 3p", DEFAULT=0.7071067690849304),#DEFAULT=0.0,
+        FlFloat("ground accel modifier 3p", DEFAULT=0.7071067690849304, #DEFAULT=0.0,
                 TOOLTIP="does the same thing as the fp accel modifier?"),
         FlSInt32("camera mass", DEFAULT=-1, TOOLTIP="unused?"),
         COMMENT=(
