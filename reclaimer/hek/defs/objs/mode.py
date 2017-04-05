@@ -6,7 +6,7 @@ from .matrices import quaternion_to_matrix, Matrix
 class ModeTag(HekTag):
 
     def calc_internal_data(self):
-        HekTag.calc_internal_data()
+        HekTag.calc_internal_data(self)
 
         # THIS SHIT DONT WORK YET
         return

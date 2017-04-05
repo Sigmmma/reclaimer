@@ -1,3 +1,4 @@
+from math import log
 from .tag import *
 from .matrices import Matrix
 
@@ -50,19 +51,16 @@ class PhysTag(HekTag):
                 mp.density = 0
             return
 
-        den_min = max(float('1e-30'), min(densities))  # prevent division by 0
-        mass_min = max(float('1e-30'), min(masses))    # prevent division by 0
         total_rel_mass = sum(mp.relative_mass for mp in mass_points)
         average_rel_mass = total_rel_mass / len(mass_points)
-
         #                    total_density      total_density
         # density_scale = ------------------ = ----------------
         #                  avg(mass/density)    avg( m^3   kg )
         #                                          ( --- * -- )
         #                                          ( kg    1  )
-        den_scale = sum(mp.relative_mass / mp.relative_density
-                        for mp in mass_points if mp.relative_density) * (
-                            total_density / len(mass_points))
+        den_scale = total_density / len(mass_points)
+        den_scale *= sum(mp.relative_mass / mp.relative_density
+                         for mp in mass_points if mp.relative_density)
         mass_scale = 1 / average_rel_mass
 
         for mp in mass_points:
@@ -132,7 +130,7 @@ class PhysTag(HekTag):
         data.zz_moment = reg_xx_yy[2]
 
     def calc_internal_data(self):
-        HekTag.calc_internal_data()
+        HekTag.calc_internal_data(self)
         self.calc_masses()
         self.calc_densities()
         self.calc_intertia_matricies()
