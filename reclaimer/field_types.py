@@ -52,7 +52,7 @@ FlFloat = FieldType(base=Float.little, name="FlFloat", enc=Float.little.enc)
 that raw data refs, reflexives, and tag references exist.'''
 RawdataRef  = FieldType(base=QStruct, name="RawdataRef")
 Reflexive   = FieldType(base=QStruct, name="Reflexive")
-TagIndexRef = FieldType(base=Struct, name="TagIndexRef")
+TagIndexRef = FieldType(base=Struct,  name="TagIndexRef")
 
 #The tag_index is the array that stores all the tag string paths and
 #meta datas in a map file. This FieldType exists so the Map_Magic
