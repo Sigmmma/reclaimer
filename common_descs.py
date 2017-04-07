@@ -156,12 +156,12 @@ def dyn_senum8(name, *args, **kwargs):
 def dyn_senum16(name, *args, **kwargs):
     kwargs.setdefault('DEFAULT', -1)
     kwargs.setdefault('WIDGET', DynamicEnumFrame)
-    return BSInt16(name, *args, **kwargs)
+    return SInt16(name, *args, **kwargs)
 
 def dyn_senum32(name, *args, **kwargs):
     kwargs.setdefault('DEFAULT', -1)
     kwargs.setdefault('WIDGET', DynamicEnumFrame)
-    return BSInt32(name, *args, **kwargs)
+    return SInt32(name, *args, **kwargs)
 
 def ascii_str32(name):
     # encoding used is latin1 to take care of cases
@@ -169,140 +169,140 @@ def ascii_str32(name):
     return StrLatin1(str(name), SIZE=32)
 
 def float_zero_to_one(name, *args, **kwargs):
-    return BFloat(name, *args, MIN=0.0, MAX=1.0, SIDETIP="[0,1]", **kwargs)
+    return Float(name, *args, MIN=0.0, MAX=1.0, SIDETIP="[0,1]", **kwargs)
 def float_neg_one_to_one(name, *args, **kwargs):
-    return BFloat(name, *args, MIN=-1.0, MAX=1.0, SIDETIP="[-1,1]", **kwargs)
+    return Float(name, *args, MIN=-1.0, MAX=1.0, SIDETIP="[-1,1]", **kwargs)
 
 def float_sec(name, *args, **kwargs):
     kwargs.setdefault('SIDETIP', "seconds")
     kwargs.setdefault('UNIT_SCALE', sec_unit_scale)
-    return BFloat(name, *args, **kwargs)
+    return Float(name, *args, **kwargs)
 
 def float_deg(name, *args, **kwargs):
     kwargs.setdefault('SIDETIP', "degrees")
-    return BFloat(name, *args, **kwargs)
+    return Float(name, *args, **kwargs)
 
 def float_deg_sec(name, *args, **kwargs):
     kwargs.setdefault('SIDETIP', "degrees/sec")
     kwargs.setdefault('UNIT_SCALE', per_sec_unit_scale)
-    return BFloat(name, *args, **kwargs)
+    return Float(name, *args, **kwargs)
 
 def float_rad(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="degrees",
+    return Float(name, *args, SIDETIP="degrees",
                   UNIT_SCALE=irad, **kwargs)
 def float_rad_sec(name, *args, **kwargs):
     kwargs.setdefault('SIDETIP', "degrees/sec")
     kwargs.setdefault('UNIT_SCALE', irad_per_sec_unit_scale)
-    return BFloat(name, *args, **kwargs)
+    return Float(name, *args, **kwargs)
 def float_rad_sec_sq(name, *args, **kwargs):
     # yes, keep this as per_sec and not per_sec_sq.
     # this is because of how halo uses these values.
     kwargs.setdefault('SIDETIP', "degrees/(sec^2)")
     kwargs.setdefault('UNIT_SCALE', irad_per_sec_unit_scale)
-    return BFloat(name, *args, **kwargs)
+    return Float(name, *args, **kwargs)
 
 def float_wu(name, *args, **kwargs):
     kwargs.setdefault('SIDETIP', "world units")
-    return BFloat(name, *args, **kwargs)
+    return Float(name, *args, **kwargs)
 def float_wu_sec(name, *args, **kwargs):
     kwargs.setdefault('SIDETIP', "world units/sec")
     kwargs.setdefault('UNIT_SCALE', per_sec_unit_scale)
-    return BFloat(name, *args, **kwargs)
+    return Float(name, *args, **kwargs)
 def float_wu_sec_sq(name, *args, **kwargs):
     kwargs.setdefault('SIDETIP', "world units/(sec^2)")
     kwargs.setdefault('UNIT_SCALE', per_sec_sq_unit_scale)
-    return BFloat(name, *args, **kwargs)
+    return Float(name, *args, **kwargs)
 
 def float_zero_to_inf(name, *args, **kwargs):
-    return BFloat(name, *args, SIDETIP="[0,+inf]", **kwargs)
+    return Float(name, *args, SIDETIP="[0,+inf]", **kwargs)
 
 
 from_to = QStruct('',
-    BFloat("from", GUI_NAME=''),
-    BFloat("to"),
+    Float("from", GUI_NAME=''),
+    Float("to"),
     ORIENT='h'
     )
 
 def from_to_deg(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", GUI_NAME=''),
-        BFloat("to"), *args,
+        Float("from", GUI_NAME=''),
+        Float("to"), *args,
         ORIENT='h', SIDETIP='degrees', **kwargs
         )
 
 def from_to_rad(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", UNIT_SCALE=irad, GUI_NAME=''),
-        BFloat("to",   UNIT_SCALE=irad), *args,
+        Float("from", UNIT_SCALE=irad, GUI_NAME=''),
+        Float("to",   UNIT_SCALE=irad), *args,
         ORIENT='h', SIDETIP='degrees', **kwargs
         )
 
 def from_to_rad_sec(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", UNIT_SCALE=irad_per_sec_unit_scale, GUI_NAME=''),
-        BFloat("to",   UNIT_SCALE=irad_per_sec_unit_scale), *args,
+        Float("from", UNIT_SCALE=irad_per_sec_unit_scale, GUI_NAME=''),
+        Float("to",   UNIT_SCALE=irad_per_sec_unit_scale), *args,
         ORIENT='h', SIDETIP='degrees/sec', **kwargs
         )
 
 def from_to_sec(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", UNIT_SCALE=sec_unit_scale, GUI_NAME=''),
-        BFloat("to",   UNIT_SCALE=sec_unit_scale), *args,
+        Float("from", UNIT_SCALE=sec_unit_scale, GUI_NAME=''),
+        Float("to",   UNIT_SCALE=sec_unit_scale), *args,
         ORIENT='h', SIDETIP='seconds', **kwargs
         )
 
 def from_to_wu(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", GUI_NAME=''),
-        BFloat("to"), *args,
+        Float("from", GUI_NAME=''),
+        Float("to"), *args,
         ORIENT='h', SIDETIP='world units', **kwargs
         )
 
 def from_to_wu_sec(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", UNIT_SCALE=per_sec_unit_scale, GUI_NAME=''),
-        BFloat("to",   UNIT_SCALE=per_sec_unit_scale), *args,
+        Float("from", UNIT_SCALE=per_sec_unit_scale, GUI_NAME=''),
+        Float("to",   UNIT_SCALE=per_sec_unit_scale), *args,
         ORIENT='h', SIDETIP='world units/sec', **kwargs
         )
 
 def from_to_zero_to_one(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", MIN=0.0, MAX=1.0, GUI_NAME=''),
-        BFloat("to", MIN=0.0, MAX=1.0), *args,
+        Float("from", MIN=0.0, MAX=1.0, GUI_NAME=''),
+        Float("to", MIN=0.0, MAX=1.0), *args,
         ORIENT='h', SIDETIP='[0,1]', **kwargs
         )
 
 def from_to_neg_one_to_one(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("from", MIN=-1.0, MAX=1.0, GUI_NAME=''),
-        BFloat("to", MIN=-1.0, MAX=1.0), *args,
+        Float("from", MIN=-1.0, MAX=1.0, GUI_NAME=''),
+        Float("to", MIN=-1.0, MAX=1.0), *args,
         ORIENT='h', SIDETIP='[-1,1]', **kwargs
         )
 
 def yp_float_deg(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("y"), BFloat("p"), *args,
+        Float("y"), BFloat("p"), *args,
         ORIENT='h', SIDETIP='degrees', **kwargs
         )
 
 def ypr_float_deg(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("y"), BFloat("p"), BFloat("r"), *args,
+        Float("y"), BFloat("p"), BFloat("r"), *args,
         ORIENT='h', SIDETIP='degrees', **kwargs
         )
 
 def yp_float_rad(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("y", UNIT_SCALE=irad),
-        BFloat("p", UNIT_SCALE=irad), *args,
+        Float("y", UNIT_SCALE=irad),
+        Float("p", UNIT_SCALE=irad), *args,
         ORIENT='h', SIDETIP='degrees', **kwargs
         )
 
 def ypr_float_rad(name, *args, **kwargs):
     return QStruct(name,
-        BFloat("y", UNIT_SCALE=irad),
-        BFloat("p", UNIT_SCALE=irad),
-        BFloat("r", UNIT_SCALE=irad), *args,
+        Float("y", UNIT_SCALE=irad),
+        Float("p", UNIT_SCALE=irad),
+        Float("r", UNIT_SCALE=irad), *args,
         ORIENT='h', SIDETIP='degrees', **kwargs
         )
 
@@ -803,13 +803,14 @@ tag_header = Struct("blam header",
         ),
     LUInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
     LUInt32("header size",  DEFAULT=64, EDITABLE=False),
-    BBool64("flags",
+    LBool64("flags",
         "edited with mozz",
         {GUI_NAME: "60fps", NAME: "fps_60", VALUE: 1<<8},
         EDITABLE=False
         ),
     LUInt16("version", DEFAULT=1, EDITABLE=False),
-    LUInt16("unknown", DEFAULT=255, EDITABLE=False),
+    UInt8("integrity0", DEFAULT=0, EDITABLE=False),
+    UInt8("integrity1", DEFAULT=255, EDITABLE=False),
     LUEnum32("engine id",
         ("halo 1", 'blam'),
         DEFAULT='blam', EDITABLE=False
@@ -859,7 +860,7 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
     BSInt32("size", EDITABLE=False, VISIBLE=False),
-    BSInt32("pointer", DEFAULT=-1, EDITABLE=False, VISIBLE=False),  # random
+    BSInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),  # random
     BUInt32("id", EDITABLE=False, VISIBLE=False),  # 0 in meta it seems
     )
 
@@ -988,7 +989,7 @@ def dependency_os(name='tag ref', valid_ids=None):
 
 def blam_header_os(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
-    header_desc= dict(tag_header_os)
+    header_desc = dict(tag_header_os)
     header_desc[1] = dict(header_desc[1])
     header_desc[5] = dict(header_desc[5])
     header_desc[1][DEFAULT] = tagid
@@ -1025,7 +1026,8 @@ tag_header_os = Struct("blam header",
         EDITABLE=False
         ),
     LUInt16("version", DEFAULT=1, EDITABLE=False),
-    LUInt16("unknown", DEFAULT=255, EDITABLE=False),
+    UInt8("integrity0", DEFAULT=0, EDITABLE=False),
+    UInt8("integrity1", DEFAULT=255, EDITABLE=False),
     LUEnum32("engine id",
         ("halo 1", 'blam'),
         DEFAULT='blam', EDITABLE=False

@@ -127,7 +127,9 @@ class HaloHandler(Handler):
             with open(filepath, 'r+b') as tagfile:
                 tagfile.seek(36)
                 def_id = str(tagfile.read(4), 'latin-1')
-            if def_id in self.defs:
+            tagfile.seek(60);
+            engine_id = tagfile.read(4)
+            if def_id in self.defs and engine_id == b'blam':
                 return def_id
         except:
             return None
