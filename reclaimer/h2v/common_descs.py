@@ -26,14 +26,91 @@ from ..common_descs import pi, irad, from_to, get_unit_scale,\
      compressed_normal_32, materials_list
 
 
-def h2xtag_class(*args, **kwargs):
+def ascii_str_varlen(name):
+    # encoding used is latin1 to take care of cases
+    # where the string has invalid characters in it
+    return Struct("%s struct" % name,
+        UInt24('offset', VISIBLE=False, EDITABLE=False),
+        UInt8('length', VISIBLE=False, EDITABLE=False),
+        STEPTREE=StrRawLatin1(str(name), SIZE='.length', MAX=255)
+        )
+
+
+def h2_tagdata_switch(*args, **kwargs):
+    cases = {}
+    for case in args:
+        assert hasattr(case, '__len__') and len(case) == 2
+        tagdata_desc = case[0]
+        engine_id = case[1]
+        engine_name = engine_id_to_name[engine_id]
+        if engine_id == 'BLM_':
+            default_desc = tagdata_desc
+
+        cases[engine_name] = tagdata_desc
+
+    kwargs.setdefault(VISIBLE, False)
+    kwargs.setdefault(EDITABLE, False)
+    kwargs.setdefault(DEFAULT, default_desc)
+
+    assert DEFAULT in kwargs
+
+    return Switch("tagdata",
+        CASES=cases, CASE='.blam_header.engine_id.enum_name', **kwargs)
+
+
+def tbfd_container(name, *args, default_case=None, **kwargs):
+    # ############################################### #
+    #               !!!!!WARNING!!!!!                 #
+    # When the tag's engine_id is ambl, the FieldType #
+    # of the version and bcount is actually UInt16    #
+    # ############################################### #
+    cases = {}
+    for case in args:
+        assert hasattr(case, '__len__') and len(case) > 1
+        bsize = case[1]
+        version = 0
+        if len(case) > 2:
+            version = case[2]
+
+        if default_case is None:
+            default_case = (bsize, version)
+
+        cases[(bsize, version)] = case[0]
+
+    if default_case is not None:
+        if isinstance(default_case, int):
+            default_case = (0, default_case)
+        else:
+            assert hasattr(default_case, '__len__') and len(default_case)
+            if len(default_case) == 1:
+                default_case = (0, ) + tuple(default_case)
+
+        default_desc = cases[default_case]
+        kwargs.setdefault(DEFAULT, default_desc)
+
+    return TBFDContainer(name,
+        QStruct("header",
+            UInt32("sig", DEFAULT='tbfd'),
+            UInt32("version", DEFAULT=default_case[0]),
+            UInt32("bcount"),
+            UInt32("bsize", DEFAULT=default_case[1]),
+            VISIBLE=False, EDITABLE=False
+            ),
+        Switch("block",
+            CASES=cases, CASE=lambda *a, parent=None, **kw: (
+                parent.header.version, parent.header.bsize)),
+        **kwargs
+        )
+
+
+def h2v_tag_class(*args, **kwargs):
     '''
     A macro for creating a tag_class enum desc with the
     enumerations set to the provided tag_class fcc's.
     '''
     classes = []
     for four_cc in args:
-        classes.append((h2xtag_class_fcc_to_ext[four_cc], four_cc))
+        classes.append((h2v_tag_class_fcc_to_ext[four_cc], four_cc))
 
     return UEnum32(
         'tag_class',
@@ -42,10 +119,16 @@ def h2xtag_class(*args, **kwargs):
         )
 
 
-def h2xreflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
+def h2_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     '''This function serves to macro the creation of a reflexive'''
+    # The STEPTREE seems to ALWAYS be a tag_block_field_definition,
+    # but if the reflexive contains zero elements, the struct is
+    # not present in the stream and should be skipped. This means
+    # that a custom parser/serializer needs to be made for tbfds
+    # which will always create the tbfd struct, but wont always
+    # parse it from the stream or write it to there.
     desc.update(
-        INCLUDE=h2xreflexive_struct,
+        INCLUDE=h2_reflexive_struct,
         STEPTREE=Array(name + " array",
             SIZE=".size", MAX=max_count,
             SUB_STRUCT=substruct, WIDGET=ReflexiveFrame
@@ -62,12 +145,12 @@ def h2xreflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc)
             
         desc[STEPTREE][NAME_MAP] = name_map
 
-    return H2XReflexive(name, **desc)
+    return H2Reflexive(name, **desc)
 
 
-def h2xrawdata_ref(name, f_type=Rawdata, max_size=None, widget=None):
+def h2_rawdata_ref(name, f_type=Rawdata, max_size=None, widget=None):
     '''This function serves to macro the creation of a rawdata reference'''
-    ref_struct = dict(h2xrawdata_ref_struct)
+    ref_struct = dict(h2_rawdata_ref_struct)
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
@@ -76,35 +159,35 @@ def h2xrawdata_ref(name, f_type=Rawdata, max_size=None, widget=None):
     if widget is not None:
         kwargs[WIDGET] = widget
 
-    return H2XRawdataRef(name,
+    return H2RawdataRef(name,
         INCLUDE=ref_struct,
         STEPTREE=f_type("data", GUI_NAME="", SIZE=".size", **kwargs))
 
 
-def h2xdependency(name='tag ref', valid_ids=None):
+def h2v_dependency(name='tag ref', valid_ids=None):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
-        valid_ids = h2xtag_class(*valid_ids)
+        valid_ids = h2v_tag_class(*valid_ids)
     elif isinstance(valid_ids, str):
-        valid_ids = h2xtag_class(valid_ids)
+        valid_ids = h2v_tag_class(valid_ids)
     elif valid_ids is None:
-        valid_ids = valid_h2xtags
+        valid_ids = valid_h2v_tags
 
-    return H2XTagIndexRef(name,
+    return H2TagIndexRef(name,
         valid_ids,
         BSInt32("path pointer", VISIBLE=False, EDITABLE=False),
         BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
         STEPTREE=HaloRefStr(
-            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=234),
+            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=234),  # 10 < Halo1
         ORIENT='h'
         )
 
 
-def h2xblam_header(tagid, version=1):
+def h2v_blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
-    header_desc = dict(h2xtag_header)
+    header_desc = dict(h2v_tag_header)
     header_desc[1] = dict(header_desc[1])
     header_desc[5] = dict(header_desc[5])
     header_desc[1][DEFAULT] = tagid
@@ -112,7 +195,7 @@ def h2xblam_header(tagid, version=1):
     return header_desc
 
 
-valid_h2xtags = h2xtag_class(*h2xtag_class_fcc_to_ext.keys())
+valid_h2v_tags = h2v_tag_class(*h2v_tag_class_fcc_to_ext.keys())
 
 
 # ###########################################################################
@@ -126,12 +209,12 @@ del materials_list
 
 
 # Descriptors
-h2xtag_header = Struct("h2xblam_header",
+h2v_tag_header = Struct("blam_header",
     Pad(36),
     UEnum32("tag class",
-        GUI_NAME="tag class", INCLUDE=valid_h2xtags, EDITABLE=False
+        GUI_NAME="tag class", INCLUDE=valid_h2v_tags, EDITABLE=False
         ),
-    UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),  #random
+    UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
     UInt32("header size", DEFAULT=64, EDITABLE=False),
     Bool64("flags",
         "edited with mozz",
@@ -141,14 +224,17 @@ h2xtag_header = Struct("h2xblam_header",
     UInt8("integrity0", DEFAULT=0, EDITABLE=False),
     UInt8("integrity1", DEFAULT=255, EDITABLE=False),
     UEnum32("engine id",
-        ("halo 2", 'BLM!'),
+        (engine_id_to_name['BLM_'], 'BLM!'),
+        (engine_id_to_name['LAMB'], 'LAMB'),
+        (engine_id_to_name['MLAB'], 'MLAB'),
+        (engine_id_to_name['ambl'], 'ambl'),
         DEFAULT='BLM!', EDITABLE=False
         ),
     VISIBLE=False, SIZE=64
     )
 
 # This is the descriptor used wherever a tag references a rawdata chunk
-h2xrawdata_ref_struct = H2XRawdataRef('rawdata ref', 
+h2_rawdata_ref_struct = H2RawdataRef('rawdata ref', 
     SInt32("size", EDITABLE=False, GUI_NAME="", SIDETIP="bytes"),
     SInt32("unknown", EDITABLE=False, VISIBLE=False),
     SInt32("raw pointer", EDITABLE=False, VISIBLE=False),
@@ -157,28 +243,14 @@ h2xrawdata_ref_struct = H2XRawdataRef('rawdata ref',
     ORIENT='h'
     )
 
-# Not sure what this is. The name is taken from a string I found in h2guerilla
-tag_block_field_definition = Struct('tag block field definition',
-    UInt32("sig", EDITABLE=False, VISIBLE=False, DEFAULT='tbfd'),
-    SInt32("unknown", EDITABLE=False, VISIBLE=False),
-    SInt32("bcount", EDITABLE=False, VISIBLE=False),
-    UInt32("bsize", EDITABLE=False, VISIBLE=False),
-    )
-
-# This is the descriptor used wherever a tag reference a reflexive
-h2xreflexive_struct = H2XReflexive('reflexive',
+# This is the descriptor used wherever a tag reference a reflexive.
+# The STEPTREE of a h2_reflexive_struct should be a tbfd_struct.
+h2_reflexive_struct = H2Reflexive('reflexive',
     BSInt32("size", EDITABLE=False, VISIBLE=False),
     BSInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),  # random
     BUInt32("id", EDITABLE=False, VISIBLE=False),  # 0 in meta it seems
     )
 
-h2xpredicted_resource = Struct('predicted_resource',
-    UInt8('string_len'),
-    UInt24('string_off'),
-    # These somehow refer to a string, but idk how the string is stored
-    # in the data stream, so i'm just leaving it unspecified till I know
-    )
-
 
 # This is the descriptor used wherever a tag references another tag
-h2xtag_index_ref_struct = h2xdependency()
+h2v_tag_index_ref_struct = h2v_dependency()
