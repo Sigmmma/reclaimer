@@ -40,19 +40,31 @@ def ascii_str_varlen(name):
 
 
 def h2_tagdata_switch(*args, **kwargs):
+    '''
+    Each arg should conform to (desc, bsize, engine_id='BLM_', version=0)
+    '''
     cases = {}
+    assert len(args)
     for case in args:
-        assert hasattr(case, '__len__') and len(case) == 2
-        tagdata_desc = case[0]
-        engine_id = case[1]
+        assert hasattr(case, '__len__') and len(case) in (2, 3, 4)
+        engine_id = 'BLM_'
+        version = 0
+        if len(case) > 2:
+            engine_id = case[2]
+        if len(case) > 3:
+            version = case[3]
+
+        tagdata_desc = tbfd_container(
+            "tagdata", (case[0], case[1], version), def_count=1)
+
         engine_name = engine_id_to_name[engine_id]
         if engine_id == 'BLM_':
-            default_desc = tagdata_desc
+            def_desc = tagdata_desc
         cases[engine_name] = tagdata_desc
 
     kwargs.setdefault(VISIBLE, False)
     kwargs.setdefault(EDITABLE, False)
-    kwargs.setdefault(DEFAULT, default_desc)
+    kwargs.setdefault(DEFAULT, def_desc)
 
     assert DEFAULT in kwargs
 
@@ -60,7 +72,10 @@ def h2_tagdata_switch(*args, **kwargs):
         CASES=cases, CASE='.blam_header.engine_id.enum_name', **kwargs)
 
 
-def tbfd_container(name, *args, default_case=None, **kwargs):
+def tbfd_container(name, *args, def_case=None, def_count=0, **kwargs):
+    '''
+    Each arg should conform to (desc, bsize, version=0)
+    '''
     # I'm not 100% certain, but I'm very sure that
     # tbfd is an acronym for tag_block_field_definition
 
@@ -77,28 +92,28 @@ def tbfd_container(name, *args, default_case=None, **kwargs):
         if len(case) > 2:
             version = case[2]
 
-        if default_case is None:
-            default_case = (version, bsize)
+        if def_case is None:
+            def_case = (version, bsize)
 
         cases[(version, bsize)] = case[0]
 
-    if default_case is not None:
-        if isinstance(default_case, int):
-            default_case = (0, default_case)
+    if def_case is not None:
+        if isinstance(def_case, int):
+            def_case = (0, def_case)
         else:
-            assert hasattr(default_case, '__len__') and len(default_case)
-            if len(default_case) == 1:
-                default_case = (0, ) + tuple(default_case)
+            assert hasattr(def_case, '__len__') and len(def_case)
+            if len(def_case) == 1:
+                def_case = (0, ) + tuple(def_case)
 
-        default_desc = cases[default_case]
-        kwargs.setdefault(DEFAULT, default_desc)
+        def_desc = cases[def_case]
+        kwargs.setdefault(DEFAULT, def_desc)
 
     return TBFDContainer("%s tbfd" % name,
         QStruct("header",
             UInt32("sig", DEFAULT='tbfd'),
-            UInt32("version", DEFAULT=default_case[0]),
-            UInt32("bcount"),
-            UInt32("bsize", DEFAULT=default_case[1]),
+            UInt32("version", DEFAULT=def_case[0]),
+            UInt32("bcount", DEFAULT=def_count),
+            UInt32("bsize", DEFAULT=def_case[1]),
             VISIBLE=False, EDITABLE=False
             ),
         Switch(name,
@@ -124,28 +139,45 @@ def h2v_tag_class(*args, **kwargs):
         )
 
 
-def h2_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
-    '''This function serves to macro the creation of a reflexive'''
-    # The STEPTREE seems to ALWAYS be a tag_block_field_definition,
-    # but if the reflexive contains zero elements, the struct is
-    # not present in the stream and should be skipped.
-    desc.update(
-        INCLUDE=h2_reflexive_struct,
-        STEPTREE=Array(name + " array",
-            SIZE=".size", MAX=max_count,
-            SUB_STRUCT=substruct, WIDGET=ReflexiveFrame
-            ),
-        SIZE=12
-        )
-    if DYN_NAME_PATH in desc:
-        desc[STEPTREE][DYN_NAME_PATH] = desc.pop(DYN_NAME_PATH)
+def h2_reflexive(name, *args, def_case=None, names=None,
+                 max_count=MAX_REFLEXIVE_COUNT, **desc):
+    '''
+    This function serves to macro the creation of a reflexive
+    Each arg should conform to (desc, bsize, version=0)
+    '''
+
+    dyn_name_path = desc.pop(DYN_NAME_PATH, None)
+    substruct_name = ''
+    cases = []
+
     if names:
+        if isinstance(names, str):
+            names = (names, )
         name_map = {}
         for i in range(len(names)):
             e_name = BlockDef.str_to_name(None, names[i])
             name_map[e_name] = i
-            
-        desc[STEPTREE][NAME_MAP] = name_map
+
+    for case in args:
+        case_desc = case[0]
+        if not substruct_name:
+            substruct_name = case_desc.get("NAME", '')
+
+        array_desc = Array(substruct_name + " array",
+            SIZE="..size", MAX=max_count,
+            SUB_STRUCT=case_desc, WIDGET=ReflexiveFrame
+            )
+        if dyn_name_path is not None:
+            array_desc[STEPTREE][DYN_NAME_PATH] = dyn_name_path
+        if names is not None:
+            array_desc[NAME_MAP] = names
+
+        cases.append((array_desc, ) + case[1:])
+
+    desc.update(
+        INCLUDE=h2_reflexive_struct,
+        STEPTREE=tbfd_container(substruct_name, *cases, def_case=def_case)
+        )
 
     return H2Reflexive(name, **desc)
 
