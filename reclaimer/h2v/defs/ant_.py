@@ -16,6 +16,8 @@ vertex = Struct("vertex",
     SIZE=128
     )
 
+vertex_switch = tbfd_container("vertex", (vertex, 128))
+
 LAMB_body = Struct("tagdata",
     ascii_str32("attachment marker name"),
     h2v_dependency("bitmaps", "bitm"),
@@ -27,7 +29,7 @@ LAMB_body = Struct("tagdata",
     BFloat("cutoff pixels"),
 
     Pad(40),
-    h2_reflexive("vertices", vertex, 20),
+    h2_reflexive("vertices", vertex_switch, 20),
     SIZE=208
     )
 

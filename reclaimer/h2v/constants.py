@@ -4,10 +4,10 @@ from ..constants import *
 # These are the 4 fourCC that I've found in tag headers
 # and this is what I believe the order of their age is.
 engine_id_to_name = dict(
-    BLM_="halo 2",
-    LAMB="halo 2 old",
-    MLAB="halo 2 older",
-    ambl="halo 2 oldest",
+    BLM_="halo_2",
+    LAMB="halo_2_old",
+    MLAB="halo_2_older",
+    ambl="halo_2_oldest",
     )
 
 # maps tag class four character codes(fccs) in

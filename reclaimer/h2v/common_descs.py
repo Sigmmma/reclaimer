@@ -29,10 +29,13 @@ from ..common_descs import pi, irad, from_to, get_unit_scale,\
 def ascii_str_varlen(name):
     # encoding used is latin1 to take care of cases
     # where the string has invalid characters in it
-    return Struct("%s struct" % name,
+    return Struct(name,
         UInt24('offset', VISIBLE=False, EDITABLE=False),
         UInt8('length', VISIBLE=False, EDITABLE=False),
-        STEPTREE=StrRawLatin1(str(name), SIZE='.length', MAX=255)
+        STEPTREE=StrRawLatin1("data",
+            SIZE='.length', GUI_NAME=str(name), MAX=255
+            ),
+        GUI_NAME="%s struct" % name
         )
 
 
@@ -45,7 +48,6 @@ def h2_tagdata_switch(*args, **kwargs):
         engine_name = engine_id_to_name[engine_id]
         if engine_id == 'BLM_':
             default_desc = tagdata_desc
-
         cases[engine_name] = tagdata_desc
 
     kwargs.setdefault(VISIBLE, False)
@@ -59,6 +61,9 @@ def h2_tagdata_switch(*args, **kwargs):
 
 
 def tbfd_container(name, *args, default_case=None, **kwargs):
+    # I'm not 100% certain, but I'm very sure that
+    # tbfd is an acronym for tag_block_field_definition
+
     # ############################################### #
     #               !!!!!WARNING!!!!!                 #
     # When the tag's engine_id is ambl, the FieldType #
@@ -73,9 +78,9 @@ def tbfd_container(name, *args, default_case=None, **kwargs):
             version = case[2]
 
         if default_case is None:
-            default_case = (bsize, version)
+            default_case = (version, bsize)
 
-        cases[(bsize, version)] = case[0]
+        cases[(version, bsize)] = case[0]
 
     if default_case is not None:
         if isinstance(default_case, int):
@@ -88,7 +93,7 @@ def tbfd_container(name, *args, default_case=None, **kwargs):
         default_desc = cases[default_case]
         kwargs.setdefault(DEFAULT, default_desc)
 
-    return TBFDContainer(name,
+    return TBFDContainer("%s tbfd" % name,
         QStruct("header",
             UInt32("sig", DEFAULT='tbfd'),
             UInt32("version", DEFAULT=default_case[0]),
@@ -96,7 +101,7 @@ def tbfd_container(name, *args, default_case=None, **kwargs):
             UInt32("bsize", DEFAULT=default_case[1]),
             VISIBLE=False, EDITABLE=False
             ),
-        Switch("block",
+        Switch(name,
             CASES=cases, CASE=lambda *a, parent=None, **kw: (
                 parent.header.version, parent.header.bsize)),
         **kwargs
@@ -123,10 +128,7 @@ def h2_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc)
     '''This function serves to macro the creation of a reflexive'''
     # The STEPTREE seems to ALWAYS be a tag_block_field_definition,
     # but if the reflexive contains zero elements, the struct is
-    # not present in the stream and should be skipped. This means
-    # that a custom parser/serializer needs to be made for tbfds
-    # which will always create the tbfd struct, but wont always
-    # parse it from the stream or write it to there.
+    # not present in the stream and should be skipped.
     desc.update(
         INCLUDE=h2_reflexive_struct,
         STEPTREE=Array(name + " array",
