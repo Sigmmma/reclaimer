@@ -10,6 +10,14 @@ engine_id_to_name = dict(
     ambl="halo_2_oldest",
     )
 
+# Here are some of the differences between engine versions:
+# ambl: the tbfd struct was 12 bytes instead of 16, with the second and
+#       third UInt32 replaced by UInt16, which are the version and bcount
+# MLAB: the ascii_str32 instances were replaced with ascii_str_varlen
+# LAMB: ???
+# BLM!: newest version.
+
+
 # maps tag class four character codes(fccs) in
 # their string encoding to their int encoding.
 h2v_tag_class_fcc_to_be_int = {}
