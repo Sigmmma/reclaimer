@@ -1,18 +1,27 @@
 from ..constants import *
 
 
+# These are the 4 fourCC that I've found in tag headers
+# and this is what I believe the order of their age is.
+engine_id_to_name = dict(
+    BLM_="halo 2",
+    LAMB="halo 2 old",
+    MLAB="halo 2 older",
+    ambl="halo 2 oldest",
+    )
+
 # maps tag class four character codes(fccs) in
 # their string encoding to their int encoding.
-h2xtag_class_fcc_to_be_int = {}
-h2xtag_class_fcc_to_le_int = {}
+h2v_tag_class_fcc_to_be_int = {}
+h2v_tag_class_fcc_to_le_int = {}
 # maps tag class four character codes(fccs) in
 # their int encoding to their string encoding.
-h2xtag_class_be_int_to_fcc = {}
-h2xtag_class_le_int_to_fcc = {}
+h2v_tag_class_be_int_to_fcc = {}
+h2v_tag_class_le_int_to_fcc = {}
 
 # maps tag class four character codes to the tags file extension
 # 120 classes, 97 of which are NOT marked with OLD?
-h2xtag_class_fcc_to_ext = {
+h2v_tag_class_fcc_to_ext = {
     "adlg": "ai_dialogue_globals",
     "mdlg": "ai_mission_dialogue",
     "ant!": "antenna",
@@ -135,8 +144,8 @@ h2xtag_class_fcc_to_ext = {
     "wind": "wind",
     }
 
-for tag_cls in h2xtag_class_fcc_to_ext:
-    h2xtag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls)
-    h2xtag_class_be_int_to_fcc[fcc(tag_cls)] = tag_cls
-    h2xtag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
-    h2xtag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls
+for tag_cls in h2v_tag_class_fcc_to_ext:
+    h2v_tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls)
+    h2v_tag_class_be_int_to_fcc[fcc(tag_cls)] = tag_cls
+    h2v_tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
+    h2v_tag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls
