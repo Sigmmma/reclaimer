@@ -1,7 +1,9 @@
+import os
 from ..hek.handler import HaloHandler
+from os.path import abspath, basename, exists, isfile, normpath, splitext
 
-class Halo2XboxHandler(HaloHandler):
-    default_defs_path = "reclaimer.h2x.defs"
+class Halo2VistaHandler(HaloHandler):
+    default_defs_path = "reclaimer.h2v.defs"
 
     def get_def_id(self, filepath):
         if not filepath.startswith('.') and '.' in filepath:
@@ -20,7 +22,8 @@ class Halo2XboxHandler(HaloHandler):
                 def_id = str(tagfile.read(4), 'latin-1')
             tagfile.seek(60);
             engine_id = tagfile.read(4)
-            if def_id in self.defs and engine_id == b'!MLB':
+            if def_id in self.defs and engine_id in (
+                b'!MLB', b'BMAL', b'BALM', b'lbma'):
                 return def_id
         except:
             return None
