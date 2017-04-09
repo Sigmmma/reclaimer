@@ -8,6 +8,7 @@ def tbfd_parser(self, desc, node=None, parent=None, attr_index=None,
     """
     try:
         orig_offset = offset
+        # create the default nodes
         if node is None:
             parent[attr_index] = node = desc.get(BLOCK_CLS, self.node_cls)\
                 (desc, parent=parent, init_attrs=rawdata is None)
@@ -48,20 +49,27 @@ def tbfd_serializer(self, node, parent=None, attr_index=None,
     """
     """
     try:
-        try:
-            # if the parent reflexive structs size is 0 then this tbfd struct
-            # shouldn't even exist, and shouldn't be serialized to the stream.
-            if not parent.size:
-                return offset
-        except Exception:
-            pass
-
         orig_offset = offset
         desc = node.desc
 
+        try:
+            # if the parent reflexive structs size is 0 then this tbfd struct
+            # shouldn't even exist, and shouldn't be serialized to the stream.
+            if parent is None:
+                parent = node.PARENT
+
+            # set the bcount to the parents size
+            node.header.bcount = parent.size
+            if not parent.size:
+                return offset
+        except AttributeError:
+            # this tbfd container is used for tagdata.
+            # set the bcount to 1 since it has to exist
+            node.header.bcount = 1
+
         # loop once for each node in the node
         for i in range(len(node)):
-            offset = desc[i]['TYPE'].serializer(
+            offset = node[i].desc['TYPE'].serializer(
                 node[i], node, i, writebuffer, root_offset, offset, **kwargs)
 
         # pass the incremented offset to the caller

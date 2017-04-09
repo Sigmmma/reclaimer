@@ -16,8 +16,6 @@ vertex = Struct("vertex",
     SIZE=128
     )
 
-vertex_switch = tbfd_container("vertex", (vertex, 128))
-
 LAMB_body = Struct("tagdata",
     ascii_str32("attachment marker name"),
     h2v_dependency("bitmaps", "bitm"),
@@ -29,7 +27,10 @@ LAMB_body = Struct("tagdata",
     BFloat("cutoff pixels"),
 
     Pad(40),
-    h2_reflexive("vertices", vertex_switch, 20),
+    h2_reflexive("vertices",
+        (vertex, 128),
+        max_count=20
+        ),
     SIZE=208
     )
 
@@ -44,8 +45,8 @@ def get():
 ant__def = TagDef("ant!",
     h2v_blam_header('ant!'),
     h2_tagdata_switch(
-        (tbfd_container("tagdata", (LAMB_body, 208)), 'LAMB'),
-        (tbfd_container("tagdata", (BLM__body, 180)), 'BLM_')
+        (LAMB_body, 208, 'LAMB'),
+        (BLM__body, 180, 'BLM_')
         ),
     ext=".antenna", endian="<", tag_cls=H2VTag
     )
