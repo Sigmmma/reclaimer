@@ -8,18 +8,22 @@ def tbfd_parser(self, desc, node=None, parent=None, attr_index=None,
     """
     try:
         orig_offset = offset
-        # create the default nodes
-        if node is None:
-            parent[attr_index] = node = desc.get(BLOCK_CLS, self.node_cls)\
-                (desc, parent=parent, init_attrs=rawdata is None)
-
+        init_attrs = rawdata is None
         try:
             # if the parent reflexive structs size is 0 then this tbfd struct
             # doesnt actually exist, and shouldn't be parsed from the stream.
             if not parent.size:
-                return offset
+                init_attrs = True
         except Exception:
             pass
+
+        # create the default nodes
+        if node is None:
+            parent[attr_index] = node = desc.get(BLOCK_CLS, self.node_cls)\
+                (desc, parent=parent, init_attrs=init_attrs)
+
+        if init_attrs:
+            return offset
 
         # If there is rawdata to build the structure from
         if rawdata is not None:
