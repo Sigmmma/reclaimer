@@ -1,0 +1,3 @@
+I don't even know why I'm keeping these files here since I don't plan to ever come back to working on halo 2 shit. There are so many complications with it. I'm writing this while just feeling absolutely let down by all the progress that was being made in the modding community, only to have it disappear with very few tools and knowledge released. H2V is dead, and I'm not even going to try to revive it. It's a lost cause.
+
+So again, why am I leaving these files here? I really don't know. Maybe as a reminder why not to put time and effort into this shit.

@@ -43,38 +43,61 @@ def h2_tagdata_switch(*args, **kwargs):
     '''
     Each arg should conform to (desc, bsize, engine_id='BLM_', version=0)
     '''
-    cases = {}
+    engine_cases = {}
     assert len(args)
+
+    def_desc = None
+    new_ver = -1
+    new_bsize = -1
+
     for case in args:
         assert hasattr(case, '__len__') and len(case) in (2, 3, 4)
         engine_id = 'BLM_'
         version = 0
+        case_desc = case[0]
+        if len(case) > 1:
+            bsize = case[1]
         if len(case) > 2:
             engine_id = case[2]
         if len(case) > 3:
             version = case[3]
 
-        tagdata_desc = tbfd_container(
-            "tagdata", (case[0], case[1], version), def_count=1)
+        engine = engine_id_to_name[engine_id]
+        cases = engine_cases.get(engine, [])
+        engine_cases[engine] = cases
+        cases.append((case_desc, bsize, version))
 
-        engine_name = engine_id_to_name[engine_id]
-        if engine_id == 'BLM_':
-            def_desc = tagdata_desc
-        cases[engine_name] = tagdata_desc
+    for engine in tuple(engine_cases.keys()):
+        cases = engine_cases[engine]
+
+        engine_cases[engine] = tbfd_container("tagdata", *cases, def_count=1)
+
+        if engine == 'halo_2':
+            def_desc = engine_cases[engine]
 
     kwargs.setdefault(VISIBLE, False)
     kwargs.setdefault(EDITABLE, False)
     kwargs.setdefault(DEFAULT, def_desc)
-
-    assert DEFAULT in kwargs
+    assert kwargs[DEFAULT] is not None
 
     return Switch("tagdata",
-        CASES=cases, CASE='.blam_header.engine_id.enum_name', **kwargs)
+        CASES=engine_cases, CASE='.blam_header.engine_id.enum_name', **kwargs)
 
 
 def tbfd_container(name, *args, def_case=None, def_count=0, **kwargs):
     '''
     Each arg should conform to (desc, bsize, version=0)
+
+    These are the fourCC's of the currently discovered unknown structs
+    tbfd
+
+    MAPP
+    PRPS
+    PRPC
+
+    snpl
+    snsc
+    snpr
     '''
     # I'm not 100% certain, but I'm very sure that
     # tbfd is an acronym for tag_block_field_definition
