@@ -178,7 +178,7 @@ bitmap = Struct("bitmap",
         "swizzled",
         "linear",
         "v16u16",
-        ("xbox bitmap", 1<<7)
+        {NAME: "xbox bitmap", VALUE: 1<<7, GUI_NAME: "prefer low detail"}
         ),
     BUInt16("registration point x"),
     BUInt16("registration point y"),
