@@ -1,6 +1,5 @@
 from .coll import *
 
-
 plane = QStruct("plane",
     BFloat("i", MIN=0.0, MAX=1.0),
     BFloat("j", MIN=0.0, MAX=1.0),
@@ -16,7 +15,7 @@ collision_material = Struct("collision material",
     SIZE=20
     )
 
-collision_bsp = Struct("collision bsp", INCLUDE=bsp)
+collision_bsp = Struct("collision bsp", INCLUDE=permutation_bsp)
 
 node = Struct("node",
     BytesRaw("unknown", SIZE=6),

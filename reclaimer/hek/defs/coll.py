@@ -117,7 +117,7 @@ vertex = QStruct("vertex",
     SIZE=16
     )
 
-bsp = Struct("bsp",
+permutation_bsp = Struct("permutation bsp",
     reflexive("bsp3d nodes", bsp3d_node, 131072),
     reflexive("planes", plane, 65535),
     reflexive("leaves", leaf, 65535),
@@ -141,7 +141,7 @@ node = Struct("node",
         DYN_NAME_PATH="..[DYN_I].name"),
 
     Pad(12),
-    reflexive("bsps", bsp, 32),
+    reflexive("bsps", permutation_bsp, 32),
     SIZE=64
     )
 
