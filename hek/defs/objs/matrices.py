@@ -13,6 +13,8 @@ def quaternion_to_matrix(i, j, k, w):
 
 class MatrixRow(list):
     '''Implements the minimal methods required for messing with matrix rows'''
+    def __neg__(self):
+        return MatrixRow(-x for x in self)
     def __add__(self, other):
         new = MatrixRow(self)
         for i in range(len(other)): new[i] += other[i]
@@ -50,6 +52,11 @@ class MatrixRow(list):
         for i in range(len(self)): self[i] /= other
         return self
 
+    __radd__ = __add__
+    __rsub__ = __sub__
+    __rmul__ = __mul__
+    __rtruediv__ = __truediv__
+
 
 class Matrix(list):
     width = 1
@@ -65,7 +72,6 @@ class Matrix(list):
         matrix_rows = []
         self.height = max(1, len(matrix))
         self.width = -1
-
         for row in matrix:
             if not hasattr(row, '__iter__'):
                 row = [row]
@@ -88,6 +94,9 @@ class Matrix(list):
             insert_str += '%s,\n' % (row,)
         return matrix_str % insert_str
 
+    def __neg__(self):
+        return Matrix([-row for row in self])
+
     def __add__(self, other):
         assert isinstance(other, Matrix)
         assert self.width == other.width and self.height == other.height
@@ -103,8 +112,8 @@ class Matrix(list):
         return new
 
     def __mul__(self, other):
-        assert isinstance(other, (Matrix, int))
-        if isinstance(other, int):
+        assert isinstance(other, (Matrix, int, float))
+        if not isinstance(other, Matrix):
             new = Matrix(self)
             for row in new:
                 row *= other
@@ -125,14 +134,19 @@ class Matrix(list):
         return new
 
     def __truediv__(self, other):
-        assert isinstance(other, (Matrix, int))
-        if isinstance(other, int):
+        assert isinstance(other, (Matrix, int, float))
+        if not isinstance(other, Matrix):
             new = Matrix(self)
             for row in new:
                 row /= other
             return new
         assert self.width == other.height
         return self * other.inverse
+
+    __radd__ = __add__
+    __rsub__ = __sub__
+    __rmul__ = __mul__
+    __rtruediv__ = __truediv__
 
     def __iadd__(self, other):
         assert isinstance(other, Matrix)
@@ -147,8 +161,8 @@ class Matrix(list):
         return self
 
     def __imul__(self, other):
-        assert isinstance(other, (Matrix, int))
-        if isinstance(other, int):
+        assert isinstance(other, (Matrix, int, float))
+        if not isinstance(other, Matrix):
             for row in self:
                 row *= other
             return self
@@ -175,8 +189,8 @@ class Matrix(list):
         return self
 
     def __itruediv__(self, other):
-        assert isinstance(other, (Matrix, int))
-        if isinstance(other, int):
+        assert isinstance(other, (Matrix, int, float))
+        if not isinstance(other, Matrix):
             for row in self:
                 row /= other
             return self
