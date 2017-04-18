@@ -166,7 +166,7 @@ function = Struct('function',
 comment = Struct("comment",
     QStruct("position", INCLUDE=xyz_float),
     Pad(16),
-    rawtext_ref("comment data", max_size=16384),
+    rawtext_ref("comment data", max_size=8192),
     SIZE=48
     )
 
