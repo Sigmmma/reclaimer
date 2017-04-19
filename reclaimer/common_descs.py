@@ -54,11 +54,12 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
 def rawdata_ref(name, f_type=Rawdata, max_size=None, widget=HaloRawdataFrame):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(rawdata_ref_struct)
+    kwargs = {}
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
+        kwargs[MAX] = max_size
 
-    kwargs = {}
     if widget is not None:
         kwargs[WIDGET] = widget
 
@@ -70,15 +71,17 @@ def rawdata_ref(name, f_type=Rawdata, max_size=None, widget=HaloRawdataFrame):
 def rawtext_ref(name, f_type=StrRawAscii, max_size=None, widget=TextFrame):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(rawdata_ref_struct)
+    kwargs = {WIDGET: widget}
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
         ref_struct[0][VISIBLE] = False
+        kwargs[MAX] = max_size
 
     return RawdataRef(name,
         INCLUDE=ref_struct, ORIENT="v",
         STEPTREE=f_type("data",
-            SIZE=".size", GUI_NAME=name.replace('_', ' '), WIDGET=widget)
+            SIZE=".size", GUI_NAME=name.replace('_', ' '), **kwargs)
             )
 
 
