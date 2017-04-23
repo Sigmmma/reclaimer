@@ -90,9 +90,10 @@ tag_path = Container("tag path",
 
 resource_def = TagDef("resource",
     LUEnum32("resource type",
-        ('bitmaps', 1),
-        ('sounds',  2),
-        ('strings', 3)
+        'NONE',
+        'bitmaps',
+        'sounds',
+        'strings'
         ),
     LPointer32("tag paths pointer"),
     LPointer32("tag headers pointer"),

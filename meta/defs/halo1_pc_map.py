@@ -21,7 +21,7 @@ from . objs.map import MapTag
 
 
 def get(): return map_def
-
+'''
 def map_fcc(value):
     return fcc(value, 'big')
 
@@ -103,7 +103,7 @@ tag_data = Container("tag",
     CStrLatin1("tag path", POINTER=tag_path_pointer),
     tag_meta,
     )
-
+'''
 tag_header = Struct("tag header",
     LUEnum32("class 1", GUI_NAME="primary tag class", INCLUDE=valid_tags),
     LUEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_tags),
@@ -115,7 +115,7 @@ tag_header = Struct("tag header",
     # if indexed is 1, the meta_offset is the literal index in the
     # bitmaps, sounds, or loc cache that the meta data is located in.
     Pad(4),
-    STEPTREE=tag_data,
+    #STEPTREE=tag_data,
     )
 
 #Apparently the Halo Demo maps have a different
@@ -131,16 +131,16 @@ map_header = Struct("map header",
         ("pc_ce", 609),
         ),
     LSInt32("decompressed len"),
-    BytesRaw("unknown1", SIZE=4),
+    BytesRaw("unknown", SIZE=4),
     LUInt32("tag index offset"),
     LUInt32("tag index meta len"),
     Pad(8),
     ascii_str32("map name"),
     StrLatin1("build date", DEFAULT="01.00.00.0609", EDITABLE=False, SIZE=32),
     LUEnum32("map type",
-        ("sp", 0),
-        ("mp", 1),
-        ("ui", 2),
+        "sp",
+        "mp",
+        "ui",
         ),
     LUInt32("crc32"),
     Pad(1940),
