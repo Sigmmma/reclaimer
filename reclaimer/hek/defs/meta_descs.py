@@ -2,8 +2,6 @@ from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from . import *
 
-################################################################
-################################################################
 '''-----------------------   Notes   ---------------------------
     If a tag is located in one of the shared resource maps, the
     offset in tag_header will the the index in the resource
@@ -14,50 +12,33 @@ from . import *
     snd! -> sounds.map
     font, hmt , str#, ustr -> loc.map
 '''
-################################################################
-################################################################
 
 # sound tags actually located in the sound cache
 # still have part of the tag exist in the map.
 indexed_sound = dict(snd_.snd__def.descriptor[1])
 indexed_sound[18] = reflexive_struct
 
+
 meta_cases = {
-    'bitm':bitm.bitm_def.descriptor[1],
-    'boom':boom.boom_def.descriptor[1],
-    'colo':colo.colo_def.descriptor[1],
-    'devc':devc.devc_def.descriptor[1],
-    'devi':devi.devi_def.descriptor[1],
-    'effe':effe.effe_def.descriptor[1],
-    'flag':flag.flag_def.descriptor[1],
-    'fog ':fog_.fog__def.descriptor[1],
-    'foot':foot.foot_def.descriptor[1],
-    'hmt ':hmt_.hmt__def.descriptor[1],
-    'hud#':hud_.hud__def.descriptor[1],
-    'item':item.item_def.descriptor[1],
-    'itmc':itmc.itmc_def.descriptor[1],
-    'jpt!':jpt_.jpt__def.descriptor[1],
-    'metr':metr.metr_def.descriptor[1],
-    'mply':mply.mply_def.descriptor[1],
-    'ngpr':ngpr.ngpr_def.descriptor[1],
-    'pphy':pphy.pphy_def.descriptor[1],
-    'scex':scex.scex_def.descriptor[1],
-    'schi':schi.schi_def.descriptor[1],
-    'senv':senv.senv_def.descriptor[1],
-    'sgla':sgla.sgla_def.descriptor[1],
-    'shdr':shdr.shdr_def.descriptor[1],
-    'smet':smet.smet_def.descriptor[1],
-    'snde':snde.snde_def.descriptor[1],
-    'snd!':snd_.snd__def.descriptor[1],
-    'soso':soso.soso_def.descriptor[1],
-    'sotr':sotr.sotr_def.descriptor[1],
-    'Soul':Soul.soul_def.descriptor[1],
-    'spla':spla.spla_def.descriptor[1],
-    'str#':str_.str__def.descriptor[1],
-    'swat':swat.swat_def.descriptor[1],
-    'tagc':tagc.tagc_def.descriptor[1],
-    'trak':trak.trak_def.descriptor[1],
-    'ustr':ustr.ustr_def.descriptor[1],
-    'wind':wind.wind_def.descriptor[1],
     'indexed_snd!':indexed_sound,
     }
+modules = locals()
+fcc_map = dict(ant_="ant!", glw_="glw!", jpt_="jpt!", snd_="snd!",
+               hud_="hud#", str_="str#", fog_="fog ", hmt_="hmt ", sky_="sky ")
+fccs = set(["actr", "actv", "ant_", "antr", "bipd", "bitm", "boom", "cdmg",
+            "coll", "colo", "cont", "ctrl", "deca", "DeLa", "devc", "devi",
+            "dobc", "effe", "elec", "eqip", "flag", "fog_", "font", "foot",
+            "garb", "glw_", "grhi", "hmt_", "hud_", "hudg", "item", "itmc",
+            "jpt_", "lens", "lifi", "ligh", "mach", "matg", "metr", "mgs2",
+            "mod2", "mode", "mply", "ngpr", "obje", "part", "pctl", "phys",
+            "plac", "pphy", "proj", "rain", "sbsp", "scen", "scex", "schi",
+            "scnr", "senv", "sgla", "shdr", "sky_", "smet", "snd_", "snde",
+            "sndl", "soso", "sotr", "Soul", "spla", "ssce", "str_", "swat",
+            "tagc", "trak", "udlg", "unhi", "unit", "ustr", "vcky", "vehi",
+            "weap", "wind", "wphi"])
+
+for fcc in fccs:
+    meta_cases[fcc_map.get(fcc, fcc)] = modules[fcc].get().descriptor[1]
+
+# not for export
+del modules

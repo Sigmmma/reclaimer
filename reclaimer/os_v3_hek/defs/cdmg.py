@@ -39,7 +39,7 @@ damage = Struct("damage",
         BFloat("i", UNIT_SCALE=per_sec_unit_scale),
         BFloat("j", UNIT_SCALE=per_sec_unit_scale),
         BFloat("k", UNIT_SCALE=per_sec_unit_scale),
-        SIDETIP="[0,+inf]", ORIENT="h"
+        SIDETIP="[-inf,+inf]", ORIENT="h"
         ),
     )
 
@@ -53,5 +53,5 @@ cdmg_def = TagDef("cdmg",
     blam_header('cdmg'),
     cdmg_body,
 
-    ext=".continuous_damage_effect", endian=">", tag_cls=HekTag
+    ext=".continuous_damage_effect", endian=">"
     )
