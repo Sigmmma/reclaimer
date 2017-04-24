@@ -53,5 +53,5 @@ jpt__def = TagDef("jpt!",
     blam_header('jpt!', 6),
     jpt__body,
 
-    ext=".damage_effect", endian=">",
+    ext=".damage_effect", endian=">", tag_cls=HekTag,
     )

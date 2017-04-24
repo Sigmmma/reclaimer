@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 animation_comment = """
@@ -108,5 +109,5 @@ avti_def = TagDef("avti",
     blam_header_os('avti', 1),
     avti_body,
 
-    ext=".actor_variant_transform_in", endian=">"
+    ext=".actor_variant_transform_in", endian=">", tag_cls=HekTag
     )

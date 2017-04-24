@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 frame = Struct("frame",
@@ -57,5 +58,5 @@ mgs2_def = TagDef("mgs2",
     blam_header("mgs2"),
     mgs2_body,
 
-    ext=".light_volume", endian=">",
+    ext=".light_volume", endian=">", tag_cls=HekTag,
     )

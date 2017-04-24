@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 def object_reference(name, *args, **kwargs):
@@ -946,5 +947,5 @@ scnr_def = TagDef("scnr",
     blam_header('scnr', 2),
     scnr_body,
 
-    ext=".scenario", endian=">"
+    ext=".scenario", endian=">", tag_cls=HekTag
     )

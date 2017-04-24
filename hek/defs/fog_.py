@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 fog__body = Struct("tagdata",
@@ -70,5 +71,5 @@ fog__def = TagDef("fog ",
     blam_header('fog '),
     fog__body,
     
-    ext=".fog", endian=">"
+    ext=".fog", endian=">", tag_cls=HekTag
     )

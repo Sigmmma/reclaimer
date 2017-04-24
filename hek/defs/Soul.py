@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 ui_widget_def = Struct("ui widget definition",
@@ -20,5 +21,5 @@ soul_def = TagDef("Soul",
     blam_header('Soul'),
     soul_body,#lol Megaman X4
 
-    ext=".ui_widget_collection", endian=">"
+    ext=".ui_widget_collection", endian=">", tag_cls=HekTag
     )

@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 infection_form = Struct("infection form",
@@ -70,5 +71,5 @@ gelc_def = TagDef("gelc",
     blam_header_os('gelc'),
     gelc_body,
 
-    ext=".project_yellow_globals_cv", endian=">"
+    ext=".project_yellow_globals_cv", endian=">", tag_cls=HekTag
     )

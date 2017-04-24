@@ -1,5 +1,6 @@
 from .obje import *
 from .item import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 # replace the object_type enum one that uses
@@ -21,5 +22,5 @@ garb_def = TagDef("garb",
     blam_header('garb'),
     garb_body,
 
-    ext=".garbage", endian=">"
+    ext=".garbage", endian=">", tag_cls=HekTag
     )

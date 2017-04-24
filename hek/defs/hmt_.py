@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 message_element = QStruct("message element",
@@ -29,5 +30,5 @@ hmt__def = TagDef("hmt ",
     blam_header('hmt '),
     hmt__body,
 
-    ext=".hud_message_text", endian=">"
+    ext=".hud_message_text", endian=">", tag_cls=HekTag
     )

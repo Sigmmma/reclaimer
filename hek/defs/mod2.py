@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 def get():
@@ -251,5 +252,5 @@ mod2_def = TagDef("mod2",
     blam_header('mod2', 5),
     mod2_body,
 
-    ext=".gbxmodel", endian=">"
+    ext=".gbxmodel", endian=">", tag_cls=HekTag
     )

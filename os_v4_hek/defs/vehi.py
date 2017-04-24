@@ -19,5 +19,5 @@ vehi_def = TagDef("vehi",
     blam_header('vehi'),
     vehi_body,
 
-    ext=".vehicle", endian=">"
+    ext=".vehicle", endian=">", tag_cls=HekTag
     )

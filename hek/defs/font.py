@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 def get(): return font_def
@@ -49,5 +50,5 @@ font_def = TagDef("font",
     blam_header('font'),
     font_body,
 
-    ext=".font", endian=">"
+    ext=".font", endian=">", tag_cls=HekTag
     )

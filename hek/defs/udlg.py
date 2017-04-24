@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 def get(): return udlg_def
@@ -233,5 +234,5 @@ udlg_def = TagDef("udlg",
     blam_header('udlg'),
     udlg_body,
 
-    ext=".dialogue", endian=">"
+    ext=".dialogue", endian=">", tag_cls=HekTag
     )

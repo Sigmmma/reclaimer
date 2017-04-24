@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 detail_sound = Struct("detail sound",
@@ -67,5 +68,5 @@ sndl_def = TagDef("sndl",
     blam_header("sndl", 3),
     sndl_body,
 
-    ext=".sound_looping", endian=">",
+    ext=".sound_looping", endian=">", tag_cls=HekTag,
     )

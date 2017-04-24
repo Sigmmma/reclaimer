@@ -1,4 +1,5 @@
 from .obje import *
+from .objs.tag import HekTag
 
 # replace the object_type enum one that uses
 # the correct default value for this object
@@ -125,5 +126,5 @@ proj_def = TagDef("proj",
     blam_header('proj', 5),
     proj_body,
 
-    ext=".projectile", endian=">"
+    ext=".projectile", endian=">", tag_cls=HekTag
     )

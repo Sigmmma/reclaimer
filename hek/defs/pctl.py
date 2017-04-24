@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 particle_creation_physics = (
@@ -147,5 +148,5 @@ pctl_def = TagDef("pctl",
     blam_header("pctl", 4),
     pctl_body,
 
-    ext=".particle_system", endian=">",
+    ext=".particle_system", endian=">", tag_cls=HekTag,
     )

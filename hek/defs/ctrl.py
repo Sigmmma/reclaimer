@@ -1,5 +1,6 @@
 from .obje import *
 from .devi import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 # replace the object_type enum one that uses
@@ -42,5 +43,5 @@ ctrl_def = TagDef("ctrl",
     blam_header('ctrl'),
     ctrl_body,
 
-    ext=".device_control", endian=">"
+    ext=".device_control", endian=">", tag_cls=HekTag
     )

@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 build_info = Struct("build info",
@@ -89,5 +90,5 @@ yelo_def = TagDef("yelo",
     blam_header_os('yelo', 2),
     yelo_body,
 
-    ext=".project_yellow", endian=">"
+    ext=".project_yellow", endian=">", tag_cls=HekTag
     )

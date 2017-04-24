@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -74,5 +75,5 @@ metr_def = TagDef("metr",
     meter_body,
 
     subdefs={"meter_image":meter_image},
-    ext=".meter", endian=">"
+    ext=".meter", endian=">", tag_cls=HekTag
     )

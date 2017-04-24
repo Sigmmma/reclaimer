@@ -1,4 +1,5 @@
 from .obje import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 # replace the object_type enum one that uses
@@ -19,5 +20,5 @@ scen_def = TagDef("scen",
     blam_header('scen'),
     scen_body,
 
-    ext=".scenery", endian=">"
+    ext=".scenery", endian=">", tag_cls=HekTag
     )
