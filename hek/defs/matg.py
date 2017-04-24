@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 def get():
@@ -366,5 +367,5 @@ matg_def = TagDef("matg",
     blam_header('matg', 3),
     matg_body,
 
-    ext=".globals", endian=">"
+    ext=".globals", endian=">", tag_cls=HekTag
     )

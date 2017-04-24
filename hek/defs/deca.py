@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 deca_body = Struct("tagdata",
@@ -73,5 +74,5 @@ deca_def = TagDef("deca",
     blam_header('deca'),
     deca_body,
 
-    ext=".decal", endian=">"
+    ext=".decal", endian=">", tag_cls=HekTag
     )

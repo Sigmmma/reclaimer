@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 velocity_properties = Struct("velocity properties",
@@ -85,5 +86,5 @@ glw__def = TagDef("glw!",
     blam_header('glw!'),
     glw__body,
 
-    ext=".glow", endian=">"
+    ext=".glow", endian=">", tag_cls=HekTag
     )

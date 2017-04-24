@@ -51,5 +51,5 @@ scnr_def = TagDef("scnr",
     blam_header('scnr', 2),
     scnr_body,
 
-    ext=".scenario", endian=">"
+    ext=".scenario", endian=">", tag_cls=HekTag
     )

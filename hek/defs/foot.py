@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 material = Struct("material",
@@ -30,5 +31,5 @@ foot_def = TagDef("foot",
     blam_header('foot'),
     foot_body,
     
-    ext=".material_effects", endian=">"
+    ext=".material_effects", endian=">", tag_cls=HekTag
     )

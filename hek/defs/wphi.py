@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 from .grhi import messaging_information, multitex_overlay, hud_background
 
@@ -321,5 +322,5 @@ wphi_def = TagDef("wphi",
     blam_header("wphi", 2),
     wphi_body,
 
-    ext=".weapon_hud_interface", endian=">",
+    ext=".weapon_hud_interface", endian=">", tag_cls=HekTag,
     )

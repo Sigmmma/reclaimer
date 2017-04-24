@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 from .grhi import multitex_overlay, hud_background
 
@@ -186,5 +187,5 @@ unhi_def = TagDef("unhi",
     blam_header("unhi"),
     unhi_body,
 
-    ext=".unit_hud_interface", endian=">",
+    ext=".unit_hud_interface", endian=">", tag_cls=HekTag,
     )

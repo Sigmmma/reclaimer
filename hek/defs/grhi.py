@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 messaging_information = Struct("messaging information",
@@ -225,5 +226,5 @@ grhi_def = TagDef("grhi",
     blam_header("grhi"),
     grhi_body,
 
-    ext=".grenade_hud_interface", endian=">",
+    ext=".grenade_hud_interface", endian=">", tag_cls=HekTag,
     )

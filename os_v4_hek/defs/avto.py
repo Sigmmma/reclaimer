@@ -1,4 +1,5 @@
 from .avti import *
+from ...hek.defs.objs.tag import HekTag
 
 instigators_comment = """
 Controls which attacking unit type can trigger this transform.
@@ -125,5 +126,5 @@ avto_def = TagDef("avto",
     blam_header_os('avto', 1),
     avto_body,
 
-    ext=".actor_variant_transform_out", endian=">"
+    ext=".actor_variant_transform_out", endian=">", tag_cls=HekTag
     )

@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 text_value_pair = Struct("effect_instance",
@@ -46,5 +47,5 @@ sily_def = TagDef("sily",
     blam_header_os('sily', 0),
     sily_body,
 
-    ext=".text_value_pair_definition", endian=">"
+    ext=".text_value_pair_definition", endian=">", tag_cls=HekTag
     )

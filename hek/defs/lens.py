@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 reflection = Struct("reflection",
@@ -95,5 +96,5 @@ lens_def = TagDef("lens",
     blam_header("lens", 2),
     lens_body,
 
-    ext=".lens_flare", endian=">",
+    ext=".lens_flare", endian=">", tag_cls=HekTag,
     )

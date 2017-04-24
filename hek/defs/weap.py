@@ -1,5 +1,6 @@
 from .obje import *
 from .item import *
+from .objs.tag import HekTag
 
 # replace the object_type enum one that uses
 # the correct default value for this object
@@ -295,5 +296,5 @@ weap_def = TagDef("weap",
     blam_header('weap', 2),
     weap_body,
 
-    ext=".weapon", endian=">"
+    ext=".weapon", endian=">", tag_cls=HekTag
     )

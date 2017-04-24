@@ -12,5 +12,5 @@ part_def = TagDef("part",
     blam_header("part", 2),
     part_body,
 
-    ext=".particle", endian=">",
+    ext=".particle", endian=">", tag_cls=HekTag,
     )

@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -22,5 +23,5 @@ trak_def = TagDef("trak",
     blam_header('trak', 2),
     trak_body,
 
-    ext=".camera_track", endian=">"
+    ext=".camera_track", endian=">", tag_cls=HekTag
     )

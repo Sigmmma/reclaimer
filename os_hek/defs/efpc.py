@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 script_variable = Struct("script variable",
@@ -78,5 +79,5 @@ efpc_def = TagDef("efpc",
     blam_header_os('efpc'),
     efpc_body,
 
-    ext=".effect_postprocess_collection", endian=">"
+    ext=".effect_postprocess_collection", endian=">", tag_cls=HekTag
     )

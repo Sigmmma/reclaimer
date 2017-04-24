@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 transform_states_comment = """
@@ -46,5 +47,5 @@ avtc_def = TagDef("avtc",
     blam_header_os('avtc', 1),
     avtc_body,
 
-    ext=".actor_variant_transform_collection", endian=">"
+    ext=".actor_variant_transform_collection", endian=">", tag_cls=HekTag
     )
