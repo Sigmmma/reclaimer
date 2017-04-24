@@ -18,5 +18,5 @@ scen_def = TagDef("scen",
     blam_header('scen'),
     scen_body,
 
-    ext=".scenery", endian=">"
+    ext=".scenery", endian=">", tag_cls=HekTag
     )

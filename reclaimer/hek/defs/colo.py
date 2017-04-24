@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -20,5 +21,5 @@ colo_def = TagDef("colo",
     blam_header('colo'),
     colo_body,
 
-    ext=".color_table", endian=">"
+    ext=".color_table", endian=">", tag_cls=HekTag
     )

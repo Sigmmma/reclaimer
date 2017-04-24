@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 child_ids = Struct("child id",
@@ -31,5 +32,5 @@ tag__def = TagDef("tag+",
     blam_header_os('tag+'),
     tag__body,
 
-    ext=".tag_database", endian=">"
+    ext=".tag_database", endian=">", tag_cls=HekTag
     )

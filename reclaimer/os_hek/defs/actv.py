@@ -16,5 +16,5 @@ actv_def = TagDef("actv",
     blam_header('actv'),
     actv_body,
 
-    ext=".actor_variant", endian=">"
+    ext=".actor_variant", endian=">", tag_cls=HekTag
     )

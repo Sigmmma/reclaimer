@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 def get(): return dobc_def
@@ -42,5 +43,5 @@ dobc_def = TagDef("dobc",
     blam_header('dobc'),
     dobc_body,
 
-    ext=".detail_object_collection", endian=">"
+    ext=".detail_object_collection", endian=">", tag_cls=HekTag
     )

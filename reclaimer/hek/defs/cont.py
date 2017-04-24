@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 def get(): return cont_def
@@ -106,5 +107,5 @@ cont_def = TagDef("cont",
     blam_header('cont', 3),
     cont_body,
 
-    ext=".contrail", endian=">"
+    ext=".contrail", endian=">", tag_cls=HekTag
     )

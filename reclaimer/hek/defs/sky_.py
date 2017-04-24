@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 shader_function = Struct('shader function',
@@ -28,7 +29,7 @@ light = Struct('light',
     Pad(4),
     yp_float_rad("direction"),  # radians
     float_rad("diameter"),  # radians (yeah, it sounds weird, but this
-    #                      value is stored as a radian coefficient)
+    #                         value is stored as a radian coefficient)
     SIZE=116
     )
 
@@ -75,5 +76,5 @@ sky__def = TagDef("sky ",
     blam_header('sky '),
     sky__body,
 
-    ext=".sky", endian=">",
+    ext=".sky", endian=">", tag_cls=HekTag,
     )

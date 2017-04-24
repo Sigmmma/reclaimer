@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 def get():
@@ -192,5 +193,5 @@ unit_def = TagDef("unit",
     blam_header('unit', 2),
     unit_body,
 
-    ext=".unit", endian=">"
+    ext=".unit", endian=">", tag_cls=HekTag
     )

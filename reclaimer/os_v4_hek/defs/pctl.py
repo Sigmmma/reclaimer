@@ -64,5 +64,5 @@ pctl_def = TagDef("pctl",
     blam_header("pctl", 4),
     pctl_body,
 
-    ext=".particle_system", endian=">",
+    ext=".particle_system", endian=">", tag_cls=HekTag,
     )

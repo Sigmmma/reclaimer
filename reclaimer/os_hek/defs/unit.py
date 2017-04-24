@@ -13,5 +13,5 @@ unit_def = TagDef("unit",
     blam_header('unit', 2),
     unit_body,
 
-    ext=".unit", endian=">"
+    ext=".unit", endian=">", tag_cls=HekTag
     )

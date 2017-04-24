@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 # Typing these up took FOREVER
@@ -312,5 +313,5 @@ DeLa_def = TagDef("DeLa",
     blam_header('DeLa'),
     DeLa_body,
 
-    ext=".ui_widget_definition", endian=">"
+    ext=".ui_widget_definition", endian=">", tag_cls=HekTag
     )

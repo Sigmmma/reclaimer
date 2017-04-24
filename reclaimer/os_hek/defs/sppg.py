@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 bloom_global = Struct("bloom global",
@@ -28,5 +29,5 @@ sppg_def = TagDef("sppg",
     blam_header_os('sppg'),
     sppg_body,
 
-    ext=".shader_postprocess_globals", endian=">"
+    ext=".shader_postprocess_globals", endian=">", tag_cls=HekTag
     )

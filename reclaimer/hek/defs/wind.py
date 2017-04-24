@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 wind_body = Struct("tagdata",
@@ -18,5 +19,5 @@ wind_def = TagDef("wind",
     blam_header('wind'),
     wind_body,
 
-    ext=".wind", endian=">"
+    ext=".wind", endian=">", tag_cls=HekTag
     )

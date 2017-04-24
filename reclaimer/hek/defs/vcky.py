@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 def get(): return vcky_def
@@ -53,5 +54,5 @@ vcky_def = TagDef("vcky",
     blam_header('vcky', 2),
     vcky_body,
 
-    ext=".virtual_keyboard", endian=">"
+    ext=".virtual_keyboard", endian=">", tag_cls=HekTag
     )

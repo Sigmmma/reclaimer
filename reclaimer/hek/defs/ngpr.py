@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 ngpr_body = Struct("tagdata",
@@ -22,5 +23,5 @@ ngpr_def = TagDef("ngpr",
     blam_header('ngpr', 2),
     ngpr_body,
 
-    ext=".preferences_network_game", endian=">"
+    ext=".preferences_network_game", endian=">", tag_cls=HekTag
     )

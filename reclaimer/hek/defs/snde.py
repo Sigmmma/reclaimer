@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 snde_body = QStruct("tagdata",
@@ -27,5 +28,5 @@ snde_def = TagDef("snde",
     blam_header('snde'),
     snde_body,
 
-    ext=".sound_environment", endian=">"
+    ext=".sound_environment", endian=">", tag_cls=HekTag
     )

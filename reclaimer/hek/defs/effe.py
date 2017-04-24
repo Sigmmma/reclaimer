@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 part_scale_modifiers = (
@@ -165,5 +166,5 @@ effe_def = TagDef("effe",
     blam_header("effe", 4),
     effe_body,
 
-    ext=".effect", endian=">",
+    ext=".effect", endian=">", tag_cls=HekTag,
     )

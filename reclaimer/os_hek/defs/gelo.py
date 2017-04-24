@@ -1,4 +1,5 @@
 from .yelo import *
+from ...hek.defs.objs.tag import HekTag
 
 gelo_body = Struct("tagdata",
     BSInt16("version"),
@@ -32,5 +33,5 @@ gelo_def = TagDef("gelo",
     blam_header_os('gelo', 2),
     gelo_body,
 
-    ext=".project_yellow_globals", endian=">"
+    ext=".project_yellow_globals", endian=">", tag_cls=HekTag
     )

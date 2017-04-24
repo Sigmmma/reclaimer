@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 shader_pass = Struct("pass",
@@ -49,5 +50,5 @@ shpp_def = TagDef("shpp",
     blam_header_os('shpp'),
     shpp_body,
 
-    ext=".shader_postprocess", endian=">"
+    ext=".shader_postprocess", endian=">", tag_cls=HekTag
     )

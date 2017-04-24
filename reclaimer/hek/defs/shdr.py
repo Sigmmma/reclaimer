@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 shdr_attrs = Struct("shdr attrs",
@@ -49,5 +50,5 @@ shdr_def = TagDef("shdr",
     blam_header('shdr'),
     shader_body,
 
-    ext=".shader", endian=">"
+    ext=".shader", endian=">", tag_cls=HekTag
     )

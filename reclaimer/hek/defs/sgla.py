@@ -1,4 +1,5 @@
 from .shdr import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 sgla_attrs = Struct("sgla attrs",
@@ -70,5 +71,5 @@ sgla_def = TagDef("sgla",
     blam_header('sgla'),
     sgla_body,
 
-    ext=".shader_transparent_glass", endian=">"
+    ext=".shader_transparent_glass", endian=">", tag_cls=HekTag
     )

@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 string_reference = Struct("string reference",
@@ -31,5 +32,5 @@ unic_def = TagDef("unic",
     blam_header_os('unic', 0),
     unic_body,
 
-    ext=".multilingual_unicode_string_list", endian=">"
+    ext=".multilingual_unicode_string_list", endian=">", tag_cls=HekTag
     )

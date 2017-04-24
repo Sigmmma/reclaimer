@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -23,5 +24,5 @@ mply_def = TagDef("mply",
     blam_header('mply'),
     mply_body,
 
-    ext=".multiplayer_scenario_description", endian=">"
+    ext=".multiplayer_scenario_description", endian=">", tag_cls=HekTag
     )

@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 button_icon = Struct("button icon",
@@ -194,5 +195,5 @@ hudg_def = TagDef("hudg",
     blam_header("hudg"),
     hudg_body,
 
-    ext=".hud_globals", endian=">",
+    ext=".hud_globals", endian=">", tag_cls=HekTag,
     )

@@ -1,6 +1,7 @@
 from math import pi
 
 from .shdr import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 ripple = Struct("ripple",
@@ -66,5 +67,5 @@ swat_def = TagDef("swat",
     blam_header('swat', 2),
     swat_body,
 
-    ext=".shader_transparent_water", endian=">"
+    ext=".shader_transparent_water", endian=">", tag_cls=HekTag
     )

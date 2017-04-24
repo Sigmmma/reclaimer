@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 efpp_attrs = Struct("efpp attrs",
@@ -21,5 +22,5 @@ efpp_def = TagDef("efpp",
     blam_header_os('efpp'),
     efpp_body,
 
-    ext=".effect_postprocess", endian=">"
+    ext=".effect_postprocess", endian=">", tag_cls=HekTag
     )

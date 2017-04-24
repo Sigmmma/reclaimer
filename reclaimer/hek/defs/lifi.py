@@ -1,5 +1,6 @@
 from .obje import *
 from .devi import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 # replace the object_type enum one that uses
@@ -22,5 +23,5 @@ lifi_def = TagDef("lifi",
     blam_header('lifi'),
     lifi_body,
 
-    ext=".device_light_fixture", endian=">"
+    ext=".device_light_fixture", endian=">", tag_cls=HekTag
     )

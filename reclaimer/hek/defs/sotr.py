@@ -1,4 +1,5 @@
 from .shdr import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 sotr_input_mappings = (
@@ -262,5 +263,5 @@ sotr_def = TagDef("sotr",
     blam_header("sotr"),
     sotr_body,
 
-    ext=".shader_transparent_generic", endian=">",
+    ext=".shader_transparent_generic", endian=">", tag_cls=HekTag,
     )

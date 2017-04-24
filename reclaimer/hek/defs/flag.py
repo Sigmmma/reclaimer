@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 def get(): return flag_def
@@ -46,5 +47,5 @@ flag_def = TagDef("flag",
     blam_header('flag'),
     flag_body,
 
-    ext=".flag", endian=">"
+    ext=".flag", endian=">", tag_cls=HekTag
     )

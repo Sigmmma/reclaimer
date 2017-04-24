@@ -1,4 +1,5 @@
 from .shpp import *
+from ...hek.defs.objs.tag import HekTag
 
 value_name = ascii_str32("value name")
 runtime_value = BSEnum16("runtime value",
@@ -200,5 +201,5 @@ shpg_def = TagDef("shpg",
     blam_header_os('shpg'),
     shpg_body,
 
-    ext=".shader_postprocess_generic", endian=">"
+    ext=".shader_postprocess_generic", endian=">", tag_cls=HekTag
     )

@@ -5,9 +5,22 @@ from . objs.map import MapTag
 
 
 def get(): return map_def
-'''
-def map_fcc(value):
-    return fcc(value, 'big')
+
+
+def tag_index_array_pointer(node=None, parent=None, new_value=None, **kwargs):
+    if node is None:
+        raise KeyError()
+    b_parent = node.parent
+
+    magic = kwargs.get('magic')
+    if magic is None:
+        magic = XBOX_INDEX_MAGIC - b_parent.map_header.tag_index_offset
+
+    if new_value is not None:
+        return
+    return (XBOX_TAG_INDEX_HEADER_SIZE +
+            b_parent.tag_index_header.index_magic - magic)
+
 
 def tag_path_pointer(node=None, parent=None, new_value=None, **kwargs):
     if parent is None:
@@ -24,7 +37,7 @@ def tag_path_pointer(node=None, parent=None, new_value=None, **kwargs):
         return
     return XBOX_TAG_INDEX_HEADER_SIZE + t_head.path_offset - magic
 
-
+'''
 def tag_meta_data_pointer(node=None, parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
@@ -53,35 +66,23 @@ def tag_meta_case(node=None, parent=None, new_value=None, **kwargs):
         magic = XBOX_INDEX_MAGIC - m_head.tag_index_offset
 
     return t_head.class_1.data
-    
-
-def tag_index_array_pointer(node=None, parent=None, new_value=None, **kwargs):
-    if node is None:
-        raise KeyError()
-    b_parent = node.parent
-
-    magic = kwargs.get('magic')
-    if magic is None:
-        magic = XBOX_INDEX_MAGIC - b_parent.map_header.tag_index_offset
-
-    if new_value is not None:
-        return
-    return (XBOX_TAG_INDEX_HEADER_SIZE +
-            b_parent.tag_index_header.index_magic - magic)
 
 
 tag_meta = Switch("tag meta",
     CASE=tag_meta_case,
-    CASES={map_fcc(k): meta_cases[k] for k in meta_cases if len(k) == 4},
+    CASES={fcc(k, 'big'): meta_cases[k] for k in meta_cases if len(k) == 4},
     POINTER=tag_meta_data_pointer,
     )
+'''
+tag_meta = Void("tag meta")
 
 
 tag_data = Container("tag",
     CStrLatin1("tag path", POINTER=tag_path_pointer),
     tag_meta,
     )
-'''
+
+
 tag_header = Struct("tag header",
     LUEnum32("class 1", GUI_NAME="primary tag class", INCLUDE=valid_tags),
     LUEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_tags),
@@ -93,7 +94,7 @@ tag_header = Struct("tag header",
     # if indexed is 1, the meta_offset is the literal index in the
     # bitmaps, sounds, or loc cache that the meta data is located in.
     Pad(4),
-    #STEPTREE=tag_data,
+    STEPTREE=tag_data,
     )
 
 #Apparently the Halo Demo maps have a different
@@ -147,13 +148,13 @@ tag_index = TagIndex("tag index",
     SUB_STRUCT=tag_header, POINTER=tag_index_array_pointer,
     WIDGET=DynamicArrayFrame, DYN_NAME_PATH=".STEPTREE.tag_path",
     )
-
+'''
 subdefs = {}
 for key in tag_meta[CASES]:
     #need to make a copy of this, or it screws up the original
     subdefs[key] = dict(tag_meta[CASES][key])
     subdefs[key][POINTER] = tag_meta[POINTER]
-        
+'''
 map_def = TagDef("halo1_xbox_map",
     map_header,
     tag_index_header_xbox,

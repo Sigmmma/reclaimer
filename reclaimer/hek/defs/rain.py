@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 particle_type = Struct("particle_type",
@@ -98,5 +99,5 @@ rain_def = TagDef("rain",
     blam_header("rain"),
     rain_body,
 
-    ext=".weather_particle_system", endian=">",
+    ext=".weather_particle_system", endian=">", tag_cls=HekTag,
     )

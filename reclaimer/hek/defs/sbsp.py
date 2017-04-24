@@ -1,4 +1,5 @@
 from .coll import *
+from .objs.tag import HekTag
 
 plane = QStruct("plane",
     BFloat("i", MIN=0.0, MAX=1.0),
@@ -387,5 +388,5 @@ sbsp_def = TagDef("sbsp",
     blam_header("sbsp", 5),
     sbsp_body,
 
-    ext=".scenario_structure_bsp", endian=">",
+    ext=".scenario_structure_bsp", endian=">", tag_cls=HekTag,
     )

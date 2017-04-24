@@ -1,4 +1,5 @@
 from .shdr import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -106,5 +107,5 @@ soso_def = TagDef("soso",
     blam_header('soso', 2),
     soso_body,
 
-    ext=".shader_model", endian=">"
+    ext=".shader_model", endian=">", tag_cls=HekTag
     )

@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 string_data_struct = rawtext_ref("string", StrLatin1, max_size=4096)
@@ -17,5 +18,5 @@ str__def = TagDef("str#",
     blam_header('str#'),
     str__body,
 
-    ext=".string_list", endian=">"
+    ext=".string_list", endian=">", tag_cls=HekTag
     )

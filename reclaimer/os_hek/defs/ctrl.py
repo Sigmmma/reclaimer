@@ -18,5 +18,5 @@ ctrl_def = TagDef("ctrl",
     blam_header('ctrl'),
     ctrl_body,
 
-    ext=".device_control", endian=">"
+    ext=".device_control", endian=">", tag_cls=HekTag
     )

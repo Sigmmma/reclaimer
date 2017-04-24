@@ -1,4 +1,5 @@
 from .efpp import *
+from ...hek.defs.objs.tag import HekTag
 
 shader = Struct("shader",
     dependency_os("shader", 'shpg'),
@@ -36,5 +37,5 @@ efpg_def = TagDef("efpg",
     blam_header_os('efpg'),
     efpg_body,
 
-    ext=".effect_postprocess_generic", endian=">"
+    ext=".effect_postprocess_generic", endian=">", tag_cls=HekTag
     )

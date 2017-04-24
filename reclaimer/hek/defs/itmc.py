@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
                   
 item_permutation = Struct("permutation",
@@ -24,5 +25,5 @@ itmc_def = TagDef("itmc",
     blam_header('itmc',0),
     itmc_body,
 
-    ext=".item_collection", endian=">"
+    ext=".item_collection", endian=">", tag_cls=HekTag
     )

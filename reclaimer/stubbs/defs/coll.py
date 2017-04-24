@@ -19,7 +19,7 @@ node = Struct("node",
     Pad(8),
     BSInt16("unknown"),
     Pad(2),
-    reflexive("bsps", bsp, 32),
+    reflexive("bsps", permutation_bsp, 32),
     SIZE=64
     )
 

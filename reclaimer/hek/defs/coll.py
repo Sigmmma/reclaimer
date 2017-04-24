@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 body = Struct("body",
@@ -243,5 +244,5 @@ coll_def = TagDef("coll",
     blam_header("coll", 10),
     coll_body,
 
-    ext=".model_collision_geometry", endian=">",
+    ext=".model_collision_geometry", endian=">", tag_cls=HekTag,
     )

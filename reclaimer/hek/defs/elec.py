@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 shader = Struct("shader",
@@ -59,5 +60,5 @@ elec_def = TagDef("elec",
     blam_header("elec"),
     elec_body,
 
-    ext=".lightning", endian=">",
+    ext=".lightning", endian=">", tag_cls=HekTag,
     )

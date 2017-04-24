@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 density_comment = """Densities(grams per milliliter)\n
@@ -52,5 +53,5 @@ pphy_def = TagDef("pphy",
     blam_header('pphy'),
     pphy_body,
 
-    ext=".point_physics", endian=">"
+    ext=".point_physics", endian=">", tag_cls=HekTag
     )

@@ -1,4 +1,5 @@
 from ...common_descs import *
+from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 sound_classes = (
@@ -140,5 +141,5 @@ snd__def = TagDef("snd!",
     blam_header('snd!', 4),
     snd__body,
 
-    ext=".sound", endian=">",
+    ext=".sound", endian=">", tag_cls=HekTag,
     )

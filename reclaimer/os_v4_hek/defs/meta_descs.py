@@ -1,4 +1,4 @@
-from ...hek.defs.meta_descs import *
+from ...os_v3_hek.defs.meta_descs import *
 from . import *
 
 modules = locals()

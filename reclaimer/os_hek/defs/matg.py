@@ -11,5 +11,5 @@ matg_def = TagDef("matg",
     blam_header_os('matg', 3),
     matg_body,
 
-    ext=".globals", endian=">"
+    ext=".globals", endian=">", tag_cls=HekTag
     )

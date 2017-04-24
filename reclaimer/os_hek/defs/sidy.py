@@ -1,4 +1,5 @@
 from ...common_descs import *
+from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 sidy_body = Struct("tagdata",
@@ -13,5 +14,5 @@ sidy_def = TagDef("sidy",
     blam_header_os('sidy'),
     sidy_body,
 
-    ext=".string_id_yelo", endian=">"
+    ext=".string_id_yelo", endian=">", tag_cls=HekTag
     )
