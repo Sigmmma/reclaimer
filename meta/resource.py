@@ -1,6 +1,6 @@
-from ...common_descs import *
+from ..common_descs import *
 from supyr_struct.defs.tag_def import TagDef
-from ...hek.defs import str_, ustr, hmt_, bitm, snd_, font
+from ..hek.defs import str_, ustr, hmt_, bitm, snd_, font
 
 def get(): return resource_def
 

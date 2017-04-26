@@ -1,9 +1,9 @@
-from ...os_v3_hek.defs.meta_descs import *
+from ...os_v3_hek.defs.meta_descs import fccs, fcc_map
 from . import *
 
 modules = locals()
-meta_cases = dict(meta_cases)
-fcc_map = dict(**fcc_map)
+meta_cases = {}
+fccs = set(fccs)
 fccs.remove("gelc")
 
 for fcc in fccs:
