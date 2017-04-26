@@ -23,8 +23,8 @@ meta_cases = {
     'indexed_snd!':indexed_sound,
     }
 modules = locals()
-fcc_map = dict(ant_="ant!", glw_="glw!", jpt_="jpt!", snd_="snd!",
-               hud_="hud#", str_="str#", fog_="fog ", hmt_="hmt ", sky_="sky ")
+fcc_map = dict(hud_="hud#", str_="str#", fog_="fog ", hmt_="hmt ", sky_="sky ",
+               ant_="ant!", glw_="glw!", jpt_="jpt!", snd_="snd!")
 fccs = set(["actr", "actv", "ant_", "antr", "bipd", "bitm", "boom", "cdmg",
             "coll", "colo", "cont", "ctrl", "deca", "DeLa", "devc", "devi",
             "dobc", "effe", "elec", "eqip", "flag", "fog_", "font", "foot",

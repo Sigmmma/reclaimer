@@ -46,26 +46,8 @@ def encode_tag_ref_str(self, node, parent=None, attr_index=None):
     return b''
 
 
-def tag_index_parser(self, desc, node=None, parent=None, attr_index=None,
-                     rawdata=None, root_offset=0, offset=0, **kwargs):
-    if parent is not None:
-        m_head = parent.map_header
-        root_tag = parent.get_root()
-        kwargs['magic'] = root_tag.index_magic - m_head.tag_index_offset
-
-    return array_parser(self, desc, node, parent, attr_index,
-                        rawdata, root_offset, offset, **kwargs)
-
-
-def tag_index_serializer(self, node, parent=None, attr_index=None,
-                         writebuffer=None, root_offset=0, offset=0, **kwargs):
-    if parent is not None:
-        m_head = parent.map_header
-        root_tag = parent.get_root()
-        kwargs['magic'] = root_tag.index_magic - m_head.tag_index_offset
-        
-    return array_serializer(self, node, parent, attr_index,
-                            writebuffer, root_offset, offset, **kwargs)
+tag_index_parser = array_parser
+tag_index_serializer = array_serializer
 
 
 def rawdata_parser(self, desc, node=None, parent=None, attr_index=None,
