@@ -1,15 +1,44 @@
 from supyr_struct.defs.constants import *
 from binilla.constants import *
+from struct import unpack
 
-PC_TAG_INDEX_HEADER_SIZE   = 40
-XBOX_TAG_INDEX_HEADER_SIZE = 36
+# for some of these magics we'll need to make
+# them signed by subtracting (0xFFFFFFFF + 1)
+XBOX_BSP_MAGIC = 0x819A6000 - 0x100000000
 
-XBOX_BSP_MAGIC = 2174377984
+PCDEMO_INDEX_MAGIC = 0x4BF10000
+PC_INDEX_MAGIC     = 0x40440000
+XBOX_INDEX_MAGIC   = 0x803A6000 - 0x100000000
+STUBBS_INDEX_MAGIC = 0x8038B000 - 0x100000000
 
-PC_INDEX_MAGIC     = 1078198312  # default value for the pc halo 1 index magic
-XBOX_INDEX_MAGIC   = 2151309348  # default value for the xbox halo 1 index magic
-STUBBS_INDEX_MAGIC = 2151198756  # default value for the xbox stubbs index magic
 
+map_build_dates = {
+    "stubbs":   "01.10.12.2276",
+    "pcstubbs": "",
+    "xbox":     "01.10.12.2276",
+    "xbox2":    "01.10.12.2274",
+    "pcdemo":   "01.00.00.0576",
+    "pc":       "01.00.00.0564",
+    "ce":       "01.00.00.0609",
+    }
+
+map_versions = {
+    "stubbs": 5,
+    "pcstubbs": 5,
+    "xbox": 5,
+    "pcdemo": 6,
+    "pc": 7,
+    "ce": 609,
+    }
+
+map_magics = {
+    "stubbs":   STUBBS_INDEX_MAGIC,
+    "pcstubbs": PC_INDEX_MAGIC,
+    "xbox":     XBOX_INDEX_MAGIC,
+    "pcdemo":   PCDEMO_INDEX_MAGIC,
+    "pc":       PC_INDEX_MAGIC,
+    "ce":       PC_INDEX_MAGIC,
+    }
 
 #I cant imagine Halo allowing any one field even close to this many
 #indices, though I have seen some open sauce stuff go over 180,000.
