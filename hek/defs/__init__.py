@@ -8,4 +8,5 @@ __all__ = (
     "scex", "schi", "scnr", "senv", "sgla", "shdr", "sky_", "smet", "snd_",
     "snde", "sndl", "soso", "sotr", "Soul", "spla", "ssce", "str_", "swat",
     "tagc", "trak", "udlg", "unhi", "unit", "ustr", "vcky", "vehi", "weap",
-    "wind", "wphi")
+    "wind", "wphi",
+    )

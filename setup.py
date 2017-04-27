@@ -8,8 +8,8 @@ except ImportError:
 curr_dir = dirname(__file__)
 
 #               YYYY.MM.DD
-release_date = "2017.04.24"
-version = (1, 1, 4)
+release_date = "2017.04.26"
+version = (1, 1, 5)
 
 try:
     try:
@@ -62,8 +62,8 @@ games built with the Blam engine',
         },
     platforms=["POSIX", "Windows"],
     keywords="reclaimer, halo",
-    install_requires=['supyr_struct'],#, 'arbytmap'],
-    requires=['supyr_struct'],#, 'arbytmap'],
+    install_requires=['supyr_struct', 'binilla'],#, 'arbytmap'],
+    requires=['supyr_struct', 'binilla'],#, 'arbytmap'],
     provides=['reclaimer'],
     classifiers=[
         "Development Status :: 4 - Beta",
