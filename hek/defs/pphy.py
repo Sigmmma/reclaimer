@@ -33,9 +33,9 @@ pphy_body = Struct("tagdata",
         ),
     #these next three are courtesy of Sparky. I had
     #no idea these existed till I looked in Eschaton
-    FlFloat("wind coefficient"),
-    FlFloat("wind sine modifier"),
-    FlFloat("z translation rate"),
+    FlFloat("wind coefficient", VISIBLE=False),
+    FlFloat("wind sine modifier", VISIBLE=False),
+    FlFloat("z translation rate", VISIBLE=False),
     Pad(16),
     BFloat("density", SIDETIP="g/mL", COMMENT=density_comment),#g/mL
     BFloat("air friction"),

@@ -46,8 +46,77 @@ def encode_tag_ref_str(self, node, parent=None, attr_index=None):
     return b''
 
 
-tag_index_parser = array_parser
-tag_index_serializer = array_serializer
+def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
+                     rawdata=None, root_offset=0, offset=0, **kwargs):
+    """
+    """
+    try:
+        __lsi__ = list.__setitem__
+        orig_offset = offset
+        if node is None:
+            parent[attr_index] = node = desc.get(BLOCK_CLS, self.node_cls)\
+                (desc, parent=parent)
+
+        # If there is rawdata to build the structure from
+        if rawdata is not None:
+            offsets = desc['ATTR_OFFS']
+            struct_off = root_offset + offset
+
+            if self.f_endian == '=':
+                for i in range(len(node)):
+                    off = struct_off + offsets[i]
+                    typ = desc[i]['TYPE']
+                    __lsi__(node, i,
+                            unpack(typ.enc, rawdata[off:off + typ.size])[0])
+            elif self.f_endian == '<':
+                for i in range(len(node)):
+                    off = struct_off + offsets[i]
+                    typ = desc[i]['TYPE']
+                    __lsi__(node, i, unpack(typ.little.enc,
+                                            rawdata[off:off + typ.size])[0])
+            else:
+                for i in range(len(node)):
+                    off = struct_off + offsets[i]
+                    typ = desc[i]['TYPE']
+                    __lsi__(node, i, unpack(typ.big.enc,
+                                            rawdata[off:off + typ.size])[0])
+
+            # increment offset by the size of the struct
+            offset += desc['SIZE']
+        else:
+            for i in range(len(node)):
+                __lsi__(node, i,
+                        desc[i].get(DEFAULT, desc[i]['TYPE'].default()))
+
+        s_desc = desc.get('STEPTREE')
+        if s_desc:
+            if 'magic' in kwargs:
+                offset = node[1] - kwargs["magic"]
+            if 'steptree_parents' not in kwargs:
+                offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
+                                               rawdata, root_offset, offset,
+                                               **kwargs)
+            else:
+                kwargs['steptree_parents'].append(node)
+
+        # pass the incremented offset to the caller
+        return offset
+    except Exception as e:
+        # if the error occurred while parsing something that doesnt have an
+        # error report routine built into the function, do it for it.
+        kwargs.update(buffer=rawdata, root_offset=root_offset)
+        if 's_desc' in locals():
+            e = format_parse_error(e, field_type=s_desc.get(TYPE), desc=s_desc,
+                                  parent=node, attr_index=STEPTREE,
+                                  offset=offset, **kwargs)
+        elif 'i' in locals():
+            e = format_parse_error(e, field_type=desc[i].get(TYPE),
+                                   desc=desc[i], parent=node, attr_index=i,
+                                   offset=offset, **kwargs)
+        e = format_parse_error(e, field_type=self, desc=desc,
+                               parent=parent, attr_index=attr_index,
+                               offset=orig_offset, **kwargs)
+        raise e
 
 
 def rawdata_parser(self, desc, node=None, parent=None, attr_index=None,
@@ -55,9 +124,10 @@ def rawdata_parser(self, desc, node=None, parent=None, attr_index=None,
     if rawdata is not None:
         bytecount = parent.size
 
-        #root_tag = parent.get_root()
-        #if hasattr(root_tag, 'index_magic'):
-        #    return offset  # NOT READY TO DO THIS STUFF YET
+        if 'magic' in kwargs:
+            offset = parent.pointer - kwargs['magic']
+            if offset < 0 or offset + bytecount > len(rawdata):
+                offset = parent.raw_pointer
         rawdata.seek(root_offset + offset)
         parent[attr_index] = self.node_cls(rawdata.read(bytecount))
         return offset + bytecount

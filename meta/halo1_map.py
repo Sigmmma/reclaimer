@@ -62,7 +62,7 @@ def get_tag_index(map_data, header=None):
 
 
 def get_index_magic(header):
-    return map_magics.get(get_map_version(header))
+    return map_magics.get(get_map_version(header), 0)
 
 
 def get_map_magic(header):
