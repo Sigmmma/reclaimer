@@ -18,6 +18,9 @@ class HaloHandler(Handler):
     tagsdir = "%s%stags%s" % (abspath(os.curdir), PATHDIV, PATHDIV)
 
     treat_mode_as_mod2 = True
+    tag_ref_cache   = None
+    reflexive_cache = None
+    raw_data_cache  = None
 
     def __init__(self, *args, **kwargs):
         Handler.__init__(self, *args, **kwargs)
@@ -42,11 +45,7 @@ class HaloHandler(Handler):
             self.datadir = basename(normpath(self.tagsdir))
             self.datadir = self.tagsdir.split(self.datadir)[0] + "data\\"
 
-        #call the functions to build the tag_ref_cache,
-        #reflexive_cache, and raw_data_cache
-        self.tag_ref_cache   = self.build_loc_cache(TagIndexRef)
-        self.reflexive_cache = self.build_loc_cache(Reflexive)
-        self.raw_data_cache  = self.build_loc_cache(RawdataRef)
+        self.build_loc_caches()
 
     def _build_loc_cache(self, f_type, desc={}):
         hasrefs = False
@@ -86,21 +85,28 @@ class HaloHandler(Handler):
             raise TypeError("Expected 'paths' to be of type %s or %s, not %s."%
                             (type(None), type(dict), type(paths)) )
 
-    def build_loc_cache(self, f_type):
+    def build_loc_caches(self):
         '''this builds a cache of paths that will be used
         to quickly locate specific FieldTypes in structures
         by caching all possible locations of the FieldType'''
-        cache = {}
-        
-        for def_id in self.defs:
-            definition = self.defs[def_id].descriptor
-
-            hasrefs, refs = self._build_loc_cache(f_type, definition)
+        caches = []
+        for f_type in (TagIndexRef, Reflexive, RawdataRef): 
+            cache = {}
+            caches.append(cache)
             
-            if hasrefs:
-                cache[def_id] = refs
+            for def_id in self.defs:
+                definition = self.defs[def_id].descriptor
 
-        return cache
+                hasrefs, refs = self._build_loc_cache(f_type, definition)
+                
+                if hasrefs:
+                    cache[def_id] = refs
+
+        self.tag_ref_cache   = caches[0]
+        self.reflexive_cache = caches[1]
+        self.raw_data_cache  = caches[2]
+
+        return caches
 
     def get_nodes_by_paths(self, paths, node, cond=None):
         coll = []
@@ -134,25 +140,98 @@ class HaloHandler(Handler):
         except:
             return None
 
-    def get_tag_hash(self, data, tag_ref_paths=(),
-                     reflexive_paths=(), raw_data_paths=()):
-        hash_buffer = BytearrayBuffer()
+    def get_tag_hash(self, data, def_id, data_key, hashes=None, is_meta=False):
+        hashbuffer = BytearrayBuffer()
+        empty = ((), ())
+        if hashes is None:
+            hashes = {}
+
+        if None in (self.tag_ref_cache, self.reflexive_cache, self.raw_data_cache):
+            self.build_loc_caches()
+
+        tag_ref_paths   = self.tag_ref_cache.get(def_id, empty)[1]
+        reflexive_paths = self.reflexive_cache.get(def_id, empty)[1]
+        raw_data_paths  = self.raw_data_cache.get(def_id, empty)[1]
+
+        if data_key in hashes:
+            if hashes[data_key] is None:
+                # Oh shit, the data_key is already in the hash set
+                # and hasn't been computed! CIRCULAR REFERENCES!
+                # We can't resolve this, so the tag can't be hashed.
+                return None
+            return hashes
+
+        # temporarily put a None in for this hash so we know we're
+        # trying to compute it, but that it's not been determined yet
+        hashes[data_key] = None
+
+        __lsi__ = list.__setitem__
+        __osa__ = object.__setattr__
+        ext_id_map = self.ext_id_map
 
         #null out the parts of a tag that can screw
-        #with the hash when compared to a tag meta                        
-        for b in self.get_nodes_by_paths(tag_ref_paths, data):
-            b.path_pointer = b.id = 0
-            
-        for b in self.get_nodes_by_paths(reflexive_paths, data):
-            b.id = b.pointer = 0
-            
-        for b in self.get_nodes_by_paths(raw_data_paths, data):
-            b.unknown = b.raw_pointer = b.pointer = b.id = 0
+        #with the hash when compared to a tag meta
+        if tag_ref_paths is not empty:
+            for b in self.get_nodes_by_paths(tag_ref_paths, data):
+                ext = "." + b[0].enum_name
+                if self.treat_mode_as_mod2 and ext == '.model':
+                    ext = '.gbxmodel'
+
+                # if there is a referenced tag, we need its hash
+                if is_meta:
+                    if b.id not in hashes:
+                        # we DONT already have this tag's hash, so
+                        # we need to try to get the meta and hash it
+                        refd_tagdata = self.get_meta(b.id)
+                        if refd_tagdata:
+                            self.get_tag_hash(refd_tagdata, ext_id_map[ext],
+                                              b.id, hashes, is_meta)
+                        if hashes[b.id] is None:
+                            # Circular reference. See above for explaination
+                            return hashes
+                    elif hashes[b.id] is None:
+                        # Circular reference. See above for explaination
+                        return hashes
+                elif b.filepath:
+                    tagpath = b.filepath + ext
+                    refd_tag = self.get_tag(tagpath, ext_id_map[ext])
+                    if refd_tag is None:
+                        # Something happened to prevent loading the tag...
+                        return hashes
+                    self.get_tag_hash(refd_tag.data.tagdata, ext_id_map[ext],
+                                      tagpath, hashes, is_meta)
+
+                if b.id in hashes:
+                    # a hash exists for this reference, so set the path to it
+                    __osa__(b, 'STEPTREE', hashes.get(b.id))
+                    
+                __lsi__(b, 1, 0)  # set path_pointer to 0
+                __lsi__(b, 2, 0)  # set path_length to 0
+                __lsi__(b, 3, 0)  # set id to 0
+
+        if reflexive_paths is not empty:
+            for b in self.get_nodes_by_paths(reflexive_paths, data):
+                __lsi__(b, 1, 0)  # set pointer to 0
+                __lsi__(b, 2, 0)  # set id to 0
+
+        if raw_data_paths is not empty:
+            for b in self.get_nodes_by_paths(raw_data_paths, data):
+                b.unknown = b.raw_pointer = b.pointer = b.id = 0
+                __lsi__(b, 1, 0)  # set unknown to 0
+                __lsi__(b, 2, 0)  # set raw_pointer to 0
+                __lsi__(b, 3, 0)  # set pointer to 0
+                __lsi__(b, 4, 0)  # set id to 0
 
         #serialize the tag data to the hash buffer
-        data.TYPE.serializer(data, writebuffer=hash_buffer)
-        
-        return md5(hash_buffer)
+        data.TYPE.serializer(data, writebuffer=hashbuffer)
+
+        # we'll include the def_id on the end of the data
+        # to make sure tags of different types, but identical
+        # contents, aren't detected as the same tag.
+        hashes[data_key] = md5(hashbuffer + def_id.encode("latin-1")).digest()
+
+        # return the collection of id's/tagpaths to hashes
+        return hashes
 
     def get_tagref_invalid(self, node):
         '''

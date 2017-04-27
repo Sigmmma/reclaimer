@@ -135,6 +135,7 @@ bipd_attrs = Struct("bipd attrs",
             "From what I understand though, these names are completely\n" +
             "experimental, so don't trust that they are 100% accurate.\n"
             ),
+        VISIBLE=False,
         ),
 
     reflexive("contact points", contact_point, 2,

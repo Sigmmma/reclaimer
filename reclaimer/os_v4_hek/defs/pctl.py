@@ -28,7 +28,7 @@ particle_state = Struct("particle state",
         ),
 
     reflexive("particle shader extensions", particle_shader_extension, 1),
-    Pad(26),
+    Pad(16),
     #Secondary map
     Struct("secondary map",
         dependency("bitmap", "bitm"),
