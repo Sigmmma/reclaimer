@@ -10,7 +10,7 @@ class P8Palette():
         # caching these values in dictionaries this way will
         # really speed up converting normal maps to p8 bump
 
-        # this is the set of cached colors abailable to the
+        # this is the set of cached colors available to the
         # dominant color channel, which is selected by the bias.
         # the keys are 0 - 255 and the values are the closest
         # to that value that is available in the palette

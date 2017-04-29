@@ -115,43 +115,52 @@ grenade = Struct("grenade",
     )
 
 rasterizer_data = Struct("rasterizer data",
-    # Function textures
-    dependency('distance attenuation', "bitm"),
-    dependency('vector normalization', "bitm"),
-    dependency('atmospheric fog density', "bitm"),
-    dependency('planar fog density', "bitm"),
-    dependency('linear corner fade', "bitm"),
-    dependency('active camouflage distortion', "bitm"),
-    dependency('glow', "bitm"),
+    Struct("function textures",
+        dependency('distance attenuation', "bitm"),
+        dependency('vector normalization', "bitm"),
+        dependency('atmospheric fog density', "bitm"),
+        dependency('planar fog density', "bitm"),
+        dependency('linear corner fade', "bitm"),
+        dependency('active camouflage distortion', "bitm"),
+        dependency('glow', "bitm"),
+        Pad(60),
+        ),
 
-    Pad(60),
     # Default textures
-    dependency('default 2d', "bitm"),
-    dependency('default 3d', "bitm"),
-    dependency('default cubemap', "bitm"),
+    Struct("default textures",
+        dependency('default 2d', "bitm"),
+        dependency('default 3d', "bitm"),
+        dependency('default cubemap', "bitm"),
+        ),
 
     # Experimental textures
-    dependency('test0', "bitm"),
-    dependency('test1', "bitm"),
-    dependency('test2', "bitm"),
-    dependency('test3', "bitm"),
+    Struct("experimental textures",
+        dependency('test0', "bitm"),
+        dependency('test1', "bitm"),
+        dependency('test2', "bitm"),
+        dependency('test3', "bitm"),
+        ),
 
     # video effect textures
-    dependency('video scanline map', "bitm"),
-    dependency('video noise map', "bitm"),
-
-    Pad(52),
-    # Active camouflage
-    BBool16("flags",
-        "tint edge density"
+    Struct("video effect textures",
+        dependency('video scanline map', "bitm"),
+        dependency('video noise map', "bitm"),
+        Pad(52),
         ),
-    Pad(2),
-    BFloat('refration amount', SIDETIP="pixels"),  # pixels
-    BFloat('distance falloff'),
-    QStruct('tint color', INCLUDE=rgb_float),
-    BFloat('hyper-stealth refration amount', SIDETIP="pixels"),  # pixels
-    BFloat('hyper-stealth distance falloff'),
-    QStruct('hyper-stealth tint color', INCLUDE=rgb_float),
+
+    # Active camouflage
+    Struct("active camouflage",
+        BBool16("flags",
+            "tint edge density"
+            ),
+        Pad(2),
+        BFloat('refration amount', SIDETIP="pixels"),  # pixels
+        BFloat('distance falloff'),
+        QStruct('tint color', INCLUDE=rgb_float),
+        BFloat('hyper-stealth refration amount', SIDETIP="pixels"),  # pixels
+        BFloat('hyper-stealth distance falloff'),
+        QStruct('hyper-stealth tint color', INCLUDE=rgb_float),
+        ),
 
     # PC textures
     dependency('distance attenuation 2d', "bitm"),

@@ -1,13 +1,20 @@
 import os
 
+from time import time
 from hashlib import md5
 from datetime import datetime
-from os.path import abspath, basename, exists, isfile, normpath, splitext
+from os.path import abspath, basename, exists, isfile, join, normpath, splitext
 
 from binilla.handler import Handler
 from supyr_struct.buffer import BytearrayBuffer
 from ..field_types import *
 from .defs.objs.tag import HekTag
+from traceback import format_exc
+
+
+BAD_DEPENDENCY_HASH = (b"<BAD_DEPENDENCY>", "0cf3d02152f2f7109908a3cdf3ae29d2")
+CIR_DEPENDENCY_HASH = (b"<CIR_DEPENDENCY>", "76b8f46d8d8daac892ea2d5143eed246")
+CANT_PARSE_TAG_HASH = (b"<CANT_PARSE_TAG>", "212d0231ac4d6b7600118c853c081d35")
 
 
 class HaloHandler(Handler):
@@ -16,6 +23,9 @@ class HaloHandler(Handler):
     tag_filepath_match_set = frozenset()
 
     tagsdir = "%s%stags%s" % (abspath(os.curdir), PATHDIV, PATHDIV)
+
+    case_sensitive = False
+    tagsdir_relative = True
 
     treat_mode_as_mod2 = True
     tag_ref_cache   = None
@@ -45,7 +55,13 @@ class HaloHandler(Handler):
             self.datadir = basename(normpath(self.tagsdir))
             self.datadir = self.tagsdir.split(self.datadir)[0] + "data\\"
 
-        self.build_loc_caches()
+        if kwargs.get("field_caches"):
+            caches = kwargs["field_caches"]
+            self.tag_ref_cache = caches[0]
+            self.reflexive_cache = caches[1]
+            self.raw_data_cache = caches[2]
+        else:
+            self.build_loc_caches()
 
     def _build_loc_cache(self, f_type, desc={}):
         hasrefs = False
@@ -72,18 +88,33 @@ class HaloHandler(Handler):
             # the paths have been exhausted, so this is a Block to check
             if cond(node):
                 coll.append(node)
+            return coll
+
+        # for the sake of speed, I am omitting the checks
+        # that are found in the commented out code below.
+        if 'SUB_STRUCT' in paths:
+            paths = paths['SUB_STRUCT']
+            for subnode in node:
+                self._get_nodes_by_paths(paths, subnode, coll, cond)
+            return coll
+        
+        for key in paths:
+            self._get_nodes_by_paths(paths[key], node[key], coll, cond)
+        '''
         elif isinstance(paths, dict):
             if 'SUB_STRUCT' in paths:
                 paths = paths['SUB_STRUCT']
-                for i in range(len(node)):
-                    self._get_nodes_by_paths(paths, node[i], coll, cond)
-                return
+                for subnode in node:
+                    self._get_nodes_by_paths(paths, subnode, coll, cond)
+                return coll
             
             for key in paths:
                 self._get_nodes_by_paths(paths[key], node[key], coll, cond)
         else:
             raise TypeError("Expected 'paths' to be of type %s or %s, not %s."%
                             (type(None), type(dict), type(paths)) )
+        '''
+        return coll
 
     def build_loc_caches(self):
         '''this builds a cache of paths that will be used
@@ -108,15 +139,11 @@ class HaloHandler(Handler):
 
         return caches
 
-    def get_nodes_by_paths(self, paths, node, cond=None):
-        coll = []
-        if cond is None:
-            cond = lambda x: True
-            
-        if len(paths):
-            self._get_nodes_by_paths(paths, node, coll, cond)
+    def get_nodes_by_paths(self, paths, node, cond=lambda x: True):
+        if paths:
+            return self._get_nodes_by_paths(paths, node, [], cond)
 
-        return coll
+        return ()
 
     def get_def_id(self, filepath):
         if not filepath.startswith('.') and '.' in filepath:
@@ -130,36 +157,30 @@ class HaloHandler(Handler):
         '''It is more reliable to determine a Halo tag
         based on its 4CC def_id than by file extension'''
         try:
-            with open(filepath, 'r+b') as tagfile:
-                tagfile.seek(36)
-                def_id = str(tagfile.read(4), 'latin-1')
-            tagfile.seek(60);
-            engine_id = tagfile.read(4)
+            with open(filepath, 'rb') as f:
+                f.seek(36)
+                def_id = str(f.read(4), 'latin-1')
+                f.seek(60)
+                engine_id = f.read(4)
             if def_id in self.defs and engine_id == b'blam':
                 return def_id
-        except:
+        except Exception:
             return None
 
-    def get_tag_hash(self, data, def_id, data_key, hashes=None, is_meta=False):
-        hashbuffer = BytearrayBuffer()
-        empty = ((), ())
-        if hashes is None:
-            hashes = {}
-
-        if None in (self.tag_ref_cache, self.reflexive_cache, self.raw_data_cache):
-            self.build_loc_caches()
-
-        tag_ref_paths   = self.tag_ref_cache.get(def_id, empty)[1]
-        reflexive_paths = self.reflexive_cache.get(def_id, empty)[1]
-        raw_data_paths  = self.raw_data_cache.get(def_id, empty)[1]
-
+    def get_tag_hash(self, data, def_id, data_key, hashes, is_meta=False):
         if data_key in hashes:
             if hashes[data_key] is None:
                 # Oh shit, the data_key is already in the hash set
                 # and hasn't been computed! CIRCULAR REFERENCES!
                 # We can't resolve this, so the tag can't be hashed.
-                return None
+                hashes[data_key] = CIR_DEPENDENCY_HASH
             return hashes
+
+        empty = ((), ())
+
+        tag_ref_paths   = self.tag_ref_cache.get(def_id, empty)[1]
+        reflexive_paths = self.reflexive_cache.get(def_id, empty)[1]
+        raw_data_paths  = self.raw_data_cache.get(def_id, empty)[1]
 
         # temporarily put a None in for this hash so we know we're
         # trying to compute it, but that it's not been determined yet
@@ -174,37 +195,52 @@ class HaloHandler(Handler):
         if tag_ref_paths is not empty:
             for b in self.get_nodes_by_paths(tag_ref_paths, data):
                 ext = "." + b[0].enum_name
-                if self.treat_mode_as_mod2 and ext == '.model':
+                if ext == '.model':
                     ext = '.gbxmodel'
 
-                # if there is a referenced tag, we need its hash
                 if is_meta:
-                    if b.id not in hashes:
+                    ref_key = b.id
+                    if ref_key not in hashes:
                         # we DONT already have this tag's hash, so
                         # we need to try to get the meta and hash it
-                        refd_tagdata = self.get_meta(b.id)
+                        refd_tagdata = self.get_meta(ref_key)
                         if refd_tagdata:
                             self.get_tag_hash(refd_tagdata, ext_id_map[ext],
-                                              b.id, hashes, is_meta)
-                        if hashes[b.id] is None:
-                            # Circular reference. See above for explaination
-                            return hashes
-                    elif hashes[b.id] is None:
+                                              ref_key, hashes, is_meta)
+                    if hashes.get(ref_key, '') is None:
                         # Circular reference. See above for explaination
+                        hashes[ref_key] = hashes[data_key] = CIR_DEPENDENCY_HASH
                         return hashes
+
                 elif b.filepath:
                     tagpath = b.filepath + ext
-                    refd_tag = self.get_tag(tagpath, ext_id_map[ext])
-                    if refd_tag is None:
-                        # Something happened to prevent loading the tag...
+                    ref_key = tagpath
+                    if ext == ".NONE":
+                        # bad dependency
+                        hashes[data_key] = BAD_DEPENDENCY_HASH
+                        print("        Bad dependency in '%s': '%s%s'" %
+                              (data_key, b.filepath, ext))
                         return hashes
-                    self.get_tag_hash(refd_tag.data.tagdata, ext_id_map[ext],
-                                      tagpath, hashes, is_meta)
+                    else:
+                        refd_tag = self.get_tag(tagpath, ext_id_map[ext], True)
+                        if refd_tag is None:
+                            # Something happened to prevent loading the tag...
+                            hashes[data_key] = BAD_DEPENDENCY_HASH
+                            hashes[ref_key] = CANT_PARSE_TAG_HASH
+                            return hashes
+                        else:
+                            # conserve ram
+                            self.delete_tag(tag=refd_tag)
+                            self.get_tag_hash(refd_tag.data.tagdata,
+                                              ext_id_map[ext], tagpath,
+                                              hashes, is_meta)
+                else:
+                    ref_key = None
 
-                if b.id in hashes:
+                if hashes.get(ref_key):
                     # a hash exists for this reference, so set the path to it
-                    __osa__(b, 'STEPTREE', hashes.get(b.id))
-                    
+                    __osa__(b, 'STEPTREE', hashes[ref_key][1])
+
                 __lsi__(b, 1, 0)  # set path_pointer to 0
                 __lsi__(b, 2, 0)  # set path_length to 0
                 __lsi__(b, 3, 0)  # set id to 0
@@ -216,19 +252,19 @@ class HaloHandler(Handler):
 
         if raw_data_paths is not empty:
             for b in self.get_nodes_by_paths(raw_data_paths, data):
-                b.unknown = b.raw_pointer = b.pointer = b.id = 0
                 __lsi__(b, 1, 0)  # set unknown to 0
                 __lsi__(b, 2, 0)  # set raw_pointer to 0
                 __lsi__(b, 3, 0)  # set pointer to 0
                 __lsi__(b, 4, 0)  # set id to 0
 
-        #serialize the tag data to the hash buffer
+        #serialize the tag data to a hashbuffer
+        hashbuffer = BytearrayBuffer()
         data.TYPE.serializer(data, writebuffer=hashbuffer)
-
         # we'll include the def_id on the end of the data
         # to make sure tags of different types, but identical
         # contents, aren't detected as the same tag.
-        hashes[data_key] = md5(hashbuffer + def_id.encode("latin-1")).digest()
+        hsh = md5(hashbuffer + def_id.encode("latin-1"))
+        hashes[data_key] = (hsh.digest(), hsh.hexdigest())
 
         # return the collection of id's/tagpaths to hashes
         return hashes
@@ -242,7 +278,7 @@ class HaloHandler(Handler):
         #if the string is empty, then it doesnt NOT exist, so return False
         if not node.filepath:
             return False
-        filepath = self.tagsdir + node.filepath
+        filepath = join(self.tagsdir, node.filepath)
         
         try:
             ext = '.' + node.tag_class.enum_name
@@ -258,7 +294,7 @@ class HaloHandler(Handler):
     def get_tagref_exists(self, node):
         if not node.filepath:
             return False
-        filepath = self.tagsdir + node.filepath
+        filepath = join(self.tagsdir, node.filepath)
         
         try:
             ext = '.' + node.tag_class.enum_name
