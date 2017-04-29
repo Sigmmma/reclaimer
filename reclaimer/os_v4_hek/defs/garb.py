@@ -14,7 +14,7 @@ garb_body[0] = obje_attrs
 def get():
     return garb_def
 
-garb_def = TagDef("grab",
+garb_def = TagDef("garb",
     blam_header('garb'),
     garb_body,
 

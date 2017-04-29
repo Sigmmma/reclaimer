@@ -241,7 +241,9 @@ animation_desc = Struct("animation",
         "compressed data",
         "world relative",
         { NAME:"pal", GUI_NAME:"25Hz(PAL)" },
-        { NAME:"fps_60", GUI_NAME:"60fps(ONLY used by fps converter)" },
+        { NAME:"fps_60", GUI_NAME:"60fps(ONLY used by fps converter)",
+          EDITABLE: False, TOOLTIP: ("the converter is the ONLY thing " +
+                                     "that should EVER edit this flag.")},
         { GUI_NAME:"special overlay(ONLY used by fps converter)",
           NAME:"special", TOOLTIP:"whether or not this animation " +
           "serves a special function where it doesnt\nlinearly animate, " +
