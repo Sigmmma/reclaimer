@@ -100,8 +100,7 @@ def dependency(name='tag ref', valid_ids=None):
         BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
-        STEPTREE=HaloRefStr(
-            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
+        STEPTREE=HaloRefStr("filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
         ORIENT='h'
         )
 
@@ -984,8 +983,7 @@ def dependency_os(name='tag ref', valid_ids=None):
         BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
-        STEPTREE=HaloRefStr(
-            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
+        STEPTREE=HaloRefStr("filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
         ORIENT='h'
         )
 

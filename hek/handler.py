@@ -12,9 +12,13 @@ from .defs.objs.tag import HekTag
 from traceback import format_exc
 
 
-BAD_DEPENDENCY_HASH = (b"<BAD_DEPENDENCY>", "0cf3d02152f2f7109908a3cdf3ae29d2")
-CIR_DEPENDENCY_HASH = (b"<CIR_DEPENDENCY>", "76b8f46d8d8daac892ea2d5143eed246")
-CANT_PARSE_TAG_HASH = (b"<CANT_PARSE_TAG>", "212d0231ac4d6b7600118c853c081d35")
+def bytes_to_hex(taghash):
+    hsh = hex(int.from_bytes(taghash, 'big'))[2:]
+    return '0x' + '0'*(len(taghash)*2-len(hsh)) + hsh
+
+
+BAD_DEPENDENCY_HASH = (b"<BAD_DEPENDENCY>", bytes_to_hex(b"<BAD_DEPENDENCY>"))
+CANT_PARSE_TAG_HASH = (b"<CANT_PARSE_TAG>", bytes_to_hex(b"<CANT_PARSE_TAG>"))
 
 
 class HaloHandler(Handler):
@@ -167,83 +171,125 @@ class HaloHandler(Handler):
         except Exception:
             return None
 
-    def get_tag_hash(self, data, def_id, data_key, hashes, is_meta=False):
-        if data_key in hashes:
-            if hashes[data_key] is None:
-                # Oh shit, the data_key is already in the hash set
-                # and hasn't been computed! CIRCULAR REFERENCES!
-                # We can't resolve this, so the tag can't be hashed.
-                hashes[data_key] = CIR_DEPENDENCY_HASH
-            return hashes
+    def get_tag_hash(self, data, def_id, data_key, hashes=None, is_meta=False):
+        if hashes is None:
+            hashes = {}
+        self._get_tag_hash(data, def_id, data_key, hashes, is_meta, {}, {}, 0)
+        return hashes
+
+    def _get_tag_hash(self, data, def_id, data_key, hashes, is_meta,
+                      partial_hashes, node_depths, curr_depth):
+        # NOTE! a clone of node_depths must be provided when calling
+        # this function as its contents MUST depend on the hierarchy
+
+        if data_key in partial_hashes:
+            ###########################################
+            #              INCOMPLETE
+            ###########################################
+            return partial_hashes[data_key]
+            __osa__(b, 'STEPTREE', partial_hashes[ref_key])
+        elif data_key in hashes:
+            #########################################################
+            #  If detecting a tag as being circularly referenced,
+            #  a set of data_keys will be returned containing any
+            #  references which were re-encountered. If a higher up
+            #  _get_tag_hash recursion sees the set that was returned
+            #  isnt empty, it will update its own set with it.
+            #  When choosing whether to save the hash as a partial or
+            #  full, this recursion levels data_key will be removed
+            #  from the set. If the set is not empty then it will be
+            #  considerd as a partial hash.
+            #
+            #  When a circular tag is encountered, all tags in its
+            #  chain need to be recognized as circular. This make it
+            #  so any time a tag in that chain is about to be hashed,
+            #  it will know that unless a hash has been calculated
+            #  for the tag the chain was entered on, a complete hash
+            #  will need to be calculated starting at that point.
+            #########################################################
+            partial_hashes[data_key] = None
+            return
+
+        # keep track of the depth of any circular reference
+        node_depths[data_key] = curr_depth
+        curr_depth += 1
 
         empty = ((), ())
 
-        tag_ref_paths   = self.tag_ref_cache.get(def_id, empty)[1]
         reflexive_paths = self.reflexive_cache.get(def_id, empty)[1]
         raw_data_paths  = self.raw_data_cache.get(def_id, empty)[1]
+        tag_ref_paths   = self.tag_ref_cache.get(def_id, empty)[1]
 
         # temporarily put a None in for this hash so we know we're
         # trying to compute it, but that it's not been determined yet
         hashes[data_key] = None
 
+        # local variables for faster access
         __lsi__ = list.__setitem__
         __osa__ = object.__setattr__
         ext_id_map = self.ext_id_map
 
-        #null out the parts of a tag that can screw
-        #with the hash when compared to a tag meta
+        # null out the parts of a tag that can screw
+        # with the hash when compared to a tag meta
         if tag_ref_paths is not empty:
             for b in self.get_nodes_by_paths(tag_ref_paths, data):
-                ext = "." + b[0].enum_name
-                if ext == '.model':
-                    ext = '.gbxmodel'
-
-                if is_meta:
-                    ref_key = b.id
-                    if ref_key not in hashes:
-                        # we DONT already have this tag's hash, so
-                        # we need to try to get the meta and hash it
-                        refd_tagdata = self.get_meta(ref_key)
-                        if refd_tagdata:
-                            self.get_tag_hash(refd_tagdata, ext_id_map[ext],
-                                              ref_key, hashes, is_meta)
-                    if hashes.get(ref_key, '') is None:
-                        # Circular reference. See above for explaination
-                        hashes[ref_key] = hashes[data_key] = CIR_DEPENDENCY_HASH
-                        return hashes
-
-                elif b.filepath:
-                    tagpath = b.filepath + ext
-                    ref_key = tagpath
-                    if ext == ".NONE":
-                        # bad dependency
-                        hashes[data_key] = BAD_DEPENDENCY_HASH
-                        print("        Bad dependency in '%s': '%s%s'" %
-                              (data_key, b.filepath, ext))
-                        return hashes
-                    else:
-                        refd_tag = self.get_tag(tagpath, ext_id_map[ext], True)
-                        if refd_tag is None:
-                            # Something happened to prevent loading the tag...
-                            hashes[data_key] = BAD_DEPENDENCY_HASH
-                            hashes[ref_key] = CANT_PARSE_TAG_HASH
-                            return hashes
-                        else:
-                            # conserve ram
-                            self.delete_tag(tag=refd_tag)
-                            self.get_tag_hash(refd_tag.data.tagdata,
-                                              ext_id_map[ext], tagpath,
-                                              hashes, is_meta)
-                else:
-                    ref_key = None
-
-                if hashes.get(ref_key):
-                    # a hash exists for this reference, so set the path to it
-                    __osa__(b, 'STEPTREE', hashes[ref_key][1])
-
+                ref_key = b.id
+                filepath = b.filepath
                 __lsi__(b, 1, 0)  # set path_pointer to 0
                 __lsi__(b, 2, 0)  # set path_length to 0
                 __lsi__(b, 3, 0)  # set id to 0
+
+                if ((is_meta and ref_key == 0xFFFFFFFF) or
+                    not(is_meta or filepath)):
+                    # dependency is empty
+                    __osa__(b, 'STEPTREE', '')
+                    continue
+
+                try:
+                    ext = "." + b[0].enum_name
+                except Exception:
+                    ext = ".NONE"
+                if filepath and not is_meta:
+                    ref_key = filepath + ext
+
+
+                if ext == ".NONE":
+                    # the tag class is invalid
+                    hashes[ref_key] = BAD_DEPENDENCY_HASH
+                    __osa__(b, 'STEPTREE', BAD_DEPENDENCY_HASH[1])
+                    continue
+                elif ext == '.model' and self.treat_mode_as_mod2:
+                    ext = '.gbxmodel'
+
+
+                if ref_key in node_depths:
+                    # this dependency points to something already being
+                    # parsed in the chain above. use the depth as the hash
+                    __osa__(b, 'STEPTREE', str(
+                        curr_depth - node_depths[ref_key]))
+                    continue
+
+                if is_meta:
+                    refd_tagdata = self.get_meta(ref_key)
+                else:
+                    refd_tag = self.get_tag(ref_key, ext_id_map[ext], True)
+                    refd_tagdata = refd_tag.data.tagdata
+                    # conserve ram
+                    self.delete_tag(tag=refd_tag)
+
+                # get the hash of this dependency
+                self._get_tag_hash(refd_tagdata, ext_id_map[ext],
+                                   ref_key, hashes, is_meta, partial_hashes,
+                                   dict(node_depths), curr_depth)
+
+                if ref_key in partial_hashes:
+                    ###########################################
+                    #              INCOMPLETE
+                    ###########################################
+                    __osa__(b, 'STEPTREE', partial_hashes[ref_key])
+                elif hashes.get(ref_key):
+                    # a hash exists for this reference, so set the path to it
+                    __osa__(b, 'STEPTREE', hashes[ref_key][1])
 
         if reflexive_paths is not empty:
             for b in self.get_nodes_by_paths(reflexive_paths, data):
@@ -259,15 +305,29 @@ class HaloHandler(Handler):
 
         #serialize the tag data to a hashbuffer
         hashbuffer = BytearrayBuffer()
-        data.TYPE.serializer(data, writebuffer=hashbuffer)
+
+        if is_meta:
+            data.TYPE.serializer(data, writebuffer=hashbuffer)
+        else:
+            # force the library to serialize tags in little endian
+            try:
+                FieldType.force_little()
+                data.TYPE.serializer(data, writebuffer=hashbuffer)
+            finally:
+                FieldType.force_normal()
+            
         # we'll include the def_id on the end of the data
         # to make sure tags of different types, but identical
         # contents, aren't detected as the same tag.
         hsh = md5(hashbuffer + def_id.encode("latin-1"))
-        hashes[data_key] = (hsh.digest(), hsh.hexdigest())
 
-        # return the collection of id's/tagpaths to hashes
-        return hashes
+        if partial:
+            ###########################################
+            #              INCOMPLETE
+            ###########################################
+            partial_hashes[data_key] = hsh.digest()
+        else:
+            hashes[data_key] = (hsh.digest(), hsh.hexdigest())
 
     def get_tagref_invalid(self, node):
         '''

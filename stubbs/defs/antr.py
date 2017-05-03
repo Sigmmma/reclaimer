@@ -99,6 +99,11 @@ vehicle_desc = Struct("vehicle",
     SIZE=116,
     )
 
+effect_reference_desc = Struct("effect reference", 
+    dependency('effect', ("snd!", "effe")),
+    SIZE=20,
+    )
+
 animation_desc = Struct("animation", 
     ascii_str32("name"),
     BSEnum16("type",
@@ -163,8 +168,8 @@ antr_body = Struct("tagdata",
     reflexive("unit damages", anim_enum_desc),
     reflexive("fp animations", fp_animation_desc),
 
-    reflexive("sound references", sound_reference_desc,
-        DYN_NAME_PATH=".sound.filepath"),
+    reflexive("effect references", effect_reference_desc,
+        DYN_NAME_PATH=".effect.filepath"),
     BFloat("limp body node radius"),
     BBool16("flags",
         "compress all animations",
