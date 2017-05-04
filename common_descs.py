@@ -962,6 +962,7 @@ def tag_class_os(*args):
     with the enumerations set to the provided tag_class fcc's.
     '''
     default = 0xffffffff
+    classes = []
     for four_cc in args:
         classes.append((tag_class_fcc_to_ext_os[four_cc], four_cc))
 
