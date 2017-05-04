@@ -119,7 +119,7 @@ damage_modifiers = QStruct("damage modifiers",
 
 def tag_class_stubbs(*args):
     classes = []
-    for four_cc in sorted(args):
+    for four_cc in args:
         classes.append((tag_class_fcc_to_ext_stubbs[four_cc], four_cc))
 
     return BUEnum32(
