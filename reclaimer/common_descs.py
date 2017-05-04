@@ -18,13 +18,17 @@ def tag_class(*args, **kwargs):
     enumerations set to the provided tag_class fcc's.
     '''
     classes = []
+    default = 0xffffffff
     for four_cc in args:
         classes.append((tag_class_fcc_to_ext[four_cc], four_cc))
+
+    if len(classes) == 1:
+        default = classes[0][1]
 
     return BUEnum32(
         'tag_class',
         *(tuple(sorted(classes)) + (("NONE", 0xffffffff),) ),
-        DEFAULT=0xffffffff, GUI_NAME='', WIDGET_WIDTH=20, **kwargs
+        DEFAULT=default, GUI_NAME='', WIDGET_WIDTH=20, **kwargs
         )
 
 
@@ -957,9 +961,12 @@ def tag_class_os(*args):
     A macro for creating an Open Sauce tag_class enum desc
     with the enumerations set to the provided tag_class fcc's.
     '''
-    classes = []
-    for four_cc in sorted(args):
+    default = 0xffffffff
+    for four_cc in args:
         classes.append((tag_class_fcc_to_ext_os[four_cc], four_cc))
+
+    if len(classes) == 1:
+        default = classes[0][1]
 
     return BUEnum32(
         'tag_class',
