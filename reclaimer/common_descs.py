@@ -135,13 +135,17 @@ def get_unit_scale(scale60, val30=1):
         return _func_unit_scales[key]
 
     def unit_scale(*args, **kwargs):
-        f_widget = kwargs.get('f_widget')
-        if f_widget is None or not (f_widget.tag_window.app_root.\
-                                    config_file.data.mozzarilla.flags.fps_60):
+        w = kwargs.get('f_widget')
+        if kwargs.get('get_scales'):
+            # used for getting both the 30 and 60 fps scales
+            return (val30, val60)
+        elif w is None or not (w.tag_window.app_root.\
+                               config_file.data.mozzarilla.flags.fps_60):
             return val30
         return val60
 
     _func_unit_scales[key] = unit_scale
+    unit_scale.fps_60_scale = True
     return unit_scale
 
 # typical unit_scales for seconds and seconds squared fields
