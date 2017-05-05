@@ -20,6 +20,20 @@ def bytes_to_hex(taghash):
 BAD_DEPENDENCY_HASH = (b"<BAD_DEPENDENCY>", bytes_to_hex(b"<BAD_DEPENDENCY>"))
 CANT_PARSE_TAG_HASH = (b"<CANT_PARSE_TAG>", bytes_to_hex(b"<CANT_PARSE_TAG>"))
 
+class NodepathRef(dict):
+    __slots__ = ("is_ref",)
+    def __init__(self, is_ref, *a, **kw):
+        self.is_ref = is_ref
+        dict.__init__(self, *a, **kw)
+
+NO_LOC_REFS = NodepathRef(False)
+
+
+def fps_60_related(desc):
+    unit_scale = desc.get("UNIT_SCALE")
+    if hasattr(unit_scale, "fps_60_scale") and unit_scale.fps_60_scale:
+        return True
+
 
 class HaloHandler(Handler):
     default_defs_path = "reclaimer.hek.defs"
@@ -35,6 +49,7 @@ class HaloHandler(Handler):
     tag_ref_cache   = None
     reflexive_cache = None
     raw_data_cache  = None
+    fps_dependent_cache = None
 
     def __init__(self, *args, **kwargs):
         Handler.__init__(self, *args, **kwargs)
@@ -64,88 +79,88 @@ class HaloHandler(Handler):
             self.tag_ref_cache = caches[0]
             self.reflexive_cache = caches[1]
             self.raw_data_cache = caches[2]
+            self.fps_dependent_cache = caches[3]
         else:
-            self.build_loc_caches()
+            self.build_halo_loc_caches()
 
-    def _build_loc_cache(self, f_type, desc={}):
-        hasrefs = False
-        refs = {}
-
+    def _build_loc_cache(self, cond, desc={}):
         try:
-            this_f_type = desc['TYPE']
+            f_type = desc['TYPE']
         except Exception:
-            this_f_type = None
-        
-        if this_f_type is f_type:
-            return True, None
-        elif this_f_type is not None:
-            for key in desc:
-                hassubrefs, subrefs = self._build_loc_cache(f_type, desc[key])
-                if hassubrefs:
-                    hasrefs = True
-                    refs[key] = subrefs
+            f_type = None
+
+        if f_type is None:
+            return NO_LOC_REFS
+
+        nodepath_ref = NodepathRef(cond(desc))
+
+        for key in desc:
+            sub_nodepath_ref = self._build_loc_cache(cond, desc[key])
+            if sub_nodepath_ref.is_ref or sub_nodepath_ref:
+                nodepath_ref[key] = sub_nodepath_ref
                     
-        return hasrefs, refs
+        return nodepath_ref
 
-    def _get_nodes_by_paths(self, paths, node, coll, cond):
-        if paths is None:
-            # the paths have been exhausted, so this is a Block to check
-            if cond(node):
+    def build_loc_caches(self, cond):
+        # if we are looking for only one specific FieldType, make it a tuple
+        if isinstance(cond, FieldType):
+            cond = (cond,)
+
+        # if we are looking for FieldTypes, make it into a function
+        if isinstance(cond, (tuple, list)):
+            cond = lambda desc, f_types=cond: desc.get('TYPE') in f_types
+
+        cache = {}
+
+        for def_id in sorted(self.defs):
+            definition = self.defs[def_id].descriptor
+
+            nodepath_ref = self._build_loc_cache(cond, definition)
+            if nodepath_ref.is_ref or nodepath_ref:
+                cache[def_id] = nodepath_ref
+
+        return cache
+
+    def _get_nodes_by_paths(self, paths, coll, cond, parent, key):
+        node = parent[key]
+        if paths.is_ref and cond(parent, key):
+            # this node is a node we are looking for; add it to the collection
+            if hasattr(node, "desc"):
                 coll.append(node)
-            return coll
+            else:
+                coll.append((parent, key))
 
-        # for the sake of speed, I am omitting the checks
-        # that are found in the commented out code below.
         if 'SUB_STRUCT' in paths:
             paths = paths['SUB_STRUCT']
-            for subnode in node:
-                self._get_nodes_by_paths(paths, subnode, coll, cond)
+            for i in range(len(node)):
+                self._get_nodes_by_paths(paths, coll, cond, node, i)
             return coll
-        
-        for key in paths:
-            self._get_nodes_by_paths(paths[key], node[key], coll, cond)
-        '''
-        elif isinstance(paths, dict):
-            if 'SUB_STRUCT' in paths:
-                paths = paths['SUB_STRUCT']
-                for subnode in node:
-                    self._get_nodes_by_paths(paths, subnode, coll, cond)
-                return coll
-            
-            for key in paths:
-                self._get_nodes_by_paths(paths[key], node[key], coll, cond)
-        else:
-            raise TypeError("Expected 'paths' to be of type %s or %s, not %s."%
-                            (type(None), type(dict), type(paths)) )
-        '''
+
+        for i in paths:
+            self._get_nodes_by_paths(paths[i], coll, cond, node, i)
+
         return coll
 
-    def build_loc_caches(self):
+    def build_halo_loc_caches(self):
         '''this builds a cache of paths that will be used
         to quickly locate specific FieldTypes in structures
         by caching all possible locations of the FieldType'''
         caches = []
         for f_type in (TagIndexRef, Reflexive, RawdataRef): 
-            cache = {}
-            caches.append(cache)
-            
-            for def_id in self.defs:
-                definition = self.defs[def_id].descriptor
+            caches.append(self.build_loc_caches(f_type))
 
-                hasrefs, refs = self._build_loc_cache(f_type, definition)
-                
-                if hasrefs:
-                    cache[def_id] = refs
+        caches.append(self.build_loc_caches(fps_60_related))
 
-        self.tag_ref_cache   = caches[0]
+        self.tag_ref_cache = caches[0]
         self.reflexive_cache = caches[1]
-        self.raw_data_cache  = caches[2]
+        self.raw_data_cache = caches[2]
+        self.fps_dependent_cache = caches[3]
 
         return caches
 
-    def get_nodes_by_paths(self, paths, node, cond=lambda x: True):
+    def get_nodes_by_paths(self, paths, node, cond=lambda x, y: True):
         if paths:
-            return self._get_nodes_by_paths(paths, node, [], cond)
+            return self._get_nodes_by_paths(paths, [], cond, (node,), 0)
 
         return ()
 
@@ -329,12 +344,13 @@ class HaloHandler(Handler):
         else:
             hashes[data_key] = (hsh.digest(), hsh.hexdigest())
 
-    def get_tagref_invalid(self, node):
+    def get_tagref_invalid(self, parent, attr_index):
         '''
         Returns whether or not the filepath of the tag reference isnt valid.
         Returns False if the filepath is empty or the file exists.
         Returns True otherwise.
         '''
+        node = parent[attr_index]
         #if the string is empty, then it doesnt NOT exist, so return False
         if not node.filepath:
             return False
@@ -351,7 +367,8 @@ class HaloHandler(Handler):
         
         return not exists(filepath)
 
-    def get_tagref_exists(self, node):
+    def get_tagref_exists(self, parent, attr_index):
+        node = parent[attr_index]
         if not node.filepath:
             return False
         filepath = join(self.tagsdir, node.filepath)
@@ -367,7 +384,7 @@ class HaloHandler(Handler):
         
         return exists(filepath)
 
-    def get_tagref_matches(self, node):
+    def get_tagref_matches(self, parent, attr_index):
         '''
         Returns whether or not the int fcc of the nodes tag_class
         matches any of the int fccs in self.tag_fcc_match_set and
@@ -376,6 +393,7 @@ class HaloHandler(Handler):
         Returns True if both matchs are found AND the filepath is valid.
         Returns False otherwise.
         '''
+        node = parent[attr_index]
         return (bool(node.filepath) and (
             node.filepath in self.tag_filepath_match_set and
             node.tag_class.data in self.tag_fcc_match_set))
