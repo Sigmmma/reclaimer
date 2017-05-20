@@ -11,6 +11,9 @@ from supyr_struct.field_type_methods import byteorder_char
 from supyr_struct.defs.block_def import BlockDef
 
 
+# for uncompressed animations, the data is stored as:
+#     rotation first, then translation, and finally scale
+
 # these structure definitions aren't really used in the code below, but
 # are a good way to illustrate the structure of the compressed data.
 frame_header = BlockDef("frame_header",

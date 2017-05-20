@@ -135,8 +135,8 @@ animation_desc = Struct("animation",
         {NAME:"pal", GUI_NAME:"25Hz(PAL)"},
         ),
     dyn_senum16("sound",
-        DYN_NAME_PATH="tagdata.sound_references." +
-        "sound_references_array[DYN_I].sound.filepath"),
+        DYN_NAME_PATH="tagdata.effect_references." +
+        "effect_references_array[DYN_I].effect.filepath"),
     BSInt16("sound frame_index"),
     SInt8("left foot frame index"),
     SInt8("right foot frame index"),

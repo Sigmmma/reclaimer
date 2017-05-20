@@ -31,6 +31,46 @@ def object_palette(name, def_id, size=48):
         SIZE=size
         )
 
+fl_float_xyz = QStruct("",
+    FlFloat("x"),
+    FlFloat("y"),
+    FlFloat("z"),
+    ORIENT="h"
+    )
+
+stance_flags = FlBool16("stance",
+    "walk",
+    "look only",
+    "primary fire",
+    "secondary fire",
+    "jump",
+    "crouch",
+    "melee",
+    "flashlight",
+    "action1",
+    "action2",
+    "action hold",
+    )
+
+unit_control_packet = Struct("unit control packet",
+    
+    )
+
+r_a_stream_header = Struct("r a stream header",
+    UInt8("move index", DEFAULT=3, MAX=6),
+    UInt8("bool index"),
+    stance_flags,
+    FlSInt16("weapon", DEFAULT=-1),
+    QStruct("speed", FlFloat("x"), FlFloat("y"), ORIENT="h"),
+    QStruct("feet", INCLUDE=fl_float_xyz),
+    QStruct("body", INCLUDE=fl_float_xyz),
+    QStruct("head", INCLUDE=fl_float_xyz),
+    QStruct("change", INCLUDE=fl_float_xyz),
+    FlUInt32("unknown1"),
+    FlUInt32("unknown2", DEFAULT=-1),
+    SIZE=60
+    )
+
 device_flags = (
     "initially open",  # value of 1.0
     "initially off",  # value of 0.0
@@ -74,7 +114,7 @@ squad_states = (
     "fleeing"
     )
 
-manuever_when_states = (
+maneuver_when_states = (
     "never",
     {NAME: "strength at 75 percent", GUI_NAME: "< 75% strength"},
     {NAME: "strength at 50 percent", GUI_NAME: "< 50% strength"},
@@ -167,7 +207,7 @@ function = Struct('function',
 comment = Struct("comment",
     QStruct("position", INCLUDE=xyz_float),
     Pad(16),
-    rawtext_ref("comment data", max_size=16384),
+    rawtext_ref("comment data", StrLatin1, max_size=16384),
     SIZE=48
     )
 
@@ -537,7 +577,10 @@ cutscene_title = Struct("cutscene title",
     )
 
 structure_bsp = Struct("structure bsp",
-    Pad(16),
+    FlUInt32("bsp meta pointer", VISIBLE=False),
+    FlUInt32("bsp meta size", VISIBLE=False),
+    FlUInt32("unknown", VISIBLE=False),
+    Pad(4),
     dependency("structure bsp", "sbsp"),
     SIZE=32
     )
@@ -598,8 +641,9 @@ squad = Struct("squad",
         "sgt lehto",
         ),
 
-    Pad(32),
-    dyn_senum16("manuever to squad", DYN_NAME_PATH="..[DYN_I].name"),
+    Pad(30),
+    dyn_senum16("maneuver to squad", DYN_NAME_PATH="..[DYN_I].name"),
+    Pad(2),
     float_sec("squad delay time"),  # seconds
     BBool32("attacking", *group_indices),
     BBool32("attacking search", *group_indices),
@@ -637,18 +681,18 @@ squad = Struct("squad",
 platoon = Struct("platoon",
     ascii_str32("name"),
     BBool32("flags",
-        "flee when manuevering",
-        "say advancing when manuevering",
+        "flee when maneuvering",
+        "say advancing when maneuvering",
         "start in defending state",
         ),
 
     Pad(12),
-    BSEnum16("change attacking/defending state", *manuever_when_states),
+    BSEnum16("change attacking/defending state", *maneuver_when_states),
     dyn_senum16("change happens to", DYN_NAME_PATH="..[DYN_I].name"),
 
     Pad(8),
-    BSEnum16("manuever when", *manuever_when_states),
-    dyn_senum16("manuever happens to", DYN_NAME_PATH="..[DYN_I].name"),
+    BSEnum16("maneuver when", *maneuver_when_states),
+    dyn_senum16("maneuver happens to", DYN_NAME_PATH="..[DYN_I].name"),
     SIZE=172
     )
 
