@@ -46,6 +46,35 @@ def encode_tag_ref_str(self, node, parent=None, attr_index=None):
     return b''
 
 
+def tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
+                   rawdata=None, root_offset=0, offset=0, **kwargs):
+    """
+    """
+    assert parent is not None and attr_index is not None, (
+        "parent and attr_index must be provided " +
+        "and not None when reading a data field.")
+    if "tag_index" in kwargs:
+        tag_index = kwargs["tag_index"]
+        if parent.id == 0xFFFFFFFF:
+            parent[attr_index] = ""
+        else:
+            i = (parent.id - tag_index.base_tag_magic) & 0xFFFF
+            if i >= 0 and i < len(tag_index.tag_index):
+                parent[attr_index] = tag_index.tag_index[i].tag.tag_path
+    elif rawdata:
+        # read and store the node
+        rawdata.seek(root_offset + offset)
+        size = parent.get_size(attr_index, root_offset=root_offset,
+                               offset=offset, rawdata=rawdata, **kwargs)
+        parent[attr_index] = self.decoder(rawdata.read(size), desc=desc,
+                                          parent=parent, attr_index=attr_index)
+        return offset + size
+    else:
+        parent[attr_index] = desc.get(DEFAULT, self.default())
+
+    return offset
+
+
 def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
                      rawdata=None, root_offset=0, offset=0, **kwargs):
     """
@@ -91,8 +120,10 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
         s_desc = desc.get('STEPTREE')
         if s_desc:
             if 'magic' in kwargs:
-                offset = node[1] - kwargs["magic"]
-            if 'steptree_parents' not in kwargs:
+                s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', rawdata,
+                                      root_offset, node[1] - kwargs["magic"],
+                                      **kwargs)
+            elif 'steptree_parents' not in kwargs:
                 offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
                                                rawdata, root_offset, offset,
                                                **kwargs)
@@ -119,18 +150,83 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
         raise e
 
 
-def rawdata_parser(self, desc, node=None, parent=None, attr_index=None,
+def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                    rawdata=None, root_offset=0, offset=0, **kwargs):
-    if rawdata is not None:
-        bytecount = parent.size
+    try:
+        __lsi__ = list.__setitem__
+        orig_offset = offset
+        if node is None:
+            parent[attr_index] = node = desc.get(BLOCK_CLS, self.node_cls)\
+                (desc, parent=parent)
 
-        if 'magic' in kwargs:
-            offset = parent.pointer - kwargs['magic']
-            if offset < 0 or offset + bytecount > len(rawdata):
-                offset = parent.raw_pointer
-        rawdata.seek(root_offset + offset)
-        parent[attr_index] = self.node_cls(rawdata.read(bytecount))
-        return offset + bytecount
+        # If there is rawdata to build the structure from
+        if rawdata is not None:
+            offsets = desc['ATTR_OFFS']
+            struct_off = root_offset + offset
 
-    parent[attr_index] = self.node_cls(b'\x00'*parent.size)
-    return offset
+            if self.f_endian == '=':
+                for i in range(len(node)):
+                    off = struct_off + offsets[i]
+                    typ = desc[i]['TYPE']
+                    __lsi__(node, i,
+                            unpack(typ.enc, rawdata[off:off + typ.size])[0])
+            elif self.f_endian == '<':
+                for i in range(len(node)):
+                    off = struct_off + offsets[i]
+                    typ = desc[i]['TYPE']
+                    __lsi__(node, i, unpack(typ.little.enc,
+                                            rawdata[off:off + typ.size])[0])
+            else:
+                for i in range(len(node)):
+                    off = struct_off + offsets[i]
+                    typ = desc[i]['TYPE']
+                    __lsi__(node, i, unpack(typ.big.enc,
+                                            rawdata[off:off + typ.size])[0])
+
+            # increment offset by the size of the struct
+            offset += desc['SIZE']
+        else:
+            for i in range(len(node)):
+                __lsi__(node, i,
+                        desc[i].get(DEFAULT, desc[i]['TYPE'].default()))
+
+        s_desc = desc.get('STEPTREE')
+        if s_desc:
+            if 'magic' in kwargs:
+                if node[3]:
+                    magic_offset = node[3] - kwargs["magic"]
+                else:
+                    magic_offset = node[2]
+
+                if magic_offset + node[0] > len(rawdata):
+                    # data is stored in a resource map
+                    s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
+                else:
+                    s_desc['TYPE'].parser(
+                        s_desc, None, node, 'STEPTREE', rawdata,
+                        root_offset, magic_offset, **kwargs)
+            elif 'steptree_parents' not in kwargs:
+                offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
+                                               rawdata, root_offset, offset,
+                                               **kwargs)
+            else:
+                kwargs['steptree_parents'].append(node)
+
+        # pass the incremented offset to the caller
+        return offset
+    except Exception as e:
+        # if the error occurred while parsing something that doesnt have an
+        # error report routine built into the function, do it for it.
+        kwargs.update(buffer=rawdata, root_offset=root_offset)
+        if 's_desc' in locals():
+            e = format_parse_error(e, field_type=s_desc.get(TYPE), desc=s_desc,
+                                  parent=node, attr_index=STEPTREE,
+                                  offset=offset, **kwargs)
+        elif 'i' in locals():
+            e = format_parse_error(e, field_type=desc[i].get(TYPE),
+                                   desc=desc[i], parent=node, attr_index=i,
+                                   offset=offset, **kwargs)
+        e = format_parse_error(e, field_type=self, desc=desc,
+                               parent=parent, attr_index=attr_index,
+                               offset=orig_offset, **kwargs)
+        raise e

@@ -205,7 +205,7 @@ def h2_reflexive(name, *args, def_case=None, names=None,
     return H2Reflexive(name, **desc)
 
 
-def h2_rawdata_ref(name, f_type=Rawdata, max_size=None, widget=None):
+def h2_rawdata_ref(name, f_type=BytearrayRaw, max_size=None, widget=None):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(h2_rawdata_ref_struct)
     if max_size is not None:

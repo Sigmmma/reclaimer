@@ -2,18 +2,21 @@ from supyr_struct.defs.constants import *
 from binilla.constants import *
 from struct import unpack
 
-# for some of these magics we'll need to make
-# them signed by subtracting (0xFFFFFFFF + 1)
-XBOX_BSP_MAGIC = 0x819A6000 - 0x100000000
+
+def inject_halo_constants():
+    # add the new descriptor keywords to the sets
+    add_desc_keywords()
+
+XBOX_BSP_MAGIC = 0x819A6000
 
 PCDEMO_INDEX_MAGIC = 0x4BF10000
 PC_INDEX_MAGIC     = 0x40440000
-XBOX_INDEX_MAGIC   = 0x803A6000 - 0x100000000
-STUBBS_INDEX_MAGIC = 0x8038B000 - 0x100000000
+XBOX_INDEX_MAGIC   = 0x803A6000
+STUBBS_INDEX_MAGIC = 0x8038B000
 
 
 map_build_dates = {
-    "stubbs":   "01.10.12.2276",
+    "stubbs":   "400",
     "pcstubbs": "",
     "xbox":     "01.10.12.2276",
     "xbox2":    "01.10.12.2274",
@@ -188,9 +191,6 @@ for tag_cls in tag_class_fcc_to_ext_os:
     tag_class_fcc_to_le_int_os[tag_cls] = fcc(tag_cls)
     tag_class_le_int_to_fcc_os[fcc(tag_cls)] = tag_cls
 
-def inject_halo_constants():
-    # add the new descriptor keywords to the sets
-    add_desc_keywords()
 
 
 #######################################
@@ -216,3 +216,4 @@ for tag_cls in tag_class_fcc_to_ext_stubbs:
     tag_class_be_int_to_fcc_stubbs[fcc(tag_cls, 'big')] = tag_cls
     tag_class_fcc_to_le_int_stubbs[tag_cls] = fcc(tag_cls)
     tag_class_le_int_to_fcc_stubbs[fcc(tag_cls)] = tag_cls
+

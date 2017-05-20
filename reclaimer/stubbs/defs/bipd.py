@@ -1,3 +1,6 @@
+'''
+THIS DEFINITION IS INCORRECT BECAUSE THE UNIT STRUCTURE IS DIFFERENT THAN HALO'S
+'''
 from ...hek.defs.bipd import *
 from .obje import *
 from .unit import *

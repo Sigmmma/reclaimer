@@ -3,18 +3,26 @@ from .objs.antr import AntrTag
 from supyr_struct.defs.tag_def import TagDef
 
 frame_info_dxdy_node = QStruct("frame info node",
-    BFloat("dx"), BFloat("dy"), ORIENT='h'
+    BFloat("dx"),
+    BFloat("dy"), ORIENT='h'
     )
 
 frame_info_dxdydyaw_node = QStruct("frame info node",
-    BFloat("dx"), BFloat("dy"), BFloat("dyaw"), ORIENT='h'
+    BFloat("dx"),
+    BFloat("dy"),
+    BFloat("dyaw"), ORIENT='h'
     )
 
 frame_info_dxdydzdyaw_node = QStruct("frame info node",
-    BFloat("dx"), BFloat("dy"), BFloat("dz"), BFloat("dyaw"), ORIENT='h'
+    BFloat("dx"),
+    BFloat("dy"),
+    BFloat("dz"),
+    BFloat("dyaw"), ORIENT='h'
     )
 
 default_node = Struct("default node",
+    # each of these structs exists ONLY if the corrosponding flag
+    # for that node it NOT set in the animation it is located in.
     QStruct("rotation",
         BSInt16("i", UNIT_SCALE=1/32767),
         BSInt16("j", UNIT_SCALE=1/32767),
@@ -23,7 +31,7 @@ default_node = Struct("default node",
         ORIENT="h"
         ),
     QStruct("translation", INCLUDE=xyz_float),
-    BSInt16("scale"),
+    BFloat("scale"),
     SIZE=24
     )
 

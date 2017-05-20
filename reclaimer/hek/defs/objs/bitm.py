@@ -191,7 +191,7 @@ class BitmTag(HekTag):
             if saveasxbox:
                 #change some miscellaneous variables               
                 bitmap.pixels = 4608
-                bitmap.bitmap_data_pointer = -1
+                bitmap.bitmap_data_pointer = 0xFFFFFFFF
                 bitmap.base_address = 1073751810
             else:
                 bitmap.base_address = 0

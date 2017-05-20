@@ -160,7 +160,8 @@ part = Struct('part',
     Pad(36),
 
     BSInt32('local node count', MIN=0, MAX=21),
-    UInt8Array('local nodes', SIZE=21),
+    #UInt8Array('local nodes', SIZE=21),
+    Array("local nodes", SUB_STRUCT=UInt8("local node index"), SIZE=21),
 
     # this COULD be 3 more potential local nodes, but i've seen tool
     # split models when they reach 21 nodes, so im assuming 21 is the max

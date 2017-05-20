@@ -9,7 +9,7 @@ from .constants import *
 '''These are varients of the standard FieldTypes that have been
 slightly modified based on how Halo needs to utilize them.'''
 HaloRefStr = FieldType(
-    base=StrLatin1, name="HaloRefStr",
+    base=StrLatin1, name="HaloRefStr", parser=tag_ref_parser,
     encoder=encode_tag_ref_str, sizecalc=tag_ref_sizecalc)
 FlUTF16StrData = FieldType(
     base=StrUtf16, name="UTF16StrData",
@@ -50,7 +50,7 @@ FlFloat = FieldType(base=Float.little, name="FlFloat", enc=Float.little.enc)
 
 '''These FieldTypes exist to easily identify where in a tag
 that raw data refs, reflexives, and tag references exist.'''
-RawdataRef = FieldType(base=QStruct, name="RawdataRef")
+RawdataRef = FieldType(base=QStruct, name="RawdataRef", parser=rawdata_ref_parser)
 Reflexive  = FieldType(base=QStruct, name="Reflexive", parser=reflexive_parser)
 TagIndexRef = FieldType(base=Struct, name="TagIndexRef",)
 
@@ -58,8 +58,6 @@ TagIndexRef = FieldType(base=Struct, name="TagIndexRef",)
 #meta datas in a map file. This FieldType exists so the Map_Magic
 #can be easily supplied through the keyword argument "Map_Magic"
 TagIndex = FieldType(base=Array, name="TagIndex")
-
-Rawdata = FieldType(base=BytearrayRaw, name="Rawdata", parser=rawdata_parser)
 
 StrLatin1Enum = FieldType(base=StrRawLatin1, name="StrLatin1Enum",
                           is_block=True, is_data=True, data_cls=str,

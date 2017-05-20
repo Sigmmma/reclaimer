@@ -184,11 +184,14 @@ bitmap = Struct("bitmap",
     BUInt16("registration point y"),
     BUInt16("mipmaps"),
     BUInt16("pixels", VISIBLE=False, EDITABLE=False),
+
+    # for halo pc/trial(not ce), this is the non-magic pointer
+    # into the bitmaps.map that the pixel data is located at.
     BUInt32("pixels offset", VISIBLE=False, EDITABLE=False),
+    BUInt32("pixels meta size", VISIBLE=False, EDITABLE=False),
     BUInt32("bitmap id unknown1", VISIBLE=False, EDITABLE=False),
+    BUInt32("bitmap data pointer", VISIBLE=False, EDITABLE=False),
     BUInt32("bitmap id unknown2", VISIBLE=False, EDITABLE=False),
-    BSInt32("bitmap data pointer", VISIBLE=False, EDITABLE=False),
-    BUInt32("bitmap id unknown3", VISIBLE=False, EDITABLE=False),
     BUInt32("base address", VISIBLE=False, EDITABLE=False),
     SIZE=48,
     )

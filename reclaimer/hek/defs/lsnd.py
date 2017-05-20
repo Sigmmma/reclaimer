@@ -64,8 +64,8 @@ sndl_body = Struct("tagdata",
 def get():
     return sndl_def
 
-sndl_def = TagDef("sndl",
-    blam_header("sndl", 3),
+sndl_def = TagDef("lsnd",
+    blam_header("lsnd", 3),
     sndl_body,
 
     ext=".sound_looping", endian=">", tag_cls=HekTag,

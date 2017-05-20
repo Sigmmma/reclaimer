@@ -2,6 +2,7 @@ import zlib
 
 from ..common_descs import *
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.buffer import BytearrayBuffer
 from ..hek.defs.meta_descs import meta_cases
 
 '''
@@ -31,7 +32,7 @@ def tag_path_pointer(node=None, parent=None, new_value=None, **kwargs):
 def get_map_version(header):
     version = header.version.enum_name
     if version == "xbox":
-        if header.unknown != 0:
+        if header.build_date == map_build_dates["stubbs"]:
             version = "stubbs"
         elif header.build_date == map_build_dates["pcstubbs"]:
             version = "pcstubbs"
@@ -80,7 +81,8 @@ def decompress_map(comp_data, header=None):
 
         if decomp_len > len(comp_data):
             decomp = zlib.decompress(comp_data[2048:])
-            return comp_data[:2048] + decomp + b'X'*(decomp_len - len(decomp))
+            return BytearrayBuffer(
+                comp_data[:2048] + decomp + b'X'*(decomp_len - len(decomp)))
 
     # not actually compressed
     return comp_data
@@ -182,12 +184,12 @@ tag_data = Container("tag",
     )
 
 tag_header = Struct("tag header",
-    LUEnum32("class 1", GUI_NAME="primary tag class", INCLUDE=valid_tags),
-    LUEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_tags),
-    LUEnum32("class 3", GUI_NAME="tertiary tag class", INCLUDE=valid_tags),
+    LUEnum32("class 1", GUI_NAME="primary tag class", INCLUDE=valid_tags_os),
+    LUEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_tags_os),
+    LUEnum32("class 3", GUI_NAME="tertiary tag class", INCLUDE=valid_tags_os),
     LUInt32("id"),
-    LSInt32("path offset"),
-    LSInt32("meta offset"),
+    LUInt32("path offset"),
+    LUInt32("meta offset"),
     LUInt32("indexed"),
     # if indexed is 1, the meta_offset is the literal index in the
     # bitmaps, sounds, or loc cache that the meta data is located in.
@@ -200,16 +202,16 @@ tag_index_array = TagIndex("tag index",
     )
 
 tag_index_xbox = Struct("tag index",
-    LSInt32("tag index offset"),
+    LUInt32("tag index offset"),
     LUInt32("base tag magic"),
     LUInt32("map id"),
     LUInt32("tag count"),
 
     LUInt32("vertex object count"),
-    LSInt32("model raw data offset"),
+    LUInt32("model raw data offset"),
 
     LUInt32("indices object count"),
-    LSInt32("indices offset"),
+    LUInt32("indices offset"),
     LUInt32("tag sig", EDITABLE=False, DEFAULT='tags'),
 
     SIZE=36,

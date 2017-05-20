@@ -12,6 +12,10 @@ from supyr_struct.defs.block_def import BlockDef
 from .field_types import *
 from .constants import *
 
+# before we do anything, we need to inject these constants so any definitions
+# that are built that use them will have them in their descriptor entries.
+inject_halo_constants()
+
 def tag_class(*args, **kwargs):
     '''
     A macro for creating a tag_class enum desc with the
@@ -55,10 +59,10 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     return Reflexive(name, **desc)
 
 
-def rawdata_ref(name, f_type=Rawdata, max_size=None, widget=HaloRawdataFrame):
+def rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
+                widget=HaloRawdataFrame, **kwargs):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(rawdata_ref_struct)
-    kwargs = {}
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
@@ -72,10 +76,11 @@ def rawdata_ref(name, f_type=Rawdata, max_size=None, widget=HaloRawdataFrame):
         STEPTREE=f_type("data", GUI_NAME="", SIZE=".size", **kwargs))
 
 
-def rawtext_ref(name, f_type=StrRawAscii, max_size=None, widget=TextFrame):
+def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
+                widget=TextFrame, **kwargs):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(rawdata_ref_struct)
-    kwargs = {WIDGET: widget}
+    kwargs.update(WIDGET=widget)
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
@@ -100,8 +105,8 @@ def dependency(name='tag ref', valid_ids=None):
 
     return TagIndexRef(name,
         valid_ids,
-        BSInt32("path pointer", VISIBLE=False, EDITABLE=False),
-        BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
+        BUInt32("path pointer", VISIBLE=False, EDITABLE=False),
+        BUInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
         STEPTREE=HaloRefStr("filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
@@ -860,17 +865,17 @@ anim_src_func_per_pha_sca_rot = Struct('',
 # This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
     BSInt32("size", EDITABLE=False, GUI_NAME="", SIDETIP="bytes"),
-    BSInt32("unknown", EDITABLE=False, VISIBLE=False),  # 0 in tags(and meta!?)
-    BSInt32("raw pointer", EDITABLE=False, VISIBLE=False),  # doesnt use magic
-    BSInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),
-    BSInt32("id", EDITABLE=False, VISIBLE=False),
+    BUInt32("unknown", EDITABLE=False, VISIBLE=False),
+    BUInt32("raw pointer", EDITABLE=False, VISIBLE=False),  # doesnt use magic
+    BUInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),
+    BUInt32("id", EDITABLE=False, VISIBLE=False),
     ORIENT='h'
     )
 
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
     BSInt32("size", EDITABLE=False, VISIBLE=False),
-    BSInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),  # random
+    BUInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),  # random
     BUInt32("id", EDITABLE=False, VISIBLE=False),  # 0 in meta it seems
     )
 
@@ -880,7 +885,7 @@ predicted_resource = Struct('predicted_resource',
         'sound',
         ),
     BSInt16('resource index'),
-    BSInt32('tag index'),
+    BUInt32('tag index'),
     )
 
 # This is the descriptor used wherever a tag references another tag
@@ -991,8 +996,8 @@ def dependency_os(name='tag ref', valid_ids=None):
 
     return TagIndexRef(name,
         valid_ids,
-        BSInt32("path pointer", VISIBLE=False, EDITABLE=False),
-        BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
+        BUInt32("path pointer", VISIBLE=False, EDITABLE=False),
+        BUInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
         BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
 
         STEPTREE=HaloRefStr("filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
