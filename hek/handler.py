@@ -74,14 +74,18 @@ class HaloHandler(Handler):
             self.datadir = basename(normpath(self.tagsdir))
             self.datadir = self.tagsdir.split(self.datadir)[0] + "data\\"
 
-        if kwargs.get("field_caches"):
-            caches = kwargs["field_caches"]
-            self.tag_ref_cache = caches[0]
-            self.reflexive_cache = caches[1]
-            self.raw_data_cache = caches[2]
-            self.fps_dependent_cache = caches[3]
-        else:
-            self.build_halo_loc_caches()
+        this_type = type(self)
+        if this_type.tag_ref_cache is None:
+            this_type.tag_ref_cache   = self.build_loc_caches(TagIndexRef)
+        
+        if this_type.reflexive_cache is None:
+            this_type.reflexive_cache = self.build_loc_caches(Reflexive)
+
+        if this_type.raw_data_cache is None:
+            this_type.raw_data_cache  = self.build_loc_caches(RawdataRef)
+
+        if this_type.fps_dependent_cache is None:
+            this_type.fps_dependent_cache = self.build_loc_caches(fps_60_related)
 
     def _build_loc_cache(self, cond, desc={}):
         try:
@@ -140,23 +144,6 @@ class HaloHandler(Handler):
             self._get_nodes_by_paths(paths[i], coll, cond, node, i)
 
         return coll
-
-    def build_halo_loc_caches(self):
-        '''this builds a cache of paths that will be used
-        to quickly locate specific FieldTypes in structures
-        by caching all possible locations of the FieldType'''
-        caches = []
-        for f_type in (TagIndexRef, Reflexive, RawdataRef): 
-            caches.append(self.build_loc_caches(f_type))
-
-        caches.append(self.build_loc_caches(fps_60_related))
-
-        self.tag_ref_cache = caches[0]
-        self.reflexive_cache = caches[1]
-        self.raw_data_cache = caches[2]
-        self.fps_dependent_cache = caches[3]
-
-        return caches
 
     def get_nodes_by_paths(self, paths, node, cond=lambda x, y: True):
         if paths:

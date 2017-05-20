@@ -33,7 +33,7 @@ fccs = set(["actr", "actv", "ant_", "antr", "bipd", "bitm", "boom", "cdmg",
             "mod2", "mode", "mply", "ngpr", "obje", "part", "pctl", "phys",
             "plac", "pphy", "proj", "rain", "sbsp", "scen", "scex", "schi",
             "scnr", "senv", "sgla", "shdr", "sky_", "smet", "snd_", "snde",
-            "sndl", "soso", "sotr", "Soul", "spla", "ssce", "str_", "swat",
+            "lsnd", "soso", "sotr", "Soul", "spla", "ssce", "str_", "swat",
             "tagc", "trak", "udlg", "unhi", "unit", "ustr", "vcky", "vehi",
             "weap", "wind", "wphi"])
 
