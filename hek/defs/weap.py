@@ -131,7 +131,10 @@ trigger = Struct("trigger",
         QStruct("first person offset", INCLUDE=xyz_float),
 
         Pad(4),
-        dependency('projectile', valid_objects),
+        # I would set this to valid_objects instead of "proj", but
+        # protection routines obfuscate the class, meaning it MUST
+        # be proj, even if technically any object will work. Damnit.
+        dependency('projectile', "proj"),
         ),
 
     Struct("misc",

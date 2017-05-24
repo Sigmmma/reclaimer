@@ -235,11 +235,14 @@ class HaloHandler(Handler):
         # with the hash when compared to a tag meta
         if tag_ref_paths is not empty:
             for b in self.get_nodes_by_paths(tag_ref_paths, data):
-                ref_key = b.id
+                tag_id = b.id
+                ref_key = tag_id[0] + (tag_id[1] << 16)
                 filepath = b.filepath
                 __lsi__(b, 1, 0)  # set path_pointer to 0
                 __lsi__(b, 2, 0)  # set path_length to 0
-                __lsi__(b, 3, 0)  # set id to 0
+                # set id to 0
+                __lsi__(tag_id, 0, 0)
+                __lsi__(tag_id, 1, 0)
 
                 if ((is_meta and ref_key == 0xFFFFFFFF) or
                     not(is_meta or filepath)):
@@ -497,23 +500,23 @@ class HaloHandler(Handler):
                     try:
                         os.remove(filepath)
                     except Exception:
-                        success_str += ('\n        Could not ' +
-                                        'delete original file.')
+                        success_str += (
+                            '\n        Could not delete original file.')
                 else:
                     # Otherwise try to os.rename the old
                     # files to the backup file names
                     try:
                         os.rename(filepath, filepath + ".backup")
                     except Exception:
-                        success_str += ('\n        Could not ' +
-                                        'backup original file.')
+                        success_str += (
+                            '\n        Could not backup original file.')
 
                 # Try to os.rename the temp file
                 try:
                     os.rename(filepath + ".temp", filepath)
                 except Exception:
-                    success_str += ("\n        Could not os.remove " +
-                                    "'temp' from filename.")
+                    success_str += (
+                        "\n        Could not os.remove 'temp' from filename.")
                     # restore the backup
                     try:
                         if backup:
