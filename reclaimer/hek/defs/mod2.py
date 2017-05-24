@@ -18,9 +18,9 @@ local_marker = Struct('local marker',
 
 fast_uncompressed_vertex = QStruct('uncompressed vertex',
     BFloat('position x'), BFloat('position y'), BFloat('position z'),
-    BFloat('normal i'), BFloat('normal j'), BFloat('normal k'),
+    BFloat('normal i'),   BFloat('normal j'),   BFloat('normal k'),
     BFloat('binormal i'), BFloat('binormal j'), BFloat('binormal k'),
-    BFloat('tangent i'), BFloat('tangent j'), BFloat('tangent k'),
+    BFloat('tangent i'),  BFloat('tangent j'),  BFloat('tangent k'),
 
     BFloat('tex coord u'), BFloat('tex coord v'),
 
@@ -157,15 +157,34 @@ part = Struct('part',
     reflexive("uncompressed vertices", fast_uncompressed_vertex, 65535),
     reflexive("compressed vertices", fast_compressed_vertex, 65535),
     reflexive("triangles", triangle, 65535),
-    Pad(36),
+    #Pad(36),
+    Struct("model meta info",
+        FlUEnum32("index type",  # name is a guess.  always 1?
+            ("uncompressed", 1),
+            ),
+        FlUInt32("index count"),
+        FlUInt32("indices offset"),
+        FlUInt32("indices reflexive offset"),
 
-    BSInt32('local node count', MIN=0, MAX=21),
-    #UInt8Array('local nodes', SIZE=21),
-    Array("local nodes", SUB_STRUCT=UInt8("local node index"), SIZE=21),
+        FlUEnum32("vertex type",  # name is a guess
+            ("uncompressed", 4),
+            ("compressed",   5),
+            ),
+        FlUInt32("vertex count"),
+        FlUInt32("unknown"),  # always 0?
+        FlUInt32("vertices offset"),
+        FlUInt32("vertices reflexive offset"),
+        VISIBLE=False
+        ),
 
-    # this COULD be 3 more potential local nodes, but i've seen tool
-    # split models when they reach 21 nodes, so im assuming 21 is the max
     Pad(3),
+    SInt8('local node count', MIN=0, MAX=22),
+    #UInt8Array('local nodes', SIZE=22),
+    Array("local nodes", SUB_STRUCT=UInt8("local node index"), SIZE=22),
+
+    # this COULD be 2 more potential local nodes, but I've seen tool
+    # split models when they reach 22 nodes, so im assuming 22 is the max
+    Pad(2),
     SIZE=132
     )
 

@@ -1,5 +1,14 @@
 from .coll import *
 from .objs.tag import HekTag
+from supyr_struct.defs.block_def import BlockDef
+
+uncompressed_lightmap_vertex = Struct("uncompressed lightmap vertex",
+    SIZE=76
+    )
+
+compressed_lightmap_vertex = Struct("compressed lightmap vertex",
+    SIZE=40
+    )
 
 plane = QStruct("plane",
     BFloat("i", MIN=0.0, MAX=1.0),
@@ -19,7 +28,10 @@ collision_material = Struct("collision material",
 collision_bsp = Struct("collision bsp", INCLUDE=permutation_bsp)
 
 node = Struct("node",
-    BytesRaw("unknown", SIZE=6),
+    # I'm guessing these are 3 UInt16's so the endianness can be swapped
+    BUInt16("unknown0"),
+    BUInt16("unknown1"),
+    BUInt16("unknown2"),
     )
 
 leaf = Struct("leaf",
@@ -144,8 +156,8 @@ cluster = Struct("cluster",
     Pad(28),
     reflexive("predicted resources", predicted_resource, 1024),
     reflexive("subclusters", subcluster, 4096),
-    BSInt16('first lens flare marker index'),
-    BSInt16('lens flare marker count'),
+    BSInt16("first lens flare marker index"),
+    BSInt16("lens flare marker count"),
     reflexive("surface indices", surface_index, 32768),
     reflexive("mirrors", mirror, 16, DYN_NAME_PATH=".shader.filepath"),
     reflexive("portals", portal, 128),
@@ -378,6 +390,17 @@ sbsp_body = Struct("tagdata",
     reflexive("leaf map leaves", leaf_map_leaf, 256),
     reflexive("leaf map portals", leaf_map_portal, 524288),
     SIZE=648,
+    )
+
+sbsp_meta_header_def = BlockDef("sbsp meta header",
+    # to convert these pointers to offsets, do:  pointer - bsp_magic
+    UInt32("meta pointer"),
+    UInt32("uncompressed lightmap materials count"),
+    UInt32("uncompressed lightmap materials pointer"),  # name is a guess
+    UInt32("compressed lightmap materials count"),
+    UInt32("compressed lightmap materials pointer"),  # name is a guess
+    UInt32("sig", DEFAULT="sbsp"),
+    SIZE=24, TYPE=QStruct
     )
 
 

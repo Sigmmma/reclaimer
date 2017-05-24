@@ -93,6 +93,12 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
             SIZE=".size", GUI_NAME=name.replace('_', ' '), **kwargs)
             )
 
+tag_id_struct = QStruct("id",
+    UInt16("tag table index", DEFAULT=0xFFFF),
+    UInt16("table index", DEFAULT=0xFFFF),
+    VISIBLE=False, EDITABLE=False
+    )
+
 
 def dependency(name='tag ref', valid_ids=None):
     '''This function serves to macro the creation of a tag dependency'''
@@ -107,7 +113,7 @@ def dependency(name='tag ref', valid_ids=None):
         valid_ids,
         BUInt32("path pointer", VISIBLE=False, EDITABLE=False),
         BUInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
-        BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
+        tag_id_struct,
 
         STEPTREE=HaloRefStr("filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
         ORIENT='h'
@@ -875,7 +881,7 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
     BSInt32("size", EDITABLE=False, VISIBLE=False),
-    BUInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),  # random
+    BUInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),
     BUInt32("id", EDITABLE=False, VISIBLE=False),  # 0 in meta it seems
     )
 
@@ -998,7 +1004,7 @@ def dependency_os(name='tag ref', valid_ids=None):
         valid_ids,
         BUInt32("path pointer", VISIBLE=False, EDITABLE=False),
         BUInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
-        BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
+        tag_id_struct,
 
         STEPTREE=HaloRefStr("filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
         ORIENT='h'

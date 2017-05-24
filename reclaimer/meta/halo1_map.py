@@ -1,8 +1,9 @@
 import zlib
+import os
 
 from ..common_descs import *
 from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.buffer import BytearrayBuffer
+from supyr_struct.buffer import PeekableMmap
 from ..hek.defs.meta_descs import meta_cases
 
 '''
@@ -36,6 +37,9 @@ def get_map_version(header):
             version = "stubbs"
         elif header.build_date == map_build_dates["pcstubbs"]:
             version = "pcstubbs"
+    elif hasattr(header, "yelo_header") and (
+        header.yelo_header.yelo.enum_name == "yelo"):
+        return "yelo"
     return version
 
 
@@ -70,83 +74,188 @@ def get_map_magic(header):
     return get_index_magic(header) - header.tag_index_header_offset
 
 
-def decompress_map(comp_data, header=None):
-    if header is None:
-        header = get_map_header(comp_data)
-
+def is_compressed(comp_data, header):
     if header.version.data < 6:
         decomp_len = header.decomp_len
         if get_map_version(header) == "pcstubbs":
             decomp_len -= 2048
 
-        if decomp_len > len(comp_data):
-            decomp = zlib.decompress(comp_data[2048:])
-            return BytearrayBuffer(
-                comp_data[:2048] + decomp + b'X'*(decomp_len - len(decomp)))
+        return decomp_len > len(comp_data)
+    return False
+
+
+def decompress_map(comp_data, header=None, decomp_path=None):
+    if header is None:
+        header = get_map_header(comp_data)
+
+    if is_compressed(comp_data, header):
+        decomp_len = header.decomp_len
+        if get_map_version(header) == "pcstubbs":
+            decomp_len -= 2048
+
+        temp_dir = os.path.dirname(decomp_path)
+        if not os.path.isdir(temp_dir):
+            os.makedirs(temp_dir)
+
+        if decomp_path is None:
+            decomp_path = "decomp.map"
+
+        print("Decompressing map to:  %s" % decomp_path)
+        with open(decomp_path, "wb+") as f:
+            f.write(comp_data[:2048])
+            comp_data = comp_data[2048:]
+            decomp_obj = zlib.decompressobj()
+
+            while comp_data:
+                # decompress map 64Mb at a time
+                f.write(decomp_obj.decompress(comp_data, 64*1024*1024))
+                comp_data = decomp_obj.unconsumed_tail
+
+            f.write(b'X'*(decomp_len - f.tell()))
+            comp_data = PeekableMmap(f.fileno(), 0)
 
     # not actually compressed
     return comp_data
+
+
+yelo_header = Struct("yelo header",
+    UEnum32("yelo", ('yelo', 'yelo'), EDITABLE=False, DEFAULT='yelo'),
+    UEnum16("version type",
+        ("version", 1),
+        ("version minimum build", 2)
+        ),
+    Bool16("flags",
+        "uses memory upgrades",
+        "uses mod data files",
+        "is protected",
+        "uses game state upgrades",
+        "has compression params",
+        ),
+    QStruct("tag versioning",
+        UInt8("project yellow"),
+        UInt8("project yellow globals"),
+        Pad(2),
+        SIZE=4
+        ),
+
+    Float("memory upgrade multiplier"),
+
+    Struct("cheape definitions",
+        UInt32("size"),
+        UInt32("decompressed size"),
+        UInt32("offset"),
+        Pad(4),
+
+        ascii_str32("build string"),
+        SIZE=48
+        ),
+
+    ascii_str32("mod name"),
+
+    Struct("build info",
+        Pad(2),
+        UEnum16("stage",
+            "ship",
+            "alpha",
+            "beta",
+            "delta",
+            "epsilon",
+            "release",
+            ),
+        UInt32("revision"),
+        Timestamp64("timestamp"),
+
+        ascii_str32("build string"),
+
+        QStruct("cheape",
+            UInt8("maj"),
+            UInt8("min"),
+            UInt16("build"),
+            ),
+        BytesRaw("uuid buffer", SIZE=16),
+
+        QStruct("minimum os build",
+            UInt8("maj"),
+            UInt8("min"),
+            UInt16("build"),
+            ),
+        Pad(4*3),
+        SIZE=84
+        ),
+
+    QStruct("resources",
+        UInt32("compression params header offset"),
+        UInt32("tag symbol storage header offset"),
+        UInt32("string id storage header offset"),
+        UInt32("tag string to id storage header offset"),
+        SIZE=16
+        ),
+
+    SIZE=196
+    )
 
 
 # Halo Demo maps have a different header
 # structure with garbage filling the padding
 map_header_demo = Struct("map header",
     Pad(2),
-    LUEnum16("map type",
+    UEnum16("map type",
         "sp",
         "mp",
         "ui",
         ),
     Pad(700),
-    LUEnum32('head', ('head', 'Ehed'), EDITABLE=False, DEFAULT='Ehed'),
-    LSInt32("tag index meta len"),
+    UEnum32('head', ('head', 'Ehed'), EDITABLE=False, DEFAULT='Ehed'),
+    SInt32("tag index meta len"),
     StrLatin1("build date", EDITABLE=False, SIZE=32),
     Pad(672),
-    LSEnum32("version",
+    SEnum32("version",
         ("xbox",   5),
         ("pcdemo", 6),
         ("pc", 7),
         ("ce", 609),
         ),
     ascii_str32("map name"),
-    LSInt32("unknown"),
-    LUInt32("crc32"),
+    SInt32("unknown"),
+    UInt32("crc32"),
     Pad(52),
-    LSInt32("decomp len"),
-    LSInt32("tag index header offset"),
-    LUEnum32('foot', ('foot', 'Gfot'), EDITABLE=False, DEFAULT='Gfot'),
+    SInt32("decomp len"),
+    SInt32("tag index header offset"),
+    UEnum32('foot', ('foot', 'Gfot'), EDITABLE=False, DEFAULT='Gfot'),
     Pad(524),
     SIZE=2048
     )
 
 map_header = Struct("map header",
-    LUEnum32('head', ('head', 'head'), EDITABLE=False, DEFAULT='head'),
-    LSEnum32("version",
+    UEnum32('head', ('head', 'head'), EDITABLE=False, DEFAULT='head'),
+    SEnum32("version",
         ("xbox",   5),
         ("pcdemo", 6),
         ("pc", 7),
         ("ce", 609),
         ),
-    LSInt32("decomp len"),
-    LSInt32("unknown"),
-    LSInt32("tag index header offset"),
-    LSInt32("tag index meta len"),
+    SInt32("decomp len"),
+    SInt32("unknown"),
+    SInt32("tag index header offset"),
+    SInt32("tag index meta len"),
     Pad(8),
     ascii_str32("map name"),
     StrLatin1("build date", EDITABLE=False, SIZE=32),
-    LUEnum32("map type",
+    UEnum32("map type",
         "sp",
         "mp",
         "ui",
         ),
-    LUInt32("crc32"),
-    Pad(1940),
-    LUEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
+    UInt32("crc32"),
+    Pad(8),
+    yelo_header,
+    Pad(1940 - 8 - yelo_header[SIZE]),
+    UEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
     SIZE=2048
     )
 
 '''
-base_tag_magic, is somewhat interesting.
+main_scenario_tag_id, is somewhat interesting.
 If you’ve ever gone through mapfiles with a hex editor, you
 know about tag-swapping. You might go through a mapfile and
 find a value like "E1880014"(in Blood Gulch, this is the
@@ -156,7 +265,7 @@ modder at all, you know that you can swap a tag id with another
 tag id of the same type (sometimes of different types) and you
 can do some rather simple, but interesting things.
 
-Well, the base_tag_magic is the number at which these tag id’s start.
+Well, the main_scenario_tag_id is the number at which these tag id’s start.
 For Blood Gulch, this number is "E1740000". This number varies
 from map to map. You will notice an interesting property of the
 tag id and the base tag occurs when you subtract one from the other:
@@ -184,13 +293,13 @@ tag_data = Container("tag",
     )
 
 tag_header = Struct("tag header",
-    LUEnum32("class 1", GUI_NAME="primary tag class", INCLUDE=valid_tags_os),
-    LUEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_tags_os),
-    LUEnum32("class 3", GUI_NAME="tertiary tag class", INCLUDE=valid_tags_os),
-    LUInt32("id"),
-    LUInt32("path offset"),
-    LUInt32("meta offset"),
-    LUInt32("indexed"),
+    UEnum32("class 1", GUI_NAME="primary tag class", INCLUDE=valid_tags_os),
+    UEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_tags_os),
+    UEnum32("class 3", GUI_NAME="tertiary tag class", INCLUDE=valid_tags_os),
+    tag_id_struct,
+    UInt32("path offset"),
+    UInt32("meta offset"),
+    UInt32("indexed"),
     # if indexed is 1, the meta_offset is the literal index in the
     # bitmaps, sounds, or loc cache that the meta data is located in.
     Pad(4),
@@ -202,17 +311,17 @@ tag_index_array = TagIndex("tag index",
     )
 
 tag_index_xbox = Struct("tag index",
-    LUInt32("tag index offset"),
-    LUInt32("base tag magic"),
-    LUInt32("map id"),
-    LUInt32("tag count"),
+    UInt32("tag index offset"),
+    QStruct("scenario tag id", INCLUDE=tag_id_struct),
+    UInt32("map id"),
+    UInt32("tag count"),
 
-    LUInt32("vertex object count"),
-    LUInt32("model raw data offset"),
+    UInt32("vertex parts count"),
+    UInt32("vertex parts offset"),
 
-    LUInt32("indices object count"),
-    LUInt32("indices offset"),
-    LUInt32("tag sig", EDITABLE=False, DEFAULT='tags'),
+    UInt32("index parts count"),
+    UInt32("index parts offset"),
+    UInt32("tag sig", EDITABLE=False, DEFAULT='tags'),
 
     SIZE=36,
     STEPTREE=tag_index_array
@@ -220,7 +329,8 @@ tag_index_xbox = Struct("tag index",
 
 tag_index_pc = tipc = dict(tag_index_xbox)
 tipc['ENTRIES'] += 1; tipc['SIZE'] += 4
-tipc[9] = tipc[8]; tipc[8] = LUInt32("model raw data size")
+tipc[7] = LUInt32("vertex data size")
+tipc[9] = tipc[8]; tipc[8] = LUInt32("index data size")
 
 map_header_def = BlockDef(map_header)
 map_header_demo_def = BlockDef(map_header_demo)

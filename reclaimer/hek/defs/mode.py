@@ -49,6 +49,26 @@ part = Struct('part',
     reflexive("compressed vertices", fast_compressed_vertex, 65535),
     reflexive("triangles", triangle, 65535),
 
+    #Pad(36),
+    Struct("model meta info",
+        FlUEnum32("index type",  # name is a guess.  always 1?
+            ("uncompressed", 1),
+            ),
+        FlUInt32("index count"),
+        FlUInt32("indices offset"),
+        FlUInt32("indices reflexive offset"),
+
+        FlUEnum32("vertex type",  # name is a guess
+            ("uncompressed", 4),
+            ("compressed",   5),
+            ),
+        FlUInt32("vertex count"),
+        FlUInt32("unknown"),  # always 0?
+        FlUInt32("vertices offset"),
+        FlUInt32("vertices reflexive offset"),
+        VISIBLE=False
+        ),
+
     SIZE=104
     )
 

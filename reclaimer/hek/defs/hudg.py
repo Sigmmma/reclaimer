@@ -149,7 +149,7 @@ time_out = Struct("time out flash color",
     BBool16("flash flags", *hud_flash_flags),
     float_sec("flash length"),
     QStruct("disabled color", INCLUDE=argb_byte),
-    SIZE=88
+    SIZE=32
     )
 
 misc_hud_crap = Struct("misc hud crap",
@@ -158,6 +158,7 @@ misc_hud_crap = Struct("misc hud crap",
     BSInt16("checkpoint begin text"),
     BSInt16("checkpoint end text"),
     dependency("checkpoint", "snd!"),
+    BytearrayRaw("unknown", SIZE=96),
     SIZE=120
     )
 
@@ -181,7 +182,7 @@ hudg_body = Struct("tagdata",
     time_running_out,
     time_out,
 
-    Pad(44),
+    Pad(40),
     dependency("carnage report bitmap", "bitm"),
     misc_hud_crap,
     SIZE=1104

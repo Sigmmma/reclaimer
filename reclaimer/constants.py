@@ -23,6 +23,7 @@ map_build_dates = {
     "pcdemo":   "01.00.00.0576",
     "pc":       "01.00.00.0564",
     "ce":       "01.00.00.0609",
+    "yelo":     "01.00.00.0609",
     }
 
 map_versions = {
@@ -32,6 +33,7 @@ map_versions = {
     "pcdemo": 6,
     "pc": 7,
     "ce": 609,
+    "yelo": 609,
     }
 
 map_magics = {
@@ -41,6 +43,7 @@ map_magics = {
     "pcdemo":   PCDEMO_INDEX_MAGIC,
     "pc":       PC_INDEX_MAGIC,
     "ce":       PC_INDEX_MAGIC,
+    "yelo":     PC_INDEX_MAGIC,
     }
 
 #I cant imagine Halo allowing any one field even close to this many
@@ -198,6 +201,8 @@ for tag_cls in tag_class_fcc_to_ext_os:
 #######################################
 tag_class_fcc_to_ext_stubbs = {
     'imef': "image_effect",
+    'vege': "vegetation",
+    'terr': "terrain",  # as kornman said, i dont fucking know
     }
 
 tag_class_fcc_to_ext_stubbs.update(tag_class_fcc_to_ext)
