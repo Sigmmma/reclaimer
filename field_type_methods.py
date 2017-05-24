@@ -55,12 +55,12 @@ def tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         "and not None when reading a data field.")
     if "tag_index" in kwargs:
         tag_index = kwargs["tag_index"]
-        if parent.id == 0xFFFFFFFF:
-            parent[attr_index] = ""
+        tagid = parent.id.tag_table_index
+        if tagid >= 0 and (tagid < len(tag_index.tag_index) and
+                           parent.id.table_index != 0xFFFF):
+            parent[attr_index] = tag_index.tag_index[tagid].tag.tag_path
         else:
-            i = (parent.id - tag_index.base_tag_magic) & 0xFFFF
-            if i >= 0 and i < len(tag_index.tag_index):
-                parent[attr_index] = tag_index.tag_index[i].tag.tag_path
+            parent[attr_index] = ""
     elif rawdata:
         # read and store the node
         rawdata.seek(root_offset + offset)
@@ -198,8 +198,9 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                 else:
                     magic_offset = node[2]
 
-                if magic_offset + node[0] > len(rawdata):
-                    # data is stored in a resource map
+                if not node[0] or (magic_offset + node[0] > len(rawdata) or
+                                   magic_offset <= 0):
+                    # data is stored in a resource map, or the size is invalid
                     s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
                 else:
                     s_desc['TYPE'].parser(

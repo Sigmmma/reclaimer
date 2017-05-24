@@ -76,11 +76,11 @@ tag_meta = Switch("tag meta",
            }
     )
 
-tag_header = QuickStruct("tag header",
-    LUInt32("id"),
+tag_header = Struct("tag header",
+    tag_id_struct,
     LUInt32("size"),
     LUInt32("offset"),
-    STEPTREE=tag_meta
+    #STEPTREE=tag_meta
     )
 
 tag_path = Container("tag path",
@@ -88,7 +88,7 @@ tag_path = Container("tag path",
     )
 
 
-resource_def = TagDef("resource",
+resource_def = BlockDef("resource",
     LUEnum32("resource type",
         'NONE',
         'bitmaps',
@@ -107,6 +107,5 @@ resource_def = TagDef("resource",
         SIZE='.tag_count', SUB_STRUCT=tag_header,
         POINTER='.tag_headers_pointer',
         ),
-
-    ext=".map", endian="<"
+    endian="<"
     )

@@ -142,7 +142,7 @@ def dependency_stubbs(name='tag ref', valid_ids=None):
         valid_ids,
         BUInt32("path pointer", VISIBLE=False, EDITABLE=False),
         BUInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
-        BUInt32("id", DEFAULT=0xFFFFFFFF, VISIBLE=False, EDITABLE=False),
+        tag_id_struct,
 
         STEPTREE=HaloRefStr(
             "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
