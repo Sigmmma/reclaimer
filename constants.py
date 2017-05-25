@@ -2,10 +2,14 @@ from supyr_struct.defs.constants import *
 from binilla.constants import *
 from struct import unpack
 
+# some reflexives are so massive that it's significantly faster to treat them
+# as raw data and just byteswap them using precalculated offsets and sizes
+RAW_REFLEXIVE_INFO = "RAW_REFLEXIVE_INFO"
 
 def inject_halo_constants():
     # add the new descriptor keywords to the sets
-    add_desc_keywords()
+    add_desc_keywords(RAW_REFLEXIVE_INFO)
+
 
 XBOX_BSP_MAGIC = 0x819A6000
 

@@ -58,6 +58,53 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
 
     return Reflexive(name, **desc)
 
+def get_raw_reflexive_offsets(desc, two_byte_offs, four_byte_offs, off=0):
+    if INCLUDE in desc:
+        desc = BlockDef.include_attrs(None, dict(desc))
+        BlockDef.set_entry_count(None, desc)
+
+    for i in range(desc.get(ENTRIES, 0)):
+        f_desc = desc[i]
+        f_type = f_desc[TYPE]
+        size   = f_desc.get(SIZE, f_type.size)
+        if f_type.is_data:
+            if size == 4:
+                four_byte_offs.append(off)
+            elif size == 2:
+                two_byte_offs.append(off)
+            off += size
+        elif f_type is Pad:
+            off += size
+        else:
+            off = get_raw_reflexive_offsets(
+                f_desc, two_byte_offs, four_byte_offs, off)
+    return off
+
+
+def raw_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
+    '''
+    This function serves to macro the creation
+    of a reflexive treated as rawdata
+    '''
+    desc = reflexive(name, substruct, max_count, *names, **desc)
+    info = desc[RAW_REFLEXIVE_INFO] = [0, [], []]
+    sub_desc = desc[STEPTREE][SUB_STRUCT]
+    sub_size = info[0] = sub_desc.get(SIZE)
+    two_byte_offs, four_byte_offs = info[1], info[2]
+    if sub_size is None:
+        raise KeyError("Cannot make a raw_reflexive without a substruct size.")
+
+    def data_size(parent=None, new_value=None, struct_size=sub_size, *a, **kw):
+        if new_value is None:
+            return parent.size*struct_size
+        else:
+            parent.size = new_value//struct_size
+
+    desc[STEPTREE] = BytearrayRaw(desc[STEPTREE][NAME], SIZE=data_size)
+    desc[TYPE] = RawReflexive
+    get_raw_reflexive_offsets(sub_desc, two_byte_offs, four_byte_offs)
+    return desc
+
 
 def rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
                 widget=HaloRawdataFrame, **kwargs):
