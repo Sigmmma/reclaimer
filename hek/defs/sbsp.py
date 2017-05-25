@@ -32,6 +32,7 @@ node = Struct("node",
     BUInt16("unknown0"),
     BUInt16("unknown1"),
     BUInt16("unknown2"),
+    SIZE=6
     )
 
 leaf = Struct("leaf",
@@ -183,6 +184,7 @@ breakable_surface = Struct("breakable surface",
     QStruct("centroid", INCLUDE=xyz_float),
     BFloat("radius"),
     BSInt32("collision surface index"),
+    Pad(28),
     SIZE=48
     )
 
@@ -392,6 +394,19 @@ sbsp_body = Struct("tagdata",
     SIZE=648,
     )
 
+fast_sbsp_body = dict(sbsp_body)
+fast_sbsp_body[16] = reflexive("collision bsp", fast_collision_bsp, 1)
+fast_sbsp_body[17] = raw_reflexive("nodes", node, 131072)
+fast_sbsp_body[21] = raw_reflexive("leaves", leaf, 65535)
+fast_sbsp_body[22] = raw_reflexive("leaf surfaces", leaf_surface, 262144)
+fast_sbsp_body[23] = raw_reflexive("surface", surface, 131072)
+fast_sbsp_body[27] = raw_reflexive("lens flare markers", lens_flare_marker, 65535)
+fast_sbsp_body[32] = raw_reflexive("breakable surfaces", breakable_surface, 256)
+fast_sbsp_body[40] = raw_reflexive("pathfinding surfaces", pathfinding_surface, 131072)
+fast_sbsp_body[41] = raw_reflexive("pathfinding edges", pathfinding_edge, 262144)
+fast_sbsp_body[46] = raw_reflexive("markers", marker, 1024, DYN_NAME_PATH='.name')
+
+
 sbsp_meta_header_def = BlockDef("sbsp meta header",
     # to convert these pointers to offsets, do:  pointer - bsp_magic
     UInt32("meta pointer"),
@@ -410,6 +425,13 @@ def get():
 sbsp_def = TagDef("sbsp",
     blam_header("sbsp", 5),
     sbsp_body,
+
+    ext=".scenario_structure_bsp", endian=">", tag_cls=HekTag,
+    )
+
+fast_sbsp_def = TagDef("sbsp",
+    blam_header("sbsp", 5),
+    fast_sbsp_body,
 
     ext=".scenario_structure_bsp", endian=">", tag_cls=HekTag,
     )

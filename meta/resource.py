@@ -1,8 +1,8 @@
 from ..common_descs import *
-from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.defs.tag_def import TagDef, BlockDef
 from ..hek.defs import str_, ustr, hmt_, bitm, snd_, font
 
-def get(): return resource_def
+def get(): return resource_tag_def
 
 def get_resource_tag_type(node=None, parent=None, attr_index=None,
                           rawdata=None, new_value=None, *args, **kwargs):
@@ -109,3 +109,5 @@ resource_def = BlockDef("resource",
         ),
     endian="<"
     )
+
+resource_tag_def = TagDef(resource_def.descriptor, endian="<", ext=".map")

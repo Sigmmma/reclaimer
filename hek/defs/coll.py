@@ -237,12 +237,51 @@ coll_body = Struct("tagdata",
     )
 
 
+fast_collision_bsp = Struct("permutation bsp",
+    raw_reflexive("bsp3d nodes", bsp3d_node, 131072),
+    raw_reflexive("planes", plane, 65535),
+    raw_reflexive("leaves", leaf, 65535),
+    raw_reflexive("bsp2d references", bsp2d_reference, 131072),
+    raw_reflexive("bsp2d nodes", bsp2d_node, 65535),
+    raw_reflexive("surfaces", surface, 131072),
+    raw_reflexive("edges", edge, 262144),
+    raw_reflexive("vertices", vertex, 131072),
+    SIZE=96
+    )
+
+fast_node = Struct("node",
+    ascii_str32("name"),
+    dyn_senum16("region",
+        DYN_NAME_PATH=".....regions.regions_array[DYN_I].name"),
+    dyn_senum16("parent node",
+        DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16("next sibling node",
+        DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16("first child node",
+        DYN_NAME_PATH="..[DYN_I].name"),
+
+    Pad(12),
+    reflexive("bsps", fast_collision_bsp, 32),
+    SIZE=64
+    )
+
+fast_coll_body = dict(coll_body)
+fast_coll_body[12] = reflexive("nodes", fast_node, 64, DYN_NAME_PATH='.name')
+
+
 def get():
     return coll_def
 
 coll_def = TagDef("coll",
     blam_header("coll", 10),
     coll_body,
+
+    ext=".model_collision_geometry", endian=">", tag_cls=HekTag,
+    )
+
+fast_coll_def = TagDef("coll",
+    blam_header("coll", 10),
+    fast_coll_body,
 
     ext=".model_collision_geometry", endian=">", tag_cls=HekTag,
     )
