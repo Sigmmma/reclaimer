@@ -119,7 +119,10 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
 
         s_desc = desc.get('STEPTREE')
         if s_desc:
-            if 'magic' in kwargs:
+            if not node[0]:
+                # reflexive is empty. no need to provide rawdata
+                s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
+            elif 'magic' in kwargs:
                 s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', rawdata,
                                       root_offset, node[1] - kwargs["magic"],
                                       **kwargs)
@@ -192,7 +195,10 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
 
         s_desc = desc.get('STEPTREE')
         if s_desc:
-            if 'magic' in kwargs:
+            if kwargs.get("parsing_resource"):
+                # parsing JUST metadata from a resource cache
+                s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
+            elif 'magic' in kwargs:
                 if node[3]:
                     magic_offset = node[3] - kwargs["magic"]
                 else:

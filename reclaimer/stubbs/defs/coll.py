@@ -23,6 +23,39 @@ node = Struct("node",
     SIZE=64
     )
 
+permutation = Struct("permutation",
+    ascii_str32("name"),
+    ascii_str32("unknown"),
+    SIZE=128
+    )
+
+region = Struct("region",
+    ascii_str32("name"),
+    BBool32("flags",
+        "lives until object dies",
+        "forces object to die",
+        "dies when object dies",
+        "dies when object is damaged",
+        "disappears when shield is off",
+        "inhibits melee attack",
+        "inhibits walking",
+        "forces drop weapon",
+        "causes head-maimed scream",
+        ),
+    SInt16("unknown0"),
+    UInt16("unknown1"),
+    Pad(16),
+    QStruct("unknown floats", *[BFloat("float%s" % i) for i in range(12)]),
+
+    dependency("destroyed garbage", "garb"),
+    dependency("destroyed weapon", "weap"),
+    dependency("destroyed effect", "effe"),
+    ascii_str32("unknown2"),
+    Pad(28),
+    reflexive("permutations", permutation, 32, DYN_NAME_PATH='.name'),
+    SIZE=224
+    )
+
 material = Struct("material",
     ascii_str32("name"),
     BBool32("flags",
@@ -33,9 +66,9 @@ material = Struct("material",
     BFloat("shield leak percentage"),
     BFloat("shield damage multiplier"),
 
-    Pad(12),
+    Pad(16+12),
     BFloat("body damage multiplier"),
-    SIZE=72
+    SIZE=144
     )
 
 coll_body = Struct("tagdata",
@@ -76,6 +109,10 @@ coll_body = Struct("tagdata",
     SIZE=664,
     )
 
+fast_coll_body = dict(coll_body)
+fast_coll_body[12] = reflexive("nodes", fast_node, 64, DYN_NAME_PATH='.name')
+
+
 def get():
     return coll_def
 
@@ -84,4 +121,11 @@ coll_def = TagDef("coll",
     coll_body,
 
     ext=".model_collision_geometry", endian=">", tag_cls=StubbsTag
+    )
+
+fast_coll_def = TagDef("coll",
+    blam_header("coll", 10),
+    fast_coll_body,
+
+    ext=".model_collision_geometry", endian=">", tag_cls=HekTag,
     )
