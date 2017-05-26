@@ -317,7 +317,7 @@ tag_index_xbox = Struct("tag index",
     UInt32("tag count"),
 
     UInt32("vertex parts count"),
-    UInt32("vertex parts offset"),
+    UInt32("model data offset"),
 
     UInt32("index parts count"),
     UInt32("index parts offset"),
