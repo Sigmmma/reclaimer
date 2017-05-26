@@ -30,8 +30,7 @@ part = Struct('part',
         'stripped',
         'ZONER',
         ),
-    Pad(1),
-    dyn_senum8('shader index',
+    dyn_senum16('shader index',
         DYN_NAME_PATH="tagdata.shaders.shaders_array[DYN_I].shader.filepath"),
     SInt8('previous part index'),
     SInt8('next part index'),
@@ -42,6 +41,8 @@ part = Struct('part',
     BFloat('centroid secondary weight'),
 
     QStruct('centroid translation', INCLUDE=xyz_float),
+
+    #reflexive("uncompressed vertices", fast_uncompressed_vertex, 65535),
     Pad(12),
 
     #reflexive("compressed vertices", compressed_vertex_union, 65535),
@@ -51,22 +52,22 @@ part = Struct('part',
 
     #Pad(36),
     Struct("model meta info",
-        FlUEnum32("index type",  # name is a guess.  always 1?
+        UEnum32("index type",  # name is a guess.  always 1?
             ("uncompressed", 1),
             ),
-        FlUInt32("index count"),
-        FlUInt32("indices offset"),
-        FlUInt32("indices reflexive offset"),
+        UInt32("index count"),
+        UInt32("indices offset"),
+        UInt32("indices reflexive offset"),
 
-        FlUEnum32("vertex type",  # name is a guess
+        UEnum32("vertex type",  # name is a guess
             ("uncompressed", 4),
             ("compressed",   5),
             ),
-        FlUInt32("vertex count"),
-        FlUInt32("unknown"),  # always 0?
-        FlUInt32("vertices offset"),
-        FlUInt32("vertices reflexive offset"),
-        VISIBLE=False
+        UInt32("vertex count"),
+        Pad(4),  # always 0?
+        UInt32("vertices offset"),
+        UInt32("vertices reflexive offset"),
+        VISIBLE=False, SIZE=36
         ),
 
     SIZE=104
@@ -119,17 +120,18 @@ mode_body = Struct('tagdata',
         ),
     BSInt32('node list checksum'),
 
-    BFloat('superhigh lod cutoff', SIDETIP="pixels"),
-    BFloat('high lod cutoff', SIDETIP="pixels"),
-    BFloat('medium lod cutoff', SIDETIP="pixels"),
-    BFloat('low lod cutoff', SIDETIP="pixels"),
+    # xbox has these values swapped around in order
     BFloat('superlow lod cutoff', SIDETIP="pixels"),
+    BFloat('low lod cutoff', SIDETIP="pixels"),
+    BFloat('medium lod cutoff', SIDETIP="pixels"),
+    BFloat('high lod cutoff', SIDETIP="pixels"),
+    BFloat('superhigh lod cutoff', SIDETIP="pixels"),
 
-    BSInt16('superhigh lod nodes', SIDETIP="nodes"),
-    BSInt16('high lod nodes', SIDETIP="nodes"),
-    BSInt16('medium lod nodes', SIDETIP="nodes"),
-    BSInt16('low lod nodes', SIDETIP="nodes"),
     BSInt16('superlow lod nodes', SIDETIP="nodes"),
+    BSInt16('low lod nodes', SIDETIP="nodes"),
+    BSInt16('medium lod nodes', SIDETIP="nodes"),
+    BSInt16('high lod nodes', SIDETIP="nodes"),
+    BSInt16('superhigh lod nodes', SIDETIP="nodes"),
 
     Pad(10),
 

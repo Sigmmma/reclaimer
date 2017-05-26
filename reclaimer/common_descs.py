@@ -197,8 +197,7 @@ def get_unit_scale(scale60, val30=1):
         if kwargs.get('get_scales'):
             # used for getting both the 30 and 60 fps scales
             return (val30, val60)
-        elif w is None or not (w.tag_window.app_root.\
-                               config_file.data.mozzarilla.flags.fps_60):
+        elif w is None or not w.tag_window.save_as_60:
             return val30
         return val60
 
