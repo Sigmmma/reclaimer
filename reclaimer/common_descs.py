@@ -868,21 +868,21 @@ tag_header = Struct("blam header",
     BUEnum32("tag class",
         GUI_NAME="tag class", INCLUDE=valid_tags, EDITABLE=False
         ),
-    LUInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
-    LUInt32("header size",  DEFAULT=64, EDITABLE=False),
-    LBool64("flags",
+    BUInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
+    BUInt32("header size",  DEFAULT=64, EDITABLE=False),
+    BBool64("flags",
         "edited with mozz",
         {GUI_NAME: "60fps", NAME: "fps_60", VALUE: 1<<8},
         EDITABLE=False
         ),
-    LUInt16("version", DEFAULT=1, EDITABLE=False),
+    BUInt16("version", DEFAULT=1, EDITABLE=False),
     UInt8("integrity0", DEFAULT=0, EDITABLE=False),
     UInt8("integrity1", DEFAULT=255, EDITABLE=False),
-    LUEnum32("engine id",
+    BUEnum32("engine id",
         ("halo 1", 'blam'),
         DEFAULT='blam', EDITABLE=False
         ),
-    VISIBLE=False, SIZE=64
+    VISIBLE=False, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
     )
 
 # Miscellaneous, Halo specific descriptors
@@ -919,7 +919,7 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
     BSInt32("size", EDITABLE=False, GUI_NAME="", SIDETIP="bytes"),
     BUInt32("unknown", EDITABLE=False, VISIBLE=False),
     BUInt32("raw pointer", EDITABLE=False, VISIBLE=False),  # doesnt use magic
-    BUInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),
+    BUInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=0xFFFFFFFF),
     BUInt32("id", EDITABLE=False, VISIBLE=False),
     ORIENT='h'
     )
@@ -927,7 +927,7 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
     BSInt32("size", EDITABLE=False, VISIBLE=False),
-    BUInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=-1),
+    BUInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=0xFFFFFFFF),
     BUInt32("id", EDITABLE=False, VISIBLE=False),  # 0 in meta it seems
     )
 
@@ -1085,24 +1085,24 @@ grenade_types_os = (
 # Descriptors
 tag_header_os = Struct("blam header",
     Pad(36),
-    BUEnum32("tag_class",
+    UEnum32("tag_class",
         GUI_NAME="tag class", INCLUDE=valid_tags_os, EDITABLE=False
         ),
-    LUInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False), 
-    LUInt32("header size",  DEFAULT=64, EDITABLE=False),
-    BBool64("flags",
+    UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False), 
+    UInt32("header size",  DEFAULT=64, EDITABLE=False),
+    Bool64("flags",
         "edited with mozz",
         {GUI_NAME: "60fps", NAME: "fps_60", VALUE: 1<<8},
         EDITABLE=False
         ),
-    LUInt16("version", DEFAULT=1, EDITABLE=False),
+    UInt16("version", DEFAULT=1, EDITABLE=False),
     UInt8("integrity0", DEFAULT=0, EDITABLE=False),
     UInt8("integrity1", DEFAULT=255, EDITABLE=False),
-    LUEnum32("engine id",
+    UEnum32("engine id",
         ("halo 1", 'blam'),
         DEFAULT='blam', EDITABLE=False
         ),
-    VISIBLE=False, SIZE=64
+    VISIBLE=False, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
     )
 
 valid_model_animations_yelo = tag_class_os('antr', 'magy')

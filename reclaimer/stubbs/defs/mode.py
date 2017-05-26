@@ -55,7 +55,7 @@ mode_body = Struct('tagdata',
     )
 
 mode_def = TagDef("mode",
-    blam_header('mode', 4),
+    blam_header('mode', 6),  # increment to differentiate it from mode and mod2
     mode_body,
 
     ext=".model", endian=">", tag_cls=ModeTag

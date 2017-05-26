@@ -67,7 +67,7 @@ r_a_stream_header = Struct("r a stream header",
     QStruct("head", INCLUDE=fl_float_xyz),
     QStruct("change", INCLUDE=fl_float_xyz),
     FlUInt32("unknown1"),
-    FlUInt32("unknown2", DEFAULT=-1),
+    FlUInt32("unknown2", DEFAULT=0xFFFFFFFF),
     SIZE=60
     )
 

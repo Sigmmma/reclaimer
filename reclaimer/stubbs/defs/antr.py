@@ -186,7 +186,7 @@ def get():
     return antr_def
 
 antr_def = TagDef("antr",
-    blam_header('antr', 4),
+    blam_header('antr', 5),  # increment to differentiate it from halo antr
     antr_body,
 
     ext=".model_animations", endian=">", tag_cls=AntrTag
