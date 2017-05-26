@@ -162,8 +162,9 @@ part = Struct('part',
             ("uncompressed", 1),
             ),
         UInt32("index count"),
+        # THESE VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
+        UInt32("indices magic offset"),
         UInt32("indices offset"),
-        UInt32("indices reflexive offset"),
 
         UEnum32("vertex type",  # name is a guess
             ("uncompressed", 4),
@@ -171,8 +172,9 @@ part = Struct('part',
             ),
         UInt32("vertex count"),
         Pad(4),  # always 0?
+        # THESE VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
+        UInt32("vertices magic offset"),
         UInt32("vertices offset"),
-        UInt32("vertices reflexive offset"),
         VISIBLE=False, SIZE=36
         ),
 

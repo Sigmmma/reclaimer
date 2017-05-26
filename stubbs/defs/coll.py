@@ -117,14 +117,14 @@ def get():
     return coll_def
 
 coll_def = TagDef("coll",
-    blam_header("coll", 10),
+    blam_header("coll", 11),
     coll_body,
 
     ext=".model_collision_geometry", endian=">", tag_cls=StubbsTag
     )
 
 fast_coll_def = TagDef("coll",
-    blam_header("coll", 10),
+    blam_header("coll", 11),  # bump this up 1 so we can tell it's stubbs
     fast_coll_body,
 
     ext=".model_collision_geometry", endian=">", tag_cls=HekTag,
