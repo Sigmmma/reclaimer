@@ -17,6 +17,61 @@ unknown_struct = Struct("unknown",
 #    SIZE=64
 #    )
 
+pc_part = Struct('part',
+    BBool32('flags',
+        'stripped',
+        'ZONER',
+        ),
+    dyn_senum16('shader index',
+        DYN_NAME_PATH="tagdata.shaders.shaders_array[DYN_I].shader.filepath"),
+    SInt8('previous part index'),
+    SInt8('next part index'),
+
+    BSInt16('centroid primary node'),
+    BSInt16('centroid secondary node'),
+    BFloat('centroid primary weight'),
+    BFloat('centroid secondary weight'),
+
+    QStruct('centroid translation', INCLUDE=xyz_float),
+
+    #reflexive("uncompressed vertices", uncompressed_vertex_union, 65535),
+    #reflexive("compressed vertices", compressed_vertex_union, 65535),
+    #reflexive("triangles", triangle_union, 65535),
+    reflexive("uncompressed vertices", fast_uncompressed_vertex, 65535),
+    reflexive("compressed vertices", fast_compressed_vertex, 65535),
+    reflexive("triangles", triangle, 65535),
+
+    #Pad(36),
+    Struct("model meta info",
+        UEnum32("index type",  # name is a guess.  always 1?
+            ("uncompressed", 1),
+            ),
+        UInt32("index count"),
+        # THESE VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
+        UInt32("indices magic offset"),
+        UInt32("indices offset"),
+
+        UEnum32("vertex type",  # name is a guess
+            ("uncompressed", 4),
+            ("compressed",   5),
+            ),
+        UInt32("vertex count"),
+        Pad(4),  # always 0?
+        # THESE VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
+        UInt32("vertices magic offset"),
+        UInt32("vertices offset"),
+        VISIBLE=False, SIZE=36
+        ),
+
+    SIZE=104
+    )
+
+pc_geometry = Struct('geometry',
+    Pad(36),
+    reflexive("parts", pc_part, 32),
+    SIZE=48
+    )
+
 mode_body = Struct('tagdata',
     BBool32('flags',
         'blend shared normals',
@@ -54,9 +109,19 @@ mode_body = Struct('tagdata',
     SIZE=232
     )
 
+pc_mode_body = dict(mode_body)
+pc_mode_body[20] = reflexive("geometries", pc_geometry, 256)
+
 mode_def = TagDef("mode",
     blam_header('mode', 6),  # increment to differentiate it from mode and mod2
     mode_body,
+
+    ext=".model", endian=">", tag_cls=ModeTag
+    )
+
+pc_mode_def = TagDef("mode",
+    blam_header('mode', 6),  # increment to differentiate it from mode and mod2
+    pc_mode_body,
 
     ext=".model", endian=">", tag_cls=ModeTag
     )
