@@ -42,11 +42,10 @@ part = Struct('part',
 
     QStruct('centroid translation', INCLUDE=xyz_float),
 
-    #reflexive("uncompressed vertices", fast_uncompressed_vertex, 65535),
-    Pad(12),
-
+    #reflexive("uncompressed vertices", uncompressed_vertex_union, 65535),
     #reflexive("compressed vertices", compressed_vertex_union, 65535),
     #reflexive("triangles", triangle_union, 65535),
+    reflexive("uncompressed vertices", fast_uncompressed_vertex, 65535),
     reflexive("compressed vertices", fast_compressed_vertex, 65535),
     reflexive("triangles", triangle, 65535),
 
