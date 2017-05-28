@@ -21,7 +21,7 @@ from ..common_descs import pi, irad, from_to, get_unit_scale,\
      from_to_rad, from_to_wu, from_to_sec, from_to_deg, from_to_zero_to_one,\
      from_to_rad_sec, from_to_wu_sec, from_to_neg_one_to_one,\
      yp_float_deg, ypr_float_deg, yp_float_rad, ypr_float_rad,\
-     xyz_float, xy_float, argb_float, rgb_float, rgb_byte, argb_byte,\
+     xyz_float, xy_float, argb_float, rgb_float, xrgb_byte, argb_byte,\
      ijkw_float, ijk_float, ij_float, yp_float, ypr_float,\
      compressed_normal_32, materials_list
 
