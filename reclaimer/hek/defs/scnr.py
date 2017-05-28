@@ -71,6 +71,36 @@ r_a_stream_header = Struct("r a stream header",
     SIZE=60
     )
 
+script_syntax_data_block = QStruct("script_syntax_data_block",
+    UInt16("unknown0"),
+    UInt16("unknown1"),
+    UInt16("unknown2"),
+    UInt16("unknown3"),
+    UInt32("unknown4"),
+    UInt32("unknown5"),
+    UInt32("unknown6"),
+    SIZE=20
+    )
+
+script_syntax_data_header = Container("script syntax data header",
+    ascii_str32('name', DEFAULT="script node"),
+    UInt16("data array length", DEFAULT=19001),  # this is 1 more than it should be
+    UInt16("data block size", DEFAULT=20),
+    UInt8("unknown0", DEFAULT=1),
+    UInt8("unknown1"),   # zero?
+    UInt16("unknown2"),  # zero?
+    UInt32("data sig", DEFAULT="d@t@"),
+    UInt16("unknown3"),  # zero?
+    UInt16("unknown4"),
+    UInt16("unknown5"),
+    UInt16("unknown6"),
+    UInt32("unknown7"),
+    SIZE=56
+    )
+
+script_syntax_data_header_os = dict(script_syntax_data_header)
+script_syntax_data_header_os[1] = UInt16("data array length", DEFAULT=28501)
+
 device_flags = (
     "initially open",  # value of 1.0
     "initially off",  # value of 0.0
@@ -568,8 +598,10 @@ cutscene_title = Struct("cutscene title",
         ),
 
     Pad(6),
-    QStruct("text color", INCLUDE=argb_byte),
-    QStruct("shadow color", INCLUDE=argb_byte),
+    #QStruct("text color", INCLUDE=argb_byte),
+    #QStruct("shadow color", INCLUDE=argb_byte),
+    UInt32("text color", INCLUDE=argb_uint32),
+    UInt32("shadow color", INCLUDE=argb_uint32),
     float_sec("fade in time"),  # seconds
     float_sec("up time"),  # seconds
     float_sec("fade out time"),  # seconds

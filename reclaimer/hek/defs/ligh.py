@@ -13,18 +13,22 @@ ligh_body = Struct("tagdata",
         ),
 
     #Shape
-    BFloat("radius"),
-    QStruct("radius modifier", INCLUDE=from_to),
-    float_rad("falloff angle"),  # radians
-    float_rad("cutoff angle"),  # radians
-    BFloat("lens flare only radius"),
-    Pad(24),
+    Struct("shape",
+        BFloat("radius"),
+        QStruct("radius modifier", INCLUDE=from_to),
+        float_rad("falloff angle"),  # radians
+        float_rad("cutoff angle"),  # radians
+        BFloat("lens flare only radius"),
+        Pad(24),
+        ),
 
     #Color
-    BBool32("interpolation flags", *blend_flags),
-    QStruct("color lower bound", INCLUDE=argb_float),
-    QStruct("color upper bound", INCLUDE=argb_float),
-    Pad(12),
+    Struct("color",
+        BBool32("interpolation flags", *blend_flags),
+        QStruct("color lower bound", INCLUDE=argb_float),
+        QStruct("color upper bound", INCLUDE=argb_float),
+        Pad(12),
+        ),
 
     #Gel
     Struct("gel map",
@@ -51,14 +55,18 @@ ligh_body = Struct("tagdata",
     Pad(24),
 
     #Radiosity
-    BFloat("intensity"),
-    QStruct("color", INCLUDE=rgb_float),
-    Pad(16),
+    Struct("radiosity",
+        BFloat("intensity"),
+        QStruct("color", INCLUDE=rgb_float),
+        Pad(16),
+        ),
 
     #Effect parameters
-    float_sec("duration"),
-    Pad(2),
-    BSEnum16("falloff function", *fade_functions),
+    Struct("effect parameters",
+        float_sec("duration"),
+        Pad(2),
+        BSEnum16("falloff function", *fade_functions),
+        ),
 
     SIZE=352,
     )

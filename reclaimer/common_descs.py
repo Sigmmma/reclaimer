@@ -4,8 +4,9 @@ from math import pi
 try:
     from mozzarilla.field_widgets import *
 except Exception:
-    ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
-                     EntryFrame = HaloScriptSourceFrame = SoundSampleFrame =\
+    ReflexiveFrame = HaloRawdataFrame = HaloUInt32ColorPickerFrame =\
+                     TextFrame = ColorPickerFrame = EntryFrame =\
+                     HaloScriptSourceFrame = SoundSampleFrame =\
                      DynamicArrayFrame = DynamicEnumFrame = None
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
@@ -230,10 +231,10 @@ def dyn_senum32(name, *args, **kwargs):
     kwargs.setdefault('WIDGET', DynamicEnumFrame)
     return SInt32(name, *args, **kwargs)
 
-def ascii_str32(name):
+def ascii_str32(name, **kwargs):
     # encoding used is latin1 to take care of cases
     # where the string has invalid characters in it
-    return StrLatin1(str(name), SIZE=32)
+    return StrLatin1(str(name), SIZE=32, **kwargs)
 
 def float_zero_to_one(name, *args, **kwargs):
     return Float(name, *args, MIN=0.0, MAX=1.0, SIDETIP="[0,1]", **kwargs)
@@ -982,14 +983,20 @@ rgb_float = QStruct('rgb_float',
     Float("b", MIN=0.0, MAX=1.0),
     ORIENT='h', WIDGET=ColorPickerFrame
     )
-rgb_byte = QStruct('rgb_uint8',
-    UInt8("r"), UInt8("g"), UInt8("b"),
+xrgb_byte = QStruct('xrgb_uint8',
+    Pad(1), UInt8("r"), UInt8("g"), UInt8("b"),
     ORIENT='h', WIDGET=ColorPickerFrame
     )
+
 argb_byte = QStruct('argb_uint8',
     UInt8("a"), UInt8("r"), UInt8("g"), UInt8("b"),
     ORIENT='h', WIDGET=ColorPickerFrame
     )
+
+xrgb_uint32 = UInt32('xrgb_uint32',
+    WIDGET=HaloUInt32ColorPickerFrame, COLOR_CHANNELS="rgb", ORIENT="h")
+argb_uint32 = UInt32('argb_uint32',
+    WIDGET=HaloUInt32ColorPickerFrame, COLOR_CHANNELS="argb", ORIENT="h")
 
 # rotations
 ijkw_float = QStruct('ijkw_float',

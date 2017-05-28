@@ -2,6 +2,24 @@ from supyr_struct.field_type_methods import *
 from .constants import *
 
 
+# this is ultra hacky, but it seems to be the only
+# way to fix the tagid for the sounds resource map
+resource_id_map = {
+    92: 15,  # sound\sfx\impulse\impacts\smallrock
+    93: 17,  # sound\sfx\impulse\impacts\medrocks
+    94: 19,  # sound\sfx\impulse\impacts\lrgrocks
+
+    125: 25,  # sound\sfx\impulse\impacts\metal_chips
+    126: 27,  # sound\sfx\impulse\impacts\metal_chip_med
+
+    372: 123,  # sound\sfx\impulse\shellcasings\double_shell_dirt
+    373: 125,  # sound\sfx\impulse\shellcasings\multi_shell_dirt
+
+    375: 129,  # sound\sfx\impulse\shellcasings\double_shell_metal
+    376: 131,  # sound\sfx\impulse\shellcasings\multi_shell_metal
+    }
+
+
 def tag_ref_sizecalc(self, node, **kwargs):
     '''
     Used to calculate the size of a tag reference string from a given string
@@ -55,10 +73,16 @@ def tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         "and not None when reading a data field.")
     if "tag_index" in kwargs:
         tag_index = kwargs["tag_index"]
-        tagid = parent.id.tag_table_index
-        if tagid >= 0 and (tagid < len(tag_index.tag_index) and
+        tagid = parent.id[0]
+        if tagid >= 0 and (tagid < len(tag_index) and
                            parent.id.table_index != 0xFFFF):
-            parent[attr_index] = tag_index.tag_index[tagid].tag.tag_path
+            try:
+                parent[attr_index] = tag_index[tagid].tag.tag_path
+            except AttributeError:
+                # tag_index is a resource map tag_paths collection
+                if kwargs['tag_cls'] == 'snd!':
+                    tagid = resource_id_map[tagid]
+                parent[attr_index] = tag_index[tagid].tag_path
         else:
             parent[attr_index] = ""
     elif rawdata:
@@ -154,7 +178,7 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
 
 
 def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
-                   rawdata=None, root_offset=0, offset=0, **kwargs):
+                       rawdata=None, root_offset=0, offset=0, **kwargs):
     try:
         __lsi__ = list.__setitem__
         orig_offset = offset
@@ -197,7 +221,9 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         if s_desc:
             if kwargs.get("parsing_resource"):
                 # parsing JUST metadata from a resource cache
-                s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
+                if 'steptree_parents' not in kwargs and 'magic' in kwargs:
+                    # need to skip over the rawdata
+                    offset += node[0] + node[2] - kwargs['magic']
             elif 'magic' in kwargs:
                 if node[3]:
                     magic_offset = node[3] - kwargs["magic"]

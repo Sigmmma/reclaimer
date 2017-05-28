@@ -11,6 +11,8 @@ detail_object_type = Struct("detail object type",
         ("interpolate color in hsv", 4),
         ("more colors", 8),
         ),
+    #UInt8("unknown0", VISIBLE=False),
+    #UInt8("unknown1", VISIBLE=False),
     Pad(2),
     float_zero_to_one("color override factor"),
     Pad(8),
@@ -20,7 +22,8 @@ detail_object_type = Struct("detail object type",
     Pad(4),
     QStruct("minimum color", INCLUDE=rgb_float),
     QStruct("maximum color", INCLUDE=rgb_float),
-    QStruct("ambient color", INCLUDE=argb_byte),
+    #QStruct("ambient color", INCLUDE=argb_byte),
+    UInt32("ambient color", INCLUDE=argb_uint32),
     SIZE=96
     )
 

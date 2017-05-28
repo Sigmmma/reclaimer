@@ -36,9 +36,10 @@ fog__body = Struct("tagdata",
         from_to_zero_to_one("density gradient"),
 
         float_wu("start distance from fog plane"),
-        Pad(5),
+        Pad(4),
 
-        QStruct("color", INCLUDE=rgb_byte),
+        #QStruct("color", INCLUDE=xrgb_byte),
+        UInt32("color", INCLUDE=xrgb_uint32),
         float_zero_to_one("rotation multiplier"),
         float_zero_to_one("strafing multiplier"),
         float_zero_to_one("zoom multiplier"),
