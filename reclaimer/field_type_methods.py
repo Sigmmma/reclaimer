@@ -180,42 +180,22 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
 def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                        rawdata=None, root_offset=0, offset=0, **kwargs):
     try:
-        __lsi__ = list.__setitem__
         orig_offset = offset
         if node is None:
             parent[attr_index] = node = desc.get(BLOCK_CLS, self.node_cls)\
-                (desc, parent=parent)
+                (desc, parent=parent, init_attrs=rawdata is None)
 
         # If there is rawdata to build the structure from
         if rawdata is not None:
             offsets = desc['ATTR_OFFS']
-            struct_off = root_offset + offset
-
-            if self.f_endian == '=':
-                for i in range(len(node)):
-                    off = struct_off + offsets[i]
-                    typ = desc[i]['TYPE']
-                    __lsi__(node, i,
-                            unpack(typ.enc, rawdata[off:off + typ.size])[0])
-            elif self.f_endian == '<':
-                for i in range(len(node)):
-                    off = struct_off + offsets[i]
-                    typ = desc[i]['TYPE']
-                    __lsi__(node, i, unpack(typ.little.enc,
-                                            rawdata[off:off + typ.size])[0])
-            else:
-                for i in range(len(node)):
-                    off = struct_off + offsets[i]
-                    typ = desc[i]['TYPE']
-                    __lsi__(node, i, unpack(typ.big.enc,
-                                            rawdata[off:off + typ.size])[0])
+            # loop once for each field in the node
+            for i in range(len(node)):
+                desc[i]['TYPE'].parser(desc[i], None, node, i, rawdata,
+                                       root_offset, offset + offsets[i],
+                                       **kwargs)
 
             # increment offset by the size of the struct
             offset += desc['SIZE']
-        else:
-            for i in range(len(node)):
-                __lsi__(node, i,
-                        desc[i].get(DEFAULT, desc[i]['TYPE'].default()))
 
         s_desc = desc.get('STEPTREE')
         if s_desc:

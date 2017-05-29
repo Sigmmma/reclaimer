@@ -9,19 +9,20 @@ cluster = Struct("cluster",
     dyn_senum16('sound environment',
         DYN_NAME_PATH="tagdata.sound_environments_palette." +
         "STEPTREE[DYN_I].name"),
-    dyn_senum32('weather',
+    dyn_senum16('weather',
         DYN_NAME_PATH="tagdata.weather_palettes.STEPTREE[DYN_I].name"),
 
     QStruct("unknown0",
         UInt16('uint16_1'),
         UInt16('uint16_2'),
+        UInt16('uint16_3'),
         Float('float_0'),
         Float('float_1'),
         Float('float_2'),
         Float('float_3'),
         Float('float_4'),
         Float('float_5'),
-        SIZE=28
+        SIZE=30
         ),
 
     reflexive("predicted resources", predicted_resource, 1024),

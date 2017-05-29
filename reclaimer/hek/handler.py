@@ -303,7 +303,7 @@ class HaloHandler(Handler):
 
         if raw_data_paths is not empty:
             for b in self.get_nodes_by_paths(raw_data_paths, data):
-                __lsi__(b, 1, 0)  # set unknown to 0
+                b[0].data = 0     # set flags to 0
                 __lsi__(b, 2, 0)  # set raw_pointer to 0
                 __lsi__(b, 3, 0)  # set pointer to 0
                 __lsi__(b, 4, 0)  # set id to 0

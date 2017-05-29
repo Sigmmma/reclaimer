@@ -406,7 +406,7 @@ player_starting_location = Struct("player starting location",
     )
 
 trigger_volume = Struct("trigger volume",
-    LUInt32("unknown", ENDIAN='<', DEFAULT=1, EDITABLE=False),
+    FlUInt32("unknown", DEFAULT=1, EDITABLE=False),
     ascii_str32("name"),
     # find out what if these fields actually what i'm calling them
     QStruct("normal",   INCLUDE=ijk_float),

@@ -41,16 +41,21 @@ track = Struct("track",
     )
 
 
-sndl_body = Struct("tagdata",
+lsnd_body = Struct("tagdata",
     BBool32("flags",
         "deafening to ai",
         "not a loop",
         "stops music",
         ),
     BFloat("detail sound period at zero"),
-    Pad(8),
+    Float("unknown0", DEFAULT=1.0, VISIBLE=False),
+    Float("unknown1", DEFAULT=1.0, VISIBLE=False),
     BFloat("detail sound period at one"),
-    Pad(24),
+    Float("unknown2", DEFAULT=1.0, VISIBLE=False),
+    Float("unknown3", DEFAULT=1.0, VISIBLE=False),
+    SInt32("unknown4", DEFAULT=-1, VISIBLE=False),
+    Float("unknown5", DEFAULT=1.0, VISIBLE=False),
+    Pad(8),
     dependency("continuous damage effect", "cdmg"),
 
     reflexive("tracks", track, 4),
@@ -62,11 +67,11 @@ sndl_body = Struct("tagdata",
 
     
 def get():
-    return sndl_def
+    return lsnd_def
 
-sndl_def = TagDef("lsnd",
+lsnd_def = TagDef("lsnd",
     blam_header("lsnd", 3),
-    sndl_body,
+    lsnd_body,
 
     ext=".sound_looping", endian=">", tag_cls=HekTag,
     )
