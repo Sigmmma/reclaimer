@@ -151,10 +151,10 @@ cluster = Struct("cluster",
     dyn_senum16('sound environment',
         DYN_NAME_PATH="tagdata.sound_environments_palette." +
         "STEPTREE[DYN_I].name"),
-    dyn_senum32('weather',
+    dyn_senum16('weather',
         DYN_NAME_PATH="tagdata.weather_palettes.STEPTREE[DYN_I].name"),
 
-    Pad(28),
+    Pad(30),
     reflexive("predicted resources", predicted_resource, 1024),
     reflexive("subclusters", subcluster, 4096),
     BSInt16("first lens flare marker index"),
@@ -294,8 +294,12 @@ detail_object = Struct("detail object",
     SIZE=64
     )
 
+# taken from reclaimer.hek.defs.scnr.decal
 runtime_decal = Struct("runtime decal",
-    BytesRaw("unknown", SIZE=16),
+    SInt16("decal type"),
+    SInt8("yaw"),
+    SInt8("pitch"),
+    QStruct("position", INCLUDE=xyz_float),
     SIZE=16
     )
 
@@ -386,7 +390,10 @@ sbsp_body = Struct("tagdata",
     reflexive("markers", marker, 1024,
         DYN_NAME_PATH='.name'),
     reflexive("detail objects", detail_object, 1),
-    reflexive("runtime decals", runtime_decal, 6144),
+
+    # the runtime decals reflexive is populated ONLY by the
+    # engine while it is running(I'm making an educated guess)
+    reflexive("runtime decals", runtime_decal, 6144, VISIBLE=False),
 
     Pad(12),
     reflexive("leaf map leaves", leaf_map_leaf, 256),

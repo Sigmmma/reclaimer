@@ -917,19 +917,22 @@ anim_src_func_per_pha_sca_rot = Struct('',
 
 # This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
-    BSInt32("size", EDITABLE=False, GUI_NAME="", SIDETIP="bytes"),
-    BUInt32("unknown", EDITABLE=False, VISIBLE=False),
-    BUInt32("raw pointer", EDITABLE=False, VISIBLE=False),  # doesnt use magic
-    BUInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=0xFFFFFFFF),
-    BUInt32("id", EDITABLE=False, VISIBLE=False),
+    BSInt32("size", GUI_NAME="", SIDETIP="bytes"),
+    BBool32("flags",
+        "data in resource map",
+        VISIBLE=False,
+        ),
+    BUInt32("raw pointer", VISIBLE=False),  # doesnt use magic
+    BUInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    BUInt32("id", VISIBLE=False),
     ORIENT='h'
     )
 
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
-    BSInt32("size", EDITABLE=False, VISIBLE=False),
-    BUInt32("pointer", EDITABLE=False, VISIBLE=False, DEFAULT=0xFFFFFFFF),
-    BUInt32("id", EDITABLE=False, VISIBLE=False),  # 0 in meta it seems
+    BSInt32("size", VISIBLE=False),
+    BUInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    BUInt32("id", VISIBLE=False),  # 0 in meta it seems
     )
 
 predicted_resource = Struct('predicted_resource',
