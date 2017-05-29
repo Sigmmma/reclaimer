@@ -16,7 +16,7 @@ try:
         format_id=ab.FORMAT_P8, raw_format=True, channel_count=4,
         depths=(8,8,8,8), offsets=(24,16,8,0),
         masks=(4278190080, 16711680, 65280, 255))
-except ImportError:
+except (ImportError, AttributeError):
     ab = None
 
 #in a bitmap tag this number designates the type
@@ -183,7 +183,7 @@ class BitmTag(HekTag):
         for b_index in range(self.bitmap_count()):
             bitmap = self.data.tagdata.bitmaps.bitmaps_array[b_index]
             
-            bitmap.flags.set_to('xbox_bitmap', saveasxbox)
+            bitmap.flags.prefer_low_detail = saveasxbox
 
             '''base_address is the ONLY discernable difference
             between a bitmap made by arsenic from a PC map, and
