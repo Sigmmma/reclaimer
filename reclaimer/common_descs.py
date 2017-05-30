@@ -917,7 +917,7 @@ anim_src_func_per_pha_sca_rot = Struct('',
 
 # This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
-    BSInt32("size", GUI_NAME="", SIDETIP="bytes"),
+    BSInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
     BBool32("flags",
         "data in resource map",
         VISIBLE=False,
