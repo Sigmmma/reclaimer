@@ -25,9 +25,10 @@ def tag_path_pointer(node=None, parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
     t_head = parent.parent
-    if new_value is not None:
-        return
-    return t_head.path_offset - kwargs['magic']
+    if new_value is None:
+        return t_head.path_offset - kwargs['magic']
+
+    t_head.path_offset = new_value + kwargs['magic']
 
 
 def get_map_version(header):
@@ -303,7 +304,7 @@ tag_header = Struct("tag header",
     # if indexed is 1, the meta_offset is the literal index in the
     # bitmaps, sounds, or loc cache that the meta data is located in.
     Pad(4),
-    STEPTREE=tag_data,
+    STEPTREE=tag_data, SIZE=32
     )
 
 tag_index_array = TagIndex("tag index",
