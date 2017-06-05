@@ -30,10 +30,10 @@ cluster = Struct("cluster",
     SInt16("first lens flare marker index"),
     SInt16("lens flare marker count"),
 
-    # stubbs seems to have different data here
-    #reflexive("surface indices", surface_index, 32768),
-    #reflexive("mirrors", mirror, 16, DYN_NAME_PATH=".shader.filepath"),
-    #reflexive("portals", portal, 128),
+    # stubbs seems to have different data here than surface indices
+    Pad(12),
+    reflexive("mirrors", mirror, 16, DYN_NAME_PATH=".shader.filepath"),
+    reflexive("portals", portal, 128),
     SIZE=104
     )
 

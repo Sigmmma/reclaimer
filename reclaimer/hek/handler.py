@@ -17,8 +17,15 @@ def bytes_to_hex(taghash):
     return '0x' + '0'*(len(taghash)*2-len(hsh)) + hsh
 
 
+def fps_60_related(desc):
+    unit_scale = desc.get("UNIT_SCALE")
+    if hasattr(unit_scale, "fps_60_scale") and unit_scale.fps_60_scale:
+        return True
+
+
 BAD_DEPENDENCY_HASH = (b"<BAD_DEPENDENCY>", bytes_to_hex(b"<BAD_DEPENDENCY>"))
 CANT_PARSE_TAG_HASH = (b"<CANT_PARSE_TAG>", bytes_to_hex(b"<CANT_PARSE_TAG>"))
+
 
 class NodepathRef(dict):
     __slots__ = ("is_ref",)
@@ -26,13 +33,8 @@ class NodepathRef(dict):
         self.is_ref = is_ref
         dict.__init__(self, *a, **kw)
 
+
 NO_LOC_REFS = NodepathRef(False)
-
-
-def fps_60_related(desc):
-    unit_scale = desc.get("UNIT_SCALE")
-    if hasattr(unit_scale, "fps_60_scale") and unit_scale.fps_60_scale:
-        return True
 
 
 class HaloHandler(Handler):

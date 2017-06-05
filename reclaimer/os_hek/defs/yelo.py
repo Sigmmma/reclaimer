@@ -68,7 +68,7 @@ yelo_body = Struct("tagdata",
 
     Pad(16),
     # Physics
-    BFloat("gravity scale", MIN=0.0, MAX=2.0, SIDETIP="[0,2]"),
+    BFloat("gravity scale",      MIN=0.0, MAX=2.0, SIDETIP="[0,2]"),
     BFloat("player speed scale", MIN=0.0, MAX=6.0, SIDETIP="[0,6]"),
 
     Pad(44),
