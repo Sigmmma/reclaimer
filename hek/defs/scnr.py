@@ -84,7 +84,7 @@ script_syntax_data_block = QStruct("script_syntax_data_block",
 
 script_syntax_data_header = Container("script syntax data header",
     ascii_str32('name', DEFAULT="script node"),
-    UInt16("data array length", DEFAULT=19001),  # this is 1 more than it should be
+    UInt16("data array length", DEFAULT=19001),  # this is 1 more than expected
     UInt16("data block size", DEFAULT=20),
     UInt8("unknown0", DEFAULT=1),
     UInt8("unknown1"),   # zero?
