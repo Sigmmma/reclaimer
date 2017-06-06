@@ -71,30 +71,50 @@ r_a_stream_header = Struct("r a stream header",
     SIZE=60
     )
 
+script_entity = Union("script entity",
+    CASES=dict(
+        id=SInt32("id"),
+        real=Float("real"),
+        unknown=QStruct("unknown",
+            SInt16("index"),
+            SInt16("salt"),
+            )
+        )
+    )
+
+expression_type = BSEnum16("expression type",
+    ('parentheses', 8),
+    ('regular_expression', 9),
+    ('script_name', 10),
+    ('global', 13)
+    )
+
+script_type = BSEnum16("script type", *script_types)
+return_type = BSEnum16("return type", *script_object_types)
+
 script_syntax_data_block = QStruct("script_syntax_data_block",
-    UInt16("unknown0"),
-    UInt16("unknown1"),
-    UInt16("unknown2"),
-    UInt16("unknown3"),
-    UInt32("unknown4"),
-    UInt32("unknown5"),
-    UInt32("unknown6"),
+    UInt16("salt"),
+    UInt16("unknown"),
+    return_type,
+    expression_type,
+    UInt32("sibling node"),
+    UInt32("string offset"),
+    Union("value", INCLUDE=script_entity),
     SIZE=20
     )
 
 script_syntax_data_header = Container("script syntax data header",
     ascii_str32('name', DEFAULT="script node"),
-    UInt16("data array length", DEFAULT=19001),  # this is 1 more than expected
-    UInt16("data block size", DEFAULT=20),
-    UInt8("unknown0", DEFAULT=1),
-    UInt8("unknown1"),   # zero?
-    UInt16("unknown2"),  # zero?
-    UInt32("data sig", DEFAULT="d@t@"),
-    UInt16("unknown3"),  # zero?
-    UInt16("unknown4"),
-    UInt16("unknown5"),
-    UInt16("unknown6"),
-    UInt32("unknown7"),
+    UInt16("max instances", DEFAULT=19001),  # this is 1 more than expected
+    UInt16("instance size", DEFAULT=20),
+    UInt8("is valid", DEFAULT=1),
+    UInt8("identifier zero invalid"),   # zero?
+    Pad(2),
+    UInt32("sig", DEFAULT="d@t@"),
+    UInt16("next index"),  # zero?
+    UInt16("last index"),
+    Union("next", INCLUDE=script_entity),
+    Pointer32("first"),
     SIZE=56
     )
 
@@ -531,8 +551,8 @@ ai_recording_reference = Struct("ai recording reference",
 
 script = Struct("script",
     ascii_str32("script name"),
-    BSEnum16("script type", *script_types),
-    BSEnum16("return type", *script_object_types),
+    script_type,
+    return_type,
     BSInt32("root expression index"),
     SIZE=92
     )
