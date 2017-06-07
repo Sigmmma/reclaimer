@@ -3,8 +3,7 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 item_attrs = Struct('item attrs',
-    Pad(2),
-    BBool16("flags",
+    BBool32("flags",
         "always maintains z up",
         "destroyed by explosions",
         "unaffected by gravity",

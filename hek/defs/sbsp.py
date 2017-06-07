@@ -2,6 +2,8 @@ from .coll import *
 from .objs.tag import HekTag
 from supyr_struct.defs.block_def import BlockDef
 
+# if the lightmap bitmap for the lightmap block is -1 the size
+# of the uncompressed is 56 and the size of the compressed is 32
 uncompressed_lightmap_vertex = Struct("uncompressed lightmap vertex",
     SIZE=76
     )
@@ -22,12 +24,13 @@ vertex = QStruct("vertex", INCLUDE=xyz_float, SIZE=12)
 
 collision_material = Struct("collision material",
     dependency("shader", valid_shaders),
+    FlUInt32("unknown", VISIBLE=False),
     SIZE=20
     )
 
 collision_bsp = Struct("collision bsp", INCLUDE=permutation_bsp)
 
-node = Struct("node",
+node = QStruct("node",
     # I'm guessing these are 3 UInt16's so the endianness can be swapped
     BUInt16("unknown0"),
     BUInt16("unknown1"),
@@ -35,21 +38,29 @@ node = Struct("node",
     SIZE=6
     )
 
-leaf = Struct("leaf",
-    Pad(8),
+leaf = QStruct("leaf",
+    # these unknowns are in the tag and are preserved in the meta
+    FlSInt16("unknown0", VISIBLE=False),
+    FlSInt16("unknown1", VISIBLE=False),
+    FlSInt16("unknown2", VISIBLE=False),
+    FlSInt16("unknown3", VISIBLE=False),
+
     BSInt16("cluster"),
     BSInt16("surface reference count"),
     BSInt32("surface references"),
     SIZE=16,
     )
 
-leaf_surface = Struct("leaf surface",
-    BSInt32("surface"), BSInt32("node"),
+leaf_surface = QStruct("leaf surface",
+    BSInt32("surface"),
+    BSInt32("node"),
     SIZE=8, ORIENT='h'
     )
 
-surface = Struct("surface",
-    BSInt16("a"), BSInt16("b"), BSInt16("c"),
+surface = QStruct("surface",
+    BSInt16("a"),
+    BSInt16("b"),
+    BSInt16("c"),
     SIZE=6, ORIENT='h'
     )
 
@@ -72,7 +83,7 @@ material = Struct("material",
     QStruct("distant light 1 color", INCLUDE=rgb_float),
     QStruct("distant light 1 direction", INCLUDE=ijk_float),
 
-    Pad(12),
+    BytesRaw("unknown0", VISIBLE=False, SIZE=12),
     QStruct("reflection tint", INCLUDE=argb_float),
     QStruct("shadow vector", INCLUDE=ijk_float),
     QStruct("shadow color", INCLUDE=rgb_float),
@@ -83,11 +94,13 @@ material = Struct("material",
     BSInt32("uncompressed vertices count"),
     BSInt32("uncompressed vertices offset"),
 
-    Pad(12),
+    # these unknowns are required for biped shadows to appear
+    BytesRaw("unknown1", VISIBLE=False, SIZE=12),
     BSInt32("compressed vertices count"),
     BSInt32("compressed vertices offset"),
 
-    Pad(8),
+    # these unknowns are required for biped shadows to appear
+    BytesRaw("unknown2", VISIBLE=False, SIZE=8),
     rawdata_ref("uncompressed vertices", max_size=4864000),
     rawdata_ref("compressed vertices", max_size=2560000),
     SIZE=256
@@ -95,7 +108,8 @@ material = Struct("material",
 
 lightmap = Struct("lightmap",
     BSInt16("bitmap index"),
-    Pad(18),
+    # might be padding, might not be
+    BytesRaw("unknown", VISIBLE=False, SIZE=18),
     reflexive("materials", material, 2048,
         DYN_NAME_PATH='.shader.filepath'),
     SIZE=32
@@ -124,7 +138,8 @@ surface_index = QStruct("surface index",
 
 mirror = Struct("mirror",
     QStruct("plane", INCLUDE=plane),
-    Pad(20),
+    # might be padding, might not be
+    BytesRaw("unknown", VISIBLE=False, SIZE=20),
     dependency("shader", valid_shaders),
     reflexive("vertices", vertex, 512),
     SIZE=64
@@ -154,7 +169,10 @@ cluster = Struct("cluster",
     dyn_senum16('weather',
         DYN_NAME_PATH="tagdata.weather_palettes.STEPTREE[DYN_I].name"),
 
-    Pad(30),
+    # almost certain this is padding
+    BytesRaw("unknown", SIZE=30),
+    #Pad(30),
+
     reflexive("predicted resources", predicted_resource, 1024),
     reflexive("subclusters", subcluster, 4096),
     BSInt16("first lens flare marker index"),
@@ -175,7 +193,8 @@ cluster_portal = Struct("cluster portal",
         "ai cant hear through this",
         ),
 
-    Pad(24),
+    # might be padding, might not be
+    BytesRaw("unknown", VISIBLE=False, SIZE=24),
     reflexive("vertices", vertex, 128),
     SIZE=64
     )
@@ -294,14 +313,7 @@ detail_object = Struct("detail object",
     SIZE=64
     )
 
-# taken from reclaimer.hek.defs.scnr.decal
-runtime_decal = Struct("runtime decal",
-    SInt16("decal type"),
-    SInt8("yaw"),
-    SInt8("pitch"),
-    QStruct("position", INCLUDE=xyz_float),
-    SIZE=16
-    )
+runtime_decal = BytesRaw("unknown", SIZE=16)
 
 
 face_vertex = QStruct("vertex", BFloat("x"), BFloat("y"), SIZE=8)
@@ -324,6 +336,7 @@ leaf_map_portal = Struct("leaf map portal",
     BSInt32("back leaf index"),
     BSInt32("front leaf index"),
     reflexive("vertices", face_vertex, 64),
+    SIZE=24
     )
 
 sbsp_body = Struct("tagdata",

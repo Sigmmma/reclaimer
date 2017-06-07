@@ -173,7 +173,7 @@ misc_hud_crap = Struct("misc hud crap",
     BSInt16("checkpoint begin text"),
     BSInt16("checkpoint end text"),
     dependency("checkpoint", "snd!"),
-    BytearrayRaw("unknown", SIZE=96),
+    BytearrayRaw("unknown", SIZE=96, VISIBLE=False),
     SIZE=120
     )
 

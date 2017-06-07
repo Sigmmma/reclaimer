@@ -47,8 +47,8 @@ def get():
     return soso_def
 
 soso_def = TagDef("soso",
-    blam_header('soso', 2),
+    blam_header('soso', 3),
     soso_body,
 
-    ext=".shader_model", endian=">"
+    ext=".shader_model", endian=">"  # increment to differentiate it from halo antr
     )
