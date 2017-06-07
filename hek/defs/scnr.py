@@ -693,9 +693,8 @@ squad = Struct("squad",
         "sgt lehto",
         ),
 
-    Pad(30),
+    Pad(32),
     dyn_senum16("maneuver to squad", DYN_NAME_PATH="..[DYN_I].name"),
-    Pad(2),
     float_sec("squad delay time"),  # seconds
     BBool32("attacking", *group_indices),
     BBool32("attacking search", *group_indices),
@@ -715,13 +714,13 @@ squad = Struct("squad",
         "none",
         "all",
         ),
-
     Pad(2),
+
     BSInt16("respawn min actors"),
     BSInt16("respawn max actors"),
     BSInt16("respawn total"),
-
     Pad(2),
+
     from_to_sec("respawn delay"),
 
     Pad(48),
