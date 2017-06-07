@@ -202,7 +202,9 @@ class BitmTag(HekTag):
         #if Xbox, reset these structure variable's all to 0
         #since xbox doesn't like them being non-zero
         tagdata = self.data.tagdata
-        for i in (1,2,3):
+        tagdata.compressed_color_plate_data.flags.data = 0
+        tagdata.processed_pixel_data.flags.data = 0
+        for i in (2,3):
             tagdata.compressed_color_plate_data[i] = 0
             tagdata.processed_pixel_data[i] = 0
 

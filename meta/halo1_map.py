@@ -52,9 +52,10 @@ def get_map_header(map_data):
 
 
 def get_tag_index(map_data, header=None):
-    map_data = decompress_map(map_data)
     if header is None:
         header = get_map_header(map_data)
+
+    map_data = decompress_map(map_data, header)
 
     tag_index_def = tag_index_pc_def
     if header.version.data < 6 and get_map_version(header) != "pcstubbs":
@@ -90,18 +91,19 @@ def decompress_map(comp_data, header=None, decomp_path=None):
         header = get_map_header(comp_data)
 
     if is_compressed(comp_data, header):
+        comp_data.seek(0)
         decomp_len = header.decomp_len
         if get_map_version(header) == "pcstubbs":
             decomp_len -= 2048
 
-        temp_dir = os.path.dirname(decomp_path)
-        if not os.path.isdir(temp_dir):
-            os.makedirs(temp_dir)
-
         if decomp_path is None:
             decomp_path = "decomp.map"
+        else:
+            temp_dir = os.path.dirname(decomp_path)
+            if not os.path.isdir(temp_dir):
+                os.makedirs(temp_dir)
 
-        print("Decompressing map to:  %s" % decomp_path)
+        print("Decompressing map to: %s" % decomp_path)
         with open(decomp_path, "wb+") as f:
             f.write(comp_data[:2048])
             comp_data = comp_data[2048:]
@@ -112,11 +114,17 @@ def decompress_map(comp_data, header=None, decomp_path=None):
                 f.write(decomp_obj.decompress(comp_data, 64*1024*1024))
                 comp_data = decomp_obj.unconsumed_tail
 
-            f.write(b'X'*(decomp_len - f.tell()))
-            comp_data = PeekableMmap(f.fileno(), 0)
+            # pad the file to its decompressed length
+            f.write(b'\xca'*(decomp_len - f.tell()))
+
+        # have to do this separate or seeking will be fucked
+        with open(decomp_path, "rb+") as f:
+            decomp_data = PeekableMmap(f.fileno(), 0)
+    else:
+        decomp_data = comp_data
 
     # not actually compressed
-    return comp_data
+    return decomp_data
 
 
 yelo_header = Struct("yelo header",
