@@ -170,7 +170,7 @@ cluster = Struct("cluster",
         DYN_NAME_PATH="tagdata.weather_palettes.STEPTREE[DYN_I].name"),
 
     # almost certain this is padding
-    BytesRaw("unknown", SIZE=30),
+    BytesRaw("unknown", SIZE=30, VISIBLE=False),
     #Pad(30),
 
     reflexive("predicted resources", predicted_resource, 1024),

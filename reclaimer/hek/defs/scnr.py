@@ -776,7 +776,7 @@ encounter = Struct("encounter",
         "8 / unused8",
         "9 / unused9"
         ),
-    BSInt16('unknown'),
+    BSInt16('unknown', VISIBLE=False),
     BSEnum16("search behavior",
         "normal",
         "never",
@@ -859,7 +859,7 @@ participant = Struct("participant",
     dyn_senum16("set new name", DYN_NAME_PATH="tagdata.object_names.STEPTREE[DYN_I].name"),
 
     Pad(12),
-    BytesRaw("unknown", DEFAULT=b"\xFF"*12, SIZE=12),
+    BytesRaw("unknown", DEFAULT=b"\xFF"*12, SIZE=12, VISIBLE=False),
     ascii_str32("encounter name"),
     SIZE=84
     )
