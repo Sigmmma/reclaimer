@@ -69,7 +69,12 @@ def get_raw_reflexive_offsets(desc, two_byte_offs, four_byte_offs, off=0):
         f_type = f_desc[TYPE]
         size   = f_desc.get(SIZE, f_type.size)
         if f_type.is_data:
-            if size == 4:
+            big = f_type.big
+            little = f_type.little
+            if big is little or big.enc == little.enc:
+                # endianness is forced. dont swap anything
+                pass
+            elif size == 4:
                 four_byte_offs.append(off)
             elif size == 2:
                 two_byte_offs.append(off)

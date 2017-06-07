@@ -62,8 +62,7 @@ plane = QStruct("plane",
     )
 
 leaf = Struct("leaf",
-    Pad(1),
-    SInt8("flags",
+    BBool16("flags",
         "contains double sided surfaces"
         ),
     BSInt16("bsp2d reference count"),

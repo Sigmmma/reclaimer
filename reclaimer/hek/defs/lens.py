@@ -52,8 +52,8 @@ reflection = Struct("reflection",
 lens_body = Struct("tagdata",
     float_rad("falloff angle"),  # radians
     float_rad("cutoff angle"),  # radians
-    FlFloat("unknown1", DEFAULT=1.0),
-    FlFloat("unknown2", DEFAULT=1.0),
+    FlFloat("unknown0", DEFAULT=1.0, VISIBLE=False),
+    FlFloat("unknown1", DEFAULT=1.0, VISIBLE=False),
     Struct("occlusion",
         float_wu("radius"),
         BSEnum16("offset direction",
