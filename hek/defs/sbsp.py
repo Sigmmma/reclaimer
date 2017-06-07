@@ -2,14 +2,39 @@ from .coll import *
 from .objs.tag import HekTag
 from supyr_struct.defs.block_def import BlockDef
 
-# if the lightmap bitmap for the lightmap block is -1 the size
-# of the uncompressed is 56 and the size of the compressed is 32
-uncompressed_lightmap_vertex = Struct("uncompressed lightmap vertex",
-    SIZE=76
+# the order is an array of vertices first, then an array of lightmap vertices.
+# 
+uncompressed_vertex = QStruct("uncompressed vertex",
+    BFloat('position x'), BFloat('position y'), BFloat('position z'),
+    BFloat('normal i'),   BFloat('normal j'),   BFloat('normal k'),
+    BFloat('binormal i'), BFloat('binormal j'), BFloat('binormal k'),
+    BFloat('tangent i'),  BFloat('tangent j'),  BFloat('tangent k'),
+
+    BFloat('tex coord u'), BFloat('tex coord v'),
+    SIZE=56
     )
 
-compressed_lightmap_vertex = Struct("compressed lightmap vertex",
-    SIZE=40
+compressed_vertex = QStruct("compressed vertex",
+    BFloat('position x'), BFloat('position y'), BFloat('position z'),
+    BUInt32('normal'),
+    BUInt32('binormal'),
+    BUInt32('tangent'),
+
+    BFloat('tex coord u'), BFloat('tex coord v'),
+    SIZE=32
+    )
+
+uncompressed_lightmap_vertex = QStruct("uncompressed lightmap vertex",
+    BFloat('normal i'),   BFloat('normal j'),   BFloat('normal k'),
+    BFloat('u'), BFloat('v'),
+    SIZE=20
+    )
+
+compressed_lightmap_vertex = QStruct("compressed lightmap vertex",
+    BUInt32('normal'),
+    BSInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    BSInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    SIZE=8
     )
 
 plane = QStruct("plane",
@@ -91,13 +116,13 @@ material = Struct("material",
     BSInt16("breakable surface"),
 
     Pad(6),
-    BSInt32("uncompressed vertices count"),
-    BSInt32("uncompressed vertices offset"),
+    BSInt32("vertices count"),
+    BSInt32("vertices offset"),
 
     # these unknowns are required for biped shadows to appear
     BytesRaw("unknown1", VISIBLE=False, SIZE=12),
-    BSInt32("compressed vertices count"),
-    BSInt32("compressed vertices offset"),
+    BSInt32("lightmap vertices count"),
+    BSInt32("lightmap vertices offset"),
 
     # these unknowns are required for biped shadows to appear
     BytesRaw("unknown2", VISIBLE=False, SIZE=8),

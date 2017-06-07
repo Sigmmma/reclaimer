@@ -22,7 +22,7 @@ fast_uncompressed_vertex = QStruct('uncompressed vertex',
     BFloat('binormal i'), BFloat('binormal j'), BFloat('binormal k'),
     BFloat('tangent i'),  BFloat('tangent j'),  BFloat('tangent k'),
 
-    BFloat('tex coord u'), BFloat('tex coord v'),
+    BFloat('u'), BFloat('v'),
 
     BSInt16('node 0 index'), BSInt16('node 1 index'),
     BFloat('node 0 weight'), BFloat('node 1 weight'),
@@ -35,8 +35,8 @@ fast_compressed_vertex = QStruct('compressed vertex',
     BUInt32('binormal'),
     BUInt32('tangent'),
 
-    BSInt16('tex coord u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
-    BSInt16('tex coord v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    BSInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    BSInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
 
     SInt8('node 0 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
     SInt8('node 1 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
@@ -50,8 +50,8 @@ uncompressed_vertex = Struct('uncompressed vertex',
     QStruct("binormal", INCLUDE=ijk_float),
     QStruct("tangent", INCLUDE=ijk_float),
 
-    BFloat('tex coord u'),
-    BFloat('tex coord v'),
+    BFloat('u'),
+    BFloat('v'),
 
     BSInt16('node 0 index',
         TOOLTIP="If local nodes are used, this is a local index"),
@@ -70,8 +70,8 @@ compressed_vertex = Struct('compressed vertex',
     BBitStruct('binormal', INCLUDE=compressed_normal_32, SIZE=4),
     BBitStruct('tangent',  INCLUDE=compressed_normal_32, SIZE=4),
 
-    BSInt16('tex coord u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
-    BSInt16('tex coord v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    BSInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    BSInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
 
     SInt8('node 0 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
     SInt8('node 1 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
