@@ -35,6 +35,7 @@ shdr_attrs = Struct("shdr attrs",
         ("spla", 11),  # Plasma
         DEFAULT=-1, EDITABLE=False,
         ),
+    Pad(2),
     SIZE=40
     )
 

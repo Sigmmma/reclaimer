@@ -189,6 +189,10 @@ part = Struct('part',
     SIZE=132
     )
 
+fast_part = dict(part)
+fast_part[9]  = raw_reflexive("uncompressed vertices", fast_uncompressed_vertex)
+fast_part[10] = raw_reflexive("compressed vertices", fast_compressed_vertex)
+fast_part[11] = raw_reflexive("triangles", triangle)
 
 marker = Struct('marker',
     ascii_str32("name"),
@@ -222,6 +226,12 @@ region = Struct('region',
 geometry = Struct('geometry',
     Pad(36),
     reflexive("parts", part, 32),
+    SIZE=48
+    )
+
+fast_geometry = Struct('geometry',
+    Pad(36),
+    reflexive("parts", fast_part, 32),
     SIZE=48
     )
 
@@ -268,10 +278,19 @@ mod2_body = Struct('tagdata',
     SIZE=232
     )
 
+fast_mod2_body = dict(mod2_body)
+fast_mod2_body[19] = reflexive("geometries", fast_geometry, 256)
 
 mod2_def = TagDef("mod2",
     blam_header('mod2', 5),
     mod2_body,
+
+    ext=".gbxmodel", endian=">", tag_cls=HekTag
+    )
+
+fast_mod2_def = TagDef("mod2",
+    blam_header('mod2', 5),
+    fast_mod2_body,
 
     ext=".gbxmodel", endian=">", tag_cls=HekTag
     )
