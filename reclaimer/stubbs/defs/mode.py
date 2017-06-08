@@ -66,9 +66,20 @@ pc_part = Struct('part',
     SIZE=104
     )
 
+fast_part = dict(part)
+fast_part[9]  = raw_reflexive("uncompressed vertices", fast_uncompressed_vertex)
+fast_part[10] = raw_reflexive("compressed vertices", fast_compressed_vertex)
+fast_part[11] = raw_reflexive("triangles", triangle)
+
 pc_geometry = Struct('geometry',
     Pad(36),
     reflexive("parts", pc_part, 32),
+    SIZE=48
+    )
+
+fast_geometry = Struct('geometry',
+    Pad(36),
+    reflexive("parts", fast_part, 32),
     SIZE=48
     )
 
@@ -112,9 +123,19 @@ mode_body = Struct('tagdata',
 pc_mode_body = dict(mode_body)
 pc_mode_body[20] = reflexive("geometries", pc_geometry, 256)
 
+fast_mode_body = dict(mode_body)
+fast_mode_body[20] = reflexive("geometries", fast_geometry, 256)
+
 mode_def = TagDef("mode",
     blam_header('mode', 6),  # increment to differentiate it from mode and mod2
     mode_body,
+
+    ext=".model", endian=">", tag_cls=ModeTag
+    )
+
+fast_mode_def = TagDef("mode",
+    blam_header('mode', 6),  # increment to differentiate it from mode and mod2
+    fast_mode_body,
 
     ext=".model", endian=">", tag_cls=ModeTag
     )
