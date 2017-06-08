@@ -55,11 +55,9 @@ collision_material = Struct("collision material",
 
 collision_bsp = Struct("collision bsp", INCLUDE=permutation_bsp)
 
-node = QStruct("node",
-    # I'm guessing these are 3 UInt16's so the endianness can be swapped
-    BUInt16("unknown0"),
-    BUInt16("unknown1"),
-    BUInt16("unknown2"),
+node = Struct("node",
+    # these dont get byteswapped going from meta to tag
+    BytesRaw("unknown", SIZE=6),
     SIZE=6
     )
 
@@ -233,7 +231,7 @@ breakable_surface = Struct("breakable surface",
     )
 
 fog_plane = Struct("fog plane",
-    BSEnum16("front region"),
+    BSInt16("front region"),
     Pad(2),
     QStruct("plane", INCLUDE=plane),
     reflexive("vertices", vertex, 4096),
@@ -386,7 +384,7 @@ sbsp_body = Struct("tagdata",
     reflexive("collision materials", collision_material, 512,
         DYN_NAME_PATH='.shader.filepath'),
     reflexive("collision bsp", collision_bsp, 1),
-    reflexive("nodes", node, 131072),
+    reflexive("nodes", node, 131072, VISIBLE=False),
     QStruct("world bounds x", INCLUDE=from_to),
     QStruct("world bounds y", INCLUDE=from_to),
     QStruct("world bounds z", INCLUDE=from_to),
