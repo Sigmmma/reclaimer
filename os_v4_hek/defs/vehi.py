@@ -11,6 +11,7 @@ obje_attrs[0] = dict(obje_attrs[0], DEFAULT=1)
 
 vehi_body = dict(vehi_body)
 vehi_body[0] = obje_attrs
+vehi_body[1] = unit_attrs
 
 def get():
     return vehi_def
