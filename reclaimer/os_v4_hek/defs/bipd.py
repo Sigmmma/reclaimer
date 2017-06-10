@@ -11,6 +11,7 @@ obje_attrs[0] = dict(obje_attrs[0], DEFAULT=0)
 
 bipd_body = dict(bipd_body)
 bipd_body[0] = obje_attrs
+bipd_body[1] = unit_attrs
 
 def get():
     return bipd_def
