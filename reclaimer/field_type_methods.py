@@ -14,9 +14,10 @@ resource_id_map = {
 
     372: 123,  # sound\sfx\impulse\shellcasings\double_shell_dirt
     373: 125,  # sound\sfx\impulse\shellcasings\multi_shell_dirt
-
+    374: 127,  # sound\sfx\impulse\shellcasings\single_shell_metal
     375: 129,  # sound\sfx\impulse\shellcasings\double_shell_metal
     376: 131,  # sound\sfx\impulse\shellcasings\multi_shell_metal
+    # coincidentally, there are 376 tags in the sound resource cache......
     }
 
 

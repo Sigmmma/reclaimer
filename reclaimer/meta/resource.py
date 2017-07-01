@@ -5,7 +5,7 @@ def get(): return resource_tag_def
 
 
 tag_header = Struct("tag header",
-    tag_id_struct,
+    LUInt32("path offset"),
     LUInt32("size"),
     LUInt32("offset"),
     )
