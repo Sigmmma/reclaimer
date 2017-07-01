@@ -143,13 +143,19 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
 
         s_desc = desc.get('STEPTREE')
         if s_desc:
+            magic = kwargs.get('magic')
+            if magic is not None and (node[1] - magic < 0 or
+                                      node[1] - magic >= len(rawdata)):
+                # reflexive is corrupt for some reason(ex: bad hek+ extraction)
+                node.size = node.pointer = 0
+
             if not node[0]:
                 # reflexive is empty. no need to provide rawdata
                 s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
-            elif 'magic' in kwargs:
+            elif magic is not None:
+                # parsing tag from a map
                 s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', rawdata,
-                                      root_offset, node[1] - kwargs["magic"],
-                                      **kwargs)
+                                      root_offset, node[1] - magic, **kwargs)
             elif 'steptree_parents' not in kwargs:
                 offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
                                                rawdata, root_offset, offset,
