@@ -417,13 +417,20 @@ player_starting_location = Struct("player starting location",
     QStruct("position", INCLUDE=xyz_float),
     float_rad("facing"),  # radians
     BSInt16("team index"),
-    BSInt16("bsp index"),
+    dyn_senum16("bsp index",
+        DYN_NAME_PATH=".....structure_bsps.STEPTREE[DYN_I].structure_bsp.filepath"),
     BSEnum16("type 0", *location_types),
     BSEnum16("type 1", *location_types),
     BSEnum16("type 2", *location_types),
     BSEnum16("type 3", *location_types),
     SIZE=52
     )
+
+player_starting_location2 = dict(player_starting_location)
+player_starting_location2[3] = dyn_senum16("bsp index",
+        DYN_NAME_PATH=("........structure_bsps.STEPTREE"
+                       "[DYN_I].structure_bsp.filepath")
+        )
 
 trigger_volume = Struct("trigger volume",
     FlUInt32("unknown", DEFAULT=1, EDITABLE=False),
@@ -514,8 +521,10 @@ starting_equipment = Struct("starting equipment",
 bsp_switch_trigger_volume = Struct("bsp switch trigger volume",
     dyn_senum16("trigger volume",
         DYN_NAME_PATH=".....trigger_volumes.STEPTREE[DYN_I].name"),
-    BSInt16("source"),
-    BSInt16("destination"),
+    dyn_senum16("source",
+        DYN_NAME_PATH=".....structure_bsps.STEPTREE[DYN_I].structure_bsp.filepath"),
+    dyn_senum16("destination",
+        DYN_NAME_PATH=".....structure_bsps.STEPTREE[DYN_I].structure_bsp.filepath"),
     SIZE=8
     )
 
@@ -782,14 +791,15 @@ encounter = Struct("encounter",
         "never",
         "tenacious"
         ),
-    BSInt16("manual bsp index"),
+    dyn_senum16("manual bsp index",
+        DYN_NAME_PATH=".....structure_bsps.STEPTREE[DYN_I].structure_bsp.filepath"),
     from_to_sec("respawn delay"),
 
     Pad(76),
     reflexive("squads", squad, 64),
     reflexive("platoons", platoon, 32, DYN_NAME_PATH='.name'),
     reflexive("firing positions", firing_position, 512),
-    reflexive("player starting locations", player_starting_location, 256),
+    reflexive("player starting locations", player_starting_location2, 256),
     
     SIZE=176
     )
@@ -829,7 +839,8 @@ command_list = Struct("command list",
         ),
 
     Pad(8),
-    BSInt16("manual bsp index"),
+    dyn_senum16("manual bsp index",
+        DYN_NAME_PATH=".....structure_bsps.STEPTREE[DYN_I].structure_bsp.filepath"),
 
     Pad(2),
     reflexive("commands", command, 64),
@@ -1024,7 +1035,7 @@ scnr_body = Struct("tagdata",
     reflexive("cutscene camera points", cutscene_camera_point, 512,
         DYN_NAME_PATH='.name'),
     reflexive("cutscene titles", cutscene_title, 64, DYN_NAME_PATH='.name'),
-    Pad(12), # unknown reflexive
+    Pad(12), # OS bsp_modifiers reflexive
 
     Pad(96),
     dependency("custom object names", 'ustr'),
