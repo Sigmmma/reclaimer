@@ -31,6 +31,12 @@ def tag_path_pointer(node=None, parent=None, new_value=None, **kwargs):
     t_head.path_offset = new_value + kwargs['magic']
 
 
+def tag_index_array_pointer(node=None, parent=None, new_value=None, **kwargs):
+    if new_value is None:
+        return parent.tag_index_offset - kwargs.get("magic")
+    parent.tag_index_offset = new_value + kwargs.get("magic")
+
+
 def get_map_version(header):
     version = header.version.enum_name
     if version == "xbox":
@@ -316,7 +322,7 @@ tag_header = Struct("tag header",
     )
 
 tag_index_array = TagIndex("tag index",
-    SIZE=".tag_count", SUB_STRUCT=tag_header,
+    SIZE=".tag_count", SUB_STRUCT=tag_header, POINTER=tag_index_array_pointer
     )
 
 tag_index_xbox = Struct("tag index",
