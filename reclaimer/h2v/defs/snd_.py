@@ -115,7 +115,7 @@ BLM__body = Struct("tagdata",
         "split long sounds into permutations",
         "always spatialize",
         "never obstruct",
-        {NAME: "INTERNAL DONT TOUCH", EDITABLE=False},
+        {NAME: "INTERNAL DONT TOUCH", EDITABLE:False},
         "use huge sound transmission"
         "link count to owner unit",
         "pitch range is language",
