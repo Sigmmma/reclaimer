@@ -1,5 +1,5 @@
 from ..common_descs import *
-from .objs.tag import H2VTag
+from .objs.tag import H2Tag
 from supyr_struct.defs.tag_def import TagDef
 
 sound_classes = (
@@ -51,22 +51,12 @@ sound_classes = (
     )
 
 promotion_rule = Struct("promotion rule",
-    UEnum16("pitch ranges",
-        "",
-        ),
+    UEnum16("pitch ranges"),
     UInt16("maximum playing count"),
     float_sec("supression time"),
     )
 
-permutation_v0 = Struct("permutation",
-    ascii_str_varlen("name"),
-    Float("skip fraction"),
-    Float("gain"),
-    h2_rawdata_ref("samples", max_size=0),
-    SIZE=32
-    )
-'''
-permutation_v1 = Struct("permutation",
+permutation = Struct("permutation",
     UEnum16("language",
         "english",
         "japanese",
@@ -79,29 +69,13 @@ permutation_v1 = Struct("permutation",
         "portugese",
         ),
     Pad(2),
-    unknown("play fraction"),
     ascii_str_varlen("name"),
     Float("skip fraction"),
     Float("gain"),
     h2_rawdata_ref("samples", max_size=0),
     SIZE=32
     )
-'''
-pitch_range = Struct("pitch range",
-    ascii_str_varlen("name"),
-    SInt16("natural pitch", SIDETIP="cents"),
-    Pad(2),
-    QStruct("bend bounds", INCLUDE=from_to_cents),
-    Pad(8),
-    h2_reflexive("permutations",
-        (permutation_v0, 32),
-        max_count=0
-        ),
-    SIZE=32
-    )
 
-platform_parameter = Struct("platform parameter",
-    )
 
 from_to_cents = QStruct("",
     SInt16("from", GUI_NAME=''),
@@ -109,7 +83,20 @@ from_to_cents = QStruct("",
     SIDETIP="cents"
     )
 
-BLM__body = Struct("tagdata",
+pitch_range = Struct("pitch range",
+    ascii_str_varlen("name"),
+    SInt16("natural pitch", SIDETIP="cents"),
+    Pad(2),
+    QStruct("bend bounds", INCLUDE=from_to_cents),
+    Pad(8),
+    h2_reflexive("permutations", permutation),
+    SIZE=32
+    )
+
+platform_parameter = Struct("platform parameter",
+    )
+
+snd__body = Struct("tagdata",
     Bool32("flags",
         "fit to adpcm blocksize",
         "split long sounds into permutations",
@@ -181,21 +168,12 @@ BLM__body = Struct("tagdata",
         "wma",
         ),
 
-    h2_reflexive("promotion rules",
-        (promotion_rule, ),
-        max_count=0
-        ),
-    Pad(12),  # h2_reflexive("unknown0", (unknown0_struct, ), max_count=0),
+    h2_reflexive("promotion rules", promotion_rule),
+    Pad(12),  # h2_reflexive("unknown0", unknown0_struct),
     Pad(24),
-    h2_reflexive("pitch ranges",
-        (pitch_range, 32),
-        max_count=0
-        ),
-    h2_reflexive("platform parameters",
-        (platform_parameter, ),
-        max_count=0
-        ),
-    h2_reflexive("unknown1", (unknown1_struct, ), max_count=0),
+    h2_reflexive("pitch ranges", pitch_range),
+    h2_reflexive("platform parameters", platform_parameter),
+    Pad(12),  # h2_reflexive("unknown1", unknown1_struct),
     SIZE=172
     )
 
@@ -204,9 +182,7 @@ def get():
     return snd__def
 
 snd__def = TagDef("snd!",
-    h2v_blam_header('snd!'),
-    h2_tagdata_switch(
-        (BLM__body, 172, 'BLM_', 5)
-        ),
-    ext=".sound", endian="<", tag_cls=H2VTag
+    h2_blam_header('snd!'),
+    snd__body,
+    ext=".sound", endian="<", tag_cls=H2Tag
     )

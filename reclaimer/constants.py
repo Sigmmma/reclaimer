@@ -23,33 +23,36 @@ STUBBS_INDEX_MAGIC = 0x8038B000
 
 map_build_dates = {
     "stubbs":   "400",
-    "pcstubbs": "",
-    "xbox":     "01.10.12.2276",
-    "xbox2":    "01.10.12.2274",
-    "pcdemo":   "01.00.00.0576",
-    "pc":       "01.00.00.0564",
-    "ce":       "01.00.00.0609",
-    "yelo":     "01.00.00.0609",
+    "stubbspc": "",
+    "halo1xbox":     "01.10.12.2276",
+    "halo1xbox2":    "01.10.12.2274",
+    "halo1pcdemo":   "01.00.00.0576",
+    "halo1pc":       "01.00.00.0564",
+    "halo2":         "1108.1.07.04.30.0934.main",
+    "halo1ce":       "01.00.00.0609",
+    "halo1yelo":     "01.00.00.0609",
     }
 
 map_versions = {
     "stubbs": 5,
-    "pcstubbs": 5,
-    "xbox": 5,
-    "pcdemo": 6,
-    "pc": 7,
-    "ce": 609,
-    "yelo": 609,
+    "stubbspc": 5,
+    "halo1xbox": 5,
+    "halo1pcdemo": 6,
+    "halo1pc": 7,
+    "halo2": 8,
+    "halo1ce": 609,
+    "halo1yelo": 609,
     }
 
 map_magics = {
     "stubbs":   STUBBS_INDEX_MAGIC,
-    "pcstubbs": PC_INDEX_MAGIC,
-    "xbox":     XBOX_INDEX_MAGIC,
-    "pcdemo":   PCDEMO_INDEX_MAGIC,
-    "pc":       PC_INDEX_MAGIC,
-    "ce":       PC_INDEX_MAGIC,
-    "yelo":     PC_INDEX_MAGIC,
+    "stubbspc": PC_INDEX_MAGIC,
+    "halo1xbox":   XBOX_INDEX_MAGIC,
+    "halo1pcdemo": PCDEMO_INDEX_MAGIC,
+    "halo1pc":     PC_INDEX_MAGIC,
+    "halo2":       0,  # Halo 2 doesnt use magic?!?!?!
+    "halo1ce":     PC_INDEX_MAGIC,
+    "halo1yelo":   PC_INDEX_MAGIC,
     }
 
 #I cant imagine Halo allowing any one field even close to this many

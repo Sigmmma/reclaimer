@@ -1,5 +1,5 @@
 from ..common_descs import *
-from .objs.tag import H2VTag
+from .objs.tag import H2Tag
 from supyr_struct.defs.tag_def import TagDef
 
 vertex = Struct("vertex",
@@ -16,10 +16,10 @@ vertex = Struct("vertex",
     SIZE=128
     )
 
-LAMB_body = Struct("tagdata",
-    ascii_str32("attachment marker name"),
-    h2v_dependency("bitmaps", "bitm"),
-    h2v_dependency("physics", "pphy"),
+ant__body = Struct("tagdata",
+    ascii_str_varlen("attachment marker name"),
+    h2_dependency("bitmaps", "bitm"),
+    h2_dependency("physics", "pphy"),
 
     Pad(80),
     BFloat("spring strength coefficient"),
@@ -27,26 +27,16 @@ LAMB_body = Struct("tagdata",
     BFloat("cutoff pixels"),
 
     Pad(40),
-    h2_reflexive("vertices",
-        (vertex, 128),
-        max_count=20
-        ),
-    SIZE=208
+    h2_reflexive("vertices", vertex, 20),
+    SIZE=180
     )
-
-BLM__body = dict(LAMB_body)
-BLM__body[0] = ascii_str_varlen("attachment marker name")
-BLM__body[SIZE] = 180
 
 
 def get():
     return ant__def
 
 ant__def = TagDef("ant!",
-    h2v_blam_header('ant!'),
-    h2_tagdata_switch(
-        (LAMB_body, 208, 'LAMB'),
-        (BLM__body, 180, 'BLM_')
-        ),
-    ext=".antenna", endian="<", tag_cls=H2VTag
+    h2_blam_header('ant!'),
+    ant__body,
+    ext=".antenna", endian="<", tag_cls=H2Tag
     )

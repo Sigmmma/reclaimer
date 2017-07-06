@@ -1,10 +1,5 @@
-import zlib
-import os
-
 from ..common_descs import *
 from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.buffer import PeekableMmap
-from ..hek.defs.meta_descs import meta_cases
 
 '''
 The formula for calculating the magic for ANY map is as follows:
@@ -21,116 +16,19 @@ To convert a magic relative pointer to an absolute pointer,
 simply do:    abs_pointer = magic_pointer - magic
 '''
 
-def tag_path_pointer(node=None, parent=None, new_value=None, **kwargs):
+def tag_path_pointer(parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
     t_head = parent.parent
     if new_value is None:
-        return t_head.path_offset - kwargs['magic']
+        return t_head.path_offset - kwargs.get('magic', 0)
+    t_head.path_offset = new_value + kwargs.get('magic', 0)
 
-    t_head.path_offset = new_value + kwargs['magic']
 
-
-def tag_index_array_pointer(node=None, parent=None, new_value=None, **kwargs):
+def tag_index_array_pointer(parent=None, new_value=None, **kwargs):
     if new_value is None:
-        return parent.tag_index_offset - kwargs.get("magic")
-    parent.tag_index_offset = new_value + kwargs.get("magic")
-
-
-def get_map_version(header):
-    version = header.version.enum_name
-    if version == "xbox":
-        if header.build_date == map_build_dates["stubbs"]:
-            version = "stubbs"
-        elif header.build_date == map_build_dates["pcstubbs"]:
-            version = "pcstubbs"
-    elif hasattr(header, "yelo_header") and (
-        header.yelo_header.yelo.enum_name == "yelo"):
-        return "yelo"
-    return version
-
-
-def get_map_header(map_data):
-    header_def = map_header_def
-    if map_data[704:708] == b'dehE' and map_data[1520:1524] == b'tofG':
-        header_def = map_header_demo_def
-    return header_def.build(rawdata=map_data)
-
-
-def get_tag_index(map_data, header=None):
-    if header is None:
-        header = get_map_header(map_data)
-
-    map_data = decompress_map(map_data, header)
-
-    tag_index_def = tag_index_pc_def
-    if header.version.data < 6 and get_map_version(header) != "pcstubbs":
-        tag_index_def = tag_index_xbox_def
-
-    tag_index = tag_index_def.build(
-        rawdata=map_data, magic=get_map_magic(header),
-        offset=header.tag_index_header_offset)
-
-    return tag_index
-
-
-def get_index_magic(header):
-    return map_magics.get(get_map_version(header), 0)
-
-
-def get_map_magic(header):
-    return get_index_magic(header) - header.tag_index_header_offset
-
-
-def is_compressed(comp_data, header):
-    if header.version.data < 6:
-        decomp_len = header.decomp_len
-        if get_map_version(header) == "pcstubbs":
-            decomp_len -= 2048
-
-        return decomp_len > len(comp_data)
-    return False
-
-
-def decompress_map(comp_data, header=None, decomp_path=None):
-    if header is None:
-        header = get_map_header(comp_data)
-
-    if is_compressed(comp_data, header):
-        comp_data.seek(0)
-        decomp_len = header.decomp_len
-        if get_map_version(header) == "pcstubbs":
-            decomp_len -= 2048
-
-        if decomp_path is None:
-            decomp_path = "decomp.map"
-        else:
-            temp_dir = os.path.dirname(decomp_path)
-            if not os.path.isdir(temp_dir):
-                os.makedirs(temp_dir)
-
-        print("Decompressing map to: %s" % decomp_path)
-        with open(decomp_path, "wb+") as f:
-            f.write(comp_data[:2048])
-            comp_data = comp_data[2048:]
-            decomp_obj = zlib.decompressobj()
-
-            while comp_data:
-                # decompress map 64Mb at a time
-                f.write(decomp_obj.decompress(comp_data, 64*1024*1024))
-                comp_data = decomp_obj.unconsumed_tail
-
-            # pad the file to its decompressed length
-            f.write(b'\xca'*(decomp_len - f.tell()))
-
-        # have to do this separate or seeking will be fucked
-        with open(decomp_path, "rb+") as f:
-            decomp_data = PeekableMmap(f.fileno(), 0)
-    else:
-        decomp_data = comp_data
-
-    # not actually compressed
-    return decomp_data
+        return parent.tag_index_offset - kwargs.get("magic", 0)
+    parent.tag_index_offset = new_value + kwargs.get("magic", 0)
 
 
 yelo_header = Struct("yelo header",
@@ -221,21 +119,22 @@ map_header_demo = Struct("map header",
         ),
     Pad(700),
     UEnum32('head', ('head', 'Ehed'), EDITABLE=False, DEFAULT='Ehed'),
-    SInt32("tag index meta len"),
-    StrLatin1("build date", EDITABLE=False, SIZE=32),
+    UInt32("tag index meta len"),
+    ascii_str32("build date", EDITABLE=False),
     Pad(672),
-    SEnum32("version",
-        ("xbox",   5),
-        ("pcdemo", 6),
-        ("pc", 7),
-        ("ce", 609),
+    UEnum32("version",
+        ("halo1xbox",   5),
+        ("halo1pcdemo", 6),
+        ("halo1pc", 7),
+        ("halo2", 8),
+        ("halo1ce", 609),
         ),
     ascii_str32("map name"),
-    SInt32("unknown"),
+    UInt32("unknown"),
     UInt32("crc32"),
     Pad(52),
-    SInt32("decomp len"),
-    SInt32("tag index header offset"),
+    UInt32("decomp len"),
+    UInt32("tag index header offset"),
     UEnum32('foot', ('foot', 'Gfot'), EDITABLE=False, DEFAULT='Gfot'),
     Pad(524),
     SIZE=2048
@@ -243,19 +142,20 @@ map_header_demo = Struct("map header",
 
 map_header = Struct("map header",
     UEnum32('head', ('head', 'head'), EDITABLE=False, DEFAULT='head'),
-    SEnum32("version",
-        ("xbox",   5),
-        ("pcdemo", 6),
-        ("pc", 7),
-        ("ce", 609),
+    UEnum32("version",
+        ("halo1xbox",   5),
+        ("halo1pcdemo", 6),
+        ("halo1pc", 7),
+        ("halo2", 8),
+        ("halo1ce", 609),
         ),
-    SInt32("decomp len"),
-    SInt32("unknown"),
-    SInt32("tag index header offset"),
-    SInt32("tag index meta len"),
+    UInt32("decomp len"),
+    UInt32("unknown"),
+    UInt32("tag index header offset"),
+    UInt32("tag index meta len"),
     Pad(8),
     ascii_str32("map name"),
-    StrLatin1("build date", EDITABLE=False, SIZE=32),
+    ascii_str32("build date", EDITABLE=False),
     UEnum32("map type",
         "sp",
         "mp",
