@@ -1,7 +1,7 @@
 from ...field_types import *
 from supyr_struct.tag import *
 
-class H2VTag(Tag):
+class H2Tag(Tag):
     def __init__(self, **kwargs):
         self.calc_pointers = False
         

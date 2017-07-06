@@ -20,16 +20,16 @@ engine_id_to_name = dict(
 
 # maps tag class four character codes(fccs) in
 # their string encoding to their int encoding.
-h2v_tag_class_fcc_to_be_int = {}
-h2v_tag_class_fcc_to_le_int = {}
+h2_tag_class_fcc_to_be_int = {}
+h2_tag_class_fcc_to_le_int = {}
 # maps tag class four character codes(fccs) in
 # their int encoding to their string encoding.
-h2v_tag_class_be_int_to_fcc = {}
-h2v_tag_class_le_int_to_fcc = {}
+h2_tag_class_be_int_to_fcc = {}
+h2_tag_class_le_int_to_fcc = {}
 
 # maps tag class four character codes to the tags file extension
 # 120 classes, 97 of which are NOT marked with OLD?
-h2v_tag_class_fcc_to_ext = {
+h2_tag_class_fcc_to_ext = {
     "adlg": "ai_dialogue_globals",
     "mdlg": "ai_mission_dialogue",
     "ant!": "antenna",
@@ -152,8 +152,8 @@ h2v_tag_class_fcc_to_ext = {
     "wind": "wind",
     }
 
-for tag_cls in h2v_tag_class_fcc_to_ext:
-    h2v_tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls)
-    h2v_tag_class_be_int_to_fcc[fcc(tag_cls)] = tag_cls
-    h2v_tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
-    h2v_tag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls
+for tag_cls in h2_tag_class_fcc_to_ext:
+    h2_tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls)
+    h2_tag_class_be_int_to_fcc[fcc(tag_cls)] = tag_cls
+    h2_tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
+    h2_tag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls

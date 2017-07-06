@@ -2,8 +2,8 @@ import os
 from ..hek.handler import HaloHandler
 from os.path import abspath, basename, exists, isfile, normpath, splitext
 
-class Halo2VistaHandler(HaloHandler):
-    default_defs_path = "reclaimer.h2v.defs"
+class Halo2Handler(HaloHandler):
+    default_defs_path = "reclaimer.h2.defs"
 
     def get_def_id(self, filepath):
         if not filepath.startswith('.') and '.' in filepath:
