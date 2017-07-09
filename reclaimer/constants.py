@@ -1,5 +1,6 @@
 from supyr_struct.defs.constants import *
 from binilla.constants import *
+from supyr_struct.defs.util import fcc
 from struct import unpack
 
 # some reflexives are so massive that it's significantly faster to treat them
@@ -22,13 +23,14 @@ STUBBS_INDEX_MAGIC = 0x8038B000
 
 
 map_build_dates = {
-    "stubbs":   "400",
-    "stubbspc": "",
+    "stubbs":        "400",
+    "stubbspc":      "",
     "halo1xbox":     "01.10.12.2276",
     "halo1xbox2":    "01.10.12.2274",
     "halo1pcdemo":   "01.00.00.0576",
     "halo1pc":       "01.00.00.0564",
     "halo2":         "1108.1.07.04.30.0934.main",
+    "halo3":         "11855.07.08.20.2317.halo3_ship",
     "halo1ce":       "01.00.00.0609",
     "halo1yelo":     "01.00.00.0609",
     }
@@ -40,17 +42,25 @@ map_versions = {
     "halo1pcdemo": 6,
     "halo1pc": 7,
     "halo2": 8,
+    "halo3": 11,
     "halo1ce": 609,
     "halo1yelo": 609,
     }
 
+# magic is actually the virtual address the map is loaded at. Halo 3 and
+# beyond instead partition the map into sections with a virtual address for
+# each section, meaning there is a "magic" for different parts of each map.
 map_magics = {
-    "stubbs":   STUBBS_INDEX_MAGIC,
-    "stubbspc": PC_INDEX_MAGIC,
+    "stubbs":      STUBBS_INDEX_MAGIC,
+    "stubbspc":    PC_INDEX_MAGIC,
     "halo1xbox":   XBOX_INDEX_MAGIC,
     "halo1pcdemo": PCDEMO_INDEX_MAGIC,
     "halo1pc":     PC_INDEX_MAGIC,
-    "halo2":       0,  # Halo 2 doesnt use magic?!?!?!
+    "halo2":       0,  # Halo 2 and beyond dont use magic
+    "halo3":       0,
+    "halo4":       0,
+    "halo5":       0,
+    "halo_reach":  0,
     "halo1ce":     PC_INDEX_MAGIC,
     "halo1yelo":   PC_INDEX_MAGIC,
     }

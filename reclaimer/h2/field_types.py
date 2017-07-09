@@ -1,9 +1,10 @@
 from ..field_types import *
 from .field_type_methods import *
 
-H2Reflexive   = FieldType(base=Reflexive,   name="H2Reflexive")
-H2RawdataRef  = FieldType(base=RawdataRef,  name="H2RawdataRef")
-H2TagIndexRef = FieldType(base=TagIndexRef, name="H2TagIndexRef")
-TBFDContainer = FieldType(
-    base=Container, name="TBFDContainer",
-    parser=tbfd_parser, serializer=tbfd_serializer)
+H2MetaTagIndexRef = FieldType(base=TagIndexRef, name="H2MetaIndexRef")
+H2MetaReflexive   = FieldType(base=Reflexive,   name="H2MetaReflexive")
+H2MetaRawdataRef  = FieldType(base=RawdataRef,  name="H2MetaRawdataRef",
+                              parser=h2_rawdata_ref_parser)
+H2TagIndexRef = FieldType(base=H2MetaTagIndexRef, name="H2IndexRef")
+H2Reflexive   = FieldType(base=H2MetaReflexive,   name="H2Reflexive")
+H2RawdataRef  = FieldType(base=H2MetaRawdataRef,  name="H2RawdataRef")

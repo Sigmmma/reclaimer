@@ -1,17 +1,2 @@
 syntax: glob
-hek/defs/__pycache__
-hek/__pycache__
-hek/defs/objs/__pycache__
-os_v3_hek/__pycache__
-os_v4_hek/__pycache__
-os_v3_hek/defs/__pycache__
-os_v4_hek/defs/__pycache__
-misc/defs/objs/__pycache__
-misc/defs/__pycache__
-meta/defs/objs/__pycache__
-meta/defs/__pycache__
-meta/__pycache__
-stubbs/defs/__pycache__
-stubbs/defs/objs/__pycache__
-stubbs/__pycache__
-__pycache__
+*__pycache__*

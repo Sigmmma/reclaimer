@@ -10,6 +10,7 @@ except Exception:
                      DynamicArrayFrame = DynamicEnumFrame = None
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
+from supyr_struct.defs.util import *
 from .field_types import *
 from .constants import *
 
@@ -164,12 +165,9 @@ def dependency(name='tag ref', valid_ids=None):
 
     return TagIndexRef(name,
         valid_ids,
-        BUInt32("path pointer", VISIBLE=False, EDITABLE=False),
-        BUInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
-        tag_id_struct,
-
-        STEPTREE=HaloRefStr("filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
-        ORIENT='h'
+        INCLUDE=tag_index_ref_struct,
+        STEPTREE=HaloRefStr(
+            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=234),  # 10 < Halo1
         )
 
 
@@ -203,9 +201,12 @@ def get_unit_scale(scale60, val30=1):
         if kwargs.get('get_scales'):
             # used for getting both the 30 and 60 fps scales
             return (val30, val60)
-        elif w is None or not w.tag_window.save_as_60:
+
+        try:
+            if w.tag_window.save_as_60:
+                return val60
+        except AttributeError:
             return val30
-        return val60
 
     _func_unit_scales[key] = unit_scale
     unit_scale.fps_60_scale = True
@@ -940,6 +941,15 @@ reflexive_struct = Reflexive('reflexive',
     BUInt32("id", VISIBLE=False),  # 0 in meta it seems
     )
 
+# This is the descriptor used wherever a tag references another tag
+tag_index_ref_struct = TagIndexRef('dependency',
+    valid_tags,
+    BSInt32("path pointer", VISIBLE=False, EDITABLE=False),
+    BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
+    tag_id_struct,
+    ORIENT='h'
+    )
+
 predicted_resource = Struct('predicted_resource',
     BSInt16('type',
         'bitmap',
@@ -948,9 +958,6 @@ predicted_resource = Struct('predicted_resource',
     BSInt16('resource index'),
     BUInt32('tag index'),
     )
-
-# This is the descriptor used wherever a tag references another tag
-tag_index_ref_struct = dependency()
 
 extra_layers_block = dependency("extra layer", valid_shaders)
 
@@ -1063,12 +1070,9 @@ def dependency_os(name='tag ref', valid_ids=None):
 
     return TagIndexRef(name,
         valid_ids,
-        BUInt32("path pointer", VISIBLE=False, EDITABLE=False),
-        BUInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
-        tag_id_struct,
-
-        STEPTREE=HaloRefStr("filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
-        ORIENT='h'
+        INCLUDE=tag_index_ref_struct,
+        STEPTREE=HaloRefStr(
+            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=234),  # 10 < Halo1
         )
 
 

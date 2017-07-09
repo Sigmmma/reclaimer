@@ -3,9 +3,6 @@ import os
 
 from ..h2.common_descs import *
 from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.buffer import PeekableMmap
-from ..hek.defs.meta_descs import meta_cases
-from .halo1_map import tag_path_pointer
 
 
 def tag_name_table_name_pointer(parent=None, new_value=None, **kwargs):
@@ -55,27 +52,29 @@ halo2_map_header = Struct("map header",
         ("halo1pcdemo", 6),
         ("halo1pc", 7),
         ("halo2", 8),
+        ("halo3", 11),
         ("halo1ce", 609),
         ),
     UInt32("decomp len"),
     UInt32("unknown0"),
     UInt32("tag index header offset"),
-    UInt32("tag index len"),
-    UInt32("tag index and meta len"),
-    UInt32("all except raw len"),
+    UInt32("tag data size"),
+    UInt32("meta size"),
+    UInt32("meta offset mask"),
     UInt32("unknown1"),
     UInt32("unknown2"),
     UInt32("unknown3"),
     Pad(256),
 
     ascii_str32("build date"),
-    UEnum32("map type",
+    UEnum16("map type",
         "sp",
         "mp",
         "ui",
         "shared",
         "sharedsp",
         ),
+    Pad(2),
     UInt32("crc32"),
     Pad(16),
     UInt32("crazy data offset"),
@@ -131,9 +130,9 @@ halo2_tag_index_array = TagIndex("tag index",
     )
 
 halo2_tag_index = Container("tag index",
-    UInt32("tag types offset", DEFAULT=32),
-    UInt32("tag types count",  DEFAULT=120),
-    UInt32("tag index offset", DEFAULT=32 + 120*12),
+    UInt32("tag types offset"),
+    UInt32("tag types count"),
+    UInt32("tag index offset"),
 
     QStruct("scenario tag id", INCLUDE=tag_id_struct),
     QStruct("globals tag id", INCLUDE=tag_id_struct),
