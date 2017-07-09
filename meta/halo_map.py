@@ -5,6 +5,7 @@ from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.buffer import PeekableMmap
 from .halo1_map import *
 from .halo2_map import *
+from .halo3_map import *
 
 
 def get_map_version(header):
@@ -26,6 +27,8 @@ def get_map_header(map_data):
         header_def = map_header_demo_def
     elif map_data[4:8] == b'\x08\x00\x00\x00':
         header_def = halo2_map_header_def
+    elif map_data[4:8] == b'\x00\x00\x00\x0b':
+        header_def = halo3_map_header_def
     return header_def.build(rawdata=map_data)
 
 
@@ -34,16 +37,23 @@ def get_tag_index(map_data, header=None):
         header = get_map_header(map_data)
 
     map_data = decompress_map(map_data, header)
+    magic = 0
 
     tag_index_def = tag_index_pc_def
     if header.version.data < 6 and get_map_version(header) != "stubbspc":
         tag_index_def = tag_index_xbox_def
-    elif header.version.data == 8:
+    elif header.version.enum_name == "halo2":
         tag_index_def = halo2_tag_index_def
+    elif header.version.enum_name == "halo3":
+        tag_index_def = halo3_tag_index_def
+        magic = HALO3_INDEX_MAGIC
 
-    tag_index = tag_index_def.build(
-        rawdata=map_data, magic=get_map_magic(header),
-        offset=header.tag_index_header_offset)
+    if header.tag_index_header_offset - magic <= 0:
+        tag_index = tag_index_def.build()
+    else:
+        tag_index = tag_index_def.build(
+            rawdata=map_data, magic=get_map_magic(header),
+            offset=header.tag_index_header_offset - magic)
 
     return tag_index
 
@@ -53,7 +63,11 @@ def get_index_magic(header):
 
 
 def get_map_magic(header):
-    return get_index_magic(header) - header.tag_index_header_offset
+    magic = get_index_magic(header)
+    if header.version.enum_name != "halo3":
+        magic -= header.tag_index_header_offset
+
+    return magic
 
 
 def is_compressed(comp_data, header):

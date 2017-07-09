@@ -1,0 +1,1 @@
+These files are all sorta placeholders in case i ever do decide to work on halo 3

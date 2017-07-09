@@ -74,7 +74,7 @@ def tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         "and not None when reading a data field.")
     if "tag_index" in kwargs:
         tag_index = kwargs["tag_index"]
-        tagid = parent.id[0]
+        tagid = parent.id.tag_table_index
         if tagid >= 0 and (tagid < len(tag_index) and
                            parent.id.table_index != 0xFFFF):
             try:
