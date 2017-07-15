@@ -950,7 +950,7 @@ tag_index_ref_struct = TagIndexRef('dependency',
     ORIENT='h'
     )
 
-predicted_resource = Struct('predicted_resource',
+predicted_resource = Struct('predicted resource',
     BSInt16('type',
         'bitmap',
         'sound',

@@ -47,8 +47,9 @@ part = Struct("part",
     BBool16("flags",
         {NAME:"face_down", GUI_NAME:"face down regardless of location(decals)"}
         ),
-    Pad(16),
+    Pad(12),
 
+    BUEnum32("effect class", INCLUDE=valid_tags_os, VISIBLE=False),
     dependency("type", valid_effect_events),
     Pad(24),
 

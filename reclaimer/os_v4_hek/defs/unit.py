@@ -4,11 +4,6 @@ region_targeting_comment="""
 When a target region is defined, melee damage is directed at it until it is destroyed.
 """
 
-camera_track = Struct("camera track",
-    dependency('track', "trak"),
-    SIZE=28
-    )
-
 unit_keyframe_action = Struct("unit keyframe action",
     BSEnum16("keyframe",
         "primary",

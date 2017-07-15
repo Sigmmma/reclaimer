@@ -200,12 +200,8 @@ some kind of "revision" number to keep track of assets, but we don’t
 really know.
 '''
 
-
-tag_meta = Void("tag meta")
-
 tag_data = Container("tag",
     CStrLatin1("tag path", POINTER=tag_path_pointer),
-    tag_meta,
     )
 
 tag_header = Struct("tag header",

@@ -62,19 +62,21 @@ class HaloHandler(Handler):
         self.ext_id_map = {}
         for key in self.id_ext_map.keys():
             self.ext_id_map[self.id_ext_map[key]] = key
-            
+
         if "default_conversion_flags" in kwargs:
             self.default_conversion_flags = kwargs["default_conversion_flags"]
         else:
             self.default_conversion_flags = {}
             for def_id in self.tags:
                 self.default_conversion_flags[def_id] = {}
-        
+
         if "datadir" in kwargs:
             self.datadir = kwargs["datadir"]
         else:
             self.datadir = basename(normpath(self.tagsdir))
-            self.datadir = self.tagsdir.split(self.datadir)[0] + "data\\"
+            self.datadir = join(self.tagsdir.split(self.datadir)[0], "data")
+
+        self.datadir = join(self.datadir, '')
 
         this_type = type(self)
         if this_type.tag_ref_cache is None:

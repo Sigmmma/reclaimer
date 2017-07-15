@@ -637,15 +637,6 @@ cutscene_title = Struct("cutscene title",
     SIZE=96
     )
 
-structure_bsp = Struct("structure bsp",
-    FlUInt32("bsp pointer", VISIBLE=False),
-    FlUInt32("bsp size", VISIBLE=False),
-    FlUInt32("bsp magic", VISIBLE=False),
-    Pad(4),
-    dependency("structure bsp", "sbsp"),
-    SIZE=32
-    )
-
 
 move_position = Struct("move position",
     QStruct("position", INCLUDE=xyz_float),
@@ -929,6 +920,15 @@ ai_conversation = Struct("ai conversation",
         DYN_NAME_PATH='.encounter_name'),
     reflexive("lines", line, 32),
     SIZE=116
+    )
+
+structure_bsp = Struct("structure bsp",
+    FlUInt32("bsp pointer", VISIBLE=False),
+    FlUInt32("bsp size", VISIBLE=False),
+    FlUInt32("bsp magic", VISIBLE=False),
+    Pad(4),
+    dependency("structure bsp", "sbsp"),
+    SIZE=32
     )
 
 scnr_body = Struct("tagdata",

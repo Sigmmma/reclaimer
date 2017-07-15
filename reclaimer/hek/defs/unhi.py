@@ -113,7 +113,7 @@ auxilary_overlay = Struct("auxilary overlay",
     BBool16("flags",
         "use team color"
         ),
-    SIZE=0
+    SIZE=132
     )
 
 auxilary_meter = Struct("auxilary meter",
