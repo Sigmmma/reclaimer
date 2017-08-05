@@ -451,7 +451,7 @@ class BitmTag(HekTag):
                 width=mw, height=mh, depth=md, format=format,
                 mipmap_count=(mipmap_count-1), sub_bitmap_count=sub_bitmap_count,
                 swizzled=self.swizzled(), texture_type=TYPE_NAME_MAP[type],
-                filepath=splitext(self.filepath.replace(tagsdir,datadir))[0]))
+                filepath=splitext(self.filepath.replace(tagsdir, datadir))[0]))
             
             """IF THE TEXTURE IS IN P-8 FORMAT THEN WE NEED TO
             PROVIDE THE PALETTE AND SOME INFORMATION ABOUT IT"""
