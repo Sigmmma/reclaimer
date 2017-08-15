@@ -12,14 +12,20 @@ def find_next_blocks(block, next_blocks):
         next_blocks.append(block.STEPTREE[-1])
         return
 
-    if typ.is_container or typ.is_struct:
-        attr_names = list(i for i in range(len(block)))
-        if hasattr(block, "STEPTREE"):
-            attr_names.append("STEPTREE")
+    if typ.is_array:
+        if block.get_desc('TYPE', 'SUB_STRUCT').is_block:
+            if len(block) == 0:
+                block.append()
+            find_next_blocks(block[0], next_blocks)
 
-        for i in attr_names:
+    elif typ.is_container or typ.is_struct:
+        for i in range(len(block)):
             if block.get_desc('TYPE', i).is_block:
                 find_next_blocks(block[i], next_blocks)
+
+    if (hasattr(block, "STEPTREE") and
+            block.get_desc('TYPE', 'STEPTREE').is_block):
+        find_next_blocks(block.STEPTREE, next_blocks)
 
 
 def print_tag_def(tag_def):
@@ -36,6 +42,9 @@ def print_tag_def(tag_def):
             new_blocks = []
 
             for block in blocks:
+                if not hasattr(block, "NAME"):
+                    continue
+
                 f.write("\n")
                 f.write("\n")
                 f.write("#"*60 + "\n")
@@ -56,6 +65,7 @@ while not tag_defs:
     engine = input("Type in the definition set to use.\n"
                    "Valid values are hek, os_hek, os_v3_hek, and os_v4_hek.\n"
                    ">>> ")
+    engine = engine.strip(" ").lower()
     print()
     classes = input("Type in the four character codes of the tag classes to write.\n"
                     "Use commans to separate each one. Spaces are ignored.\n"
@@ -79,6 +89,10 @@ while not tag_defs:
             #print(format_exc())
 
 for cls in classes:
-    print_tag_def(tag_defs[cls])
+    try:
+        print_tag_def(tag_defs[cls])
+    except Exception:
+        print("Could not print the %s definition" % cls)
+        print(format_exc())
 
-input("Finished. Press any key to exit. . .")
+input("Finished. Hit enter to exit. . .")

@@ -244,9 +244,9 @@ class AntrTag(HekTag):
             rot[1] = ((comp_rot>>24)&2047)/2047
             rot[0] = ((comp_rot>>36)&2047)/2047
             if sum(rot):
-                if comp_rot&0x800: rot[3] = rot[3]-1
-                if comp_rot&0x800000: rot[2] = rot[2]-1
-                if comp_rot&0x800000000: rot[1] = rot[1]-1
+                if comp_rot&0x800:          rot[3] = rot[3]-1
+                if comp_rot&0x800000:       rot[2] = rot[2]-1
+                if comp_rot&0x800000000:    rot[1] = rot[1]-1
                 if comp_rot&0x800000000000: rot[0] = rot[0]-1
                 length = sq(rot[0]**2+rot[1]**2+rot[2]**2+rot[3]**2)
                 rot[0] /= length
