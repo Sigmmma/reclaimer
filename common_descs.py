@@ -263,7 +263,7 @@ def float_deg_sec(name, *args, **kwargs):
 
 def float_rad(name, *args, **kwargs):
     return Float(name, *args, SIDETIP="degrees",
-                  UNIT_SCALE=irad, **kwargs)
+                 UNIT_SCALE=irad, **kwargs)
 def float_rad_sec(name, *args, **kwargs):
     kwargs.setdefault('SIDETIP', "degrees/sec")
     kwargs.setdefault('UNIT_SCALE', irad_per_sec_unit_scale)
