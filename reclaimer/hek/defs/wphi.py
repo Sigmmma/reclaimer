@@ -125,9 +125,10 @@ number_element = Struct("number element",
         "draw a trailing m",
         ),
     SInt8("number of fractional digits"),
+    Pad(1),
 
-    Pad(14),
-    Bool8("weapon specific flags",
+    Pad(12),
+    BBool16("weapon specific flags",
         "divide number by magazine size"
         ),
     SIZE=160
