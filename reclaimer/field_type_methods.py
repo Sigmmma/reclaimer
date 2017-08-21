@@ -81,9 +81,14 @@ def tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                 parent[attr_index] = tag_index[tagid].tag.tag_path
             except AttributeError:
                 # tag_index is a resource map tag_paths collection
-                if kwargs['tag_cls'] == 'snd!':
-                    tagid = resource_id_map[tagid]
-                parent[attr_index] = tag_index[tagid].tag_path
+                if kwargs['tag_cls'] != 'snd!':
+                    parent[attr_index] = tag_index[tagid].tag_path
+                elif tagid in resource_id_map:
+                    parent[attr_index] = tag_index[
+                        resource_id_map[tagid]].tag_path
+                else:
+                    # unable to get the tag path
+                    parent[attr_index] = ""
         else:
             parent[attr_index] = ""
     elif rawdata:
