@@ -190,7 +190,7 @@ class BitmTag(HekTag):
             a bitmap made by arsenic from an original XBOX map'''
             if saveasxbox:
                 #change some miscellaneous variables               
-                bitmap.pixels = 4608
+                bitmap.pixels = 18
                 bitmap.bitmap_data_pointer = 0xFFFFFFFF
                 bitmap.base_address = 1073751810
             else:
