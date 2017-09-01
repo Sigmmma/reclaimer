@@ -17,8 +17,8 @@ node = Struct("node",
         DYN_NAME_PATH="..[DYN_I].name"),
 
     Pad(8),
-    BSInt16("unknown"),
-    Pad(2),
+    FlSInt16("unknown0", VISIBLE=False),
+    FlSInt16("unknown1", VISIBLE=False),
     reflexive("bsps", permutation_bsp, 32),
     SIZE=64
     )

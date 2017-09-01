@@ -185,7 +185,7 @@ bitmap = Struct("bitmap",
     BUInt16("registration point x"),
     BUInt16("registration point y"),
     BUInt16("mipmaps"),
-    BUInt16("pixels", VISIBLE=False, EDITABLE=False),
+    FlUInt16("pixels", VISIBLE=False, EDITABLE=False),
 
     # for halo pc/trial(not ce), this is the non-magic pointer
     # into the bitmaps.map that the pixel data is located at.

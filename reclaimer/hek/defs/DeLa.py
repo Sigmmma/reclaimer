@@ -267,8 +267,11 @@ DeLa_body = Struct("tagdata",
             "flashing",
             "dont do that weird focus test",
             ),
+        Pad(2),
 
-        Pad(12),
+        BytesRaw("unknown1", SIZE=8, VISIBLE=False),
+
+        FlSInt16("unknown2", VISIBLE=False),
         BSInt16("string list index"),
         BSInt16("horizontal offset"),
         BSInt16("vertical offset")

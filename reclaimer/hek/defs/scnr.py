@@ -20,6 +20,12 @@ def object_reference(name, *args, **kwargs):
         BSInt16('desired permutation'),
         QStruct("position", INCLUDE=xyz_float),
         ypr_float_rad("rotation"),
+        BBool32("misc flags",
+            "initially at rest",
+            # "obsolete",
+            {NAME: "can accelerate", VALUE: 1<<2,
+             GUI_NAME:"moves due to explosions"},
+            ),
         *args,
         **kwargs
         )
@@ -263,6 +269,8 @@ comment = Struct("comment",
 
 object_name = Struct("object name",
     ascii_str32("name"),
+    FlUInt16("unknown1", VISIBLE=False),
+    FlUInt16("unknown2", VISIBLE=False),
     SIZE=36
     )
 
@@ -270,7 +278,7 @@ object_name = Struct("object name",
 scenery = object_reference("scenery", SIZE=72, block_name="sceneries")
 
 biped = object_reference("biped",
-    Pad(40),
+    Pad(36),
     float_zero_to_one("body vitality"),
     BBool32("flags",
         "dead",
@@ -279,7 +287,7 @@ biped = object_reference("biped",
     )
 
 vehicle = object_reference("vehicle",
-    Pad(40),
+    Pad(36),
     float_zero_to_one("body vitality"),
     BBool32("flags",
         "dead",
@@ -310,17 +318,11 @@ vehicle = object_reference("vehicle",
     )
 
 equipment = object_reference("equipment",
-    BBool32("misc flags",
-        "initially at rest",
-        # "obsolete",
-        {NAME: "can accelerate", VALUE: 1<<2,
-         GUI_NAME:"moves due to explosions"},
-        ),
     SIZE=40
     )
 
 weapon = object_reference("weapon",
-    Pad(40),
+    Pad(36),
     BSInt16("rounds left"),
     BSInt16("rounds loaded"),
     BBool16("flags",
@@ -342,7 +344,7 @@ device_group = Struct("device group",
     )
 
 machine = object_reference("machine",
-    Pad(8),
+    Pad(4),
     dyn_senum16("power group",
         DYN_NAME_PATH=".....device_groups.STEPTREE[DYN_I].name"),
     dyn_senum16("position group",
@@ -358,7 +360,7 @@ machine = object_reference("machine",
     )
 
 control = object_reference("control",
-    Pad(8),
+    Pad(4),
     dyn_senum16("power group",
         DYN_NAME_PATH=".....device_groups.STEPTREE[DYN_I].name"),
     dyn_senum16("position group",
@@ -372,7 +374,7 @@ control = object_reference("control",
     )
 
 light_fixture = object_reference("light fixture",
-    Pad(8),
+    Pad(4),
     dyn_senum16("power group",
         DYN_NAME_PATH=".....device_groups.STEPTREE[DYN_I].name"),
     dyn_senum16("position group",
