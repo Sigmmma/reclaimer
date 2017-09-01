@@ -140,7 +140,9 @@ node = Struct("node",
     dyn_senum16("first child node",
         DYN_NAME_PATH="..[DYN_I].name"),
 
-    Pad(12),
+    Pad(8),
+    FlSInt16("unknown0", VISIBLE=False),
+    FlSInt16("unknown1", VISIBLE=False),
     reflexive("bsps", permutation_bsp, 32),
     SIZE=64
     )
@@ -259,7 +261,9 @@ fast_node = Struct("node",
     dyn_senum16("first child node",
         DYN_NAME_PATH="..[DYN_I].name"),
 
-    Pad(12),
+    Pad(8),
+    FlSInt16("unknown0", VISIBLE=False),
+    FlSInt16("unknown1", VISIBLE=False),
     reflexive("bsps", fast_collision_bsp, 32),
     SIZE=64
     )
