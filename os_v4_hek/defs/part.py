@@ -1,8 +1,10 @@
 from ...hek.defs.part import *
 
 part_body = dict(part_body)
-part_body[30] = reflexive(
-    "particle shader extensions", particle_shader_extension, 1)
+part_body[11] = reflexive(
+    "particle shader extensions",
+    Struct("particle shader extension", INCLUDE=os_shader_extension),
+    1)
 
     
 def get():
