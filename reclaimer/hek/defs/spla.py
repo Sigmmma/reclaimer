@@ -3,10 +3,13 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 noise_map = Struct("noise_map",
+    FlUInt16("unknown0"),
+    FlUInt16("unknown1"),
     float_sec("animation period"),
     QStruct("animation direction", INCLUDE=ijk_float),
     BFloat("noise map scale"),
     dependency("noise map", "bitm"),
+    Pad(32),
     )
 
 spla_attrs = Struct("spla attrs",
@@ -37,11 +40,10 @@ spla_attrs = Struct("spla attrs",
         BSEnum16("tint color source", *function_names),
         ),
 
-    Pad(62),
+    Pad(58),
     #Primary Noise Map
     Struct("primary noise map", INCLUDE=noise_map),
 
-    Pad(36),
     #Secondary Noise Map
     Struct("secondary noise map", INCLUDE=noise_map),
     SIZE=292

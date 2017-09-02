@@ -260,18 +260,16 @@ DeLa_body = Struct("tagdata",
             "right",
             "center",
             ),
-        Pad(2),
-        BBool16("flags",
+        # as weird as it sounds, these flags are off alignment by 2
+        BBool32("flags",
             "editable",
             "password",
             "flashing",
             "dont do that weird focus test",
             ),
-        Pad(2),
+        BytesRaw("unknown2", SIZE=10, VISIBLE=False),
 
-        BytesRaw("unknown1", SIZE=8, VISIBLE=False),
-
-        FlSInt16("unknown2", VISIBLE=False),
+        FlSInt16("unknown3", VISIBLE=False),
         BSInt16("string list index"),
         BSInt16("horizontal offset"),
         BSInt16("vertical offset")

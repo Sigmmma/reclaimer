@@ -35,7 +35,9 @@ os_soso_ext = Struct("shader model extension",
     float_zero_to_one("parallel brightness"),
     QStruct("parallel tint color", INCLUDE=rgb_float),
 
-    Pad(8),
+    BSInt16("unknown0", VISIBLE=False),
+    BSInt16("unknown1", VISIBLE=False),
+    FlFloat("unknown2", VISIBLE=False),
     BFloat("specular Lighting exponent"),
     BFloat("specular Lighting coefficient"),
     SIZE=192,
@@ -65,6 +67,10 @@ soso_attrs = Struct("soso attrs",
     Pad(8),
     #Reflection Properties
     reflection_properties,
+    Pad(16),
+
+    FlFloat("unknown0", VISIBLE=False),
+    BytesRaw("unknown1", SIZE=16, VISIBLE=False),  # little endian dependency
     SIZE=400
     )
 

@@ -72,10 +72,10 @@ particle = Struct("particle",
         "third person only",
         "first person if possible",
         ),
-    Pad(2),
+    FlSInt16("unknown0", VISIBLE=False),
     dyn_senum16("location",
         DYN_NAME_PATH="........locations.locations_array[DYN_I].marker_name"),
-    Pad(2),
+    FlSInt16("unknown1", VISIBLE=False),
 
     yp_float_rad("relative direction"),  # radians
     QStruct("relative offset", INCLUDE=ijk_float),

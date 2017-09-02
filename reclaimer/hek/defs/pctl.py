@@ -54,7 +54,8 @@ particle_state = Struct("particle state",
     BFloat("radius multiplier"),
     dependency("physics", "pphy"),
 
-    Pad(76),
+    Pad(72),
+    FlUInt32("unknown0", VISIBLE=False),
     BBool16("shader flags", *shader_flags),
     BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
     BSEnum16("framebuffer fade mode", *render_fade_mode),
@@ -62,7 +63,8 @@ particle_state = Struct("particle state",
         "unfiltered"
         ),
 
-    Pad(28),
+    Pad(12),  # open sauce particle shader extension
+    Pad(16),
     #Secondary map
     Struct("secondary map",
         dependency("bitmap", "bitm"),
