@@ -154,7 +154,7 @@ tag_id_struct = QStruct("id",
     )
 
 
-def dependency(name='tag ref', valid_ids=None):
+def dependency(name='tag ref', valid_ids=None, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
         valid_ids = tag_class(*valid_ids)
@@ -167,7 +167,8 @@ def dependency(name='tag ref', valid_ids=None):
         valid_ids,
         INCLUDE=tag_index_ref_struct,
         STEPTREE=HaloRefStr(
-            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=234),  # 10 < Halo1
+            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=234),
+        **kwargs
         )
 
 
@@ -1126,8 +1127,9 @@ tag_header_os = Struct("blam header",
 
 valid_model_animations_yelo = tag_class_os('antr', 'magy')
 
-particle_shader_extension = Struct("particle shader extension",
-    Struct("fade controls",
+os_shader_extension = Struct("os shader extension",
+    Pad(4),
+    QStruct("fade controls",
         Float("depth fade distance"),
         Float("camera fade distance"),
         COMMENT="Controls the softness of an effect"
