@@ -3,7 +3,7 @@ from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 
 bump_properties = Struct("bump properties",
-    BFloat("bump scale"),
+    Float("bump scale"),
     dependency("bump map", "bitm"),
     )
 
@@ -13,7 +13,7 @@ soso_attrs = Struct("soso attrs",
         
     Pad(16),
     #Color-Change
-    BSEnum16("color change source", *function_names),
+    SEnum16("color change source", *function_names),
         
     Pad(30),
     #Self-Illumination

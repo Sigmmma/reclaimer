@@ -45,7 +45,7 @@ sound_classes = (
     ("game event", 50),
     )
 
-compression = BSEnum16("compression",
+compression = SEnum16("compression",
     'none',
     'xbox adpcm',
     'ima adpcm',
@@ -60,10 +60,12 @@ permutation = Struct('permutation',
     compression,
     SInt16("next permutation index"),
     Struct("unknown",
-        Pad(12),
-        # idk what this is, but it's SUPER important to ogg sounds
-        FlUInt32("uint32"),
-        Pad(4),
+        # idk what these are, but they are SUPER important to ogg sounds
+        FlUInt32("unknown0"),
+        FlUInt32("unknown1"),
+        FlUInt32("unknown2"),
+        FlUInt32("unknown3"),
+        FlUInt32("unknown4"),
         VISIBLE=False
         ),
     rawdata_ref("samples", max_size=4194304, widget=SoundSampleFrame),
@@ -78,7 +80,7 @@ pitch_range = Struct('pitch range',
 
     Float("natural pitch"),
     QStruct("bend bounds", INCLUDE=from_to),
-    BSInt16("actual permutation count"),
+    SInt16("actual permutation count"),
     Pad(2),
     Float("unknown0", VISIBLE=False),
     SInt32("unknown1", VISIBLE=False, DEFAULT=-1),
@@ -114,16 +116,16 @@ snd__body = Struct("tagdata",
     Pad(12),
 
     QStruct("modifiers when scale is zero",
-        BFloat("skip fraction"),
-        BFloat("gain"),
-        BFloat("pitch"),
+        Float("skip fraction"),
+        Float("gain"),
+        Float("pitch"),
         Pad(12),
         ),
 
     QStruct("modifiers when scale is one",
-        BFloat("skip fraction"),
-        BFloat("gain"),
-        BFloat("pitch"),
+        Float("skip fraction"),
+        Float("gain"),
+        Float("pitch"),
         Pad(12),
         ),
 
@@ -135,14 +137,14 @@ snd__body = Struct("tagdata",
     dependency("promotion sound", "snd!"),
     SInt16("promotion count"),
     SInt16("unknown1", VISIBLE=False),
-    Pad(20),  # Struct("unknown2", INCLUDE=rawdata_ref_struct, VISIBLE=False),
+    Struct("unknown2", INCLUDE=rawdata_ref_struct, VISIBLE=False),
     reflexive("pitch ranges", pitch_range, 8,
         DYN_NAME_PATH='.name'),
 
     SIZE=164,
     )
 
-    
+
 def get():
     return snd__def
 

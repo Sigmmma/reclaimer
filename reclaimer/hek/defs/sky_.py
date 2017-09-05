@@ -9,7 +9,7 @@ shader_function = Struct('shader function',
     )
 
 animation = Struct('animation',
-    BSInt16('animation index'),
+    SInt16('animation index'),
     Pad(2),
     float_sec("period"),
     SIZE=36
@@ -19,13 +19,13 @@ light = Struct('light',
     dependency("lens flare", "lens"),
     ascii_str32("global function name"),
     Pad(28),
-    BBool32('flags',
+    Bool32('flags',
         'affects exteriors',
         'affects interiors',
         ),
     QStruct("color", INCLUDE=rgb_float),
-    BFloat("power"),
-    BFloat("test distance"),
+    Float("power"),
+    Float("test distance"),
     Pad(4),
     yp_float_rad("direction"),  # radians
     float_rad("diameter"),  # radians (yeah, it sounds weird, but this
@@ -40,10 +40,10 @@ sky__body = Struct("tagdata",
     Pad(24),
 
     QStruct("indoor ambient radiosity color", INCLUDE=rgb_float),
-    BFloat("indoor ambient radiosity power"),
+    Float("indoor ambient radiosity power"),
 
     QStruct("outdoor ambient radiosity color", INCLUDE=rgb_float),
-    BFloat("outdoor ambient radiosity power"),
+    Float("outdoor ambient radiosity power"),
 
     QStruct("outdoor fog color", INCLUDE=rgb_float),
     Pad(8),

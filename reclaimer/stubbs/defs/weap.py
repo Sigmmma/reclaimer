@@ -10,7 +10,7 @@ obje_attrs[0] = dict(obje_attrs[0], DEFAULT=2)
 # replace the object_type enum one that uses
 # the correct default value for this object
 weap_attrs = dict(weap_attrs)
-weap_attrs[24] = BSEnum16('weapon type', *weapon_types)
+weap_attrs[24] = SEnum16('weapon type', *weapon_types)
 
 weap_body = Struct("tagdata",
     obje_attrs,

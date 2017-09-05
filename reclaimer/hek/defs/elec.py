@@ -4,10 +4,10 @@ from supyr_struct.defs.tag_def import TagDef
 
 shader = Struct("shader",
     Pad(40),
-    BBool16("shader flags", *shader_flags),
-    BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
-    BSEnum16("framebuffer fade mode", *render_fade_mode),
-    BBool16("map flags",
+    Bool16("shader flags", *shader_flags),
+    SEnum16("framebuffer blend function", *framebuffer_blend_functions),
+    SEnum16("framebuffer fade mode", *render_fade_mode),
+    Bool16("map flags",
         "unfiltered"
         ),
     SIZE=180
@@ -15,12 +15,12 @@ shader = Struct("shader",
 
 marker = Struct("marker",
     ascii_str32("attachment marker"),
-    BBool16("flags",
+    Bool16("flags",
         "not connected to next marker"
         ),
 
     Pad(2),
-    BSInt16("octaves to next marker"),
+    SInt16("octaves to next marker"),
 
     Pad(78),
     QStruct("random position bounds", INCLUDE=ijk_float, SIDETIP="world units"),
@@ -32,17 +32,17 @@ marker = Struct("marker",
 
 elec_body = Struct("tagdata",
     Pad(2),
-    BSInt16("count"),
+    SInt16("count"),
 
     Pad(16),
     float_wu("near fade distance"),
     float_wu("far fade distance"),
 
     Pad(16),
-    BSEnum16("jitter scale source", *function_outputs),
-    BSEnum16("thickness scale source", *function_outputs),
-    BSEnum16("tint modulation source", *function_names),
-    BSEnum16("brightness scale source", *function_outputs),
+    SEnum16("jitter scale source", *function_outputs),
+    SEnum16("thickness scale source", *function_outputs),
+    SEnum16("tint modulation source", *function_names),
+    SEnum16("brightness scale source", *function_outputs),
     dependency("bitmap", "bitm"),
 
     Pad(84),

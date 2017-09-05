@@ -3,7 +3,7 @@ from supyr_struct.defs.tag_def import TagDef
 from .objs.schi import SchiTag
 
 chicago_4_stage_maps = Struct("four stage map",
-    BBool16("flags" ,
+    Bool16("flags" ,
         "unfiltered",
         "alpha replicate",
         "u-clamped",
@@ -11,15 +11,15 @@ chicago_4_stage_maps = Struct("four stage map",
         ),
 
     Pad(42),
-    BSEnum16("color function", *blend_functions),
-    BSEnum16("alpha function", *blend_functions),
+    SEnum16("color function", *blend_functions),
+    SEnum16("alpha function", *blend_functions),
 
     Pad(36),
     #shader transformations
-    BFloat("map u-scale"),
-    BFloat("map v-scale"),
-    BFloat("map u-offset"),
-    BFloat("map v-offset"),
+    Float("map u-scale"),
+    Float("map v-scale"),
+    Float("map u-offset"),
+    Float("map v-offset"),
     float_deg("map rotation"),  # degrees
     float_zero_to_one("map bias"),  # [0,1]
     dependency("bitmap", "bitm"),
@@ -41,10 +41,10 @@ schi_attrs = Struct("schi attrs",
             MIN=0, MAX=255, SIDETIP="[0,255]"),  # [0,255]
 
         Bool8("chicago shader flags", *trans_shdr_properties),
-        BSEnum16("first map type", *trans_shdr_first_map_type),
-        BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
-        BSEnum16("framebuffer fade mode", *render_fade_mode),
-        BSEnum16("framebuffer fade source", *function_outputs),
+        SEnum16("first map type", *trans_shdr_first_map_type),
+        SEnum16("framebuffer blend function", *framebuffer_blend_functions),
+        SEnum16("framebuffer fade mode", *render_fade_mode),
+        SEnum16("framebuffer fade source", *function_outputs),
         Pad(2),
         ),
 
@@ -55,7 +55,7 @@ schi_attrs = Struct("schi attrs",
         DYN_NAME_PATH='.filepath'),
     reflexive("maps", chicago_4_stage_maps, 4,
         DYN_NAME_PATH='.bitmap.filepath'),
-    BBool32("extra flags",
+    Bool32("extra flags",
         "dont fade active camouflage",
         "numeric countdown timer"
         ),

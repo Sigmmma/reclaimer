@@ -7,7 +7,7 @@ from ...hek.defs.actv import *
 # that uses open sauce's extra grenade slots
 actv_body = dict(actv_body)
 grenades_desc = actv_body[10] = dict(actv_body[10])
-grenades_desc[1] = BSEnum16("grenade type", *grenade_types_os)
+grenades_desc[1] = SEnum16("grenade type", *grenade_types_os)
 
 def get():
     return actv_def

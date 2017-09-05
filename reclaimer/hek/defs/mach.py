@@ -9,12 +9,12 @@ obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=7)
 
 mach_attrs = Struct("mach attrs",
-    BSEnum16('type',
+    SEnum16('type',
         'door',
         'platform',
         'gear',
         ),
-    BBool16('flags',
+    Bool16('flags',
         'pathfinding obstable',
         'except when open',
         'elevator',
@@ -22,11 +22,11 @@ mach_attrs = Struct("mach attrs",
     float_sec('door open time'),  # seconds
 
     Pad(80),
-    BSEnum16('triggers when',
+    SEnum16('triggers when',
         'pause until crushed',
         'reverse directions'
         ),
-    BSInt16('elevator node')
+    SInt16('elevator node')
     )
 
 mach_body = Struct("tagdata",

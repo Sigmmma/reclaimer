@@ -9,13 +9,13 @@ obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=8)
 
 ctrl_attrs = Struct("ctrl attrs",
-    BSEnum16('type',
+    SEnum16('type',
         'toggle switch',
         'on button',
         'off button',
         'call button'
         ),
-    BSEnum16('triggers when',
+    SEnum16('triggers when',
         'touched by player',
         'destroyed'
         ),

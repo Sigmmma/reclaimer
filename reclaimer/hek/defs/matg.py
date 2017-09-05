@@ -16,26 +16,26 @@ sound = Struct("sound",
     )
 
 look_function = Struct("look function",
-    BFloat('scale'),
+    Float('scale'),
     SIZE=4
     )
 
 player_control = Struct("player control",
-    BFloat('magnetism friction'),
-    BFloat('magnetism adhesion'),
-    BFloat('inconsequential target scale'),
+    Float('magnetism friction'),
+    Float('magnetism adhesion'),
+    Float('inconsequential target scale'),
 
     Pad(52),
     float_sec('look acceleration time'),
-    BFloat('look acceleration scale'),
+    Float('look acceleration scale'),
     float_zero_to_one('look peg threshold'),
     float_deg('look default pitch rate'),  # degrees
     float_deg('look default yaw rate'),  # degrees
-    BFloat('look autolevelling scale'),
+    Float('look autolevelling scale'),
 
     Pad(20),
-    BSInt16('minimum weapon swap ticks'),
-    BSInt16('minimum autolevelling ticks'),
+    SInt16('minimum weapon swap ticks'),
+    SInt16('minimum autolevelling ticks'),
     float_rad('minimum angle for vehicle flip'),  # radians
     reflexive("look functions", look_function, 16),
 
@@ -43,10 +43,10 @@ player_control = Struct("player control",
     )
 
 difficulty_base = QStruct("",
-    BFloat("easy"),
-    BFloat("normal"),
-    BFloat("hard"),
-    BFloat("imposs"),
+    Float("easy"),
+    Float("normal"),
+    Float("hard"),
+    Float("imposs"),
     ORIENT='h'
     )
 
@@ -105,8 +105,8 @@ difficulty = Struct("difficulty",
     )
 
 grenade = Struct("grenade",
-    BSInt16('maximum count'),
-    BSInt16('mp spawn default'),
+    SInt16('maximum count'),
+    SInt16('mp spawn default'),
     dependency('throwing effect', "effe"),
     dependency('hud interface', "grhi"),
     dependency('equipment', "eqip"),
@@ -150,15 +150,15 @@ rasterizer_data = Struct("rasterizer data",
 
     # Active camouflage
     Struct("active camouflage",
-        BBool16("flags",
+        Bool16("flags",
             "tint edge density"
             ),
         Pad(2),
-        BFloat('refration amount', SIDETIP="pixels"),  # pixels
-        BFloat('distance falloff'),
+        Float('refration amount', SIDETIP="pixels"),  # pixels
+        Float('distance falloff'),
         QStruct('tint color', INCLUDE=rgb_float),
-        BFloat('hyper-stealth refration amount', SIDETIP="pixels"),  # pixels
-        BFloat('hyper-stealth distance falloff'),
+        Float('hyper-stealth refration amount', SIDETIP="pixels"),  # pixels
+        Float('hyper-stealth distance falloff'),
         QStruct('hyper-stealth tint color', INCLUDE=rgb_float),
         ),
 
@@ -226,7 +226,7 @@ player_information = Struct("player information",
     ####################################################
 
     float_wu_sec("walking speed"),  # world units/second
-    BFloat("double speed multiplier", SIDETIP="[1.0,+inf]", MIN=1.0),
+    Float("double speed multiplier", SIDETIP="[1.0,+inf]", MIN=1.0),
     float_wu_sec("run forward"),  # world units/second
     float_wu_sec("run backward"),  # world units/second
     float_wu_sec("run sideways"),  # world units/second
@@ -239,7 +239,7 @@ player_information = Struct("player information",
                     UNIT_SCALE=per_sec_unit_scale),  # world units/second^2
     float_wu_sec_sq("airborne acceleration",
                     UNIT_SCALE=per_sec_unit_scale),  # world units/second^2
-    BFloat("speed multiplier", SIDETIP="multiplayer only"),  # multiplayer only
+    Float("speed multiplier", SIDETIP="multiplayer only"),  # multiplayer only
 
     Pad(12),
     QStruct("grenade origin", INCLUDE=xyz_float),
@@ -248,8 +248,8 @@ player_information = Struct("player information",
     float_zero_to_one("stun movement penalty"),
     float_zero_to_one("stun turning penalty"),
     float_zero_to_one("stun jumping penalty"),
-    BFloat("minimum stun time"),
-    BFloat("maximum stun time"),
+    Float("minimum stun time"),
+    Float("maximum stun time"),
 
     Pad(8),
     from_to_sec("first person idle time"),
@@ -265,11 +265,11 @@ first_person_interface = Struct("first person interface",
     dependency('base bitmap', "bitm"),
     dependency('shield meter', "metr"),
     QStruct('shield meter origin',
-        BSInt16('x'), BSInt16('y'), ORIENT='h'
+        SInt16('x'), SInt16('y'), ORIENT='h'
         ),
     dependency('body meter', "metr"),
     QStruct('body meter origin',
-        BSInt16('x'), BSInt16('y'), ORIENT='h'
+        SInt16('x'), SInt16('y'), ORIENT='h'
         ),
     dependency('night-vision toggle on effect', "effe"),
     dependency('night-vision toggle off effect', "effe"),
@@ -283,7 +283,7 @@ falling_damage = Struct("falling_damage",
     dependency('falling damage', "jpt!"),
 
     Pad(8),
-    BFloat("maximum falling distance"),
+    Float("maximum falling distance"),
     dependency('distance damage', "jpt!"),
     dependency('vehicle environment collision damage', "jpt!"),
     dependency('vehicle killed unit damage', "jpt!"),
@@ -294,7 +294,7 @@ falling_damage = Struct("falling_damage",
 
 particle_effect = Struct("particle effect",
     dependency('particle type', "part"),
-    BBool32("flags", *blend_flags),
+    Bool32("flags", *blend_flags),
     float_wu("density"),
     QStruct("velocity scale", INCLUDE=from_to),
 
@@ -313,15 +313,15 @@ particle_effect = Struct("particle effect",
 material = Struct("material",
     Pad(148),
     # Vehicle terrain parameters
-    BFloat("ground friction scale"),
-    BFloat("ground friction normal k1 scale"),
-    BFloat("ground friction normal k0 scale"),
-    BFloat("ground depth scale"),
-    BFloat("ground damp fraction scale"),
+    Float("ground friction scale"),
+    Float("ground friction normal k1 scale"),
+    Float("ground friction normal k0 scale"),
+    Float("ground depth scale"),
+    Float("ground damp fraction scale"),
 
     # Breakable surface parameters
     Pad(556),
-    BFloat("maximum vitality"),
+    Float("maximum vitality"),
 
     Pad(12),
     dependency('effect', "effe"),
@@ -339,11 +339,11 @@ material = Struct("material",
 playlist_member = Struct("playlist_member",
     ascii_str32("map name"),
     ascii_str32("game variant"),
-    BSInt32('minimum experience'),
-    BSInt32('maximum experience'),
-    BSInt32('minimum player count'),
-    BSInt32('maximum player count'),
-    BSInt32('rating'),
+    SInt32('minimum experience'),
+    SInt32('maximum experience'),
+    SInt32('minimum player count'),
+    SInt32('maximum player count'),
+    SInt32('rating'),
     SIZE=148
     )
 

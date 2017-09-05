@@ -5,7 +5,7 @@ from supyr_struct.defs.tag_def import TagDef
 efpp_attrs = Struct("efpp attrs",
     Pad(12),
     QStruct("quad tesselation",
-        BSInt16("x"), BSInt16("y"), ORIENT='h'
+        SInt16("x"), SInt16("y"), ORIENT='h'
         ),
     from_to_zero_to_one("x screen bounds"),
     from_to_zero_to_one("y screen bounds"),

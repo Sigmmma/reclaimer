@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 fog__body = Struct("tagdata",
     #fog flags
-    BBool32("flags",
+    Bool32("flags",
         "is water",
         "atmospheric dominant",
         "fog screen only",
@@ -25,12 +25,12 @@ fog__body = Struct("tagdata",
 
     #Screen Layers
     Struct("screen layers",
-        BBool16("flags",
+        Bool16("flags",
             "no environment multipass",
             "no model multipass",
             "no texture-based falloff",
             ),
-        BUInt16("layer count", SIDETIP="[0,4]", MIN=0, MAX=4),
+        UInt16("layer count", SIDETIP="[0,4]", MIN=0, MAX=4),
 
         from_to_wu("distance gradient"),
         from_to_zero_to_one("density gradient"),
@@ -44,7 +44,7 @@ fog__body = Struct("tagdata",
         float_zero_to_one("strafing multiplier"),
         float_zero_to_one("zoom multiplier"),
         Pad(8),
-        BFloat("map scale"),
+        Float("map scale"),
         dependency("fog map", "bitm")
         ),
 

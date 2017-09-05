@@ -5,8 +5,8 @@ from .objs.tag import StubbsTag
 cdmg_body = dict(cdmg_body)
 cdmg_body[5] = dict(cdmg_body[5])
 cdmg_body[6] = damage_modifiers
-cdmg_body[5][1] = BSEnum16("category", *damage_category)
-cdmg_body[5][2] = BBool32("flags",
+cdmg_body[5][1] = SEnum16("category", *damage_category)
+cdmg_body[5][2] = Bool32("flags",
     "does not hurt owner",
     {NAME: "headshot", GUI_NAME: "can cause headshots"},
     "pings resistant units",

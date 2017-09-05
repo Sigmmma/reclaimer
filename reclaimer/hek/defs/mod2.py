@@ -17,30 +17,30 @@ local_marker = Struct('local marker',
     )
 
 fast_uncompressed_vertex = QStruct('uncompressed vertex',
-    BFloat('position x'), BFloat('position y'), BFloat('position z'),
-    BFloat('normal i'),   BFloat('normal j'),   BFloat('normal k'),
-    BFloat('binormal i'), BFloat('binormal j'), BFloat('binormal k'),
-    BFloat('tangent i'),  BFloat('tangent j'),  BFloat('tangent k'),
+    Float('position x'), Float('position y'), Float('position z'),
+    Float('normal i'),   Float('normal j'),   Float('normal k'),
+    Float('binormal i'), Float('binormal j'), Float('binormal k'),
+    Float('tangent i'),  Float('tangent j'),  Float('tangent k'),
 
-    BFloat('u'), BFloat('v'),
+    Float('u'), Float('v'),
 
-    BSInt16('node 0 index'), BSInt16('node 1 index'),
-    BFloat('node 0 weight'), BFloat('node 1 weight'),
+    SInt16('node 0 index'), SInt16('node 1 index'),
+    Float('node 0 weight'), Float('node 1 weight'),
     SIZE=68
     )
 
 fast_compressed_vertex = QStruct('compressed vertex',
-    BFloat('position x'), BFloat('position y'), BFloat('position z'),
-    BUInt32('normal'),
-    BUInt32('binormal'),
-    BUInt32('tangent'),
+    Float('position x'), Float('position y'), Float('position z'),
+    UInt32('normal'),
+    UInt32('binormal'),
+    UInt32('tangent'),
 
-    BSInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
-    BSInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    SInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    SInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
 
     SInt8('node 0 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
     SInt8('node 1 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
-    BSInt16('node 0 weight', UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
+    SInt16('node 0 weight', UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
     SIZE=32
     )
 
@@ -50,15 +50,15 @@ uncompressed_vertex = Struct('uncompressed vertex',
     QStruct("binormal", INCLUDE=ijk_float),
     QStruct("tangent", INCLUDE=ijk_float),
 
-    BFloat('u'),
-    BFloat('v'),
+    Float('u'),
+    Float('v'),
 
-    BSInt16('node 0 index',
+    SInt16('node 0 index',
         TOOLTIP="If local nodes are used, this is a local index"),
-    BSInt16('node 1 index',
+    SInt16('node 1 index',
         TOOLTIP="If local nodes are used, this is a local index"),
-    BFloat('node 0 weight'),
-    BFloat('node 1 weight'),
+    Float('node 0 weight'),
+    Float('node 1 weight'),
     SIZE=68
     )
 
@@ -70,17 +70,17 @@ compressed_vertex = Struct('compressed vertex',
     BBitStruct('binormal', INCLUDE=compressed_normal_32, SIZE=4),
     BBitStruct('tangent',  INCLUDE=compressed_normal_32, SIZE=4),
 
-    BSInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
-    BSInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    SInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    SInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
 
     SInt8('node 0 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
     SInt8('node 1 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
-    BSInt16('node 0 weight', UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
+    SInt16('node 0 weight', UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
     SIZE=32
     )
 
 triangle = QStruct('triangle',
-    BSInt16('v0 index'), BSInt16('v1 index'), BSInt16('v2 index'),
+    SInt16('v0 index'), SInt16('v1 index'), SInt16('v2 index'),
     SIZE=6, ORIENT='h'
     )
 
@@ -112,7 +112,7 @@ marker_instance = Struct('marker instance',
 
 permutation = Struct('permutation',
     ascii_str32("name"),
-    BBool32('flags',
+    Bool32('flags',
         'cannot be chosen randomly'
         ),
     Pad(28),
@@ -134,7 +134,7 @@ permutation = Struct('permutation',
     )
 
 part = Struct('part',
-    BBool32('flags',
+    Bool32('flags',
         'stripped',
         'ZONER',
         ),
@@ -143,10 +143,10 @@ part = Struct('part',
     SInt8('previous part index'),
     SInt8('next part index'),
 
-    BSInt16('centroid primary node'),
-    BSInt16('centroid secondary node'),
-    BFloat('centroid primary weight'),
-    BFloat('centroid secondary weight'),
+    SInt16('centroid primary node'),
+    SInt16('centroid secondary node'),
+    Float('centroid primary weight'),
+    Float('centroid secondary weight'),
 
     QStruct('centroid translation', INCLUDE=xyz_float),
 
@@ -196,7 +196,7 @@ fast_part[11] = raw_reflexive("triangles", triangle)
 
 marker = Struct('marker',
     ascii_str32("name"),
-    BUInt16('magic identifier'),
+    UInt16('magic identifier'),
     Pad(18),
 
     reflexive("marker instances", marker_instance, 32),
@@ -212,7 +212,7 @@ node = Struct('node',
 
     QStruct('translation', INCLUDE=xyz_float),
     QStruct('rotation', INCLUDE=ijkw_float),
-    BFloat('distance from parent'),
+    Float('distance from parent'),
     SIZE=156,
     )
 
@@ -237,35 +237,35 @@ fast_geometry = Struct('geometry',
 
 shader = Struct('shader',
     dependency("shader", valid_shaders),
-    BSInt16('permutation index'),
+    SInt16('permutation index'),
     SIZE=32,
     )
 
 
 mod2_body = Struct('tagdata',
-    BBool32('flags',
+    Bool32('flags',
         'blend shared normals',
         'parts have local nodes',
         'ignore skinning'
         ),
-    BSInt32('node list checksum'),
+    SInt32('node list checksum'),
 
-    BFloat('superhigh lod cutoff', SIDETIP="pixels"),
-    BFloat('high lod cutoff', SIDETIP="pixels"),
-    BFloat('medium lod cutoff', SIDETIP="pixels"),
-    BFloat('low lod cutoff', SIDETIP="pixels"),
-    BFloat('superlow lod cutoff', SIDETIP="pixels"),
+    Float('superhigh lod cutoff', SIDETIP="pixels"),
+    Float('high lod cutoff', SIDETIP="pixels"),
+    Float('medium lod cutoff', SIDETIP="pixels"),
+    Float('low lod cutoff', SIDETIP="pixels"),
+    Float('superlow lod cutoff', SIDETIP="pixels"),
 
-    BSInt16('superhigh lod nodes', SIDETIP="nodes"),
-    BSInt16('high lod nodes', SIDETIP="nodes"),
-    BSInt16('medium lod nodes', SIDETIP="nodes"),
-    BSInt16('low lod nodes', SIDETIP="nodes"),
-    BSInt16('superlow lod nodes', SIDETIP="nodes"),
+    SInt16('superhigh lod nodes', SIDETIP="nodes"),
+    SInt16('high lod nodes', SIDETIP="nodes"),
+    SInt16('medium lod nodes', SIDETIP="nodes"),
+    SInt16('low lod nodes', SIDETIP="nodes"),
+    SInt16('superlow lod nodes', SIDETIP="nodes"),
 
     Pad(10),
 
-    BFloat('base map u scale'),
-    BFloat('base map v scale'),
+    Float('base map u scale'),
+    Float('base map v scale'),
 
     Pad(116),
 

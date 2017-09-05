@@ -8,7 +8,7 @@ obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=1)
 
 vehi_attrs = dict(vehi_attrs)
-vehi_attrs[1] = BSEnum16('type', *vehicle_types)
+vehi_attrs[1] = SEnum16('type', *vehicle_types)
 
 vehi_body = Struct("tagdata",
     obje_attrs,

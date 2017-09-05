@@ -17,13 +17,13 @@ effect = Struct("effect",
     )
 
 activation_control = Struct("activation control",
-    BSEnum16("state",
+    SEnum16("state",
         "initially active",
         "is in cutscene",
         "player is zoomed",
         "player is using a vehicle"
         ),
-    BBool16("flags",
+    Bool16("flags",
         "invert"
         ),
     SIZE=4
@@ -33,7 +33,7 @@ effect_instance = Struct("effect instance",
     ascii_str32("name"),
     dyn_senum16("effect",
         DYN_NAME_PATH="tagdata.effects.STEPTREE[DYN_I].effect.filepath"),
-    BSEnum16("render stage",
+    SEnum16("render stage",
         "after bsp - before blur",
         "after blur - before alphad faces",
         "after alphad faces - before hud",
@@ -41,13 +41,13 @@ effect_instance = Struct("effect instance",
         "after menu",
         ),
     QStruct("quad tesselation",
-        BSInt16("x"), BSInt16("y"), ORIENT="h"
+        SInt16("x"), SInt16("y"), ORIENT="h"
         ),
     from_to_zero_to_one("x screen bounds"),
     from_to_zero_to_one("y screen bounds"),
 
     Pad(12),
-    BSEnum16("activation operation",
+    SEnum16("activation operation",
         "all",
         "any"
         ),

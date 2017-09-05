@@ -31,7 +31,7 @@ def tag_class(*args, **kwargs):
     if len(classes) == 1:
         default = classes[0][1]
 
-    return BUEnum32(
+    return UEnum32(
         'tag_class',
         *(tuple(sorted(classes)) + (("NONE", 0xffffffff),) ),
         DEFAULT=default, GUI_NAME='', WIDGET_WIDTH=20, **kwargs
@@ -356,13 +356,13 @@ def from_to_neg_one_to_one(name, *args, **kwargs):
 
 def yp_float_deg(name, *args, **kwargs):
     return QStruct(name,
-        Float("y"), BFloat("p"), *args,
+        Float("y"), Float("p"), *args,
         ORIENT='h', SIDETIP='degrees', **kwargs
         )
 
 def ypr_float_deg(name, *args, **kwargs):
     return QStruct(name,
-        Float("y"), BFloat("p"), BFloat("r"), *args,
+        Float("y"), Float("p"), Float("r"), *args,
         ORIENT='h', SIDETIP='degrees', **kwargs
         )
 
@@ -873,20 +873,20 @@ detail_mask = (
 # Descriptors
 tag_header = Struct("blam header",
     Pad(36),
-    BUEnum32("tag class",
+    UEnum32("tag class",
         GUI_NAME="tag class", INCLUDE=valid_tags, EDITABLE=False
         ),
-    BUInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
-    BUInt32("header size",  DEFAULT=64, EDITABLE=False),
+    UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
+    UInt32("header size",  DEFAULT=64, EDITABLE=False),
     BBool64("flags",
         "edited with mozz",
         {GUI_NAME: "60fps", NAME: "fps_60", VALUE: 1<<8},
         EDITABLE=False
         ),
-    BUInt16("version", DEFAULT=1, EDITABLE=False),
+    UInt16("version", DEFAULT=1, EDITABLE=False),
     UInt8("integrity0", DEFAULT=0, EDITABLE=False),
     UInt8("integrity1", DEFAULT=255, EDITABLE=False),
-    BUEnum32("engine id",
+    UEnum32("engine id",
         ("halo 1", 'blam'),
         DEFAULT='blam', EDITABLE=False
         ),
@@ -895,36 +895,36 @@ tag_header = Struct("blam header",
 
 # Miscellaneous, Halo specific descriptors
 anim_func_per_pha = Struct('',
-    BSEnum16("function", *animation_functions),
+    SEnum16("function", *animation_functions),
     Pad(2),
-    BFloat("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
-    BFloat("phase", SIDETIP='seconds',  UNIT_SCALE=sec_unit_scale),
+    Float("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
+    Float("phase", SIDETIP='seconds',  UNIT_SCALE=sec_unit_scale),
     )
 anim_func_per_sca = Struct('',
-    BSEnum16("function", *animation_functions),
+    SEnum16("function", *animation_functions),
     Pad(2),
-    BFloat("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
-    BFloat("scale", SIDETIP='base map repeats'),  # base map repeats
+    Float("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
+    Float("scale", SIDETIP='base map repeats'),  # base map repeats
     )
 anim_src_func_per_pha_sca = Struct('',
-    BSEnum16("source", *function_outputs),
-    BSEnum16("function", *animation_functions),
-    BFloat("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
-    BFloat("phase", SIDETIP='seconds',  UNIT_SCALE=sec_unit_scale),
-    BFloat("scale", SIDETIP='repeats'),  # repeats
+    SEnum16("source", *function_outputs),
+    SEnum16("function", *animation_functions),
+    Float("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
+    Float("phase", SIDETIP='seconds',  UNIT_SCALE=sec_unit_scale),
+    Float("scale", SIDETIP='repeats'),  # repeats
     )
 anim_src_func_per_pha_sca_rot = Struct('',
-    BSEnum16("source", *function_outputs),
-    BSEnum16("function", *animation_functions),
-    BFloat("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
-    BFloat("phase", SIDETIP='seconds',  UNIT_SCALE=sec_unit_scale),
-    BFloat("scale", SIDETIP='degrees'),  # repeats
+    SEnum16("source", *function_outputs),
+    SEnum16("function", *animation_functions),
+    Float("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
+    Float("phase", SIDETIP='seconds',  UNIT_SCALE=sec_unit_scale),
+    Float("scale", SIDETIP='degrees'),  # repeats
     )
 
 
 # This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
-    BSInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
+    SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
     FlBool32("flags",
         "data in resource map",
         VISIBLE=False,
@@ -937,7 +937,7 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
 
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
-    BSInt32("size", VISIBLE=False),
+    SInt32("size", VISIBLE=False),
     FlUInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
     FlUInt32("id", VISIBLE=False),  # 0 in meta it seems
     )
@@ -945,19 +945,19 @@ reflexive_struct = Reflexive('reflexive',
 # This is the descriptor used wherever a tag references another tag
 tag_index_ref_struct = TagIndexRef('dependency',
     valid_tags,
-    BSInt32("path pointer", VISIBLE=False, EDITABLE=False),
-    BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
+    SInt32("path pointer", VISIBLE=False, EDITABLE=False),
+    SInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
     tag_id_struct,
     ORIENT='h'
     )
 
 predicted_resource = Struct('predicted resource',
-    BSInt16('type',
+    SInt16('type',
         'bitmap',
         'sound',
         ),
-    BSInt16('resource index'),
-    BUInt32('tag index'),
+    SInt16('resource index'),
+    UInt32('tag index'),
     )
 
 extra_layers_block = dependency("extra layer", valid_shaders)
@@ -1028,11 +1028,11 @@ ij_float = QStruct('ij_float',
     ORIENT='h'
     )
 yp_float = QStruct('yp_float',
-    BFloat("y"), BFloat("p"),
+    Float("y"), Float("p"),
     ORIENT='h',
     )
 ypr_float = QStruct('ypr_float',
-    BFloat("y"), BFloat("p"), BFloat("r"),
+    Float("y"), Float("p"), Float("r"),
     ORIENT='h',
     )
 
@@ -1053,7 +1053,7 @@ def tag_class_os(*args):
     if len(classes) == 1:
         default = classes[0][1]
 
-    return BUEnum32(
+    return UEnum32(
         'tag_class',
         *(tuple(classes) + (("NONE", 0xffffffff),) ),
         DEFAULT=0xffffffff, GUI_NAME=''

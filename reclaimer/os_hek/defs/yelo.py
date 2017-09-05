@@ -3,7 +3,7 @@ from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 build_info = Struct("build info",
-    BSEnum32("build stage",
+    SEnum32("build stage",
         "ship",
         "alpha",
         "beta",
@@ -11,7 +11,7 @@ build_info = Struct("build info",
         "epsilon",
         "release",
         ),
-    BSInt32("revision"),
+    SInt32("revision"),
     SIZE=48
     )
 
@@ -22,15 +22,15 @@ scripted_ui_widget = Struct("scripted ui widget",
     )
 
 parameter = Struct("parameter",
-    BSEnum16("type", *script_object_types),
+    SEnum16("type", *script_object_types),
     SIZE=2
     )
 
 new_function = Struct("new function",
     ascii_str32("name1"),
     ascii_str32("name2"),
-    BSInt16("override index"),
-    BSEnum16("return type", *script_object_types),
+    SInt16("override index"),
+    SEnum16("return type", *script_object_types),
     reflexive("parameters", parameter),
     SIZE=80
     )
@@ -38,8 +38,8 @@ new_function = Struct("new function",
 new_global = Struct("new global",
     ascii_str32("name1"),
     ascii_str32("name2"),
-    BSInt16("override index"),
-    BSEnum16("type", *script_object_types),
+    SInt16("override index"),
+    SEnum16("type", *script_object_types),
     SIZE=68
     )
 
@@ -52,8 +52,8 @@ yelo_scripting = Struct("yelo scripting",
     )
 
 yelo_body = Struct("tagdata",
-    BSInt16("version"),
-    BBool16("flags",
+    SInt16("version"),
+    Bool16("flags",
         "dont fix ui game globals",
         "game updates ignore player pvs hack",
         ),
@@ -68,11 +68,11 @@ yelo_body = Struct("tagdata",
 
     Pad(16),
     # Physics
-    BFloat("gravity scale",      MIN=0.0, MAX=2.0, SIDETIP="[0,2]"),
-    BFloat("player speed scale", MIN=0.0, MAX=6.0, SIDETIP="[0,6]"),
+    Float("gravity scale",      MIN=0.0, MAX=2.0, SIDETIP="[0,2]"),
+    Float("player speed scale", MIN=0.0, MAX=6.0, SIDETIP="[0,6]"),
 
     Pad(44),
-    BBool32("gameplay model",
+    Bool32("gameplay model",
         "prohibit multi-team vehicles",
         ),
 

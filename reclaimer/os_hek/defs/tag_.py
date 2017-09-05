@@ -12,9 +12,9 @@ referenced_by = Struct("referenced by", INCLUDE=child_ids)
 
 entry = Struct("entry",
     rawtext_ref("name", StrUtf8, max_size=256, widget=EntryFrame),
-    BUEnum32("group tag", INCLUDE=valid_tags_os, GUI_NAME="group tag"),
-    BSInt32("handle data"),
-    BSInt32("flags"),
+    UEnum32("group tag", INCLUDE=valid_tags_os, GUI_NAME="group tag"),
+    SInt32("handle data"),
+    SInt32("flags"),
     reflexive("child ids", child_ids, 65536),
     reflexive("referenced by", referenced_by, 65536),
     SIZE=68

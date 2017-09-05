@@ -8,10 +8,10 @@ ngpr_body = Struct("tagdata",
     QStruct("secondary color", INCLUDE=rgb_float),
 
     dependency("pattern", "bitm"),
-    BSInt16("pattern bitmap index"),
+    SInt16("pattern bitmap index"),
     Pad(2),
     dependency("decal", "bitm"),
-    BSInt16("decal bitmap index"),
+    SInt16("decal bitmap index"),
     SIZE=896
     )
 

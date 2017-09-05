@@ -18,7 +18,7 @@ unknown_struct = Struct("unknown",
 #    )
 
 pc_part = Struct('part',
-    BBool32('flags',
+    Bool32('flags',
         'stripped',
         'ZONER',
         ),
@@ -27,10 +27,10 @@ pc_part = Struct('part',
     SInt8('previous part index'),
     SInt8('next part index'),
 
-    BSInt16('centroid primary node'),
-    BSInt16('centroid secondary node'),
-    BFloat('centroid primary weight'),
-    BFloat('centroid secondary weight'),
+    SInt16('centroid primary node'),
+    SInt16('centroid secondary node'),
+    Float('centroid primary weight'),
+    Float('centroid secondary weight'),
 
     QStruct('centroid translation', INCLUDE=xyz_float),
 
@@ -84,29 +84,29 @@ fast_geometry = Struct('geometry',
     )
 
 mode_body = Struct('tagdata',
-    BBool32('flags',
+    Bool32('flags',
         'blend shared normals',
         'parts have local nodes',
         'ignore skinning'
         ),
-    BSInt32('node list checksum'),
+    SInt32('node list checksum'),
 
-    BFloat('superhigh lod cutoff', SIDETIP="pixels"),
-    BFloat('high lod cutoff', SIDETIP="pixels"),
-    BFloat('medium lod cutoff', SIDETIP="pixels"),
-    BFloat('low lod cutoff', SIDETIP="pixels"),
-    BFloat('superlow lod cutoff', SIDETIP="pixels"),
+    Float('superhigh lod cutoff', SIDETIP="pixels"),
+    Float('high lod cutoff', SIDETIP="pixels"),
+    Float('medium lod cutoff', SIDETIP="pixels"),
+    Float('low lod cutoff', SIDETIP="pixels"),
+    Float('superlow lod cutoff', SIDETIP="pixels"),
 
-    BSInt16('superhigh lod nodes', SIDETIP="nodes"),
-    BSInt16('high lod nodes', SIDETIP="nodes"),
-    BSInt16('medium lod nodes', SIDETIP="nodes"),
-    BSInt16('low lod nodes', SIDETIP="nodes"),
-    BSInt16('superlow lod nodes', SIDETIP="nodes"),
+    SInt16('superhigh lod nodes', SIDETIP="nodes"),
+    SInt16('high lod nodes', SIDETIP="nodes"),
+    SInt16('medium lod nodes', SIDETIP="nodes"),
+    SInt16('low lod nodes', SIDETIP="nodes"),
+    SInt16('superlow lod nodes', SIDETIP="nodes"),
 
     Pad(10),
 
-    BFloat('base map u scale'),
-    BFloat('base map v scale'),
+    Float('base map u scale'),
+    Float('base map v scale'),
 
     Pad(104),
     reflexive("unknown", unknown_struct, DYN_NAME_PATH=".name"),

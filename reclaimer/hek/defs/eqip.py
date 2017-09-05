@@ -9,7 +9,7 @@ obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=3)
 
 eqip_attrs = Struct("equipment attrs",
-    BSEnum16('powerup type',
+    SEnum16('powerup type',
         'none',
         'double speed',
         'overshield',
@@ -18,7 +18,7 @@ eqip_attrs = Struct("equipment attrs",
         'health',
         'grenade',
         ),
-    BSEnum16('grenade type', *grenade_types),
+    SEnum16('grenade type', *grenade_types),
     float_sec('powerup time'),
     dependency('pickup sound', "snd!"),
 

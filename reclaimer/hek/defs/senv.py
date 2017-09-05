@@ -3,12 +3,12 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 environment_shader = Struct("environment shader",
-    BBool16("environment shader flags",
+    Bool16("environment shader flags",
         "alpha tested",
         "bump-map is specular mask",
         "true atmospheric fog",
         ),
-    BSEnum16("environment shader type",
+    SEnum16("environment shader type",
         "normal",
         "blended",
         "blended base specular",
@@ -16,7 +16,7 @@ environment_shader = Struct("environment shader",
     )
 
 diffuse = Struct("diffuse",
-    BBool16("diffuse flags",
+    Bool16("diffuse flags",
         "rescale detail maps",
         "rescale bump maps",
         ),
@@ -24,25 +24,25 @@ diffuse = Struct("diffuse",
     dependency("base map", "bitm"),
                    
     Pad(24),
-    BSEnum16("detail map function", *detail_map_functions),
+    SEnum16("detail map function", *detail_map_functions),
     Pad(2),
 
-    BFloat("primary detail map scale"),
+    Float("primary detail map scale"),
     dependency("primary detail map", "bitm"),
-    BFloat("secondary detail map scale"),
+    Float("secondary detail map scale"),
     dependency("secondary detail map", "bitm"),
 
     Pad(24),
-    BSEnum16("micro detail map function", *detail_map_functions),
+    SEnum16("micro detail map function", *detail_map_functions),
 
     Pad(2),
-    BFloat("micro detail map scale"),
+    Float("micro detail map scale"),
     dependency("micro detail map", "bitm"),
     QStruct("material color", INCLUDE=rgb_float),
     )
 
 bump_properties = Struct("bump properties",
-    BFloat("map scale"),
+    Float("map scale"),
     dependency("map", "bitm"),
     FlFloat("map scale x"),
     FlFloat("map scale y"),
@@ -64,12 +64,12 @@ self_illumination = Struct("self illumination",
     Struct("plasma animation", INCLUDE=anim_func_per_pha),
 
     Pad(24),
-    BFloat("map scale"),
+    Float("map scale"),
     dependency("map", "bitm"),
     )
 
 specular = Struct("specular",
-    BBool16("specular flags",
+    Bool16("specular flags",
         "overbright",
         "extra-shiny",
         "lightmap is specular"
@@ -83,10 +83,10 @@ specular = Struct("specular",
     )
 
 reflection = Struct("reflection",
-    BBool16("reflection flags",
+    Bool16("reflection flags",
         "dynamic mirror",
          ),
-    BSEnum16("reflection type",
+    SEnum16("reflection type",
         "bumped cubemap",
         "flat cubemap",
         "bumped radiosity",

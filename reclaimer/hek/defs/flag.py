@@ -5,14 +5,14 @@ from supyr_struct.defs.tag_def import TagDef
 def get(): return flag_def
 
 attachment_point = Struct("attachment point",
-    BSInt16("height to next attachment", SIDETIP="vertices"),
+    SInt16("height to next attachment", SIDETIP="vertices"),
     Pad(18),
     ascii_str32("marker name"),
     )
 
 flag_body = Struct("tagdata",
     Pad(4),
-    BSEnum16("trailing edge shape",
+    SEnum16("trailing edge shape",
         "flat",
         "concave triangular",
         "convex triangular",
@@ -20,14 +20,14 @@ flag_body = Struct("tagdata",
         "trapezoid short bottom",
         ),
 
-    BSInt16("trailing edge shape offset", SIDETIP="vertices"),
-    BSEnum16("attached edge shape",
+    SInt16("trailing edge shape offset", SIDETIP="vertices"),
+    SEnum16("attached edge shape",
         "flat",
         "concave triangular",
         ),
     Pad(2),
-    BSInt16("width", SIDETIP="vertices"),
-    BSInt16("height", SIDETIP="vertices"),
+    SInt16("width", SIDETIP="vertices"),
+    SInt16("height", SIDETIP="vertices"),
 
     float_wu("cell width"),
     float_wu("cell height"),

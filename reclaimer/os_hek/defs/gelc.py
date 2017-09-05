@@ -13,13 +13,13 @@ infectable_unit = Struct("infectable unit",
         DYN_NAME_PATH=".....infection_forms.STEPTREE" +
         "[DYN_I].infection_form.filepath"),
     dependency_os("infectable unit", valid_units),
-    BFloat("health threshold"),
+    Float("health threshold"),
     dependency_os("infected unit", valid_units),
     dependency_os("infected unit actor variant", "actv"),
     dependency_os("transition effect", "effe"),
     dependency_os("attachment object", valid_devices_items_objects_units),
     ascii_str32("attachment marker"),
-    BSInt16("attachment marker count"),
+    SInt16("attachment marker count"),
     SIZE=144
     )
 
@@ -33,7 +33,7 @@ unit_infection = Struct("unit infection",
     )
 
 boarding_seat = Struct("boarding seat",
-    BBool16("flags",
+    Bool16("flags",
         "boarding ejects target seat",
         "boarding enters target seat",
         "controls open and close",
@@ -54,8 +54,8 @@ unit_external_upgrade = Struct("unit external upgrade",
     )
 
 gelc_body = Struct("tagdata",
-    BSInt16("version"),
-    BBool16("flags",
+    SInt16("version"),
+    Bool16("flags",
         "allow unit infections during cinematics",
         ),
     reflexive("unit infections", unit_infection, 1),

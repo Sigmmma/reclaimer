@@ -3,7 +3,7 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 ligh_body = Struct("tagdata",
-    BBool32("flags",
+    Bool32("flags",
         "dynamic",
         "no specular",
         "dont light own object",
@@ -14,17 +14,17 @@ ligh_body = Struct("tagdata",
 
     #Shape
     Struct("shape",
-        BFloat("radius"),
+        Float("radius"),
         QStruct("radius modifier", INCLUDE=from_to),
         float_rad("falloff angle"),  # radians
         float_rad("cutoff angle"),  # radians
-        BFloat("lens flare only radius"),
+        Float("lens flare only radius"),
         Pad(24),
         ),
 
     #Color
     Struct("color",
-        BBool32("interpolation flags", *blend_flags),
+        Bool32("interpolation flags", *blend_flags),
         QStruct("color lower bound", INCLUDE=argb_float),
         QStruct("color upper bound", INCLUDE=argb_float),
         Pad(12),
@@ -34,18 +34,18 @@ ligh_body = Struct("tagdata",
     Struct("gel map",
         dependency("primary cube map", "bitm"),
         Pad(2),
-        BSEnum16("texture animation function", *animation_functions),
+        SEnum16("texture animation function", *animation_functions),
         float_sec("texture animation period"),
 
         dependency("secondary cube map", "bitm"),
         Pad(2),
-        BSEnum16("yaw animation function", *animation_functions),
+        SEnum16("yaw animation function", *animation_functions),
         float_sec("yaw animation period"),
         Pad(2),
-        BSEnum16("roll animation function", *animation_functions),
+        SEnum16("roll animation function", *animation_functions),
         float_sec("roll animation period"),
         Pad(2),
-        BSEnum16("pitch animation function", *animation_functions),
+        SEnum16("pitch animation function", *animation_functions),
         float_sec("pitch animation period"),
         Pad(8)
         ),
@@ -56,7 +56,7 @@ ligh_body = Struct("tagdata",
 
     #Radiosity
     Struct("radiosity",
-        BFloat("intensity"),
+        Float("intensity"),
         QStruct("color", INCLUDE=rgb_float),
         Pad(16),
         ),
@@ -65,7 +65,7 @@ ligh_body = Struct("tagdata",
     Struct("effect parameters",
         float_sec("duration"),
         Pad(2),
-        BSEnum16("falloff function", *fade_functions),
+        SEnum16("falloff function", *fade_functions),
         ),
 
     SIZE=352,

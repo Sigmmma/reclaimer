@@ -3,23 +3,23 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 shdr_attrs = Struct("shdr attrs",
-    BBool16("radiosity flags",
+    Bool16("radiosity flags",
         "simple parameterization",
         "ignore normals",
         "transparent lit",
         ),
-    BSEnum16("radiosity detail level" ,
+    SEnum16("radiosity detail level" ,
         "high",
         "medium",
         "low",
         "turd",
         ),
-    BFloat("radiosity light power"),
+    Float("radiosity light power"),
     QStruct("radiosity light color", INCLUDE=rgb_float),
     QStruct("radiosity tint color",  INCLUDE=rgb_float),
 
     Pad(2),
-    BSEnum16("material type", *materials_list),
+    SEnum16("material type", *materials_list),
     # THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS.
     # This seems to be a Guerilla-only optimization value
     FlSEnum16("shader type",

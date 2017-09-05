@@ -9,7 +9,7 @@ change_color = Struct("change_color",
     )
 
 actv_body = Struct("tagdata",
-    BBool32('flags',
+    Bool32('flags',
         "can shoot while flying",
         "blend color in hsv",
         "has unlimited grenades",
@@ -26,7 +26,7 @@ actv_body = Struct("tagdata",
     #Movement switching
     Struct("movement switching",
         Pad(24),
-        BSEnum16("movement type",
+        SEnum16("movement type",
             "always run",
             "always crouch",
             "switch types",
@@ -41,14 +41,14 @@ actv_body = Struct("tagdata",
     Struct("ranged combat",
         dependency("weapon", "weap"),
         float_wu("maximum firing distance"),
-        BFloat("rate of fire", UNIT_SCALE=per_sec_unit_scale),  # rounds/sec
+        Float("rate of fire", UNIT_SCALE=per_sec_unit_scale),  # rounds/sec
         float_rad("projectile error"),  # radians
         from_to_sec("first burst delay time",
                     UNIT_SCALE=sec_unit_scale),  # seconds
-        BFloat("new-target firing pattern time",
+        Float("new-target firing pattern time",
                UNIT_SCALE=sec_unit_scale),  # seconds
-        BFloat("surprise delay time", UNIT_SCALE=sec_unit_scale),  # seconds
-        BFloat("surprise fire-wildly time",
+        Float("surprise delay time", UNIT_SCALE=sec_unit_scale),  # seconds
+        Float("surprise fire-wildly time",
                UNIT_SCALE=sec_unit_scale),  # seconds
         float_zero_to_one("death fire-wildly chance"),
         float_sec("death fire-wildly time",
@@ -58,8 +58,8 @@ actv_body = Struct("tagdata",
         QStruct("custom crouch gun offset", INCLUDE=ijk_float),
         float_zero_to_one("target tracking"),
         float_zero_to_one("target leading"),
-        BFloat("weapon damage modifier"),
-        BFloat("damage per second", UNIT_SCALE=per_sec_unit_scale),  # seconds
+        Float("weapon damage modifier"),
+        Float("damage per second", UNIT_SCALE=per_sec_unit_scale),  # seconds
         ),
 
     #Burst geometry
@@ -70,7 +70,7 @@ actv_body = Struct("tagdata",
         float_rad("burst return angle"),  # radians
         from_to_sec("burst duration", UNIT_SCALE=sec_unit_scale),  # seconds
         from_to_sec("burst separation"),
-        BFloat("burst angular velocity", SIDETIP="degrees/sec",
+        Float("burst angular velocity", SIDETIP="degrees/sec",
                UNIT_SCALE=irad_per_sec_unit_scale), # radians/second
         Pad(4),
         float_zero_to_one("special damage modifier"),
@@ -79,36 +79,36 @@ actv_body = Struct("tagdata",
 
     #Firing patterns"
     Struct("firing patterns",
-        BFloat("new-target burst duration"),
-        BFloat("new-target burst separation"),
-        BFloat("new-target rate of fire", UNIT_SCALE=per_sec_unit_scale),
-        BFloat("new-target projectile error"),
+        Float("new-target burst duration"),
+        Float("new-target burst separation"),
+        Float("new-target rate of fire", UNIT_SCALE=per_sec_unit_scale),
+        Float("new-target projectile error"),
 
         Pad(8),
-        BFloat("moving burst duration"),
-        BFloat("moving burst separation"),
-        BFloat("moving rate of fire", UNIT_SCALE=per_sec_unit_scale),
-        BFloat("moving projectile error"),
+        Float("moving burst duration"),
+        Float("moving burst separation"),
+        Float("moving rate of fire", UNIT_SCALE=per_sec_unit_scale),
+        Float("moving projectile error"),
 
         Pad(8),
-        BFloat("berserk burst duration"),
-        BFloat("berserk burst separation"),
-        BFloat("berserk rate of fire", UNIT_SCALE=per_sec_unit_scale),
-        BFloat("berserk projectile error")
+        Float("berserk burst duration"),
+        Float("berserk burst separation"),
+        Float("berserk rate of fire", UNIT_SCALE=per_sec_unit_scale),
+        Float("berserk projectile error")
         ),
 
     #Special-case firing patterns
     Struct("special case firing patterns",
         Pad(8),
-        BFloat("super-ballistic range"),
-        BFloat("bombardment range"),
-        BFloat("modified vision range"),
-        BSEnum16("special-fire mode",
+        Float("super-ballistic range"),
+        Float("bombardment range"),
+        Float("modified vision range"),
+        SEnum16("special-fire mode",
             "none",
             "overcharge",
             "secondary trigger",
             ),
-        BSEnum16("special-fire situation",
+        SEnum16("special-fire situation",
             "never",
             "enemy visible",
             "enemy out of sight",
@@ -130,18 +130,18 @@ actv_body = Struct("tagdata",
     #Grenades
     Struct("grenades",
         Pad(8),
-        BSEnum16("grenade type", *grenade_types),
-        BSEnum16("trajectory type",
+        SEnum16("grenade type", *grenade_types),
+        SEnum16("trajectory type",
             "toss",
             "lob",
             "bounce",
             ),
-        BSEnum16("grenade stimulus",
+        SEnum16("grenade stimulus",
             "never",
             "visible target",
             "seek cover",
             ),
-        BSInt16("minimum enemy count"),
+        SInt16("minimum enemy count"),
         float_wu("enemy radius"),
 
         Pad(4),
@@ -158,23 +158,23 @@ actv_body = Struct("tagdata",
         Pad(20),
         dependency("equipment", "eqip"),
         QStruct("grenade count",
-            BSInt16("from", GUI_NAME=""), BSInt16("to"), ORIENT='h'
+            SInt16("from", GUI_NAME=""), SInt16("to"), ORIENT='h'
             ),
         float_zero_to_one("dont drop grenades chance"),
         QStruct("drop weapon loaded", INCLUDE=from_to),
         QStruct("drop weapon ammo",
-            BSInt16("from", GUI_NAME=""),
-            BSInt16("to"), ORIENT='h'
+            SInt16("from", GUI_NAME=""),
+            SInt16("to"), ORIENT='h'
             )
         ),
 
     #Unit properties
     Struct("unit properties",
         Pad(28),
-        BFloat("body vitality"),
-        BFloat("shield vitality"),
+        Float("body vitality"),
+        Float("shield vitality"),
         float_wu("shield sapping radius"),
-        BSInt16("forced shader permutation"),
+        SInt16("forced shader permutation"),
         ),
 
     Pad(30),

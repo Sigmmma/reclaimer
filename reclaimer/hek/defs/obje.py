@@ -8,9 +8,9 @@ def get():
 attachment = Struct('attachment',
     dependency('type', valid_attachments),
     ascii_str32('marker'),
-    BSEnum16('primary scale', *function_outputs),
-    BSEnum16('secondary scale', *function_outputs),
-    BSEnum16('change color', *function_names),
+    SEnum16('primary scale', *function_outputs),
+    SEnum16('secondary scale', *function_outputs),
+    SEnum16('change color', *function_names),
 
     SIZE=72
     )
@@ -21,26 +21,26 @@ widget = Struct('widget',
     )
 
 function = Struct('function',
-    BBool32('flags',
+    Bool32('flags',
         'invert',
         'additive',
         'always active',
         ),
     float_sec('period', UNIT_SCALE=sec_unit_scale),  # seconds
-    BSEnum16('scale period by', *function_inputs_outputs),
-    BSEnum16('function', *animation_functions),
-    BSEnum16('scale function by', *function_inputs_outputs),
-    BSEnum16('wobble function', *animation_functions),
+    SEnum16('scale period by', *function_inputs_outputs),
+    SEnum16('function', *animation_functions),
+    SEnum16('scale function by', *function_inputs_outputs),
+    SEnum16('wobble function', *animation_functions),
     float_sec('wobble period', UNIT_SCALE=sec_unit_scale),  # seconds
-    BFloat('wobble magnitude', SIDETIP="%"),  # percent
+    Float('wobble magnitude', SIDETIP="%"),  # percent
 
-    BFloat('square wave threshold'),
-    BSInt16('step count'),
-    BSEnum16('map to', *fade_functions),
-    BSInt16('sawtooth count'),
-    BSEnum16('add', *function_inputs_outputs),
-    BSEnum16('scale result by', *function_inputs_outputs),
-    BSEnum16('bounds mode',
+    Float('square wave threshold'),
+    SInt16('step count'),
+    SEnum16('map to', *fade_functions),
+    SInt16('sawtooth count'),
+    SEnum16('add', *function_inputs_outputs),
+    SEnum16('scale result by', *function_inputs_outputs),
+    SEnum16('bounds mode',
         'clip',
         'clip and normalize',
         'scale to fit',
@@ -49,7 +49,7 @@ function = Struct('function',
 
     Pad(6),
     dyn_senum16('turn off with', DYN_NAME_PATH="..[DYN_I].usage"),
-    BFloat('scale by'),
+    Float('scale by'),
 
     Pad(268),
     ascii_str32('usage'),
@@ -58,7 +58,7 @@ function = Struct('function',
     )
 
 permutation = Struct('permutation',
-    BFloat('weight'),
+    Float('weight'),
     QStruct('color lower bound', INCLUDE=rgb_float),
     QStruct('color upper bound', INCLUDE=rgb_float),
 
@@ -66,9 +66,9 @@ permutation = Struct('permutation',
     )
 
 change_color = Struct('change_color',
-    BSEnum16('darken by', *function_inputs_outputs),
-    BSEnum16('scale by', *function_inputs_outputs),
-    BBool32('flags',
+    SEnum16('darken by', *function_inputs_outputs),
+    SEnum16('scale by', *function_inputs_outputs),
+    Bool32('flags',
         'blend in hsv',
         'more colors',
         ),
@@ -96,7 +96,7 @@ obje_attrs = Struct('obje attrs',
         ("obje", -1),
         VISIBLE=False, DEFAULT=-1
         ),
-    BBool16('flags',
+    Bool16('flags',
         'does not cast shadow',
         'transparent self-occlusion',
         'brighter than it should be',
@@ -122,14 +122,14 @@ obje_attrs = Struct('obje attrs',
     float_wu('render bounding radius'),
 
     #Export to functions
-    BSEnum16('A in', *object_export_to),
-    BSEnum16('B in', *object_export_to),
-    BSEnum16('C in', *object_export_to),
-    BSEnum16('D in', *object_export_to),
+    SEnum16('A in', *object_export_to),
+    SEnum16('B in', *object_export_to),
+    SEnum16('C in', *object_export_to),
+    SEnum16('D in', *object_export_to),
 
     Pad(44),
-    BSInt16('hud text message index'),
-    BSInt16('forced shader permutation index'),
+    SInt16('hud text message index'),
+    SInt16('forced shader permutation index'),
     reflexive("attachments", attachment, 8, DYN_NAME_PATH='.type.filepath'),
     reflexive("widgets", widget, 4, DYN_NAME_PATH='.reference.filepath'),
     reflexive("functions", function, 4, DYN_NAME_PATH='.usage'),

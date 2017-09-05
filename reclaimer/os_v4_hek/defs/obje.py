@@ -1,7 +1,7 @@
 from ...os_v3_hek.defs.obje import *
 
 obje_attrs = dict(obje_attrs)
-obje_attrs[1] = BBool16('flags',
+obje_attrs[1] = Bool16('flags',
     'does not cast shadow',
     'transparent self-occlusion',
     'brighter than it should be',

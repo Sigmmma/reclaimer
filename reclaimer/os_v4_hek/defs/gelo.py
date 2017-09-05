@@ -1,14 +1,14 @@
 from .yelo import *
 
 gelo_body = Struct("tagdata",
-    BSInt16("version", DEFAULT=2),
-    BBool16("flags",
+    SInt16("version", DEFAULT=2),
+    Bool16("flags",
         "hide health when zoomed",
         "hide shield when zoomed",
         "hide motion sensor when zoomed",
         "force game to use stun jumping penalty"
         ),
-    BSInt32("base address"),
+    SInt32("base address"),
     ascii_str32("mod name"),
     dependency_os("global explicit references", "tagc"),
     #dependency_os("chokin victim globals", "gelc"),
