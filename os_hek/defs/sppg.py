@@ -3,14 +3,14 @@ from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 bloom_global = Struct("bloom global",
-    BBool16("shader model",
+    Bool16("shader model",
         "enabled",
         "apply after hud",
         ),
     Pad(2),
-    BFloat("bloom size"),
-    BFloat("bloom exposure"),
-    BFloat("bloom mix amount", MIN=0.0, MAX=1.0),
+    Float("bloom size"),
+    Float("bloom exposure"),
+    Float("bloom mix amount", MIN=0.0, MAX=1.0),
     QStruct("bloom minimum color", INCLUDE=rgb_float),
     QStruct("bloom maximum color", INCLUDE=rgb_float),
     SIZE=40,

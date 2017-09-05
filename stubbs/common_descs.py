@@ -122,7 +122,7 @@ def tag_class_stubbs(*args):
     for four_cc in args:
         classes.append((tag_class_fcc_to_ext_stubbs[four_cc], four_cc))
 
-    return BUEnum32(
+    return UEnum32(
         'tag_class',
         *(tuple(classes) + (("NONE", 0xffffffff),) ),
         DEFAULT=0xffffffff, GUI_NAME=''
@@ -140,8 +140,8 @@ def dependency_stubbs(name='tag ref', valid_ids=None):
 
     return TagIndexRef(name,
         valid_ids,
-        BUInt32("path pointer", VISIBLE=False, EDITABLE=False),
-        BUInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
+        UInt32("path pointer", VISIBLE=False, EDITABLE=False),
+        UInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
         tag_id_struct,
 
         STEPTREE=HaloRefStr(

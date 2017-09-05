@@ -4,15 +4,15 @@ from supyr_struct.defs.tag_def import TagDef
 
 string_reference = Struct("string reference",
     dependency_os("string id", "sidy"),
-    BSInt32("english offset"),
-    BSInt32("unused offset 1"),
-    BSInt32("unused offset 2"),
-    BSInt32("unused offset 3"),
-    BSInt32("unused offset 4"),
-    BSInt32("unused offset 5"),
-    BSInt32("unused offset 6"),
-    BSInt32("unused offset 7"),
-    BSInt32("unused offset 8"),
+    SInt32("english offset"),
+    SInt32("unused offset 1"),
+    SInt32("unused offset 2"),
+    SInt32("unused offset 3"),
+    SInt32("unused offset 4"),
+    SInt32("unused offset 5"),
+    SInt32("unused offset 6"),
+    SInt32("unused offset 7"),
+    SInt32("unused offset 8"),
     SIZE=56
     )
 

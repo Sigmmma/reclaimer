@@ -21,9 +21,9 @@ contact_point = Struct("contact point",
     )
 
 bipd_attrs = Struct("bipd attrs",
-    BFloat("moving turning speed",
+    Float("moving turning speed",
         SIDETIP="degrees/sec", UNIT_SCALE=180/pi),  # radians
-    BBool32("flags",
+    Bool32("flags",
         "turns without aiming",
         "uses player physics",
         "physics pill centered at origin",
@@ -40,10 +40,10 @@ bipd_attrs = Struct("bipd attrs",
     float_rad("stationary turning threshold"),  # radians
 
     Pad(16),
-    BSEnum16('A in', *biped_inputs),
-    BSEnum16('B in', *biped_inputs),
-    BSEnum16('C in', *biped_inputs),
-    BSEnum16('D in', *biped_inputs),
+    SEnum16('A in', *biped_inputs),
+    SEnum16('B in', *biped_inputs),
+    SEnum16('C in', *biped_inputs),
+    SEnum16('D in', *biped_inputs),
     dependency('DONT USE', "jpt!"),
 
     ####################################################
@@ -56,7 +56,7 @@ bipd_attrs = Struct("bipd attrs",
         float_rad("bank angle"),  # radians
         float_sec("bank apply time", UNIT_SCALE=sec_unit_scale),  # seconds
         float_sec("bank decay time", UNIT_SCALE=sec_unit_scale),  # seconds
-        BFloat("pitch ratio"),
+        Float("pitch ratio"),
         float_wu_sec("max velocity",
                      UNIT_SCALE=per_sec_unit_scale),  # world units/second
         float_wu_sec("max sidestep velocity",
@@ -75,10 +75,10 @@ bipd_attrs = Struct("bipd attrs",
         float_rad("maximum slope angle"),  # radians
         float_rad("downhill falloff angle"),  # radians
         float_rad("downhill cutoff angle"),  # radians
-        BFloat("downhill velocity scale"),
+        Float("downhill velocity scale"),
         float_rad("uphill falloff angle"),  # radians
         float_rad("uphill cutoff angle"),  # radians
-        BFloat("uphill velocity scale"),
+        Float("uphill velocity scale"),
 
         Pad(24),
         dependency('footsteps', "foot"),

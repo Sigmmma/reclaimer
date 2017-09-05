@@ -2,7 +2,7 @@ from .shpp import *
 from ...hek.defs.objs.tag import HekTag
 
 value_name = ascii_str32("value name")
-runtime_value = BSEnum16("runtime value",
+runtime_value = SEnum16("runtime value",
     "none",
     )
 animation_flags1 = Bool8("animation flags",
@@ -12,13 +12,13 @@ animation_flags2 = Bool8("animation flags",
     "invert",
     "multichannel noise",
     )
-animation_function = BSEnum16("animation function", *animation_functions)
+animation_function = SEnum16("animation function", *animation_functions)
 
 bitmap = Struct("bitmap",
     value_name,
 
     Pad(8),
-    BSInt16("bitmap index"),
+    SInt16("bitmap index"),
 
     Pad(58),
     dependency_os("bitmap", "bitm"),
@@ -33,21 +33,21 @@ boolean = Struct("boolean",
     Pad(31),
     # Runtime value override
     Pad(2),  # runtime_value,
-    BBool16("flags", "invert"),
+    Bool16("flags", "invert"),
     # Animation
     animation_function,
     animation_flags1,
     Pad(1),
     float_sec("animation duration"),
-    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
+    Float("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
 integer = Struct("integer",
     value_name,
     Pad(8),
-    BSInt32("value lower bound"),
-    BSInt32("value upper bound"),
+    SInt32("value lower bound"),
+    SInt32("value upper bound"),
 
     Pad(24),
     # Runtime value override
@@ -59,16 +59,16 @@ integer = Struct("integer",
     animation_flags1,
     Pad(1),
     float_sec("animation duration"),
-    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
+    Float("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
 float_1d = Struct("float 1d",
     value_name,
     Pad(8),
-    BFloat("value lower bound"),
+    Float("value lower bound"),
     Pad(12),
-    BFloat("value upper bound"),
+    Float("value upper bound"),
 
     Pad(12),
     # Runtime value override
@@ -80,7 +80,7 @@ float_1d = Struct("float 1d",
     animation_flags1,
     Pad(1),
     float_sec("animation duration"),
-    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
+    Float("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
@@ -101,7 +101,7 @@ float_2d = Struct("float 2d",
     animation_flags2,
     Pad(1),
     float_sec("animation duration"),
-    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
+    Float("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
@@ -122,7 +122,7 @@ float_3d = Struct("float 3d",
     animation_flags2,
     Pad(1),
     float_sec("animation duration"),
-    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
+    Float("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
@@ -141,7 +141,7 @@ float_4d = Struct("float 4d",
     animation_flags2,
     Pad(1),
     float_sec("animation duration"),
-    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
+    Float("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 
@@ -152,7 +152,7 @@ color = Struct("color",
     QStruct("value upper bound", INCLUDE=argb_float),
 
     # Runtime value override
-    BSEnum16("runtime value",
+    SEnum16("runtime value",
         "none",
         "player team color",
         ),
@@ -167,7 +167,7 @@ color = Struct("color",
         ),
     Pad(1),
     float_sec("animation duration"),
-    BFloat("animation rate", UNIT_SCALE=per_sec_unit_scale),
+    Float("animation rate", UNIT_SCALE=per_sec_unit_scale),
     SIZE=88
     )
 

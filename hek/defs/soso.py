@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 
 model_shader = Struct("model shader",
-    BBool16("flags",
+    Bool16("flags",
         "detail after reflection",
         "two-sided",
         "not alpha-tested",
@@ -13,36 +13,36 @@ model_shader = Struct("model shader",
         "disable two-sided culling",
         ),
     Pad(14),
-    BFloat("translucency"),
+    Float("translucency"),
     )
         
 self_illumination = Struct("self illumination",
-    BBool16("flags",
+    Bool16("flags",
         "no random phase"
         ),
     Pad(2),
-    BSEnum16("color source", *function_names),
-    BSEnum16("animation function", *animation_functions),
+    SEnum16("color source", *function_names),
+    SEnum16("animation function", *animation_functions),
     float_sec("animation period"),  # seconds
     QStruct("color lower bound", INCLUDE=rgb_float),
     QStruct("color upper bound", INCLUDE=rgb_float),
     )
         
 maps = Struct("maps",
-    BFloat("map u-scale"),
-    BFloat("map v-scale"),
+    Float("map u-scale"),
+    Float("map v-scale"),
     dependency("diffuse map", "bitm"),
        
     Pad(8),
     dependency("multipurpose map", "bitm"),
 
     Pad(8),
-    BSEnum16("detail function", *detail_map_functions),
-    BSEnum16("detail mask", *detail_mask),
+    SEnum16("detail function", *detail_map_functions),
+    SEnum16("detail mask", *detail_mask),
        
-    BFloat("detail map scale"),
+    Float("detail map scale"),
     dependency("detail map", "bitm"),
-    BFloat("detail map v-scale"),
+    Float("detail map v-scale"),
     )
 
 texture_scrolling = Struct("texture scrolling",
@@ -71,7 +71,7 @@ soso_attrs = Struct("soso attrs",
         
     Pad(16),
     #Color-Change
-    BSEnum16("color change source", *function_names),
+    SEnum16("color change source", *function_names),
         
     Pad(30),
     #Self-Illumination

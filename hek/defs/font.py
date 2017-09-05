@@ -6,7 +6,7 @@ def get(): return font_def
 
 
 character_table = QStruct("character table",
-    BSInt16("character index"),
+    SInt16("character index"),
     SIZE=2
     )
 
@@ -16,24 +16,24 @@ character_tables = Struct("character tables",
     )
 
 character = QStruct("character",
-    BSInt16("character"),
-    BSInt16("character width"),
-    BSInt16("bitmap width"),
-    BSInt16("bitmap height"),
-    BSInt16("bitmap origin x"),
-    BSInt16("bitmap origin y"),
-    BSInt16("hardware character index"),
+    SInt16("character"),
+    SInt16("character width"),
+    SInt16("bitmap width"),
+    SInt16("bitmap height"),
+    SInt16("bitmap origin x"),
+    SInt16("bitmap origin y"),
+    SInt16("hardware character index"),
     Pad(2),
-    BSInt32("pixels offset"),
+    SInt32("pixels offset"),
     SIZE=20
     )
 
 font_body = Struct("tagdata",
-    BSInt32("flags"),
-    BSInt16("ascending height"),
-    BSInt16("decending height"),
-    BSInt16("leading height"),
-    BSInt16("leading width"),
+    SInt32("flags"),
+    SInt16("ascending height"),
+    SInt16("decending height"),
+    SInt16("leading height"),
+    SInt16("leading width"),
     Pad(36),
 
     reflexive("character tables", character_tables, 256),

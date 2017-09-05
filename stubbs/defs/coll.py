@@ -3,7 +3,7 @@ from ..common_descs import *
 from .objs.tag import StubbsTag
 
 shield = dict(shield)
-shield[2] = BSEnum16("shield material type", *materials_list)
+shield[2] = SEnum16("shield material type", *materials_list)
 
 node = Struct("node",
     ascii_str32("name"),
@@ -31,7 +31,7 @@ permutation = Struct("permutation",
 
 region = Struct("region",
     ascii_str32("name"),
-    BBool32("flags",
+    Bool32("flags",
         "lives until object dies",
         "forces object to die",
         "dies when object dies",
@@ -43,8 +43,8 @@ region = Struct("region",
         "causes head-maimed scream",
         ),
     Pad(20),
-    BFloat("damage threshold"),
-    QStruct("unknown floats", *[BFloat("float%s" % i) for i in range(11)]),
+    Float("damage threshold"),
+    QStruct("unknown floats", *[Float("float%s" % i) for i in range(11)]),
 
     dependency("destroyed garbage", "garb"),
     dependency("destroyed weapon", "weap"),
@@ -57,21 +57,21 @@ region = Struct("region",
 
 material = Struct("material",
     ascii_str32("name"),
-    BBool32("flags",
+    Bool32("flags",
         "head"
         ),
-    BSEnum16("material type", *materials_list),
+    SEnum16("material type", *materials_list),
     Pad(2),
-    BFloat("shield leak percentage"),
-    BFloat("shield damage multiplier"),
+    Float("shield leak percentage"),
+    Float("shield damage multiplier"),
 
     Pad(16+12),
-    BFloat("body damage multiplier"),
+    Float("body damage multiplier"),
     SIZE=144
     )
 
 coll_body = Struct("tagdata",
-    BBool32("flags",
+    Bool32("flags",
         "takes shield damage for children",
         "takes body damage for children",
         "always shields friendly damage",

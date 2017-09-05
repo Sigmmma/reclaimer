@@ -3,8 +3,8 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 body = Struct("body",
-    BFloat("maximum body vitality"),
-    BFloat("body system shock"),
+    Float("maximum body vitality"),
+    Float("body system shock"),
 
     Pad(52),
     float_zero_to_one("friendly damage resistance"),
@@ -15,79 +15,79 @@ body = Struct("body",
     float_zero_to_one("area damage effect threshold"),
     dependency("area damage effect", "effe"),
 
-    BFloat("body damaged threshold"),
+    Float("body damaged threshold"),
     dependency("body damaged effect", "effe"),
     dependency("body depleted effect", "effe"),
-    BFloat("body destroyed threshold"),
+    Float("body destroyed threshold"),
     dependency("body destroyed effect", "effe"),
     )
 
 shield = Struct("shield",
-    BFloat("maximum shield vitality"),
+    Float("maximum shield vitality"),
 
     Pad(2),
-    BSEnum16("shield material type", *materials_list),
+    SEnum16("shield material type", *materials_list),
 
     Pad(24),
-    BSEnum16("shield failure function", *fade_functions),
+    SEnum16("shield failure function", *fade_functions),
 
     Pad(2),
-    BFloat("shield failure threshold"),
-    BFloat("shield failing leak fraction"),
+    Float("shield failure threshold"),
+    Float("shield failing leak fraction"),
 
     Pad(16),
-    BFloat("minimum stun damage"),
+    Float("minimum stun damage"),
     float_sec("stun time"),
     float_sec("recharge time"),
 
     Pad(112),
-    BFloat("shield damaged threshold"),
+    Float("shield damaged threshold"),
     dependency("shield damaged effect", "effe"),
     dependency("shield depleted effect", "effe"),
     dependency("shield recharging effect", "effe"),
     )
 
 bsp3d_node = QStruct("bsp3d node",
-    BSInt32("plane"),
-    BSInt32("back child"),
-    BSInt32("front child"),
+    SInt32("plane"),
+    SInt32("back child"),
+    SInt32("front child"),
     SIZE=12
     )
 
 plane = QStruct("plane",
     # i, j, and k form a unit vector where d(presumably)
     # specifies the location of a point a "distance" along it
-    BFloat("i"), BFloat("j"), BFloat("k"), BFloat("d"),
+    Float("i"), Float("j"), Float("k"), Float("d"),
     SIZE=16, ORIENT='h'
     )
 
 leaf = Struct("leaf",
-    BBool16("flags",
+    Bool16("flags",
         "contains double sided surfaces"
         ),
-    BSInt16("bsp2d reference count"),
-    BSInt32("first bsp2d reference"),
+    SInt16("bsp2d reference count"),
+    SInt32("first bsp2d reference"),
     SIZE=8
     )
 
 bsp2d_reference = QStruct("bsp2d reference",
-    BSInt32("plane"),
-    BSInt32("bsp2d node"),
+    SInt32("plane"),
+    SInt32("bsp2d node"),
     SIZE=8
     )
 
 bsp2d_node = QStruct("bsp2d node",
-    BFloat("plane i"),
-    BFloat("plane j"),
-    BFloat("plane d"),
-    BSInt32("left child"),
-    BSInt32("right child"),
+    Float("plane i"),
+    Float("plane j"),
+    Float("plane d"),
+    SInt32("left child"),
+    SInt32("right child"),
     SIZE=20
     )
 
 surface = Struct("surface",
-    BSInt32("plane"),
-    BSInt32("first edge"),
+    SInt32("plane"),
+    SInt32("first edge"),
     SInt8("flags",
         "two sided"
         "invisible"
@@ -95,25 +95,25 @@ surface = Struct("surface",
         "breakable"
         ),
     SInt8("breakable surface"),
-    BSInt16("material"),
+    SInt16("material"),
     SIZE=12
     )
 
 edge = QStruct("edge",
-    BSInt32("start vertex"),
-    BSInt32("end vertex"),
-    BSInt32("forward edge"),
-    BSInt32("reverse edge"),
-    BSInt32("left surface"),
-    BSInt32("right surface"),
+    SInt32("start vertex"),
+    SInt32("end vertex"),
+    SInt32("forward edge"),
+    SInt32("reverse edge"),
+    SInt32("left surface"),
+    SInt32("right surface"),
     SIZE=24
     )
 
 vertex = QStruct("vertex",
-    BFloat("x"),
-    BFloat("y"),
-    BFloat("z"),
-    BSInt32("first edge"),
+    Float("x"),
+    Float("y"),
+    Float("z"),
+    SInt32("first edge"),
     SIZE=16
     )
 
@@ -153,7 +153,7 @@ pathfinding_sphere = Struct("pathfinding sphere",
 
     Pad(14),
     QStruct("center", INCLUDE=xyz_float),
-    BFloat("radius"),
+    Float("radius"),
     SIZE=32
     )
 
@@ -164,7 +164,7 @@ permutation = Struct("permutation",
 
 region = Struct("region",
     ascii_str32("name"),
-    BBool32("flags",
+    Bool32("flags",
         "lives until object dies",
         "forces object to die",
         "dies when object dies",
@@ -176,7 +176,7 @@ region = Struct("region",
         "causes head-maimed scream",
         ),
     Pad(4),
-    BFloat("damage threshold"),
+    Float("damage threshold"),
 
     Pad(12),
     dependency("destroyed effect", "effe"),
@@ -186,21 +186,21 @@ region = Struct("region",
 
 material = Struct("material",
     ascii_str32("name"),
-    BBool32("flags",
+    Bool32("flags",
         "head"
         ),
-    BSEnum16("material type", *materials_list),
+    SEnum16("material type", *materials_list),
     Pad(2),
-    BFloat("shield leak percentage"),
-    BFloat("shield damage multiplier"),
+    Float("shield leak percentage"),
+    Float("shield damage multiplier"),
 
     Pad(12),
-    BFloat("body damage multiplier"),
+    Float("body damage multiplier"),
     SIZE=72
     )
 
 coll_body = Struct("tagdata",
-    BBool32("flags",
+    Bool32("flags",
         "takes shield damage for children",
         "takes body damage for children",
         "always shields friendly damage",
