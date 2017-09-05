@@ -16,7 +16,7 @@ new_hud_interface = Struct('new hud interface',
     )
 
 dialogue_variant = Struct('dialogue variant',
-    BSInt16('variant number'),
+    SInt16('variant number'),
     Pad(6),
     dependency('dialogue', "udlg"),
     SIZE=24
@@ -35,7 +35,7 @@ weapon = Struct('weapon',
     )
 
 seat = Struct('seat',
-    BBool32("flags",
+    Bool32("flags",
         "invisible",
         "locked",
         "driver",
@@ -67,7 +67,7 @@ seat = Struct('seat',
               'default/solo', 'multiplayer'),
 
     Pad(4),
-    BSInt16("hud text message index"),
+    SInt16("hud text message index"),
 
     Pad(2),
     float_rad('yaw minimum'),  # radians
@@ -78,7 +78,7 @@ seat = Struct('seat',
     )
 
 unit_attrs = Struct("unit attrs",
-    BBool32("flags",
+    Bool32("flags",
         "circular aiming",
         "destroyed after dying",
         "half-speed interpolation",
@@ -104,16 +104,16 @@ unit_attrs = Struct("unit attrs",
         "integrated light controls weapon",
         "integrated light lasts forever",
         ),
-    BSEnum16('default team', *unit_teams),
-    BSEnum16('constant sound volume', *sound_volumes),
+    SEnum16('default team', *unit_teams),
+    SEnum16('constant sound volume', *sound_volumes),
     float_zero_to_inf('rider damage fraction'),
     dependency('integrated light toggle', "effe"),
-    BSEnum16('A in', *unit_inputs),
-    BSEnum16('B in', *unit_inputs),
-    BSEnum16('C in', *unit_inputs),
-    BSEnum16('D in', *unit_inputs),
+    SEnum16('A in', *unit_inputs),
+    SEnum16('B in', *unit_inputs),
+    SEnum16('C in', *unit_inputs),
+    SEnum16('D in', *unit_inputs),
     float_rad('camera field of view'),  # radians
-    BFloat('camera stiffness'),
+    Float('camera stiffness'),
     ascii_str32('camera marker name'),
     ascii_str32('camera submerged marker name'),
     float_rad('pitch auto-level'),  # radians
@@ -140,7 +140,7 @@ unit_attrs = Struct("unit attrs",
     float_zero_to_one('feign repeat chance'),  # [0,1]
     dependency('spawned actor', "actv"),
     QStruct("spawned actor count",
-        BSInt16("from", GUI_NAME=""), BSInt16("to"), ORIENT='h',
+        SInt16("from", GUI_NAME=""), SInt16("to"), ORIENT='h',
         ),
     float_wu_sec('spawned velocity'),  
     float_rad_sec('aiming velocity maximum',
@@ -154,10 +154,10 @@ unit_attrs = Struct("unit attrs",
                      UNIT_SCALE=irad_per_sec_sq_unit_scale),  # radians/sec^2
 
     Pad(8),
-    BFloat('ai vehicle radius'),
-    BFloat('ai danger radius'),
+    Float('ai vehicle radius'),
+    Float('ai danger radius'),
     dependency('melee damage', "jpt!"),
-    BSEnum16('motion sensor blip size',
+    SEnum16('motion sensor blip size',
         "medium",
         "small",
         "large",
@@ -172,8 +172,8 @@ unit_attrs = Struct("unit attrs",
 
     #Grenades
     float_wu_sec('grenade velocity'),
-    BSEnum16('grenade type', *grenade_types),
-    BSInt16('grenade count', MIN=0),
+    SEnum16('grenade type', *grenade_types),
+    SInt16('grenade count', MIN=0),
 
     Pad(4),
     reflexive("powered seats", powered_seat, 2,

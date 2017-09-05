@@ -6,14 +6,14 @@ from .matrices import quaternion_to_matrix, Matrix
 class ModeTag(HekTag):
 
     def calc_internal_data(self):
+        '''
+        For each node, this method recalculates the rotation matrix
+        from the quaternion, and the translation to the root bone.
+        '''
         HekTag.calc_internal_data(self)
 
         nodes = self.data.tagdata.nodes.STEPTREE
         for node in nodes:
-            '''
-            For each node, this method recalculates the rotation matrix
-            from the quaternion, and the translation to the root bone.
-            '''
             rotation = quaternion_to_matrix(*node.rotation)
             trans = Matrix([node.translation])*-1
             parent = None

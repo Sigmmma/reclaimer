@@ -141,17 +141,17 @@ event_functions = (
     )
 
 widget_bounds = QStruct("",
-    BSInt16("t"), BSInt16("l"), BSInt16("b"),  BSInt16("r"),
+    SInt16("t"), SInt16("l"), SInt16("b"),  SInt16("r"),
     ORIENT='h', SIZE=8
     )
 
 game_data_input = Struct("game data input",
-    BSEnum16("function", *game_data_input_functions),
+    SEnum16("function", *game_data_input_functions),
     SIZE=36
     )
 
 event_handler = Struct("event handler",
-    BBool32('flags',
+    Bool32('flags',
         "close current widget",
         "close other widget",
         "close all widgets",
@@ -165,8 +165,8 @@ event_handler = Struct("event handler",
         "run scenario script",
         "try to branch on failure",
         ),
-    BSEnum16("event type", *event_types),
-    BSEnum16("function", *event_functions),
+    SEnum16("event type", *event_types),
+    SEnum16("function", *event_functions),
     dependency("widget tag", "DeLa"),
     dependency("sound effect", "snd!"),
     ascii_str32("script"),
@@ -175,7 +175,7 @@ event_handler = Struct("event handler",
 
 s_and_r_reference = Struct("search and replace reference",
     ascii_str32("search string"),
-    BSEnum16("replace function",
+    SEnum16("replace function",
         "NULL",
         "widgets controller",
         "build number",
@@ -187,27 +187,27 @@ s_and_r_reference = Struct("search and replace reference",
 conditional_widget = Struct("conditional widget",
     dependency("widget tag", "DeLa"),
     ascii_str32("name"),  # UNUSED
-    BBool32("flags",
+    Bool32("flags",
         "load if event handler function fails",
         ),
-    BSInt16("custom controller index"),  # UNUSED
+    SInt16("custom controller index"),  # UNUSED
     SIZE=80
     )
 
 child_widget = Struct("child widget",
     dependency("widget tag", "DeLa"),
     ascii_str32("name"),  # UNUSED
-    BBool32("flags",
+    Bool32("flags",
         "use custom controller index",
         ),
-    BSInt16("custom controller index"),
-    BSInt16("vertical offset"),
-    BSInt16("horizontal offset"),
+    SInt16("custom controller index"),
+    SInt16("vertical offset"),
+    SInt16("horizontal offset"),
     SIZE=80
     )
 
 DeLa_body = Struct("tagdata",
-    BSEnum16("widget type",
+    SEnum16("widget type",
         "container",
         "text box",
         "spinner list",
@@ -216,7 +216,7 @@ DeLa_body = Struct("tagdata",
         "movie",  # not implemented
         "custom"  # not implemented
         ),
-    BSEnum16("controller index",
+    SEnum16("controller index",
         "player 1",
         "player 2",
         "player 3",
@@ -225,7 +225,7 @@ DeLa_body = Struct("tagdata",
         ),
     ascii_str32("name"),
     QStruct("bounds", INCLUDE=widget_bounds),
-    BBool32('flags',
+    Bool32('flags',
         "pass unhandled events to focused child",
         "pause game time",
         "flash background bitmap",
@@ -241,8 +241,8 @@ DeLa_body = Struct("tagdata",
         "dont push history",
         "force handle mouse"
         ),
-    BSInt32("auto close time", SIDETIP="milliseconds"),
-    BSInt32("auto close fade time", SIDETIP="milliseconds"),
+    SInt32("auto close time", SIDETIP="milliseconds"),
+    SInt32("auto close fade time", SIDETIP="milliseconds"),
     dependency("background bitmap", "bitm"),
 
     reflexive("game data inputs", game_data_input, 64),
@@ -255,13 +255,13 @@ DeLa_body = Struct("tagdata",
         dependency("text label unicode strings list", "ustr"),
         dependency("text font", "font"),
         QStruct("text color", INCLUDE=argb_float),
-        BSEnum16("justification",
+        SEnum16("justification",
             "left",
             "right",
             "center",
             ),
         # as weird as it sounds, these flags are off alignment by 2
-        BBool32("flags",
+        Bool32("flags",
             "editable",
             "password",
             "flashing",
@@ -270,14 +270,14 @@ DeLa_body = Struct("tagdata",
         BytesRaw("unknown2", SIZE=10, VISIBLE=False),
 
         FlSInt16("unknown3", VISIBLE=False),
-        BSInt16("string list index"),
-        BSInt16("horizontal offset"),
-        BSInt16("vertical offset")
+        SInt16("string list index"),
+        SInt16("horizontal offset"),
+        SInt16("vertical offset")
         ),
 
     Pad(28),
     Struct("list items",
-        BBool32("flags",
+        Bool32("flags",
             "list items generated in code",
             "list items from string list tag",
             "list items only one tooltip",

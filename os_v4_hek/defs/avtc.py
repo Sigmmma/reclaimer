@@ -9,13 +9,13 @@ The transformation in tag determines the possible actors to transform into.
 """
 
 transform = Struct("transform",
-    BBool16("flags",
+    Bool16("flags",
         'scripted only',
         ),
     Pad(2),
     ascii_str32("transform name"),
     QStruct("selection chances",
-        BFloat("easy"), BFloat("normal"), BFloat("hard"), BFloat("imposs"),
+        Float("easy"), Float("normal"), Float("hard"), Float("imposs"),
         ORIENT="h"
         ),
     Struct("transform stages",

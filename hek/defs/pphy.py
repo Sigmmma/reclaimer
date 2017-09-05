@@ -23,7 +23,7 @@ uranium    18.74
 gold       19.3"""
 
 pphy_body = Struct("tagdata",
-    BBool32("flags",
+    Bool32("flags",
         "flamethrower particle collision",
         "collides with structures",
         "collides with water surface",
@@ -37,11 +37,11 @@ pphy_body = Struct("tagdata",
     FlFloat("wind sine modifier", VISIBLE=False),
     FlFloat("z translation rate", VISIBLE=False),
     Pad(16),
-    BFloat("density", SIDETIP="g/mL", COMMENT=density_comment),#g/mL
-    BFloat("air friction"),
-    BFloat("water friction"),
-    BFloat("surface friction"),
-    BFloat("elasticity"),
+    Float("density", SIDETIP="g/mL", COMMENT=density_comment),#g/mL
+    Float("air friction"),
+    Float("water friction"),
+    Float("surface friction"),
+    Float("elasticity"),
 
     SIZE=64
     )

@@ -111,15 +111,15 @@ sotr_alpha_outputs = (
 
 
 stage = Struct("stage",
-    BBool16("flags" ,
+    Bool16("flags" ,
         "color mux",
         "alpha mux",
         "A-out controls color0 animation",
         ),
     Pad(2),
 
-    BSEnum16("color0 source", *function_names),
-    BSEnum16("color0 anim function", *animation_functions),
+    SEnum16("color0 source", *function_names),
+    SEnum16("color0 anim function", *animation_functions),
     float_sec("color0 anim period"),
     QStruct("color0 anim lower bound", INCLUDE=argb_float),
     QStruct("color0 anim upper bound", INCLUDE=argb_float),
@@ -127,83 +127,83 @@ stage = Struct("stage",
 
     Struct('color',
         Struct('input A', 
-            BSEnum16('input', GUI_NAME='', *sotr_color_inputs),
-            BSEnum16('mapped_to', *sotr_input_mappings),
+            SEnum16('input', GUI_NAME='', *sotr_color_inputs),
+            SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
         Struct('input B', 
-            BSEnum16('input', GUI_NAME='', *sotr_color_inputs),
-            BSEnum16('mapped_to', *sotr_input_mappings),
+            SEnum16('input', GUI_NAME='', *sotr_color_inputs),
+            SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
         Struct('input C', 
-            BSEnum16('input', GUI_NAME='', *sotr_color_inputs),
-            BSEnum16('mapped_to', *sotr_input_mappings),
+            SEnum16('input', GUI_NAME='', *sotr_color_inputs),
+            SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
         Struct('input D', 
-            BSEnum16('input', GUI_NAME='', *sotr_color_inputs),
-            BSEnum16('mapped_to', *sotr_input_mappings),
+            SEnum16('input', GUI_NAME='', *sotr_color_inputs),
+            SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
 
         Struct('output AB', 
-            BSEnum16('output', GUI_NAME='', *sotr_color_outputs),
-            BSEnum16('function', *sotr_color_output_functions),
+            SEnum16('output', GUI_NAME='', *sotr_color_outputs),
+            SEnum16('function', *sotr_color_output_functions),
             ORIENT='h'
             ),
         Struct('output CD', 
-            BSEnum16('output', GUI_NAME='', *sotr_color_outputs),
-            BSEnum16('function', *sotr_color_output_functions),
+            SEnum16('output', GUI_NAME='', *sotr_color_outputs),
+            SEnum16('function', *sotr_color_output_functions),
             ORIENT='h'
             ),
-        BSEnum16('output AB CD mux/sum', *sotr_color_outputs),
-        BSEnum16('output mapping', *sotr_output_mappings)
+        SEnum16('output AB CD mux/sum', *sotr_color_outputs),
+        SEnum16('output mapping', *sotr_output_mappings)
         ),
 
     Struct('alpha',
         Struct('input A', 
-            BSEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
-            BSEnum16('mapped_to', *sotr_input_mappings),
+            SEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
+            SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
         Struct('input B', 
-            BSEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
-            BSEnum16('mapped_to', *sotr_input_mappings),
+            SEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
+            SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
         Struct('input C', 
-            BSEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
-            BSEnum16('mapped_to', *sotr_input_mappings),
+            SEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
+            SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
         Struct('input D', 
-            BSEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
-            BSEnum16('mapped_to', *sotr_input_mappings),
+            SEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
+            SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
 
-        BSEnum16('output AB', *sotr_alpha_outputs),
-        BSEnum16('output CD', *sotr_alpha_outputs),
-        BSEnum16('output AB CD mux/sum', *sotr_alpha_outputs),
-        BSEnum16('output mapping', *sotr_output_mappings)
+        SEnum16('output AB', *sotr_alpha_outputs),
+        SEnum16('output CD', *sotr_alpha_outputs),
+        SEnum16('output AB CD mux/sum', *sotr_alpha_outputs),
+        SEnum16('output mapping', *sotr_output_mappings)
         ),
 
     SIZE=112
     )
 
 map = Struct("map",
-    BBool16("flags" ,
+    Bool16("flags" ,
         "unfiltered",
         "u-clamped",
         "v-clamped",
         ),
     Pad(2),
     #shader transformations
-    BFloat("map u-scale"),
-    BFloat("map v-scale"),
-    BFloat("map u-offset"),
-    BFloat("map v-offset"),
+    Float("map u-scale"),
+    Float("map v-scale"),
+    Float("map u-offset"),
+    Float("map v-offset"),
     float_deg("map rotation"),  # degrees
     float_zero_to_one("map bias"),
     dependency("bitmap", "bitm"),
@@ -231,10 +231,10 @@ sotr_attrs = Struct("sotr attrs",
             "scale first map with distance",
             "numeric",
             ),
-        BSEnum16("first map type",             *trans_shdr_first_map_type),
-        BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
-        BSEnum16("framebuffer fade mode",      *render_fade_mode),
-        BSEnum16("framebuffer fade source",    *function_outputs),
+        SEnum16("first map type",             *trans_shdr_first_map_type),
+        SEnum16("framebuffer blend function", *framebuffer_blend_functions),
+        SEnum16("framebuffer fade mode",      *render_fade_mode),
+        SEnum16("framebuffer fade source",    *function_outputs),
         Pad(2),
         ),
 

@@ -9,7 +9,7 @@ unknown_float_struct = Struct("unknown float struct",
 
 stage = Struct("stage",
     Pad(32),
-    BSInt32("unknown0"),
+    SInt32("unknown0"),
     Struct("unknown-animation", INCLUDE=anim_src_func_per_pha_sca),
 
     Struct("unknown1", Float("f0"), Float("f1"), ORIENT='h'),
@@ -36,7 +36,7 @@ imef_body = Struct("tagdata",
     Struct("color2", INCLUDE=rgb_float),
     Struct("unknown struct2", INCLUDE=unknown_float_struct),
     Struct("unknown floats2", *floats_7),
-    BSInt16("unknown0"),
+    SInt16("unknown0"),
     Struct("unknown-animation1", INCLUDE=anim_src_func_per_pha_sca),
     Struct("unknown floats3", *floats_7),
 

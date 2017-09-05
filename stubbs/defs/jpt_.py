@@ -6,8 +6,8 @@ jpt__body = dict(jpt__body)
 jpt__body[16] = dict(jpt__body[16])
 jpt__body[17] = damage_modifiers
 
-jpt__body[16][1] = BSEnum16("category", *damage_category)
-jpt__body[16][2] = BBool32("flags",
+jpt__body[16][1] = SEnum16("category", *damage_category)
+jpt__body[16][2] = Bool32("flags",
     "does not hurt owner",
     {NAME: "headshot", GUI_NAME: "causes headshots"},
     "pings resistant units",

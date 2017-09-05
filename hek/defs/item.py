@@ -3,23 +3,23 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 item_attrs = Struct('item attrs',
-    BBool32("flags",
+    Bool32("flags",
         "always maintains z up",
         "destroyed by explosions",
         "unaffected by gravity",
         ),
 
-    BSInt16("message index"),
-    BSInt16("sort order"),
-    BFloat("scale"),
-    BSInt16("hud message value scale"),
+    SInt16("message index"),
+    SInt16("sort order"),
+    Float("scale"),
+    SInt16("hud message value scale"),
 
     Pad(18),
 
-    BSEnum16("A in", *device_functions),
-    BSEnum16("B in", *device_functions),
-    BSEnum16("C in", *device_functions),
-    BSEnum16("D in", *device_functions),
+    SEnum16("A in", *device_functions),
+    SEnum16("B in", *device_functions),
+    SEnum16("C in", *device_functions),
+    SEnum16("D in", *device_functions),
 
     Pad(164),
 

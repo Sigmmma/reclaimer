@@ -3,7 +3,7 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 devi_attrs = Struct("devi attrs",
-    BBool32("flags",
+    Bool32("flags",
         "position loops",
         "position not interpolated",
         ),
@@ -15,10 +15,10 @@ devi_attrs = Struct("devi attrs",
     float_sec("depowered position transition time"),
     float_sec("depowered position acceleration time"),
 
-    BSEnum16("A in", *device_functions),
-    BSEnum16("B in", *device_functions),
-    BSEnum16("C in", *device_functions),
-    BSEnum16("D in", *device_functions),
+    SEnum16("A in", *device_functions),
+    SEnum16("B in", *device_functions),
+    SEnum16("C in", *device_functions),
+    SEnum16("D in", *device_functions),
 
     dependency("open", valid_event_effects),
     dependency("close", valid_event_effects),

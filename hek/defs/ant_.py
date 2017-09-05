@@ -3,12 +3,12 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 vertex = Struct("vertex",
-    BFloat("spring strength coefficient"),
+    Float("spring strength coefficient"),
 
     Pad(24),
     yp_float_rad("angles"),  # radians
     float_wu("length"),
-    BSInt16("sequence index"),
+    SInt16("sequence index"),
 
     Pad(2),
     QStruct("color", INCLUDE=argb_float),
@@ -22,9 +22,9 @@ ant__body = Struct("tagdata",
     dependency("physics", "pphy"),
 
     Pad(80),
-    BFloat("spring strength coefficient"),
-    BFloat("falloff pixels"),
-    BFloat("cutoff pixels"),
+    Float("spring strength coefficient"),
+    Float("falloff pixels"),
+    Float("cutoff pixels"),
 
     Pad(40),
     reflexive("vertices", vertex, 20),

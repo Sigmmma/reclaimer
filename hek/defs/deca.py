@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 deca_body = Struct("tagdata",
     #Decal Properties
-    BBool16("meter shader flags",
+    Bool16("meter shader flags",
         "geometry inherited by next decal in chain",
         "interpolate color in hsv",
         "more colors",
@@ -15,13 +15,13 @@ deca_body = Struct("tagdata",
         "animation loop",
         "preserve aspect",
         ),
-    BSEnum16("type",
+    SEnum16("type",
         "scratch",
         "splatter",
         "burn",
         "painted sign",
         ),
-    BSEnum16("layer",
+    SEnum16("layer",
         "primary",
         "secondary",
         "light",
@@ -42,8 +42,8 @@ deca_body = Struct("tagdata",
 
     #Animation
     Struct("animation",
-        BSInt16("loop frame"),
-        BSInt16("speed", MIN=1, MAX=120,
+        SInt16("loop frame"),
+        SInt16("speed", MIN=1, MAX=120,
                 SIDETIP="[1,120] ticks/frame", UNIT_SCALE=per_sec_unit_scale),
         Pad(28),
         from_to_sec("lifetime"),  # seconds
@@ -53,14 +53,14 @@ deca_body = Struct("tagdata",
 
     #Shader
     Struct("shader",
-        BSEnum16("framebuffer blend function", *framebuffer_blend_functions),
+        SEnum16("framebuffer blend function", *framebuffer_blend_functions),
         Pad(22),
         dependency("shader map", "bitm"),
         ),
 
     #Sprite info
     Pad(20),
-    BFloat("maximum sprite extent", SIDETIP="pixels"),
+    Float("maximum sprite extent", SIDETIP="pixels"),
 
     SIZE=268,
     )

@@ -26,14 +26,14 @@ particle_scale_modifiers = (
     "tint"
     )
 
-create_in_env = BSEnum16("create in env",
+create_in_env = SEnum16("create in env",
     "any environment",
     "air only",
     "water only",
     "space only",
     )
 
-create_in_mode = BSEnum16("create in mode",
+create_in_mode = SEnum16("create in mode",
     "either mode",
     "violent mode only",
     "nonviolent mode only",
@@ -44,12 +44,12 @@ part = Struct("part",
     create_in_mode,
     dyn_senum16("location",
         DYN_NAME_PATH="........locations.locations_array[DYN_I].marker_name"),
-    BBool16("flags",
+    Bool16("flags",
         {NAME:"face_down", GUI_NAME:"face down regardless of location(decals)"}
         ),
     Pad(12),
 
-    BUEnum32("effect class", INCLUDE=valid_tags_os, VISIBLE=False),
+    UEnum32("effect class", INCLUDE=valid_tags_os, VISIBLE=False),
     dependency("type", valid_effect_events),
     Pad(24),
 
@@ -58,15 +58,15 @@ part = Struct("part",
     from_to_rad_sec("angular velocity bounds"),  # radians/sec
     QStruct("radius modifier bounds"),
 
-    BBool32("A scales values", *part_scale_modifiers),
-    BBool32("B scales values", *part_scale_modifiers),
+    Bool32("A scales values", *part_scale_modifiers),
+    Bool32("B scales values", *part_scale_modifiers),
     SIZE=104,
     )
 
 particle = Struct("particle",
     create_in_env,
     create_in_mode,
-    BSEnum16("create in camera",
+    SEnum16("create in camera",
         "either",
         "first person only",
         "third person only",
@@ -82,14 +82,14 @@ particle = Struct("particle",
     Pad(52),
 
     dependency("particle type", "part"),
-    BBool32("flags",
+    Bool32("flags",
         "stay attached to marker",
         "random initial angle",
         "tint from object color",
         {NAME: "tint_as_hsv", GUI_NAME: "interpolate tint as hsv"},
         {NAME: "use_long_hue_path", GUI_NAME: "...across the long hue path"},
         ),
-    BSEnum16("distribution function",
+    SEnum16("distribution function",
         "start",
         "end",
         "constant",
@@ -100,8 +100,8 @@ particle = Struct("particle",
     Pad(2),
 
     QStruct("count",
-        BSInt16("from", GUI_NAME=""),
-        BSInt16("to"), ORIENT='h'
+        SInt16("from", GUI_NAME=""),
+        SInt16("to"), ORIENT='h'
         ),
     from_to_wu("distribution radius"),
     Pad(12),
@@ -118,8 +118,8 @@ particle = Struct("particle",
     QStruct("tint upper bound", INCLUDE=argb_float),
     Pad(16),
 
-    BBool32("A scales values", *particle_scale_modifiers),
-    BBool32("B scales values", *particle_scale_modifiers),
+    Bool32("A scales values", *particle_scale_modifiers),
+    Bool32("B scales values", *particle_scale_modifiers),
     SIZE=232
     )
 
@@ -130,7 +130,7 @@ location = Struct("location",
 
 event = Struct("event",
     Pad(4),
-    BFloat("skip fraction"),
+    Float("skip fraction"),
     from_to_sec("delay bounds"),
     from_to_sec("duration bounds"),
 
@@ -142,7 +142,7 @@ event = Struct("event",
 
 
 effe_body = Struct("tagdata",
-    BBool32("flags",
+    Bool32("flags",
         {NAME: "deleted when inactive", GUI_NAME: "deleted when attachment deactivates"},
         {NAME: "required", GUI_NAME: "required for gameplay(cannot optimize)"},
         #'unknown'  # found only in map meta data

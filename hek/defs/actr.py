@@ -16,7 +16,7 @@ danger_triggers = (
     )
 
 actr_body = Struct("tagdata",
-    BBool32('flags',
+    Bool32('flags',
         "can see in darkness",
         "sneak uncovering target",
         "sneak uncovering pursuit location",
@@ -50,7 +50,7 @@ actr_body = Struct("tagdata",
         "crouch when in line of fire",
         "avoid friends line of fire"
         ),
-    BBool32('more flags',
+    Bool32('more flags',
         "avoid all enemy attack vectors",
         "must stand to fire",
         "must stop to fire",
@@ -61,7 +61,7 @@ actr_body = Struct("tagdata",
         ),
 
     Pad(12),
-    BSEnum16("type", *actor_types),
+    SEnum16("type", *actor_types),
 
     Pad(2),
     Struct("perception",
@@ -130,14 +130,14 @@ actr_body = Struct("tagdata",
         ),
 
     Struct("unopposable",
-        BSEnum16("unreachable danger trigger", *danger_triggers),
-        BSEnum16("vehicle danger trigger", *danger_triggers),
-        BSEnum16("player danger trigger", *danger_triggers),
+        SEnum16("unreachable danger trigger", *danger_triggers),
+        SEnum16("vehicle danger trigger", *danger_triggers),
+        SEnum16("player danger trigger", *danger_triggers),
 
         Pad(2),
         from_to_sec("danger trigger time"),  # seconds
-        BSInt16("friends killed trigger"),
-        BSInt16("friends retreating trigger"),
+        SInt16("friends killed trigger"),
+        SInt16("friends retreating trigger"),
 
         Pad(12),
         from_to_sec("retreat time"),  # seconds
@@ -147,7 +147,7 @@ actr_body = Struct("tagdata",
     Struct("panic",
         from_to_sec("cowering time"),  # seconds
         float_zero_to_one("friend killed panic chance"),
-        BSEnum16("leader type", *actor_types),
+        SEnum16("leader type", *actor_types),
 
         Pad(2),
         float_zero_to_one("leader killed panic chance"),
@@ -165,7 +165,7 @@ actr_body = Struct("tagdata",
         float_zero_to_one("pursue shield fraction"),
 
         Pad(16),
-        BSEnum16("defensive crouch type",
+        SEnum16("defensive crouch type",
             "never",
             "danger",
             "low shields",
@@ -175,13 +175,13 @@ actr_body = Struct("tagdata",
             ),
 
         Pad(2),
-        BFloat("attacking crouch threshold"),
-        BFloat("defending crouch threshold"),
+        Float("attacking crouch threshold"),
+        Float("defending crouch threshold"),
         float_sec("mim stand time",  UNIT_SCALE=sec_unit_scale),  # seconds
         float_sec("mim crouch time", UNIT_SCALE=sec_unit_scale),  # seconds
-        BFloat("defending hide time modifier"),
-        BFloat("attacking evasion threshold"),
-        BFloat("defending evasion threshold"),
+        Float("defending hide time modifier"),
+        Float("attacking evasion threshold"),
+        Float("defending evasion threshold"),
         float_zero_to_one("evasion seek-cover chance"),
         float_sec("evasion delay time", UNIT_SCALE=sec_unit_scale),  # seconds
         float_wu("max seek cover distance"),  # world units
@@ -199,8 +199,8 @@ actr_body = Struct("tagdata",
         from_to_sec("uncover delay time"),  # seconds
         from_to_sec("target search time"),  # seconds
         from_to_sec("pursuit position time"),  # seconds
-        BSInt16("coordinated position count", MIN=0),
-        BSInt16("normal position count", MIN=0),
+        SInt16("coordinated position count", MIN=0),
+        SInt16("normal position count", MIN=0),
         ),
 
     Pad(32),
@@ -210,7 +210,7 @@ actr_body = Struct("tagdata",
         float_sec("melee charge time",  UNIT_SCALE=sec_unit_scale),  # seconds
         float_wu("melee leap range lower bound"),  # world units
         float_wu("melee leap range upper bound"),  # world units
-        BFloat("melee leap velocity", SIDETIP="world units/tick",
+        Float("melee leap velocity", SIDETIP="world units/tick",
                UNIT_SCALE=per_sec_unit_scale),  # world units/tick
         float_zero_to_one("melee leap chance"),
         float_zero_to_one("melee leap ballistic"),
@@ -225,8 +225,8 @@ actr_body = Struct("tagdata",
     Struct("firing positions",
         from_to_sec("guard position time"),  # seconds
         from_to_sec("combat position time"),  # seconds
-        BFloat("old position avoid dist"),  # world units
-        BFloat("friend avoid dist"),  # world units
+        Float("old position avoid dist"),  # world units
+        Float("friend avoid dist"),  # world units
         ),
 
     Pad(40),

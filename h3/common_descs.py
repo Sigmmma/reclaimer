@@ -195,39 +195,39 @@ h3_meta_tag_index_ref_struct = H3MetaTagIndexRef('h3 meta dependency',
     )
 
 h3_meta_reflexive_struct = H3MetaReflexive('h3 meta reflexive',
-    BSInt32("size", VISIBLE=False),
-    BUInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    SInt32("size", VISIBLE=False),
+    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
     )
 
 h3_meta_rawdata_ref_struct = H3MetaRawdataRef('h3 meta rawdata ref', 
-    BSInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
-    BUInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
+    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
     ORIENT='h'
     )
 
 # these structs replace the above ones when used outside a map
 h3_tag_index_ref_struct = H3TagIndexRef('dependency',
     valid_h3_tags,
-    BSInt32("path pointer", VISIBLE=False, EDITABLE=False),
-    BSInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
+    SInt32("path pointer", VISIBLE=False, EDITABLE=False),
+    SInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
     h3_tag_id_struct,
     ORIENT='h'
     )
 
 h3_reflexive_struct = H3Reflexive('reflexive',
-    BSInt32("size", VISIBLE=False),
-    BUInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
-    BUInt32("id", VISIBLE=False),  # 0 in meta it seems
+    SInt32("size", VISIBLE=False),
+    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    UInt32("id", VISIBLE=False),  # 0 in meta it seems
     )
 
 h3_rawdata_ref_struct = H3RawdataRef('rawdata ref', 
-    BSInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
-    BBool32("flags",
+    SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
+    Bool32("flags",
         "data in resource map",
         VISIBLE=False,
         ),
-    BUInt32("raw pointer", VISIBLE=False),  # doesnt use magic
-    BUInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
-    BUInt32("id", VISIBLE=False),
+    UInt32("raw pointer", VISIBLE=False),  # doesnt use magic
+    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    UInt32("id", VISIBLE=False),
     ORIENT='h'
     )

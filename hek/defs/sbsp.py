@@ -5,43 +5,43 @@ from supyr_struct.defs.block_def import BlockDef
 # the order is an array of vertices first, then an array of lightmap vertices.
 # 
 uncompressed_vertex = QStruct("uncompressed vertex",
-    BFloat('position x'), BFloat('position y'), BFloat('position z'),
-    BFloat('normal i'),   BFloat('normal j'),   BFloat('normal k'),
-    BFloat('binormal i'), BFloat('binormal j'), BFloat('binormal k'),
-    BFloat('tangent i'),  BFloat('tangent j'),  BFloat('tangent k'),
+    Float('position x'), Float('position y'), Float('position z'),
+    Float('normal i'),   Float('normal j'),   Float('normal k'),
+    Float('binormal i'), Float('binormal j'), Float('binormal k'),
+    Float('tangent i'),  Float('tangent j'),  Float('tangent k'),
 
-    BFloat('tex coord u'), BFloat('tex coord v'),
+    Float('tex coord u'), Float('tex coord v'),
     SIZE=56
     )
 
 compressed_vertex = QStruct("compressed vertex",
-    BFloat('position x'), BFloat('position y'), BFloat('position z'),
-    BUInt32('normal'),
-    BUInt32('binormal'),
-    BUInt32('tangent'),
+    Float('position x'), Float('position y'), Float('position z'),
+    UInt32('normal'),
+    UInt32('binormal'),
+    UInt32('tangent'),
 
-    BFloat('tex coord u'), BFloat('tex coord v'),
+    Float('tex coord u'), Float('tex coord v'),
     SIZE=32
     )
 
 uncompressed_lightmap_vertex = QStruct("uncompressed lightmap vertex",
-    BFloat('normal i'),   BFloat('normal j'),   BFloat('normal k'),
-    BFloat('u'), BFloat('v'),
+    Float('normal i'),   Float('normal j'),   Float('normal k'),
+    Float('u'), Float('v'),
     SIZE=20
     )
 
 compressed_lightmap_vertex = QStruct("compressed lightmap vertex",
-    BUInt32('normal'),
-    BSInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
-    BSInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    UInt32('normal'),
+    SInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    SInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
     SIZE=8
     )
 
 plane = QStruct("plane",
-    BFloat("i", MIN=0.0, MAX=1.0),
-    BFloat("j", MIN=0.0, MAX=1.0),
-    BFloat("k", MIN=0.0, MAX=1.0),
-    BFloat("d"),
+    Float("i", MIN=0.0, MAX=1.0),
+    Float("j", MIN=0.0, MAX=1.0),
+    Float("k", MIN=0.0, MAX=1.0),
+    Float("d"),
     SIZE=16, ORIENT='h'
     )
 
@@ -68,37 +68,37 @@ leaf = QStruct("leaf",
     FlSInt16("unknown2", VISIBLE=False),
     FlSInt16("unknown3", VISIBLE=False),
 
-    BSInt16("cluster"),
-    BSInt16("surface reference count"),
-    BSInt32("surface references"),
+    SInt16("cluster"),
+    SInt16("surface reference count"),
+    SInt32("surface references"),
     SIZE=16,
     )
 
 leaf_surface = QStruct("leaf surface",
-    BSInt32("surface"),
-    BSInt32("node"),
+    SInt32("surface"),
+    SInt32("node"),
     SIZE=8, ORIENT='h'
     )
 
 surface = QStruct("surface",
-    BSInt16("a"),
-    BSInt16("b"),
-    BSInt16("c"),
+    SInt16("a"),
+    SInt16("b"),
+    SInt16("c"),
     SIZE=6, ORIENT='h'
     )
 
 material = Struct("material",
     dependency("shader", valid_shaders),
-    BSInt16("shader permutation"),
-    BBool16("flags",
+    SInt16("shader permutation"),
+    Bool16("flags",
         "coplanar",
         "fog plane",
         ),
-    BSInt32("surfaces"),
-    BSInt32("surface count"),
+    SInt32("surfaces"),
+    SInt32("surface count"),
     QStruct("centroid", INCLUDE=xyz_float),
     QStruct("ambient color", INCLUDE=rgb_float),
-    BSInt16("distant light count"),
+    SInt16("distant light count"),
 
     Pad(2),
     QStruct("distant light 0 color", INCLUDE=rgb_float),
@@ -111,16 +111,16 @@ material = Struct("material",
     QStruct("shadow vector", INCLUDE=ijk_float),
     QStruct("shadow color", INCLUDE=rgb_float),
     QStruct("plane", INCLUDE=plane),
-    BSInt16("breakable surface"),
+    SInt16("breakable surface"),
 
     Pad(6),
-    BSInt32("vertices count"),
-    BSInt32("vertices offset"),
+    SInt32("vertices count"),
+    SInt32("vertices offset"),
 
     # these unknowns are required for biped shadows to appear
     BytesRaw("unknown1", VISIBLE=False, SIZE=12),
-    BSInt32("lightmap vertices count"),
-    BSInt32("lightmap vertices offset"),
+    SInt32("lightmap vertices count"),
+    SInt32("lightmap vertices offset"),
 
     # these unknowns are required for biped shadows to appear
     BytesRaw("unknown2", VISIBLE=False, SIZE=8),
@@ -130,7 +130,7 @@ material = Struct("material",
     )
 
 lightmap = Struct("lightmap",
-    BSInt16("bitmap index"),
+    SInt16("bitmap index"),
     # might be padding, might not be
     BytesRaw("unknown", VISIBLE=False, SIZE=18),
     reflexive("materials", material, 2048,
@@ -155,7 +155,7 @@ lens_flare_marker = Struct("lens flare marker",
     )
 
 surface_index = QStruct("surface index",
-    BSInt32("index"),
+    SInt32("index"),
     SIZE=4
     )
 
@@ -169,7 +169,7 @@ mirror = Struct("mirror",
     )
 
 portal = QStruct("portal",
-    BSInt16("portal"),
+    SInt16("portal"),
     SIZE=2
     )
 
@@ -182,8 +182,8 @@ subcluster = Struct("subcluster",
     )
 
 cluster = Struct("cluster",
-    BSInt16('sky'),
-    BSInt16('fog'),
+    SInt16('sky'),
+    SInt16('fog'),
     dyn_senum16('background sound',
         DYN_NAME_PATH="tagdata.background_sounds_palette.STEPTREE[DYN_I].name"),
     dyn_senum16('sound environment',
@@ -198,8 +198,8 @@ cluster = Struct("cluster",
 
     reflexive("predicted resources", predicted_resource, 1024),
     reflexive("subclusters", subcluster, 4096),
-    BSInt16("first lens flare marker index"),
-    BSInt16("lens flare marker count"),
+    SInt16("first lens flare marker index"),
+    SInt16("lens flare marker count"),
     reflexive("surface indices", surface_index, 32768),
     reflexive("mirrors", mirror, 16, DYN_NAME_PATH=".shader.filepath"),
     reflexive("portals", portal, 128),
@@ -207,12 +207,12 @@ cluster = Struct("cluster",
     )
 
 cluster_portal = Struct("cluster portal",
-    BSInt16("front cluster"),
-    BSInt16("back cluster"),
-    BSInt32("plane index"),
+    SInt16("front cluster"),
+    SInt16("back cluster"),
+    SInt32("plane index"),
     QStruct("centroid", INCLUDE=xyz_float),
-    BFloat("bounding radius"),
-    BBool32("flags",
+    Float("bounding radius"),
+    Bool32("flags",
         "ai cant hear through this",
         ),
 
@@ -224,14 +224,14 @@ cluster_portal = Struct("cluster portal",
 
 breakable_surface = Struct("breakable surface",
     QStruct("centroid", INCLUDE=xyz_float),
-    BFloat("radius"),
-    BSInt32("collision surface index"),
+    Float("radius"),
+    SInt32("collision surface index"),
     Pad(28),
     SIZE=48
     )
 
 fog_plane = Struct("fog plane",
-    BSInt16("front region"),
+    SInt16("front region"),
     Pad(2),
     QStruct("plane", INCLUDE=plane),
     reflexive("vertices", vertex, 4096),
@@ -264,7 +264,7 @@ weather_palette = Struct("weather palette",
     Pad(44),
     dependency("wind", "wind"),
     QStruct("wind direction", INCLUDE=ijk_float),
-    BFloat("wind magnitude"),
+    Float("wind magnitude"),
     Pad(4),
     ascii_str32("wind scale function"),
     SIZE=240
@@ -272,7 +272,7 @@ weather_palette = Struct("weather palette",
 
 weather_polyhedra = Struct("weather polyhedra",
     QStruct("bounding sphere center", INCLUDE=xyz_float),
-    BFloat("bounding sphere radius"),
+    Float("bounding sphere radius"),
     Pad(4),
     reflexive("planes", plane, 15),
     SIZE=32
@@ -305,26 +305,26 @@ marker = Struct("marker",
 
 
 detail_object_cell = QStruct("detail object cell",
-    BSInt16("unknown1"), BSInt16("unknown2"),
-    BSInt16("unknown3"), BSInt16("unknown4"),
-    BSInt32("unknown5"), BSInt32("unknown6"), BSInt32("unknown7"),
+    SInt16("unknown1"), SInt16("unknown2"),
+    SInt16("unknown3"), SInt16("unknown4"),
+    SInt32("unknown5"), SInt32("unknown6"), SInt32("unknown7"),
     SIZE=32
     )
 
 detail_object_instance = QStruct("detail object instance",
     SInt8("unknown1"), SInt8("unknown2"),
-    SInt8("unknown3"), SInt8("unknown4"), BSInt16("unknown5"),
+    SInt8("unknown3"), SInt8("unknown4"), SInt16("unknown5"),
     SIZE=6
     )
 
 detail_object_count = QStruct("detail object count",
-    BSInt16("unknown"),
+    SInt16("unknown"),
     SIZE=2
     )
 
 detail_object_z_reference_vector = QStruct("detail object z reference vector",
-    BFloat("unknown1"), BFloat("unknown2"),
-    BFloat("unknown3"), BFloat("unknown4"),
+    Float("unknown1"), Float("unknown2"),
+    Float("unknown3"), Float("unknown4"),
     SIZE=16
     )
 
@@ -339,11 +339,11 @@ detail_object = Struct("detail object",
 runtime_decal = BytesRaw("unknown", SIZE=16)
 
 
-face_vertex = QStruct("vertex", BFloat("x"), BFloat("y"), SIZE=8)
-portal_index = Struct("portal index", BSInt32("portal index"), SIZE=4)
+face_vertex = QStruct("vertex", Float("x"), Float("y"), SIZE=8)
+portal_index = Struct("portal index", SInt32("portal index"), SIZE=4)
 
 face = Struct("face",
-    BSInt32("node index"),
+    SInt32("node index"),
     reflexive("vertices", face_vertex, 64),
     SIZE=16
     )
@@ -355,9 +355,9 @@ leaf_map_leaf = Struct("leaf map leaf",
     )
 
 leaf_map_portal = Struct("leaf map portal",
-    BSInt32("plane index"),
-    BSInt32("back leaf index"),
-    BSInt32("front leaf index"),
+    SInt32("plane index"),
+    SInt32("back leaf index"),
+    SInt32("front leaf index"),
     reflexive("vertices", face_vertex, 64),
     SIZE=24
     )

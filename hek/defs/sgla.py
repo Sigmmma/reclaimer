@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 sgla_attrs = Struct("sgla attrs",
     #Environment Shader Properties
-    BBool16("glass shader flags",
+    Bool16("glass shader flags",
         "alpha tested",
         "decal",
         "two-sided",
@@ -15,14 +15,14 @@ sgla_attrs = Struct("sgla attrs",
     #Background Tint Properties
     Struct("background tint properties",
         QStruct("color", INCLUDE=rgb_float),
-        BFloat("map scale"),
+        Float("map scale"),
         dependency("map", "bitm"),
         ),
 
     Pad(22),
     #Reflection Properties
     Struct("reflection properties",
-        BSEnum16("type",
+        SEnum16("type",
             "bumped cubemap",
             "flat cubemap",
             "dynamic mirror",
@@ -33,25 +33,25 @@ sgla_attrs = Struct("sgla attrs",
         QStruct("parallel tint color", INCLUDE=rgb_float),
         dependency("map", "bitm"),
 
-        BFloat("bump map scale"),
+        Float("bump map scale"),
         dependency("bump map", "bitm"),
         ),
 
     Pad(132),
     #Diffuse Properties
     Struct("diffuse properties",
-        BFloat("map scale"),
+        Float("map scale"),
         dependency("map", "bitm"),
-        BFloat("detail map scale"),
+        Float("detail map scale"),
         dependency("detail map", "bitm"),
         ),
 
     Pad(32),
     #Specular Properties
     Struct("specular properties",
-        BFloat("map scale"),
+        Float("map scale"),
         dependency("map", "bitm"),
-        BFloat("detail map scale"),
+        Float("detail map scale"),
         dependency("detail map", "bitm"),
         ),
     SIZE=440
