@@ -16,7 +16,7 @@ def get_map_version(header):
         elif header.build_date == map_build_dates["stubbspc"]:
             version = "stubbspc"
     elif hasattr(header, "yelo_header") and (
-        header.yelo_header.yelo.enum_name == "halo1yelo"):
+        header.yelo_header.yelo.enum_name == "yelo"):
         return "halo1yelo"
     return version
 
