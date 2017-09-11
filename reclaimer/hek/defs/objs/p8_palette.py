@@ -90,7 +90,7 @@ class P8Palette():
         red_colors = [0]*250
         green_colors = [0]*250
 
-        with open(os.path.dirname(__file__) + "\\p8.act", 'rb') as f:
+        with open(os.path.join(os.path.dirname(__file__), "p8.act"), 'rb') as f:
             pal_data = f.read()[:(250)*3]
 
         for i in range(len(pal_data)//3):
