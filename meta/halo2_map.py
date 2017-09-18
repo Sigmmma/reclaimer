@@ -1,5 +1,4 @@
 import zlib
-import os
 
 from ..h2.common_descs import *
 from supyr_struct.defs.tag_def import TagDef
@@ -45,7 +44,7 @@ string_id_table = Array("string id table",
     )
 
 
-halo2_map_header = Struct("map header",
+h2v_map_header = Struct("map header",
     UEnum32('head', ('head', 'head'), EDITABLE=False, DEFAULT='head'),
     UEnum32("version",
         ("halo1xbox",   5),
@@ -92,28 +91,32 @@ halo2_map_header = Struct("map header",
     UInt32("tag name table offset"),
     UInt32("tag name table size"),
     UInt32("tag name index offset"),
-    UInt32("checksum"),
+    UInt32("checksum1"),
     UInt32("unknown4"),
     UInt32("unknown5"),
-    UInt32("unknown offset0"),
-    UInt32("unknown offset1"),
-    UInt32("unknown6"),
+    UInt32("raw table offset"),
+    UInt32("raw table size"),
+    UInt32("checksum2"),
     Pad(1288),
     UEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
-    SIZE=2048,
+    SIZE=2048
+    )
+
+h2v_map_header_full = Struct("map header",
+    INCLUDE=h2v_map_header, 
     STEPTREE=Container("strings",
         string_id_table,
         tag_name_table,
         )
     )
 
-halo2_tag_type = Struct("tag header",
+h2_tag_type = Struct("tag header",
     UEnum32("class 1", GUI_NAME="primary tag class",   INCLUDE=valid_h2_tags),
     UEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_h2_tags),
     UEnum32("class 3", GUI_NAME="tertiary tag class",  INCLUDE=valid_h2_tags)
     )
 
-halo2_tag_header = Struct("tag header",
+h2_tag_header = Struct("tag header",
     UEnum32("tag class", INCLUDE=valid_h2_tags),
     tag_id_struct,
     UInt32("offset"),
@@ -121,15 +124,15 @@ halo2_tag_header = Struct("tag header",
     SIZE=16
     )
 
-halo2_tag_types_array = Array("tag types",
-    SIZE=".tag_types_count", SUB_STRUCT=halo2_tag_type,
+h2_tag_types_array = Array("tag types",
+    SIZE=".tag_types_count", SUB_STRUCT=h2_tag_type,
     )
 
-halo2_tag_index_array = TagIndex("tag index",
-    SIZE=".tag_count", SUB_STRUCT=halo2_tag_header,
+h2_tag_index_array = TagIndex("tag index",
+    SIZE=".tag_count", SUB_STRUCT=h2_tag_header,
     )
 
-halo2_tag_index = Container("tag index",
+h2_tag_index = Container("tag index",
     UInt32("tag types offset"),
     UInt32("tag types count"),
     UInt32("tag index offset"),
@@ -141,9 +144,10 @@ halo2_tag_index = Container("tag index",
     UInt32("tag count"),
     UInt32("tag sig", EDITABLE=False, DEFAULT='tags'),
 
-    halo2_tag_types_array,
-    halo2_tag_index_array
+    h2_tag_types_array,
+    h2_tag_index_array
     )
 
-halo2_map_header_def = BlockDef(halo2_map_header)
-halo2_tag_index_def = BlockDef(halo2_tag_index)
+h2v_map_header_def = BlockDef(h2v_map_header)
+h2v_map_header_full_def = BlockDef(h2v_map_header_full)
+h2_tag_index_def = BlockDef(h2_tag_index)

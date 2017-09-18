@@ -78,7 +78,7 @@ h2_tag_class_fcc_to_ext = {
     "metr": "meter",
     "hlmt": "model",
     "jmad": "model_animation_graph",
-    "mcsr": "mouse_cursor_definition",  # OLD?
+    "mcsr": "mouse_cursor_definition",
     "unic": "multilingual_unicode_string_list",
     "mulg": "multiplayer_globals",
     "mply": "multiplayer_scenario_description",

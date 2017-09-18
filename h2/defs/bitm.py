@@ -1,9 +1,6 @@
 from array import array
 from ..common_descs import *
-from .objs.tag import H2Tag
-from supyr_struct.defs.tag_def import TagDef
-
-def get(): return bitm_def
+from supyr_struct.defs.block_def import BlockDef
 
 def pixel_block_size(node, *a, **kwa):
     if isinstance(node, array):
@@ -25,7 +22,6 @@ sprite = QStruct("sprite",
     Float("bottom side"),
     Float("registration point x"),
     Float("registration point y"),
-    # SIZE=32,
     )
 
 sequence = Struct("sequence",
@@ -33,28 +29,27 @@ sequence = Struct("sequence",
     UInt16("first bitmap index"),
     UInt16("bitmap count"),
     Pad(16),
-    h2_reflexive("sprites", sprite, 64),
-    # SIZE=60,
+    h2_meta_reflexive("sprites", sprite, 64),
     )
 
 bitmap = Struct("bitmap",
-    LUEnum32('bitm id', ('bitm', 'bitm'), DEFAULT='bitm', EDITABLE=False),
-    LUInt16("width", SIDETIP="pixels", EDITABLE=False),
-    LUInt16("height", SIDETIP="pixels", EDITABLE=False),
+    UEnum32('bitm id', ('bitm', 'bitm'), DEFAULT='bitm', EDITABLE=False),
+    UInt16("width", SIDETIP="pixels", EDITABLE=False),
+    UInt16("height", SIDETIP="pixels", EDITABLE=False),
     UInt8("depth", SIDETIP="pixels", EDITABLE=False),
     Bool8("more flags",
         "delete from cache file",
         "bitmap create attempted",
         "unknown"
         ),
-    LSEnum16("type",
+    SEnum16("type",
         "texture 2d",
         "texture 3d",
         "cubemap",
         "white",
         EDITABLE=False
         ),
-    LSEnum16("format",
+    SEnum16("format",
         "a8",
         "y8",
         "ay8",
@@ -80,7 +75,7 @@ bitmap = Struct("bitmap",
         ("v8u8", 22),
         ("g8b8", 23),
         ),
-    LBool16("flags",
+    Bool16("flags",
         "power of 2 dim",
         "compressed",
         "palletized",
@@ -90,24 +85,31 @@ bitmap = Struct("bitmap",
         "mipmap debug level",
         "prefer low detail",
         ),
-    LUInt16("registration point x"),
-    LUInt16("registration point y"),
-    LUInt16("mipmaps"),
-    LUInt16("low detail mipmaps"),
+    UInt16("registration point x"),
+    UInt16("registration point y"),
+    UInt16("mipmaps"),
+    UInt16("low detail mipmaps"),
 
-    # for halo pc/trial(not ce), this is the non-magic pointer
-    # into the bitmaps.map that the pixel data is located at.
-    LUInt32("pixels offset", VISIBLE=False, EDITABLE=False),
-    LUInt32("pixels meta size", VISIBLE=False, EDITABLE=False),
-    LUInt32("bitmap id unknown1", VISIBLE=False, EDITABLE=False),
-    LUInt32("bitmap data pointer", VISIBLE=False, EDITABLE=False),
-    LUInt32("bitmap id unknown2", VISIBLE=False, EDITABLE=False),
-    LUInt32("base address", VISIBLE=False, EDITABLE=False),
-    Pad(116-48),
-    #SIZE=116,
+    UInt32("pixels offset", EDITABLE=False),
+    UInt32("lod1 offset", EDITABLE=False),
+    UInt32("lod2 offset", EDITABLE=False),
+    UInt32("lod3 offset", EDITABLE=False),
+    UInt32("lod4 offset", EDITABLE=False),
+    UInt32("lod5 offset", EDITABLE=False),
+    UInt32("lod6 offset", EDITABLE=False),
+    UInt32("lod1 size", EDITABLE=False),
+    UInt32("lod2 size", EDITABLE=False),
+    UInt32("lod3 size", EDITABLE=False),
+    UInt32("lod4 size", EDITABLE=False),
+    UInt32("lod5 size", EDITABLE=False),
+    UInt32("lod6 size", EDITABLE=False),
+    QStruct("datum",  # points back to this tag
+        INCLUDE=tag_id_struct, VISIBLE=False, EDITABLE=False
+        ),
+    Pad(116 - 4*15 - 2*9 - 1*2),
     )
 
-bitm_body = Struct("tagdata",
+bitm_meta_def = BlockDef("bitm",
     SEnum16("type",
         "textures 2d",
         "textures 3d",
@@ -171,8 +173,8 @@ bitm_body = Struct("tagdata",
     UInt16("color plate width",  SIDETIP="pixels", EDITABLE=False),
     UInt16("color plate height", SIDETIP="pixels", EDITABLE=False),
 
-    h2_rawdata_ref("compressed color plate data", max_size=16777216),
-    h2_rawdata_ref("processed pixel data", max_size=16777216),
+    h2_meta_rawdata_ref("compressed color plate data", max_size=16777216),
+    h2_meta_rawdata_ref("processed pixel data", max_size=16777216),
 
     Float("blur filter size", MIN=0.0, MAX=10.0, SIDETIP="[0,10] pixels"),
     float_neg_one_to_one("alpha bias"),
@@ -192,22 +194,19 @@ bitm_body = Struct("tagdata",
        "a8l8",
        "a4r4g4b4",
        ),
-    h2_reflexive("sequences", sequence, 256, DYN_NAME_PATH='.sequence_name'),
-    h2_reflexive("bitmaps", bitmap, 65536),
-    QStruct("more sprite processing",
-        UInt16("unknown0"),
-        UInt16("unknown1"),
+    h2_meta_reflexive("sequences", sequence, 256, DYN_NAME_PATH='.sequence_name'),
+    h2_meta_reflexive("bitmaps", bitmap, 65536),
+    Struct("more sprite processing",
+        SInt8("color compression quality", SIDETIP="[1, 127]"),
+        SInt8("alpha compression quality", SIDETIP="[1, 127]"),
+        SInt8("overlap"),
+        UEnum8("color subsampling",
+            {GUI_NAME:"4:0:0", NAME:"x0x0"},
+            {GUI_NAME:"4:2:0", NAME:"x2x0"},
+            {GUI_NAME:"4:2:2", NAME:"x2x2"},
+            {GUI_NAME:"4:4:4", NAME:"x4x4"},
+            )
         ),
-    #SIZE=80,
-    )
-
-def get():
-    return bitm_def
-
-bitm_def = TagDef("bitm",
-    h2_blam_header('bitm', 8),
-    bitm_body,
-
-    ext=".bitmap", endian="<", tag_cls=H2Tag,
-    subdefs = {'pixel_root':pixel_root}
+    ENDIAN="<", TYPE=Struct,
+    subdefs={'pixel_root':pixel_root}
     )
