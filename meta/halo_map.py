@@ -18,17 +18,43 @@ def get_map_version(header):
     elif hasattr(header, "yelo_header") and (
         header.yelo_header.yelo.enum_name == "yelo"):
         return "halo1yelo"
+    elif version == "halo2":
+        version = "halo2vista"
     return version
 
 
-def get_map_header(map_data):
+def get_map_header(map_data, header_only=False):
     header_def = map_header_def
-    if map_data[704:708] == b'dehE' and map_data[1520:1524] == b'tofG':
+    sig_b = map_data[:4].decode('latin-1').lower()
+    sig_l = sig_b[::-1]
+    ver_b = int.from_bytes(map_data[4:8], 'big')
+    ver_l = int.from_bytes(map_data[4:8], 'little')
+
+    if sig_l == "head":
+        if ver_l == 8:
+            if header_only:
+                header_def = h2v_map_header_def
+            else:
+                header_def = h2v_map_header_full_def
+
+    elif sig_b == "head":
+        if ver_b == 11:
+            header_def = h3_map_header_def
+
+    elif map_data[704:708] == b'dehE' and map_data[1520:1524] == b'tofG':
         header_def = map_header_demo_def
-    elif map_data[4:8] == b'\x08\x00\x00\x00':
-        header_def = halo2_map_header_def
-    elif map_data[4:8] == b'\x00\x00\x00\x0b':
-        header_def = halo3_map_header_def
+
+    elif map_data[:2] == b'\x78\xDA':
+        # zlib compressed halo 2 vista map.
+        # decompress the 2048 byte header
+        if header_only:
+            header_def = h2v_map_header_def
+            decomp_len = 2048
+        else:
+            header_def = h2v_map_header_full_def
+            decomp_len = None
+        map_data = zlib.decompressobj().decompress(map_data, decomp_len)
+
     return header_def.build(rawdata=map_data)
 
 
@@ -43,9 +69,9 @@ def get_tag_index(map_data, header=None):
     if header.version.data < 6 and get_map_version(header) != "stubbspc":
         tag_index_def = tag_index_xbox_def
     elif header.version.enum_name == "halo2":
-        tag_index_def = halo2_tag_index_def
+        tag_index_def = h2_tag_index_def
     elif header.version.enum_name == "halo3":
-        tag_index_def = halo3_tag_index_def
+        tag_index_def = h3_tag_index_def
         magic = HALO3_INDEX_MAGIC
 
     if header.tag_index_header_offset - magic <= 0:
@@ -70,7 +96,7 @@ def get_map_magic(header):
     return magic
 
 
-def is_compressed(comp_data, header):
+def get_is_compressed_map(comp_data, header):
     if header.version.data not in (7, 609):
         decomp_len = header.decomp_len
         if get_map_version(header) == "pcstubbs":
@@ -84,11 +110,15 @@ def decompress_map(comp_data, header=None, decomp_path=None):
     if header is None:
         header = get_map_header(comp_data)
 
-    if is_compressed(comp_data, header):
+    if get_is_compressed_map(comp_data, header):
         comp_data.seek(0)
-        decomp_len = header.decomp_len
-        if get_map_version(header) == "pcstubbs":
+        decomp_start = 2048
+        decomp_len   = header.decomp_len
+        version      = get_map_version(header)
+        if version == "pcstubbs":
             decomp_len -= 2048
+        elif version == "halo2vista":
+            decomp_start = 0
 
         if decomp_path is None:
             decomp_path = "decomp.map"
@@ -99,8 +129,10 @@ def decompress_map(comp_data, header=None, decomp_path=None):
 
         print("Decompressing map to: %s" % decomp_path)
         with open(decomp_path, "wb+") as f:
-            f.write(comp_data[:2048])
-            comp_data = comp_data[2048:]
+            if decomp_start:
+                f.write(comp_data[:decomp_start])
+                comp_data = comp_data[decomp_start:]
+
             decomp_obj = zlib.decompressobj()
 
             while comp_data:
