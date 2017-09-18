@@ -1,6 +1,3 @@
-import zlib
-import os
-
 from ..h3.common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
@@ -84,7 +81,7 @@ tag_name_table = Array("tag name table",
     POINTER=tag_name_index_pointer
     )
 
-halo3_map_header = Struct("map header",
+h3_map_header = Struct("map header",
     UEnum32('head', ('head', 'head'), EDITABLE=False, DEFAULT='head'),
     UEnum32("version",
         ("halo1xbox",   5),
@@ -162,7 +159,7 @@ halo3_map_header = Struct("map header",
     SIZE=4096*3
     )
 
-halo3_tag_type = Struct("tag header",
+h3_tag_type = Struct("tag header",
     UEnum32("class 1", GUI_NAME="primary tag class",   INCLUDE=valid_h3_tags),
     UEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_h3_tags),
     UEnum32("class 3", GUI_NAME="tertiary tag class",  INCLUDE=valid_h3_tags),
@@ -170,35 +167,35 @@ halo3_tag_type = Struct("tag header",
     #                       extension for this class(i.e: bitm = bitmap)
     )
 
-halo3_tag_header = Struct("tag header",
+h3_tag_header = Struct("tag header",
     UInt16("tag type index"),
     UInt16("table index"),
     UInt32("offset"),
     SIZE=8
     )
 
-halo3_root_tag_ref = Struct("root tag ref",
+h3_root_tag_ref = Struct("root tag ref",
     UEnum32("tag class", INCLUDE=valid_h3_tags),
     h3_tag_id_struct,
     SIZE=8
     )
 
-halo3_tag_types_array = Array("tag types",
-    SIZE=".tag_types_count", SUB_STRUCT=halo3_tag_type,
+h3_tag_types_array = Array("tag types",
+    SIZE=".tag_types_count", SUB_STRUCT=h3_tag_type,
     POINTER=tag_types_array_pointer
     )
 
-halo3_tag_index_array = TagIndex("tag index",
-    SIZE=".tag_count", SUB_STRUCT=halo3_tag_header,
+h3_tag_index_array = TagIndex("tag index",
+    SIZE=".tag_count", SUB_STRUCT=h3_tag_header,
     POINTER=tag_index_array_pointer
     )
 
-halo3_root_tags_array = TagIndex("root tags",
-    SIZE=".root_tags_count", SUB_STRUCT=halo3_root_tag_ref,
+h3_root_tags_array = TagIndex("root tags",
+    SIZE=".root_tags_count", SUB_STRUCT=h3_root_tag_ref,
     POINTER=root_tags_array_pointer
     )
 
-halo3_tag_index = Container("tag index",
+h3_tag_index = Container("tag index",
     UInt32("tag types count"),
     UInt32("tag types offset"),
 
@@ -213,10 +210,10 @@ halo3_tag_index = Container("tag index",
     UInt32("crc32"),
     UInt32("tag sig", EDITABLE=False, DEFAULT='tags'),
 
-    halo3_tag_types_array,
-    halo3_tag_index_array,
-    halo3_root_tags_array
+    h3_tag_types_array,
+    h3_tag_index_array,
+    h3_root_tags_array
     )
 
-halo3_map_header_def = BlockDef(halo3_map_header, endian=">")
-halo3_tag_index_def = BlockDef(halo3_tag_index, endian=">")
+h3_map_header_def = BlockDef(h3_map_header, endian=">")
+h3_tag_index_def = BlockDef(h3_tag_index, endian=">")

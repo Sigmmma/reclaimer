@@ -319,7 +319,7 @@ h2_tag_index_ref_struct = H2TagIndexRef('dependency',
 h2_reflexive_struct = H2Reflexive('reflexive',
     SInt32("size", VISIBLE=False),
     UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
-    UInt32("id", VISIBLE=False),  # 0 in meta it seems
+    UInt32("id", VISIBLE=False),
     )
 
 h2_rawdata_ref_struct = H2RawdataRef('rawdata ref', 
@@ -328,7 +328,7 @@ h2_rawdata_ref_struct = H2RawdataRef('rawdata ref',
         "data in resource map",
         VISIBLE=False,
         ),
-    UInt32("raw pointer", VISIBLE=False),  # doesnt use magic
+    UInt32("raw pointer", VISIBLE=False),
     UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
     UInt32("id", VISIBLE=False),
     ORIENT='h'
