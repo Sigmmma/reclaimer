@@ -9,11 +9,20 @@ from .halo3_map import *
 
 
 def get_map_version(header):
-    version = header.version.enum_name
+    try:
+        version = header.version.enum_name
+    except AttributeError:
+        return None
+
     if version == "halo1xbox":
-        if header.build_date == map_build_dates["stubbs"]:
+        try:
+            build_date = header.build_date
+        except AttributeError:
+            return None
+
+        if build_date == map_build_dates["stubbs"]:
             version = "stubbs"
-        elif header.build_date == map_build_dates["stubbspc"]:
+        elif build_date == map_build_dates["stubbspc"]:
             version = "stubbspc"
     elif hasattr(header, "yelo_header") and (
         header.yelo_header.yelo.enum_name == "yelo"):
@@ -24,18 +33,21 @@ def get_map_version(header):
 
 
 def get_map_header(map_data, header_only=False):
-    header_def = map_header_def
-    sig_b = map_data[:4].decode('latin-1').lower()
+    sig   = map_data[:4]
+    sig_b = sig.decode('latin-1').lower()
     sig_l = sig_b[::-1]
     ver_b = int.from_bytes(map_data[4:8], 'big')
     ver_l = int.from_bytes(map_data[4:8], 'little')
+    header_def = None
 
     if sig_l == "head":
         if ver_l == 8:
+            header_def = h2v_map_header_full_def
             if header_only:
                 header_def = h2v_map_header_def
-            else:
-                header_def = h2v_map_header_full_def
+
+        elif ver_l in (5, 6, 7, 609):
+            header_def = map_header_def
 
     elif sig_b == "head":
         if ver_b == 11:
@@ -47,13 +59,16 @@ def get_map_header(map_data, header_only=False):
     elif map_data[:2] == b'\x78\xDA':
         # zlib compressed halo 2 vista map.
         # decompress the 2048 byte header
+        header_def = h2v_map_header_full_def
+        decomp_len = None
         if header_only:
             header_def = h2v_map_header_def
             decomp_len = 2048
-        else:
-            header_def = h2v_map_header_full_def
-            decomp_len = None
+
         map_data = zlib.decompressobj().decompress(map_data, decomp_len)
+
+    if header_def is None:
+        return None
 
     return header_def.build(rawdata=map_data)
 
