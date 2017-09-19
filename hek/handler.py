@@ -51,7 +51,6 @@ class HaloHandler(Handler):
     tag_ref_cache   = None
     reflexive_cache = None
     raw_data_cache  = None
-    fps_dependent_cache = None
 
     def __init__(self, *args, **kwargs):
         Handler.__init__(self, *args, **kwargs)
@@ -87,9 +86,6 @@ class HaloHandler(Handler):
 
         if this_type.raw_data_cache is None:
             this_type.raw_data_cache  = self.build_loc_caches(RawdataRef)
-
-        if this_type.fps_dependent_cache is None:
-            this_type.fps_dependent_cache = self.build_loc_caches(fps_60_related)
 
     def _build_loc_cache(self, cond, desc={}):
         try:
