@@ -18,8 +18,8 @@ bipd_body = Struct("tagdata",
     SIZE=1268,
     )
 
-def get():
-    return bipd_def
+#def get():
+#    return bipd_def
 
 bipd_def = TagDef("bipd",
     blam_header('bipd', 3),

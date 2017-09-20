@@ -53,6 +53,14 @@ class HaloHandler(Handler):
     raw_data_cache  = None
 
     def __init__(self, *args, **kwargs):
+        this_type = type(self)
+        if not kwargs.pop("build_tag_ref_cache", True):
+            this_type.tag_ref_cache = NO_LOC_REFS
+        if not kwargs.pop("build_reflexive_cache", True):
+            this_type.reflexive_cache = NO_LOC_REFS
+        if not kwargs.pop("build_raw_data_cache", True):
+            this_type.raw_data_cache = NO_LOC_REFS
+
         Handler.__init__(self, *args, **kwargs)
 
         self.tag_fcc_match_set = set()
@@ -77,7 +85,6 @@ class HaloHandler(Handler):
 
         self.datadir = join(self.datadir, '')
 
-        this_type = type(self)
         if this_type.tag_ref_cache is None:
             this_type.tag_ref_cache   = self.build_loc_caches(TagIndexRef)
         

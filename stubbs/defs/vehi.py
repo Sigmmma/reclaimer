@@ -1,3 +1,6 @@
+'''
+THIS DEFINITION IS INCORRECT BECAUSE THE UNIT STRUCTURE IS DIFFERENT THAN HALO'S
+'''
 from ...hek.defs.vehi import *
 from .obje import *
 from .unit import *
@@ -17,8 +20,8 @@ vehi_body = Struct("tagdata",
     SIZE=1008,
     )
 
-def get():
-    return vehi_def
+#def get():
+#    return vehi_def
 
 vehi_def = TagDef("vehi",
     blam_header('vehi'),

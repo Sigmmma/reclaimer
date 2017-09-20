@@ -123,8 +123,8 @@ unit_body = Struct('tagdata',
     SIZE=372
     )
 
-def get():
-    return unit_def
+#def get():
+#    return unit_def
 
 unit_def = TagDef("unit",
     blam_header('unit', 2),
