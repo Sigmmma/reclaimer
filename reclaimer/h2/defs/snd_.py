@@ -1,6 +1,5 @@
 from ..common_descs import *
-from .objs.tag import H2Tag
-from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.defs.tag_def import BlockDef
 
 sound_classes = (
     ("projectile impact", 0),
@@ -72,7 +71,7 @@ permutation = Struct("permutation",
     ascii_str_varlen("name"),
     Float("skip fraction"),
     Float("gain"),
-    h2_rawdata_ref("samples", max_size=0),
+    h2_meta_rawdata_ref("samples", max_size=0),
     SIZE=32
     )
 
@@ -89,14 +88,14 @@ pitch_range = Struct("pitch range",
     Pad(2),
     QStruct("bend bounds", INCLUDE=from_to_cents),
     Pad(8),
-    h2_reflexive("permutations", permutation),
+    h2_meta_reflexive("permutations", permutation),
     SIZE=32
     )
 
 platform_parameter = Struct("platform parameter",
     )
 
-snd__body = Struct("tagdata",
+snd__meta_def = BlockDef("snd!",
     Bool32("flags",
         "fit to adpcm blocksize",
         "split long sounds into permutations",
@@ -168,21 +167,11 @@ snd__body = Struct("tagdata",
         "wma",
         ),
 
-    h2_reflexive("promotion rules", promotion_rule),
-    Pad(12),  # h2_reflexive("unknown0", unknown0_struct),
+    h2_meta_reflexive("promotion rules", promotion_rule),
+    Pad(12),  # h2_meta_reflexive("unknown0", unknown0_struct),
     Pad(24),
-    h2_reflexive("pitch ranges", pitch_range),
-    h2_reflexive("platform parameters", platform_parameter),
-    Pad(12),  # h2_reflexive("unknown1", unknown1_struct),
-    SIZE=172
-    )
-
-
-def get():
-    return snd__def
-
-snd__def = TagDef("snd!",
-    h2_blam_header('snd!'),
-    snd__body,
-    ext=".sound", endian="<", tag_cls=H2Tag
+    h2_meta_reflexive("pitch ranges", pitch_range),
+    h2_meta_reflexive("platform parameters", platform_parameter),
+    Pad(12),  # h2_meta_reflexive("unknown1", unknown1_struct),
+    ENDIAN="<", TYPE=Struct,
     )
