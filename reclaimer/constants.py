@@ -13,13 +13,14 @@ def inject_halo_constants():
     add_desc_keywords(RAW_REFLEXIVE_INFO, COLOR_CHANNELS)
 
 
-XBOX_BSP_MAGIC = 0x819A6000
-
 PCDEMO_INDEX_MAGIC = 0x4BF10000
 PC_INDEX_MAGIC     = 0x40440000
 CE_INDEX_MAGIC     = 0x40440000
 XBOX_INDEX_MAGIC   = 0x803A6000
 STUBBS_INDEX_MAGIC = 0x8038B000
+H2V_MP_INDEX_MAGIC = 0x01400000  # only applies to multiplayer maps.
+#                                  pointers below this index magic
+#                                  actually point to resource maps.
 
 
 map_build_dates = {
@@ -42,11 +43,11 @@ map_versions = {
     "halo1xbox": 5,
     "halo1pcdemo": 6,
     "halo1pc": 7,
+    "halo1ce": 609,
+    "halo1yelo": 609,
     "halo2xbox": 8,
     "halo2vista": 8,
     "halo3": 11,
-    "halo1ce": 609,
-    "halo1yelo": 609,
     }
 
 # magic is actually the virtual address the map is loaded at. Halo 3 and
@@ -58,14 +59,14 @@ map_magics = {
     "halo1xbox":   XBOX_INDEX_MAGIC,
     "halo1pcdemo": PCDEMO_INDEX_MAGIC,
     "halo1pc":     PC_INDEX_MAGIC,
+    "halo1ce":     PC_INDEX_MAGIC,
+    "halo1yelo":   PC_INDEX_MAGIC,
     "halo2xbox":   0,  # Halo 2 and beyond dont use magic
-    "halo2vista":  0,  # Halo 2 and beyond dont use magic
+    "halo2vista":  0,
     "halo3":       0,
     "halo4":       0,
     "halo5":       0,
     "halo_reach":  0,
-    "halo1ce":     PC_INDEX_MAGIC,
-    "halo1yelo":   PC_INDEX_MAGIC,
     }
 
 #I cant imagine Halo allowing any one field even close to this many
