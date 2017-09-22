@@ -100,7 +100,11 @@ def get_tag_index(map_data, header=None):
 
 
 def get_index_magic(header):
-    return map_magics.get(get_map_version(header), 0)
+    version = get_map_version(header)
+    if version == "halo2vista" and header.map_type.enum_name == "mp":
+        return H2V_MP_INDEX_MAGIC
+
+    return map_magics.get(version, 0)
 
 
 def get_map_magic(header):
@@ -148,11 +152,17 @@ def decompress_map(comp_data, header=None, decomp_path=None):
                 comp_data = comp_data[decomp_start:]
 
             decomp_obj = zlib.decompressobj()
-
+            last_comp_len = len(comp_data)
             while comp_data:
                 # decompress map 64Mb at a time
                 f.write(decomp_obj.decompress(comp_data, 64*1024*1024))
                 comp_data = decomp_obj.unconsumed_tail
+                if len(comp_data) == last_comp_len:
+                    # need to do this to not get stuck in an infinite
+                    # loop where the compressed data doesnt actually
+                    # decode to anything because it is all zeros.
+                    break
+                last_comp_len = len(comp_data)
 
             # pad the file to its decompressed length
             f.write(b'\xca'*(decomp_len - f.tell()))
