@@ -139,10 +139,9 @@ def decompress_map(comp_data, header=None, decomp_path=None):
             decomp_path = "decomp.map"
         else:
             temp_dir = os.path.dirname(decomp_path)
-            if not os.path.isdir(temp_dir):
+            if temp_dir and not os.path.isdir(temp_dir):
                 os.makedirs(temp_dir)
 
-        print("Decompressing map to: %s" % decomp_path)
         with open(decomp_path, "wb+") as f:
             if decomp_start:
                 f.write(comp_data[:decomp_start])

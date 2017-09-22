@@ -17,7 +17,9 @@ resource_id_map = {
     374: 127,  # sound\sfx\impulse\shellcasings\single_shell_metal
     375: 129,  # sound\sfx\impulse\shellcasings\double_shell_metal
     376: 131,  # sound\sfx\impulse\shellcasings\multi_shell_metal
-    # coincidentally, there are 376 tags in the sound resource cache......
+
+    1545: 529,  # sound\sfx\impulse\glass\glass_medium
+    1546: 531,  # sound\sfx\impulse\glass\glass_large
     }
 
 
@@ -75,17 +77,16 @@ def tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
     if "tag_index" in kwargs:
         tag_index = kwargs["tag_index"]
         tagid = parent.id.tag_table_index
-        if tagid >= 0 and (tagid < len(tag_index) and
-                           parent.id.table_index != 0xFFFF):
+        if tagid >= 0 and tagid != 0xFFFF:
             try:
                 parent[attr_index] = tag_index[tagid].tag.tag_path
-            except AttributeError:
+            except (AttributeError, IndexError):
                 # tag_index is a resource map tag_paths collection
-                if kwargs['tag_cls'] != 'snd!':
-                    parent[attr_index] = tag_index[tagid].tag_path
-                elif tagid in resource_id_map:
+                if kwargs['tag_cls'] == 'snd!':
                     parent[attr_index] = tag_index[
                         resource_id_map[tagid]].tag_path
+                elif tagid in resource_id_map:
+                    parent[attr_index] = tag_index[tagid].tag_path
                 else:
                     # unable to get the tag path
                     parent[attr_index] = ""
