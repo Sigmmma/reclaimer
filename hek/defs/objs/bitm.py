@@ -9,13 +9,14 @@ P8_PALETTE = load_palette()
 try:
     import arbytmap as ab
 
-    ab.FORMAT_P8 = "P8-BUMP"
+    if not hasattr(ab, "FORMAT_P8"):
+        ab.FORMAT_P8 = "P8-BUMP"
 
-    """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
-    ab.define_format(
-        format_id=ab.FORMAT_P8, raw_format=True, channel_count=4,
-        depths=(8,8,8,8), offsets=(24,16,8,0),
-        masks=(4278190080, 16711680, 65280, 255))
+        """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
+        ab.define_format(
+            format_id=ab.FORMAT_P8, raw_format=True, channel_count=4,
+            depths=(8,8,8,8), offsets=(24,16,8,0),
+            masks=(4278190080, 16711680, 65280, 255))
 except (ImportError, AttributeError):
     ab = None
 
@@ -351,7 +352,7 @@ class BitmTag(HekTag):
 
         bitmap_pad = (BITMAP_PADDING -
                       (bytes_count%BITMAP_PADDING))%BITMAP_PADDING
-        
+
         return(bitmap_pad, cubemap_pad)
 
     def sanitize_mipmap_counts(self):
@@ -452,7 +453,7 @@ class BitmTag(HekTag):
                 mipmap_count=(mipmap_count-1), sub_bitmap_count=sub_bitmap_count,
                 swizzled=self.swizzled(), texture_type=TYPE_NAME_MAP[type],
                 filepath=splitext(self.filepath.replace(tagsdir, datadir))[0]))
-            
+
             """IF THE TEXTURE IS IN P-8 FORMAT THEN WE NEED TO
             PROVIDE THE PALETTE AND SOME INFORMATION ABOUT IT"""
             if format == ab.FORMAT_P8:
