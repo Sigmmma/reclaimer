@@ -59,19 +59,14 @@ permutation = Struct('permutation',
     Float("gain"),
     compression,
     SInt16("next permutation index"),
-    Struct("unknown",
-        # idk what these are, but they are SUPER important to ogg sounds
-        FlUInt32("unknown0"),
-        FlUInt32("unknown1"),
-        FlUInt32("unknown2"),
-        FlUInt32("unknown3"),
-        FlUInt32("unknown4"),
-        VISIBLE=False
-        ),
+    FlSInt32("unknown0", VISIBLE=False),
+    FlUInt32("unknown1", VISIBLE=False),  # always zero?
+    FlUInt32("unknown2", VISIBLE=False),
+    FlUInt32("ogg_sample_count", EDITABLE=False),
+    FlUInt32("unknown3", VISIBLE=False),  # seems to always be == unknown2
     rawdata_ref("samples", max_size=4194304, widget=SoundSampleFrame),
     rawdata_ref("mouth data", max_size=8192),
     rawdata_ref("subtitle data", max_size=512),
-
     SIZE=124
     )
 
