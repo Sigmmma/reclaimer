@@ -24,12 +24,12 @@ def string_id_table_name_pointer(parent=None, new_value=None, **kwargs):
 
 tag_name_table_entry = Container("tag name table entry",
     SInt32("offset"),
-    STEPTREE=CStrLatin1("tag name", POINTER=tag_name_table_name_pointer),
+    STEPTREE=CStrLatin1("tag_name", POINTER=tag_name_table_name_pointer),
     )
 
 string_id_table_entry = Container("string id table entry",
     SInt32("offset"),
-    STEPTREE=CStrLatin1("string id", POINTER=string_id_table_name_pointer),
+    STEPTREE=CStrLatin1("string", POINTER=string_id_table_name_pointer),
     )
 
 

@@ -28,12 +28,20 @@ from ..common_descs import pi, irad, from_to, get_unit_scale,\
      rawdata_ref_struct, reflexive_struct, tag_index_ref_struct
 
 
-def ascii_str_varlen(name):
+def string_id_meta(name):
+    return StringID(name,
+        UInt16('id'),  # cant name it "index" as that is a method name
+        UInt8('unused', VISIBLE=False),
+        UInt8('length'),
+        )
+
+def string_id_tag(name):
     # encoding used is latin1 to take care of cases
     # where the string has invalid characters in it
-    return Struct(name,
-        UInt24('offset', VISIBLE=False, EDITABLE=False),
-        UInt8('length', VISIBLE=False, EDITABLE=False),
+    return StringID(name,
+        UInt16('id', VISIBLE=False),
+        UInt8('unused', VISIBLE=False),
+        UInt8('length', VISIBLE=False),
         STEPTREE=StrRawLatin1("data",
             SIZE='.length', GUI_NAME=str(name), MAX=255
             ),
@@ -147,6 +155,35 @@ def ascii_str_varlen(name):
 #        **kwargs
 #        )
 
+
+from_to_float = from_to
+
+from_to_sint16 = QStruct('',
+    SInt16("from", GUI_NAME=''),
+    SInt16("to"),
+    ORIENT='h'
+    )
+
+resource = Struct("resource",
+    SEnum8("type",
+        "tag_block",  # reflexive
+        "tag_data",   # rawdata
+        "vertex_buffer",
+        ),
+    SInt8("unknown0", DEFAULT=2, VISIBLE=False),
+    SInt16("primary_locator2", VISIBLE=False),
+    SInt16("primary_locator",
+        TOOLTIP="offset into the block section that the tag block/\n"
+                "tag data/vertex buffer header block is located at."),
+    SInt16("secondary_locator",
+        TOOLTIP="tag block size in bytes(-1 if not a tag block)"),
+    UInt32("resource_data_size",
+        TOOLTIP="size of the rsrc section in bytes"),
+    UInt32("resource_data_offset",
+        TOOLTIP="offset into the block section that the rsrc section\n"
+                "is located at."),
+    SIZE=16
+    )
 
 def h2_tag_class(*args, **kwargs):
     '''
