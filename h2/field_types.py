@@ -1,6 +1,9 @@
 from ..field_types import *
 from .field_type_methods import *
 
+
+StringID = FieldType(base=QStruct, name="StringID")
+
 H2MetaTagIndexRef = FieldType(base=TagIndexRef, name="H2MetaIndexRef")
 H2MetaReflexive   = FieldType(base=Reflexive,   name="H2MetaReflexive")
 H2MetaRawdataRef  = FieldType(base=RawdataRef,  name="H2MetaRawdataRef",
