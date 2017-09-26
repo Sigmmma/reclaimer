@@ -4,7 +4,7 @@ from .constants import *
 
 # this is ultra hacky, but it seems to be the only
 # way to fix the tagid for the sounds resource map
-resource_id_map = {
+sound_rsrc_id_map = {
     92: 15,  # sound\sfx\impulse\impacts\smallrock
     93: 17,  # sound\sfx\impulse\impacts\medrocks
     94: 19,  # sound\sfx\impulse\impacts\lrgrocks
@@ -83,9 +83,8 @@ def tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
             except (AttributeError, IndexError):
                 # tag_index is a resource map tag_paths collection
                 if kwargs['tag_cls'] == 'snd!':
-                    parent[attr_index] = tag_index[
-                        resource_id_map[tagid]].tag_path
-                elif tagid in resource_id_map:
+                    # fix the sound reference tagid
+                    parent.id[0] = tagid = sound_rsrc_id_map[tagid]
                     parent[attr_index] = tag_index[tagid].tag_path
                 else:
                     # unable to get the tag path
