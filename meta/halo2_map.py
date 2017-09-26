@@ -44,6 +44,70 @@ string_id_table = Array("string id table",
     )
 
 
+h2x_map_header = Struct("map header",
+    UEnum32('head', ('head', 'head'), EDITABLE=False, DEFAULT='head'),
+    UEnum32("version",
+        ("halo1xbox",   5),
+        ("halo1pcdemo", 6),
+        ("halo1pc", 7),
+        ("halo2", 8),
+        ("halo3", 11),
+        ("halo1ce", 609),
+        ),
+    UInt32("decomp len"),
+    UInt32("unknown0"),
+    UInt32("tag index header offset"),
+    UInt32("tag data size"),
+    UInt32("meta size"),
+    UInt32("meta offset mask"),
+    Pad(256),
+
+    ascii_str32("build date"),
+    UEnum16("map type",
+        "sp",
+        "mp",
+        "ui",
+        "shared",
+        "sharedsp",
+        ),
+    Pad(2),
+    UInt32("crc32"),
+    Pad(16),
+    UInt32("crazy data offset"),
+    UInt32("crazy data len"),
+    UInt32("string id padded offset"),  # what is this?
+    UInt32("string id count"),
+    UInt32("string id table size"),
+    UInt32("string id index offset"),
+    UInt32("string id table offset"),
+    Pad(36),
+    ascii_str32("map name"),
+    Pad(4),
+    StrLatin1("scenario tag path", SIZE=260),
+    UInt32("tag name count"),
+    UInt32("tag name table offset"),
+    UInt32("tag name table size"),
+    UInt32("tag name index offset"),
+    UInt32("checksum1"),
+    UInt32("unknown1"),
+    UInt32("unknown2"),
+    UInt32("raw table offset"),
+    UInt32("raw table size"),
+    UInt32("checksum2"),
+    Pad(1300),
+    UEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
+    SIZE=2048
+    )
+
+h2x_map_header_full = Struct("map header",
+    INCLUDE=h2x_map_header, 
+    STEPTREE=Container("strings",
+        string_id_table,
+        tag_name_table,
+        )
+    )
+
+
 h2v_map_header = Struct("map header",
     UEnum32('head', ('head', 'head'), EDITABLE=False, DEFAULT='head'),
     UEnum32("version",
@@ -60,9 +124,9 @@ h2v_map_header = Struct("map header",
     UInt32("tag data size"),
     UInt32("meta size"),
     UInt32("meta offset mask"),
-    UInt32("unknown1"),
-    UInt32("unknown2"),
-    UInt32("unknown3"),
+    UInt32("virtual_address"),
+    UInt32("dependency_map_offset"),  # -1 if not shared.map
+    UInt32("dependency_map_size"),    #  0 if not shared.map
     Pad(256),
 
     ascii_str32("build date"),
@@ -99,7 +163,7 @@ h2v_map_header = Struct("map header",
     UInt32("checksum2"),
     Pad(1288),
     UEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
-    SIZE=2048
+    INCLUDE=h2x_map_header
     )
 
 h2v_map_header_full = Struct("map header",
@@ -148,6 +212,8 @@ h2_tag_index = Container("tag index",
     h2_tag_index_array
     )
 
+h2x_map_header_def = BlockDef(h2x_map_header)
+h2x_map_header_full_def = BlockDef(h2x_map_header_full)
 h2v_map_header_def = BlockDef(h2v_map_header)
 h2v_map_header_full_def = BlockDef(h2v_map_header_full)
 h2_tag_index_def = BlockDef(h2_tag_index)
