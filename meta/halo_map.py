@@ -13,22 +13,32 @@ def get_map_version(header):
         version = header.version.enum_name
     except AttributeError:
         return None
+    try:
+        build_date = header.build_date
+    except AttributeError:
+        build_date = None
 
     if version == "halo1xbox":
-        try:
-            build_date = header.build_date
-        except AttributeError:
-            return None
-
-        if build_date == map_build_dates["stubbs"]:
+        if build_date is None:
+            return
+        elif build_date == map_build_dates["stubbs"]:
             version = "stubbs"
         elif build_date == map_build_dates["stubbspc"]:
             version = "stubbspc"
     elif hasattr(header, "yelo_header") and (
-        header.yelo_header.yelo.enum_name == "yelo"):
+            header.yelo_header.yelo.enum_name == "yelo"):
         return "halo1yelo"
     elif version == "halo2":
-        version = "halo2vista"
+        version = None
+        if build_date == map_build_dates['halo2alpha']:
+            version = "halo2alpha"
+        elif build_date == map_build_dates['halo2xbox']:
+            version = "halo2xbox"
+        elif build_date == map_build_dates['halo2epsilon']:
+            version = "halo2epsilon"
+        elif build_date == map_build_dates['halo2vista']:
+            version = "halo2vista"
+
     return version
 
 
@@ -42,9 +52,15 @@ def get_map_header(map_data, header_only=False):
 
     if sig_l == "head":
         if ver_l == 8:
-            header_def = h2v_map_header_full_def
-            if header_only:
-                header_def = h2v_map_header_def
+            build_date = map_data[300: 324].decode("latin-1")
+            if build_date == map_build_dates['halo2vista']:
+                header_def = h2v_map_header_full_def
+                if header_only:
+                    header_def = h2v_map_header_def
+            else:
+                header_def = h2x_map_header_full_def
+                if header_only:
+                    header_def = h2x_map_header_def
 
         elif ver_l in (5, 6, 7, 609):
             header_def = map_header_def
