@@ -1,6 +1,6 @@
 from array import array
 
-__all__ = ("decode_adpcm_samples", )
+__all__ = ("decode_adpcm_samples", "ADPCM_BLOCKSIZE", "PCM_BLOCKSIZE", )
 
 STEP_TABLE = (
     7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
