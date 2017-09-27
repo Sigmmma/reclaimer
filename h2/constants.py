@@ -17,6 +17,8 @@ engine_id_to_name = dict(
 # LAMB: ???
 # BLM!: newest version.
 
+# DO NOT CHANGE THE ORDER OF THESE
+HALO2_MAP_TYPES = ("local", "mainmenu", "shared", "single_player_shared")
 
 # maps tag class four character codes(fccs) in
 # their string encoding to their int encoding.
