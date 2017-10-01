@@ -275,8 +275,8 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
                 # float
                 float_data = cast_uint32_to_float(node.data)
                 sig_figs = -1
-                if float_data > 0:
-                    sig_figs = int(6 - log(float_data, 10))
+                if abs(float_data) > 0:
+                    sig_figs = int(7 - log(abs(float_data), 10))
     
                 if sig_figs < 0:
                     node_str = str(float_data).split(".")[0]
