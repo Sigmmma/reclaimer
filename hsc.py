@@ -180,26 +180,30 @@ def get_node_sibling_count(node, nodes):
         node = nodes[sib_index]
 
 
-def get_first_significant_node(node, nodes, string_data, parent=None, start=1):
-    if start or get_node_sibling_count(node, nodes) <= 1:
+def get_first_significant_node(node, nodes, string_data, parent=None,
+                               last_begin_parenthese=None, started=False):
+    if (not started) or get_node_sibling_count(node, nodes) <= 1:
         # node has one or no siblings, meaning it COULD be a begin block
         if node.flags == 8:
             index, salt = node.data & 0xFFff, node.data >> 16
             if salt and index < len(nodes):
                 # node is parenthese. go deeper
                 return get_first_significant_node(
-                    nodes[index], nodes, string_data, node, True)
+                    nodes[index], nodes, string_data, node, node, True)
 
         func_name = get_string(string_data, node.string_offset)
         if (node.flags & 1) and node.type == 2 and func_name == "begin":
             index, salt = node.next_node & 0xFFff, node.next_node >> 16
             if salt and index < len(nodes):
                 return get_first_significant_node(
-                    nodes[index], nodes, string_data, None, True)
+                    nodes[index], nodes, string_data, parent,
+                    last_begin_parenthese, True)
 
-    if parent is None:
-        return node
-    return parent
+    if last_begin_parenthese is not None:
+        return last_begin_parenthese
+    elif parent is not None:
+        return parent
+    return node
         
 
 def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
