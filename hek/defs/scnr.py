@@ -77,55 +77,8 @@ r_a_stream_header = Struct("r a stream header",
     SIZE=60
     )
 
-script_entity = Union("script entity",
-    CASES=dict(
-        id=SInt32("id"),
-        real=Float("real"),
-        unknown=QStruct("unknown",
-            SInt16("index"),
-            SInt16("salt"),
-            )
-        )
-    )
-
-expression_type = SEnum16("expression type",
-    ('parentheses', 8),
-    ('regular_expression', 9),
-    ('script_name', 10),
-    ('global', 13)
-    )
-
-script_type = SEnum16("script type", *script_types)
+script_type = SEnum16("type", *script_types)
 return_type = SEnum16("return type", *script_object_types)
-
-script_syntax_data_block = QStruct("script_syntax_data_block",
-    UInt16("salt"),
-    UInt16("unknown"),
-    return_type,
-    expression_type,
-    UInt32("sibling node"),
-    UInt32("string offset"),
-    Union("value", INCLUDE=script_entity),
-    SIZE=20
-    )
-
-script_syntax_data_header = Container("script syntax data header",
-    ascii_str32('name', DEFAULT="script node"),
-    UInt16("max instances", DEFAULT=19001),  # this is 1 more than expected
-    UInt16("instance size", DEFAULT=20),
-    UInt8("is valid", DEFAULT=1),
-    UInt8("identifier zero invalid"),   # zero?
-    Pad(2),
-    UInt32("sig", DEFAULT="d@t@"),
-    UInt16("next index"),  # zero?
-    UInt16("last index"),
-    Union("next", INCLUDE=script_entity),
-    Pointer32("first"),
-    SIZE=56
-    )
-
-script_syntax_data_header_os = dict(script_syntax_data_header)
-script_syntax_data_header_os[1] = UInt16("data array length", DEFAULT=28501)
 
 device_flags = (
     "initially open",  # value of 1.0
@@ -560,19 +513,19 @@ ai_recording_reference = Struct("ai recording reference",
     SIZE=40
     )
 
-script = Struct("script",
-    ascii_str32("script name"),
+halo_script = Struct("script",
+    ascii_str32("name"),
     script_type,
     return_type,
-    SInt32("root expression index"),
+    UInt32("root expression index"),
     SIZE=92
     )
 
-halo_global = Struct("halo global",
-    ascii_str32("global name"),
+halo_global = Struct("global",
+    ascii_str32("name"),
     SEnum16("type", *script_object_types),
     Pad(6),
-    SInt32("initialization expression index"),
+    UInt32("initialization expression index"),
     SIZE=92
     )
 
@@ -662,8 +615,8 @@ actor_starting_location = Struct("starting location",
     Bool8("flags",
         "required",
         ),
-    SEnum16("return state", *squad_states),
-    SEnum16("initial state", *squad_states),
+    SEnum16("return state", *(dict(NAME=n, GUI_NAME=n) for n in squad_states)),
+    SEnum16("initial state", *(dict(NAME=n, GUI_NAME=n) for n in squad_states)),
     dyn_senum16("actor type",
         DYN_NAME_PATH="tagdata.actors_palette.STEPTREE[DYN_I].name.filepath"),
     dyn_senum16("command list",
@@ -677,8 +630,8 @@ squad = Struct("squad",
         DYN_NAME_PATH="tagdata.actors_palette.STEPTREE[DYN_I].name.filepath"),
     dyn_senum16("platoon",
         DYN_NAME_PATH=".....platoons.STEPTREE[DYN_I].name"),
-    SEnum16("initial state", *squad_states),
-    SEnum16("return state", *squad_states),
+    SEnum16("initial state", *(dict(NAME=n, GUI_NAME=n) for n in squad_states)),
+    SEnum16("return state", *(dict(NAME=n, GUI_NAME=n) for n in squad_states)),
     Bool32("flags",
         "unused",
         "never search",
@@ -807,7 +760,7 @@ command = Struct("command",
     dyn_senum16("animation",
         DYN_NAME_PATH="tagdata.ai_animation_references.STEPTREE[DYN_I].animation_name"),
     dyn_senum16("script",
-        DYN_NAME_PATH="tagdata.scripts.STEPTREE[DYN_I].script_name"),
+        DYN_NAME_PATH="tagdata.scripts.STEPTREE[DYN_I].name"),
     dyn_senum16("recording",
         DYN_NAME_PATH="tagdata.ai_recording_references.STEPTREE[DYN_I].recording_name"),
     dyn_senum16("command", DYN_NAME_PATH="..[DYN_I].atom_type.enum_name"),
@@ -1026,8 +979,8 @@ scnr_body = Struct("tagdata",
         DYN_NAME_PATH='.name'),
     rawdata_ref("script syntax data", max_size=380076),
     rawdata_ref("script string data", max_size=262144),
-    reflexive("scripts", script, 512, DYN_NAME_PATH='.script_name'),
-    reflexive("globals", halo_global, 128, DYN_NAME_PATH='.global_name'),
+    reflexive("scripts", halo_script, 512, DYN_NAME_PATH='.name'),
+    reflexive("globals", halo_global, 128, DYN_NAME_PATH='.name'),
     reflexive("references", reference, 256,
               DYN_NAME_PATH='.reference.filepath'),
     reflexive("source files", source_file, 8, DYN_NAME_PATH='.source_name'),

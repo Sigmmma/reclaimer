@@ -3,9 +3,6 @@ import zlib
 from os.path import exists, join
 from .halo_map import *
 from reclaimer import data_extraction
-from reclaimer.h2.defs.bitm import bitm_meta_def as h2_bitm_meta_def
-from reclaimer.h2.defs.snd_ import snd__meta_def as h2_snd__meta_def
-from reclaimer.h2.defs.ugh_ import ugh__meta_def as h2_ugh__meta_def
 from reclaimer.h2.util import HALO2_MAP_TYPES, split_raw_pointer
 
 
@@ -112,10 +109,20 @@ class Halo2Map(HaloMap):
                 print(format_exc())
 
     def setup_defs(self):
-        self.defs = {
-            "bitm": h2_bitm_meta_def,
-            "snd!": h2_snd__meta_def, "ugh!": h2_ugh__meta_def,
-            }
+        if Halo2Map.defs:
+            return
+
+        Halo2Map.defs = defs = {}
+        for fcc in ("ant!", "bitm", "hsc*", "pphy", "snd!", "trak", "ugh!"):
+            try:
+                fcc2 = fcc
+                for char in "!#$*<>/ ":
+                    fcc2 = fcc2.replace(char, "_")
+                exec("from reclaimer.h2.defs.%s import %s_meta_def" %
+                     (fcc2, fcc2))
+                exec("defs['%s'] = %s_meta_def" % (fcc, fcc2))
+            except Exception:
+                print(format_exc())
 
     def get_meta_descriptor(self, tag_cls):
         tagdef = self.defs.get(tag_cls)

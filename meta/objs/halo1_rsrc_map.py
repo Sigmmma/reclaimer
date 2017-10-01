@@ -1,8 +1,3 @@
-from reclaimer.os_v4_hek.defs.bitm import bitm_def
-from reclaimer.os_v4_hek.defs.snd_ import snd__def
-from reclaimer.os_v4_hek.defs.font import font_def
-from reclaimer.os_v4_hek.defs.hmt_ import hmt__def
-from reclaimer.os_v4_hek.defs.ustr import ustr_def
 from reclaimer import data_extraction
 
 from .byteswapping import raw_block_def, byteswap_pcm16_samples
@@ -55,10 +50,18 @@ class Halo1RsrcMap(HaloMap):
                                      calc_pointers=False))
 
     def setup_defs(self):
-        self.defs = {
-            "bitm": bitm_def, "snd!": snd__def,
-            "font": font_def, "hmt ": hmt__def, "ustr": ustr_def
-            }
+        if Halo1RsrcMap.defs:
+            return
+
+        Halo1RsrcMap.defs = defs = {}
+        for fcc in ("bitm", "snd!", "font", "hmt ", "ustr"):
+            try:
+                fcc2 = fcc.replace("!", "_").replace(" ", "_")
+                exec("from reclaimer.os_v4_hek.defs.%s import %s_def" %
+                     (fcc2, fcc2))
+                exec("defs['%s'] = %s_def" % (fcc, fcc2))
+            except Exception:
+                print(format_exc())
 
     def extract_tag_data(self, meta, tag_index_ref, **kw):
         extractor = data_extraction.h1_data_extractors.get(

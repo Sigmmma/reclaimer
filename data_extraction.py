@@ -18,7 +18,7 @@ from arbytmap import Arbytmap, TYPE_2D, TYPE_3D, TYPE_CUBEMAP,\
      FORMAT_R32G32B32F, FORMAT_A32R32G32B32F
     
 from os import makedirs
-from os.path import dirname, exists, join
+from os.path import dirname, exists, join, isfile
 from struct import unpack, pack_into
 from traceback import format_exc
 
@@ -33,6 +33,7 @@ from .h2.util import *
 from .adpcm import decode_adpcm_samples
 from .hek.defs.objs.p8_palette import load_palette
 from .hek.defs.hmt_ import icon_types as hmt_icon_types
+from .hsc import get_hsc_data_block, hsc_bytecode_to_string
 
 #load the palette for p-8 bump maps
 P8_PALETTE = load_palette()
@@ -64,7 +65,7 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
 
         filepath = BAD_PATH_CHAR_REMOVAL.sub("_", filepath)
 
-        if exists(filepath) and not overwrite:
+        if not overwrite and isfile(filepath):
             continue
 
         if encoding in ("ogg", "wma"):
@@ -407,8 +408,10 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
     return False
 
 
-def extract_h1_hud_message_text(meta, tag_index_ref, **kw):
+def extract_hud_message_text(meta, tag_index_ref, **kw):
     filepath = join(kw['out_dir'], tag_index_ref.tag.tag_path + ".hmt")
+    if isfile(filepath) and not kw.get('overwrite', True):
+        return False
 
     in_data  = meta.string.data
     messages = meta.messages.STEPTREE
@@ -451,17 +454,126 @@ def extract_h1_hud_message_text(meta, tag_index_ref, **kw):
     return False
 
 
+def extract_h1_scnr_data(meta, tag_index_ref, **kw):
+    filepath_base = join(
+        kw['out_dir'], dirname(tag_index_ref.tag.tag_path), "scripts")
+    overwrite = kw.get('overwrite', True)
+    # If the path doesnt exist, create it
+    if not exists(filepath_base):
+        makedirs(filepath_base)
+
+    engine = kw.get('engine')
+    if not engine and 'halo_map' in kw:
+        engine = kw['halo_map'].engine
+
+    syntax_data = get_hsc_data_block(meta.script_syntax_data.data)
+    string_data = meta.script_string_data.data.decode("latin-1")
+    if not syntax_data or not string_data:
+        return True
+
+    for typ, arr in (("global", meta.globals.STEPTREE),
+                     ("script", meta.scripts.STEPTREE)):
+        filepath = join(filepath_base, "%ss" % typ)
+        comment_str = ""
+        src_file_i = 0
+        global_uses  = {}
+        static_calls = {}
+        if typ == "global":
+            sort_by = global_uses
+            try:
+                comment_str += "; scenario object names(sorted alphabetically):\n"
+                names = set()
+                for obj in meta.object_names.STEPTREE:
+                    names.add(obj.name)
+
+                for name in sorted(names):
+                    comment_str += ";     %s\n" % name
+
+            except Exception:
+                pass
+        else:
+            sort_by = static_calls
+
+        try:
+            sources = {}
+            for i in range(len(arr)):
+                # assemble source code for each function/global
+                name = arr[i].name
+                global_uses[name]  = set()
+                static_calls[name] = set()
+                sources[name] = (hsc_bytecode_to_string(
+                    syntax_data, string_data, i, meta.scripts.STEPTREE,
+                    meta.globals.STEPTREE, typ, engine,
+                    global_uses=global_uses[name],
+                    static_calls=static_calls[name]))
+
+            already_sorted = set()
+            sorted_sources = []
+            need_to_sort = sources
+            while need_to_sort:
+                # sort the functions/globals so dependencies come first
+                next_need_to_sort = {}
+                for name in sorted(need_to_sort.keys()):
+                    source = need_to_sort[name]
+                    if sort_by[name].issubset(already_sorted):
+                        sorted_sources.append(source)
+                        already_sorted.add(name)
+                    else:
+                        next_need_to_sort[name] = source
+
+                if need_to_sort.keys() == next_need_to_sort.keys():
+                    print("Could not sort %s so dependencies come first." % typ)
+                    for src in need_to_sort.values():
+                        sorted_sources.append(src)
+                    break
+                need_to_sort = next_need_to_sort
+
+            merged_sources = []
+            merged_src = ""
+            for src in sorted_sources:
+                # concatenate sources until they are too large to be compiled
+                if len(merged_src) + len(src) > 262100:
+                    merged_sources.append(merged_sources)
+                    merged_src = ""
+
+                merged_src += src + "\n\n\n"
+
+            if merged_src:
+                merged_sources.append(merged_src)
+
+            i = 0
+            for out_data in merged_sources:
+                # write sources to hsc files
+                if len(merged_sources) > 1:
+                    fp = "%s_%s.hsc" % (filepath, i)
+                else:
+                    fp = "%s.hsc" % filepath
+
+                if not overwrite and isfile(fp):
+                    continue
+
+                with open(fp, "w") as f:
+                    f.write("; Extracted with Reclaimer\n\n")
+                    f.write(out_data)
+                    f.write(comment_str)
+        except Exception:
+            print(format_exc())
+            return True
+
+    return False
+
+
 h1_data_extractors = {
     #'mode', 'mod2', 'coll', 'phys', 'antr', 'magy', 'sbsp',
     #'font', 'str#', 'ustr', 'unic',
     "bitm": extract_bitmaps, "snd!": extract_h1_sounds,
-    "hmt ": extract_h1_hud_message_text,
+    "hmt ": extract_hud_message_text, 'scnr': extract_h1_scnr_data,
     }
 
 h2_data_extractors = {
     #'mode', 'coll', 'phmo', 'jmad',
     #'sbsp',
 
-    #'hmt ', 'unic',
+    #'unic',
     "bitm": extract_bitmaps, "snd!": extract_h2_sounds,
     }

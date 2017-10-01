@@ -135,10 +135,10 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(rawdata_ref_struct)
     kwargs.update(WIDGET=widget)
+    ref_struct[0] = dict(ref_struct[0])
+    ref_struct[0][VISIBLE] = False
     if max_size is not None:
-        ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
-        ref_struct[0][VISIBLE] = False
         kwargs[MAX] = max_size
 
     return RawdataRef(name,
@@ -614,6 +614,10 @@ framebuffer_blend_functions = (
     "component max",
     "alpha-multiply add",
     )
+
+# DO NOT MODIFY ANY OF THESE SCRIPT ENUMS.
+# The exact wording is important as the script extractor uses
+# these strings to reconstruct scripts
 script_types = (
     "startup",
     "dormant",
@@ -631,39 +635,44 @@ script_object_types = (
     "real",
     "short",
     "long",
+
+# DO NOT MODIFY ANY OF THESE SCRIPT ENUMS.
+# The exact wording is important as the script extractor uses
+# these strings to reconstruct scripts
+
     "string",
     "script",
 
-    "trigger volume",
-    "cutscene flag",
-    "cutscene camera point",
-    "cutscene title",
-    "cutscene recording",
+    "trigger_volume",
+    "cutscene_flag",
+    "cutscene_camera_point",
+    "cutscene_title",
+    "cutscene_recording",
 
-    "device group",
+    "device_group",
     "ai",
-    "ai command list",
-    "starting profile",
+    "ai_command_list",
+    "starting_profile",
 
     "conversation",
     "navpoint",
-    "hud message",
-    "object list",
+    "hud_message",
+    "object_list",
 
     "sound",
     "effect",
     "damage",
-    "looping sound",
-    "animation graph",
-    "actor variant",
-    "damage effect",
+    "looping_sound",
+    "animation_graph",
+    "actor_variant",
+    "damage_effect",
 
-    "object definition",
-    "game difficulty",
+    "object_definition",
+    "game_difficulty",
     "team",
-    "ai default state",
-    "actor type",
-    "hud corner",
+    "ai_default_state",
+    "actor_type",
+    "hud_corner",
 
     "object",
     "unit",
@@ -672,12 +681,12 @@ script_object_types = (
     "device",
     "scenery",
 
-    "object name",
-    "unit name",
-    "vehicle name",
-    "weapon name",
-    "device name",
-    "scenery name"
+    "object_name",
+    "unit_name",
+    "vehicle_name",
+    "weapon_name",
+    "device_name",
+    "scenery_name"
     )
 function_names = (
     "none",
