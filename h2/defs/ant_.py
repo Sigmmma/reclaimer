@@ -1,6 +1,5 @@
 from ..common_descs import *
-from .objs.tag import H2Tag
-from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.defs.block_def import BlockDef
 
 vertex = Struct("vertex",
     Float("spring strength coefficient"),
@@ -16,10 +15,10 @@ vertex = Struct("vertex",
     SIZE=128
     )
 
-ant__body = Struct("tagdata",
-    ascii_str_varlen("attachment marker name"),
-    h2_dependency("bitmaps", "bitm"),
-    h2_dependency("physics", "pphy"),
+ant__meta_def = BlockDef("ant!",
+    string_id_meta("attachment marker name"),
+    h2_meta_dependency("bitmaps", "bitm"),
+    h2_meta_dependency("physics", "pphy"),
 
     Pad(80),
     Float("spring strength coefficient"),
@@ -27,16 +26,6 @@ ant__body = Struct("tagdata",
     Float("cutoff pixels"),
 
     Pad(40),
-    h2_reflexive("vertices", vertex, 20),
-    SIZE=180
-    )
-
-
-def get():
-    return ant__def
-
-ant__def = TagDef("ant!",
-    h2_blam_header('ant!'),
-    ant__body,
-    ext=".antenna", endian="<", tag_cls=H2Tag
+    h2_meta_reflexive("vertices", vertex, 20),
+    ENDIAN="<", TYPE=Struct,
     )
