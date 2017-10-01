@@ -2,12 +2,14 @@
 Used for extracting tag definitions to a format that can be easily read.
 '''
 from reclaimer.field_types import Reflexive
+from reclaimer.h2.field_types import H2MetaReflexive, H2Reflexive
 from traceback import format_exc
+from supyr_struct.tag import Tag
 
 
 def find_next_blocks(block, next_blocks):
     typ = block.TYPE
-    if typ is Reflexive:
+    if typ in (Reflexive, H2MetaReflexive, H2Reflexive):
         block.STEPTREE.append()
         next_blocks.append(block.STEPTREE[-1])
         return
@@ -34,8 +36,12 @@ def print_tag_def(tag_def):
 
     # write the tag definition to a file
     with open("%s_def.txt" % tag_def.def_id, "w") as f:
-        blocks = [new_tag.data.blam_header, new_tag.data.tagdata]
-        f.write("%s (%s)\n\n" % (tag_def.def_id, tag_def.ext[1:]))
+        if isinstance(new_tag, Tag):
+            blocks = [new_tag.data.blam_header, new_tag.data.tagdata]
+            f.write("%s (%s)\n\n" % (tag_def.def_id, tag_def.ext[1:]))
+        else:
+            blocks = [new_tag]
+            f.write("%s\n\n" % tag_def.def_id)
 
         # loop over each block until they are exhausted
         while blocks:
@@ -68,7 +74,7 @@ while not tag_defs:
     engine = engine.strip(" ").lower()
     print()
     classes = input("Type in the four character codes of the tag classes to write.\n"
-                    "Use commans to separate each one. Spaces are ignored.\n"
+                    "Use commas to separate each one. Spaces are ignored.\n"
                     "Examples include jpt!, vehi, DeLa, snd!, and bitm.\n"
                     ">>> ")
     print()
@@ -81,7 +87,11 @@ while not tag_defs:
     classes = []
     for cls in fixed_classes:
         try:
-            exec("from reclaimer.%s.defs.%s import %s_def as tag_def" % (engine, cls, cls))
+            def_name = cls
+            if "_meta" in cls:
+                def_name = cls.replace("_meta", "")
+            exec("from reclaimer.%s.defs.%s import %s_def as tag_def" %
+                 (engine, def_name, cls))
             tag_defs[cls] = tag_def
             classes.append(cls)
         except Exception:

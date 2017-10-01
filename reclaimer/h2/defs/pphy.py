@@ -1,8 +1,7 @@
 from ..common_descs import *
-from .objs.tag import H2Tag
-from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.defs.block_def import BlockDef
 
-pphy_body = Struct("tagdata",
+pphy_meta_def = BlockDef("pphy",
     Bool32("flags",
         "flamethrower particle collision",
         "collides with structures",
@@ -22,15 +21,5 @@ pphy_body = Struct("tagdata",
     Float("water friction"),
     Float("surface friction"),
     Float("elasticity"),
-    SIZE=64
-    )
-
-def get():
-    return pphy_def
-
-pphy_def = TagDef("pphy",
-    h2_blam_header('pphy'),
-    pphy_body,
-
-    ext=".point_physics", endian="<", tag_cls=H2Tag
+    ENDIAN="<", TYPE=Struct,
     )

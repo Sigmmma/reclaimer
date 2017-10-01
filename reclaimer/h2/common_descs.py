@@ -223,6 +223,23 @@ def h2_meta_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **
     return H2MetaReflexive(name, **desc)
 
 
+def h2_meta_rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
+                        widget=TextFrame, **kwargs):
+    '''This function serves to macro the creation of a rawdata reference'''
+    ref_struct = dict(h2_meta_rawdata_ref_struct)
+    kwargs.update(WIDGET=widget)
+    ref_struct[0] = dict(ref_struct[0])
+    ref_struct[0][VISIBLE] = False
+    if max_size is not None:
+        ref_struct[0][MAX] = max_size
+        kwargs[MAX] = max_size
+
+    return H2MetaRawdataRef(name,
+        INCLUDE=ref_struct, ORIENT="v",
+        STEPTREE=f_type("data",
+            SIZE=".size", GUI_NAME=name.replace('_', ' '), **kwargs)
+            )
+
 def h2_meta_rawdata_ref(name, f_type=BytearrayRaw, max_size=None, widget=None):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(h2_meta_rawdata_ref_struct)
@@ -250,8 +267,7 @@ def h2_meta_dependency(name='tag ref', valid_ids=None):
 
     return H2MetaTagIndexRef(name,
         valid_ids,
-        STEPTREE=HaloRefStr(
-            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=234),  # 10 < Halo1
+        tag_id_struct
         )
 
 def h2_reflexive(*args, **kwargs):
@@ -260,6 +276,7 @@ def h2_reflexive(*args, **kwargs):
     desc["SIZE"] = 12
     desc["INCLUDE"] = reflexive_struct
     desc["TYPE"] = H2Reflexive
+    return desc
 
 
 def h2_rawdata_ref(*args, **kwargs):
@@ -268,6 +285,7 @@ def h2_rawdata_ref(*args, **kwargs):
     desc["SIZE"] = 20
     desc["INCLUDE"] = rawdata_ref_struct
     desc["TYPE"] = H2RawdataRef
+    return desc
 
 
 def h2_dependency(*args, **kwargs):
@@ -276,6 +294,7 @@ def h2_dependency(*args, **kwargs):
     desc["SIZE"] = 16
     desc["INCLUDE"] = tag_index_ref_struct
     desc["TYPE"] = H2TagIndexRef
+    return desc
 
 
 def h2_blam_header(tagid, version=1):
@@ -294,6 +313,79 @@ valid_h2_tags = h2_tag_class(*h2_tag_class_fcc_to_ext.keys())
 # ###########################################################################
 # The order of element in all the enumerators is important(DONT SHUFFLE THEM)
 # ###########################################################################
+
+# DO NOT MODIFY ANY OF THESE SCRIPT ENUMS.
+# The exact wording is important as the script extractor uses
+# these strings to reconstruct scripts
+script_types = (
+    "startup",
+    "dormant",
+    "continuous",
+    "static",
+    "stub",
+    "command_script",
+    )
+script_object_types = (
+    "unparsed",
+    "special form",
+    "function name",
+    "passthrough",
+    "void",
+    "boolean",
+    "short",
+    "long",
+    "string_id",
+    "unit_seat_mapping",
+
+    "trigger_volume",
+    "cutscene_flag",
+    "cutscene_camera_point",
+    "cutscene_title",
+    "cutscene_recording",
+
+    "device_group",
+    "ai_command_list",
+    "ai_command_script",
+    "ai_behavior",
+    "ai_orders",
+
+# DO NOT MODIFY ANY OF THESE SCRIPT ENUMS.
+# The exact wording is important as the script extractor uses
+# these strings to reconstruct scripts
+
+    "starting_profile",
+
+    "conversation",
+    "structure_bsp",
+    "navpoint",
+    "point reference",
+    "hud_message",
+    "object_list",
+
+    "effect",
+    "damage",
+    "looping_sound",
+    "animation_graph",
+    "damage_effect",
+
+    "object_definition",
+    "shader",
+    "render model",
+    "structure definition",
+    "lightmap definition",
+    "game_difficulty",
+    "actor_type",
+    "hud_corner",
+
+    "model_state",
+    "unit",
+    "object_name",
+    "unit_name",
+    "vehicle_name",
+    "weapon_name",
+    "device_name",
+    "scenery_name",
+    )
 
 #Shared Enumerator options
 old_materials_list = materials_list
