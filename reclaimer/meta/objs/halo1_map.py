@@ -235,19 +235,21 @@ class Halo1Map(HaloMap):
             # tag exists in a resource cache
             tag_id = tag_index_ref.meta_offset
 
-            if tag_cls == "snd!":
-                rsrc_map = self.maps.get("sounds")
+            rsrc_map = None
+            if tag_cls == "snd!" and "sounds" in self.maps:
+                rsrc_map = self.maps["sounds"]
                 sound_mapping = self.ce_rsrc_sound_indexes_by_path
                 tag_path = tag_index_ref.tag.tag_path
                 if sound_mapping is None or tag_path not in sound_mapping:
                     return
 
                 tag_id = sound_mapping[tag_path]//2
-            elif tag_cls == "bitm":
-                rsrc_map = self.maps.get("bitmaps")
+            elif tag_cls == "bitm" and "bitmaps" in self.maps:
+                rsrc_map = self.maps["bitmaps"]
                 tag_id = tag_id//2
-            else:
-                rsrc_map = self.maps.get("loc")
+
+            elif "loc" in self.maps:
+                rsrc_map = self.maps["loc"]
                 # this resource tag is in a yelo loc.map, which means
                 # we will need to set its tag class to what this map
                 # specifies it as or else the resource map wont know
