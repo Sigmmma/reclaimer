@@ -101,6 +101,16 @@ h1_script_syntax_data_def    = BlockDef(h1_script_syntax_data)
 h1_script_syntax_data_os_def = BlockDef(h1_script_syntax_data_os)
 
 
+def float_to_str(f, max_sig_figs=7):
+    sig_figs = -1
+    if abs(f) > 0:
+        sig_figs = int(max_sig_figs - log(abs(f), 10))
+
+    if sig_figs < 0:
+        return str(f).split(".")[0]
+    return (("%" + (".%sf" % sig_figs)) % f).rstrip("0").rstrip(".")
+
+
 def cast_uint32_to_float(uint32, packer=struct.Struct("<I"),
                          unpacker=struct.Struct("<f")):
     return unpacker.unpack(packer.pack(uint32))[0]
@@ -138,12 +148,11 @@ def get_hsc_data_block(raw_syntax_data=None, engine="halo1"):
     if block_def is None:
         return
 
-    try:
-        if raw_syntax_data[sig_off: sig_off+4] == b"d@t@":
-            FieldType.force_big()
-        else:
-            FieldType.force_little()
+    endianness_force = FieldType.force_little
+    if raw_syntax_data[sig_off: sig_off+4] == b"d@t@":
+        endianness_force = FieldType.force_big
 
+    with endianness_force:
         syntax_data = block_def.build(rawdata=raw_syntax_data)
         node_size = syntax_data.node_size
         node_ct = min(syntax_data.max_nodes, syntax_data.last_node,
@@ -152,15 +161,6 @@ def get_hsc_data_block(raw_syntax_data=None, engine="halo1"):
         nodes = syntax_data.nodes
         for i in range(header_len, header_len + node_ct*node_size, node_size):
             nodes.append(rawdata=raw_syntax_data, root_offset=i)
-
-    except Exception:
-        print(format_exc())
-        syntax_data = None
-
-    if f_endian != FieldType.f_endian:
-        if   f_endian == "=": FieldType.force_normal()
-        elif f_endian == ">": FieldType.force_big()
-        elif f_endian == "<": FieldType.force_little()
 
     return syntax_data
 
@@ -273,16 +273,7 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
                 node_str = "true" if node.data&1 else "false"
             elif node_type == 6:
                 # float
-                float_data = cast_uint32_to_float(node.data)
-                sig_figs = -1
-                if abs(float_data) > 0:
-                    sig_figs = int(7 - log(abs(float_data), 10))
-    
-                if sig_figs < 0:
-                    node_str = str(float_data).split(".")[0]
-                else:
-                    float_str = ("%" + (".%sf" % sig_figs)) % float_data
-                    node_str = float_str.rstrip("0").rstrip(".")
+                node_str = float_to_str(cast_uint32_to_float(node.data))
             elif node_type == 7:
                 # short
                 node_str = str(cast_uint32_to_sint16(node.data))

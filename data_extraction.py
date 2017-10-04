@@ -474,20 +474,28 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
     for typ, arr in (("global", meta.globals.STEPTREE),
                      ("script", meta.scripts.STEPTREE)):
         filepath = join(filepath_base, "%ss" % typ)
-        comment_str = ""
+        comments = ""
         src_file_i = 0
         global_uses  = {}
         static_calls = {}
         if typ == "global":
             sort_by = global_uses
             try:
-                comment_str += "; scenario object names(sorted alphabetically):\n"
-                names = set()
-                for obj in meta.object_names.STEPTREE:
-                    names.add(obj.name)
+                comments += "; scenario names(each sorted alphabetically)\n"
+                comments += "\n;   object names:\n"
+                for name in sorted(set(obj.name for obj in
+                                       meta.object_names.STEPTREE)):
+                    comments += ";     %s\n" % name
 
-                for name in sorted(names):
-                    comment_str += ";     %s\n" % name
+                comments += "\n;   trigger volumes:\n"
+                for name in sorted(set(tv.name for tv in
+                                       meta.trigger_volumes.STEPTREE)):
+                    comments += ";     %s\n" % name
+
+                comments += "\n;   device groups:\n"
+                for name in sorted(set(dg.name for dg in
+                                       meta.device_groups.STEPTREE)):
+                    comments += ";     %s\n" % name
 
             except Exception:
                 pass
@@ -555,7 +563,7 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
                 with open(fp, "w") as f:
                     f.write("; Extracted with Reclaimer\n\n")
                     f.write(out_data)
-                    f.write(comment_str)
+                    f.write(comments)
         except Exception:
             print(format_exc())
             return True
