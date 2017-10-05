@@ -509,11 +509,11 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
                 name = arr[i].name
                 global_uses[name]  = set()
                 static_calls[name] = set()
-                sources[name] = (hsc_bytecode_to_string(
+                sources[name] = hsc_bytecode_to_string(
                     syntax_data, string_data, i, meta.scripts.STEPTREE,
                     meta.globals.STEPTREE, typ, engine,
                     global_uses=global_uses[name],
-                    static_calls=static_calls[name]))
+                    static_calls=static_calls[name])
 
             already_sorted = set()
             sorted_sources = []
@@ -541,7 +541,7 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
             for src in sorted_sources:
                 # concatenate sources until they are too large to be compiled
                 if len(merged_src) + len(src) > 262100:
-                    merged_sources.append(merged_sources)
+                    merged_sources.append(merged_src)
                     merged_src = ""
 
                 merged_src += src + "\n\n\n"
@@ -564,6 +564,8 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
                     f.write("; Extracted with Reclaimer\n\n")
                     f.write(out_data)
                     f.write(comments)
+
+                i += 1
         except Exception:
             print(format_exc())
             return True

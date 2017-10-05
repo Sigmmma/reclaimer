@@ -1,13 +1,14 @@
 from copy import copy, deepcopy
 from math import pi
-
 try:
     from mozzarilla.field_widgets import *
 except Exception:
     ReflexiveFrame = HaloRawdataFrame = HaloUInt32ColorPickerFrame =\
                      TextFrame = ColorPickerFrame = EntryFrame =\
                      HaloScriptSourceFrame = SoundSampleFrame =\
-                     DynamicArrayFrame = DynamicEnumFrame = None
+                     DynamicArrayFrame = DynamicEnumFrame =\
+                     HaloScriptTextFrame = None
+
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
 from supyr_struct.defs.util import *
