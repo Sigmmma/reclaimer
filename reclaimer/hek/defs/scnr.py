@@ -77,9 +77,6 @@ r_a_stream_header = Struct("r a stream header",
     SIZE=60
     )
 
-script_type = SEnum16("type", *script_types)
-return_type = SEnum16("return type", *script_object_types)
-
 device_flags = (
     "initially open",  # value of 1.0
     "initially off",  # value of 0.0
@@ -514,19 +511,19 @@ ai_recording_reference = Struct("ai recording reference",
     )
 
 halo_script = Struct("script",
-    ascii_str32("name"),
-    script_type,
-    return_type,
-    UInt32("root expression index"),
+    ascii_str32("name", EDITABLE=False),
+    SEnum16("type", *script_types),
+    SEnum16("return type", *script_object_types, EDITABLE=False),
+    UInt32("root expression index", EDITABLE=False),
     Void("decompiled script", WIDGET=HaloScriptTextFrame),
     SIZE=92,
     )
 
 halo_global = Struct("global",
-    ascii_str32("name"),
-    SEnum16("type", *script_object_types),
+    ascii_str32("name", EDITABLE=False),
+    SEnum16("type", *script_object_types, EDITABLE=False),
     Pad(6),
-    UInt32("initialization expression index"),
+    UInt32("initialization expression index", EDITABLE=False),
     Void("decompiled script", WIDGET=HaloScriptTextFrame),
     SIZE=92,
     )
@@ -617,7 +614,7 @@ actor_starting_location = Struct("starting location",
     Bool8("flags",
         "required",
         ),
-    SEnum16("return state", *(dict(NAME=n, GUI_NAME=n) for n in squad_states)),
+    SEnum16("return state",  *(dict(NAME=n, GUI_NAME=n) for n in squad_states)),
     SEnum16("initial state", *(dict(NAME=n, GUI_NAME=n) for n in squad_states)),
     dyn_senum16("actor type",
         DYN_NAME_PATH="tagdata.actors_palette.STEPTREE[DYN_I].name.filepath"),
@@ -633,7 +630,7 @@ squad = Struct("squad",
     dyn_senum16("platoon",
         DYN_NAME_PATH=".....platoons.STEPTREE[DYN_I].name"),
     SEnum16("initial state", *(dict(NAME=n, GUI_NAME=n) for n in squad_states)),
-    SEnum16("return state", *(dict(NAME=n, GUI_NAME=n) for n in squad_states)),
+    SEnum16("return state",  *(dict(NAME=n, GUI_NAME=n) for n in squad_states)),
     Bool32("flags",
         "unused",
         "never search",
@@ -797,8 +794,8 @@ command_list = Struct("command list",
     )
 
 participant = Struct("participant",
-    Pad(3),
-    Bool8("flags",
+    Pad(2),
+    Bool16("flags",
         "optional",
         "has alternate",
         "is alternate",
