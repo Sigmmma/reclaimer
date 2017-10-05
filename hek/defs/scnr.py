@@ -518,7 +518,8 @@ halo_script = Struct("script",
     script_type,
     return_type,
     UInt32("root expression index"),
-    SIZE=92
+    Void("decompiled script", WIDGET=HaloScriptTextFrame),
+    SIZE=92,
     )
 
 halo_global = Struct("global",
@@ -526,7 +527,8 @@ halo_global = Struct("global",
     SEnum16("type", *script_object_types),
     Pad(6),
     UInt32("initialization expression index"),
-    SIZE=92
+    Void("decompiled script", WIDGET=HaloScriptTextFrame),
+    SIZE=92,
     )
 
 reference = Struct("tag reference",
