@@ -209,7 +209,7 @@ def get_first_significant_node(node, nodes, string_data, parent=None,
 def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
                             object_types, indent=1, indent_size=4, **kwargs):
     if node_index < 0 or node_index >= len(nodes):
-        return "", False
+        return "", False, 0
 
     has_newlines = False
     node_strs = []
@@ -293,7 +293,7 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
 
     node_str_ct = len(node_strs)
     if not node_str_ct:
-        return "", False
+        return "", False, 0
 
     string = ""
     indent_str = " " * indent_size * indent
