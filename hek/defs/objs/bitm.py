@@ -13,10 +13,7 @@ try:
         ab.FORMAT_P8 = "P8-BUMP"
 
         """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
-        ab.define_format(
-            format_id=ab.FORMAT_P8, raw_format=True, channel_count=4,
-            depths=(8,8,8,8), offsets=(24,16,8,0),
-            masks=(4278190080, 16711680, 65280, 255))
+        ab.define_format(format_id=ab.FORMAT_P8, depths=(8,8,8,8))
 except (ImportError, AttributeError):
     ab = None
 
@@ -30,9 +27,9 @@ TYPE_WHITE = 3
 FORMAT_NONE = -1#this value is used ONLY in the conversion process
 
 FORMAT_A8 = 0
-FORMAT_Y8 = 1
-FORMAT_AY8 = 2
-FORMAT_A8Y8 = 3
+FORMAT_L8 = 1
+FORMAT_AL8 = 2
+FORMAT_A8L8 = 3
 FORMAT_R5G6B5 = 6
 FORMAT_A1R5G5B5 = 8
 FORMAT_A4R4G4B4 = 9
@@ -43,14 +40,14 @@ FORMAT_DXT3 = 15
 FORMAT_DXT5 = 16
 FORMAT_P8 = 17
 
-DXT_FORMATS = [FORMAT_DXT1,FORMAT_DXT3,FORMAT_DXT5]
+DXT_FORMATS = [FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5]
 
 PALLETIZED_FORMATS = [FORMAT_P8]
 
 TYPE_NAME_MAP = ["2D", "3D", "CUBE"]
 
 FORMAT_NAME_MAP = [
-    "A8", "Y8", "AY8", "A8Y8",
+    "A8", "L8", "AL8", "A8L8",
     "UNUSED1", "UNUSED2",
     "R5G6B5",  "UNUSED3", "A1R5G5B5", "A4R4G4B4",
     "X8R8G8B8", "A8R8G8B8",
