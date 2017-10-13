@@ -4,19 +4,17 @@ if not hasattr(arbytmap, "FORMAT_P8"):
     arbytmap.FORMAT_P8 = "P8-BUMP"
 
     """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
-    arbytmap.define_format(
-        format_id=arbytmap.FORMAT_P8, raw_format=True, channel_count=4,
-        depths=(8,8,8,8), offsets=(24,16,8,0),
-        masks=(4278190080, 16711680, 65280, 255))
+    arbytmap.register_format(format_id=arbytmap.FORMAT_P8, depths=(8,8,8,8))
 
 from arbytmap import Arbytmap, TYPE_2D, TYPE_3D, TYPE_CUBEMAP,\
-     FORMAT_A8, FORMAT_Y8, FORMAT_AY8, FORMAT_A8Y8,\
+     FORMAT_A8, FORMAT_L8, FORMAT_AL8, FORMAT_A8L8,\
      FORMAT_R5G6B5, FORMAT_A1R5G5B5, FORMAT_A4R4G4B4,\
      FORMAT_X8R8G8B8, FORMAT_A8R8G8B8,\
-     FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5, FORMAT_P8, FORMAT_U8V8,\
+     FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5,\
+     FORMAT_P8, FORMAT_V8U8, FORMAT_G8R8,\
      FORMAT_R16G16B16F, FORMAT_A16R16G16B16F,\
      FORMAT_R32G32B32F, FORMAT_A32R32G32B32F
-    
+
 from os import makedirs
 from os.path import dirname, exists, join, isfile
 from struct import unpack, pack_into
@@ -336,8 +334,8 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
         tex_infos.append(tex_info)
 
         if fmt in ("a8", "y8", "ay8", "p8"):
-            tex_info["format"] = {"a8":  FORMAT_A8,  "y8": FORMAT_Y8,
-                                  "ay8": FORMAT_AY8, "p8": FORMAT_A8}[fmt]
+            tex_info["format"] = {"a8":  FORMAT_A8,  "y8": FORMAT_L8,
+                                  "ay8": FORMAT_AL8, "p8": FORMAT_A8}[fmt]
         elif fmt == "p8-bump":
             tex_info.update(
                 palette=P8_PALETTE.p8_palette_32bit_packed*(bitmap.mipmaps+1),
@@ -346,7 +344,7 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
                      "a8y8", "v8u8", "g8b8"):
             bpp = 2
             tex_info["format"] = {
-                "a8y8": FORMAT_A8Y8, "v8u8": FORMAT_U8V8, "g8b8": FORMAT_U8V8,
+                "a8y8": FORMAT_A8L8, "v8u8": FORMAT_V8U8, "g8b8": FORMAT_G8R8,
                 "r5g6b5": FORMAT_R5G6B5, "a1r5g5b5": FORMAT_A1R5G5B5,
                 "a4r4g4b4": FORMAT_A4R4G4B4}[fmt]
         elif fmt in ("x8r8g8b8", "a8r8g8b8"):
