@@ -27,9 +27,9 @@ TYPE_WHITE = 3
 FORMAT_NONE = -1#this value is used ONLY in the conversion process
 
 FORMAT_A8 = 0
-FORMAT_L8 = 1
-FORMAT_AL8 = 2
-FORMAT_A8L8 = 3
+FORMAT_Y8 = 1
+FORMAT_AY8 = 2
+FORMAT_A8Y8 = 3
 FORMAT_R5G6B5 = 6
 FORMAT_A1R5G5B5 = 8
 FORMAT_A4R4G4B4 = 9
@@ -98,7 +98,6 @@ class BitmTag(HekTag):
         if new_value is None:
             return self.data.tagdata.bitmaps.bitmaps_array[b_index].format.data
         self.data.tagdata.bitmaps.bitmaps_array[b_index].format.data = new_value
-
 
     def bitmap_width_height_depth(self, b_index=0, new_value=None):
         bitmap = self.data.tagdata.bitmaps.bitmaps_array[b_index]
@@ -455,7 +454,7 @@ class BitmTag(HekTag):
             PROVIDE THE PALETTE AND SOME INFORMATION ABOUT IT"""
             if format == ab.FORMAT_P8:
                 tex_infos[-1]["palette"] = [
-                    P8_PALETTE.p8_palette_32bit_packed[0]]*mipmap_count
+                    P8_PALETTE.p8_palette_32bit_packed]*mipmap_count
 
                 # set it to packed since if we need to drop channels
                 # then it needs to be unpacked with channels dropped

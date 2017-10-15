@@ -145,11 +145,6 @@ class P8Palette():
 
             packed.append((unpacked[-4]<<24) + (unpacked[-3]<<16) +
                           (unpacked[-2]<<8)  +  unpacked[-1])
-                
-        # stick the palette in a list since that's how it'll
-        # need to be referenced by the bitmap convertor
-        self.p8_palette_32bit = [unpacked]
-        self.p8_palette_32bit_packed = [packed]
 
     def argb_array_to_p8_array_average_alpha(self, unpacked_pix):
         pal0 = self.palette[0]
