@@ -3,8 +3,8 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 noise_map = Struct("noise_map",
-    FlUInt16("unknown0"),
-    FlUInt16("unknown1"),
+    FlUInt16("unknown0", VISIBLE=False),
+    FlUInt16("unknown1", VISIBLE=False),
     float_sec("animation period"),
     QStruct("animation direction", INCLUDE=ijk_float),
     Float("noise map scale"),

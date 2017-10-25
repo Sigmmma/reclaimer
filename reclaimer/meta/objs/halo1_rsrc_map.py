@@ -200,12 +200,6 @@ class Halo1RsrcMap(HaloMap):
             # set the size of the compressed plate data to nothing
             meta.compressed_color_plate_data.STEPTREE = BytearrayBuffer()
 
-            # to enable compatibility with my bitmap converter we'll set the
-            # base address to a certain constant based on the console platform
-            is_xbox = engine in ("halo1xbox", "stubbs")
-            for bitmap in meta.bitmaps.STEPTREE:
-                bitmap.base_address = 1073751810 * is_xbox
-
             new_pixels_offset = 0
 
             # uncheck the prefer_low_detail flag and
@@ -256,6 +250,9 @@ class Halo1RsrcMap(HaloMap):
             # grab bitmap data from map
             new_pixels = BytearrayBuffer()
 
+            # to enable compatibility with my bitmap converter we'll set the
+            # base address to a certain constant based on the console platform
+            is_xbox = engine in ("halo1xbox", "stubbs")
             for bitmap in meta.bitmaps.STEPTREE:
                 pixel_data = map_data
                 if might_be_in_rsrc and bitmap.flags.data_in_resource_map:
@@ -266,6 +263,8 @@ class Halo1RsrcMap(HaloMap):
                 # grab the bitmap data from this map(no magic used)
                 pixel_data.seek(bitmap.pixels_offset)
                 new_pixels += pixel_data.read(bitmap.pixels_meta_size)
+
+                bitmap.base_address = 1073751810 * is_xbox
 
             meta.processed_pixel_data.STEPTREE = new_pixels
 

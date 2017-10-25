@@ -13,7 +13,7 @@ try:
         ab.FORMAT_P8 = "P8-BUMP"
 
         """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
-        ab.define_format(format_id=ab.FORMAT_P8, depths=(8,8,8,8))
+        ab.register_format(format_id=ab.FORMAT_P8, depths=(8,8,8,8))
 except (ImportError, AttributeError):
     ab = None
 
@@ -40,19 +40,19 @@ FORMAT_DXT3 = 15
 FORMAT_DXT5 = 16
 FORMAT_P8 = 17
 
-DXT_FORMATS = [FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5]
+DXT_FORMATS = (FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5)
 
-PALLETIZED_FORMATS = [FORMAT_P8]
+PALLETIZED_FORMATS = (FORMAT_P8, )
 
-TYPE_NAME_MAP = ["2D", "3D", "CUBE"]
+TYPE_NAME_MAP = ("2D", "3D", "CUBE")
 
-FORMAT_NAME_MAP = [
+FORMAT_NAME_MAP = (
     "A8", "L8", "AL8", "A8L8",
     "UNUSED1", "UNUSED2",
     "R5G6B5",  "UNUSED3", "A1R5G5B5", "A4R4G4B4",
     "X8R8G8B8", "A8R8G8B8",
     "UNUSED4", "UNUSED5",
-    "DXT1", "DXT3", "DXT5", "P8-BUMP", None]
+    "DXT1", "DXT3", "DXT5", "P8-BUMP", None)
 
 #each bitmap's number of bytes must be a multiple of 512
 BITMAP_PADDING = 512
@@ -446,7 +446,7 @@ class BitmTag(HekTag):
             #this texture info is used in manipulating the texture data
             tex_infos.append(dict(
                 width=mw, height=mh, depth=md, format=format,
-                mipmap_count=(mipmap_count-1), sub_bitmap_count=sub_bitmap_count,
+                mipmap_count=mipmap_count-1, sub_bitmap_count=sub_bitmap_count,
                 swizzled=self.swizzled(), texture_type=TYPE_NAME_MAP[type],
                 filepath=splitext(self.filepath.replace(tagsdir, datadir))[0]))
 
