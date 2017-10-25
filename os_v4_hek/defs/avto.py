@@ -13,10 +13,10 @@ flag is set, they cannot be killed once the animation begins.
 """
 
 attachments_comment = """
-The listed attachments will be added to the unit when it's transformation begins.
-When specifying a single destination marker the destination marker
-name will be used as-is ('marker'), however when the marker count is
-more than 1, an index will be appended ('marker0', 'marker1', etc.)
+The listed attachments will be added to the unit when it's transformation
+begins. When specifying a single destination marker the destination marker
+name will be used as-is(ex: 'marker'), however when the marker count is
+more than 1, an index will be appended('marker0', 'marker1', etc.)
 """
 
 instigator = Struct("instigator",

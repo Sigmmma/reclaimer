@@ -325,8 +325,6 @@ class Halo1Map(HaloMap):
             # to enable compatibility with my bitmap converter we'll set the
             # base address to a certain constant based on the console platform
             is_xbox = engine in ("halo1xbox", "stubbs")
-            for bitmap in meta.bitmaps.STEPTREE:
-                bitmap.base_address = 1073751810 * is_xbox
 
             new_pixels_offset = 0
 
@@ -340,7 +338,8 @@ class Halo1Map(HaloMap):
                 # clear some meta-only fields
                 bitmap.pixels_meta_size = 0
                 bitmap.bitmap_id_unknown1 = bitmap.bitmap_id_unknown2 = 0
-                bitmap.bitmap_data_pointer = bitmap.base_address = 0
+                bitmap.bitmap_data_pointer = 0
+                bitmap.base_address = 1073751810 * is_xbox
 
         elif tag_cls == "cdmg":
             # divide camera shaking wobble period by 30
