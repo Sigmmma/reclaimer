@@ -1,19 +1,22 @@
-import arbytmap
 import re
-if not hasattr(arbytmap, "FORMAT_P8"):
-    arbytmap.FORMAT_P8 = "P8-BUMP"
+try:
+    import arbytmap
+    if not hasattr(arbytmap, "FORMAT_P8"):
+        arbytmap.FORMAT_P8 = "P8-BUMP"
 
-    """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
-    arbytmap.register_format(format_id=arbytmap.FORMAT_P8, depths=(8,8,8,8))
+        """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
+        arbytmap.register_format(format_id=arbytmap.FORMAT_P8, depths=(8,8,8,8))
 
-from arbytmap import Arbytmap, TYPE_2D, TYPE_3D, TYPE_CUBEMAP,\
-     FORMAT_A8, FORMAT_L8, FORMAT_AL8, FORMAT_A8L8,\
-     FORMAT_R5G6B5, FORMAT_A1R5G5B5, FORMAT_A4R4G4B4,\
-     FORMAT_X8R8G8B8, FORMAT_A8R8G8B8,\
-     FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5,\
-     FORMAT_P8, FORMAT_V8U8, FORMAT_G8R8,\
-     FORMAT_R16G16B16F, FORMAT_A16R16G16B16F,\
-     FORMAT_R32G32B32F, FORMAT_A32R32G32B32F
+    from arbytmap import Arbytmap, TYPE_2D, TYPE_3D, TYPE_CUBEMAP,\
+         FORMAT_A8, FORMAT_L8, FORMAT_AL8, FORMAT_A8L8,\
+         FORMAT_R5G6B5, FORMAT_A1R5G5B5, FORMAT_A4R4G4B4,\
+         FORMAT_X8R8G8B8, FORMAT_A8R8G8B8,\
+         FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5,\
+         FORMAT_P8, FORMAT_V8U8, FORMAT_G8R8,\
+         FORMAT_R16G16B16F, FORMAT_A16R16G16B16F,\
+         FORMAT_R32G32B32F, FORMAT_A32R32G32B32F
+except ImportError:
+    arbytmap = Arbytmap = None
 
 from os import makedirs
 from os.path import dirname, exists, join, isfile
@@ -303,7 +306,7 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
     is_padded = "xbox" in kw['halo_map'].engine
     pix_data = meta.processed_pixel_data.STEPTREE
 
-    if is_padded:
+    if is_padded or Arbytmap is None:
         # cant extract xbox bitmaps yet
         return True
 
