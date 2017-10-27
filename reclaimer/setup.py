@@ -8,8 +8,8 @@ except ImportError:
 curr_dir = dirname(__file__)
 
 #               YYYY.MM.DD
-release_date = "2017.10.25"
-version = (1, 6, 1)
+release_date = "2017.10.27"
+version = (1, 6, 2)
 
 try:
     try:
@@ -62,8 +62,10 @@ games built with the Blam engine',
         },
     platforms=["POSIX", "Windows"],
     keywords="reclaimer, halo",
-    install_requires=['supyr_struct', 'binilla'],#, 'arbytmap'],
-    requires=['supyr_struct', 'binilla'],#, 'arbytmap'],
+    # arbytmap can be removed from the dependencies if you cannot install
+    # it for some reason, though it will prevent certain things from working.
+    install_requires=['supyr_struct', 'binilla', 'arbytmap'],
+    requires=['supyr_struct', 'binilla', 'arbytmap'],
     provides=['reclaimer'],
     classifiers=[
         "Development Status :: 4 - Beta",

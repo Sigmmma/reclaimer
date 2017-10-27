@@ -263,6 +263,9 @@ class BitmTag(HekTag):
 
         DO NOT RUN IF A BITMAP ALREADY HAS PADDING."""
         total_data_size = 0
+        if ab is None:
+            raise NotImplementedError(
+                "Arbytmap is not loaded. Cannot add padding.")
 
         for i in range(self.bitmap_count()):
             sub_bitmap_count = 1
@@ -312,6 +315,9 @@ class BitmTag(HekTag):
         '''Given a bitmap index, this function will
         calculate how many bytes the data takes up.
         THIS FUNCTION WILL NOT TAKE INTO ACCOUNT THE NUMBER OF SUB-BITMAPS'''
+        if ab is None:
+            raise NotImplementedError(
+                "Arbytmap is not loaded. Cannot get bitmap size.")
 
         #since we need this information to read the bitmap we extract it
         mw, mh, md, = self.bitmap_width_height_depth(b_index)
@@ -390,6 +396,9 @@ class BitmTag(HekTag):
         return bad_bitmap_index_list
 
     def sanitize_bitmaps(self):
+        if ab is None:
+            raise NotImplementedError(
+                "Arbytmap is not loaded. Cannot sanitize bitmaps.")
         tex_infos = self.tex_infos
         #after we've edited with the bitmap in whatever ways we did this will
         #tie up all the loose ends and recalculate all the offsets and stuff
@@ -416,6 +425,9 @@ class BitmTag(HekTag):
     def parse_bitmap_blocks(self):
         '''converts the raw pixel data into arrays of pixel
         data and replaces the raw data in the tag with them'''
+        if ab is None:
+            raise NotImplementedError(
+                "Arbytmap is not loaded. Cannot parse bitmaps.")
         pixel_data = self.data.tagdata.processed_pixel_data
         rawdata = pixel_data.data
 
