@@ -67,7 +67,7 @@ class Halo1RsrcMap(HaloMap):
         extractor = data_extraction.h1_data_extractors.get(
             fourcc(tag_index_ref.class_1.data))
         if extractor is None:
-            return True
+            return "No extractor for this type of tag."
         kw['halo_map'] = self
         return extractor(meta, tag_index_ref, **kw)
 
