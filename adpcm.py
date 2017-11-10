@@ -1,4 +1,6 @@
+import audioop
 from array import array
+from struct import Struct
 
 __all__ = ("decode_adpcm_samples", "ADPCM_BLOCKSIZE", "PCM_BLOCKSIZE", )
 
@@ -21,9 +23,42 @@ INDEX_TABLE = (
 ADPCM_BLOCKSIZE = 36
 PCM_BLOCKSIZE   = 130
 
+
+def _fast_decode_mono_adpcm_samples(samples, channel_ct):
+    if channel_ct <= 0:
+        return
+
+    adpcm2lin = audioop.adpcm2lin
+
+    pcm_size   = PCM_BLOCKSIZE
+    adpcm_size = ADPCM_BLOCKSIZE
+    state_size = 4
+
+    block_ct = len(samples) // adpcm_size
+    out_data = bytearray(block_ct * pcm_size)
+
+    pcm_i = 0
+    unpacker = Struct("<hh").unpack_from
+    for i in range(0, len(samples), adpcm_size):
+        # why couldn't it be nice and just follow the same
+        # step packing pattern where the first step is the
+        # first 4 bits and the second is the last 4 bits.
+        steps = bytes(((b<<4) + (b>>4))&0xFF for b in
+                      samples[i + state_size: i + adpcm_size])
+        out_data[pcm_i: pcm_i + pcm_size] = (
+            samples[i: i+2] + adpcm2lin(steps, 2, unpacker(samples, i))[0]
+            )
+
+        pcm_i += pcm_size
+
+    return array("h", out_data)
+
+
 def decode_adpcm_samples(samples, channel_ct):
     if channel_ct <= 0:
         return
+    elif channel_ct == 1:
+        return _fast_decode_mono_adpcm_samples(samples, channel_ct)
 
     pcm_mask  = 1 << 16
     code_shifts = tuple(range(0, 8*4, 4))
@@ -35,7 +70,7 @@ def decode_adpcm_samples(samples, channel_ct):
 
     block_ct = len(samples) // (channel_ct * ADPCM_BLOCKSIZE)
     in_data  = array("H", samples)
-    out      = [0]*(block_ct * channel_ct * PCM_BLOCKSIZE // 2)
+    out_data = array("h", bytes(block_ct * channel_ct * PCM_BLOCKSIZE))
 
     for c in range(channel_ct):
         pcm_i = c
@@ -48,11 +83,11 @@ def decode_adpcm_samples(samples, channel_ct):
             if predictor & 32768:
                 predictor -= pcm_mask
 
-            out[pcm_i] = predictor
+            out_data[pcm_i] = predictor
             pcm_i += channel_ct
 
             for j in range(i, i + code_skip_size, skip_size):
-                codes = in_data[j] + (in_data[j + 1] << 16)
+                codes = (in_data[j + 1] << 16) + in_data[j]
 
                 for shift in code_shifts:
                     if   index > 88: index = 88
@@ -69,7 +104,7 @@ def decode_adpcm_samples(samples, channel_ct):
                         predictor += ((step >> 1) + (code & 15) * step) >> 2
                         if predictor >  32767: predictor =  32767
 
-                    out[pcm_i] = predictor
+                    out_data[pcm_i] = predictor
                     pcm_i += channel_ct
 
-    return array("h", out)
+    return out_data

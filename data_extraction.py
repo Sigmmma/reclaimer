@@ -204,7 +204,7 @@ def extract_h2_sounds(meta, tag_index_ref, **kw):
 
     ugh__meta = halo_map.ugh__meta
     if ugh__meta is None:
-        return True
+        return "    No sound_cache_file_gestalt to read sounds from."
 
     import_names = ugh__meta.import_names.STEPTREE
     pitch_ranges = ugh__meta.pitch_ranges.STEPTREE
@@ -218,7 +218,7 @@ def extract_h2_sounds(meta, tag_index_ref, **kw):
     compression = meta.compression.enum_name
 
     if meta.encoding.enum_name == "codec":
-        print("    CANNOT YET EXTRACT THIS FORMAT.")
+        return "    CANNOT YET EXTRACT THIS FORMAT."
         '''
         The codec format seems to be encoded with wmaudio2.
 
@@ -244,12 +244,12 @@ def extract_h2_sounds(meta, tag_index_ref, **kw):
 
             Everything after this appears to be audio data.
         '''
-        return
 
     pr_index = meta.pitch_range_index
     pr_count = min(meta.pitch_range_count, len(pitch_ranges) - pr_index)
     if pr_index < 0 or pr_count < 0:
-        return True
+        # nothing to extract
+        return
 
     for i in range(pr_index, pr_index + pr_count):
         pr = pitch_ranges[i]
@@ -308,7 +308,7 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
 
     if is_padded or Arbytmap is None:
         # cant extract xbox bitmaps yet
-        return True
+        return "    Cannot extract xbox bitmaps."
 
     arby = Arbytmap()
     tex_infos = []
@@ -394,7 +394,6 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
                 tex_block.append(pix_data[pix_off: pix_off + mip_size])
                 pix_off += mip_size
 
-            #if fmt == "p8": mip_size += 256*4
             if w > 1: w = w//2
             if h > 1: h = h//2
             if d > 1: d = d//2
@@ -406,13 +405,11 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
         arby.load_new_texture(texture_block=tex_block, texture_info=tex_info)
         arby.save_to_file()
 
-    return False
-
 
 def extract_hud_message_text(meta, tag_index_ref, **kw):
     filepath = join(kw['out_dir'], tag_index_ref.tag.tag_path + ".hmt")
     if isfile(filepath) and not kw.get('overwrite', True):
-        return False
+        return
 
     in_data  = meta.string.data
     messages = meta.messages.STEPTREE
@@ -449,10 +446,9 @@ def extract_hud_message_text(meta, tag_index_ref, **kw):
             f.write(b"\xFF\xFE")  # little endian unicode sig
             f.write(out_data)
     except Exception:
-        print(format_exc())
-        return True
+        return format_exc()
 
-    return False
+    return
 
 
 def extract_h1_scnr_data(meta, tag_index_ref, **kw):
@@ -470,7 +466,7 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
     syntax_data = get_hsc_data_block(meta.script_syntax_data.data)
     string_data = meta.script_string_data.data.decode("latin-1")
     if not syntax_data or not string_data:
-        return True
+        return "No script data to extract."
 
     for typ, arr in (("global", meta.globals.STEPTREE),
                      ("script", meta.scripts.STEPTREE)):
@@ -568,10 +564,7 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
 
                 i += 1
         except Exception:
-            print(format_exc())
-            return True
-
-    return False
+            return format_exc()
 
 
 h1_data_extractors = {
