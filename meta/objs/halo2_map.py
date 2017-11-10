@@ -1,6 +1,8 @@
 import zlib
 
 from os.path import exists, join
+from tkinter.filedialog import askopenfilename
+
 from .halo_map import *
 from reclaimer import data_extraction
 from reclaimer.h2.util import HALO2_MAP_TYPES, split_raw_pointer
@@ -166,7 +168,7 @@ class Halo2Map(HaloMap):
         extractor = data_extraction.h2_data_extractors.get(
             fourcc(tag_index_ref.class_1.data))
         if extractor is None:
-            return True
+            return "No extractor for this type of tag."
         kw['halo_map'] = self
         return extractor(meta, tag_index_ref, **kw)
 
