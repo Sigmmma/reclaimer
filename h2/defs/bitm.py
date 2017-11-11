@@ -207,6 +207,6 @@ bitm_meta_def = BlockDef("bitm",
             {GUI_NAME:"4:4:4", NAME:"x4x4"},
             )
         ),
-    ENDIAN="<", TYPE=Struct,
+    ENDIAN="<", TYPE=Struct, WIDGET=Halo2BitmapTagFrame,
     subdefs={'pixel_root':pixel_root}
     )
