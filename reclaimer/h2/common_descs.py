@@ -4,7 +4,8 @@ try:
     from mozzarilla.field_widgets import *
 except Exception:
     ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
-                     EntryFrame = SoundSampleFrame = DynamicArrayFrame = None
+                     EntryFrame = SoundSampleFrame = DynamicArrayFrame =\
+                     H2BitmapTagFrame = None
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
 from .field_types import *

@@ -7,7 +7,7 @@ except Exception:
                      TextFrame = ColorPickerFrame = EntryFrame =\
                      HaloScriptSourceFrame = SoundSampleFrame =\
                      DynamicArrayFrame = DynamicEnumFrame =\
-                     HaloScriptTextFrame = BitmapTagFrame = None
+                     HaloScriptTextFrame = HaloBitmapTagFrame = None
 
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
