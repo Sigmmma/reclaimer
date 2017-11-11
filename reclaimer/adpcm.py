@@ -24,10 +24,7 @@ ADPCM_BLOCKSIZE = 36
 PCM_BLOCKSIZE   = 130
 
 
-def _fast_decode_mono_adpcm_samples(samples, channel_ct):
-    if channel_ct <= 0:
-        return
-
+def _fast_decode_mono_adpcm_samples(samples):
     adpcm2lin = audioop.adpcm2lin
 
     pcm_size   = PCM_BLOCKSIZE
@@ -58,7 +55,7 @@ def decode_adpcm_samples(samples, channel_ct):
     if channel_ct <= 0:
         return
     elif channel_ct == 1:
-        return _fast_decode_mono_adpcm_samples(samples, channel_ct)
+        return _fast_decode_mono_adpcm_samples(samples)
 
     pcm_mask  = 1 << 16
     code_shifts = tuple(range(0, 8*4, 4))
