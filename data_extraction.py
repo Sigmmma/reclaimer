@@ -31,7 +31,7 @@ from supyr_struct.field_types import FieldType
 
 from .util import is_protected_tag, fourcc, is_reserved_tag
 from .h2.util import *
-from .adpcm import decode_adpcm_samples
+from .adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
 from .hek.defs.objs.p8_palette import load_palette
 from .hek.defs.hmt_ import icon_types as hmt_icon_types
 from .hsc import get_hsc_data_block, hsc_bytecode_to_string
@@ -103,7 +103,9 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
                 wav_fmt.block_align = 2 * wav_fmt.channels
             else:
                 wav_fmt.fmt.set_to('ima_adpcm')
-                wav_fmt.block_align = 36 * wav_fmt.channels
+                wav_fmt.block_align = ADPCM_BLOCKSIZE * wav_fmt.channels
+                wav_fmt.byte_rate = int(wav_fmt.byte_rate *
+                                        ADPCM_BLOCKSIZE/PCM_BLOCKSIZE/2)
 
             wav_file.data.wav_data.audio_data = samples
             wav_file.data.wav_data.audio_data_size = samples_len
