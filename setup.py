@@ -9,7 +9,7 @@ curr_dir = dirname(__file__)
 
 #               YYYY.MM.DD
 release_date = "2017.11.10"
-version = (1, 6, 4)
+version = (1, 6, 5)
 
 try:
     try:

@@ -267,7 +267,7 @@ bitm_body = Struct("tagdata",
     Pad(2),
     reflexive("sequences", sequence, 256, DYN_NAME_PATH='.sequence_name'),
     reflexive("bitmaps", bitmap),
-    SIZE=108, WIDGET=BitmapTagFrame
+    SIZE=108, WIDGET=HaloBitmapTagFrame
     )
 
 def get():
