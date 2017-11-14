@@ -1,5 +1,6 @@
 from os.path import splitext
 from array import array
+from reclaimer.constants import *
 from .tag import *
 from .p8_palette import load_palette
 
@@ -16,48 +17,6 @@ try:
         ab.register_format(format_id=ab.FORMAT_P8, depths=(8,8,8,8))
 except (ImportError, AttributeError):
     ab = None
-
-#in a bitmap tag this number designates the type
-TYPE_2D = 0
-TYPE_3D = 1
-TYPE_CUBEMAP = 2
-TYPE_WHITE = 3
-
-#in a bitmap tag this number designates the format
-FORMAT_NONE = -1#this value is used ONLY in the conversion process
-
-FORMAT_A8 = 0
-FORMAT_Y8 = 1
-FORMAT_AY8 = 2
-FORMAT_A8Y8 = 3
-FORMAT_R5G6B5 = 6
-FORMAT_A1R5G5B5 = 8
-FORMAT_A4R4G4B4 = 9
-FORMAT_X8R8G8B8 = 10
-FORMAT_A8R8G8B8 = 11
-FORMAT_DXT1 = 14
-FORMAT_DXT3 = 15
-FORMAT_DXT5 = 16
-FORMAT_P8 = 17
-
-DXT_FORMATS = (FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5)
-
-PALLETIZED_FORMATS = (FORMAT_P8, )
-
-TYPE_NAME_MAP = ("2D", "3D", "CUBE")
-
-FORMAT_NAME_MAP = (
-    "A8", "L8", "AL8", "A8L8",
-    "UNUSED1", "UNUSED2",
-    "R5G6B5",  "UNUSED3", "A1R5G5B5", "A4R4G4B4",
-    "X8R8G8B8", "A8R8G8B8",
-    "UNUSED4", "UNUSED5",
-    "DXT1", "DXT3", "DXT5", "P8-BUMP", None)
-
-#each bitmap's number of bytes must be a multiple of 512
-BITMAP_PADDING = 512
-#each sub-bitmap(cubemap face) must be a multiple of 128 bytes
-CUBEMAP_PADDING = 128
 
 
 class BitmTag(HekTag):
