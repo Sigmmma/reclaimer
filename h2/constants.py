@@ -20,6 +20,28 @@ engine_id_to_name = dict(
 # DO NOT CHANGE THE ORDER OF THESE
 HALO2_MAP_TYPES = ("local", "mainmenu", "shared", "single_player_shared")
 
+
+# bitmap formats
+FORMAT_P8 = 18
+FORMAT_A32R32G32B32F = 19
+FORMAT_R32G32B32F = 20
+FORMAT_R16G16B16F = 21
+FORMAT_V8U8 = 22
+FORMAT_G8B8 = 23
+
+PALLETIZED_FORMATS = (FORMAT_P8_BUMP, FORMAT_P8)
+
+FORMAT_NAME_MAP = (
+    "A8", "L8", "AL8", "A8L8",
+    "UNUSED1", "UNUSED2",
+    "R5G6B5",  "UNUSED3", "A1R5G5B5", "A4R4G4B4",
+    "X8R8G8B8", "A8R8G8B8",
+    "UNUSED4", "UNUSED5",
+    "DXT1", "DXT3", "DXT5", "P8-BUMP", "A8R8G8B8",
+    "A32R32G32B32F", "R32G32B32F", "R16G16B16F",
+    "V8U8", "G8B8")
+
+
 # maps tag class four character codes(fccs) in
 # their string encoding to their int encoding.
 h2_tag_class_fcc_to_be_int = {}
