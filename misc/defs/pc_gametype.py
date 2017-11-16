@@ -22,37 +22,37 @@ def is_xbox_gametype(node=None, parent=None, **kwargs):
 '''Shared enumerators, booleans, and bitstructs'''
 ##################################################
 
-enum_off_on = LUEnum32('',
+enum_off_on = UEnum32('',
     'off',
     'on',
     )
 #why is is that two of the slayer specific booleans reverse the truthyness?
-enum_on_off = LUEnum32('',
+enum_on_off = UEnum32('',
     'on',
     'off',
     )
 
-speed_with_ball = LUEnum32('speed with ball',
+speed_with_ball = UEnum32('speed with ball',
     'slow',
     'normal',
     'fast',
     )
 
-trait_with_ball = LUEnum32('trait with ball',
+trait_with_ball = UEnum32('trait with ball',
     'none',
     'invisible',
     'extra damage',
     'damage resistance',
     )
 
-trait_without_ball = LUEnum32('trait without ball',
+trait_without_ball = UEnum32('trait without ball',
     'none',
     'invisible',
     'extra damage',
     'damage resistance',
     )
 
-ball_type = LUEnum32('ball type',
+ball_type = UEnum32('ball type',
     'normal',
     'reverse tag',
     'juggernaut',
@@ -64,14 +64,14 @@ race_order = UEnum8('order',
     'rally',
     )
 
-race_points_used = LUEnum32('points used',
+race_points_used = UEnum32('points used',
     'minimum',
     'maximum',
     'sum'
     )
 
-vehicle_spawn = LBitStruct("vehicle spawn",
-    BitUEnum('vehicle type',
+vehicle_spawn = BitStruct("vehicle spawn",
+    UBitEnum('vehicle type',
         'default',
         'none',
         'warthogs',
@@ -83,16 +83,16 @@ vehicle_spawn = LBitStruct("vehicle spawn",
         'custom',
         SIZE=4,
         ),
-    BitUInt('warthogs',  SIZE=3),
-    BitUInt('ghosts',    SIZE=3),
-    BitUInt('scorpions', SIZE=3),
-    BitUInt('rocket warthogs', SIZE=3),
-    BitUInt('banshees',  SIZE=3),
-    BitUInt('gun turrets', SIZE=3),
+    UBitInt('warthogs',  SIZE=3),
+    UBitInt('ghosts',    SIZE=3),
+    UBitInt('scorpions', SIZE=3),
+    UBitInt('rocket warthogs', SIZE=3),
+    UBitInt('banshees',  SIZE=3),
+    UBitInt('gun turrets', SIZE=3),
     SIZE=4,
     )
 
-player_settings = LBool32("player settings",
+player_settings = Bool32("player settings",
     'radar enabled',
     'friend on hud',
     'infinite grenades',
@@ -102,7 +102,7 @@ player_settings = LBool32("player settings",
     'enemies not on radar',
     )
 
-game_type = LUEnum32('game type',
+game_type = UEnum32('game type',
     ('ctf', 1),
     ('slayer', 2),
     ('oddball', 3),
@@ -111,13 +111,13 @@ game_type = LUEnum32('game type',
     DEFAULT=1
     )
 
-objective_indicator = LUEnum32('objective indicator',
+objective_indicator = UEnum32('objective indicator',
     'motion tracker',
     'nav point',
     'none',
     )
 
-weapon_type = LUEnum32('weapon type',
+weapon_type = UEnum32('weapon type',
     'default',
     'pistols',
     'rifles',
@@ -133,14 +133,14 @@ weapon_type = LUEnum32('weapon type',
     'heavy weapons',
     )
 
-friendly_fire = LUEnum32('friendly fire',
+friendly_fire = UEnum32('friendly fire',
     'off',
     'on',
     'shields',
     'explosions',
     )
 
-vehicle_type = LUEnum32('vehicle type',
+vehicle_type = UEnum32('vehicle type',
     'all',
     'none',
     'warthog',
@@ -165,7 +165,7 @@ ctf_settings = Struct('ctf settings',
         ('flag must reset', 1<<16),
         ('flag must be at home', 1<<24),
         ),
-    LUInt32('single_flag_time', SIDETIP="seconds", UNIT_SCALE=1/30),
+    UInt32('single_flag_time', SIDETIP="seconds", UNIT_SCALE=1/30),
     SIZE=28,
     )
 
@@ -190,7 +190,7 @@ oddball_settings = Struct('oddball settings',
     trait_with_ball,
     trait_without_ball,
     ball_type,
-    LUInt32('ball_count', MIN=1, MAX=16),
+    UInt32('ball_count', MIN=1, MAX=16),
     SIZE=28,
     )
 
@@ -226,20 +226,20 @@ header_comment = \
       Race ------- laps'''
 
 xbox_gametype_header = Struct("gametype header",
-    LStrUtf16('name', SIZE=24),
+    StrUtf16('name', SIZE=24),
     game_type,
-    LUEnum32('teamplay', INCLUDE=enum_off_on),
+    UEnum32('teamplay', INCLUDE=enum_off_on),
     player_settings,
     objective_indicator,
-    LUEnum32('odd man out', INCLUDE=enum_off_on),
+    UEnum32('odd man out', INCLUDE=enum_off_on),
 
-    LUInt32('respawn time growth', SIDETIP="seconds", UNIT_SCALE=1/30),
-    LUInt32('respawn time', MAX=300*30, SIDETIP="seconds", UNIT_SCALE=1/30),
-    LUInt32('respawn suicide penalty',  SIDETIP="seconds", UNIT_SCALE=1/30),
-    LUInt32('lives', SIDETIP='[0 == unlimited]'),
-    LFloat('health',
+    UInt32('respawn time growth', SIDETIP="seconds", UNIT_SCALE=1/30),
+    UInt32('respawn time', MAX=300*30, SIDETIP="seconds", UNIT_SCALE=1/30),
+    UInt32('respawn suicide penalty',  SIDETIP="seconds", UNIT_SCALE=1/30),
+    UInt32('lives', SIDETIP='[0 == unlimited]'),
+    Float('health',
         DEFAULT=0.5, MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
-    LUInt32('score limit', MIN=1, DEFAULT=1),
+    UInt32('score limit', MIN=1, DEFAULT=1),
     weapon_type,
     vehicle_type,
     SIZE=76, COMMENT=header_comment
@@ -247,30 +247,30 @@ xbox_gametype_header = Struct("gametype header",
 
 
 pc_gametype_header = Struct("gametype header",
-    LStrUtf16('name', SIZE=48),
+    StrUtf16('name', SIZE=48),
     game_type,
-    LUEnum32('teamplay', INCLUDE=enum_off_on),
+    UEnum32('teamplay', INCLUDE=enum_off_on),
     player_settings,
     objective_indicator,
-    LUEnum32('odd man out', INCLUDE=enum_off_on),
+    UEnum32('odd man out', INCLUDE=enum_off_on),
 
-    LUInt32('respawn time growth', SIDETIP="seconds", UNIT_SCALE=1/30),
-    LUInt32('respawn time', MAX=300*30, SIDETIP="seconds", UNIT_SCALE=1/30),
-    LUInt32('respawn suicide penalty',  SIDETIP="seconds", UNIT_SCALE=1/30),
-    LUInt32('lives', SIDETIP='[0 == unlimited]'),
-    LFloat('health',
+    UInt32('respawn time growth', SIDETIP="seconds", UNIT_SCALE=1/30),
+    UInt32('respawn time', MAX=300*30, SIDETIP="seconds", UNIT_SCALE=1/30),
+    UInt32('respawn suicide penalty',  SIDETIP="seconds", UNIT_SCALE=1/30),
+    UInt32('lives', SIDETIP='[0 == unlimited]'),
+    Float('health',
         DEFAULT=0.5, MIN=0.5, MAX=4.0, UNIT_SCALE=100, SIDETIP="%"),
-    LUInt32('score limit', MIN=1, DEFAULT=1),
+    UInt32('score limit', MIN=1, DEFAULT=1),
     weapon_type,
 
-    LBitStruct('red vehicles',  INCLUDE=vehicle_spawn),
-    LBitStruct('blue vehicles', INCLUDE=vehicle_spawn),
+    BitStruct('red vehicles',  INCLUDE=vehicle_spawn),
+    BitStruct('blue vehicles', INCLUDE=vehicle_spawn),
 
-    LUInt32('vehicle respawn time', SIDETIP="seconds", UNIT_SCALE=1/30),
+    UInt32('vehicle respawn time', SIDETIP="seconds", UNIT_SCALE=1/30),
     friendly_fire,
-    LUInt32('respawn betrayal penalty', SIDETIP="seconds", UNIT_SCALE=1/30),
-    LUEnum32('auto team balance', INCLUDE=enum_off_on),
-    LUInt32('time limit', SIDETIP="seconds", UNIT_SCALE=1/30),
+    UInt32('respawn betrayal penalty', SIDETIP="seconds", UNIT_SCALE=1/30),
+    UEnum32('auto team balance', INCLUDE=enum_off_on),
+    UInt32('time limit', SIDETIP="seconds", UNIT_SCALE=1/30),
     SIZE=124, COMMENT=header_comment
     )
 
@@ -282,12 +282,12 @@ xbox_gametype_footer = Container('gametype footer',
     )
 
 pc_gametype_footer = Struct('gametype footer',
-    LUInt32('crc 32'),
+    UInt32('crc 32'),
     #its possible to make a gametype platform independent by keeping
     #a copy of the settings here as well in a bytearray buffer
     BytearrayRaw('hybrid settings', SIZE=28),
     Pad(32),
-    LUInt32('crc 32 ce'),
+    UInt32('crc 32 ce'),
     Pad(7972),
     VISIBLE=False
     )

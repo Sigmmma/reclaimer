@@ -164,11 +164,11 @@ def dependency(name='tag ref', valid_ids=None, **kwargs):
     elif valid_ids is None:
         valid_ids = valid_tags
 
-    return TagIndexRef(name,
+    return TagRef(name,
         valid_ids,
-        INCLUDE=tag_index_ref_struct,
-        STEPTREE=HaloRefStr(
-            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=234),
+        INCLUDE=tag_ref_struct,
+        STEPTREE=StrTagRef(
+            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=234),
         **kwargs
         )
 
@@ -952,7 +952,7 @@ reflexive_struct = Reflexive('reflexive',
     )
 
 # This is the descriptor used wherever a tag references another tag
-tag_index_ref_struct = TagIndexRef('dependency',
+tag_ref_struct = TagRef('dependency',
     valid_tags,
     SInt32("path pointer", VISIBLE=False, EDITABLE=False),
     SInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
@@ -977,11 +977,11 @@ damage_modifiers = QStruct("damage modifiers",
 
 # Miscellaneous shared descriptors
 compressed_normal_32 = BitStruct('compressed_norm32',
-    Bit1SInt("i",
+    S1BitInt("i",
         SIZE=11, UNIT_SCALE=1/1023, MIN=-1023, MAX=1023, WIDGET_WIDTH=10),
-    Bit1SInt("j",
+    S1BitInt("j",
         SIZE=11, UNIT_SCALE=1/1023, MIN=-1023, MAX=1023, WIDGET_WIDTH=10),
-    Bit1SInt("k",
+    S1BitInt("k",
         SIZE=10, UNIT_SCALE=1/511, MIN=-511, MAX=511, WIDGET_WIDTH=10),
     ORIENT='h'
     )
@@ -1078,11 +1078,11 @@ def dependency_os(name='tag ref', valid_ids=None):
     elif valid_ids is None:
         valid_ids = valid_tags_os
 
-    return TagIndexRef(name,
+    return TagRef(name,
         valid_ids,
-        INCLUDE=tag_index_ref_struct,
-        STEPTREE=HaloRefStr(
-            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=234),  # 10 < Halo1
+        INCLUDE=tag_ref_struct,
+        STEPTREE=StrTagRef(
+            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=234),  # 10 < Halo1
         )
 
 

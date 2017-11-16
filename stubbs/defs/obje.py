@@ -17,3 +17,6 @@ obje_def = TagDef("obje",
 
     ext=".object", endian=">"
     )
+
+def get():
+    return obje_def

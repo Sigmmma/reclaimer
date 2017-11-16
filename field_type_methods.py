@@ -23,7 +23,7 @@ sound_rsrc_id_map = {
     }
 
 
-def tag_ref_sizecalc(self, node, **kwargs):
+def tag_ref_str_sizecalc(self, node, **kwargs):
     '''
     Used to calculate the size of a tag reference string from a given string
     '''
@@ -32,7 +32,7 @@ def tag_ref_sizecalc(self, node, **kwargs):
         return len(node) + 1
     return 0
 
-def tag_ref_size(node=None, parent=None, attr_index=None,
+def tag_ref_str_size(node=None, parent=None, attr_index=None,
                  rawdata=None, new_value=None, **kwargs):
     '''Used to retrieve or set the byte size of a Halo tag
     reference string. If the string is empty, the actual amount
@@ -48,12 +48,9 @@ def tag_ref_size(node=None, parent=None, attr_index=None,
     
     if new_value is None:
         strlen = parent.path_length
-        strlen += 1*bool(strlen)
-        return strlen
-    if new_value <= 1:
-        parent.path_length = 0
-    else:
-        parent.path_length = new_value - 1
+        return strlen + bool(strlen)
+
+    parent.path_length = (new_value - 1)*(new_value > 1)
 
 
 def encode_tag_ref_str(self, node, parent=None, attr_index=None):
@@ -67,7 +64,7 @@ def encode_tag_ref_str(self, node, parent=None, attr_index=None):
     return b''
 
 
-def tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
+def tag_ref_str_parser(self, desc, node=None, parent=None, attr_index=None,
                    rawdata=None, root_offset=0, offset=0, **kwargs):
     """
     """

@@ -17,8 +17,8 @@ vertex = Struct("vertex",
 
 ant__meta_def = BlockDef("ant!",
     string_id_meta("attachment marker name"),
-    h2_meta_dependency("bitmaps", "bitm"),
-    h2_meta_dependency("physics", "pphy"),
+    h2_meta_tag_ref("bitmaps", "bitm"),
+    h2_meta_tag_ref("physics", "pphy"),
 
     Pad(80),
     Float("spring strength coefficient"),
