@@ -86,7 +86,7 @@ class HaloHandler(Handler):
         self.datadir = join(self.datadir, '')
 
         if this_type.tag_ref_cache is None:
-            this_type.tag_ref_cache   = self.build_loc_caches(TagIndexRef)
+            this_type.tag_ref_cache   = self.build_loc_caches(TagRef)
         
         if this_type.reflexive_cache is None:
             this_type.reflexive_cache = self.build_loc_caches(Reflexive)

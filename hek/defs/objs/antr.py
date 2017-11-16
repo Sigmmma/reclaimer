@@ -17,17 +17,17 @@ from supyr_struct.defs.block_def import BlockDef
 # these structure definitions aren't really used in the code below, but
 # are a good way to illustrate the structure of the compressed data.
 frame_header = BlockDef("frame_header",
-    BitUInt("frames_count", SIZE=12),
-    BitUInt("frames_offset", SIZE=20),
+    UBitInt("frames_count", SIZE=12),
+    UBitInt("frames_offset", SIZE=20),
     SIZE=4, TYPE=BitStruct
     )
 
 # compressed quaternion rotation
 rot_def = BlockDef("comp_rotation",
-    Bit1SInt("w", SIZE=12),
-    Bit1SInt("k", SIZE=12),
-    Bit1SInt("j", SIZE=12),
-    Bit1SInt("i", SIZE=12),
+    S1BitInt("w", SIZE=12),
+    S1BitInt("k", SIZE=12),
+    S1BitInt("j", SIZE=12),
+    S1BitInt("i", SIZE=12),
     # yes, they are stored in this order
     SIZE=6, TYPE=BitStruct
     )

@@ -20,6 +20,7 @@ bipd_body = Struct("tagdata",
 
 #def get():
 #    return bipd_def
+del get
 
 bipd_def = TagDef("bipd",
     blam_header('bipd', 3),
