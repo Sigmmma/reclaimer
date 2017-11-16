@@ -25,7 +25,7 @@ from ..common_descs import pi, irad, from_to, get_unit_scale,\
      xyz_float, xy_float, argb_float, rgb_float, xrgb_byte, argb_byte,\
      ijkw_float, ijk_float, ij_float, yp_float, ypr_float,\
      compressed_normal_32, materials_list, tag_id_struct,\
-     rawdata_ref_struct, reflexive_struct, tag_index_ref_struct
+     rawdata_ref_struct, reflexive_struct, tag_ref_struct
 
 
 def ascii_str_varlen(name):
@@ -106,8 +106,8 @@ def h3_meta_dependency(name='tag ref', valid_ids=None):
 
     return H3MetaTagIndexRef(name,
         valid_ids,
-        STEPTREE=HaloRefStr(
-            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=234),  # 10 < Halo1
+        STEPTREE=StrTagRef(
+            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=234),  # 10 < Halo1
         )
 
 def h3_reflexive(*args, **kwargs):
@@ -130,7 +130,7 @@ def h3_dependency(*args, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     desc = h3_meta_dependency(*args, **kwargs)
     desc["SIZE"] = 16
-    desc["INCLUDE"] = tag_index_ref_struct
+    desc["INCLUDE"] = tag_ref_struct
     desc["TYPE"] = H3TagIndexRef
 
 

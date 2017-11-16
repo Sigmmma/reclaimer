@@ -22,6 +22,7 @@ vehi_body = Struct("tagdata",
 
 #def get():
 #    return vehi_def
+del get
 
 vehi_def = TagDef("vehi",
     blam_header('vehi'),

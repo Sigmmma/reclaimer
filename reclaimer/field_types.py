@@ -8,11 +8,11 @@ from .constants import *
 
 '''These are varients of the standard FieldTypes that have been
 slightly modified based on how Halo needs to utilize them.'''
-HaloRefStr = FieldType(
-    base=StrLatin1, name="HaloRefStr", parser=tag_ref_parser,
-    encoder=encode_tag_ref_str, sizecalc=tag_ref_sizecalc)
-FlUTF16StrData = FieldType(
-    base=StrUtf16, name="UTF16StrData",
+StrTagRef = FieldType(
+    base=StrLatin1, name="StrTagRef", parser=tag_ref_str_parser,
+    encoder=encode_tag_ref_str, sizecalc=tag_ref_str_sizecalc)
+FlStrUTF16Data = FieldType(
+    base=StrUtf16, name="StrUTF16Data",
     enc={">": StrUtf16.little.enc, "<": StrUtf16.little.enc},
     decoder=decode_raw_string, sizecalc=utf_sizecalc)
 FlStrUTF16 = FieldType(
@@ -53,7 +53,7 @@ that raw data refs, reflexives, and tag references exist.'''
 RawdataRef   = FieldType(base=Struct,  name="RawdataRef", parser=rawdata_ref_parser)
 Reflexive    = FieldType(base=QStruct, name="Reflexive", parser=reflexive_parser)
 RawReflexive = FieldType(base=Reflexive, name="RawReflexive")
-TagIndexRef  = FieldType(base=Struct, name="TagIndexRef",)
+TagRef       = FieldType(base=Struct,    name="TagRef",)
 
 #The tag_index is the array that stores all the tag string paths and
 #meta datas in a map file. This FieldType exists so the Map_Magic

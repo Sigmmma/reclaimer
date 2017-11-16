@@ -125,6 +125,7 @@ unit_body = Struct('tagdata',
 
 #def get():
 #    return unit_def
+del get
 
 unit_def = TagDef("unit",
     blam_header('unit', 2),

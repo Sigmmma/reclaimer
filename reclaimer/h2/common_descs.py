@@ -26,7 +26,7 @@ from ..common_descs import pi, irad, from_to, get_unit_scale,\
      xyz_float, xy_float, argb_float, rgb_float, xrgb_byte, argb_byte,\
      ijkw_float, ijk_float, ij_float, yp_float, ypr_float,\
      compressed_normal_32, materials_list, tag_id_struct,\
-     rawdata_ref_struct, reflexive_struct, tag_index_ref_struct
+     rawdata_ref_struct, reflexive_struct, tag_ref_struct
 
 
 def string_id_meta(name):
@@ -257,7 +257,7 @@ def h2_meta_rawdata_ref(name, f_type=BytearrayRaw, max_size=None, widget=None):
         STEPTREE=f_type("data", GUI_NAME="", SIZE=".size", **kwargs))
 
 
-def h2_meta_dependency(name='tag ref', valid_ids=None):
+def h2_meta_tag_ref(name='tag ref', valid_ids=None):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
         valid_ids = h2_tag_class(*valid_ids)
@@ -266,7 +266,7 @@ def h2_meta_dependency(name='tag ref', valid_ids=None):
     elif valid_ids is None:
         valid_ids = valid_h2_tags
 
-    return H2MetaTagIndexRef(name,
+    return H2MetaTagRef(name,
         valid_ids,
         tag_id_struct
         )
@@ -289,12 +289,12 @@ def h2_rawdata_ref(*args, **kwargs):
     return desc
 
 
-def h2_dependency(*args, **kwargs):
+def h2_tag_ref(*args, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
-    desc = h2_meta_dependency(*args, **kwargs)
+    desc = h2_meta_tag_ref(*args, **kwargs)
     desc["SIZE"] = 16
-    desc["INCLUDE"] = tag_index_ref_struct
-    desc["TYPE"] = H2TagIndexRef
+    desc["INCLUDE"] = tag_ref_struct
+    desc["TYPE"] = H2TagRef
     return desc
 
 
@@ -420,7 +420,7 @@ h2_tag_header = Struct("blam_header",
     )
 
 
-h2_meta_tag_index_ref_struct = H2MetaTagIndexRef('h2 meta dependency',
+h2_meta_tag_index_ref_struct = H2MetaTagRef('h2 meta dependency',
     valid_h2_tags,
     tag_id_struct,
     ORIENT='h'
@@ -438,7 +438,7 @@ h2_meta_rawdata_ref_struct = H2MetaRawdataRef('h2 meta rawdata ref',
     )
 
 # these structs replace the above ones when used outside a map
-h2_tag_index_ref_struct = H2TagIndexRef('dependency',
+h2_tag_index_ref_struct = H2TagRef('dependency',
     valid_h2_tags,
     SInt32("path pointer", VISIBLE=False, EDITABLE=False),
     SInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),

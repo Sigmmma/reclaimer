@@ -3,10 +3,12 @@ from supyr_struct.defs.tag_def import TagDef
 
 
 def virtual_ptr_to_file_ptr(v_ptr, **kwargs):
+    # UNFINISHED
     return ptr
 
 
 def file_ptr_to_virtual_ptr(ptr, **kwargs):
+    # UNFINISHED
     return v_ptr
 
 

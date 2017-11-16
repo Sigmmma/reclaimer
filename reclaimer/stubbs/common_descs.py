@@ -138,14 +138,14 @@ def dependency_stubbs(name='tag ref', valid_ids=None):
     elif valid_ids is None:
         valid_ids = valid_tags_stubbs
 
-    return TagIndexRef(name,
+    return TagRef(name,
         valid_ids,
         UInt32("path pointer", VISIBLE=False, EDITABLE=False),
         UInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
         tag_id_struct,
 
-        STEPTREE=HaloRefStr(
-            "filepath", SIZE=tag_ref_size, GUI_NAME="", MAX=244),
+        STEPTREE=StrTagRef(
+            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=244),
         ORIENT='h'
         )
 
