@@ -249,17 +249,19 @@ animation_desc = Struct("animation",
         "compressed data",
         "world relative",
         { NAME:"pal", GUI_NAME:"25Hz(PAL)" },
-        { NAME:"fps_60", GUI_NAME:"60fps(ONLY used by fps converter)",
-          EDITABLE: False, TOOLTIP: ("the converter is the ONLY thing " +
-                                     "that should EVER edit this flag.")},
-        { GUI_NAME:"special overlay(ONLY used by fps converter)",
-          NAME:"special", TOOLTIP:"whether or not this animation " +
-          "serves a special function where it doesnt\nlinearly animate, " +
-          "such as tire suspension or unit aiming."},
-        { GUI_NAME:"final velocity is important(ONLY used by fps converter)",
-          NAME:"final velocity kept", TOOLTIP:"whether or not the " +
-          "velocity of the final frame of the animation is given to the\n" +
-          "object when the animation ends(jumping, exiting vehicle, etc)"}
+        # these flags are no longer needed, but will stay typed in
+        # to remind others what they were used for at one point.
+        #{ NAME:"fps_60", GUI_NAME:"60fps(ONLY used by fps converter)",
+        #  EDITABLE: False, TOOLTIP: ("the converter is the ONLY thing " +
+        #                             "that should EVER edit this flag.")},
+        #{ GUI_NAME:"special overlay(ONLY used by fps converter)",
+        #  NAME:"special", TOOLTIP:"whether or not this animation " +
+        #  "serves a special function where it doesnt\nlinearly animate, " +
+        #  "such as tire suspension or unit aiming."},
+        #{ GUI_NAME:"final velocity is important(ONLY used by fps converter)",
+        #  NAME:"final velocity kept", TOOLTIP:"whether or not the " +
+        #  "velocity of the final frame of the animation is given to the\n" +
+        #  "object when the animation ends(jumping, exiting vehicle, etc)"}
         ),
     dyn_senum16("sound",
         DYN_NAME_PATH="tagdata.sound_references." +

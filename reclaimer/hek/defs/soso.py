@@ -92,7 +92,7 @@ soso_attrs = Struct("soso attrs",
     reflection_properties,
     Pad(16),
 
-    FlFloat("unknown0", VISIBLE=False),
+    Float("unknown0", VISIBLE=False),
     BytesRaw("unknown1", SIZE=16, VISIBLE=False),  # little endian dependency
 
     SIZE=400
