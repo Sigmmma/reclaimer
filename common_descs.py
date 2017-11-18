@@ -109,6 +109,7 @@ def raw_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc
             parent.size = new_value//struct_size
 
     desc[STEPTREE] = BytearrayRaw(desc[STEPTREE][NAME], SIZE=data_size)
+    desc[STEPTREE][SUB_STRUCT] = sub_desc  # store this here in case its needed
     desc[TYPE] = RawReflexive
     get_raw_reflexive_offsets(sub_desc, two_byte_offs, four_byte_offs)
     return desc
