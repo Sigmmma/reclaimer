@@ -147,9 +147,12 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
         s_desc = desc.get('STEPTREE')
         if s_desc:
             magic = kwargs.get('magic')
-            if magic is not None and (node[1] - magic < 0 or
-                                      node[1] - magic >= len(rawdata)):
-                # reflexive is corrupt for some reason(ex: bad hek+ extraction)
+            if magic is None:
+                pass
+            elif (node[1] - magic < 0 or node[1] - magic +
+                  node[0]*s_desc['SUB_STRUCT'].get('SIZE', 0) >= len(rawdata)):
+                # the reflexive is corrupt for some reason
+                #    (ex: bad hek+ extraction)
                 node.size = node.pointer = 0
 
             if not node[0]:
