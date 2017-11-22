@@ -1,5 +1,5 @@
 from .halo1_map import *
-from ..shadowrun_beta.common_descs import *
+from ..shadowrun_prototype.common_descs import *
 
 
 sr_tag_header = Struct("tag header",

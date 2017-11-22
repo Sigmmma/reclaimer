@@ -1,5 +1,5 @@
 from .halo1_map import *
-from reclaimer.shadowrun_beta.handler import ShadowrunBetaHandler
+from reclaimer.shadowrun_prototype.handler import ShadowrunPrototypeHandler
 from supyr_struct.defs.frozen_dict import FrozenDict
 
 
@@ -16,7 +16,7 @@ class ShadowrunMap(Halo1Map):
     def setup_defs(self):
         if not ShadowrunMap.defs:
             print("Loading Shadowrun tag definitions...")
-            ShadowrunMap.handler = ShadowrunBetaHandler(
+            ShadowrunMap.handler = ShadowrunPrototypeHandler(
                 build_reflexive_cache=False, build_raw_data_cache=False)
             ShadowrunMap.defs = FrozenDict(ShadowrunMap.handler.defs)
             print("    Finished")
