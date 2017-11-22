@@ -25,7 +25,7 @@ vehi_body = Struct("tagdata",
 del get
 
 vehi_def = TagDef("vehi",
-    blam_header('vehi'),
+    blam_header_stubbs('vehi'),
     vehi_body,
 
     ext=".vehicle", endian=">"

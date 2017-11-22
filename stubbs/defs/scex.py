@@ -13,7 +13,7 @@ def get():
     return scex_def
 
 scex_def = TagDef("scex",
-    blam_header('scex'),
+    blam_header_stubbs('scex'),
     scex_body,
 
     ext=".shader_transparent_chicago_extended", endian=">"

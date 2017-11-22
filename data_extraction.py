@@ -538,6 +538,8 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
             merged_sources = []
             merged_src = ""
             for src in sorted_sources:
+                if not src:
+                    continue
                 # concatenate sources until they are too large to be compiled
                 if len(merged_src) + len(src) > 262100:
                     merged_sources.append(merged_src)

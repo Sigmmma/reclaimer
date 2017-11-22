@@ -13,58 +13,61 @@ def inject_halo_constants():
     add_desc_keywords(RAW_REFLEXIVE_INFO, COLOR_CHANNELS)
 
 
-PCDEMO_INDEX_MAGIC = 0x4BF10000
-PC_INDEX_MAGIC     = 0x40440000
-CE_INDEX_MAGIC     = 0x40440000
-XBOX_INDEX_MAGIC   = 0x803A6000
-STUBBS_INDEX_MAGIC = 0x8038B000
-H2V_MP_INDEX_MAGIC = 0x01400000  # only applies to multiplayer maps.
-#                                  pointers below this index magic
-#                                  actually point to resource maps.
+PCDEMO_INDEX_MAGIC         = 0x4BF10000
+PC_INDEX_MAGIC             = 0x40440000
+CE_INDEX_MAGIC             = 0x40440000
+XBOX_INDEX_MAGIC           = 0x803A6000
+STUBBS_INDEX_MAGIC         = 0x8038B000
+SHADOWRUN_BETA_INDEX_MAGIC = 0x8069E000
+H2V_MP_INDEX_MAGIC         = 0x01400000  # only applies to multiplayer maps.
+#                                          pointers below this index magic
+#                                          actually point to resource maps.
 
 
 map_build_dates = {
-    "stubbs":        "400",
-    "stubbspc":      "",
-    "halo1xbox":     "01.10.12.2276",
-    "halo1xbox2":    "01.10.12.2274",
-    "halo1pcdemo":   "01.00.00.0576",
-    "halo1pc":       "01.00.00.0564",
-    "halo2alpha":    "02.06.28.07902",
-    "halo2epsilon":  "02.08.28.09214",
-    "halo2xbox":     "02.09.27.09809",
-    "halo2vista":    "11081.07.04.30.0934.main",
-    "halo3":         "11855.07.08.20.2317.halo3_ship",
-    "halo1ce":       "01.00.00.0609",
-    "halo1yelo":     "01.00.00.0609",
+    "stubbs":         "400",
+    "stubbspc":       "",
+    "shadowrun_beta": "01.12.07.0132",
+    "halo1xbox":      "01.10.12.2276",
+    "halo1pcdemo":    "01.00.00.0576",
+    "halo1pc":        "01.00.00.0564",
+    "halo2alpha":     "02.06.28.07902",
+    "halo2epsilon":   "02.08.28.09214",
+    "halo2xbox":      "02.09.27.09809",
+    "halo2vista":     "11081.07.04.30.0934.main",
+    "halo3":          "11855.07.08.20.2317.halo3_ship",
+    "halo1ce":        "01.00.00.0609",
+    "halo1yelo":      "01.00.00.0609",
     }
 
 map_versions = {
-    "stubbs":       5,
-    "stubbspc":     5,
-    "halo1xbox":    5,
-    "halo1pcdemo":  6,
-    "halo1pc":      7,
-    "halo1ce":      609,
-    "halo1yelo":    609,
-    "halo2alpha":   8,
-    "halo2epsilon": 8,
-    "halo2xbox":    8,
-    "halo2vista":   8,
-    "halo3":        11,
+    "stubbs":         5,
+    "stubbspc":       5,
+    "shadowrun_beta": 5,
+    "halo1xbox":      5,
+    "halo1pcdemo":    6,
+    "halo1pc":        7,
+    "halo1ce":        609,
+    "halo1yelo":      609,
+    "halo2alpha":     8,
+    "halo2epsilon":   8,
+    "halo2xbox":      8,
+    "halo2vista":     8,
+    "halo3":          11,
     }
 
 # magic is actually the virtual address the map is loaded at. Halo 3 and
 # beyond instead partition the map into sections with a virtual address for
 # each section, meaning there is a "magic" for different parts of each map.
 map_magics = {
-    "stubbs":       STUBBS_INDEX_MAGIC,
-    "stubbspc":     PC_INDEX_MAGIC,
-    "halo1xbox":    XBOX_INDEX_MAGIC,
-    "halo1pcdemo":  PCDEMO_INDEX_MAGIC,
-    "halo1pc":      PC_INDEX_MAGIC,
-    "halo1ce":      PC_INDEX_MAGIC,
-    "halo1yelo":    PC_INDEX_MAGIC,
+    "stubbs":         STUBBS_INDEX_MAGIC,
+    "stubbspc":       PC_INDEX_MAGIC,
+    "shadowrun_beta": SHADOWRUN_BETA_INDEX_MAGIC,
+    "halo1xbox":      XBOX_INDEX_MAGIC,
+    "halo1pcdemo":    PCDEMO_INDEX_MAGIC,
+    "halo1pc":        PC_INDEX_MAGIC,
+    "halo1ce":        PC_INDEX_MAGIC,
+    "halo1yelo":      PC_INDEX_MAGIC,
     "halo2alpha":   0,
     "halo2epsilon": 0,
     "halo2xbox":    0,  # Halo 2 and beyond dont use magic

@@ -345,7 +345,7 @@ def hsc_bytecode_to_string(syntax_data, string_data, block_index,
     if block_type not in ("script", "global"):
         return ""
 
-    if   "halo1" in engine:
+    if   "halo1" in engine or "stubbs" in engine or "shadowrun" in engine:
         script_types = h1_script_types
         object_types = h1_script_object_types
     elif "halo2" in engine:

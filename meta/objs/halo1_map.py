@@ -26,6 +26,7 @@ class Halo1Map(HaloMap):
     ce_tag_indexs_by_paths = None
     tag_headers = None
     sound_rsrc_id = None
+    defs = None
 
     inject_rawdata = Halo1RsrcMap.inject_rawdata
 
@@ -120,14 +121,14 @@ class Halo1Map(HaloMap):
             Halo1Map.handler = OsV4HaloHandler(build_reflexive_cache=False,
                                                build_raw_data_cache=False)
             Halo1Map.defs = FrozenDict(Halo1Map.handler.defs)
+
+            Halo1Map.defs["sbsp"] = fast_sbsp_def
+            Halo1Map.defs["coll"] = fast_coll_def
+            Halo1Map.defs["gelc"] = gelc_def
             print("        Finished")
 
         # make a shallow copy for this instance to manipulate
         self.defs = dict(self.defs)
-
-        self.defs["sbsp"] = fast_sbsp_def
-        self.defs["coll"] = fast_coll_def
-        self.defs["gelc"] = gelc_def
 
     def load_map(self, map_path, **kwargs):
         autoload_resources = kwargs.get("autoload_resources", True)

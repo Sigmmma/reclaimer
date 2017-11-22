@@ -20,7 +20,7 @@ def get():
     return ctrl_def
 
 ctrl_def = TagDef("ctrl",
-    blam_header('ctrl'),
+    blam_header_stubbs('ctrl'),
     ctrl_body,
 
     ext=".device_control", endian=">"

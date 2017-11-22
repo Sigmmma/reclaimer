@@ -16,7 +16,7 @@ def get():
     return garb_def
 
 garb_def = TagDef("grab",
-    blam_header('garb'),
+    blam_header_stubbs('garb'),
     garb_body,
 
     ext=".garbage", endian=">"
