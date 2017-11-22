@@ -9,4 +9,7 @@ __all__ = (
     "snde", "lsnd", "soso", "sotr", "Soul", "spla", "ssce", "str_", "swat",
     "tagc", "trak", "udlg", "unhi", "unit", "ustr", "vcky", "vehi", "weap",
     "wind", "wphi",
+
+    "srac", "srud", "srwd", "buym",
+    "m1ed", "m2ed", "m3ed", "t1ed", "t2ed", "t3ed",
     )
