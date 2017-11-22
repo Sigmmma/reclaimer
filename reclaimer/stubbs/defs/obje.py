@@ -4,7 +4,7 @@ def get():
     return obje_def
 
 obje_attrs = dict(obje_attrs)
-obje_attrs[7] = dependency('model', 'mode')
+obje_attrs[7] = dependency_stubbs('model', 'mode')
 
 obje_body = Struct('tagdata',
     obje_attrs,
@@ -12,7 +12,7 @@ obje_body = Struct('tagdata',
     )
 
 obje_def = TagDef("obje",
-    blam_header('obje'),
+    blam_header_stubbs('obje'),
     obje_body,
 
     ext=".object", endian=">"

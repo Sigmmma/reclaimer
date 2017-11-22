@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 bump_properties = Struct("bump properties",
     Float("bump scale"),
-    dependency("bump map", "bitm"),
+    dependency_stubbs("bump map", "bitm"),
     )
 
 soso_attrs = Struct("soso attrs",
@@ -47,7 +47,7 @@ def get():
     return soso_def
 
 soso_def = TagDef("soso",
-    blam_header('soso', 3),
+    blam_header_stubbs('soso', 3),
     soso_body,
 
     ext=".shader_model", endian=">"  # increment to differentiate it from halo antr

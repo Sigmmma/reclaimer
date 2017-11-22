@@ -12,7 +12,7 @@ def get():
     return schi_def
 
 schi_def = TagDef("schi",
-    blam_header('schi'),
+    blam_header_stubbs('schi'),
     schi_body,
 
     ext=".shader_transparent_chicago", endian=">",

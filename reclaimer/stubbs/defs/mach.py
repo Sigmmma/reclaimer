@@ -21,7 +21,7 @@ def get():
     return mach_def
 
 mach_def = TagDef("mach",
-    blam_header('mach'),
+    blam_header_stubbs('mach'),
     mach_body,
 
     ext=".device_machine", endian=">"

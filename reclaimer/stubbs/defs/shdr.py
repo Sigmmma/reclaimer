@@ -14,7 +14,7 @@ def get():
     return shdr_def
 
 shdr_def = TagDef("shdr",
-    blam_header('shdr'),
+    blam_header_stubbs('shdr'),
     shader_body,
 
     ext=".shader", endian=">"

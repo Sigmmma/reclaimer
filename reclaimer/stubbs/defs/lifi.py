@@ -18,7 +18,7 @@ def get():
     return lifi_def
 
 lifi_def = TagDef("lifi",
-    blam_header('lifi'),
+    blam_header_stubbs('lifi'),
     lifi_body,
 
     ext=".device_light_fixture", endian=">"

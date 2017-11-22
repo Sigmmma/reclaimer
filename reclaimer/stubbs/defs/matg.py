@@ -31,7 +31,7 @@ matg_body = Struct('tagdata',
     )
 
 matg_def = TagDef("matg",
-    blam_header('matg', 3),
+    blam_header_stubbs('matg', 3),
     matg_body,
 
     ext=".globals", endian=">"

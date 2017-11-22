@@ -13,7 +13,7 @@ def get():
     return sotr_def
 
 sotr_def = TagDef("sotr",
-    blam_header("sotr"),
+    blam_header_stubbs("sotr"),
     sotr_body,
 
     ext=".shader_transparent_generic", endian=">",

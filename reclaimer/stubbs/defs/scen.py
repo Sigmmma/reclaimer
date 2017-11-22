@@ -15,7 +15,7 @@ def get():
     return scen_def
 
 scen_def = TagDef("scen",
-    blam_header('scen'),
+    blam_header_stubbs('scen'),
     scen_body,
 
     ext=".scenery", endian=">"

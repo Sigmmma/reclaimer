@@ -100,7 +100,7 @@ vehicle_desc = Struct("vehicle",
     )
 
 effect_reference_desc = Struct("effect reference", 
-    dependency('effect', ("snd!", "effe")),
+    dependency_stubbs('effect', ("snd!", "effe")),
     SIZE=20,
     )
 
@@ -186,7 +186,7 @@ def get():
     return antr_def
 
 antr_def = TagDef("antr",
-    blam_header('antr', 5),  # increment to differentiate it from halo antr
+    blam_header_stubbs('antr', 5),  # increment to differentiate it from halo antr
     antr_body,
 
     ext=".model_animations", endian=">", tag_cls=AntrTag

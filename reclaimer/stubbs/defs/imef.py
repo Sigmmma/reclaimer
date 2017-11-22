@@ -13,7 +13,7 @@ stage = Struct("stage",
     Struct("unknown-animation", INCLUDE=anim_src_func_per_pha_sca),
 
     Struct("unknown1", Float("f0"), Float("f1"), ORIENT='h'),
-    dependency("bitmap", "bitm"),
+    dependency_stubbs("bitmap", "bitm"),
 
     Pad(32),
     Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),

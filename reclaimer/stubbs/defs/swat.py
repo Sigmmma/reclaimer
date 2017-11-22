@@ -12,7 +12,7 @@ def get():
     return swat_def
 
 swat_def = TagDef("swat",
-    blam_header('swat', 2),
+    blam_header_stubbs('swat', 2),
     swat_body,
 
     ext=".shader_transparent_water", endian=">"

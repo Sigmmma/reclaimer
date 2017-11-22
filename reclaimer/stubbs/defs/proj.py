@@ -22,7 +22,7 @@ def get():
     return proj_def
 
 proj_def = TagDef("proj",
-    blam_header('proj', 5),
+    blam_header_stubbs('proj', 5),
     proj_body,
 
     ext=".projectile", endian=">"

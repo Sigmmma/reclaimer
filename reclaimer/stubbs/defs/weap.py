@@ -23,7 +23,7 @@ def get():
     return weap_def
 
 weap_def = TagDef("weap",
-    blam_header('weap', 2),
+    blam_header_stubbs('weap', 2),
     weap_body,
 
     ext=".weapon", endian=">"

@@ -23,7 +23,7 @@ bipd_body = Struct("tagdata",
 del get
 
 bipd_def = TagDef("bipd",
-    blam_header('bipd', 3),
+    blam_header_stubbs('bipd', 3),
     bipd_body,
 
     ext=".biped", endian=">", tag_cls=StubbsTag

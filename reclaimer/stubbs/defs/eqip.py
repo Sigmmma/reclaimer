@@ -22,7 +22,7 @@ def get():
     return eqip_def
 
 eqip_def = TagDef("eqip",
-    blam_header('eqip', 2),
+    blam_header_stubbs('eqip', 2),
     eqip_body,
 
     ext=".equipment", endian=">"

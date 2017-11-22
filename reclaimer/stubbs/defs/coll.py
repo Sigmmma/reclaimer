@@ -46,9 +46,9 @@ region = Struct("region",
     Float("damage threshold"),
     QStruct("unknown floats", *[Float("float%s" % i) for i in range(11)]),
 
-    dependency("destroyed garbage", "garb"),
-    dependency("destroyed weapon", "weap"),
-    dependency("destroyed effect", "effe"),
+    dependency_stubbs("destroyed garbage", "garb"),
+    dependency_stubbs("destroyed weapon", "weap"),
+    dependency_stubbs("destroyed effect", "effe"),
     ascii_str32("unknown2"),
     Pad(28),
     reflexive("permutations", permutation, 32, DYN_NAME_PATH='.name'),
@@ -116,14 +116,14 @@ def get():
     return coll_def
 
 coll_def = TagDef("coll",
-    blam_header("coll", 11),
+    blam_header_stubbs("coll", 11),
     coll_body,
 
     ext=".model_collision_geometry", endian=">", tag_cls=StubbsTag
     )
 
 fast_coll_def = TagDef("coll",
-    blam_header("coll", 11),  # bump this up 1 so we can tell it's stubbs
+    blam_header_stubbs("coll", 11),  # bump this up 1 so we can tell it's stubbs
     fast_coll_body,
 
     ext=".model_collision_geometry", endian=">", tag_cls=HekTag,

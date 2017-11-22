@@ -26,7 +26,7 @@ def get():
     return cdmg_def
 
 cdmg_def = TagDef("cdmg",
-    blam_header('cdmg'),
+    blam_header_stubbs('cdmg'),
     cdmg_body,
 
     ext=".continuous_damage_effect", endian=">", tag_cls=StubbsTag

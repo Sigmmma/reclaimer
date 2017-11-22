@@ -39,7 +39,7 @@ unit_attrs = Struct("unit attrs",
     SEnum16('default team', *unit_teams),
     SEnum16('constant sound volume', *sound_volumes),
     float_zero_to_inf('rider damage fraction'),
-    dependency('integrated light toggle', "effe"),
+    dependency_stubbs('integrated light toggle', "effe"),
     SEnum16('A in', *unit_inputs),
     SEnum16('B in', *unit_inputs),
     SEnum16('C in', *unit_inputs),
@@ -72,7 +72,7 @@ unit_attrs = Struct("unit attrs",
     float_zero_to_one('stunned movement threshold'),  # [0,1]
     float_zero_to_one('feign death chance'),  # [0,1]
     float_zero_to_one('feign repeat chance'),  # [0,1]
-    dependency('spawned actor', "actv"),
+    dependency_stubbs('spawned actor', "actv"),
     QStruct("spawned actor count",
         SInt16("from", GUI_NAME=""), SInt16("to"), ORIENT='h',
         ),
@@ -90,7 +90,7 @@ unit_attrs = Struct("unit attrs",
     Pad(8),
     Float('ai vehicle radius'),
     Float('ai danger radius'),
-    dependency('melee damage', "jpt!"),
+    dependency_stubbs('melee damage', "jpt!"),
     SEnum16('motion sensor blip size',
         "medium",
         "small",
@@ -128,7 +128,7 @@ unit_body = Struct('tagdata',
 del get
 
 unit_def = TagDef("unit",
-    blam_header('unit', 2),
+    blam_header_stubbs('unit', 2),
     unit_body,
 
     ext=".unit", endian=">"

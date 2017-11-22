@@ -12,7 +12,7 @@ def get():
     return sgla_def
 
 sgla_def = TagDef("sgla",
-    blam_header('sgla'),
+    blam_header_stubbs('sgla'),
     sgla_body,
 
     ext=".shader_transparent_glass", endian=">"

@@ -2,8 +2,8 @@ from ..common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 material = Struct("material",
-    dependency("effect", "effe"),
-    dependency("sound", "snd!"),
+    dependency_stubbs("effect", "effe"),
+    dependency_stubbs("sound", "snd!"),
     SIZE=48,
     )
                          
@@ -27,7 +27,7 @@ def get():
     return foot_def
 
 foot_def = TagDef("foot",
-    blam_header('foot'),
+    blam_header_stubbs('foot'),
     foot_body,
     
     ext=".material_effects", endian=">"
