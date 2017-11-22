@@ -1,4 +1,5 @@
 from ...hek.defs.mode import *
+from ..common_descs import *
 
 def get():
     return mode_def
@@ -127,21 +128,21 @@ fast_mode_body = dict(mode_body)
 fast_mode_body[20] = reflexive("geometries", fast_geometry, 256)
 
 mode_def = TagDef("mode",
-    blam_header('mode', 6),  # increment to differentiate it from mode and mod2
+    blam_header_stubbs('mode', 6),  # increment to differentiate it from mode and mod2
     mode_body,
 
     ext=".model", endian=">", tag_cls=ModeTag
     )
 
 fast_mode_def = TagDef("mode",
-    blam_header('mode', 6),  # increment to differentiate it from mode and mod2
+    blam_header_stubbs('mode', 6),  # increment to differentiate it from mode and mod2
     fast_mode_body,
 
     ext=".model", endian=">", tag_cls=ModeTag
     )
 
 pc_mode_def = TagDef("mode",
-    blam_header('mode', 6),  # increment to differentiate it from mode and mod2
+    blam_header_stubbs('mode', 6),  # increment to differentiate it from mode and mod2
     pc_mode_body,
 
     ext=".model", endian=">", tag_cls=ModeTag

@@ -4,9 +4,11 @@ from reclaimer.stubbs.defs.mode import pc_mode_def as stubbs_pc_mode_def
 from reclaimer.stubbs.defs.sbsp import fast_sbsp_def as stubbs_fast_sbsp_def
 from reclaimer.stubbs.defs.coll import fast_coll_def as stubbs_fast_coll_def
 from reclaimer.stubbs.handler   import StubbsHandler
+from supyr_struct.defs.frozen_dict import FrozenDict
 
 
 class StubbsMap(Halo1Map):
+    defs = None
 
     def setup_tag_headers(self):
         if StubbsMap.tag_headers is not None:
@@ -24,17 +26,19 @@ class StubbsMap(Halo1Map):
                                      calc_pointers=False))
 
     def setup_defs(self):
-        Halo1Map.setup_defs(self)
-        if StubbsMap.defs is None:
+        if not StubbsMap.defs:
             print("Loading Stubbs tag definitions...")
             StubbsMap.handler = StubbsHandler(build_reflexive_cache=False,
                                               build_raw_data_cache=False)
             StubbsMap.defs = FrozenDict(StubbsMap.handler.defs)
+
+            if self.engine == "stubbspc":
+                StubbsMap.defs["mode"] = stubbs_pc_mode_def
+            else:
+                StubbsMap.defs["mode"] = stubbs_mode_def
+            StubbsMap.defs["sbsp"] = stubbs_fast_sbsp_def
+            StubbsMap.defs["coll"] = stubbs_fast_coll_def
             print("    Finished")
 
-        if self.engine == "stubbspc":
-            self.defs["mode"] = stubbs_pc_mode_def
-        else:
-            self.defs["mode"] = stubbs_mode_def
-        self.defs["sbsp"] = stubbs_fast_sbsp_def
-        self.defs["coll"] = stubbs_fast_coll_def
+        # make a shallow copy for this instance to manipulate
+        self.defs = dict(self.defs)

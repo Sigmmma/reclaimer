@@ -6,6 +6,7 @@ from supyr_struct.buffer import PeekableMmap
 from .halo1_map import *
 from .halo2_map import *
 from .halo3_map import *
+from .shadowrun_map import *
 
 
 def get_map_version(header):
@@ -25,6 +26,8 @@ def get_map_version(header):
             version = "stubbs"
         elif build_date == map_build_dates["stubbspc"]:
             version = "stubbspc"
+        elif build_date == map_build_dates["shadowrun_beta"]:
+            version = "shadowrun_beta"
     elif hasattr(header, "yelo_header") and (
             header.yelo_header.yelo.enum_name == "yelo"):
         return "halo1yelo"
@@ -97,7 +100,10 @@ def get_tag_index(map_data, header=None):
     magic = 0
 
     tag_index_def = tag_index_pc_def
-    if header.version.data < 6 and get_map_version(header) != "stubbspc":
+    version = get_map_version(header)
+    if "shadowrun" in version:
+        tag_index_def = sr_tag_index_def
+    elif header.version.data < 6 and version != "stubbspc":
         tag_index_def = tag_index_xbox_def
     elif header.version.enum_name == "halo2":
         tag_index_def = h2_tag_index_def

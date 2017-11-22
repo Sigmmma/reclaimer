@@ -13,7 +13,7 @@ def get():
     return spla_def
 
 spla_def = TagDef("spla",
-    blam_header('spla'),
+    blam_header_stubbs('spla'),
     spla_body,
 
     ext=".shader_transparent_plasma", endian=">"

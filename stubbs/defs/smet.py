@@ -12,7 +12,7 @@ def get():
     return smet_def
 
 smet_def = TagDef("smet",
-    blam_header('smet'),
+    blam_header_stubbs('smet'),
     smet_body,
 
     ext=".shader_transparent_meter", endian=">"

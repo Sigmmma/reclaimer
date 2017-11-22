@@ -15,7 +15,7 @@ def get():
     return plac_def
 
 plac_def = TagDef("plac",
-    blam_header('plac', 2),
+    blam_header_stubbs('plac', 2),
     plac_body,
 
     ext=".placeholder", endian=">"

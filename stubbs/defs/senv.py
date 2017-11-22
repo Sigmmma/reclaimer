@@ -12,7 +12,7 @@ def get():
     return senv_def
 
 senv_def = TagDef("senv",
-    blam_header('senv', 2),
+    blam_header_stubbs('senv', 2),
     senv_body,
 
     ext=".shader_environment", endian=">"

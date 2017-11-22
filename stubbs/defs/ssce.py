@@ -15,7 +15,7 @@ def get():
     return ssce_def
 
 ssce_def = TagDef("ssce",
-    blam_header('ssce'),
+    blam_header_stubbs('ssce'),
     ssce_body,
 
     ext=".sound_scenery", endian=">"

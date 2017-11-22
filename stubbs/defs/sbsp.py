@@ -1,4 +1,5 @@
 from ...hek.defs.sbsp import *
+from ..common_descs import *
 
 
 cluster = Struct("cluster",
@@ -49,14 +50,14 @@ def get():
     return sbsp_def
 
 sbsp_def = TagDef("sbsp",
-    blam_header("sbsp", 5),
+    blam_header_stubbs("sbsp", 5),
     sbsp_body,
 
     ext=".scenario_structure_bsp", endian=">", tag_cls=HekTag,
     )
 
 fast_sbsp_def = TagDef("sbsp",
-    blam_header("sbsp", 5),
+    blam_header_stubbs("sbsp", 5),
     fast_sbsp_body,
 
     ext=".scenario_structure_bsp", endian=">", tag_cls=HekTag,
