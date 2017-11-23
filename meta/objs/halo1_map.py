@@ -120,11 +120,12 @@ class Halo1Map(HaloMap):
             print("    Loading Halo 1 OSv4 tag definitions...")
             Halo1Map.handler = OsV4HaloHandler(build_reflexive_cache=False,
                                                build_raw_data_cache=False)
-            Halo1Map.defs = FrozenDict(Halo1Map.handler.defs)
 
+            Halo1Map.defs = dict(Halo1Map.handler.defs)
             Halo1Map.defs["sbsp"] = fast_sbsp_def
             Halo1Map.defs["coll"] = fast_coll_def
             Halo1Map.defs["gelc"] = gelc_def
+            Halo1Map.defs = FrozenDict(Halo1Map.defs)
             print("        Finished")
 
         # make a shallow copy for this instance to manipulate

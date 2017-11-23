@@ -30,7 +30,7 @@ class StubbsMap(Halo1Map):
             print("Loading Stubbs tag definitions...")
             StubbsMap.handler = StubbsHandler(build_reflexive_cache=False,
                                               build_raw_data_cache=False)
-            StubbsMap.defs = FrozenDict(StubbsMap.handler.defs)
+            StubbsMap.defs = dict(StubbsMap.handler.defs)
 
             if self.engine == "stubbspc":
                 StubbsMap.defs["mode"] = stubbs_pc_mode_def
@@ -38,6 +38,7 @@ class StubbsMap(Halo1Map):
                 StubbsMap.defs["mode"] = stubbs_mode_def
             StubbsMap.defs["sbsp"] = stubbs_fast_sbsp_def
             StubbsMap.defs["coll"] = stubbs_fast_coll_def
+            StubbsMap.defs = FrozenDict(StubbsMap.handler.defs)
             print("    Finished")
 
         # make a shallow copy for this instance to manipulate
