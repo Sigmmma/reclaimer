@@ -62,7 +62,7 @@ reflection_properties = Struct("reflection properties",
     float_zero_to_one("parallel brightness"),
     QStruct("parallel tint color", INCLUDE=rgb_float),
 
-    dependency("reflection cube map map", "bitm"),
+    dependency("reflection cube map", "bitm"),
     )
 
 soso_attrs = Struct("soso attrs",
