@@ -148,6 +148,7 @@ map_header = Struct("map header",
         ("halo1pcdemo", 6),
         ("halo1pc", 7),
         ("halo2", 8),
+        ("halo3", 11),
         ("halo1ce", 609),
         ),
     UInt32("decomp len"),
@@ -157,11 +158,12 @@ map_header = Struct("map header",
     Pad(8),
     ascii_str32("map name"),
     ascii_str32("build date", EDITABLE=False),
-    UEnum32("map type",
+    UEnum16("map type",
         "sp",
         "mp",
         "ui",
         ),
+    Pad(2),
     UInt32("crc32"),
     Pad(8),
     yelo_header,
@@ -169,36 +171,6 @@ map_header = Struct("map header",
     UEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
     SIZE=2048
     )
-
-'''
-main_scenario_tag_id, is somewhat interesting.
-If you’ve ever gone through mapfiles with a hex editor, you
-know about tag-swapping. You might go through a mapfile and
-find a value like "E1880014"(in Blood Gulch, this is the
-"scenery\rocks\boulder\shaders\boulder" tag. This number is
-what we like to call a "Tag ID". Now if you are an experienced
-modder at all, you know that you can swap a tag id with another
-tag id of the same type (sometimes of different types) and you
-can do some rather simple, but interesting things.
-
-Well, the main_scenario_tag_id is the number at which these tag id’s start.
-For Blood Gulch, this number is "E1740000". This number varies
-from map to map. You will notice an interesting property of the
-tag id and the base tag occurs when you subtract one from the other:
-
-Code:
-
-E1880014 - E1740000 = 00140014
-
-If you’ve used the "Offset List Export" feature of SparkEdit, you
-will notice that this tag is the 0x15th element in the tag index.
-If you were referencing the array in C, it would be TagIndex[0x14].
-Pretty cool eh? Well, actually, in a few cases this property breaks down.
-The upper 16 bits of that number do not always equal the lower 16 bits,
-and the reason why is still a mystery. Some of us guess that it may be
-some kind of "revision" number to keep track of assets, but we don’t
-really know.
-'''
 
 tag_data = Container("tag",
     CStrLatin1("tag path", POINTER=tag_path_pointer),
