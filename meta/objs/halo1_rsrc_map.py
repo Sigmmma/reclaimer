@@ -267,7 +267,6 @@ class Halo1RsrcMap(HaloMap):
                 bitmap.base_address = 1073751810 * is_xbox
 
             meta.processed_pixel_data.STEPTREE = new_pixels
-
         elif tag_cls == "font":
             # might need to grab pixel data from resource map
             meta_offset = tag_index_ref.meta_offset
@@ -282,7 +281,6 @@ class Halo1RsrcMap(HaloMap):
 
             loc_data.seek(meta.pixels.pointer + meta_offset)
             meta.pixels.data = loc_data.read(meta.pixels.size)
-
         elif tag_cls == "hmt ":
             # might need to grab string data from resource map
             meta_offset = tag_index_ref.meta_offset
@@ -296,7 +294,6 @@ class Halo1RsrcMap(HaloMap):
             b = meta.string
             loc_data.seek(b.pointer + meta_offset)
             meta.string.data = loc_data.read(b.size).decode('utf-16-le')
-
         elif tag_cls == "snd!":
             # might need to get samples and permutations from the resource map
             is_pc = engine in ("halo1pc", "halo1pcdemo")
@@ -309,7 +306,7 @@ class Halo1RsrcMap(HaloMap):
             # ce tagpaths are in the format:  path__permutations
             #     ex: sound\sfx\impulse\coolant\enter_water__permutations
             #
-            # pc tagpaths are in the format:  path__pitch_range__permutation
+            # pc tagpaths are in the format:  path__pitchrange__permutation
             #     ex: sound\sfx\impulse\coolant\enter_water__0__0
             other_data = map_data
             sound_magic = 0 - magic

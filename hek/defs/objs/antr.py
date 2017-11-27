@@ -23,16 +23,17 @@ frame_header = BlockDef("frame_header",
     )
 
 # compressed quaternion rotation
+# Bits AND bytes are ordered left to right as most significant to least
+#   bbbbbbbb aaaaaaaa   dddddddd cccccccc   ffffffff eeeeeeee
+#   iiiiiiii iiiijjjj   jjjjjjjj kkkkkkkk   kkkkwwww wwwwwwww
 rot_def = BlockDef("comp_rotation",
-    S1BitInt("w", SIZE=12),
-    S1BitInt("k", SIZE=12),
-    S1BitInt("j", SIZE=12),
-    S1BitInt("i", SIZE=12),
-    # yes, they are stored in this order
-    SIZE=6, TYPE=BitStruct
+    UInt16("q0"),
+    UInt16("q1"),
+    UInt16("q2"),
+    SIZE=6, TYPE=QStruct
     )
 # you'll need to read the 6 bytes as 3 little endian ints, then bit shift
-# them together like so:    compressed_quat = int2 + (int1<<16) + (int0<<32)
+# them together like so:    compressed_quat = q2 + (q1<<16) + (q0<<32)
 
 # Translation is not compressed, and is still an xyz float triple.
 trans_def = BlockDef("translation",
@@ -172,7 +173,7 @@ class AntrTag(HekTag):
         frame_count = anim.frame_count
         node_count = anim.node_count
         trans_flags = anim.trans_flags0 + (anim.trans_flags1 << 32)
-        rot_flags = anim.rot_flags0 + (anim.rot_flags1 << 32)
+        rot_flags   = anim.rot_flags0   + (anim.rot_flags1 << 32)
         scale_flags = anim.scale_flags0 + (anim.scale_flags1 << 32)
 
         offset = anim.offset_to_compressed_data
@@ -239,16 +240,17 @@ class AntrTag(HekTag):
 
             # rotation
             comp_rot = rot_begin[n*3+2]+(rot_begin[n*3+1]<<16)+(rot_begin[n*3]<<32)
-            rot[3] = (comp_rot&2047)/2047
-            rot[2] = ((comp_rot>>12)&2047)/2047
-            rot[1] = ((comp_rot>>24)&2047)/2047
-            rot[0] = ((comp_rot>>36)&2047)/2047
+            rot[3] = comp_rot&2047
+            rot[2] = (comp_rot>>12)&2047
+            rot[1] = (comp_rot>>24)&2047
+            rot[0] = (comp_rot>>36)&2047
             if sum(rot):
-                if comp_rot&0x800:          rot[3] = rot[3]-1
-                if comp_rot&0x800000:       rot[2] = rot[2]-1
-                if comp_rot&0x800000000:    rot[1] = rot[1]-1
-                if comp_rot&0x800000000000: rot[0] = rot[0]-1
-                length = sq(rot[0]**2+rot[1]**2+rot[2]**2+rot[3]**2)
+                if comp_rot&0x800:          rot[3] = rot[3]-2047
+                if comp_rot&0x800000:       rot[2] = rot[2]-2047
+                if comp_rot&0x800000000:    rot[1] = rot[1]-2047
+                if comp_rot&0x800000000000: rot[0] = rot[0]-2047
+                length = sq(rot[0]**2+rot[1]**2+
+                            rot[2]**2+rot[3]**2)
                 rot[0] /= length
                 rot[1] /= length
                 rot[2] /= length
@@ -337,6 +339,7 @@ class AntrTag(HekTag):
         node_scale_nums = [()]*node_count
         for n in range(node_count):
             rot_frames = trans_frames = scale_frames = ()
+            nf = node_frames[n]
 
             # get the frames that this node is animated on
             if rot_flags&(1<<n):
@@ -354,18 +357,19 @@ class AntrTag(HekTag):
 
             # rotation
             for f in rot_frames:
-                rot = node_frames[n][f][0]
+                rot = nf[f][0]
                 comp_rot = rot_data[ri+2]+(rot_data[ri+1]<<16)+(rot_data[ri]<<32)
-                rot[3] = (comp_rot&2047)/2047
-                rot[2] = ((comp_rot>>12)&2047)/2047
-                rot[1] = ((comp_rot>>24)&2047)/2047
-                rot[0] = ((comp_rot>>36)&2047)/2047
+                rot[3] = comp_rot&2047
+                rot[2] = (comp_rot>>12)&2047
+                rot[1] = (comp_rot>>24)&2047
+                rot[0] = (comp_rot>>36)&2047
                 if sum(rot):
-                    if comp_rot&0x800: rot[3] = rot[3]-1
-                    if comp_rot&0x800000: rot[2] = rot[2]-1
-                    if comp_rot&0x800000000: rot[1] = rot[1]-1
-                    if comp_rot&0x800000000000: rot[0] = rot[0]-1
-                    length = sq(rot[0]**2+rot[1]**2+rot[2]**2+rot[3]**2)
+                    if comp_rot&0x800:          rot[3] = rot[3]-2047
+                    if comp_rot&0x800000:       rot[2] = rot[2]-2047
+                    if comp_rot&0x800000000:    rot[1] = rot[1]-2047
+                    if comp_rot&0x800000000000: rot[0] = rot[0]-2047
+                    length = sq(rot[0]**2+rot[1]**2+
+                                rot[2]**2+rot[3]**2)
                     rot[0] /= length
                     rot[1] /= length
                     rot[2] /= length
@@ -378,12 +382,12 @@ class AntrTag(HekTag):
 
             # translation
             for f in trans_frames:
-                node_frames[n][f][1][:] = trans_data[ti:ti+3]
+                nf[f][1][:] = trans_data[ti:ti+3]
                 ti += 3
 
             # scale
             for f in scale_frames:
-                node_frames[n][f][2] = scale_data[si]
+                nf[f][2] = scale_data[si]
                 si += 1
 
 
@@ -406,9 +410,9 @@ class AntrTag(HekTag):
             w0 = f0[3]
             last_num = 0
             reverse_orient = False
-            if n == 1 and anim_index == 1:
-                print(node_rot_nums[n])
-                print(0, f0)
+            #if n == 1 and anim_index == 1:
+            #    print(node_rot_nums[n])
+            #    print(0, f0)
 
             # interpolate the rotations
             for next_num in node_rot_nums[n]:
@@ -438,8 +442,8 @@ class AntrTag(HekTag):
                 #    f1[2] = k1 = -k1
                 #    f1[3] = w1 = -w1
 
-                if n == 1 and anim_index == 1:
-                    print(next_num, reverse_orient, cos_half_theta, f1)
+                #if n == 1 and anim_index == 1:
+                #    print(next_num, reverse_orient, cos_half_theta, f1)
 
                 # slerp interpolation code
                 '''
