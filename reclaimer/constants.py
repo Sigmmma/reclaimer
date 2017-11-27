@@ -66,16 +66,16 @@ map_magics = {
     "halo1xbox":      XBOX_INDEX_MAGIC,
     "halo1pcdemo":    PCDEMO_INDEX_MAGIC,
     "halo1pc":        PC_INDEX_MAGIC,
-    "halo1ce":        PC_INDEX_MAGIC,
-    "halo1yelo":      PC_INDEX_MAGIC,
-    "halo2alpha":   0,
-    "halo2epsilon": 0,
-    "halo2xbox":    0,  # Halo 2 and beyond dont use magic
-    "halo2vista":   0,
-    "halo3":        0,
-    "halo4":        0,
-    "halo5":        0,
-    "halo_reach":   0,
+    "halo1ce":        CE_INDEX_MAGIC,
+    "halo1yelo":      CE_INDEX_MAGIC,
+    "halo2alpha":     0,
+    "halo2epsilon":   0,
+    "halo2xbox":      0,  # Halo 2 and beyond dont use magic
+    "halo2vista":     0,
+    "halo3":          0,
+    "halo4":          0,
+    "halo5":          0,
+    "halo_reach":     0,
     }
 
 # bitmap types

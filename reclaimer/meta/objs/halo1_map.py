@@ -514,16 +514,22 @@ class Halo1Map(HaloMap):
             for cluster in meta.clusters.STEPTREE:
                 predicted_resources.append(cluster.predicted_resources)
 
-            compressed = engine in ("halo1xbox", "stubbs")
+            compressed = engine in ("halo1xbox", "stubbs", "shadowrun_beta")
+
+            if compressed:
+                generate_verts = kwargs.get("generate_uncomp_verts", False)
+            else:
+                generate_verts = kwargs.get("generate_comp_verts", False)
 
             # local variables for faster access
             s_unpack = unpack
             s_pack_into = pack_into
 
-            # make sure the compressed and uncompressed lightmap vertices
-            # are padded with 0x00 up to the size they need to be
             for lightmap in meta.lightmaps.STEPTREE:
                 for b in lightmap.materials.STEPTREE:
+                    if not generate_verts:
+                        continue
+
                     vert_count = b.vertices_count
                     lightmap_vert_count = b.lightmap_vertices_count
 
@@ -552,9 +558,6 @@ class Halo1Map(HaloMap):
                             if ti&1024: ti = -1*((~ti) & 2047)
                             if tj&1024: tj = -1*((~tj) & 2047)
                             if tk&512:  tk = -1*((~tk) & 1023)
-                            ni /= 1023; nj /= 1023; nk /= 511
-                            bi /= 1023; bj /= 1023; bk /= 511
-                            ti /= 1023; tj /= 1023; tk /= 511
 
                             nmag = max(sqrt(ni**2 + nj**2 + nk**2), 0.00000001)
                             bmag = max(sqrt(bi**2 + bj**2 + bk**2), 0.00000001)
@@ -578,7 +581,6 @@ class Halo1Map(HaloMap):
                             if ni&1024: ni = -1*((~ni) & 2047)
                             if nj&1024: nj = -1*((~nj) & 2047)
                             if nk&512:  nk = -1*((~nk) & 1023)
-                            ni /= 1023; nj /= 1023; nk /= 511
 
                             mag = max(sqrt(ni**2 + nj**2 + nk**2), 0.00000001)
 
@@ -594,6 +596,64 @@ class Halo1Map(HaloMap):
                         uncomp_buffer = u_verts.STEPTREE
                         comp_buffer   = bytearray(32*vert_count +
                                                   8*lightmap_vert_count)
+
+                        in_off  = 0
+                        out_off = 0
+                        # for speed purposes, we'll assume all vectors
+                        # are already normalized to a length of ~1.0
+                        for i in range(vert_count):
+                            ni, nj, nk, bi, bj, bk, ti, tj, tk = s_unpack(
+                                "<9f", uncomp_buffer[in_off + 12:
+                                                     in_off + 48])
+                            ni = int(min(ni, 1.0)*1023)
+                            nj = int(min(nj, 1.0)*1023)
+                            nk = int(min(nk, 1.0)*511)
+                            bi = int(min(bi, 1.0)*1023)
+                            bj = int(min(bj, 1.0)*1023)
+                            bk = int(min(bk, 1.0)*511)
+                            ti = int(min(ti, 1.0)*1023)
+                            tj = int(min(tj, 1.0)*1023)
+                            tk = int(min(tk, 1.0)*511)
+                            if ni < 0: ni = max(ni, -1023) + 2047
+                            if nj < 0: nj = max(nj, -1023) + 2047
+                            if nk < 0: nk = max(nk, -511)  + 1023
+                            if bi < 0: bi = max(bi, -1023) + 2047
+                            if bj < 0: bj = max(bj, -1023) + 2047
+                            if bk < 0: bk = max(bk, -511)  + 1023
+                            if ti < 0: ti = max(ti, -1023) + 2047
+                            if tj < 0: tj = max(tj, -1023) + 2047
+                            if tk < 0: tk = max(tk, -511)  + 1023
+
+                            # write the compressed data
+                            s_pack_into('<12s3I8s', comp_buffer, out_off,
+                                        uncomp_buffer[in_off: in_off + 12],
+                                        ni + (nj<<11) + (nk<<22),
+                                        bi + (bj<<11) + (bk<<22),
+                                        ti + (tj<<11) + (tk<<22),
+                                        uncomp_buffer[in_off + 48:
+                                                      in_off + 56])
+
+                            in_off  += 56
+                            out_off += 32
+
+                        for i in range(lightmap_vert_count):
+                            ni, nj, nk, u, v = s_unpack(
+                                "<5f", uncomp_buffer[in_off: in_off + 20])
+                            ni = int(min(ni, 1.0)*1023)
+                            nj = int(min(nj, 1.0)*1023)
+                            nk = int(min(nk, 1.0)*511)
+                            if ni < 0: ni = max(ni, -1023) + 2047
+                            if nj < 0: nj = max(nj, -1023) + 2047
+                            if nk < 0: nk = max(nk, -511)  + 1023
+
+                            # write the compressed data
+                            s_pack_into('<I2h', comp_buffer, out_off,
+                                        ni + (nj<<11) + (nk<<22),
+                                        int(min(max(u, -1.0), 1.0)*32767),
+                                        int(min(max(v, -1.0), 1.0)*32767))
+
+                            in_off  += 20
+                            out_off += 8
 
                     # replace the buffers
                     u_verts.STEPTREE = uncomp_buffer

@@ -618,7 +618,7 @@ framebuffer_blend_functions = (
     )
 
 # DO NOT MODIFY ANY OF THESE SCRIPT ENUMS.
-# The exact wording is important as the script extractor uses
+# The exact lettering is important as the script extractor uses
 # these strings to reconstruct scripts
 script_types = (
     "startup",
@@ -639,8 +639,8 @@ script_object_types = (
     "long",
 
 # DO NOT MODIFY ANY OF THESE SCRIPT ENUMS.
-# The exact wording is important as the script extractor uses
-# these strings to reconstruct scripts
+# The exact lettering is important as the script extractor
+# uses these strings to reconstruct scripts
 
     "string",
     "script",
@@ -690,6 +690,8 @@ script_object_types = (
     "device_name",
     "scenery_name"
     )
+
+
 function_names = (
     "none",
     "A",
