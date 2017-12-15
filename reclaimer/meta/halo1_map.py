@@ -186,7 +186,8 @@ tag_header = Struct("tag header",
     UInt32("indexed"),
     # if indexed is 1, the meta_offset is the literal index in the
     # bitmaps, sounds, or loc cache that the meta data is located in.
-    Pad(4),
+    UInt32("pad"),  # normally padding, but the scenario tag's header
+    #                 can be used for spoofing the maps checksum
     STEPTREE=tag_data, SIZE=32
     )
 
