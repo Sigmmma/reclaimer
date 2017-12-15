@@ -28,6 +28,8 @@ class Halo1Map(HaloMap):
     sound_rsrc_id = None
     defs = None
 
+    force_checksum = False
+
     inject_rawdata = Halo1RsrcMap.inject_rawdata
 
     def __init__(self, maps=None):
