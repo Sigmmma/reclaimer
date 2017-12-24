@@ -87,7 +87,6 @@ texture_scrolling = Struct("texture scrolling",
     QStruct("rot-animation center", INCLUDE=xy_float),
 	COMMENT=tex_scroll_comment
     )
-                   
 
 reflection_properties = Struct("reflection properties",
     float_wu("falloff distance"),  # world units
@@ -101,11 +100,6 @@ reflection_properties = Struct("reflection properties",
     dependency("reflection cube map", "bitm"),
 	#COMMENT=reflection_prop_comment
     )
-	
-color_change = Struct("change color",
-    SEnum16("color change source", *function_names),
-	COMMENT=cc_comment
-	)
 	
 soso_attrs = Struct("soso attrs",
     #Model Shader Properties
