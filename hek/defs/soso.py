@@ -2,6 +2,38 @@ from .shdr import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
+soso_comment = """MODEL SHADER
+Setting <true atmospheric fog> enables per-pixel atmospheric fog but disables point/spot 
+lights, planar fog, and the ability to control the atmospheric fog density for this shader."""
+
+cc_comment = """CHANGE COLOR
+Change color is used to recolor the diffuse map, it affects pixels 
+based on the ALPHA channel of the multipurpose map"""
+
+self_illum_comment = """SELF-ILLUMINATION
+Self-illumination adds diffuse light to pixels based on the GREEN channel
+of the multipurpose map. The external self-illumination color referenced by
+<color source> is modulated by the self-illumination animation."""
+
+maps_comment = """MAPS
+Multipurpose map is used for:
+* RED: auxiliary mask (usually used for detail) 
+* GREEN: self-illumination mask (adds to diffuse light)
+* BLUE: specular reflection mask (modulates reflections)
+* ALPHA: primary change color mask (recolors diffuse map)
+
+Note that when DXT1 compressed color-key textures are used for the 
+multipurpose map (as they should be normally), the alpha channel is 1-bit 
+and any non-zero alpha pixels must have zero-color, therefore if we need 
+colorchange we use DXT3 (explicit alpha) or DXT5 (interpolated alpha).
+
+Detail map affects diffuse map, and optionally affects reflection 
+if <detail after reflection> flag is set."""
+
+tex_scroll_comment = """TEXTURE SCROLLING ANIMATIONS
+Scrolls all 2D maps simultaneously."""
+
+reflection_prop_comment = """REFLECTION PROPERTIES"""
 
 model_shader = Struct("model shader",
     Bool16("flags",
@@ -14,6 +46,7 @@ model_shader = Struct("model shader",
         ),
     Pad(14),
     Float("translucency"),
+	COMMENT=soso_comment
     )
         
 self_illumination = Struct("self illumination",
@@ -26,6 +59,7 @@ self_illumination = Struct("self illumination",
     float_sec("animation period"),  # seconds
     QStruct("color lower bound", INCLUDE=rgb_float),
     QStruct("color upper bound", INCLUDE=rgb_float),
+	COMMENT=self_illum_comment
     )
         
 maps = Struct("maps",
@@ -43,6 +77,7 @@ maps = Struct("maps",
     Float("detail map scale"),
     dependency("detail map", "bitm"),
     Float("detail map v-scale"),
+	COMMENT=maps_comment
     )
 
 texture_scrolling = Struct("texture scrolling",
@@ -50,6 +85,7 @@ texture_scrolling = Struct("texture scrolling",
     Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
     Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca_rot),
     QStruct("rot-animation center", INCLUDE=xy_float),
+	COMMENT=tex_scroll_comment
     )
                    
 
@@ -63,15 +99,22 @@ reflection_properties = Struct("reflection properties",
     QStruct("parallel tint color", INCLUDE=rgb_float),
 
     dependency("reflection cube map", "bitm"),
+	#COMMENT=reflection_prop_comment
     )
-
+	
+color_change = Struct("change color",
+    SEnum16("color change source", *function_names),
+	COMMENT=cc_comment
+	)
+	
 soso_attrs = Struct("soso attrs",
     #Model Shader Properties
     model_shader,
         
     Pad(16),
     #Color-Change
-    SEnum16("color change source", *function_names),
+    SEnum16("color change source", *function_names, COMMENT=cc_comment),
+	
         
     Pad(30),
     #Self-Illumination
