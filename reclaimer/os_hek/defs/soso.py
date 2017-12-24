@@ -28,7 +28,8 @@ Normal coefficient is used to change the height/visiblity of the normal map."""
 specular_tint_override_comment = """SPECULAR TINT OVERRIDE
 These values override the specular tint colors in the stock part of the tag (the bottom).
 Useful for if you want to have specific os and non-os tint values.
-(Whetever these values are used is only controlled by if the user has opensauce,
+
+(Whetever these values are used is controlled by if the user has opensauce,
 not by the opensauce settings.)"""
 
 diffuse_lighting_comment = """DIFFUSE LIGHTING"""
@@ -36,6 +37,23 @@ diffuse_lighting_comment = """DIFFUSE LIGHTING"""
 specular_lighting_comment = """SPECULAR LIGHTING
 Exponent controls the highlight size, the bigger the exponent, the smaller the highlight.
 Coefficient controls the brightness of the highlights."""
+
+os_reflection_prop_comment = """REFLECTION PROPERIES
+When the opensauce extension is used the tint values in here are overwritten 
+by the ones in the os extension when the map is loaded."""
+
+reflection_properties = Struct("reflection properties",
+    float_wu("falloff distance"),  # world units
+    float_wu("cutoff distance"),  # world units
+ 
+    float_zero_to_one("perpendicular brightness"),
+    QStruct("perpendicular tint color", INCLUDE=rgb_float),
+    float_zero_to_one("parallel brightness"),
+    QStruct("parallel tint color", INCLUDE=rgb_float),
+
+    dependency("reflection cube map", "bitm"),
+	COMMENT=os_reflection_prop_comment
+    )
 
 os_soso_ext = Struct("shader model extension",
     #Specular Color
@@ -73,7 +91,7 @@ os_soso_ext = Struct("shader model extension",
     QStruct("parallel tint color", INCLUDE=rgb_float),
 
     Bool16("diffuse lighting flags",
-        { NAME: "do not use dlms", GUI_NAME: "do not use dlms (bsp)" },
+        { NAME: "do_not_use_dlms", GUI_NAME: "do not use dlms (bsp)" },
         COMMENT=diffuse_lighting_comment
 		),
 	Pad(4),
