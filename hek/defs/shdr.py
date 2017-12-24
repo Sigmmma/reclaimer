@@ -2,11 +2,25 @@ from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
+radiosity_comment = """RADIOSITY/LIGHTMAPPING
+The simple parameterisation flag is used for shaders that are on surfaces with more curved
+shapes like grass hills. It avoids lightmap uv problems by using the uvs from the bsp geometry.
+The ignore normals flag helps with shading bugs on double sided polygons by making the 
+light independent of normals.(Suggested use: tree leaves).
+
+The detail level controls the relative quality of the lightmaps/lightmap uvs for this shader."""
+
+lighting_comment = """LIGHT
+Light power controls the brightness and reach of the light emitted by this shader 
+during lightmap rendering.
+"""
+
 shdr_attrs = Struct("shdr attrs",
     Bool16("radiosity flags",
-        "simple parameterization",
+        { NAME: "simple_parameterization", GUI_NAME: "simple parameterization(lightmap fix)" },
         "ignore normals",
         "transparent lit",
+		COMMENT=radiosity_comment
         ),
     SEnum16("radiosity detail level" ,
         "high",
@@ -14,7 +28,7 @@ shdr_attrs = Struct("shdr attrs",
         "low",
         "turd",
         ),
-    Float("radiosity light power"),
+    Float("radiosity light power", COMMENT=lighting_comment),
     QStruct("radiosity light color", INCLUDE=rgb_float),
     QStruct("radiosity tint color",  INCLUDE=rgb_float),
 
