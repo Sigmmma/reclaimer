@@ -1048,6 +1048,11 @@ ypr_float = QStruct('ypr_float',
     ORIENT='h',
     )
 
+# texture coordinates
+uv_float = QStruct('uv_float',
+    Float("u"), Float("v"),
+    ORIENT='h'
+    )
 
 #############################
 # Open Sauce related things #
