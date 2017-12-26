@@ -1,33 +1,44 @@
 from ...hek.defs.senv import *
+#from ...os_hek.defs.soso import *
+
+dlm_comment = """DIRECTIONAL LIGHTMAP PROPERTIES
+Special shader settings for when your map has directional lightmaps rendered for it."""
+
+dlm_specular_map_comment = """DLM SPECULAR (COLOR) MAP
+*RGB holds the specular color.
+*ALPHA can be used as an exponent mask to provide finer control 
+over the size of the specular highlights."""
+
+dlm_tint_comment = """DLM SPECULAR TINT AND BRIGHTNESS"""
+
+dlm_specular_comment = """DLM SPECULAR INTENSITY
+Exponent controls the highlight size, the bigger the exponent, the smaller the highlight.
+Coefficient controls the brightness of the highlights."""
 
 os_senv_ext = Struct("shader environment extension",
-    Bool16("flags",
+    Bool16("dlm flags",
         "do not use dlms",
-        ),
+        COMMENT=dlm_comment
+		),
     Pad(2),
     Float("bump amount"),
 
-    Struct("dlm color",
-        dependency_os("map", "bitm"),
-        Float("specular exponent"),
-        Float("specular coefficient"),
-        Bool16("flags",
-            "alpha as exponent mask",
-            ),
-        Pad(2),
+    dependency_os("specular color map", "bitm", COMMENT=dlm_specular_map_comment),
+    Float("specular color coefficient"),
+    Float("specular color exponent"),
+    Bool16("specular flags",
+        "alpha as exponent mask",
         ),
+	Pad(2),
 
-    QStruct("dlm tint and brightness",
-        Float("perpendicular brightness"),
-        Float("perpendicular tint color"),
-        Float("parallel brightness"),
-        Float("parallel tint color"),
-        ),
+    float_zero_to_one("perpendicular brightness", COMMENT=dlm_tint_comment),
+	QStruct("perpendicular tint color", INCLUDE=rgb_float),
+	float_zero_to_one("parallel brightness"),
+	QStruct("parallel tint color", INCLUDE=rgb_float),
+        
 
-    QStruct("dlm intensity",
-        Float("lighting exponent"),
-        Float("lighting coefficient"),
-        ),
+    Float("specular Lighting exponent", COMMENT=dlm_specular_comment),
+    Float("specular Lighting coefficient"),
 
     SIZE=100,
     )
