@@ -72,12 +72,12 @@ environment_shader = Struct("environment shader",
         "bump-map is specular mask",
         "true atmospheric fog",
         COMMENT=environment_shader_comment
-		),
+        ),
     SEnum16("environment shader type",
         "normal",
         "blended",
         "blended base specular",
-		COMMENT=environment_shader_type_comment
+        COMMENT=environment_shader_type_comment
         ),
     )
 
@@ -112,41 +112,40 @@ bump_properties = Struct("bump properties",
     dependency("map", "bitm"),
     FlFloat("map scale x"),
     FlFloat("map scale y"),
-	COMMENT=bump_properties_comment
+    COMMENT=bump_properties_comment
     )
 	
-texture_scrolling_animation = Struct("texture scrolling animation",
-	Struct("u-scrolling animation", INCLUDE=anim_func_per_sca),
-    Struct("v-scrolling animation", INCLUDE=anim_func_per_sca),
-	COMMENT=tex_scroll_anim_comment
+texture_scrolling_animation = Struct("animation",
+    anim_func_per_sca_macro("u-scrolling"),
+    anim_func_per_sca_macro("v-scrolling"),
+    COMMENT=tex_scroll_anim_comment
     )
 	
 self_illumination = Struct("self illumination",
-	
-	Bool16("flags",
+    Bool16("flags",
         "unfiltered",
         ),
-	Pad(2),
-	Pad(24),
+    Pad(2),
+    Pad(24),
 	
     QStruct("primary on-color",  INCLUDE=rgb_float),
     QStruct("primary off-color", INCLUDE=rgb_float),
-    Struct("primary animation", INCLUDE=anim_func_per_pha),
+    anim_func_per_pha_macro("primary animation"),
 
     Pad(24),
     QStruct("secondary on-color",  INCLUDE=rgb_float),
     QStruct("secondary off-color", INCLUDE=rgb_float),
-    Struct("secondary animation", INCLUDE=anim_func_per_pha),
+    anim_func_per_pha_macro("secondary animation"),
 
     Pad(24),
     QStruct("plasma on-color",  INCLUDE=rgb_float),
     QStruct("plasma off-color", INCLUDE=rgb_float),
-    Struct("plasma animation", INCLUDE=anim_func_per_pha),
+    anim_func_per_pha_macro("plasma animation"),
 
     Pad(24),
     Float("map scale"),
     dependency("map", "bitm"),
-	COMMENT=self_illum_comment
+    COMMENT=self_illum_comment
     )
 
 specular = Struct("specular",
@@ -161,7 +160,7 @@ specular = Struct("specular",
     Pad(20),
     QStruct("perpendicular color", INCLUDE=rgb_float),
     QStruct("parallel color",      INCLUDE=rgb_float),
-	COMMENT=specular_properties_comment
+    COMMENT=specular_properties_comment
     )
 
 reflection = Struct("reflection",
@@ -181,7 +180,7 @@ reflection = Struct("reflection",
 
     Pad(40),
     dependency("cube map", "bitm"),
-	COMMENT=reflection_properties_comment
+    COMMENT=reflection_properties_comment
     )
 
 senv_attrs = Struct("senv attrs",
@@ -205,7 +204,7 @@ senv_attrs = Struct("senv attrs",
 
     Pad(16),
     #Texture Animation
-    Struct("texture scrolling animation", INCLUDE=texture_scrolling_animation),
+    texture_scrolling_animation,
 
     Pad(24),
     #Self Illumination

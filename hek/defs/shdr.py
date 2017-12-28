@@ -20,7 +20,7 @@ shdr_attrs = Struct("shdr attrs",
         { NAME: "simple_parameterization", GUI_NAME: "simple parameterization(lightmap fix)" },
         "ignore normals",
         "transparent lit",
-		COMMENT=radiosity_comment
+        COMMENT=radiosity_comment
         ),
     SEnum16("radiosity detail level" ,
         "high",

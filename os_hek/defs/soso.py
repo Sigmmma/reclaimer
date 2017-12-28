@@ -21,7 +21,7 @@ D = also no detail normal maps visible
 
 alpha brightness:
    A -------> B -------> C -------> D
-0/0.000   85/0.333  170/0.666  255/1.000
+  0=0.000   85=0.333  170=0.666  255=1.000
 
 Normal coefficient is used to change the height/visiblity of the normal map."""
 
@@ -29,8 +29,8 @@ specular_tint_override_comment = """SPECULAR TINT OVERRIDE
 These values override the specular tint colors in the stock part of the tag (the bottom).
 Useful for if you want to have specific os and non-os tint values.
 
-(Whetever these values are used is controlled by if the user has opensauce,
-not by the opensauce settings.)"""
+(Whether these values are used is controlled by if the user has opensauce, not
+by the opensauce settings.)"""
 
 diffuse_lighting_comment = """DIFFUSE LIGHTING"""
 
@@ -93,10 +93,10 @@ os_soso_ext = Struct("shader model extension",
     Bool16("diffuse lighting flags",
         { NAME: "do_not_use_dlms", GUI_NAME: "do not use dlms (bsp)" },
         COMMENT=diffuse_lighting_comment
-		),
-	Pad(4),
-	Pad(2),
-	
+        ),
+    Pad(4),
+    Pad(2),
+
     Float("specular Lighting exponent", COMMENT=specular_lighting_comment),
     Float("specular Lighting coefficient"),
     SIZE=192,
