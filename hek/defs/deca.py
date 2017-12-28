@@ -35,7 +35,7 @@ deca_body = Struct("tagdata",
         "SAPIEN-incremental counter",
         "animation loop",
         "preserve aspect",
-		COMMENT=decal_comment
+        COMMENT=decal_comment
         ),
     SEnum16("type",
         "scratch",

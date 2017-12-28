@@ -16,11 +16,17 @@ of the multipurpose map. The external self-illumination color referenced by
 <color source> is modulated by the self-illumination animation."""
 
 maps_comment = """MAPS
-Multipurpose map is used for:
-* RED: auxiliary mask (usually used for detail) 
+On PC, a multipurpose maps channels are used for:
+* RED: auxiliary mask (usually used for detail)
 * GREEN: self-illumination mask (adds to diffuse light)
 * BLUE: specular reflection mask (modulates reflections)
 * ALPHA: primary change color mask (recolors diffuse map)
+
+On XBOX however, the channels are used for:
+* RED: specular reflection mask (modulates reflections)
+* GREEN: self-illumination mask (adds to diffuse light)
+* BLUE: primary change color mask (recolors diffuse map)
+* ALPHA: auxiliary mask (usually used for detail)
 
 Note that when DXT1 compressed color-key textures are used for the 
 multipurpose map (as they should be normally), the alpha channel is 1-bit 
@@ -46,7 +52,7 @@ model_shader = Struct("model shader",
         ),
     Pad(14),
     Float("translucency"),
-	COMMENT=soso_comment
+    COMMENT=soso_comment
     )
         
 self_illumination = Struct("self illumination",
@@ -59,7 +65,7 @@ self_illumination = Struct("self illumination",
     float_sec("animation period"),  # seconds
     QStruct("color lower bound", INCLUDE=rgb_float),
     QStruct("color upper bound", INCLUDE=rgb_float),
-	COMMENT=self_illum_comment
+    COMMENT=self_illum_comment
     )
         
 maps = Struct("maps",
@@ -77,7 +83,7 @@ maps = Struct("maps",
     Float("detail map scale"),
     dependency("detail map", "bitm"),
     Float("detail map v-scale"),
-	COMMENT=maps_comment
+    COMMENT=maps_comment
     )
 
 texture_scrolling = Struct("texture scrolling",
@@ -85,7 +91,7 @@ texture_scrolling = Struct("texture scrolling",
     Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
     Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca_rot),
     QStruct("rot-animation center", INCLUDE=xy_float),
-	COMMENT=tex_scroll_comment
+    COMMENT=tex_scroll_comment
     )
 
 reflection_properties = Struct("reflection properties",
