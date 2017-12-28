@@ -14,16 +14,16 @@ loc_exts    = tuple(loc_exts.get(i, 'unicode_string_list') for i in range(176))
 
 
 def inject_sound_data(map_data, rsrc_data, rawdata_ref, map_magic):
-    if not rawdata_ref.size :
+    if not rawdata_ref.size:
         rawdata_ref.data = b''
         return
 
     if rawdata_ref.flags.data_in_resource_map:
         data, ptr = rsrc_data, rawdata_ref.raw_pointer
     elif rawdata_ref.pointer == 0:
-        data, ptr = map_data, rawdata_ref.raw_pointer
+        data, ptr = map_data,  rawdata_ref.raw_pointer
     else:
-        data, ptr = map_data, rawdata_ref.pointer + map_magic
+        data, ptr = map_data,  rawdata_ref.pointer + map_magic
 
     data.seek(ptr)
     rawdata_ref.data = data.read(rawdata_ref.size)
@@ -310,6 +310,7 @@ class Halo1RsrcMap(HaloMap):
             #     ex: sound\sfx\impulse\coolant\enter_water__0__0
             other_data = map_data
             sound_magic = 0 - magic
+            # DO NOT optimize this section. The logic is like this on purpose
             if is_pc:
                 pass
             elif self.is_resource:

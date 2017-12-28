@@ -904,7 +904,7 @@ scnr_body = Struct("tagdata",
     float_rad("local north"),  # radians
 
     Pad(156),
-    reflexive("predicted resources", predicted_resource, 1024),
+    reflexive("predicted resources", predicted_resource, 1024, VISIBLE=False),
     reflexive("functions", function, 32,
         DYN_NAME_PATH='.name'),
     rawdata_ref("scenario editor data", max_size=65536),
