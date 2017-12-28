@@ -150,7 +150,7 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
             if magic is None:
                 pass
             elif (node[1] - magic < 0 or node[1] - magic +
-                  node[0]*s_desc['SUB_STRUCT'].get('SIZE', 0) >= len(rawdata)):
+                  node[0]*s_desc['SUB_STRUCT'].get('SIZE', 0) > len(rawdata)):
                 # the reflexive is corrupt for some reason
                 #    (ex: bad hek+ extraction)
                 node.size = node.pointer = 0
@@ -217,19 +217,20 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                     # need to skip over the rawdata
                     offset += node[0] + node[2] - kwargs['magic']
             elif 'magic' in kwargs:
+                # use magic offset if it is valid
                 if node[3]:
-                    magic_offset = node[3] - kwargs["magic"]
+                    nonmagic_offset = node[3] - kwargs["magic"]
                 else:
-                    magic_offset = node[2]
+                    nonmagic_offset = node[2]
 
-                if not node[0] or (magic_offset + node[0] > len(rawdata) or
-                                   magic_offset <= 0):
+                if not node[0] or (nonmagic_offset + node[0] > len(rawdata) or
+                                   nonmagic_offset <= 0):
                     # data is stored in a resource map, or the size is invalid
                     s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
                 else:
                     s_desc['TYPE'].parser(
                         s_desc, None, node, 'STEPTREE', rawdata,
-                        root_offset, magic_offset, **kwargs)
+                        root_offset, nonmagic_offset, **kwargs)
             elif 'steptree_parents' not in kwargs:
                 offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
                                                rawdata, root_offset, offset,

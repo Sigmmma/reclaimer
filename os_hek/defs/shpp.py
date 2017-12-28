@@ -37,7 +37,7 @@ shpp_attrs = Struct("shpp",
     Pad(64),
     reflexive("techniques", technique,
         DYN_NAME_PATH='.name'),
-    reflexive("predicted resources", predicted_resource, 1024),
+    reflexive("predicted resources", predicted_resource, 1024, VISIBLE=False),
     SIZE=164
     )
 
