@@ -2,6 +2,17 @@ from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
+scale_comment = """DETAIL SOUND PERIOD SCALING
+As the sound's input scale changes from zero to one, these modifiers move between 
+the two values specified here. The sound will play using the current scale modifier
+multiplied by the value specified below. (0 values are ignored.)"""
+
+random_spatialisation_comment = """RANDOM SPATIALIZATION
+If the sound specified above is not stereo it will be randomly spatialized according 
+to the following contraints. If both lower and upper bounds are zero for any of 
+the following fields, the sound's position will be randomly selected from 
+all the possible directions or distances."""
+
 detail_sound = Struct("detail sound",
     dependency("sound", "snd!"),
     from_to_sec('random period bounds'),
@@ -12,7 +23,7 @@ detail_sound = Struct("detail sound",
         ),
 
     Pad(48),
-    from_to_rad('yaw bounds'),  # radians
+    from_to_rad('yaw bounds', COMMENT=random_spatialisation_comment),  # radians
     from_to_rad('pitch bounds'),  # radians
     from_to_wu('distance bounds'),  # world units
 
@@ -47,7 +58,7 @@ lsnd_body = Struct("tagdata",
         "not a loop",
         "stops music",
         ),
-    Float("detail sound period at zero"),
+    Float("detail sound period at zero", COMMENT=scale_comment),
     FlFloat("unknown0", DEFAULT=1.0, VISIBLE=False),
     FlFloat("unknown1", DEFAULT=1.0, VISIBLE=False),
     Float("detail sound period at one"),

@@ -28,10 +28,10 @@ On XBOX, the channels are used for:
 * BLUE: color change
 * ALPHA: auxiliary
 
-Note: When DXT1 compressed color-key textures are used for the 
-multipurpose map (as they should be normally), the alpha channel is 1-bit 
-and any non-zero alpha pixels must have zero-color, therefore if we need 
-colorchange we use DXT3 (explicit alpha) or DXT5 (interpolated alpha) on PC.
+Note: When DXT1 compressed color-key textures are used for the
+multipurpose map (as they should be normally), the alpha channel is 1-bit
+and any non-zero alpha pixels must have zero-color, therefore on PC if we
+need colorchange we use DXT3 (explicit alpha) or DXT5 (interpolated alpha).
 
 Detail map affects diffuse map, and optionally affects reflection 
 if <detail after reflection> flag is set."""
