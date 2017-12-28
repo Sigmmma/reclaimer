@@ -15,6 +15,10 @@ Light power controls the brightness and reach of the light emitted by this shade
 during lightmap rendering.
 """
 
+material_type_comment = """MATERIAL TYPE
+The material type is used to determine what material effects should be used for impacts on 
+BSP geometry that uses this shader."""
+
 shdr_attrs = Struct("shdr attrs",
     Bool16("radiosity flags",
         { NAME: "simple_parameterization", GUI_NAME: "simple parameterization(lightmap fix)" },
@@ -33,7 +37,7 @@ shdr_attrs = Struct("shdr attrs",
     QStruct("radiosity tint color",  INCLUDE=rgb_float),
 
     Pad(2),
-    SEnum16("material type", *materials_list),
+    SEnum16("material type", *materials_list, COMMENT=material_type_comment),
     # THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS.
     # This seems to be a Guerilla-only optimization value
     FlSEnum16("shader type",
@@ -47,7 +51,7 @@ shdr_attrs = Struct("shdr attrs",
         ("sgla", 9),   # Glass
         ("smet", 10),  # Meter
         ("spla", 11),  # Plasma
-        DEFAULT=-1, EDITABLE=False,
+        DEFAULT=-1, EDITABLE=False, VISIBLE=False,
         ),
     Pad(2),
     SIZE=40
