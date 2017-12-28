@@ -8,7 +8,7 @@ lights, planar fog, and the ability to control the atmospheric fog density for t
 
 cc_comment = """CHANGE COLOR
 Change color is used to recolor the diffuse map, it affects pixels 
-based on the ALPHA channel of the multipurpose map"""
+based on the ALPHA channel (BLUE on XBOX) of the multipurpose map."""
 
 self_illum_comment = """SELF-ILLUMINATION
 Self-illumination adds diffuse light to pixels based on the GREEN channel
@@ -16,22 +16,22 @@ of the multipurpose map. The external self-illumination color referenced by
 <color source> is modulated by the self-illumination animation."""
 
 maps_comment = """MAPS
-On PC, a multipurpose maps channels are used for:
+On PC, the multipurpose map channels are used for:
 * RED: auxiliary mask (usually used for detail)
 * GREEN: self-illumination mask (adds to diffuse light)
 * BLUE: specular reflection mask (modulates reflections)
-* ALPHA: primary change color mask (recolors diffuse map)
+* ALPHA: color change mask (recolors diffuse map)
 
-On XBOX however, the channels are used for:
-* RED: specular reflection mask (modulates reflections)
-* GREEN: self-illumination mask (adds to diffuse light)
-* BLUE: primary change color mask (recolors diffuse map)
-* ALPHA: auxiliary mask (usually used for detail)
+On XBOX, the channels are used for:
+* RED: specular reflection
+* GREEN: self-illumination
+* BLUE: color change
+* ALPHA: auxiliary
 
-Note that when DXT1 compressed color-key textures are used for the 
+Note: When DXT1 compressed color-key textures are used for the 
 multipurpose map (as they should be normally), the alpha channel is 1-bit 
 and any non-zero alpha pixels must have zero-color, therefore if we need 
-colorchange we use DXT3 (explicit alpha) or DXT5 (interpolated alpha).
+colorchange we use DXT3 (explicit alpha) or DXT5 (interpolated alpha) on PC.
 
 Detail map affects diffuse map, and optionally affects reflection 
 if <detail after reflection> flag is set."""
