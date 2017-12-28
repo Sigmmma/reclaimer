@@ -2,6 +2,15 @@ from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
+gel_comment = """The map tints the light per-pixel of cubemap."""
+
+lens_flare_comment = """LENS FLARE
+Optional lens flare associated with this light."""
+
+radiosity_comment = """Controls how the light affects the lightmaps (ignored for dynamic lights)."""
+
+effect_parameters_comment = """If the light is created by an effect, it will animate itself as follows."""
+
 ligh_body = Struct("tagdata",
     Bool32("flags",
         "dynamic",
@@ -47,11 +56,12 @@ ligh_body = Struct("tagdata",
         Pad(2),
         SEnum16("pitch animation function", *animation_functions),
         float_sec("pitch animation period"),
-        Pad(8)
+        Pad(8),
+		COMMENT=gel_comment
         ),
 
     #Lens flare
-    dependency("lens flare", "lens"),
+    dependency("lens flare", "lens", COMMENT=lens_flare_comment),
     Pad(24),
 
     #Radiosity
@@ -59,6 +69,7 @@ ligh_body = Struct("tagdata",
         Float("intensity"),
         QStruct("color", INCLUDE=rgb_float),
         Pad(16),
+		COMMENT=radiosity_comment
         ),
 
     #Effect parameters
@@ -66,6 +77,7 @@ ligh_body = Struct("tagdata",
         float_sec("duration"),
         Pad(2),
         SEnum16("falloff function", *fade_functions),
+		COMMENT=effect_parameters_comment
         ),
 
     SIZE=352,
