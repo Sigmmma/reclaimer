@@ -119,6 +119,8 @@ def rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
                 widget=HaloRawdataFrame, **kwargs):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(rawdata_ref_struct)
+    if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
+    if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
@@ -139,6 +141,8 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
     kwargs.update(WIDGET=widget)
     ref_struct[0] = dict(ref_struct[0])
     ref_struct[0][VISIBLE] = False
+    if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
+    if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     if max_size is not None:
         ref_struct[0][MAX] = max_size
         kwargs[MAX] = max_size
@@ -383,6 +387,64 @@ def ypr_float_rad(name, *args, **kwargs):
         ORIENT='h', SIDETIP='degrees', **kwargs
         )
 
+def anim_func_per_pha(name, **desc):
+    desc.setdefault("HIDE_TITLE", True)
+    return Struct(name,
+        SEnum16("function", *animation_functions,
+            GUI_NAME="%s function" % name),
+        Pad(2),
+        Float("period", SIDETIP='seconds',
+            GUI_NAME="%s period" % name, UNIT_SCALE=sec_unit_scale),
+        Float("phase",  SIDETIP='seconds',
+            GUI_NAME="%s phase" % name,  UNIT_SCALE=sec_unit_scale),
+        **desc
+        )
+
+def anim_func_per_sca(name, **desc):
+    desc.setdefault("HIDE_TITLE", True)
+    return Struct(name,
+        SEnum16("function", *animation_functions,
+            GUI_NAME="%s function" % name),
+        Pad(2),
+        Float("period", SIDETIP='seconds',
+            GUI_NAME="%s period" % name, UNIT_SCALE=sec_unit_scale),
+        Float("scale",  SIDETIP='base map repeats',
+            GUI_NAME="%s scale" % name),  # base map repeats
+        **desc
+        )
+
+def anim_src_func_per_pha_sca(name, **desc):
+    desc.setdefault("HIDE_TITLE", True)
+    return Struct(name,
+        SEnum16("source", *function_outputs,
+            GUI_NAME="%s source" % name),
+        SEnum16("function", *animation_functions,
+            GUI_NAME="%s function" % name),
+        Float("period", SIDETIP='seconds',
+            GUI_NAME="%s period" % name, UNIT_SCALE=sec_unit_scale),
+        Float("phase", SIDETIP='seconds',
+            GUI_NAME="%s phase" % name, UNIT_SCALE=sec_unit_scale),
+        Float("scale",  SIDETIP='repeats',
+            GUI_NAME="%s scale" % name),  # repeats
+        **desc
+        )
+
+def anim_src_func_per_pha_sca_rot(name, **desc):
+    desc.setdefault("HIDE_TITLE", True)
+    return Struct(name,
+        SEnum16("source", *function_outputs,
+            GUI_NAME="%s source" % name),
+        SEnum16("function", *animation_functions,
+            GUI_NAME="%s function" % name),
+        Float("period", SIDETIP='seconds',
+            GUI_NAME="%s period" % name, UNIT_SCALE=sec_unit_scale),
+        Float("phase", SIDETIP='seconds',
+            GUI_NAME="%s phase" % name, UNIT_SCALE=sec_unit_scale),
+        Float("scale",  SIDETIP='degrees',
+            GUI_NAME="%s scale" % name),  # repeats
+        **desc
+        )
+
 
 valid_tags = tag_class(*tag_class_fcc_to_ext.keys())
 valid_models = tag_class('mode', 'mod2')
@@ -410,9 +472,9 @@ valid_shaders = tag_class(
 valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
 
 
-# ###########################################################################
-# The order of element in all the enumerators is important(DONT SHUFFLE THEM)
-# ###########################################################################
+# ########################################################################
+# The element order in all the enumerators is important(DONT SHUFFLE THEM)
+# ########################################################################
 
 #Shared Enumerator options
 materials_list = (
@@ -421,34 +483,34 @@ materials_list = (
     "stone",
     "snow",
     "wood",
-    "metal hollow",
-    "metal thin",
-    "metal thick",
+    "metal_hollow",
+    "metal_thin",
+    "metal_thick",
     "rubber",
     "glass",
-    "force field",
+    "force_field",
     "grunt",
-    "hunter armor",
-    "hunter skin",
+    "hunter_armor",
+    "hunter_skin",
     "elite",
     "jackal",
-    "jackal energy shield",
-    "engineer skin",
-    "engineer force field",
-    "flood combat form",
-    "flood carrier form",
-    "cyborg armor",
-    "cyborg energy shield",
-    "human armor",
-    "human skin",
+    "jackal_energy_shield",
+    "engineer_skin",
+    "engineer_force_field",
+    "flood_combat_form",
+    "flood_carrier_form",
+    "cyborg_armor",
+    "cyborg_energy_shield",
+    "human_armor",
+    "human_skin",
     "sentinel",
     "moniter",
     "plastic",
     "water",
     "leaves",
-    "elite energy shield",
+    "elite_energy_shield",
     "ice",
-    "hunter shield",
+    "hunter_shield",
     )
 actor_types = (
     "elite",
@@ -460,23 +522,23 @@ actor_types = (
     "player",
     "marine",
     "crew",
-    "combat form",
-    "infection form",
-    "carrier form",
+    "combat_form",
+    "infection_form",
+    "carrier_form",
     "moniter",
     "sentinal",
     "none",
-    "mounted weapon"
+    "mounted_weapon"
     )
 animation_functions = (
     "one",
     "zero",
     "cosine",
-    "cosine variable period",
-    "diagonal wave",
-    "diagonal wave variable period",
+    "cosine_variable_period",
+    "diagonal_wave",
+    "diagonal_wave_variable_period",
     "slide",
-    "slide variable period",
+    "slide_variable_period",
     "noise",
     "jitter",
     "wander",
@@ -494,87 +556,87 @@ damage_category = (
     "falling",
     "bullet",
     "grenade",
-    "high explosive",
+    "high_explosive",
     "sniper",
     "melee",
     "flame",
-    "mounted weapon",
+    "mounted_weapon",
     "vehicle",
     "plasma",
     "needle",
     "shotgun",
     )
 grenade_types = (
-    'human frag',
-    'covenant plasma'
+    'human_frag',
+    'covenant_plasma'
     )
 fade_functions = (
     "linear",
     "early",
-    "very early",
+    "very_early",
     "late",
-    "very late",
+    "very_late",
     "cosine",
     )
 detail_map_functions = (
-    "double/biased multiply",
+    "double_biased_multiply",
     "multiply",
-    "double/biased add",
+    "double_biased_add",
     )
 device_functions = (
     "none",
     "power",
-    "change in power",
+    "change_in_power",
     "position",
-    "change in position",
+    "change_in_position",
     "locked",
     "delay",
     )
 render_anchor = (
-    "with primary",
-    "with screen space",
-    "with zsprite"
+    "with_primary",
+    "with_screen_space",
+    "with_zsprite"
     )
 render_fade_mode = (
     "none",
-    "fade when perpendicular",
-    "fade when parallel",
+    "fade_when_perpendicular",
+    "fade_when_parallel",
     )
 render_mode = (
-    "screen facing",
-    "parallel to direction",
-    "perpendicular to direction"
+    "screen_facing",
+    "parallel_to_direction",
+    "perpendicular_to_direction"
     )
 shader_flags = (
-    "sort bias",
-    "nonlinear tint",
-    "dont overdraw fp weapon"
+    "sort_bias",
+    "nonlinear_tint",
+    "dont_overdraw_fp_weapon"
     )
 blend_flags = (
-    "blend in hsv",
-    "more colors"
+    "blend_in_hsv",
+    "more_colors"
     )
 hud_scaling_flags = (
-    "dont scale offset",
-    "dont scale size",
-    "use high res scale"
+    "dont_scale_offset",
+    "dont_scale_size",
+    "use_high_res_scale"
     )
 hud_flash_flags = (
-    "reverse default and flashing colors",
+    "reverse_default_and_flashing_colors",
     )
 hud_anchors = (
-    "top left",
-    "top right",
-    "bottom left",
-    "bottom right",
+    "top_left",
+    "top_right",
+    "bottom_left",
+    "bottom_right",
     "center"
     )
 hud_panel_meter_flags = (
-    "use min/max for state changes",
-    "interpolate between min/max flash colors",
-    "interpolate color along hsv space",
-    "more colors for hsv interpolation ",
-    "invert interpolation"
+    "use_min_max_for_state_changes",
+    "interpolate_between_min_max_flash_colors",
+    "interpolate_color_along_hsv_space",
+    "more_colors_for_hsv_interpolation ",
+    "invert_interpolation"
     )
 multitex_anchors = (
     "texture",
@@ -588,33 +650,33 @@ blending_funcs = (
     "add",
     "subtract",
     "multiply",
-    "multiply 2x",
+    "multiply_2x",
     "dot",
     )
 blend_functions = (
     "current",
-    "next map",
+    "next_map",
     "multiply",
-    "double multiply",
+    "double_multiply",
     "add",
-    "add-signed current",
-    "add-signed next map",
-    "subtract-signed current",
-    "subtract-signed next map",
-    "blend current alpha",
-    "blend current alpha-inverse",
-    "blend next map alpha",
-    "blend next map alpha-inverse",
+    "add_signed_current",
+    "add_signed_next_map",
+    "subtract_signed_current",
+    "subtract_signed_next_map",
+    "blend_current_alpha",
+    "blend_current_alpha_inverse",
+    "blend_next_map_alpha",
+    "blend_next_map_alpha_inverse",
     )
 framebuffer_blend_functions = (
-    "alpha blend",
+    "alpha_blend",
     "multiply",
-    "double multiply",
+    "double_multiply",
     "add",
     "subtract",
-    "component min",
-    "component max",
-    "alpha-multiply add",
+    "component_min",
+    "component_max",
+    "alpha_multiply_add",
     )
 
 # DO NOT MODIFY ANY OF THESE SCRIPT ENUMS.
@@ -701,92 +763,92 @@ function_names = (
     )
 function_inputs_outputs = (
     "none",
-    "A in",
-    "B in",
-    "C in",
-    "D in",
-    "A out",
-    "B out",
-    "C out",
-    "D out",
+    "A_in",
+    "B_in",
+    "C_in",
+    "D_in",
+    "A_out",
+    "B_out",
+    "C_out",
+    "D_out",
     )
 function_inputs = (
     "none",
-    "A in",
-    "B in",
-    "C in",
-    "D in",
+    "A_in",
+    "B_in",
+    "C_in",
+    "D_in",
     )
 function_outputs = (
     "none",
-    "A out",
-    "B out",
-    "C out",
-    "D out",
+    "A_out",
+    "B_out",
+    "C_out",
+    "D_out",
     )
 #Tag class specific enumerators
 object_export_to = (
     'none',
-    'body vitality',
-    'shield vitality',
-    'recent body damage',
-    'recent shield damage',
-    'random constant',
-    'umbrella shield vitality',
-    'shield stun',
-    'recent umbrella shield vitality',
-    'umbrella shield stun',
-    'region 0 damage',
-    'region 1 damage',
-    'region 2 damage',
-    'region 3 damage',
-    'region 4 damage',
-    'region 5 damage',
-    'region 6 damage',
-    'region 7 damage',
+    'body_vitality',
+    'shield_vitality',
+    'recent_body_damage',
+    'recent_shield_damage',
+    'random_constant',
+    'umbrella_shield_vitality',
+    'shield_stun',
+    'recent_umbrella_shield_vitality',
+    'umbrella_shield_stun',
+    'region_0_damage',
+    'region_1_damage',
+    'region_2_damage',
+    'region_3_damage',
+    'region_4_damage',
+    'region_5_damage',
+    'region_6_damage',
+    'region_7_damage',
     'alive',
     'compass',
     )
 weapon_export_to = (
     'none',
     'heat',
-    'primary ammunition',
-    'secondary ammunition',
-    'primary rate of fire',
-    'secondary rate of fire',
+    'primary_ammunition',
+    'secondary_ammunition',
+    'primary_rate_of_fire',
+    'secondary_rate_of_fire',
     'ready',
-    'primary ejection port',
-    'secondary ejection port',
+    'primary_ejection_port',
+    'secondary_ejection_port',
     'overheated',
-    'primary charged',
-    'secondary charged',
+    'primary_charged',
+    'secondary_charged',
     'illumination',
     'age',
-    'integrated light',
-    'primary firing',
-    'secondary firing',
-    'primary firing on',
-    'secondary firing on',
+    'integrated_light',
+    'primary_firing',
+    'secondary_firing',
+    'primary_firing_on',
+    'secondary_firing_on',
     )
 biped_inputs = (
     'none',
-    'flying velocity'
+    'flying_velocity'
     )
 projectile_inputs = (
     "none",
-    "range remaining",
-    "time remaining",
+    "range_remaining",
+    "time_remaining",
     "tracer",
     )
 unit_inputs = (
     "none",
-    "driver seat power",
-    "gunner seat power",
-    "aiming change",
-    "mouth aperture",
-    "integrated light power",
-    "can blink",
-    "shield sapping"
+    "driver_seat_power",
+    "gunner_seat_power",
+    "aiming_change",
+    "mouth_aperture",
+    "integrated_light_power",
+    "can_blink",
+    "shield_sapping"
     )
 unit_teams = (
     "none",
@@ -802,84 +864,84 @@ unit_teams = (
     )
 vehicle_inputs = (
     "none",
-    "speed absolute",
-    "speed forward",
-    "speed backward",
-    "slide absolute",
-    "slide left",
-    "slide right",
-    "speed slide maximum",
-    "turn absolute",
-    "turn left",
-    "turn right",
+    "speed_absolute",
+    "speed_forward",
+    "speed_backward",
+    "slide_absolute",
+    "slide_left",
+    "slide_right",
+    "speed_slide_maximum",
+    "turn_absolute",
+    "turn_left",
+    "turn_right",
     "crouch",
     "jump",
     "walk",
-    "velocity air",
-    "velocity water",
-    "velocity ground",
-    "velocity forward",
-    "velocity left",
-    "velocity up",
-    "left tread position",
-    "right tread position",
-    "left tread velocity",
-    "right tread velocity",
-    "front left tire position",
-    "front right tire position",
-    "back left tire position",
-    "back right tire position",
-    "front left tire velocity",
-    "front right tire velocity",
-    "back left tire velocity",
-    "back right tire velocity",
-    "wingtip contrail",
+    "velocity_air",
+    "velocity_water",
+    "velocity_ground",
+    "velocity_forward",
+    "velocity_left",
+    "velocity_up",
+    "left_tread_position",
+    "right_tread_position",
+    "left_tread_velocity",
+    "right_tread_velocity",
+    "front_left_tire_position",
+    "front_right_tire_position",
+    "back_left_tire_position",
+    "back_right_tire_position",
+    "front_left_tire_velocity",
+    "front_right_tire_velocity",
+    "back_left_tire_velocity",
+    "back_right_tire_velocity",
+    "wingtip_contrail",
     "hover",
     "thrust",
-    "engine hack",
-    "wingtip contrail new",
+    "engine_hack",
+    "wingtip_contrail_new",
     )
 vehicle_types = (
-    "human tank",
-    "human jeep",
-    "human boat",
-    "human plane",
-    "alien scout",
-    "alien fighter",
+    "human_tank",
+    "human_jeep",
+    "human_boat",
+    "human_plane",
+    "alien_scout",
+    "alien_fighter",
     "turret",
     )
 weapon_types = (
     "undefined",
     "shotgun",
     "needler",
-    "plasma pistol",
-    "plasma rifle",
+    "plasma_pistol",
+    "plasma_rifle",
     )
 trans_shdr_properties = (
-    "alpha tested",
+    "alpha_tested",
     "decal",
-    "two sided",
-    "first map is in screenspace",
-    "draw before water",
-    "ignore effect",
-    "scale first map with distance",
+    "two_sided",
+    "first_map_is_in_screenspace",
+    "draw_before_water",
+    "ignore_effect",
+    "scale_first_map_with_distance",
     "numeric",
     )
 trans_shdr_first_map_type = (
-    "map 2d",
-    "reflection cube map",
-    "object centered cube map",
-    "viewer centered cube map",
+    "map_2d",
+    "reflection_cube_map",
+    "object_centered_cube_map",
+    "viewer_centered_cube_map",
     )
 detail_mask = (
     "none",
-    "red inverse",
+    "red_inverse",
     "red",
-    "green inverse",
+    "green_inverse",
     "green",
-    "blue inverse",
+    "blue_inverse",
     "blue",
-    "alpha inverse",
+    "alpha_inverse",
     "alpha"
     )
 
@@ -912,12 +974,14 @@ anim_func_per_pha = Struct('',
     Float("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
     Float("phase", SIDETIP='seconds',  UNIT_SCALE=sec_unit_scale),
     )
+
 anim_func_per_sca = Struct('',
     SEnum16("function", *animation_functions),
     Pad(2),
     Float("period", SIDETIP='seconds', UNIT_SCALE=sec_unit_scale),
     Float("scale", SIDETIP='base map repeats'),  # base map repeats
     )
+
 anim_src_func_per_pha_sca = Struct('',
     SEnum16("source", *function_outputs),
     SEnum16("function", *animation_functions),
@@ -925,6 +989,7 @@ anim_src_func_per_pha_sca = Struct('',
     Float("phase", SIDETIP='seconds',  UNIT_SCALE=sec_unit_scale),
     Float("scale", SIDETIP='repeats'),  # repeats
     )
+
 anim_src_func_per_pha_sca_rot = Struct('',
     SEnum16("source", *function_outputs),
     SEnum16("function", *animation_functions),
@@ -1072,7 +1137,7 @@ def tag_class_os(*args):
         )
 
 
-def dependency_os(name='tag ref', valid_ids=None):
+def dependency_os(name='tag ref', valid_ids=None, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
         valid_ids = tag_class_os(*valid_ids)
@@ -1086,6 +1151,7 @@ def dependency_os(name='tag ref', valid_ids=None):
         INCLUDE=tag_ref_struct,
         STEPTREE=StrTagRef(
             "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=234),  # 10 < Halo1
+        **kwargs
         )
 
 
@@ -1102,9 +1168,9 @@ def blam_header_os(tagid, version=1):
 valid_tags_os = tag_class_os(*tag_class_fcc_to_ext_os.keys())
 
 
-# ###########################################################################
-# The order of element in all the enumerators is important(DONT SHUFFLE THEM)
-# ###########################################################################
+# ########################################################################
+# The element order in all the enumerators is important(DONT SHUFFLE THEM)
+# ########################################################################
 
 #Shared Enumerator options
 grenade_types_os = (
@@ -1121,7 +1187,7 @@ tag_header_os = Struct("blam header",
         GUI_NAME="tag class", INCLUDE=valid_tags_os, EDITABLE=False
         ),
     UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False), 
-    UInt32("header size",  DEFAULT=64, EDITABLE=False),
+    UInt32("header size", DEFAULT=64, EDITABLE=False),
     Bool64("flags",
         "edited with mozz",
         EDITABLE=False

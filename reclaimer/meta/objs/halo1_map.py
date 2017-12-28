@@ -411,7 +411,6 @@ class Halo1Map(HaloMap):
             else:
                 model_magic = magic
 
-            # grab vertices and indices from the map
             if model_magic is None:
                 verts_attr_name = "uncompressed_vertices"
                 byteswap_verts = byteswap_uncomp_verts
@@ -436,6 +435,7 @@ class Halo1Map(HaloMap):
                 byteswap_verts = byteswap_comp_verts
                 vert_size = 32
 
+            # grab vertices and indices from the map
             for geom in meta.geometries.STEPTREE:
                 for part in geom.parts.STEPTREE:
                     verts_block = part[verts_attr_name]

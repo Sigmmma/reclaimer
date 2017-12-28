@@ -135,7 +135,7 @@ obje_attrs = Struct('obje attrs',
     reflexive("functions", function, 4, DYN_NAME_PATH='.usage'),
     reflexive("change colors", change_color, 4,
         'A', 'B', 'C', 'D'),
-    reflexive("predicted resources", predicted_resource, 1024),
+    reflexive("predicted resources", predicted_resource, 1024, VISIBLE=False),
 
     SIZE=380
     )
