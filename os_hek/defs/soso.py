@@ -21,7 +21,7 @@ D = also no detail normal maps visible
 
 alpha brightness:
    A -------> B -------> C -------> D
-  0=0.000   85=0.333  170=0.666  255=1.000
+  0/0.000   85/0.333  170/0.666  255/1.000
 
 Normal coefficient is used to change the height/visiblity of the normal map."""
 
@@ -29,8 +29,8 @@ specular_tint_override_comment = """SPECULAR TINT OVERRIDE
 These values override the specular tint colors in the stock part of the tag (the bottom).
 Useful for if you want to have specific os and non-os tint values.
 
-(Whether these values are used is controlled by if the user has opensauce, not
-by the opensauce settings.)"""
+(Whetever these values are used is controlled by if the user has opensauce,
+not by the opensauce settings.)"""
 
 diffuse_lighting_comment = """DIFFUSE LIGHTING"""
 
