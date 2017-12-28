@@ -1,5 +1,4 @@
-from ...hek.defs.senv import *
-#from ...os_hek.defs.soso import *
+from ...os_hek.defs.senv import *
 
 dlm_comment = """DIRECTIONAL LIGHTMAP PROPERTIES
 Special shader settings for when your map has directional lightmaps rendered for it."""
@@ -19,7 +18,7 @@ os_senv_ext = Struct("shader environment extension",
     Bool16("dlm flags",
         "do not use dlms",
         COMMENT=dlm_comment
-		),
+        ),
     Pad(2),
     Float("bump amount"),
 
@@ -29,13 +28,12 @@ os_senv_ext = Struct("shader environment extension",
     Bool16("specular flags",
         "alpha as exponent mask",
         ),
-	Pad(2),
+    Pad(2),
 
     float_zero_to_one("perpendicular brightness", COMMENT=dlm_tint_comment),
-	QStruct("perpendicular tint color", INCLUDE=rgb_float),
-	float_zero_to_one("parallel brightness"),
-	QStruct("parallel tint color", INCLUDE=rgb_float),
-        
+    QStruct("perpendicular tint color", INCLUDE=rgb_float),
+    float_zero_to_one("parallel brightness"),
+    QStruct("parallel tint color", INCLUDE=rgb_float),
 
     Float("specular Lighting exponent", COMMENT=dlm_specular_comment),
     Float("specular Lighting coefficient"),
