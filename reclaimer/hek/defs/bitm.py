@@ -187,8 +187,9 @@ bitmap = Struct("bitmap",
     UInt16("mipmaps"),
     FlUInt16("pixels", VISIBLE=False, EDITABLE=False),
 
-    # for halo pc/trial(not ce), this is the non-magic pointer
-    # into the bitmaps.map that the pixel data is located at.
+    # this is the non-magic pointer into the map that the pixel data
+    # is located at. if flags.data_in_resource_map is True and the
+    # map is halo ce/pc/trial, the offset is into the bitmaps.map
     UInt32("pixels offset", VISIBLE=False, EDITABLE=False),
     UInt32("pixels meta size", VISIBLE=False, EDITABLE=False),
     UInt32("bitmap id unknown1", VISIBLE=False, EDITABLE=False),

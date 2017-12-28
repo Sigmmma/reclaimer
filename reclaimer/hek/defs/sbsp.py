@@ -196,7 +196,7 @@ cluster = Struct("cluster",
     BytesRaw("unknown", SIZE=30, VISIBLE=False),
     #Pad(30),
 
-    reflexive("predicted resources", predicted_resource, 1024),
+    reflexive("predicted resources", predicted_resource, 1024, VISIBLE=False),
     reflexive("subclusters", subcluster, 4096),
     SInt16("first lens flare marker index"),
     SInt16("lens flare marker count"),

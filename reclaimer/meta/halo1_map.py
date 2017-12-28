@@ -215,7 +215,7 @@ tag_index_xbox = Struct("tag index",
 tag_index_pc = tipc = dict(tag_index_xbox)
 tipc['ENTRIES'] += 1; tipc['SIZE'] += 4
 tipc[7] = LUInt32("vertex data size")
-tipc[9] = tipc[8]; tipc[8] = LUInt32("index data size")
+tipc[9] = tipc[8]; tipc[8] = LUInt32("model data size")
 
 map_header_def = BlockDef(map_header)
 map_header_demo_def = BlockDef(map_header_demo)

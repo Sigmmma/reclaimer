@@ -272,7 +272,7 @@ weap_attrs = Struct("weap attrs",
     Pad(14),
     SEnum16('weapon type', *weapon_types),
 
-    reflexive("predicted resources", predicted_resource, 1024),
+    reflexive("predicted resources", predicted_resource, 1024, VISIBLE=False),
     reflexive("magazines", magazine, 2,
         "primary", "secondary"),
     reflexive("triggers", trigger, 2,

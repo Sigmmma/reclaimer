@@ -269,8 +269,8 @@ animation_desc = Struct("animation",
     SInt16("sound frame index"),
     SInt8("left foot frame index"),
     SInt8("right foot frame index"),
-    FlSInt16("unknown sint16"),
-    FlFloat("unknown float"),
+    FlSInt16("unknown sint16", VISIBLE=False),
+    FlFloat("unknown float", VISIBLE=False),
 
     rawdata_ref("frame info", max_size=32768),
 
