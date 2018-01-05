@@ -57,7 +57,7 @@ ligh_body = Struct("tagdata",
         SEnum16("pitch animation function", *animation_functions),
         float_sec("pitch animation period"),
         Pad(8),
-		COMMENT=gel_comment
+        COMMENT=gel_comment
         ),
 
     #Lens flare
@@ -69,7 +69,7 @@ ligh_body = Struct("tagdata",
         Float("intensity"),
         QStruct("color", INCLUDE=rgb_float),
         Pad(16),
-		COMMENT=radiosity_comment
+        COMMENT=radiosity_comment
         ),
 
     #Effect parameters
@@ -77,7 +77,7 @@ ligh_body = Struct("tagdata",
         float_sec("duration"),
         Pad(2),
         SEnum16("falloff function", *fade_functions),
-		COMMENT=effect_parameters_comment
+        COMMENT=effect_parameters_comment
         ),
 
     SIZE=352,
