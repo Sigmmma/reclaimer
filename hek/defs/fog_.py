@@ -2,12 +2,19 @@ from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
+fog_comment = """FLAGS
+Setting <atmosphere dominant> prevents polygon popping when the atmospheric fog maximum
+density (in the sky tag) is 1 and the atmospheric fog opaque distance is less than the
+diameter of the map. However, this flag will cause artifacts when the camera goes below
+the fog plane - so it should only be used when the fog plane is close to the ground."""
+
 fog__body = Struct("tagdata",
     #fog flags
     Bool32("flags",
         "is water",
         "atmospheric dominant",
         "fog screen only",
+		COMMENT=fog_comment
         ),
                    
     Pad(84),

@@ -387,7 +387,7 @@ def ypr_float_rad(name, *args, **kwargs):
         ORIENT='h', SIDETIP='degrees', **kwargs
         )
 
-def anim_func_per_pha(name, **desc):
+def anim_func_per_pha_macro(name, **desc):
     desc.setdefault("HIDE_TITLE", True)
     return Struct(name,
         SEnum16("function", *animation_functions,
@@ -400,7 +400,7 @@ def anim_func_per_pha(name, **desc):
         **desc
         )
 
-def anim_func_per_sca(name, **desc):
+def anim_func_per_sca_macro(name, **desc):
     desc.setdefault("HIDE_TITLE", True)
     return Struct(name,
         SEnum16("function", *animation_functions,
@@ -413,7 +413,7 @@ def anim_func_per_sca(name, **desc):
         **desc
         )
 
-def anim_src_func_per_pha_sca(name, **desc):
+def anim_src_func_per_pha_sca_macro(name, **desc):
     desc.setdefault("HIDE_TITLE", True)
     return Struct(name,
         SEnum16("source", *function_outputs,
@@ -429,7 +429,7 @@ def anim_src_func_per_pha_sca(name, **desc):
         **desc
         )
 
-def anim_src_func_per_pha_sca_rot(name, **desc):
+def anim_src_func_per_pha_sca_rot_macro(name, **desc):
     desc.setdefault("HIDE_TITLE", True)
     return Struct(name,
         SEnum16("source", *function_outputs,
@@ -1113,6 +1113,11 @@ ypr_float = QStruct('ypr_float',
     ORIENT='h',
     )
 
+# texture coordinates
+uv_float = QStruct('uv_float',
+    Float("u"), Float("v"),
+    ORIENT='h'
+    )
 
 #############################
 # Open Sauce related things #
