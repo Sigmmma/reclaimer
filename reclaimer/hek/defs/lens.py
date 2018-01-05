@@ -2,6 +2,11 @@ from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
+occlusion_comment = """Occlusion factor affects overall lens flare brightness and can also affect scale.
+Occlusion never affects rotation."""
+
+corona_rotation_comment = """Controls how corona rotation is affected by the viewer and light angles."""
+
 reflection = Struct("reflection",
     Bool16("flags",
         "align rotation with screen center",
@@ -64,6 +69,7 @@ lens_body = Struct("tagdata",
         Pad(2),
         float_wu("near fade distance"),
         float_wu("far fade distance"),
+		COMMENT=occlusion_comment
         ),
 
     Struct("bitmaps",
@@ -84,6 +90,7 @@ lens_body = Struct("tagdata",
             ),
         Pad(2),
         float_rad("function scale"),  # radians
+		COMMENT=corona_rotation_comment
         ),
 
     Struct("corona radius scale",

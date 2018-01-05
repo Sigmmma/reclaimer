@@ -2,14 +2,16 @@ from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
+message_index_comment = """MESSAGE INDEX
+This sets which string from tags\\ui\\hud\\hud_item_messages.unicode_string_list to display."""
+
 item_attrs = Struct('item attrs',
     Bool32("flags",
         "always maintains z up",
         "destroyed by explosions",
         "unaffected by gravity",
         ),
-
-    SInt16("message index"),
+    SInt16("message index", COMMENT=message_index_comment),
     SInt16("sort order"),
     Float("scale"),
     SInt16("hud message value scale"),

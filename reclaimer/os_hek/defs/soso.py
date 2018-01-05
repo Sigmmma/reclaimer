@@ -1,18 +1,73 @@
 from ...hek.defs.soso import *
 
+specular_map_comment = """SPECULAR (COLOR) MAP
+The specular color map is multiplied by the stock specular 
+to provide finer control over specular color.
+
+*RGB holds the specular color.
+*ALPHA can be used as an exponent mask to provide finer control 
+over the size of the specular highlights."""
+
+normal_maps_comment = """NORMAL MAPS
+*RED holds the horizontal normal data.
+*GREEN holds the vertical normal data.
+*BLUE holds the 'height', dimmer blue means dimmer specular and reflection.
+
+*ALPHA is used for detail normal opacity:
+A = no detail normal maps visible
+B = detail normal 1 at full opacity
+C = detail normal 2 at full opacity
+D = also no detail normal maps visible
+
+alpha brightness:
+   A -------> B -------> C -------> D
+  0/0.000   85/0.333  170/0.666  255/1.000
+
+Normal coefficient is used to change the height/visiblity of the normal map."""
+
+specular_tint_override_comment = """SPECULAR TINT OVERRIDE
+These values override the specular tint colors in the stock part of the tag (the bottom).
+Useful for if you want to have specific os and non-os tint values.
+
+(Whetever these values are used is controlled by if the user has opensauce,
+not by the opensauce settings.)"""
+
+diffuse_lighting_comment = """DIFFUSE LIGHTING"""
+
+specular_lighting_comment = """SPECULAR LIGHTING
+Exponent controls the highlight size, the bigger the exponent, the smaller the highlight.
+Coefficient controls the brightness of the highlights."""
+
+os_reflection_prop_comment = """REFLECTION PROPERIES
+When the opensauce extension is used the tint values in here are overwritten 
+by the ones in the os extension when the map is loaded."""
+
+reflection_properties = Struct("reflection properties",
+    float_wu("falloff distance"),  # world units
+    float_wu("cutoff distance"),  # world units
+ 
+    float_zero_to_one("perpendicular brightness"),
+    QStruct("perpendicular tint color", INCLUDE=rgb_float),
+    float_zero_to_one("parallel brightness"),
+    QStruct("parallel tint color", INCLUDE=rgb_float),
+
+    dependency("reflection cube map", "bitm"),
+	COMMENT=os_reflection_prop_comment
+    )
+
 os_soso_ext = Struct("shader model extension",
     #Specular Color
-    dependency_os("specular color map", "bitm"),
+    dependency_os("specular color map", "bitm", COMMENT=specular_map_comment),
     Float("specular color coefficient"),
     Pad(4),
     Float("specular color exponent"),
     Bool16("flags",
         "alpha as exponent mask",
         ),
-                     
+
     Pad(2),
     #Base Normal Map
-    dependency_os("base normal map", "bitm"),
+    dependency_os("base normal map", "bitm", COMMENT=normal_maps_comment),
     Float("base normal coefficient"),
 
     Pad(12),
@@ -30,15 +85,19 @@ os_soso_ext = Struct("shader model extension",
 
     Pad(4),
     #Specular Tint Override
-    float_zero_to_one("perpendicular brightness"),
+    float_zero_to_one("perpendicular brightness", COMMENT=specular_tint_override_comment),
     QStruct("perpendicular tint color", INCLUDE=rgb_float),
     float_zero_to_one("parallel brightness"),
     QStruct("parallel tint color", INCLUDE=rgb_float),
 
-    SInt16("unknown0", VISIBLE=False),
-    SInt16("unknown1", VISIBLE=False),
-    FlFloat("unknown2", VISIBLE=False),
-    Float("specular Lighting exponent"),
+    Bool16("diffuse lighting flags",
+        { NAME: "do_not_use_dlms", GUI_NAME: "do not use dlms (bsp)" },
+        COMMENT=diffuse_lighting_comment
+        ),
+    Pad(4),
+    Pad(2),
+
+    Float("specular Lighting exponent", COMMENT=specular_lighting_comment),
     Float("specular Lighting coefficient"),
     SIZE=192,
     )
@@ -49,7 +108,7 @@ soso_attrs = Struct("soso attrs",
 
     Pad(16),
     #Color-Change
-    SEnum16("color change source", *function_names),
+    SEnum16("color change source", *function_names, COMMENT=cc_comment),
 
     Pad(30),
     #Self-Illumination
