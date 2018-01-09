@@ -35,8 +35,8 @@ os_senv_ext = Struct("shader environment extension",
     float_zero_to_one("parallel brightness"),
     QStruct("parallel tint color", INCLUDE=rgb_float),
 
-    Float("specular Lighting exponent", COMMENT=dlm_specular_comment),
-    Float("specular Lighting coefficient"),
+    Float("specular lighting exponent", COMMENT=dlm_specular_comment),
+    Float("specular lighting coefficient"),
 
     SIZE=100,
     )
