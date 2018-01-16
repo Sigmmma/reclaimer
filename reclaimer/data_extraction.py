@@ -561,7 +561,8 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
                 if not overwrite and isfile(fp):
                     continue
 
-                with open(fp, "w") as f:
+                # apparently the scripts use latin1 encoding, who knew....
+                with open(fp, "w", encoding='latin1') as f:
                     f.write("; Extracted with Reclaimer\n\n")
                     f.write(out_data)
                     f.write(comments)
