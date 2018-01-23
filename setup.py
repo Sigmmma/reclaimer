@@ -8,8 +8,8 @@ except ImportError:
 curr_dir = dirname(__file__)
 
 #               YYYY.MM.DD
-release_date = "2018.01.16"
-version = (1, 8, 1)
+release_date = "2018.01.23"
+version = (1, 8, 2)
 
 try:
     try:
