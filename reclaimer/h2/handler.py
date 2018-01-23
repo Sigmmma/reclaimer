@@ -1,8 +1,10 @@
 import os
+from .defs import __all__ as all_def_names
 from ..hek.handler import HaloHandler
 from os.path import abspath, basename, exists, isfile, normpath, splitext
 
 class Halo2Handler(HaloHandler):
+    frozen_imp_paths = all_def_names
     default_defs_path = "reclaimer.h2.defs"
 
     def get_def_id(self, filepath):

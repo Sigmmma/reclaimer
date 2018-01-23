@@ -1,4 +1,5 @@
 from ...hek.defs.antr import *
+from ..common_descs import *
 
 # As meta, it seems MOST arrays of anim_enum_desc have an extra extra on the end
 

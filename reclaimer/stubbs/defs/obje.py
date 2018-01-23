@@ -1,4 +1,5 @@
 from ...hek.defs.obje import *
+from ..common_descs import *
 
 def get():
     return obje_def

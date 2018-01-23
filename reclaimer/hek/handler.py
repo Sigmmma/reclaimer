@@ -10,6 +10,7 @@ from supyr_struct.buffer import BytearrayBuffer
 from ..field_types import *
 from .defs.objs.tag import HekTag
 from traceback import format_exc
+from .defs import __all__ as all_def_names
 
 
 def bytes_to_hex(taghash):
@@ -38,6 +39,7 @@ NO_LOC_REFS = NodepathRef(False)
 
 
 class HaloHandler(Handler):
+    frozen_imp_paths = all_def_names
     default_defs_path = "reclaimer.hek.defs"
     tag_fcc_match_set = frozenset()
     tag_filepath_match_set = frozenset()

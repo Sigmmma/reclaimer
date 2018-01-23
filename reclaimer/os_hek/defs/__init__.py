@@ -1,3 +1,4 @@
+# DO NOT REMOVE! __all__ is used to locate frozen definitions
 __all__ = (
     "actr", "actv", "ant_", "antr", "bipd", "bitm", "boom", "cdmg", "coll",
     "colo", "cont", "ctrl", "deca", "DeLa", "devc", "devi", "dobc", "effe",

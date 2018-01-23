@@ -1,5 +1,6 @@
 from ...common_descs import *
 from supyr_struct.defs.tag_def import TagDef
+from ..common_descs import *
 
 unknown_float_struct = Struct("unknown float struct",
     # f0 and f1 sum to 1.0

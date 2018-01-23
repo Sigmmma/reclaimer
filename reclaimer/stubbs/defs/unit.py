@@ -5,6 +5,7 @@ THIS DEFINITION IS INCORRECT BECAUSE THE UNIT STRUCTURE IS DIFFERENT THAN HALO'S
 from ...hek.defs.unit import *
 from ..common_descs import *
 from supyr_struct.defs.tag_def import TagDef
+from ..common_descs import *
 
 unit_attrs = Struct("unit attrs",
     Bool32("flags",
