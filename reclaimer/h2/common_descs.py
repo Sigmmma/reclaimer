@@ -274,6 +274,8 @@ def h2_meta_tag_ref(name='tag ref', valid_ids=None):
 def h2_reflexive(*args, **kwargs):
     '''This function serves to macro the creation of a reflexive'''
     desc = h2_meta_reflexive(*args, **kwargs)
+    for i in range(desc['ENTRIES']):
+        desc.pop(i, None)
     desc["SIZE"] = 12
     desc["INCLUDE"] = reflexive_struct
     desc["TYPE"] = H2Reflexive
@@ -283,6 +285,8 @@ def h2_reflexive(*args, **kwargs):
 def h2_rawdata_ref(*args, **kwargs):
     '''This function serves to macro the creation of a rawdata reference'''
     desc = h2_meta_rawdata_ref(*args, **kwargs)
+    for i in range(desc['ENTRIES']):
+        desc.pop(i, None)
     desc["SIZE"] = 20
     desc["INCLUDE"] = rawdata_ref_struct
     desc["TYPE"] = H2RawdataRef
@@ -292,6 +296,8 @@ def h2_rawdata_ref(*args, **kwargs):
 def h2_tag_ref(*args, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     desc = h2_meta_tag_ref(*args, **kwargs)
+    for i in range(desc['ENTRIES']):
+        desc.pop(i, None)
     desc["SIZE"] = 16
     desc["INCLUDE"] = tag_ref_struct
     desc["TYPE"] = H2TagRef
