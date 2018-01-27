@@ -352,7 +352,7 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
                      "a8y8", "v8u8", "g8b8"):
             bpp = 2
             tex_info["format"] = {
-                "a8y8": FORMAT_A8L8, "v8u8": FORMAT_V8U8, "g8b8": FORMAT_G8R8,
+                "a8y8": FORMAT_A8L8, "v8u8": FORMAT_V8U8, "g8b8": FORMAT_R8G8,
                 "r5g6b5": FORMAT_R5G6B5, "a1r5g5b5": FORMAT_A1R5G5B5,
                 "a4r4g4b4": FORMAT_A4R4G4B4}[fmt]
         elif fmt in ("x8r8g8b8", "a8r8g8b8"):
