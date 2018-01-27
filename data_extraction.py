@@ -12,7 +12,7 @@ try:
          FORMAT_R5G6B5, FORMAT_A1R5G5B5, FORMAT_A4R4G4B4,\
          FORMAT_X8R8G8B8, FORMAT_A8R8G8B8,\
          FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5,\
-         FORMAT_P8, FORMAT_V8U8, FORMAT_G8R8,\
+         FORMAT_P8, FORMAT_V8U8, FORMAT_R8G8,\
          FORMAT_R16G16B16F, FORMAT_A16R16G16B16F,\
          FORMAT_R32G32B32F, FORMAT_A32R32G32B32F
 except ImportError:
@@ -308,9 +308,12 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
     is_padded = "xbox" in kw['halo_map'].engine
     pix_data = meta.processed_pixel_data.STEPTREE
 
-    if is_padded or Arbytmap is None:
+    if is_padded:
         # cant extract xbox bitmaps yet
         return "    Cannot extract xbox bitmaps."
+    elif Arbytmap is None:
+        # cant extract xbox bitmaps yet
+        return "    Arbytmap not loaded. Cannot extract bitmaps."
 
     arby = Arbytmap()
     tex_infos = []
