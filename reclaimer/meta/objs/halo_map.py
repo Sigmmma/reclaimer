@@ -264,11 +264,11 @@ class HaloMap:
 
         if self.maps.get('active') is self:
             self.maps.pop('active')
+        if self.maps.get(map_name) is self:
+            self.maps.pop(map_name, None)
 
         if keep_resources_loaded and map_name in self.maps:
             return
 
         try: self.map_data.close()
-        except Exception: pass
-        try: self.maps.pop(map_name, None)
         except Exception: pass
