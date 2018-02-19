@@ -88,7 +88,7 @@ bsp2d_node = QStruct("bsp2d node",
 surface = Struct("surface",
     SInt32("plane"),
     SInt32("first edge"),
-    SInt8("flags",
+    Bool8("flags",
         "two sided"
         "invisible"
         "climbable"
