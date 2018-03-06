@@ -432,7 +432,7 @@ sbsp_body = Struct("tagdata",
     reflexive("runtime decals", runtime_decal, 6144, VISIBLE=False),
 
     Pad(12),
-    reflexive("leaf map leaves", leaf_map_leaf, 256),
+    reflexive("leaf map leaves", leaf_map_leaf, 65536),
     reflexive("leaf map portals", leaf_map_portal, 524288),
     SIZE=648,
     )
