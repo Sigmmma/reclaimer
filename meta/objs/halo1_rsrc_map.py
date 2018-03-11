@@ -252,7 +252,7 @@ class Halo1RsrcMap(HaloMap):
 
             # to enable compatibility with my bitmap converter we'll set the
             # base address to a certain constant based on the console platform
-            is_xbox = engine in ("halo1xbox", "stubbs")
+            is_xbox = "xbox" in engine or engine in ("stubbs", "shadowrun_beta")
             for bitmap in meta.bitmaps.STEPTREE:
                 pixel_data = map_data
                 if might_be_in_rsrc and bitmap.flags.data_in_resource_map:
