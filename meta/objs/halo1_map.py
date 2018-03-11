@@ -328,7 +328,7 @@ class Halo1Map(HaloMap):
 
             # to enable compatibility with my bitmap converter we'll set the
             # base address to a certain constant based on the console platform
-            is_xbox = engine in ("halo1xbox", "stubbs")
+            is_xbox = "xbox" in engine or engine in ("stubbs", "shadowrun_beta")
 
             new_pixels_offset = 0
 
@@ -516,7 +516,7 @@ class Halo1Map(HaloMap):
             for cluster in meta.clusters.STEPTREE:
                 predicted_resources.append(cluster.predicted_resources)
 
-            compressed = engine in ("halo1xbox", "stubbs", "shadowrun_beta")
+            compressed = "xbox" in engine or engine in ("stubbs", "shadowrun_beta")
 
             if compressed:
                 generate_verts = kwargs.get("generate_uncomp_verts", False)
