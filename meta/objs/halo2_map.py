@@ -35,8 +35,10 @@ class Halo2Map(HaloMap):
                     continue
 
                 halo_map.map_data.seek(ptr)
-                mip_pixels = zlib.decompress(
-                    halo_map.map_data.read(bitmap.lod1_size))
+                mip_pixels = halo_map.map_data.read(bitmap.lod1_size)
+                if self.engine != "halo2alpha":
+                    mip_pixels = zlib.decompress(mip_pixels)
+
                 new_pixels += mip_pixels
                 bitmap.lod1_size = len(mip_pixels)
                 pix_off += bitmap.lod1_size
@@ -50,16 +52,11 @@ class Halo2Map(HaloMap):
         if tag_cls == "bitm":
             # set the size of the compressed plate data to nothing
             meta.compressed_color_plate_data.STEPTREE = BytearrayBuffer()
-
-            # to enable compatibility with my bitmap converter we'll set the
-            # base address to a certain constant based on the console platform
-            is_xbox = engine in ("halo2xbox", )
             new_pixels_offset = 0
 
             # uncheck the prefer_low_detail flag and
             # set up the lod1_offset correctly.
             for bitmap in meta.bitmaps.STEPTREE:
-                bitmap.flags.prefer_low_detail = is_xbox
                 bitmap.lod1_offset = new_pixels_offset
                 new_pixels_offset += bitmap.lod1_size
 
@@ -72,6 +69,9 @@ class Halo2Map(HaloMap):
 
     def load_all_resource_maps(self, maps_dir=""):
         map_paths = {name: None for name in HALO2_MAP_TYPES[1:]}
+        if self.engine == "halo2alpha":
+            map_paths.pop("single_player_shared", None)
+
         if not maps_dir:
             maps_dir = dirname(self.filepath)
 
@@ -136,7 +136,10 @@ class Halo2Map(HaloMap):
         will_be_active = kwargs.get("will_be_active", True)
         HaloMap.load_map(self, map_path, **kwargs)
         tag_index = self.tag_index
-        self.tag_index = h2_to_h1_tag_index(self.map_header, tag_index)
+        if self.engine == "halo2alpha":
+            self.tag_index = h2_alpha_to_h1_tag_index(self.map_header, tag_index)
+        else:
+            self.tag_index = h2_to_h1_tag_index(self.map_header, tag_index)
 
         map_type = self.map_header.map_type.data - 1
         if map_type > 0 and map_type < 4:
@@ -175,19 +178,24 @@ class Halo2Map(HaloMap):
     def get_meta(self, tag_id, reextract=False):
         if tag_id is None: return
         scnr_id = self.orig_tag_index.scenario_tag_id[0]
-        matg_id = self.orig_tag_index.globals_tag_id[0]
         tag_index_array = self.tag_index.tag_index
         shared_map    = self.maps.get("shared")
-        sp_shared_map = self.maps.get("single_player_shared")
 
         # if we are given a 32bit tag id, mask it off
         tag_id &= 0xFFFF
-        if tag_id >= 10000 and shared_map is not self:
-            if shared_map is None: return
-            return shared_map.get_meta(tag_id, reextract)
-        elif tag_id >= len(tag_index_array) and sp_shared_map is not self:
-            if sp_shared_map is None: return
-            return sp_shared_map.get_meta(tag_id, reextract)
+
+        if self.engine != "halo2alpha":
+            matg_id = self.orig_tag_index.globals_tag_id[0]
+            sp_shared_map = self.maps.get("single_player_shared")
+
+            if tag_id >= 10000 and shared_map is not self:
+                if shared_map is None: return
+                return shared_map.get_meta(tag_id, reextract)
+            elif tag_id >= len(tag_index_array) and sp_shared_map is not self:
+                if sp_shared_map is None: return
+                return sp_shared_map.get_meta(tag_id, reextract)
+        else:
+            matg_id = None
 
         tag_index_ref = tag_index_array[tag_id]
 
