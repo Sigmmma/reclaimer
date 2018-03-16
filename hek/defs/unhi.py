@@ -118,7 +118,7 @@ auxilary_overlay = Struct("auxilary overlay",
 
 auxilary_meter = Struct("auxilary meter",
     Pad(18),
-    Pad(2),  # SEnum16("type", "integrated light"),
+    SEnum16("type", "integrated light", VISIBLE=False),
     Struct("background", INCLUDE=hud_background),
 
     QStruct("anchor offset",
@@ -156,7 +156,8 @@ auxilary_meter = Struct("auxilary meter",
         "flash once if activated while disabled",
         ),
 
-    SIZE=324
+    SIZE=324,
+    COMMENT="\nThis auxilary meter is meant for the flashlight.\n"
     )
 
 unhi_body = Struct("tagdata",

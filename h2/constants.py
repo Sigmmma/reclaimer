@@ -109,6 +109,8 @@ h2_tag_class_fcc_to_ext = {
     "goof": "multiplayer_variant_settings_interface_definition",
     "nhdt": "new_hud_definition",
     "obje": "object",
+    'pctl': "particle_system",  # still in use in the halo 2 alpha
+    "part": "particle_old",     # still in use in the halo 2 alpha
     "prt3": "particle",
     "PRTM": "particle_model",
     "pmov": "particle_physics",
