@@ -4,6 +4,7 @@ from ..common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.buffer import PeekableMmap
 from .halo1_map import *
+from .halo2_alpha_map import *
 from .halo2_map import *
 from .halo3_map import *
 from .shadowrun_map import *
@@ -19,7 +20,12 @@ def get_map_version(header):
     except AttributeError:
         build_date = None
 
-    if version == "halo1xbox":
+    if version == "halo1pc":
+        # apparently the halo pc build and halo 2 alpha
+        # use the same version integer of 7
+        if build_date == map_build_dates["halo2alpha"]:
+            version = "halo2alpha"
+    elif version == "halo1xbox":
         if build_date is None:
             return
         elif build_date == map_build_dates["stubbs"]:
@@ -38,8 +44,8 @@ def get_map_version(header):
         return "halo1yelo"
     elif version == "halo2":
         version = None
-        if build_date == map_build_dates['halo2alpha']:
-            version = "halo2alpha"
+        if build_date == map_build_dates['halo2beta']:
+            version = "halo2beta"
         elif build_date == map_build_dates['halo2xbox']:
             version = "halo2xbox"
         elif build_date == map_build_dates['halo2epsilon']:
@@ -70,8 +76,13 @@ def get_map_header(map_data, header_only=False):
                 if header_only:
                     header_def = h2x_map_header_def
 
-        elif ver_l in (5, 6, 7, 609):
+        elif ver_l in (5, 6, 609):
             header_def = map_header_def
+        elif ver_l == 7:
+            header_def = map_header_def
+            build_date = map_data[64: 96].decode("latin-1")
+            if build_date == map_build_dates['halo2alpha']:
+                h2_alpha_map_header_def
 
     elif sig_b == "head":
         if ver_b == 11:
@@ -110,6 +121,8 @@ def get_tag_index(map_data, header=None):
         tag_index_def = sr_tag_index_def
     elif header.version.data < 6 and version != "stubbspc":
         tag_index_def = tag_index_xbox_def
+    elif version == "halo2alpha":
+        tag_index_def = h2_alpha_tag_index_def
     elif header.version.enum_name == "halo2":
         tag_index_def = h2_tag_index_def
     elif header.version.enum_name == "halo3":

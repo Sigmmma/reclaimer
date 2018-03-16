@@ -19,6 +19,7 @@ CE_INDEX_MAGIC             = 0x40440000
 XBOX_INDEX_MAGIC           = 0x803A6000
 STUBBS_INDEX_MAGIC         = 0x8038B000
 SHADOWRUN_BETA_INDEX_MAGIC = 0x8069E000
+H2_ALPHA_INDEX_MAGIC       = 0x80061000
 H2V_MP_INDEX_MAGIC         = 0x01400000  # only applies to multiplayer maps.
 #                                          pointers below this index magic
 #                                          actually point to resource maps.
@@ -32,7 +33,8 @@ map_build_dates = {
     "halo1xboxbeta":  "",
     "halo1pcdemo":    "01.00.00.0576",
     "halo1pc":        "01.00.00.0564",
-    "halo2alpha":     "02.06.28.07902",
+    "halo2alpha":     "02.01.07.4998",
+    "halo2beta":      "02.06.28.07902",
     "halo2epsilon":   "02.08.28.09214",
     "halo2xbox":      "02.09.27.09809",
     "halo2vista":     "11081.07.04.30.0934.main",
@@ -51,7 +53,8 @@ map_versions = {
     "halo1pc":        7,
     "halo1ce":        609,
     "halo1yelo":      609,
-    "halo2alpha":     8,
+    "halo2alpha":     7,
+    "halo2beta":      8,
     "halo2epsilon":   8,
     "halo2xbox":      8,
     "halo2vista":     8,
@@ -71,7 +74,8 @@ map_magics = {
     "halo1pc":        PC_INDEX_MAGIC,
     "halo1ce":        CE_INDEX_MAGIC,
     "halo1yelo":      CE_INDEX_MAGIC,
-    "halo2alpha":     0,
+    "halo2alpha":     H2_ALPHA_INDEX_MAGIC,
+    "halo2beta":      0,
     "halo2epsilon":   0,
     "halo2xbox":      0,  # Halo 2 and beyond dont use magic
     "halo2vista":     0,
