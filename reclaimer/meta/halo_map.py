@@ -31,7 +31,7 @@ def get_map_version(header):
         elif build_date == map_build_dates["stubbs"]:
             version = "stubbs"
         elif build_date == map_build_dates["stubbspc"]:
-            if header.unknown == 11:
+            if header.unknown in (11, 1033):
                 # this is the only discernable difference
                 # between xbox beta and stubbs pc maps
                 version = "halo1xboxbeta"

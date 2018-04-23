@@ -73,13 +73,13 @@ multitex_overlay = Struct("multitex overlay",
 
     # Map scales
     Pad(2),
-    QStruct("primary scale", INCLUDE=from_to),
-    QStruct("secondary scale", INCLUDE=from_to),
-    QStruct("tertiary scale", INCLUDE=from_to),
+    QStruct("primary scale", INCLUDE=xy_float),
+    QStruct("secondary scale", INCLUDE=xy_float),
+    QStruct("tertiary scale", INCLUDE=xy_float),
     # Map offsets
-    QStruct("primary offset", INCLUDE=from_to),
-    QStruct("secondary offset", INCLUDE=from_to),
-    QStruct("tertiary offset", INCLUDE=from_to),
+    QStruct("primary offset", INCLUDE=xy_float),
+    QStruct("secondary offset", INCLUDE=xy_float),
+    QStruct("tertiary offset", INCLUDE=xy_float),
 
     # Maps
     dependency("primary map", "bitm"),
