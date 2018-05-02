@@ -124,8 +124,6 @@ fast_geometry = Struct('geometry',
 mode_body = Struct('tagdata',
     Bool32('flags',
         'blend shared normals',
-        'parts have local nodes',
-        'ignore skinning'
         ),
     SInt32('node list checksum'),
 
