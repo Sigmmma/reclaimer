@@ -24,7 +24,7 @@ def object_reference(name, *args, **kwargs):
         **kwargs
         )
 
-def object_palette(name, def_id, size=48):
+def object_swatch(name, def_id, size=48):
     "Macro to cut down on a lot of code"
     return Struct(name,
         dependency("name", def_id),
@@ -338,16 +338,16 @@ light_fixture = object_reference("light fixture",
 
 sound_scenery = object_reference("sound scenery", SIZE=40, block_name="sound_sceneries")
 
-# Object palettes
-scenery_palette = object_palette("scenery palette", "scen")
-biped_palette = object_palette("biped palette", "bipd")
-vehicle_palette = object_palette("vehicle palette", "vehi")
-equipment_palette = object_palette("equipment palette", "eqip")
-weapon_palette = object_palette("weapon palette", "weap")
-machine_palette = object_palette("machine palette", "mach")
-control_palette = object_palette("control palette", "ctrl")
-light_fixture_palette = object_palette("light fixture palette", "lifi")
-sound_scenery_palette = object_palette("sound scenery palette", "ssce")
+# Object swatches
+scenery_swatch = object_swatch("scenery swatch", "scen")
+biped_swatch = object_swatch("biped swatch", "bipd")
+vehicle_swatch = object_swatch("vehicle swatch", "vehi")
+equipment_swatch = object_swatch("equipment swatch", "eqip")
+weapon_swatch = object_swatch("weapon swatch", "weap")
+machine_swatch = object_swatch("machine swatch", "mach")
+control_swatch = object_swatch("control swatch", "ctrl")
+light_fixture_swatch = object_swatch("light fixture swatch", "lifi")
+sound_scenery_swatch = object_swatch("sound scenery swatch", "ssce")
 
 player_starting_profile = Struct("player starting profile",
     ascii_str32("name"),
@@ -488,10 +488,10 @@ decal = Struct("decal",
     SIZE=16
     )
 
-decal_palette = object_palette("decal palette", "deca", 16)
-detail_object_collection_palette = object_palette(
-    "detail object collection palette", "dobc")
-actor_palette = object_palette("actor palette", "actv", 16)
+decal_swatch = object_swatch("decal swatch", "deca", 16)
+detail_object_collection_swatch = object_swatch(
+    "detail object collection swatch", "dobc")
+actor_swatch = object_swatch("actor swatch", "actv", 16)
 
 ai_anim_reference = Struct("ai animation reference",
     ascii_str32("animation name"),
@@ -913,33 +913,33 @@ scnr_body = Struct("tagdata",
     reflexive("object names", object_name, 512,
         DYN_NAME_PATH='.name'),
     reflexive("sceneries", scenery, 2000),
-    reflexive("sceneries palette", scenery_palette, 100,
+    reflexive("sceneries palette", scenery_swatch, 100,
         DYN_NAME_PATH='.name.filepath'),
     reflexive("bipeds", biped, 128),
-    reflexive("bipeds palette", biped_palette, 100,
+    reflexive("bipeds palette", biped_swatch, 100,
         DYN_NAME_PATH='.name.filepath'),
     reflexive("vehicles", vehicle, 80),
-    reflexive("vehicles palette", vehicle_palette, 100,
+    reflexive("vehicles palette", vehicle_swatch, 100,
         DYN_NAME_PATH='.name.filepath'),
     reflexive("equipments", equipment, 256),
-    reflexive("equipments palette", equipment_palette, 100,
+    reflexive("equipments palette", equipment_swatch, 100,
         DYN_NAME_PATH='.name.filepath'),
     reflexive("weapons", weapon, 128),
-    reflexive("weapons palette", weapon_palette, 100,
+    reflexive("weapons palette", weapon_swatch, 100,
         DYN_NAME_PATH='.name.filepath'),
     reflexive("device groups", device_group, 128,
         DYN_NAME_PATH='.name'),
     reflexive("machines", machine, 400),
-    reflexive("machines palette", machine_palette, 100,
+    reflexive("machines palette", machine_swatch, 100,
         DYN_NAME_PATH='.name.filepath'),
     reflexive("controls", control, 100),
-    reflexive("controls palette", control_palette, 100,
+    reflexive("controls palette", control_swatch, 100,
         DYN_NAME_PATH='.name.filepath'),
     reflexive("light fixtures", light_fixture, 500),
-    reflexive("light fixtures palette", light_fixture_palette, 100,
+    reflexive("light fixtures palette", light_fixture_swatch, 100,
         DYN_NAME_PATH='.name.filepath'),
     reflexive("sound sceneries", sound_scenery, 256),
-    reflexive("sound sceneries palette", sound_scenery_palette, 100,
+    reflexive("sound sceneries palette", sound_scenery_swatch, 100,
         DYN_NAME_PATH='.name.filepath'),
 
     Pad(84),
@@ -957,13 +957,13 @@ scnr_body = Struct("tagdata",
     reflexive("starting equipments", starting_equipment, 200),
     reflexive("bsp switch trigger volumes", bsp_switch_trigger_volume, 256),
     reflexive("decals", decal, 65535),
-    reflexive("decals palette", decal_palette, 128,
+    reflexive("decals palette", decal_swatch, 128,
         DYN_NAME_PATH='.name.filepath'),
     reflexive("detail object collection palette",
-        detail_object_collection_palette, 32, DYN_NAME_PATH='.name.filepath'),
+        detail_object_collection_swatch, 32, DYN_NAME_PATH='.name.filepath'),
 
     Pad(84),
-    reflexive("actors palette", actor_palette, 64,
+    reflexive("actors palette", actor_swatch, 64,
         DYN_NAME_PATH='.name.filepath'),
     reflexive("encounters", encounter, 128, DYN_NAME_PATH='.name'),
     reflexive("command lists", command_list, 256, DYN_NAME_PATH='.name'),

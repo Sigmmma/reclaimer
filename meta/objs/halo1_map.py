@@ -471,7 +471,7 @@ class Halo1Map(HaloMap):
                     map_data.seek(verts_off)
                     raw_verts = map_data.read(vert_size*info.vertex_count)
                     map_data.seek(tris_off)
-                    raw_tris  = map_data.read(2*(info.index_count + 3))
+                    raw_tris  = map_data.read(2*(info.index_count + 2))
 
                     # put the raw data in the verts and tris blocks
                     verts_block.STEPTREE.data = raw_verts
