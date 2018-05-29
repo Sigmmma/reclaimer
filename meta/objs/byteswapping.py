@@ -169,8 +169,11 @@ def byteswap_comp_verts(verts_block):
 def byteswap_tris(tris_block):
     raw_block = tris_block.STEPTREE
     raw_data  = raw_block.data
+    remainder = len(raw_data)%6
 
-    if len(raw_data)%6 == 4:
+    if remainder == 2:
+        raw_data += b'\xff\xff\xff\xff'
+    elif remainder == 4:
         raw_data += b'\xff\xff'
 
     # replace the verts with the byteswapped and trimmed ones
