@@ -163,6 +163,8 @@ weap_attrs = Struct("weap attrs",
         "prevents grenade throwing",
         "must be picked up",
         "holds triggers when dropped",
+        "prevents melee attack",
+        "detonates when dropped",
         "cannot fire at maximum age",
         "secondary trigger overrides grenades",
         "does not depower active camo in multiplayer",  # obsolete
