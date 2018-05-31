@@ -343,7 +343,21 @@ class Halo1Map(HaloMap):
                 bitmap.pixels_meta_size = 0
                 bitmap.bitmap_id_unknown1 = bitmap.bitmap_id_unknown2 = 0
                 bitmap.bitmap_data_pointer = 0
-                bitmap.base_address = 1073751810 * is_xbox
+
+                if is_xbox:
+                    bitmap.base_address = 1073751810
+                    max_dim = max(bitmap.width, bitmap.height)
+                    if "dxt" in bitmap.format.enum_name:
+                        # need to correct mipmap count on xbox dxt bitmaps.
+                        # the game seems to prune the mipmap texels for any
+                        # mipmaps whose dimensions are 2x2 or smaller
+                        last_mip_size = max_dim // (2 ** bitmap.mipmaps)
+                        if last_mip_dim <= 1:
+                            bitmap.mipmaps -= 2
+                        elif last_mip_dim == 2:
+                            bitmap.mipmaps -= 1
+                else:
+                    bitmap.base_address = 0
 
         elif tag_cls == "cdmg":
             # divide camera shaking wobble period by 30
@@ -548,22 +562,30 @@ class Halo1Map(HaloMap):
                         for i in range(vert_count):
                             n, b, t = s_unpack("<3I",
                                 comp_buffer[in_off + 12: in_off + 24])
-                            ni = n&2047; nj = (n>>11)&2047; nk = (n>>22)&1023
-                            bi = b&2047; bj = (b>>11)&2047; bk = (b>>22)&1023
-                            ti = t&2047; tj = (t>>11)&2047; tk = (t>>22)&1023
-                            if ni&1024: ni = -1*((~ni) & 2047)
-                            if nj&1024: nj = -1*((~nj) & 2047)
-                            if nk&512:  nk = -1*((~nk) & 1023)
-                            if bi&1024: bi = -1*((~bi) & 2047)
-                            if bj&1024: bj = -1*((~bj) & 2047)
-                            if bk&512:  bk = -1*((~bk) & 1023)
-                            if ti&1024: ti = -1*((~ti) & 2047)
-                            if tj&1024: tj = -1*((~tj) & 2047)
-                            if tk&512:  tk = -1*((~tk) & 1023)
+                            ni = (n&1023) / 1023
+                            nj = ((n>>11)&1023) / 1023
+                            nk = ((n>>22)&511) / 511
+                            if (n>>10)&1: ni = ni - 1.0
+                            if (n>>21)&1: nj = nj - 1.0
+                            if (n>>31)&1: nk = nk - 1.0
 
-                            nmag = max(sqrt(ni**2 + nj**2 + nk**2), 0.00000001)
-                            bmag = max(sqrt(bi**2 + bj**2 + bk**2), 0.00000001)
-                            tmag = max(sqrt(ti**2 + tj**2 + tk**2), 0.00000001)
+                            bi = (b&1023) / 1023
+                            bj = ((b>>11)&1023) / 1023
+                            bk = ((b>>22)&511) / 511
+                            if (b>>10)&1: bi = bi - 1.0
+                            if (b>>21)&1: bj = bj - 1.0
+                            if (b>>31)&1: bk = bk - 1.0
+
+                            ti = (t&1023) / 1023
+                            tj = ((t>>11)&1023) / 1023
+                            tk = ((t>>22)&511) / 511
+                            if (t>>10)&1: ti = ti - 1.0
+                            if (t>>21)&1: tj = tj - 1.0
+                            if (t>>31)&1: tk = tk - 1.0
+
+                            nmag = max(sqrt(ni**2 + nj**2 + nk**2), 0.00000000001)
+                            bmag = max(sqrt(bi**2 + bj**2 + bk**2), 0.00000000001)
+                            tmag = max(sqrt(ti**2 + tj**2 + tk**2), 0.00000000001)
                             
                             # write the uncompressed data
                             s_pack_into('<12s9f8s', uncomp_buffer, out_off,
@@ -579,12 +601,13 @@ class Halo1Map(HaloMap):
                         for i in range(lightmap_vert_count):
                             n, u, v = s_unpack(
                                 "<I2h", comp_buffer[in_off: in_off + 8])
-                            ni = n&2047; nj = (n>>11)&2047; nk = (n>>22)&1023
-                            if ni&1024: ni = -1*((~ni) & 2047)
-                            if nj&1024: nj = -1*((~nj) & 2047)
-                            if nk&512:  nk = -1*((~nk) & 1023)
-
-                            mag = max(sqrt(ni**2 + nj**2 + nk**2), 0.00000001)
+                            ni = (n&1023) / 1023
+                            nj = ((n>>11)&1023) / 1023
+                            nk = ((n>>22)&511) / 511
+                            if (n>>10)&1: ni -= 1.0
+                            if (n>>21)&1: nj -= 1.0
+                            if (n>>31)&1: nk -= 1.0
+                            mag = max(sqrt(ni**2 + nj**2 + nk**2), 0.00000000001)
 
                             # write the uncompressed data
                             s_pack_into('<5f', uncomp_buffer, out_off,

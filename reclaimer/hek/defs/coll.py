@@ -89,10 +89,10 @@ surface = Struct("surface",
     SInt32("plane"),
     SInt32("first edge"),
     Bool8("flags",
-        "two sided"
-        "invisible"
-        "climbable"
-        "breakable"
+        "two sided",
+        "invisible",
+        "climbable",
+        "breakable",
         ),
     SInt8("breakable surface"),
     SInt16("material"),
