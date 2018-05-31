@@ -346,12 +346,12 @@ class Halo1Map(HaloMap):
 
                 if is_xbox:
                     bitmap.base_address = 1073751810
-                    max_dim = max(bitmap.width, bitmap.height)
                     if "dxt" in bitmap.format.enum_name:
                         # need to correct mipmap count on xbox dxt bitmaps.
                         # the game seems to prune the mipmap texels for any
                         # mipmaps whose dimensions are 2x2 or smaller
-                        last_mip_size = max_dim // (2 ** bitmap.mipmaps)
+                        max_dim = max(bitmap.width, bitmap.height)
+                        last_mip_dim = max_dim // (2 ** bitmap.mipmaps)
                         if last_mip_dim <= 1:
                             bitmap.mipmaps -= 2
                         elif last_mip_dim == 2:
