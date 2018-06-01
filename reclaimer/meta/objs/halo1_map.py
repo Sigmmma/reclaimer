@@ -1,4 +1,4 @@
-from math import pi, sqrt
+from math import pi, sqrt, log
 from os.path import exists, join
 from struct import pack_into
 from tkinter.filedialog import askopenfilename
@@ -350,12 +350,21 @@ class Halo1Map(HaloMap):
                         # need to correct mipmap count on xbox dxt bitmaps.
                         # the game seems to prune the mipmap texels for any
                         # mipmaps whose dimensions are 2x2 or smaller
+
                         max_dim = max(bitmap.width, bitmap.height)
+                        if 2 ** bitmap.mipmaps > max_dim:
+                            # make sure the mipmap level isnt higher than the
+                            # number of mipmaps that should be able to exist.
+                            bitmap.mipmaps = int(log(max_dim, 2))
+
                         last_mip_dim = max_dim // (2 ** bitmap.mipmaps)
-                        if last_mip_dim <= 1:
+                        if last_mip_dim == 1:
                             bitmap.mipmaps -= 2
                         elif last_mip_dim == 2:
                             bitmap.mipmaps -= 1
+
+                        if bitmap.mipmaps < 0:
+                            bitmap.mipmaps = 0
                 else:
                     bitmap.base_address = 0
 
