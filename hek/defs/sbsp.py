@@ -99,31 +99,45 @@ material = Struct("material",
     QStruct("centroid", INCLUDE=xyz_float),
     QStruct("ambient color", INCLUDE=rgb_float),
     SInt16("distant light count"),
-
     Pad(2),
+
     QStruct("distant light 0 color", INCLUDE=rgb_float),
     QStruct("distant light 0 direction", INCLUDE=ijk_float),
     QStruct("distant light 1 color", INCLUDE=rgb_float),
     QStruct("distant light 1 direction", INCLUDE=ijk_float),
+    Pad(12),
 
-    BytesRaw("unknown0", VISIBLE=False, SIZE=12),
     QStruct("reflection tint", INCLUDE=argb_float),
     QStruct("shadow vector", INCLUDE=ijk_float),
     QStruct("shadow color", INCLUDE=rgb_float),
     QStruct("plane", INCLUDE=plane),
     SInt16("breakable surface"),
-
     Pad(6),
-    SInt32("vertices count"),
-    SInt32("vertices offset"),
+
+    SInt32("vertices count", EDITABLE=False),
+    SInt32("vertices offset", EDITABLE=False),
 
     # these unknowns are required for biped shadows to appear
-    BytesRaw("unknown1", VISIBLE=False, SIZE=12),
-    SInt32("lightmap vertices count"),
-    SInt32("lightmap vertices offset"),
+    FlUInt32("unknown meta offset0", EDITABLE=False),
+    FlUInt32("vertices meta offset",
+        TOOLTIP=("In xbox maps this is a bspmagic relative pointer that\n"
+                 "points to a reflexive. The reflexive contains only a\n"
+                 "bspmagic relative pointer to the vertices."), EDITABLE=False),
+    FlUEnum32("vertex type",  # name is a guess
+        ("uncompressed", 2),
+        ("compressed",   3),
+        EDITABLE=False,
+        ),
+    SInt32("lightmap vertices count", EDITABLE=False),
+    SInt32("lightmap vertices offset", EDITABLE=False),
 
     # these unknowns are required for biped shadows to appear
-    BytesRaw("unknown2", VISIBLE=False, SIZE=8),
+    FlUInt32("unknown meta offset1", EDITABLE=False),
+    FlUInt32("lightmap vertices meta offset",
+        TOOLTIP=("In xbox maps this is a bspmagic relative pointer that\n"
+                 "points to a reflexive. The reflexive contains only a\n"
+                 "bspmagic relative pointer to the lightmap vertices."), EDITABLE=False),
+
     rawdata_ref("uncompressed vertices", max_size=4864000),
     rawdata_ref("compressed vertices", max_size=2560000),
     SIZE=256
