@@ -52,7 +52,7 @@ static_element = Struct("static element",
 
     Pad(2),
     reflexive("multitex overlays", multitex_overlay, 30),
-    SIZE=180
+    SIZE=180, COMMENT="STATIC ELEMENTS\nBest used for normally drawn bitmaps."
     )
 
 meter_element = Struct("meter element",
