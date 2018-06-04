@@ -67,13 +67,13 @@ BUMPED CUBE MAP: Makes it so that the reflection and fresnel is affected by the 
 FLAT CUBE MAP: The reflection is not affected by the cubemap, the fresnel still is though."""
 
 environment_shader = Struct("environment shader",
-    Bool16("environment shader flags",
+    Bool16("flags",
         "alpha tested",
         "bump-map is specular mask",
         "true atmospheric fog",
         COMMENT=environment_shader_comment
         ),
-    SEnum16("environment shader type",
+    SEnum16("type",
         "normal",
         "blended",
         "blended base specular",
@@ -115,9 +115,9 @@ bump_properties = Struct("bump properties",
     COMMENT=bump_properties_comment
     )
 	
-texture_scrolling_animation = Struct("animation",
-    anim_func_per_sca_macro("u-scrolling"),
-    anim_func_per_sca_macro("v-scrolling"),
+texture_scrolling = Struct("texture scrolling",
+    anim_func_per_sca_macro("u-animation"),
+    anim_func_per_sca_macro("v-animation"),
     COMMENT=tex_scroll_anim_comment
     )
 	
@@ -158,8 +158,8 @@ specular = Struct("specular",
     float_zero_to_one("brightness"),  # [0,1]
 
     Pad(20),
-    QStruct("perpendicular color", INCLUDE=rgb_float),
-    QStruct("parallel color",      INCLUDE=rgb_float),
+    QStruct("perpendicular tint color", INCLUDE=rgb_float),
+    QStruct("parallel tint color",      INCLUDE=rgb_float),
     COMMENT=specular_properties_comment
     )
 
@@ -204,7 +204,7 @@ senv_attrs = Struct("senv attrs",
 
     Pad(16),
     #Texture Animation
-    texture_scrolling_animation,
+    texture_scrolling,
 
     Pad(24),
     #Self Illumination
