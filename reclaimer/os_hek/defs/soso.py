@@ -42,17 +42,8 @@ os_reflection_prop_comment = """REFLECTION PROPERIES
 When the opensauce extension is used the tint values in here are overwritten 
 by the ones in the os extension when the map is loaded."""
 
-reflection_properties = Struct("reflection properties",
-    float_wu("falloff distance"),  # world units
-    float_wu("cutoff distance"),  # world units
- 
-    float_zero_to_one("perpendicular brightness"),
-    QStruct("perpendicular tint color", INCLUDE=rgb_float),
-    float_zero_to_one("parallel brightness"),
-    QStruct("parallel tint color", INCLUDE=rgb_float),
-
-    dependency("reflection cube map", "bitm"),
-	COMMENT=os_reflection_prop_comment
+reflection = Struct("reflection",
+    INCLUDE=reflection, COMMENT=os_reflection_prop_comment
     )
 
 os_soso_ext = Struct("shader model extension",
@@ -125,7 +116,7 @@ soso_attrs = Struct("soso attrs",
 
     Pad(8),
     #Reflection Properties
-    reflection_properties,
+    reflection,
     Pad(16),
 
     FlFloat("unknown0", VISIBLE=False),

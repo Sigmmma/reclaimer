@@ -31,7 +31,7 @@ soso_attrs = Struct("soso attrs",
                    
     Pad(8),
     #Reflection Properties
-    reflection_properties,
+    reflection,
 
     Pad(16),
     bump_properties,
