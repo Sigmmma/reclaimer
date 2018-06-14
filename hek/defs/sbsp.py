@@ -117,7 +117,6 @@ material = Struct("material",
     SInt32("vertices count", EDITABLE=False),
     SInt32("vertices offset", EDITABLE=False),
 
-    # these unknowns are required for biped shadows to appear
     FlUInt32("unknown meta offset0", EDITABLE=False),
     FlUInt32("vertices meta offset",
         TOOLTIP=("In xbox maps this is a bspmagic relative pointer that\n"
@@ -131,7 +130,6 @@ material = Struct("material",
     SInt32("lightmap vertices count", EDITABLE=False),
     SInt32("lightmap vertices offset", EDITABLE=False),
 
-    # these unknowns are required for biped shadows to appear
     FlUInt32("unknown meta offset1", EDITABLE=False),
     FlUInt32("lightmap vertices meta offset",
         TOOLTIP=("In xbox maps this is a bspmagic relative pointer that\n"
@@ -145,8 +143,7 @@ material = Struct("material",
 
 lightmap = Struct("lightmap",
     SInt16("bitmap index"),
-    # might be padding, might not be
-    BytesRaw("unknown", VISIBLE=False, SIZE=18),
+    Pad(18),
     reflexive("materials", material, 2048,
         DYN_NAME_PATH='.shader.filepath'),
     SIZE=32
