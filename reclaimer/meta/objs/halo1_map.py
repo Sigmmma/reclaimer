@@ -552,6 +552,12 @@ class Halo1Map(HaloMap):
 
             for lightmap in meta.lightmaps.STEPTREE:
                 for b in lightmap.materials.STEPTREE:
+                    # need to null these or switching bsps will crash sapien
+                    b.unknown_meta_offset0 = b.unknown_meta_offset1 = 0
+                    b.vertices_meta_offset = 0
+                    b.lightmap_vertices_meta_offset = 0
+                    b.vertex_type.data = 0
+
                     if not generate_verts:
                         continue
 
