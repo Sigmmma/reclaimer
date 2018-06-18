@@ -114,10 +114,10 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
             wav_file.serialize(temp=False, backup=False)
 
 
-def extract_h1_sounds(meta, tag_index_ref, **kw):
+def extract_h1_sounds(meta, tag_path, **kw):
     overwrite = kw.get('overwrite', True)
     decode_adpcm = kw.get('decode_adpcm', True)
-    tagpath_base = join(kw['out_dir'], tag_index_ref.tag.tag_path)
+    tagpath_base = join(kw['out_dir'], tag_path)
     pitch_ranges = meta.pitch_ranges.STEPTREE
     same_pr_names = {}
 
@@ -197,11 +197,11 @@ def get_sound_name(string_ids, import_names, index):
     return get_string_id_string(string_ids, import_names[index])
 
 
-def extract_h2_sounds(meta, tag_index_ref, **kw):
+def extract_h2_sounds(meta, tag_path, **kw):
     halo_map = kw['halo_map']
     overwrite = kw.get('overwrite', True)
     decode_adpcm = kw.get('decode_adpcm', True)
-    tagpath_base = join(kw['out_dir'], tag_index_ref.tag.tag_path)
+    tagpath_base = join(kw['out_dir'], tag_path)
     string_ids = halo_map.map_header.strings.string_id_table
 
     ugh__meta = halo_map.ugh__meta
@@ -303,8 +303,8 @@ def extract_h2_sounds(meta, tag_index_ref, **kw):
                              sample_rate, channels, overwrite, decode_adpcm)
 
 
-def extract_bitmaps(meta, tag_index_ref, **kw):
-    filepath_base = join(kw['out_dir'], tag_index_ref.tag.tag_path)
+def extract_bitmaps(meta, tag_path, **kw):
+    filepath_base = join(kw['out_dir'], tag_path)
     is_padded = "xbox" in kw['halo_map'].engine
     pix_data = meta.processed_pixel_data.STEPTREE
 
@@ -411,8 +411,8 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
         arby.save_to_file()
 
 
-def extract_hud_message_text(meta, tag_index_ref, **kw):
-    filepath = join(kw['out_dir'], tag_index_ref.tag.tag_path + ".hmt")
+def extract_hud_message_text(meta, tag_path, **kw):
+    filepath = join(kw['out_dir'], tag_path + ".hmt")
     if isfile(filepath) and not kw.get('overwrite', True):
         return
 
@@ -456,9 +456,8 @@ def extract_hud_message_text(meta, tag_index_ref, **kw):
     return
 
 
-def extract_h1_scnr_data(meta, tag_index_ref, **kw):
-    filepath_base = join(
-        kw['out_dir'], dirname(tag_index_ref.tag.tag_path), "scripts")
+def extract_h1_scnr_data(meta, tag_path, **kw):
+    filepath_base = join(kw['out_dir'], dirname(tag_path), "scripts")
     overwrite = kw.get('overwrite', True)
     # If the path doesnt exist, create it
     if not exists(filepath_base):

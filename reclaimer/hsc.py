@@ -145,7 +145,6 @@ def get_hsc_data_block(raw_syntax_data=None, engine="halo1"):
     block_def = None
     header_len = 56
     sig_off = 40
-    f_endian = FieldType.f_endian
 
     if "yelo" in engine:
         block_def = h1_script_syntax_data_os_def
@@ -352,7 +351,8 @@ def hsc_bytecode_to_string(syntax_data, string_data, block_index,
     if block_type not in ("script", "global"):
         return ""
 
-    if   "halo1" in engine or "stubbs" in engine or "shadowrun" in engine:
+    if ("halo1" in engine or "yelo" in engine or
+        "stubbs" in engine or "shadowrun" in engine):
         script_types = h1_script_types
         object_types = h1_script_object_types
     elif "halo2" in engine:

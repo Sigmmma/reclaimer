@@ -94,8 +94,8 @@ material = Struct("material",
         "coplanar",
         "fog plane",
         ),
-    SInt32("surfaces"),
-    SInt32("surface count"),
+    SInt32("surfaces", EDITABLE=False),
+    SInt32("surface count", EDITABLE=False),
     QStruct("centroid", INCLUDE=xyz_float),
     QStruct("ambient color", INCLUDE=rgb_float),
     SInt16("distant light count"),
@@ -111,30 +111,35 @@ material = Struct("material",
     QStruct("shadow vector", INCLUDE=ijk_float),
     QStruct("shadow color", INCLUDE=rgb_float),
     QStruct("plane", INCLUDE=plane),
-    SInt16("breakable surface"),
+    SInt16("breakable surface", EDITABLE=False),
     Pad(6),
 
     SInt32("vertices count", EDITABLE=False),
-    SInt32("vertices offset", EDITABLE=False),
+    SInt32("vertices offset", VISIBLE=False),
 
-    FlUInt32("unknown meta offset0", EDITABLE=False),
+    FlUInt32("unknown meta offset0", VISIBLE=False),
     FlUInt32("vertices meta offset",
         TOOLTIP=("In xbox maps this is a bspmagic relative pointer that\n"
                  "points to a reflexive. The reflexive contains only a\n"
-                 "bspmagic relative pointer to the vertices."), EDITABLE=False),
+                 "bspmagic relative pointer to the vertices."),
+        VISIBLE=False
+        ),
     FlUEnum32("vertex type",  # name is a guess
+        ("unknown", 0),
         ("uncompressed", 2),
         ("compressed",   3),
-        EDITABLE=False,
+        VISIBLE=False,
         ),
-    SInt32("lightmap vertices count", EDITABLE=False),
-    SInt32("lightmap vertices offset", EDITABLE=False),
+    SInt32("lightmap vertices count", VISIBLE=False),
+    SInt32("lightmap vertices offset", VISIBLE=False),
 
-    FlUInt32("unknown meta offset1", EDITABLE=False),
+    FlUInt32("unknown meta offset1", VISIBLE=False),
     FlUInt32("lightmap vertices meta offset",
         TOOLTIP=("In xbox maps this is a bspmagic relative pointer that\n"
                  "points to a reflexive. The reflexive contains only a\n"
-                 "bspmagic relative pointer to the lightmap vertices."), EDITABLE=False),
+                 "bspmagic relative pointer to the lightmap vertices."),
+        VISIBLE=False
+        ),
 
     rawdata_ref("uncompressed vertices", max_size=4864000),
     rawdata_ref("compressed vertices", max_size=2560000),
