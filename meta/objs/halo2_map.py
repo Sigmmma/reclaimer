@@ -173,7 +173,7 @@ class Halo2Map(HaloMap):
         if extractor is None:
             return "No extractor for this type of tag."
         kw['halo_map'] = self
-        return extractor(meta, tag_index_ref, **kw)
+        return extractor(meta, tag_index_ref.tag.tag_path, **kw)
 
     def get_meta(self, tag_id, reextract=False):
         if tag_id is None: return
