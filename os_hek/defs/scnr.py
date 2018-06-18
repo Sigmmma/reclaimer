@@ -36,7 +36,7 @@ scnr_body = desc_variant(
     ("DONT_USE", dependency_os("project yellow definitions", 'yelo')),
     ("player_starting_profiles",
      reflexive("player starting profiles",
-        player_starting_profile, 128, DYN_NAME_PATH='.name')
+        player_starting_profile, 256, DYN_NAME_PATH='.name')
      ),
     ("ai_animation_references",
      reflexive("ai animation references",
