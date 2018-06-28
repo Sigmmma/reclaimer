@@ -19,7 +19,7 @@ except ImportError:
     arbytmap = Arbytmap = None
 
 from os import makedirs
-from os.path import dirname, exists, join, isfile
+from os.path import dirname, exists, join, isfile, splitext
 from struct import unpack, pack_into
 from traceback import format_exc
 
@@ -35,6 +35,8 @@ from .adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
 from .hek.defs.objs.p8_palette import load_palette
 from .hek.defs.hmt_ import icon_types as hmt_icon_types
 from .hsc import get_hsc_data_block, hsc_bytecode_to_string
+from .jms import write_jms, JmsNode, JmsMaterial, JmsMarker,\
+     JmsVertex, JmsTriangle
 
 #load the palette for p-8 bump maps
 P8_PALETTE = load_palette()
@@ -117,7 +119,7 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
 def extract_h1_sounds(meta, tag_path, **kw):
     overwrite = kw.get('overwrite', True)
     decode_adpcm = kw.get('decode_adpcm', True)
-    tagpath_base = join(kw['out_dir'], tag_path)
+    tagpath_base = join(kw['out_dir'], splitext(tag_path)[0])
     pitch_ranges = meta.pitch_ranges.STEPTREE
     same_pr_names = {}
 
@@ -198,10 +200,14 @@ def get_sound_name(string_ids, import_names, index):
 
 
 def extract_h2_sounds(meta, tag_path, **kw):
-    halo_map = kw['halo_map']
+    halo_map = kw.get('halo_map')
+    if not halo_map:
+        print("Cannot run this function on tags.")
+        return
+
     overwrite = kw.get('overwrite', True)
     decode_adpcm = kw.get('decode_adpcm', True)
-    tagpath_base = join(kw['out_dir'], tag_path)
+    tagpath_base = join(kw['out_dir'], splitext(tag_path)[0])
     string_ids = halo_map.map_header.strings.string_id_table
 
     ugh__meta = halo_map.ugh__meta
@@ -304,9 +310,13 @@ def extract_h2_sounds(meta, tag_path, **kw):
 
 
 def extract_bitmaps(meta, tag_path, **kw):
-    filepath_base = join(kw['out_dir'], tag_path)
-    is_padded = "xbox" in kw['halo_map'].engine
+    filepath_base = join(kw['out_dir'], splitext(tag_path)[0])
     pix_data = meta.processed_pixel_data.STEPTREE
+    is_padded = False
+    if 'engine' in kw:
+        is_padded = "xbox" in kw['engine']
+    elif 'halo_map' in kw:
+        is_padded = "xbox" in kw['halo_map'].engine
 
     if is_padded:
         # cant extract xbox bitmaps yet
@@ -412,7 +422,7 @@ def extract_bitmaps(meta, tag_path, **kw):
 
 
 def extract_hud_message_text(meta, tag_path, **kw):
-    filepath = join(kw['out_dir'], tag_path + ".hmt")
+    filepath = join(kw['out_dir'], splitext(tag_path)[0] + ".hmt")
     if isfile(filepath) and not kw.get('overwrite', True):
         return
 
@@ -574,8 +584,42 @@ def extract_h1_scnr_data(meta, tag_path, **kw):
             return format_exc()
 
 
+def extract_physics(meta, tag_path, **kw):
+    filepath = join(kw['out_dir'], dirname(tag_path), "physics", "physics.jms")
+    if not kw.get('overwrite', True) and isfile(filepath):
+        return
+
+    nodes = [JmsNode("root")]
+    markers = []
+
+    child_node_ct = 0
+    for mp in meta.mass_points.STEPTREE:
+        child_node_ct = max(child_node_ct, mp.model_node)
+        # THIS IS NOT CORRECT. FIX IT
+        rot_i = mp.up.i
+        rot_j = mp.up.j
+        rot_k = mp.up.k
+        rot_w = 0.0
+        markers.append(
+            JmsMarker(
+                mp.name, mp.model_node, mp.radius * 100,
+                rot_i, rot_j, rot_k, rot_w,
+                mp.position.x * 100, mp.position.y * 100, mp.position.z * 100,
+                ))
+
+    if child_node_ct > 0:
+        # make some fake nodes
+        nodes[0].first_child = 1
+        for i in range(child_node_ct):
+            nodes.append(JmsNode("node_%s" % (i + 1), i + 2))
+        nodes[-1].sibling_index = -1
+
+    write_jms(filepath, checksum=0, nodes=nodes, markers=markers)
+
+
 h1_data_extractors = {
-    #'mode', 'mod2', 'coll', 'phys', 'antr', 'magy', 'sbsp',
+    #'mode', 'mod2', 'coll', 'antr', 'magy', 'sbsp',
+    'phys': extract_physics,
     #'font', 'str#', 'ustr', 'unic',
     "bitm": extract_bitmaps, "snd!": extract_h1_sounds,
     "hmt ": extract_hud_message_text, 'scnr': extract_h1_scnr_data,
