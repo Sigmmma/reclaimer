@@ -224,8 +224,10 @@ tag_class_fcc_to_ext = {
     'rain': "weather_particle_system",
     'wind': "wind",
     }
+tag_class_ext_to_fcc = {}
 
 for tag_cls in tag_class_fcc_to_ext:
+    tag_class_ext_to_fcc[tag_class_fcc_to_ext[tag_cls]] = tag_cls
     tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls, 'big')
     tag_class_be_int_to_fcc[fcc(tag_cls, 'big')] = tag_cls
     tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
@@ -257,6 +259,10 @@ tag_class_fcc_to_ext_os = {
     }
 
 tag_class_fcc_to_ext_os.update(tag_class_fcc_to_ext)
+tag_class_ext_to_fcc_os = {}
+
+for tag_cls in tag_class_fcc_to_ext_os:
+    tag_class_ext_to_fcc_os[tag_class_fcc_to_ext_os[tag_cls]] = tag_cls
 
 # maps open sauce tag class four character codes(fccs)
 # in their string encoding to their int encoding.
@@ -285,6 +291,10 @@ tag_class_fcc_to_ext_stubbs = {
     }
 
 tag_class_fcc_to_ext_stubbs.update(tag_class_fcc_to_ext)
+tag_class_ext_to_fcc_stubbs = {}
+
+for tag_cls in tag_class_fcc_to_ext_stubbs:
+    tag_class_ext_to_fcc_stubbs[tag_class_fcc_to_ext_stubbs[tag_cls]] = tag_cls
 
 # maps open sauce tag class four character codes(fccs)
 # in their string encoding to their int encoding.
