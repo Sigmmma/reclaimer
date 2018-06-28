@@ -1,11 +1,11 @@
 import struct
-from math import log
 
 from reclaimer.field_types import *
 from reclaimer.constants import *
 from reclaimer.common_descs import ascii_str32,\
      script_types as h1_script_types,\
      script_object_types as h1_script_object_types
+from reclaimer.util import float_to_str
 from reclaimer.h2.common_descs import script_types as h2_script_types,\
      script_object_types as h2_script_object_types
 from supyr_struct.defs.block_def import BlockDef
@@ -99,23 +99,6 @@ h1_script_syntax_data_os[1] = UInt16("max_nodes", DEFAULT=28501)
 
 h1_script_syntax_data_def    = BlockDef(h1_script_syntax_data)
 h1_script_syntax_data_os_def = BlockDef(h1_script_syntax_data_os)
-
-
-POS_INF = float("inf")
-NEG_INF = float("-inf")
-def float_to_str(f, max_sig_figs=7):
-    if f == POS_INF:
-        return "1000000000000000000000000000000000000000"
-    elif f == NEG_INF:
-        return "-1000000000000000000000000000000000000000"
-
-    sig_figs = -1
-    if abs(f) > 0:
-        sig_figs = int(max_sig_figs - log(abs(f), 10))
-
-    if sig_figs < 0:
-        return str(f).split(".")[0]
-    return (("%" + (".%sf" % sig_figs)) % f).rstrip("0").rstrip(".")
 
 
 def cast_uint32_to_float(uint32, packer=struct.Struct("<I"),
