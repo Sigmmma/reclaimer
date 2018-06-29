@@ -1,7 +1,8 @@
+import re
 
 from os import makedirs
 from os.path import dirname, exists
-from .util import float_to_str
+from reclaimer.util import float_to_str
 
 
 class JmsNode:
@@ -25,6 +26,15 @@ class JmsNode:
         self.pos_y = pos_y
         self.pos_z = pos_z
 
+    def __repr__(self):
+        return """JmsNode(%s,
+    first_child=%s, sibling_index=%s,
+    i=%s, j=%s, k=%s, w=%s,
+    x=%s, y=%s, z=%s
+)""" % (self.name, self.sibling_index, self.first_child,
+        self.rot_i, self.rot_j, self.rot_k, self.rot_w,
+        self.pos_x, self.pos_y, self.pos_z)
+
 
 class JmsMaterial:
     __slots__ = (
@@ -34,6 +44,11 @@ class JmsMaterial:
     def __init__(self, name="__unnamed", tiff_path="<none>"):
         self.name = name
         self.tiff_path = tiff_path
+
+    def __repr__(self):
+        return """JmsMaterial(name=%s,
+    tiff_path=%s
+)""" % (self.name, self.tiff_path)
 
 
 class JmsMarker:
@@ -56,6 +71,15 @@ class JmsMarker:
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.pos_z = pos_z
+
+    def __repr__(self):
+        return """JmsMarker(name=%s,
+    parent=%s, radius=%s,
+    i=%s, j=%s, k=%s, w=%s,
+    x=%s, y=%s, z=%s
+)""" % (self.name, self.parent, self.radius,
+        self.rot_i, self.rot_j, self.rot_k, self.rot_w,
+        self.pos_x, self.pos_y, self.pos_z)
 
 
 class JmsVertex:
@@ -82,6 +106,16 @@ class JmsVertex:
         self.tex_v = tex_v
         self.tex_w = tex_w
 
+    def __repr__(self):
+        return """JmsVertex(node_0=%s, node_1=%s, node_1_weight=%s,
+    x=%s, y=%s, z=%s,
+    i=%s, j=%s, k=%s,
+    u=%s, v=%s, w=%s
+)""" % (self.node_0, self.node_1, self.node_1_weight,
+        self.pos_x, self.pos_y, self.pos_z,
+        self.norm_i, self.norm_j, self.norm_k,
+        self.tex_u, self.tex_v, self.tex_w)
+
 
 class JmsTriangle:
     __slots__ = (
@@ -95,6 +129,150 @@ class JmsTriangle:
         self.v0 = v0
         self.v1 = v1
         self.v2 = v2
+
+    def __repr__(self):
+        return """JmsTriangle(
+    region=%s, shader=%s,
+    v0=%s, v1=%s, v2=%s
+)""" % (self.region, self.shader,
+        self.v0, self.v1, self.v2)
+
+
+def read_jms(jms_string):
+    nodes = []
+    materials = []
+    markers = []
+    regions = []
+    vertices = []
+    triangles = []
+
+    jms_data = [0, materials, regions,
+                nodes, markers, vertices, triangles]
+
+    jms_string = jms_string.replace("\n", "\t")
+
+    data = tuple(d for d in jms_string.split("\t") if d)
+
+    if data[0] != "8200":
+        print("JMS identifier not found.")
+        return jms_data
+
+    try:
+        jms_data[0] = int(data[1])
+    except Exception:
+        print("Could not read node list checksum.")
+        return jms_data
+
+    dat_i = 2
+
+    # read the nodes
+    try:
+        i = 0
+        nodes.extend((None, ) * int(data[dat_i]))
+        dat_i += 1
+        for i in range(len(nodes)):
+            nodes[i] = JmsNode(
+                data[dat_i], int(data[dat_i+1]), int(data[dat_i+2]),
+                float(data[dat_i+3]), float(data[dat_i+4]),
+                float(data[dat_i+5]), float(data[dat_i+6]),
+                float(data[dat_i+7]), float(data[dat_i+8]), float(data[dat_i+9]),
+                )
+            dat_i += 10
+            i += 1
+    except Exception:
+        print("Failed to read nodes.")
+        del nodes[i: ]
+        return jms_data
+
+
+    # read the materials
+    try:
+        i = 0
+        materials.extend((None, ) * int(data[dat_i]))
+        dat_i += 1
+        for i in range(len(materials)):
+            materials[i] = JmsMaterial(data[dat_i], data[dat_i+1])
+            dat_i += 2
+            i += 1
+    except Exception:
+        print("Failed to read materials.")
+        del materials[i: ]
+        return jms_data
+
+    # read the markers
+    try:
+        i = 0
+        markers.extend((None, ) * int(data[dat_i]))
+        dat_i += 1
+        for i in range(len(markers)):
+            markers[i] = JmsMarker(
+                data[dat_i], int(data[dat_i+2]),
+                float(data[dat_i+3]), float(data[dat_i+4]),
+                float(data[dat_i+5]), float(data[dat_i+6]),
+                float(data[dat_i+7]), float(data[dat_i+8]), float(data[dat_i+9]),
+                float(data[dat_i+10])
+                )
+            dat_i += 11
+            i += 1
+    except Exception:
+        print("Failed to read markers.")
+        del markers[i: ]
+        return jms_data
+
+
+    # read the regions
+    try:
+        i = 0
+        regions.extend((None, ) * int(data[dat_i]))
+        dat_i += 1
+        for i in range(len(regions)):
+            regions[i] = data[dat_i]
+            dat_i += 1
+            i += 1
+    except Exception:
+        print("Failed to read regions.")
+        del regions[i: ]
+        return jms_data
+
+
+    # read the vertices
+    try:
+        i = 0
+        vertices.extend((None, ) * int(data[dat_i]))
+        dat_i += 1
+        for i in range(len(vertices)):
+            vertices[i] = JmsVertex(
+                int(data[dat_i]), int(data[dat_i+7]), float(data[dat_i+8]),
+                float(data[dat_i+1]), float(data[dat_i+2]), float(data[dat_i+3]),
+                float(data[dat_i+4]), float(data[dat_i+5]), float(data[dat_i+6]),
+                float(data[dat_i+9]), float(data[dat_i+10]), float(data[dat_i+11])
+                )
+            dat_i += 12
+            i += 1
+    except Exception:
+        print("Failed to read vertices.")
+        del vertices[i: ]
+        return jms_data
+
+
+    # read the triangles
+    try:
+        i = 0
+        triangles.extend((None, ) * int(data[dat_i]))
+        dat_i += 1
+        for i in range(len(triangles)):
+            triangles[i] = JmsTriangle(
+                int(data[dat_i]), int(data[dat_i+1]),
+                int(data[dat_i+2]), int(data[dat_i+3]), int(data[dat_i+4]),
+                )
+            dat_i += 5
+            i += 1
+    except Exception:
+        print("Failed to read triangles.")
+        del triangles[i: ]
+        return jms_data
+
+    return jms_data
 
 
 def write_jms(filepath, *, checksum=3251, materials=(), regions=(),
