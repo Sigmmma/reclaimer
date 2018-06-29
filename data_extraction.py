@@ -116,15 +116,15 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
             wav_file.serialize(temp=False, backup=False)
 
 
-def extract_h1_sounds(meta, tag_path, **kw):
+def extract_h1_sounds(tagdata, tag_path, **kw):
     overwrite = kw.get('overwrite', True)
     decode_adpcm = kw.get('decode_adpcm', True)
     tagpath_base = join(kw['out_dir'], splitext(tag_path)[0])
-    pitch_ranges = meta.pitch_ranges.STEPTREE
+    pitch_ranges = tagdata.pitch_ranges.STEPTREE
     same_pr_names = {}
 
-    channels = meta.encoding.data + 1
-    sample_rate = 22050 * (meta.sample_rate.data + 1)
+    channels = tagdata.encoding.data + 1
+    sample_rate = 22050 * (tagdata.sample_rate.data + 1)
 
     for i in range(len(pitch_ranges)):
         pr = pitch_ranges[i]
@@ -199,7 +199,7 @@ def get_sound_name(string_ids, import_names, index):
     return get_string_id_string(string_ids, import_names[index])
 
 
-def extract_h2_sounds(meta, tag_path, **kw):
+def extract_h2_sounds(tagdata, tag_path, **kw):
     halo_map = kw.get('halo_map')
     if not halo_map:
         print("Cannot run this function on tags.")
@@ -221,11 +221,11 @@ def extract_h2_sounds(meta, tag_path, **kw):
 
     same_pr_names = {}
 
-    channels    = {0: 1,     1: 2,     2: 6    }.get(meta.encoding.data)
-    sample_rate = {0: 22050, 1: 44100, 2: 32000}.get(meta.sample_rate.data)
-    compression = meta.compression.enum_name
+    channels    = {0: 1,     1: 2,     2: 6    }.get(tagdata.encoding.data)
+    sample_rate = {0: 22050, 1: 44100, 2: 32000}.get(tagdata.sample_rate.data)
+    compression = tagdata.compression.enum_name
 
-    if meta.encoding.enum_name == "codec":
+    if tagdata.encoding.enum_name == "codec":
         return "    CANNOT YET EXTRACT THIS FORMAT."
         '''
         The codec format seems to be encoded with wmaudio2.
@@ -253,8 +253,8 @@ def extract_h2_sounds(meta, tag_path, **kw):
             Everything after this appears to be audio data.
         '''
 
-    pr_index = meta.pitch_range_index
-    pr_count = min(meta.pitch_range_count, len(pitch_ranges) - pr_index)
+    pr_index = tagdata.pitch_range_index
+    pr_count = min(tagdata.pitch_range_count, len(pitch_ranges) - pr_index)
     if pr_index < 0 or pr_count < 0:
         # nothing to extract
         return
@@ -309,9 +309,9 @@ def extract_h2_sounds(meta, tag_path, **kw):
                              sample_rate, channels, overwrite, decode_adpcm)
 
 
-def extract_bitmaps(meta, tag_path, **kw):
+def extract_bitmaps(tagdata, tag_path, **kw):
     filepath_base = join(kw['out_dir'], splitext(tag_path)[0])
-    pix_data = meta.processed_pixel_data.STEPTREE
+    pix_data = tagdata.processed_pixel_data.STEPTREE
     is_padded = False
     if 'engine' in kw:
         is_padded = "xbox" in kw['engine']
@@ -328,8 +328,8 @@ def extract_bitmaps(meta, tag_path, **kw):
     arby = Arbytmap()
     tex_infos = []
     bitm_i = 0
-    multi_bitmap = len(meta.bitmaps.STEPTREE) > 1
-    for bitmap in meta.bitmaps.STEPTREE:
+    multi_bitmap = len(tagdata.bitmaps.STEPTREE) > 1
+    for bitmap in tagdata.bitmaps.STEPTREE:
         typ = bitmap.type.enum_name
         fmt = bitmap.format.enum_name
         bpp = 1
@@ -421,14 +421,14 @@ def extract_bitmaps(meta, tag_path, **kw):
         arby.save_to_file()
 
 
-def extract_hud_message_text(meta, tag_path, **kw):
+def extract_hud_message_text(tagdata, tag_path, **kw):
     filepath = join(kw['out_dir'], splitext(tag_path)[0] + ".hmt")
     if isfile(filepath) and not kw.get('overwrite', True):
         return
 
-    in_data  = meta.string.data
-    messages = meta.messages.STEPTREE
-    elements = meta.message_elements.STEPTREE
+    in_data  = tagdata.string.data
+    messages = tagdata.messages.STEPTREE
+    elements = tagdata.message_elements.STEPTREE
     out_data = b""
 
     for m in messages:
@@ -466,7 +466,7 @@ def extract_hud_message_text(meta, tag_path, **kw):
     return
 
 
-def extract_h1_scnr_data(meta, tag_path, **kw):
+def extract_h1_scnr_data(tagdata, tag_path, **kw):
     filepath_base = join(kw['out_dir'], dirname(tag_path), "scripts")
     overwrite = kw.get('overwrite', True)
     # If the path doesnt exist, create it
@@ -477,13 +477,13 @@ def extract_h1_scnr_data(meta, tag_path, **kw):
     if not engine and 'halo_map' in kw:
         engine = kw['halo_map'].engine
 
-    syntax_data = get_hsc_data_block(meta.script_syntax_data.data)
-    string_data = meta.script_string_data.data.decode("latin-1")
+    syntax_data = get_hsc_data_block(tagdata.script_syntax_data.data)
+    string_data = tagdata.script_string_data.data.decode("latin-1")
     if not syntax_data or not string_data:
         return "No script data to extract."
 
-    for typ, arr in (("global", meta.globals.STEPTREE),
-                     ("script", meta.scripts.STEPTREE)):
+    for typ, arr in (("global", tagdata.globals.STEPTREE),
+                     ("script", tagdata.scripts.STEPTREE)):
         filepath = join(filepath_base, "%ss" % typ)
         comments = ""
         src_file_i = 0
@@ -495,17 +495,17 @@ def extract_h1_scnr_data(meta, tag_path, **kw):
                 comments += "; scenario names(each sorted alphabetically)\n"
                 comments += "\n;   object names:\n"
                 for name in sorted(set(obj.name for obj in
-                                       meta.object_names.STEPTREE)):
+                                       tagdata.object_names.STEPTREE)):
                     comments += ";     %s\n" % name
 
                 comments += "\n;   trigger volumes:\n"
                 for name in sorted(set(tv.name for tv in
-                                       meta.trigger_volumes.STEPTREE)):
+                                       tagdata.trigger_volumes.STEPTREE)):
                     comments += ";     %s\n" % name
 
                 comments += "\n;   device groups:\n"
                 for name in sorted(set(dg.name for dg in
-                                       meta.device_groups.STEPTREE)):
+                                       tagdata.device_groups.STEPTREE)):
                     comments += ";     %s\n" % name
 
             except Exception:
@@ -521,8 +521,8 @@ def extract_h1_scnr_data(meta, tag_path, **kw):
                 global_uses[name]  = set()
                 static_calls[name] = set()
                 sources[name] = hsc_bytecode_to_string(
-                    syntax_data, string_data, i, meta.scripts.STEPTREE,
-                    meta.globals.STEPTREE, typ, engine,
+                    syntax_data, string_data, i, tagdata.scripts.STEPTREE,
+                    tagdata.globals.STEPTREE, typ, engine,
                     global_uses=global_uses[name],
                     static_calls=static_calls[name])
 
@@ -584,7 +584,7 @@ def extract_h1_scnr_data(meta, tag_path, **kw):
             return format_exc()
 
 
-def extract_physics(meta, tag_path, **kw):
+def extract_physics(tagdata, tag_path, **kw):
     filepath = join(kw['out_dir'], dirname(tag_path), "physics", "physics.jms")
     if not kw.get('overwrite', True) and isfile(filepath):
         return
@@ -593,7 +593,7 @@ def extract_physics(meta, tag_path, **kw):
     markers = []
 
     child_node_ct = 0
-    for mp in meta.mass_points.STEPTREE:
+    for mp in tagdata.mass_points.STEPTREE:
         child_node_ct = max(child_node_ct, mp.model_node)
         # THIS IS NOT CORRECT. FIX IT
         rot_i = mp.up.i
@@ -617,9 +617,54 @@ def extract_physics(meta, tag_path, **kw):
     write_jms(filepath, checksum=0, nodes=nodes, markers=markers)
 
 
+def extract_model(tagdata, tag_path, **kw):
+    filepath_base = join(kw['out_dir'], dirname(tag_path), "models")
+
+    global_markers = {}
+    nodes = []
+    regions = []
+    materials = []
+
+    for b in tagdata.markers.STEPTREE:
+        markers_key = (b.region_index, b.permutation_index)
+        permutation_markers = global_markers.get(markers_key, [])
+        
+        trans = b.translation
+        rot = b.rotation
+        permutation_markers.append(JmsMarker(
+            b.name, b.node_index, 0.01,
+            rot.i, rot.j, rot.k, rot.w, trans.x, trans.y, trans.z
+            ))
+
+        global_markers[markers_key] = permutation_markers
+
+    for b in tagdata.nodes.STEPTREE:
+        trans = b.translation
+        rot = b.rotation
+        nodes.append(JmsNode(
+            b.name, b.first_child_node, b.next_sibling_node,
+            rot.i, rot.j, rot.k, rot.w, trans.x, trans.y, trans.z
+            ))
+
+    for b in tagdata.shaders.STEPTREE:
+        materials.append(JmsMaterial(
+            b.shader.filepath.split("/")[-1].split("\\")[-1])
+            )
+
+    for b in tagdata.regions.STEPTREE:
+        regions.append(b.name)
+
+
+    for region_i in range(len(regions)):
+        markers = []
+        verts = []
+        tris = []
+
+
 h1_data_extractors = {
-    #'mode', 'mod2', 'coll', 'antr', 'magy', 'sbsp',
     'phys': extract_physics,
+    'mode': extract_model, 'mod2': extract_model,
+    #'coll', 'antr', 'magy', 'sbsp',
     #'font', 'str#', 'ustr', 'unic',
     "bitm": extract_bitmaps, "snd!": extract_h1_sounds,
     "hmt ": extract_hud_message_text, 'scnr': extract_h1_scnr_data,
