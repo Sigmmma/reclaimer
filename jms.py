@@ -2,7 +2,7 @@ import re
 
 from os import makedirs
 from os.path import dirname, exists
-from reclaimer.util import float_to_str
+from .util import float_to_str
 
 
 class JmsNode:
@@ -54,15 +54,16 @@ class JmsMaterial:
 class JmsMarker:
     __slots__ = (
         "name",
-        "parent", "radius",
+        "region", "parent", "radius",
         "rot_i", "rot_j", "rot_k", "rot_w",
         "pos_x", "pos_y", "pos_z",
         )
-    def __init__(self, name="", parent="", radius=0.0,
+    def __init__(self, name="", region=-1, parent=0, radius=0.0,
                  rot_i=0.0, rot_j=0.0, rot_k=0.0, rot_w=1.0,
                  pos_x=0.0, pos_y=0.0, pos_z=0.0):
         self.name = name
         self.parent = parent
+        self.region = region
         self.radius = radius
         self.rot_i = rot_i
         self.rot_j = rot_j
@@ -74,10 +75,10 @@ class JmsMarker:
 
     def __repr__(self):
         return """JmsMarker(name=%s,
-    parent=%s, radius=%s,
+    region=%s,  parent=%s, radius=%s,
     i=%s, j=%s, k=%s, w=%s,
     x=%s, y=%s, z=%s
-)""" % (self.name, self.parent, self.radius,
+)""" % (self.name, self.region, self.parent, self.radius,
         self.rot_i, self.rot_j, self.rot_k, self.rot_w,
         self.pos_x, self.pos_y, self.pos_z)
 
@@ -206,7 +207,7 @@ def read_jms(jms_string):
         dat_i += 1
         for i in range(len(markers)):
             markers[i] = JmsMarker(
-                data[dat_i], int(data[dat_i+2]),
+                data[dat_i], int(data[dat_i+1]), int(data[dat_i+2]),
                 float(data[dat_i+3]), float(data[dat_i+4]),
                 float(data[dat_i+5]), float(data[dat_i+6]),
                 float(data[dat_i+7]), float(data[dat_i+8]), float(data[dat_i+9]),
@@ -311,8 +312,8 @@ def write_jms(filepath, *, checksum=3251, materials=(), regions=(),
 
         f.write("%s\n" % len(markers))
         for marker in markers:
-            f.write("%s\n-1\n%s\n%s\t%s\t%s\t%s\n%s\t%s\t%s\n%s\n" % (
-                marker.name[: 31], marker.parent,
+            f.write("%s\n%s\n%s\n%s\t%s\t%s\t%s\n%s\t%s\t%s\n%s\n" % (
+                marker.name[: 31], marker.region, marker.parent,
                 float_to_str(marker.rot_i),
                 float_to_str(marker.rot_j),
                 float_to_str(marker.rot_k),

@@ -602,7 +602,7 @@ def extract_physics(tagdata, tag_path, **kw):
         rot_w = 0.0
         markers.append(
             JmsMarker(
-                mp.name, mp.model_node, mp.radius * 100,
+                mp.name, -1, mp.model_node, mp.radius * 100,
                 rot_i, rot_j, rot_k, rot_w,
                 mp.position.x * 100, mp.position.y * 100, mp.position.z * 100,
                 ))
@@ -621,22 +621,33 @@ def extract_model(tagdata, tag_path, **kw):
     filepath_base = join(kw['out_dir'], dirname(tag_path), "models")
 
     global_markers = {}
-    nodes = []
-    regions = []
     materials = []
+    regions = []
+    nodes = []
 
     for b in tagdata.markers.STEPTREE:
-        markers_key = (b.region_index, b.permutation_index)
-        permutation_markers = global_markers.get(markers_key, [])
-        
-        trans = b.translation
-        rot = b.rotation
-        permutation_markers.append(JmsMarker(
-            b.name, b.node_index, 0.01,
-            rot.i, rot.j, rot.k, rot.w, trans.x, trans.y, trans.z
-            ))
+        marker_name = b.name
 
-        global_markers[markers_key] = permutation_markers
+        for inst in b.marker_instances.STEPTREE:
+            try:
+                region = tagdata.regions.STEPTREE[inst.region_index]
+            except Exception:
+                print("Invalid region index in marker '%s'" % marker_name)
+
+            try:
+                perm = region.permutations.STEPTREE[inst.permutation_index]
+            except Exception:
+                print("Invalid permutation index in marker '%s'" % marker_name)
+
+            perm_markers = global_markers.setdefault(perm.name, [])
+
+            trans = inst.translation
+            rot = inst.rotation
+            perm_markers.append(JmsMarker(
+                marker_name, inst.region_index, inst.node_index, 0.01,
+                rot.i, rot.j, rot.k, rot.w,
+                trans.x, trans.y, trans.z
+                ))
 
     for b in tagdata.nodes.STEPTREE:
         trans = b.translation
@@ -651,14 +662,132 @@ def extract_model(tagdata, tag_path, **kw):
             b.shader.filepath.split("/")[-1].split("\\")[-1])
             )
 
-    for b in tagdata.regions.STEPTREE:
-        regions.append(b.name)
+    markers_by_perm = {}
+    geoms_by_perm_lod_region = {}
 
+    for region in tagdata.regions.STEPTREE:
+        region_index = len(regions)
+        regions.append(region.name)
+        for perm in region.permutations.STEPTREE:
+            geoms_by_lod_region = geoms_by_perm_lod_region.setdefault(perm.name, {})
 
-    for region_i in range(len(regions)):
-        markers = []
-        verts = []
-        tris = []
+            perm_markers = markers_by_perm.setdefault(perm.name, [])
+
+            for m in perm.local_markers.STEPTREE:
+                trans = m.translation
+                rot = m.rotation
+                perm_markers.append(JmsMarker(
+                    m.name, region_index, m.node_index, 0.01,
+                    rot.i, rot.j, rot.k, rot.w,
+                    trans.x, trans.y, trans.z
+                    ))
+
+            last_geom_index = -1
+            for lod_num in range(5):
+                geoms_by_region = geoms_by_lod_region.get(lod_num, {})
+                region_geoms = geoms_by_region.get(region.name, [])
+
+                geom_index = perm[
+                    perm.NAME_MAP["superlow_geometry_block"] + (4 - lod_num)]
+
+                if (geom_index in region_geoms or
+                    geom_index == last_geom_index):
+                    continue
+
+                geoms_by_lod_region[lod_num] = geoms_by_region
+                geoms_by_region[region.name] = region_geoms
+                region_geoms.append(geom_index)
+                last_geom_index = geom_index
+
+    def_node_map = list(range(128))
+
+    for perm_name in sorted(geoms_by_perm_lod_region):
+        geoms_by_lod_region = geoms_by_perm_lod_region[perm_name]
+        perm_markers = markers_by_perm.get(perm_name)
+        
+        for lod_num in sorted(geoms_by_lod_region):
+            if lod_num == -1:
+                continue
+
+            filepath = join(filepath_base, perm_name)
+            if   lod_num == 4:
+                filepath += " superlow.jms"
+            elif lod_num == 3:
+                filepath += " low.jms"
+            elif lod_num == 2:
+                filepath += " medium.jms"
+            elif lod_num == 1:
+                filepath += " high.jms"
+            else:
+                filepath += " superhigh.jms"
+
+            markers = list(perm_markers)
+            markers.extend(global_markers.get(perm_name, ()))
+            verts = []
+            tris = []
+
+            geoms_by_region = geoms_by_lod_region[lod_num]
+            for region_name in sorted(geoms_by_region):
+                region_index = regions.index(region_name)
+                geoms = geoms_by_region[region_name]
+
+                for geom_index in geoms:
+                    v_origin = len(verts)
+                    try:
+                        geom_block = tagdata.geometries.STEPTREE[geom_index]
+                    except Exception:
+                        print("Invalid geometry index '%s'" % geom_index)
+                        continue
+
+                    try:
+                        for part in geom_block.parts.STEPTREE:
+                            shader_index = part.shader_index
+                            try:
+                                node_map = list(part.local_nodes)
+                                compressed = False
+                            except (AttributeError, KeyError):
+                                node_map = def_node_map
+                                compressed = True
+
+                            # TODO: Make this work in meta(parse verts and tris)
+                            try:
+                                if compressed:
+                                    for v in part.compressed_vertices.STEPTREE:
+                                        n = v[3]
+                                        ni = (n&1023) / 1023
+                                        nj = ((n>>11)&1023) / 1023
+                                        nk = ((n>>22)&511) / 511
+                                        if (n>>10)&1: ni = ni - 1.0
+                                        if (n>>21)&1: nj = nj - 1.0
+                                        if (n>>31)&1: nk = nk - 1.0
+
+                                        verts.append(JmsVertex(
+                                            v[8], v[9], 1.0 - (v[10]/32767),
+                                            v[0], v[1], v[2],
+                                            ni, nj, nk,
+                                            v[6]/32767, v[7]/32767))
+                                else:
+                                    for v in part.uncompressed_vertices.STEPTREE:
+                                        verts.append(JmsVertex(
+                                            node_map[v[14]],
+                                            node_map[v[15]],
+                                            max(0, min(1, v[17])),
+                                            v[0], v[1], v[2],
+                                            v[3], v[4], v[5],
+                                            v[12], v[13]))
+                            except Exception:
+                                print(format_exc())
+                                print("If you see this, tell Moses to stop "
+                                      "fucking with the vertex definition.")
+
+                    except Exception:
+                        print(format_exc())
+                        print("Could not parse geometry blocks.")
+
+            write_jms(filepath, checksum=tagdata.node_list_checksum,
+                      materials=materials, regions=regions,
+                      nodes=nodes, markers=markers,
+                      vertices=verts, triangles=tris)
 
 
 h1_data_extractors = {
