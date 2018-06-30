@@ -769,8 +769,7 @@ def extract_model(tagdata, tag_path, **kw):
                                 else:
                                     for v in part.uncompressed_vertices.STEPTREE:
                                         verts.append(JmsVertex(
-                                            node_map[v[14]],
-                                            node_map[v[15]],
+                                            node_map[v[14]], node_map[v[15]],
                                             max(0, min(1, v[17])),
                                             v[0], v[1], v[2],
                                             v[3], v[4], v[5],
@@ -779,6 +778,30 @@ def extract_model(tagdata, tag_path, **kw):
                                 print(format_exc())
                                 print("If you see this, tell Moses to stop "
                                       "fucking with the vertex definition.")
+
+                            try:
+                                tri_list = []
+                                for triangle in part.triangles.STEPTREE:
+                                    tri_list.extend(triangle)
+
+                                swap = False
+                                for i in range(len(tri_list) - 2):
+                                    v0 = tri_list[i]
+                                    v1 = tri_list[i + 1 + swap]
+                                    v2 = tri_list[i + 2 - swap]
+                                    if v0 == -1 or v1 == -1 or v2 == -1:
+                                        continue
+                                    elif v0 == v1 or v0 == v2:
+                                        # remove degens
+                                        continue
+
+                                    tris.append(JmsTriangle(
+                                        region_index, shader_index,
+                                        v0, v1, v2))
+                                    swap = not swap
+                            except Exception:
+                                print(format_exc())
+                                print("Could not parse triangle blocks.")
 
                     except Exception:
                         print(format_exc())
