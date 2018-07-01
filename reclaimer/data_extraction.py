@@ -20,7 +20,7 @@ except ImportError:
 
 from os import makedirs
 from os.path import dirname, exists, join, isfile, splitext
-from struct import unpack, pack_into
+from struct import Struct as PyStruct, unpack, pack_into
 from traceback import format_exc
 
 from supyr_struct.buffer import BytearrayBuffer
@@ -32,6 +32,7 @@ from supyr_struct.field_types import FieldType
 from .util import is_protected_tag, fourcc, is_reserved_tag
 from .h2.util import *
 from .adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
+from .hek.defs.objs.matrices import Matrix, matrix_to_quaternion
 from .hek.defs.objs.p8_palette import load_palette
 from .hek.defs.hmt_ import icon_types as hmt_icon_types
 from .hsc import get_hsc_data_block, hsc_bytecode_to_string
@@ -595,15 +596,23 @@ def extract_physics(tagdata, tag_path, **kw):
     child_node_ct = 0
     for mp in tagdata.mass_points.STEPTREE:
         child_node_ct = max(child_node_ct, mp.model_node)
-        # THIS IS NOT CORRECT. FIX IT
-        rot_i = mp.up.i
-        rot_j = mp.up.j
-        rot_k = mp.up.k
-        rot_w = 0.0
+        fi, fj, fk = mp.forward
+        ui, uj, uk = mp.up
+        si, sj, sk = uj*fk - fj*uk, uk*fi - fk*ui, ui*fj - fi*uj
+
+        matrix = Matrix(
+            ((fi, fj, fk),
+             (si, sj, sk),
+             (ui, uj, uk)))
+        i, j, k, w = matrix_to_quaternion(matrix)
+        # no idea why I have to invert these
+        w = -w
+        if w < 0:
+            i, j, k, w = -i, -j, -k, -w
+
         markers.append(
             JmsMarker(
-                mp.name, -1, mp.model_node, mp.radius * 100,
-                rot_i, rot_j, rot_k, rot_w,
+                mp.name, -1, mp.model_node, mp.radius * 100, i, j, k, w,
                 mp.position.x * 100, mp.position.y * 100, mp.position.z * 100,
                 ))
 
@@ -611,7 +620,7 @@ def extract_physics(tagdata, tag_path, **kw):
         # make some fake nodes
         nodes[0].first_child = 1
         for i in range(child_node_ct):
-            nodes.append(JmsNode("node_%s" % (i + 1), i + 2))
+            nodes.append(JmsNode("node_%s" % (i + 1), -1, i + 2))
         nodes[-1].sibling_index = -1
 
     write_jms(filepath, checksum=0, nodes=nodes, markers=markers)
@@ -644,9 +653,9 @@ def extract_model(tagdata, tag_path, **kw):
             trans = inst.translation
             rot = inst.rotation
             perm_markers.append(JmsMarker(
-                marker_name, inst.region_index, inst.node_index, 0.01,
+                marker_name, inst.region_index, inst.node_index, 1,
                 rot.i, rot.j, rot.k, rot.w,
-                trans.x, trans.y, trans.z
+                trans.x * 100, trans.y * 100, trans.z * 100
                 ))
 
     for b in tagdata.nodes.STEPTREE:
@@ -654,7 +663,8 @@ def extract_model(tagdata, tag_path, **kw):
         rot = b.rotation
         nodes.append(JmsNode(
             b.name, b.first_child_node, b.next_sibling_node,
-            rot.i, rot.j, rot.k, rot.w, trans.x, trans.y, trans.z
+            rot.i, rot.j, rot.k, rot.w,
+            trans.x * 100, trans.y * 100, trans.z * 100
             ))
 
     for b in tagdata.shaders.STEPTREE:
@@ -664,6 +674,9 @@ def extract_model(tagdata, tag_path, **kw):
 
     markers_by_perm = {}
     geoms_by_perm_lod_region = {}
+
+    u_scale = tagdata.base_map_u_scale
+    v_scale = tagdata.base_map_v_scale
 
     for region in tagdata.regions.STEPTREE:
         region_index = len(regions)
@@ -677,9 +690,9 @@ def extract_model(tagdata, tag_path, **kw):
                 trans = m.translation
                 rot = m.rotation
                 perm_markers.append(JmsMarker(
-                    m.name, region_index, m.node_index, 0.01,
+                    m.name, region_index, m.node_index, 1,
                     rot.i, rot.j, rot.k, rot.w,
-                    trans.x, trans.y, trans.z
+                    trans.x * 100, trans.y * 100, trans.z * 100
                     ))
 
             last_geom_index = -1
@@ -699,7 +712,16 @@ def extract_model(tagdata, tag_path, **kw):
                 region_geoms.append(geom_index)
                 last_geom_index = geom_index
 
+    try:
+        use_local_nodes = tagdata.flags.parts_have_local_nodes
+    except Exception:
+        use_local_nodes = False
     def_node_map = list(range(128))
+    def_node_map.append(-1)
+
+    # use big endian since it will have been byteswapped
+    comp_vert_unpacker = PyStruct(">3f3I2h2bh").unpack_from
+    uncomp_vert_unpacker = PyStruct(">14f2h2f").unpack_from
 
     for perm_name in sorted(geoms_by_perm_lod_region):
         geoms_by_lod_region = geoms_by_perm_lod_region[perm_name]
@@ -732,80 +754,127 @@ def extract_model(tagdata, tag_path, **kw):
                 geoms = geoms_by_region[region_name]
 
                 for geom_index in geoms:
-                    v_origin = len(verts)
                     try:
                         geom_block = tagdata.geometries.STEPTREE[geom_index]
                     except Exception:
                         print("Invalid geometry index '%s'" % geom_index)
                         continue
 
-                    try:
-                        for part in geom_block.parts.STEPTREE:
-                            shader_index = part.shader_index
-                            try:
-                                node_map = list(part.local_nodes)
-                                compressed = False
-                            except (AttributeError, KeyError):
-                                node_map = def_node_map
-                                compressed = True
+                    for part in geom_block.parts.STEPTREE:
+                        v_origin = len(verts)
+                        shader_index = part.shader_index
 
-                            # TODO: Make this work in meta(parse verts and tris)
-                            try:
-                                if compressed:
-                                    for v in part.compressed_vertices.STEPTREE:
-                                        n = v[3]
-                                        ni = (n&1023) / 1023
-                                        nj = ((n>>11)&1023) / 1023
-                                        nk = ((n>>22)&511) / 511
-                                        if (n>>10)&1: ni = ni - 1.0
-                                        if (n>>21)&1: nj = nj - 1.0
-                                        if (n>>31)&1: nk = nk - 1.0
+                        try:
+                            node_map = list(part.local_nodes)
+                            node_map.append(-1)
+                            compressed = False
+                        except (AttributeError, KeyError):
+                            compressed = True
 
-                                        verts.append(JmsVertex(
-                                            v[8], v[9], 1.0 - (v[10]/32767),
-                                            v[0], v[1], v[2],
-                                            ni, nj, nk,
-                                            v[6]/32767, v[7]/32767))
-                                else:
-                                    for v in part.uncompressed_vertices.STEPTREE:
-                                        verts.append(JmsVertex(
-                                            node_map[v[14]], node_map[v[15]],
-                                            max(0, min(1, v[17])),
-                                            v[0], v[1], v[2],
-                                            v[3], v[4], v[5],
-                                            v[12], v[13]))
-                            except Exception:
-                                print(format_exc())
-                                print("If you see this, tell Moses to stop "
-                                      "fucking with the vertex definition.")
+                        if not use_local_nodes:
+                            node_map = def_node_map
 
-                            try:
+                        try:
+                            unparsed = isinstance(
+                                part.triangles.STEPTREE.data, bytearray)
+                        except Exception:
+                            unparsed = False
+
+                        # TODO: Make this work in meta(parse verts and tris)
+                        try:
+                            if compressed and unparsed:
+                                vert_data = part.compressed_vertices.STEPTREE.data
+                                for off in range(0, len(vert_data), 32):
+                                    v = comp_vert_unpacker(vert_data, off)
+                                    n = v[3]
+                                    ni = (n&1023) / 1023
+                                    nj = ((n>>11)&1023) / 1023
+                                    nk = ((n>>22)&511) / 511
+                                    if (n>>10)&1: ni = ni - 1.0
+                                    if (n>>21)&1: nj = nj - 1.0
+                                    if (n>>31)&1: nk = nk - 1.0
+
+                                    verts.append(JmsVertex(
+                                        v[8]//3, v[9]//3, 1.0 - (v[10]/32767),
+                                        v[0] * 100, v[1] * 100, v[2] * 100,
+                                        ni, nj, nk,
+                                        u_scale * v[6]/32767,
+                                        v_scale *(1.0 - v[7]/32767)))
+                            elif compressed:
+                                for v in part.compressed_vertices.STEPTREE:
+                                    n = v[3]
+                                    ni = (n&1023) / 1023
+                                    nj = ((n>>11)&1023) / 1023
+                                    nk = ((n>>22)&511) / 511
+                                    if (n>>10)&1: ni = ni - 1.0
+                                    if (n>>21)&1: nj = nj - 1.0
+                                    if (n>>31)&1: nk = nk - 1.0
+
+                                    verts.append(JmsVertex(
+                                        v[8]//3, v[9]//3, 1.0 - (v[10]/32767),
+                                        v[0] * 100, v[1] * 100, v[2] * 100,
+                                        ni, nj, nk,
+                                        u_scale * v[6]/32767,
+                                        v_scale *(1.0 - v[7]/32767)))
+                            elif not compressed and unparsed:
+                                vert_data = part.uncompressed_vertices.STEPTREE.data
+                                for off in range(0, len(vert_data), 68):
+                                    v = uncomp_vert_unpacker(vert_data, off)
+                                    verts.append(JmsVertex(
+                                        node_map[v[14]], node_map[v[15]],
+                                        max(0, min(1, v[17])),
+                                        v[0] * 100, v[1] * 100, v[2] * 100,
+                                        v[3], v[4], v[5],
+                                        u_scale * v[12],
+                                        v_scale * (1.0 - v[13])))
+                            else:
+                                for v in part.uncompressed_vertices.STEPTREE:
+                                    verts.append(JmsVertex(
+                                        node_map[v[14]], node_map[v[15]],
+                                        max(0, min(1, v[17])),
+                                        v[0] * 100, v[1] * 100, v[2] * 100,
+                                        v[3], v[4], v[5],
+                                        u_scale * v[12],
+                                        v_scale * (1.0 - v[13])))
+                        except Exception:
+                            print(format_exc())
+                            print("If you see this, tell Moses to stop "
+                                  "fucking with the vertex definition.")
+
+                        try:
+                            if unparsed:
+                                tri_block = part.triangles.STEPTREE.data
+                                tri_list = [-1] * (len(tri_block) // 2)
+                                for i in range(len(tri_list)):
+                                    # assuming big endian
+                                    tri_list[i] = (
+                                        tri_block[i * 2 + 1] +
+                                        (tri_block[i * 2] << 8))
+                                    if tri_list[i] > 32767:
+                                        tri_list[i] = -1
+                            else:
+                                tri_block = part.triangles.STEPTREE
                                 tri_list = []
-                                for triangle in part.triangles.STEPTREE:
+                                for triangle in tri_block:
                                     tri_list.extend(triangle)
 
-                                swap = False
-                                for i in range(len(tri_list) - 2):
-                                    v0 = tri_list[i]
-                                    v1 = tri_list[i + 1 + swap]
-                                    v2 = tri_list[i + 2 - swap]
-                                    if v0 == -1 or v1 == -1 or v2 == -1:
-                                        continue
-                                    elif v0 == v1 or v0 == v2:
-                                        # remove degens
-                                        continue
-
-                                    tris.append(JmsTriangle(
-                                        region_index, shader_index,
-                                        v0, v1, v2))
-                                    swap = not swap
-                            except Exception:
-                                print(format_exc())
-                                print("Could not parse triangle blocks.")
-
-                    except Exception:
-                        print(format_exc())
-                        print("Could not parse geometry blocks.")
+                            swap = True
+                            for i in range(len(tri_list) - 2):
+                                v0 = tri_list[i]
+                                v1 = tri_list[i + 1 + swap]
+                                v2 = tri_list[i + 2 - swap]
+                                if v0 != -1 and v1 != -1 and v2 != -1:
+                                    # remove degens
+                                    if v0 != v1 and v0 != v2 and v1 != v2:
+                                        tris.append(JmsTriangle(
+                                            region_index, shader_index,
+                                            v0 + v_origin,
+                                            v1 + v_origin,
+                                            v2 + v_origin))
+                                swap = not swap
+                        except Exception:
+                            print(format_exc())
+                            print("Could not parse triangle blocks.")
 
             write_jms(filepath, checksum=tagdata.node_list_checksum,
                       materials=materials, regions=regions,
@@ -816,8 +885,11 @@ def extract_model(tagdata, tag_path, **kw):
 h1_data_extractors = {
     'phys': extract_physics,
     'mode': extract_model, 'mod2': extract_model,
-    #'coll', 'antr', 'magy', 'sbsp',
-    #'font', 'str#', 'ustr', 'unic',
+    #'coll', 'sbsp',
+    #'antr', 'magy',
+    #'font', 'unic',
+    #'str#', 'ustr',  # there is literally no reason to rip these two
+    #                   two since mozz can fully make/edit these tags
     "bitm": extract_bitmaps, "snd!": extract_h1_sounds,
     "hmt ": extract_hud_message_text, 'scnr': extract_h1_scnr_data,
     }

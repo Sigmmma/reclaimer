@@ -12,7 +12,7 @@ class JmsNode:
         "rot_i", "rot_j", "rot_k", "rot_w",
         "pos_x", "pos_y", "pos_z",
         )
-    def __init__(self, name="", sibling_index=-1, first_child=-1,
+    def __init__(self, name="", first_child=-1, sibling_index=-1,
                  rot_i=0.0, rot_j=0.0, rot_k=0.0, rot_w=1.0,
                  pos_x=0.0, pos_y=0.0, pos_z=0.0):
         self.name = name
