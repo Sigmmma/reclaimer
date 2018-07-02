@@ -31,7 +31,7 @@ class JmsNode:
     first_child=%s, sibling_index=%s,
     i=%s, j=%s, k=%s, w=%s,
     x=%s, y=%s, z=%s
-)""" % (self.name, self.sibling_index, self.first_child,
+)""" % (self.name, self.first_child, self.sibling_index,
         self.rot_i, self.rot_j, self.rot_k, self.rot_w,
         self.pos_x, self.pos_y, self.pos_z)
 
@@ -54,17 +54,17 @@ class JmsMaterial:
 class JmsMarker:
     __slots__ = (
         "name",
-        "region", "parent", "radius",
+        "region", "parent",
         "rot_i", "rot_j", "rot_k", "rot_w",
         "pos_x", "pos_y", "pos_z",
+        "radius",
         )
-    def __init__(self, name="", region=-1, parent=0, radius=0.0,
+    def __init__(self, name="", region=-1, parent=0,
                  rot_i=0.0, rot_j=0.0, rot_k=0.0, rot_w=1.0,
-                 pos_x=0.0, pos_y=0.0, pos_z=0.0):
+                 pos_x=0.0, pos_y=0.0, pos_z=0.0, radius=0.0):
         self.name = name
         self.parent = parent
         self.region = region
-        self.radius = radius
         self.rot_i = rot_i
         self.rot_j = rot_j
         self.rot_k = rot_k
@@ -72,49 +72,55 @@ class JmsMarker:
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.pos_z = pos_z
+        self.radius = radius
 
     def __repr__(self):
         return """JmsMarker(name=%s,
-    region=%s,  parent=%s, radius=%s,
+    region=%s,  parent=%s,
     i=%s, j=%s, k=%s, w=%s,
-    x=%s, y=%s, z=%s
-)""" % (self.name, self.region, self.parent, self.radius,
+    x=%s, y=%s, z=%s,
+    radius=%s
+)""" % (self.name, self.region, self.parent,
         self.rot_i, self.rot_j, self.rot_k, self.rot_w,
-        self.pos_x, self.pos_y, self.pos_z)
+        self.pos_x, self.pos_y, self.pos_z, self.radius)
 
 
 class JmsVertex:
     __slots__ = (
-        "node_0", "node_1", "node_1_weight", 
+        "node_0",
         "pos_x", "pos_y", "pos_z",
         "norm_i", "norm_j", "norm_k",
+        "node_1", "node_1_weight", 
         "tex_u", "tex_v", "tex_w",
         )
-    def __init__(self, node_0=0, node_1=-1, node_1_weight=0.0,
+    def __init__(self, node_0=0,
                  pos_x=0.0, pos_y=0.0, pos_z=0.0,
                  norm_i=0.0, norm_j=0.0, norm_k=0.0,
+                 node_1=-1, node_1_weight=0.0,
                  tex_u=0, tex_v=0, tex_w=0):
         self.node_0 = node_0
-        self.node_1 = node_1
-        self.node_1_weight = node_1_weight
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.pos_z = pos_z
         self.norm_i = norm_i
         self.norm_j = norm_j
         self.norm_k = norm_k
+        self.node_1 = node_1
+        self.node_1_weight = node_1_weight
         self.tex_u = tex_u
         self.tex_v = tex_v
         self.tex_w = tex_w
 
     def __repr__(self):
-        return """JmsVertex(node_0=%s, node_1=%s, node_1_weight=%s,
+        return """JmsVertex(node_0=%s,
     x=%s, y=%s, z=%s,
     i=%s, j=%s, k=%s,
+    node_1=%s, node_1_weight=%s,
     u=%s, v=%s, w=%s
-)""" % (self.node_0, self.node_1, self.node_1_weight,
+)""" % (self.node_0,
         self.pos_x, self.pos_y, self.pos_z,
         self.norm_i, self.norm_j, self.norm_k,
+        self.node_1, self.node_1_weight,
         self.tex_u, self.tex_v, self.tex_w)
 
 
@@ -139,7 +145,7 @@ class JmsTriangle:
         self.v0, self.v1, self.v2)
 
 
-def read_jms(jms_string):
+def read_jms(jms_string, stop_at=""):
     nodes = []
     materials = []
     markers = []
@@ -164,6 +170,8 @@ def read_jms(jms_string):
         print("Could not read node list checksum.")
         return jms_data
 
+    if stop_at == "nodes": return jms_data
+
     dat_i = 2
 
     # read the nodes
@@ -185,6 +193,7 @@ def read_jms(jms_string):
         del nodes[i: ]
         return jms_data
 
+    if stop_at == "materials": return jms_data
 
     # read the materials
     try:
@@ -199,6 +208,8 @@ def read_jms(jms_string):
         print("Failed to read materials.")
         del materials[i: ]
         return jms_data
+
+    if stop_at == "markers": return jms_data
 
     # read the markers
     try:
@@ -220,6 +231,7 @@ def read_jms(jms_string):
         del markers[i: ]
         return jms_data
 
+    if stop_at == "regions": return jms_data
 
     # read the regions
     try:
@@ -235,6 +247,7 @@ def read_jms(jms_string):
         del regions[i: ]
         return jms_data
 
+    if stop_at == "vertices": return jms_data
 
     # read the vertices
     try:
@@ -243,9 +256,10 @@ def read_jms(jms_string):
         dat_i += 1
         for i in range(len(vertices)):
             vertices[i] = JmsVertex(
-                int(data[dat_i]), int(data[dat_i+7]), float(data[dat_i+8]),
+                int(data[dat_i]),
                 float(data[dat_i+1]), float(data[dat_i+2]), float(data[dat_i+3]),
                 float(data[dat_i+4]), float(data[dat_i+5]), float(data[dat_i+6]),
+                int(data[dat_i+7]), float(data[dat_i+8]),
                 float(data[dat_i+9]), float(data[dat_i+10]), float(data[dat_i+11])
                 )
             dat_i += 12
@@ -255,6 +269,7 @@ def read_jms(jms_string):
         del vertices[i: ]
         return jms_data
 
+    if stop_at == "triangles": return jms_data
 
     # read the triangles
     try:
