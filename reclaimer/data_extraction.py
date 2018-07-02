@@ -612,8 +612,9 @@ def extract_physics(tagdata, tag_path, **kw):
 
         markers.append(
             JmsMarker(
-                mp.name, -1, mp.model_node, mp.radius * 100, i, j, k, w,
+                mp.name, -1, mp.model_node, i, j, k, w,
                 mp.position.x * 100, mp.position.y * 100, mp.position.z * 100,
+                mp.radius * 100,
                 ))
 
     if child_node_ct > 0:
@@ -653,9 +654,10 @@ def extract_model(tagdata, tag_path, **kw):
             trans = inst.translation
             rot = inst.rotation
             perm_markers.append(JmsMarker(
-                marker_name, inst.region_index, inst.node_index, 1,
+                marker_name, inst.region_index, inst.node_index,
                 rot.i, rot.j, rot.k, rot.w,
-                trans.x * 100, trans.y * 100, trans.z * 100
+                trans.x * 100, trans.y * 100, trans.z * 100,
+                1.0
                 ))
 
     for b in tagdata.nodes.STEPTREE:
@@ -690,9 +692,10 @@ def extract_model(tagdata, tag_path, **kw):
                 trans = m.translation
                 rot = m.rotation
                 perm_markers.append(JmsMarker(
-                    m.name, region_index, m.node_index, 1,
+                    m.name, region_index, m.node_index,
                     rot.i, rot.j, rot.k, rot.w,
-                    trans.x * 100, trans.y * 100, trans.z * 100
+                    trans.x * 100, trans.y * 100, trans.z * 100,
+                    1.0
                     ))
 
             last_geom_index = -1
@@ -795,9 +798,10 @@ def extract_model(tagdata, tag_path, **kw):
                                     if (n>>31)&1: nk = nk - 1.0
 
                                     verts.append(JmsVertex(
-                                        v[8]//3, v[9]//3, 1.0 - (v[10]/32767),
+                                        v[8]//3,
                                         v[0] * 100, v[1] * 100, v[2] * 100,
                                         ni, nj, nk,
+                                        v[9]//3, 1.0 - (v[10]/32767),
                                         u_scale * v[6]/32767,
                                         v_scale *(1.0 - v[7]/32767)))
                             elif compressed:
@@ -811,9 +815,10 @@ def extract_model(tagdata, tag_path, **kw):
                                     if (n>>31)&1: nk = nk - 1.0
 
                                     verts.append(JmsVertex(
-                                        v[8]//3, v[9]//3, 1.0 - (v[10]/32767),
+                                        v[8]//3,
                                         v[0] * 100, v[1] * 100, v[2] * 100,
                                         ni, nj, nk,
+                                        v[9]//3, 1.0 - (v[10]/32767),
                                         u_scale * v[6]/32767,
                                         v_scale *(1.0 - v[7]/32767)))
                             elif not compressed and unparsed:
@@ -821,19 +826,19 @@ def extract_model(tagdata, tag_path, **kw):
                                 for off in range(0, len(vert_data), 68):
                                     v = uncomp_vert_unpacker(vert_data, off)
                                     verts.append(JmsVertex(
-                                        node_map[v[14]], node_map[v[15]],
-                                        max(0, min(1, v[17])),
+                                        node_map[v[14]],
                                         v[0] * 100, v[1] * 100, v[2] * 100,
                                         v[3], v[4], v[5],
+                                        node_map[v[15]], max(0, min(1, v[17])),
                                         u_scale * v[12],
                                         v_scale * (1.0 - v[13])))
                             else:
                                 for v in part.uncompressed_vertices.STEPTREE:
                                     verts.append(JmsVertex(
-                                        node_map[v[14]], node_map[v[15]],
-                                        max(0, min(1, v[17])),
+                                        node_map[v[14]],
                                         v[0] * 100, v[1] * 100, v[2] * 100,
                                         v[3], v[4], v[5],
+                                        node_map[v[15]], max(0, min(1, v[17])),
                                         u_scale * v[12],
                                         v_scale * (1.0 - v[13])))
                         except Exception:
