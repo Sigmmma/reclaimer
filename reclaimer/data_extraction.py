@@ -643,13 +643,19 @@ def extract_model(tagdata, tag_path, **kw):
                 region = tagdata.regions.STEPTREE[inst.region_index]
             except Exception:
                 print("Invalid region index in marker '%s'" % marker_name)
+                continue
 
             try:
                 perm = region.permutations.STEPTREE[inst.permutation_index]
+                perm_name = perm.name
+                if (perm.flags.cannot_be_chosen_randomly and
+                    not perm_name.startswith("~")):
+                    perm_name += "~"
             except Exception:
                 print("Invalid permutation index in marker '%s'" % marker_name)
+                continue
 
-            perm_markers = global_markers.setdefault(perm.name, [])
+            perm_markers = global_markers.setdefault(perm_name, [])
 
             trans = inst.translation
             rot = inst.rotation
@@ -684,9 +690,14 @@ def extract_model(tagdata, tag_path, **kw):
         region_index = len(regions)
         regions.append(region.name)
         for perm in region.permutations.STEPTREE:
-            geoms_by_lod_region = geoms_by_perm_lod_region.setdefault(perm.name, {})
+            perm_name = perm.name
+            if (perm.flags.cannot_be_chosen_randomly and
+                not perm_name.startswith("~")):
+                perm_name += "~"
 
-            perm_markers = markers_by_perm.setdefault(perm.name, [])
+            geoms_by_lod_region = geoms_by_perm_lod_region.setdefault(perm_name, {})
+
+            perm_markers = markers_by_perm.setdefault(perm_name, [])
 
             for m in perm.local_markers.STEPTREE:
                 trans = m.translation
