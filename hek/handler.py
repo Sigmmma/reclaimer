@@ -55,13 +55,12 @@ class HaloHandler(Handler):
     raw_data_cache  = None
 
     def __init__(self, *args, **kwargs):
-        this_type = type(self)
         if not kwargs.pop("build_tag_ref_cache", True):
-            this_type.tag_ref_cache = NO_LOC_REFS
+            self.tag_ref_cache = NO_LOC_REFS
         if not kwargs.pop("build_reflexive_cache", True):
-            this_type.reflexive_cache = NO_LOC_REFS
+            self.reflexive_cache = NO_LOC_REFS
         if not kwargs.pop("build_raw_data_cache", True):
-            this_type.raw_data_cache = NO_LOC_REFS
+            self.raw_data_cache = NO_LOC_REFS
 
         Handler.__init__(self, *args, **kwargs)
 
@@ -87,14 +86,14 @@ class HaloHandler(Handler):
 
         self.datadir = join(self.datadir, '')
 
-        if this_type.tag_ref_cache is None:
-            this_type.tag_ref_cache   = self.build_loc_caches(TagRef)
+        if self.tag_ref_cache is None:
+            self.tag_ref_cache   = self.build_loc_caches(TagRef)
         
-        if this_type.reflexive_cache is None:
-            this_type.reflexive_cache = self.build_loc_caches(Reflexive)
+        if self.reflexive_cache is None:
+            self.reflexive_cache = self.build_loc_caches(Reflexive)
 
-        if this_type.raw_data_cache is None:
-            this_type.raw_data_cache  = self.build_loc_caches(RawdataRef)
+        if self.raw_data_cache is None:
+            self.raw_data_cache  = self.build_loc_caches(RawdataRef)
 
     def _build_loc_cache(self, cond, desc={}):
         try:
