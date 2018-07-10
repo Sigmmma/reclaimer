@@ -118,7 +118,7 @@ class BitmTag(HekTag):
     def is_compressed_bitmap(self, b_index=0):
         return self.bitmap_flags(b_index).compressed
         
-    def swizzled(self, new_flag=None, b_index = 0):
+    def swizzled(self, b_index=0, new_flag=None):
         if new_flag is None:
             return self.bitmap_flags(b_index).swizzled
         self.bitmap_flags(b_index).swizzled = new_flag
