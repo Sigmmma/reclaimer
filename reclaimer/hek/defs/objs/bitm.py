@@ -382,6 +382,7 @@ class BitmTag(HekTag):
         if ab is None:
             raise NotImplementedError(
                 "Arbytmap is not loaded. Cannot parse bitmaps.")
+
         pixel_data = self.data.tagdata.processed_pixel_data
         rawdata = pixel_data.data
 
@@ -416,8 +417,6 @@ class BitmTag(HekTag):
                 swizzled=self.swizzled(), texture_type=TYPE_NAME_MAP[type],
                 filepath=splitext(self.filepath.replace(tagsdir, datadir))[0]))
 
-            """IF THE TEXTURE IS IN P-8 FORMAT THEN WE NEED TO
-            PROVIDE THE PALETTE AND SOME INFORMATION ABOUT IT"""
             if format == ab.FORMAT_P8:
                 tex_infos[-1]["palette"] = [
                     P8_PALETTE.p8_palette_32bit_packed]*mipmap_count
@@ -427,8 +426,8 @@ class BitmTag(HekTag):
                 tex_infos[-1]["palette_packed"] = True
                 tex_infos[-1]["indexing_size"] = 8
             
-            '''this is the block that will hold each mipmap,
-            texture slice, and cube face of the bitmap'''
+            # this is the block that will hold each mipmap,
+            # texture slice, and cube face of the bitmap
             root_tex_block.append()
             tex_block = root_tex_block[-1]
 
@@ -459,11 +458,9 @@ class BitmTag(HekTag):
                         off += tex_pad
 
         pixel_data.data = root_tex_block
-        '''now that we've successfully built the bitmap
-        blocks from the raw data we replace the raw data'''
+        # now that we've successfully built the bitmap
+        # blocks from the raw data we replace the raw data
         if is_xbox:
-            '''it's easier to work with bitmaps in one format so
-            we'll switch the mipmaps from XBOX to PC ordering'''
+            # it's easier to work with bitmaps in one format so
+            # we'll switch the mipmaps from XBOX to PC ordering
             self.change_sub_bitmap_ordering(False)
-
-        return True
