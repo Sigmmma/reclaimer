@@ -110,7 +110,7 @@ DXT_FORMATS = (FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5)
 
 PALLETIZED_FORMATS = (FORMAT_P8_BUMP, )
 
-TYPE_NAME_MAP = ("2D", "3D", "CUBE")
+TYPE_NAME_MAP = ("2D", "3D", "CUBE", "WHITE")
 
 FORMAT_NAME_MAP = (
     "A8", "L8", "AL8", "A8L8",
@@ -119,6 +119,8 @@ FORMAT_NAME_MAP = (
     "X8R8G8B8", "A8R8G8B8",
     "UNUSED4", "UNUSED5",
     "DXT1", "DXT3", "DXT5", "P8-BUMP")
+
+I_FORMAT_NAME_MAP = {FORMAT_NAME_MAP[i]: i for i in range(len(FORMAT_NAME_MAP))}
 
 #each bitmap's number of bytes must be a multiple of 512
 BITMAP_PADDING = 512
