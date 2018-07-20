@@ -104,7 +104,7 @@ class BitmTag(HekTag):
 
     @property
     def is_xbox_bitmap(self):
-        #we only need to check the first bitmap
+        # we only need to check the first bitmap
         return self.bitmap_base_address() == 1073751810
 
     def is_power_of_2_bitmap(self, b_index=0):
@@ -130,7 +130,7 @@ class BitmTag(HekTag):
 
     def set_platform(self, saveasxbox):
         '''changes different things to set the platform to either PC or Xbox'''
-        #Read each of the bitmap blocks
+        # read each of the bitmap blocks
         for b_index in range(self.bitmap_count()):
             bitmap = self.data.tagdata.bitmaps.bitmaps_array[b_index]
 
@@ -140,7 +140,7 @@ class BitmTag(HekTag):
             between a bitmap made by arsenic from a PC map, and
             a bitmap made by arsenic from an original XBOX map'''
             if saveasxbox:
-                #change some miscellaneous variables
+                # change some miscellaneous variables
                 bitmap.pixels = 18
                 bitmap.bitmap_data_pointer = 0xFFFFFFFF
                 bitmap.base_address = 1073751810
@@ -150,8 +150,8 @@ class BitmTag(HekTag):
         if not saveasxbox:
             return
 
-        #if Xbox, reset these structure variable's all to 0
-        #since xbox doesn't like them being non-zero
+        # if Xbox, reset these structure variable's all to 0
+        # since xbox doesn't like them being non-zero
         tagdata = self.data.tagdata
         tagdata.compressed_color_plate_data.flags.data = 0
         tagdata.processed_pixel_data.flags.data = 0
@@ -163,8 +163,8 @@ class BitmTag(HekTag):
             tagdata.sequences[i] = 0
             tagdata.bitmaps[i] = 0
 
-        #swap the order of the cubemap faces
-        #and mipmaps if saving to xbox format
+        # swap the order of the cubemap faces
+        # and mipmaps if saving to xbox format
         self.change_sub_bitmap_ordering(saveasxbox)
 
     def change_sub_bitmap_ordering(self, saveasxbox):
@@ -178,17 +178,17 @@ class BitmTag(HekTag):
 
         raw_bitmap_data = self.data.tagdata.processed_pixel_data.data
 
-        #Loop over each of the bitmap blocks
+        # loop over each of the bitmap blocks
         for b_index in range(self.bitmap_count()):
             if self.bitmap_type(b_index) == TYPE_CUBEMAP:
                 mipmap_count = self.bitmap_mipmaps_count(b_index) + 1
                 tex_block = raw_bitmap_data[b_index]
 
-                #this will be used to copy values from
+                # this will be used to copy values from
                 template = tex_block.__copy__()
 
-                #this is used to keep track of which index
-                #we're placing the new pixel array into
+                # this is used to keep track of which index
+                # we're placing the new pixel array into
                 i = 0
 
                 '''since we also want to swap the second and third
@@ -227,21 +227,17 @@ class BitmTag(HekTag):
 
             pixel_data_block = self.data.tagdata.processed_pixel_data.data[i]
 
-            """BECAUSE THESE OFFSETS ARE THE BEGINNING OF THE PIXEL
-            DATA WE ADD THE NUMBER OF BYTES OF PIXEL DATA BEFORE
-            WE CALCULATE THE NUMBER OF BYTES OF THIS ONE"""
-            #apply the offset to the tag
+            # apply the offset to the tag
             self.bitmap_data_offset(i, total_data_size)
 
-            """ONLY ADD PADDING IF THE BITMAP IS P8 FORMAT OR GOING ON XBOX"""
             if save_as_xbox or self.bitmap_format(i) == FORMAT_P8_BUMP:
-                #calculate how much padding to add to the xbox bitmaps
+                # calculate how much padding to add to the xbox bitmaps
                 bitmap_pad, cubemap_pad = self.get_padding_size(i)
 
-                #add the number of bytes of padding to the total
+                # add the number of bytes of padding to the total
                 total_data_size += bitmap_pad + cubemap_pad*sub_bitmap_count
 
-                #if this bitmap has padding on each of the sub-bitmaps
+                # if this bitmap has padding on each of the sub-bitmaps
                 if cubemap_pad:
                     mipmap_count = self.bitmap_mipmaps_count(i) + 1
                     for j in range(0, 6*(mipmap_count + 1), mipmap_count + 1):
@@ -250,18 +246,18 @@ class BitmTag(HekTag):
                             pad = array('B', pad)
                         pixel_data_block.insert(j + mipmap_count, pad)
 
-                #add the main padding to the end of the bitmap block
+                # add the main padding to the end of the bitmap block
                 pad = bytearray(bitmap_pad)
                 if isinstance(pixel_data_block[0], array):
                     pad = array('B', pad)
                 pixel_data_block.append(pad)
 
-            #add the number of bytes this bitmap is to the
-            #total bytes so far(multiple by sub-bitmap count)
+            # add the number of bytes this bitmap is to the
+            # total bytes so far(multiple by sub-bitmap count)
             total_data_size += self.get_bitmap_size(i)*sub_bitmap_count
 
-        #update the total number of bytes of pixel data
-        #in the tag by all the padding that was added
+        # update the total number of bytes of pixel data
+        # in the tag by all the padding that was added
         self.pixel_data_bytes_size(total_data_size)
 
     def get_bitmap_size(self, b_index):
@@ -285,7 +281,7 @@ class BitmTag(HekTag):
         # based on the format, each pixel takes up a different amount of bytes
         if format != ab.FORMAT_P8:
             bytes_count = (bytes_count * ab.BITS_PER_PIXEL[format])//8
-        print(mw, mh, md, self.bitmap_format(b_index), bytes_count)
+
         return bytes_count
 
     def get_padding_size(self, b_index):
@@ -314,12 +310,12 @@ class BitmTag(HekTag):
         bitmap_count = self.bitmap_count()
 
         for i in range(bitmap_count):
-            #if this is the last bitmap
+            # if this is the last bitmap
             if i + 1 == bitmap_count:
-                #this is how many bytes of texture data there is total
+                # this is how many bytes of texture data there is total
                 max_size = self.pixel_data_bytes_size()
             else:
-                #this is the start of the next bitmap's pixel data
+                # this is the start of the next bitmap's pixel data
                 max_size = self.bitmap_data_offset(i+1)
 
             while True:
@@ -331,8 +327,8 @@ class BitmTag(HekTag):
 
                 self.bitmap_mipmaps_count(i, mipmap_count - 1)
 
-                #the mipmap count is zero and the bitmap still will
-                #not fit within the space provided. Something's wrong
+                # the mipmap count is zero and the bitmap still will
+                # not fit within the space provided. Something's wrong
                 if mipmap_count == 0:
                     bad_bitmap_index_list.append(i)
                     break
@@ -375,27 +371,27 @@ class BitmTag(HekTag):
 
         tex_infos = self.tex_infos = []
 
-        #this is the block that will hold all of the bitmap blocks
+        # this is the block that will hold all of the bitmap blocks
         root_tex_block = self.definition.subdefs['pixel_root'].build()
 
         is_xbox = self.is_xbox_bitmap
         get_mip_dims = ab.get_mipmap_dimensions
         bytes_to_array = ab.bitmap_io.bitmap_bytes_to_array
 
-        #Read the pixel data blocks for each bitmap
+        # read the pixel data blocks for each bitmap
         for i in range(self.bitmap_count()):
-            #since we need this information to read the bitmap we extract it
+            # since we need this information to read the bitmap we extract it
             mw, mh, md, = self.bitmap_width_height_depth(i)
             type         = self.bitmap_type(i)
             format       = FORMAT_NAME_MAP[self.bitmap_format(i)]
             mipmap_count = self.bitmap_mipmaps_count(i) + 1
             sub_bitmap_count = ab.SUB_BITMAP_COUNTS[TYPE_NAME_MAP[type]]
 
-            #Get the offset of the pixel data for
-            #this bitmap within the raw pixel data
+            # Get the offset of the pixel data for
+            # this bitmap within the raw pixel data
             off = self.bitmap_data_offset(i)
 
-            #this texture info is used in manipulating the texture data
+            # this texture info is used in manipulating the texture data
             tex_infos.append(dict(
                 width=mw, height=mh, depth=md, format=format,
                 mipmap_count=mipmap_count-1, sub_bitmap_count=sub_bitmap_count,
