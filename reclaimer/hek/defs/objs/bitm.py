@@ -268,19 +268,17 @@ class BitmTag(HekTag):
             raise NotImplementedError(
                 "Arbytmap is not loaded. Cannot get bitmap size.")
 
-        mw, mh, md, = self.bitmap_width_height_depth(b_index)
+        w, h, d, = self.bitmap_width_height_depth(b_index)
         format = FORMAT_NAME_MAP[self.bitmap_format(b_index)]
 
-        pixel_count = 0
-
+        bytes_count = 0
         for mipmap in range(self.bitmap_mipmaps_count(b_index) + 1):
-            w, h, d = ab.get_mipmap_dimensions(mw, mh, md, mipmap, format)
-            pixel_count += w*h*d
-
-        bytes_count = pixel_count
-        # based on the format, each pixel takes up a different amount of bytes
-        if format != ab.FORMAT_P8:
-            bytes_count = (bytes_count * ab.BITS_PER_PIXEL[format])//8
+            mw, mh, md = ab.get_mipmap_dimensions(w, h, d, mipmap)
+            if format == ab.FORMAT_P8:
+                bytes_count += mw*mh*md
+            else:
+                bytes_count += ab.bitmap_io.get_pixel_bytes_size(
+                    format, mw, mh, md)
 
         return bytes_count
 
@@ -417,10 +415,10 @@ class BitmTag(HekTag):
             dim0 = sub_bitmap_count if is_xbox else mipmap_count
             dim1 = mipmap_count if is_xbox else sub_bitmap_count
             for j in range(dim0):
-                if not is_xbox: w, h, d = get_mip_dims(mw, mh, md, j, format)
+                if not is_xbox: w, h, d = get_mip_dims(mw, mh, md, j)
 
                 for k in range(dim1):
-                    if is_xbox: w, h, d = get_mip_dims(mw, mh, md, k, format)
+                    if is_xbox: w, h, d = get_mip_dims(mw, mh, md, k)
 
                     if format == ab.FORMAT_P8:
                         pixel_count = w*h
