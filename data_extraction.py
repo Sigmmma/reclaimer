@@ -19,8 +19,8 @@ except ImportError:
     arbytmap = Arbytmap = None
 
 from os import makedirs
-from os.path import dirname, exists, join, isfile
-from struct import unpack, pack_into
+from os.path import dirname, exists, join, isfile, splitext
+from struct import Struct as PyStruct, unpack, pack_into
 from traceback import format_exc
 
 from supyr_struct.buffer import BytearrayBuffer
@@ -32,9 +32,12 @@ from supyr_struct.field_types import FieldType
 from .util import is_protected_tag, fourcc, is_reserved_tag
 from .h2.util import *
 from .adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
+from .hek.defs.objs.matrices import Matrix, matrix_to_quaternion
 from .hek.defs.objs.p8_palette import load_palette
 from .hek.defs.hmt_ import icon_types as hmt_icon_types
 from .hsc import get_hsc_data_block, hsc_bytecode_to_string
+from .jms import write_jms, JmsNode, JmsMaterial, JmsMarker,\
+     JmsVertex, JmsTriangle
 
 #load the palette for p-8 bump maps
 P8_PALETTE = load_palette()
@@ -114,15 +117,15 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
             wav_file.serialize(temp=False, backup=False)
 
 
-def extract_h1_sounds(meta, tag_index_ref, **kw):
+def extract_h1_sounds(tagdata, tag_path, **kw):
     overwrite = kw.get('overwrite', True)
     decode_adpcm = kw.get('decode_adpcm', True)
-    tagpath_base = join(kw['out_dir'], tag_index_ref.tag.tag_path)
-    pitch_ranges = meta.pitch_ranges.STEPTREE
+    tagpath_base = join(kw['out_dir'], splitext(tag_path)[0])
+    pitch_ranges = tagdata.pitch_ranges.STEPTREE
     same_pr_names = {}
 
-    channels = meta.encoding.data + 1
-    sample_rate = 22050 * (meta.sample_rate.data + 1)
+    channels = tagdata.encoding.data + 1
+    sample_rate = 22050 * (tagdata.sample_rate.data + 1)
 
     for i in range(len(pitch_ranges)):
         pr = pitch_ranges[i]
@@ -197,11 +200,15 @@ def get_sound_name(string_ids, import_names, index):
     return get_string_id_string(string_ids, import_names[index])
 
 
-def extract_h2_sounds(meta, tag_index_ref, **kw):
-    halo_map = kw['halo_map']
+def extract_h2_sounds(tagdata, tag_path, **kw):
+    halo_map = kw.get('halo_map')
+    if not halo_map:
+        print("Cannot run this function on tags.")
+        return
+
     overwrite = kw.get('overwrite', True)
     decode_adpcm = kw.get('decode_adpcm', True)
-    tagpath_base = join(kw['out_dir'], tag_index_ref.tag.tag_path)
+    tagpath_base = join(kw['out_dir'], splitext(tag_path)[0])
     string_ids = halo_map.map_header.strings.string_id_table
 
     ugh__meta = halo_map.ugh__meta
@@ -215,11 +222,11 @@ def extract_h2_sounds(meta, tag_index_ref, **kw):
 
     same_pr_names = {}
 
-    channels    = {0: 1,     1: 2,     2: 6    }.get(meta.encoding.data)
-    sample_rate = {0: 22050, 1: 44100, 2: 32000}.get(meta.sample_rate.data)
-    compression = meta.compression.enum_name
+    channels    = {0: 1,     1: 2,     2: 6    }.get(tagdata.encoding.data)
+    sample_rate = {0: 22050, 1: 44100, 2: 32000}.get(tagdata.sample_rate.data)
+    compression = tagdata.compression.enum_name
 
-    if meta.encoding.enum_name == "codec":
+    if tagdata.encoding.enum_name == "codec":
         return "    CANNOT YET EXTRACT THIS FORMAT."
         '''
         The codec format seems to be encoded with wmaudio2.
@@ -247,8 +254,8 @@ def extract_h2_sounds(meta, tag_index_ref, **kw):
             Everything after this appears to be audio data.
         '''
 
-    pr_index = meta.pitch_range_index
-    pr_count = min(meta.pitch_range_count, len(pitch_ranges) - pr_index)
+    pr_index = tagdata.pitch_range_index
+    pr_count = min(tagdata.pitch_range_count, len(pitch_ranges) - pr_index)
     if pr_index < 0 or pr_count < 0:
         # nothing to extract
         return
@@ -303,10 +310,14 @@ def extract_h2_sounds(meta, tag_index_ref, **kw):
                              sample_rate, channels, overwrite, decode_adpcm)
 
 
-def extract_bitmaps(meta, tag_index_ref, **kw):
-    filepath_base = join(kw['out_dir'], tag_index_ref.tag.tag_path)
-    is_padded = "xbox" in kw['halo_map'].engine
-    pix_data = meta.processed_pixel_data.STEPTREE
+def extract_bitmaps(tagdata, tag_path, **kw):
+    filepath_base = join(kw['out_dir'], splitext(tag_path)[0])
+    pix_data = tagdata.processed_pixel_data.STEPTREE
+    is_padded = False
+    if 'engine' in kw:
+        is_padded = "xbox" in kw['engine']
+    elif 'halo_map' in kw:
+        is_padded = "xbox" in kw['halo_map'].engine
 
     if is_padded:
         # cant extract xbox bitmaps yet
@@ -318,8 +329,8 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
     arby = Arbytmap()
     tex_infos = []
     bitm_i = 0
-    multi_bitmap = len(meta.bitmaps.STEPTREE) > 1
-    for bitmap in meta.bitmaps.STEPTREE:
+    multi_bitmap = len(tagdata.bitmaps.STEPTREE) > 1
+    for bitmap in tagdata.bitmaps.STEPTREE:
         typ = bitmap.type.enum_name
         fmt = bitmap.format.enum_name
         bpp = 1
@@ -411,14 +422,14 @@ def extract_bitmaps(meta, tag_index_ref, **kw):
         arby.save_to_file()
 
 
-def extract_hud_message_text(meta, tag_index_ref, **kw):
-    filepath = join(kw['out_dir'], tag_index_ref.tag.tag_path + ".hmt")
+def extract_hud_message_text(tagdata, tag_path, **kw):
+    filepath = join(kw['out_dir'], splitext(tag_path)[0] + ".hmt")
     if isfile(filepath) and not kw.get('overwrite', True):
         return
 
-    in_data  = meta.string.data
-    messages = meta.messages.STEPTREE
-    elements = meta.message_elements.STEPTREE
+    in_data  = tagdata.string.data
+    messages = tagdata.messages.STEPTREE
+    elements = tagdata.message_elements.STEPTREE
     out_data = b""
 
     for m in messages:
@@ -456,9 +467,8 @@ def extract_hud_message_text(meta, tag_index_ref, **kw):
     return
 
 
-def extract_h1_scnr_data(meta, tag_index_ref, **kw):
-    filepath_base = join(
-        kw['out_dir'], dirname(tag_index_ref.tag.tag_path), "scripts")
+def extract_h1_scnr_data(tagdata, tag_path, **kw):
+    filepath_base = join(kw['out_dir'], dirname(tag_path), "scripts")
     overwrite = kw.get('overwrite', True)
     # If the path doesnt exist, create it
     if not exists(filepath_base):
@@ -468,13 +478,13 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
     if not engine and 'halo_map' in kw:
         engine = kw['halo_map'].engine
 
-    syntax_data = get_hsc_data_block(meta.script_syntax_data.data)
-    string_data = meta.script_string_data.data.decode("latin-1")
+    syntax_data = get_hsc_data_block(tagdata.script_syntax_data.data)
+    string_data = tagdata.script_string_data.data.decode("latin-1")
     if not syntax_data or not string_data:
         return "No script data to extract."
 
-    for typ, arr in (("global", meta.globals.STEPTREE),
-                     ("script", meta.scripts.STEPTREE)):
+    for typ, arr in (("global", tagdata.globals.STEPTREE),
+                     ("script", tagdata.scripts.STEPTREE)):
         filepath = join(filepath_base, "%ss" % typ)
         comments = ""
         src_file_i = 0
@@ -486,17 +496,17 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
                 comments += "; scenario names(each sorted alphabetically)\n"
                 comments += "\n;   object names:\n"
                 for name in sorted(set(obj.name for obj in
-                                       meta.object_names.STEPTREE)):
+                                       tagdata.object_names.STEPTREE)):
                     comments += ";     %s\n" % name
 
                 comments += "\n;   trigger volumes:\n"
                 for name in sorted(set(tv.name for tv in
-                                       meta.trigger_volumes.STEPTREE)):
+                                       tagdata.trigger_volumes.STEPTREE)):
                     comments += ";     %s\n" % name
 
                 comments += "\n;   device groups:\n"
                 for name in sorted(set(dg.name for dg in
-                                       meta.device_groups.STEPTREE)):
+                                       tagdata.device_groups.STEPTREE)):
                     comments += ";     %s\n" % name
 
             except Exception:
@@ -512,8 +522,8 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
                 global_uses[name]  = set()
                 static_calls[name] = set()
                 sources[name] = hsc_bytecode_to_string(
-                    syntax_data, string_data, i, meta.scripts.STEPTREE,
-                    meta.globals.STEPTREE, typ, engine,
+                    syntax_data, string_data, i, tagdata.scripts.STEPTREE,
+                    tagdata.globals.STEPTREE, typ, engine,
                     global_uses=global_uses[name],
                     static_calls=static_calls[name])
 
@@ -575,9 +585,327 @@ def extract_h1_scnr_data(meta, tag_index_ref, **kw):
             return format_exc()
 
 
+def extract_physics(tagdata, tag_path, **kw):
+    filepath = join(kw['out_dir'], dirname(tag_path), "physics", "physics.jms")
+    if not kw.get('overwrite', True) and isfile(filepath):
+        return
+
+    nodes = [JmsNode("root")]
+    markers = []
+
+    child_node_ct = 0
+    for mp in tagdata.mass_points.STEPTREE:
+        child_node_ct = max(child_node_ct, mp.model_node)
+        fi, fj, fk = mp.forward
+        ui, uj, uk = mp.up
+        si, sj, sk = uj*fk - fj*uk, uk*fi - fk*ui, ui*fj - fi*uj
+
+        matrix = Matrix(
+            ((fi, fj, fk),
+             (si, sj, sk),
+             (ui, uj, uk)))
+        i, j, k, w = matrix_to_quaternion(matrix)
+        # no idea why I have to invert these
+        w = -w
+        if w < 0:
+            i, j, k, w = -i, -j, -k, -w
+
+        markers.append(
+            JmsMarker(
+                mp.name, -1, mp.model_node, i, j, k, w,
+                mp.position.x * 100, mp.position.y * 100, mp.position.z * 100,
+                mp.radius * 100,
+                ))
+
+    if child_node_ct > 0:
+        # make some fake nodes
+        nodes[0].first_child = 1
+        for i in range(child_node_ct):
+            nodes.append(JmsNode("node_%s" % (i + 1), -1, i + 2))
+        nodes[-1].sibling_index = -1
+
+    write_jms(filepath, checksum=0, nodes=nodes, markers=markers)
+
+
+def extract_model(tagdata, tag_path, **kw):
+    filepath_base = join(kw['out_dir'], dirname(tag_path), "models")
+
+    global_markers = {}
+    materials = []
+    regions = []
+    nodes = []
+
+    for b in tagdata.markers.STEPTREE:
+        marker_name = b.name
+
+        for inst in b.marker_instances.STEPTREE:
+            try:
+                region = tagdata.regions.STEPTREE[inst.region_index]
+            except Exception:
+                print("Invalid region index in marker '%s'" % marker_name)
+                continue
+
+            try:
+                perm = region.permutations.STEPTREE[inst.permutation_index]
+                perm_name = perm.name
+                if (perm.flags.cannot_be_chosen_randomly and
+                    not perm_name.startswith("~")):
+                    perm_name += "~"
+            except Exception:
+                print("Invalid permutation index in marker '%s'" % marker_name)
+                continue
+
+            perm_markers = global_markers.setdefault(perm_name, [])
+
+            trans = inst.translation
+            rot = inst.rotation
+            perm_markers.append(JmsMarker(
+                marker_name, inst.region_index, inst.node_index,
+                rot.i, rot.j, rot.k, rot.w,
+                trans.x * 100, trans.y * 100, trans.z * 100,
+                1.0
+                ))
+
+    for b in tagdata.nodes.STEPTREE:
+        trans = b.translation
+        rot = b.rotation
+        nodes.append(JmsNode(
+            b.name, b.first_child_node, b.next_sibling_node,
+            rot.i, rot.j, rot.k, rot.w,
+            trans.x * 100, trans.y * 100, trans.z * 100
+            ))
+
+    for b in tagdata.shaders.STEPTREE:
+        materials.append(JmsMaterial(
+            b.shader.filepath.split("/")[-1].split("\\")[-1])
+            )
+
+    markers_by_perm = {}
+    geoms_by_perm_lod_region = {}
+
+    u_scale = tagdata.base_map_u_scale
+    v_scale = tagdata.base_map_v_scale
+
+    for region in tagdata.regions.STEPTREE:
+        region_index = len(regions)
+        regions.append(region.name)
+        for perm in region.permutations.STEPTREE:
+            perm_name = perm.name
+            if (perm.flags.cannot_be_chosen_randomly and
+                not perm_name.startswith("~")):
+                perm_name += "~"
+
+            geoms_by_lod_region = geoms_by_perm_lod_region.setdefault(perm_name, {})
+
+            perm_markers = markers_by_perm.setdefault(perm_name, [])
+
+            for m in perm.local_markers.STEPTREE:
+                trans = m.translation
+                rot = m.rotation
+                perm_markers.append(JmsMarker(
+                    m.name, region_index, m.node_index,
+                    rot.i, rot.j, rot.k, rot.w,
+                    trans.x * 100, trans.y * 100, trans.z * 100,
+                    1.0
+                    ))
+
+            last_geom_index = -1
+            for lod_num in range(5):
+                geoms_by_region = geoms_by_lod_region.get(lod_num, {})
+                region_geoms = geoms_by_region.get(region.name, [])
+
+                geom_index = perm[
+                    perm.NAME_MAP["superlow_geometry_block"] + (4 - lod_num)]
+
+                if (geom_index in region_geoms or
+                    geom_index == last_geom_index):
+                    continue
+
+                geoms_by_lod_region[lod_num] = geoms_by_region
+                geoms_by_region[region.name] = region_geoms
+                region_geoms.append(geom_index)
+                last_geom_index = geom_index
+
+    try:
+        use_local_nodes = tagdata.flags.parts_have_local_nodes
+    except Exception:
+        use_local_nodes = False
+    def_node_map = list(range(128))
+    def_node_map.append(-1)
+
+    # use big endian since it will have been byteswapped
+    comp_vert_unpacker = PyStruct(">3f3I2h2bh").unpack_from
+    uncomp_vert_unpacker = PyStruct(">14f2h2f").unpack_from
+
+    for perm_name in sorted(geoms_by_perm_lod_region):
+        geoms_by_lod_region = geoms_by_perm_lod_region[perm_name]
+        perm_markers = markers_by_perm.get(perm_name)
+        
+        for lod_num in sorted(geoms_by_lod_region):
+            if lod_num == -1:
+                continue
+
+            filepath = join(filepath_base, perm_name)
+            if   lod_num == 4:
+                filepath += " superlow.jms"
+            elif lod_num == 3:
+                filepath += " low.jms"
+            elif lod_num == 2:
+                filepath += " medium.jms"
+            elif lod_num == 1:
+                filepath += " high.jms"
+            else:
+                filepath += " superhigh.jms"
+
+            markers = list(perm_markers)
+            markers.extend(global_markers.get(perm_name, ()))
+            verts = []
+            tris = []
+
+            geoms_by_region = geoms_by_lod_region[lod_num]
+            for region_name in sorted(geoms_by_region):
+                region_index = regions.index(region_name)
+                geoms = geoms_by_region[region_name]
+
+                for geom_index in geoms:
+                    try:
+                        geom_block = tagdata.geometries.STEPTREE[geom_index]
+                    except Exception:
+                        print("Invalid geometry index '%s'" % geom_index)
+                        continue
+
+                    for part in geom_block.parts.STEPTREE:
+                        v_origin = len(verts)
+                        shader_index = part.shader_index
+
+                        try:
+                            node_map = list(part.local_nodes)
+                            node_map.append(-1)
+                            compressed = False
+                        except (AttributeError, KeyError):
+                            compressed = True
+
+                        if not use_local_nodes:
+                            node_map = def_node_map
+
+                        try:
+                            unparsed = isinstance(
+                                part.triangles.STEPTREE.data, bytearray)
+                        except Exception:
+                            unparsed = False
+
+                        # TODO: Make this work in meta(parse verts and tris)
+                        try:
+                            if compressed and unparsed:
+                                vert_data = part.compressed_vertices.STEPTREE.data
+                                for off in range(0, len(vert_data), 32):
+                                    v = comp_vert_unpacker(vert_data, off)
+                                    n = v[3]
+                                    ni = (n&1023) / 1023
+                                    nj = ((n>>11)&1023) / 1023
+                                    nk = ((n>>22)&511) / 511
+                                    if (n>>10)&1: ni = ni - 1.0
+                                    if (n>>21)&1: nj = nj - 1.0
+                                    if (n>>31)&1: nk = nk - 1.0
+
+                                    verts.append(JmsVertex(
+                                        v[8]//3,
+                                        v[0] * 100, v[1] * 100, v[2] * 100,
+                                        ni, nj, nk,
+                                        v[9]//3, 1.0 - (v[10]/32767),
+                                        u_scale * v[6]/32767,
+                                        v_scale *(1.0 - v[7]/32767)))
+                            elif compressed:
+                                for v in part.compressed_vertices.STEPTREE:
+                                    n = v[3]
+                                    ni = (n&1023) / 1023
+                                    nj = ((n>>11)&1023) / 1023
+                                    nk = ((n>>22)&511) / 511
+                                    if (n>>10)&1: ni = ni - 1.0
+                                    if (n>>21)&1: nj = nj - 1.0
+                                    if (n>>31)&1: nk = nk - 1.0
+
+                                    verts.append(JmsVertex(
+                                        v[8]//3,
+                                        v[0] * 100, v[1] * 100, v[2] * 100,
+                                        ni, nj, nk,
+                                        v[9]//3, 1.0 - (v[10]/32767),
+                                        u_scale * v[6]/32767,
+                                        v_scale *(1.0 - v[7]/32767)))
+                            elif not compressed and unparsed:
+                                vert_data = part.uncompressed_vertices.STEPTREE.data
+                                for off in range(0, len(vert_data), 68):
+                                    v = uncomp_vert_unpacker(vert_data, off)
+                                    verts.append(JmsVertex(
+                                        node_map[v[14]],
+                                        v[0] * 100, v[1] * 100, v[2] * 100,
+                                        v[3], v[4], v[5],
+                                        node_map[v[15]], max(0, min(1, v[17])),
+                                        u_scale * v[12],
+                                        v_scale * (1.0 - v[13])))
+                            else:
+                                for v in part.uncompressed_vertices.STEPTREE:
+                                    verts.append(JmsVertex(
+                                        node_map[v[14]],
+                                        v[0] * 100, v[1] * 100, v[2] * 100,
+                                        v[3], v[4], v[5],
+                                        node_map[v[15]], max(0, min(1, v[17])),
+                                        u_scale * v[12],
+                                        v_scale * (1.0 - v[13])))
+                        except Exception:
+                            print(format_exc())
+                            print("If you see this, tell Moses to stop "
+                                  "fucking with the vertex definition.")
+
+                        try:
+                            if unparsed:
+                                tri_block = part.triangles.STEPTREE.data
+                                tri_list = [-1] * (len(tri_block) // 2)
+                                for i in range(len(tri_list)):
+                                    # assuming big endian
+                                    tri_list[i] = (
+                                        tri_block[i * 2 + 1] +
+                                        (tri_block[i * 2] << 8))
+                                    if tri_list[i] > 32767:
+                                        tri_list[i] = -1
+                            else:
+                                tri_block = part.triangles.STEPTREE
+                                tri_list = []
+                                for triangle in tri_block:
+                                    tri_list.extend(triangle)
+
+                            swap = True
+                            for i in range(len(tri_list) - 2):
+                                v0 = tri_list[i]
+                                v1 = tri_list[i + 1 + swap]
+                                v2 = tri_list[i + 2 - swap]
+                                if v0 != -1 and v1 != -1 and v2 != -1:
+                                    # remove degens
+                                    if v0 != v1 and v0 != v2 and v1 != v2:
+                                        tris.append(JmsTriangle(
+                                            region_index, shader_index,
+                                            v0 + v_origin,
+                                            v1 + v_origin,
+                                            v2 + v_origin))
+                                swap = not swap
+                        except Exception:
+                            print(format_exc())
+                            print("Could not parse triangle blocks.")
+
+            write_jms(filepath, checksum=tagdata.node_list_checksum,
+                      materials=materials, regions=regions,
+                      nodes=nodes, markers=markers,
+                      vertices=verts, triangles=tris)
+
+
 h1_data_extractors = {
-    #'mode', 'mod2', 'coll', 'phys', 'antr', 'magy', 'sbsp',
-    #'font', 'str#', 'ustr', 'unic',
+    'phys': extract_physics,
+    'mode': extract_model, 'mod2': extract_model,
+    #'coll', 'sbsp',
+    #'antr', 'magy',
+    #'font', 'unic',
+    #'str#', 'ustr',  # there is literally no reason to rip these two
+    #                   two since mozz can fully make/edit these tags
     "bitm": extract_bitmaps, "snd!": extract_h1_sounds,
     "hmt ": extract_hud_message_text, 'scnr': extract_h1_scnr_data,
     }

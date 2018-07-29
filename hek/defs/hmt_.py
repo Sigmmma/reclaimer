@@ -74,7 +74,7 @@ message = Struct("message",
     )
 
 hmt__body = Struct("tagdata",
-    rawtext_ref("string", FlStrUTF16Data, max_size=65536),
+    rawtext_ref("string", FlStrUTF16Data, max_size=65536, EDITABLE=False),
     reflexive("message elements", message_element, 8192),
     reflexive("messages", message, 1024, DYN_NAME_PATH='.name'),
     SIZE=128,

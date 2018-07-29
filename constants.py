@@ -110,7 +110,8 @@ DXT_FORMATS = (FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5)
 
 PALLETIZED_FORMATS = (FORMAT_P8_BUMP, )
 
-TYPE_NAME_MAP = ("2D", "3D", "CUBE")
+# These name maps must match the constants found in arbytmap
+TYPE_NAME_MAP = ("2D", "3D", "CUBE", "WHITE")
 
 FORMAT_NAME_MAP = (
     "A8", "L8", "AL8", "A8L8",
@@ -119,6 +120,8 @@ FORMAT_NAME_MAP = (
     "X8R8G8B8", "A8R8G8B8",
     "UNUSED4", "UNUSED5",
     "DXT1", "DXT3", "DXT5", "P8-BUMP")
+
+I_FORMAT_NAME_MAP = {FORMAT_NAME_MAP[i]: i for i in range(len(FORMAT_NAME_MAP))}
 
 #each bitmap's number of bytes must be a multiple of 512
 BITMAP_PADDING = 512
@@ -224,8 +227,10 @@ tag_class_fcc_to_ext = {
     'rain': "weather_particle_system",
     'wind': "wind",
     }
+tag_class_ext_to_fcc = {}
 
 for tag_cls in tag_class_fcc_to_ext:
+    tag_class_ext_to_fcc[tag_class_fcc_to_ext[tag_cls]] = tag_cls
     tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls, 'big')
     tag_class_be_int_to_fcc[fcc(tag_cls, 'big')] = tag_cls
     tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
@@ -257,6 +262,10 @@ tag_class_fcc_to_ext_os = {
     }
 
 tag_class_fcc_to_ext_os.update(tag_class_fcc_to_ext)
+tag_class_ext_to_fcc_os = {}
+
+for tag_cls in tag_class_fcc_to_ext_os:
+    tag_class_ext_to_fcc_os[tag_class_fcc_to_ext_os[tag_cls]] = tag_cls
 
 # maps open sauce tag class four character codes(fccs)
 # in their string encoding to their int encoding.
@@ -285,6 +294,10 @@ tag_class_fcc_to_ext_stubbs = {
     }
 
 tag_class_fcc_to_ext_stubbs.update(tag_class_fcc_to_ext)
+tag_class_ext_to_fcc_stubbs = {}
+
+for tag_cls in tag_class_fcc_to_ext_stubbs:
+    tag_class_ext_to_fcc_stubbs[tag_class_fcc_to_ext_stubbs[tag_cls]] = tag_cls
 
 # maps open sauce tag class four character codes(fccs)
 # in their string encoding to their int encoding.

@@ -446,7 +446,7 @@ def anim_src_func_per_pha_sca_rot_macro(name, **desc):
         )
 
 
-valid_tags = tag_class(*tag_class_fcc_to_ext.keys())
+valid_tags = tag_class(*sorted(tag_class_fcc_to_ext.keys()))
 valid_models = tag_class('mode', 'mod2')
 valid_event_effects = tag_class('effe', 'snd!')
 valid_attachments = tag_class('cont', 'effe', 'ligh', 'mgs2', 'pctl', 'lsnd')
@@ -1170,7 +1170,7 @@ def blam_header_os(tagid, version=1):
     return header_desc
 
 
-valid_tags_os = tag_class_os(*tag_class_fcc_to_ext_os.keys())
+valid_tags_os = tag_class_os(*sorted(tag_class_fcc_to_ext_os.keys()))
 
 
 # ########################################################################

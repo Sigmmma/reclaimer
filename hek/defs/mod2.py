@@ -150,12 +150,12 @@ part = Struct('part',
 
     QStruct('centroid translation', INCLUDE=xyz_float),
 
-    #reflexive("uncompressed vertices", uncompressed_vertex_union, 65535),
-    #reflexive("compressed vertices", compressed_vertex_union, 65535),
-    #reflexive("triangles", triangle_union, 65535),
-    reflexive("uncompressed vertices", fast_uncompressed_vertex, 65535),
-    reflexive("compressed vertices", fast_compressed_vertex, 65535),
-    reflexive("triangles", triangle, 65535),
+    #reflexive("uncompressed vertices", uncompressed_vertex_union, 32767),
+    #reflexive("compressed vertices", compressed_vertex_union, 32767),
+    #reflexive("triangles", triangle_union, 32767),
+    reflexive("uncompressed vertices", fast_uncompressed_vertex, 32767),
+    reflexive("compressed vertices", fast_compressed_vertex, 32767),
+    reflexive("triangles", triangle, 32767),
     #Pad(36),
     Struct("model meta info",
         UEnum32("index type",  # name is a guess.  always 1?
