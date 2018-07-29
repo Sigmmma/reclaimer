@@ -110,6 +110,7 @@ DXT_FORMATS = (FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5)
 
 PALLETIZED_FORMATS = (FORMAT_P8_BUMP, )
 
+# These name maps must match the constants found in arbytmap
 TYPE_NAME_MAP = ("2D", "3D", "CUBE", "WHITE")
 
 FORMAT_NAME_MAP = (
