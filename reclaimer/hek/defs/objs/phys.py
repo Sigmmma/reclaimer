@@ -66,7 +66,7 @@ class PhysTag(HekTag):
         for mp in mass_points:
             mp.density = den_scale * mass_scale * mp.relative_density
 
-    def calc_intertia_matricies(self):
+    def calc_intertia_matrices(self):
         data = self.data.tagdata
         scale = data.moment_scale
         matrices = data.inertia_matrices.STEPTREE
@@ -96,7 +96,11 @@ class PhysTag(HekTag):
             dist_xy = (com[0] - pos[0])*(com[1] - pos[1])
             dist_yz = (com[1] - pos[1])*(com[2] - pos[2])
 
-            radius_term = 4*pow(10, (2*log(mp.radius, 10) - 1))
+            if mp.radius > 0:
+                radius_term = 4*pow(10, (2*log(mp.radius, 10) - 1))
+            else:
+                radius_term = 0
+
             xx += (dist_xx + radius_term) * mp.mass
             yy += (dist_yy + radius_term) * mp.mass
             zz += (dist_zz + radius_term) * mp.mass
@@ -133,4 +137,4 @@ class PhysTag(HekTag):
         HekTag.calc_internal_data(self)
         self.calc_masses()
         self.calc_densities()
-        self.calc_intertia_matricies()
+        self.calc_intertia_matrices()

@@ -1,7 +1,7 @@
 '''
 This module implements some basic matrix classes
 '''
-from math import log
+from math import log, sqrt
 
 def quaternion_to_matrix(i, j, k, w):
     return Matrix([
@@ -9,6 +9,40 @@ def quaternion_to_matrix(i, j, k, w):
         (2*(i*j - k*w),         2*(0.5 - k*k - i*i),   2*(j*k + i*w)),
         (2*(i*k + j*w),         2*(j*k - i*w),         2*(0.5 - i*i - j*j)),
     ])
+
+
+def matrix_to_quaternion(matrix):
+    m00, m10, m20 = matrix[0]
+    m01, m11, m21 = matrix[1]
+    m02, m12, m22 = matrix[2]
+    tr = m00 + m11 + m22
+
+    if tr > 0:
+        s = sqrt(tr+1.0) * 2
+        i = (m21 - m12) / s
+        j = (m02 - m20) / s
+        k = (m10 - m01) / s
+        w = 0.25 * s
+    elif m00 > m11 and m00 > m22:
+        s = sqrt(1.0 + m00 - m11 - m22) * 2
+        i = 0.25 * s
+        j = (m01 + m10) / s
+        k = (m02 + m20) / s
+        w = (m21 - m12) / s
+    elif m11 > m22:
+        s = sqrt(1.0 + m11 - m00 - m22) * 2
+        i = (m01 + m10) / s
+        j = 0.25 * s
+        k = (m12 + m21) / s
+        w = (m02 - m20) / s
+    else:
+        s = sqrt(1.0 + m22 - m00 - m11) * 2
+        i = (m02 + m20) / s
+        j = (m12 + m21) / s
+        k = 0.25 * s
+        w = (m10 - m01) / s
+
+    return (i, j, k, w)
 
 
 class MatrixRow(list):
@@ -246,3 +280,4 @@ class Matrix(list):
                 inverse[j] -= inv_diff*mul
 
         return inverse
+

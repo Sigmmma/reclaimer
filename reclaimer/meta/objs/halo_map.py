@@ -246,7 +246,7 @@ class HaloMap:
             decomp_path = splitext(map_path)
             while decomp_path[1]:
                 decomp_path = splitext(decomp_path[0])
-            decomp_path = decomp_path[0] + ".map"
+            decomp_path = decomp_path[0] + "_DECOMP.map"
 
             if isfile(decomp_path):
                 decomp_path = ''
@@ -256,6 +256,7 @@ class HaloMap:
                         title="Decompress '%s' to..." % map_name,
                         filetypes=(("mapfile", "*.map"),
                                    ("All", "*.*")))
+
             if not(decomp_path.lower().endswith(".map") or
                    isfile(decomp_path + ".map")):
                 decomp_path += ".map"
