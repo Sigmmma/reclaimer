@@ -269,16 +269,15 @@ class BitmTag(HekTag):
                 "Arbytmap is not loaded. Cannot get bitmap size.")
 
         w, h, d, = self.bitmap_width_height_depth(b_index)
-        format = FORMAT_NAME_MAP[self.bitmap_format(b_index)]
+        fmt = FORMAT_NAME_MAP[self.bitmap_format(b_index)]
 
         bytes_count = 0
         for mipmap in range(self.bitmap_mipmaps_count(b_index) + 1):
             mw, mh, md = ab.get_mipmap_dimensions(w, h, d, mipmap)
-            if format == ab.FORMAT_P8:
+            if fmt == ab.FORMAT_P8:
                 bytes_count += mw*mh*md
             else:
-                bytes_count += ab.bitmap_io.get_pixel_bytes_size(
-                    format, mw, mh, md)
+                bytes_count += ab.bitmap_io.get_pixel_bytes_size(fmt, mw, mh, md)
 
         return bytes_count
 

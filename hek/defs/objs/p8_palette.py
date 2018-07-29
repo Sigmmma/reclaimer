@@ -204,7 +204,7 @@ class P8Palette():
             else:
                 indexing[i>>2] = 255
 
-        return(self.p8_palette_32bit[0], indexing)
+        return (self.p8_palette_32bit, indexing)
 
     def argb_array_to_p8_array_average(self, unpacked_pix):
         pal0 = self.palette[0]
@@ -231,7 +231,7 @@ class P8Palette():
             
             indexing[i>>2] = pal2[((red*multi)+pal1[red][src_green])]
 
-        return(self.p8_palette_32bit[0], indexing)
+        return (self.p8_palette_32bit, indexing)
 
     def argb_array_to_p8_array_auto_alpha(self, unpacked_pix):
         pal0 = self.palette[0]
@@ -255,7 +255,7 @@ class P8Palette():
             else:
                 indexing[i>>2] = 255
                     
-        return(self.p8_palette_32bit[0], indexing)
+        return (self.p8_palette_32bit, indexing)
 
     def argb_array_to_p8_array_auto(self, unpacked_pix):
         pal0 = self.palette[0]
@@ -276,7 +276,7 @@ class P8Palette():
                 green = pal0[green]
                 indexing[i>>2] = pal2[((pal1[green][red]*multi) + green)]
 
-        return(self.p8_palette_32bit[0], indexing)
+        return (self.p8_palette_32bit, indexing)
 
 
 def load_palette():
