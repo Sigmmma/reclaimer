@@ -69,7 +69,7 @@ class Halo1RsrcMap(HaloMap):
         if extractor is None:
             return "No extractor for this type of tag."
         kw['halo_map'] = self
-        return extractor(meta, tag_index_ref, **kw)
+        return extractor(meta, tag_index_ref.tag.tag_path, **kw)
 
     def load_map(self, map_path, **kwargs):
         will_be_active = kwargs.get("will_be_active", True)
