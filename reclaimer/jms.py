@@ -369,3 +369,87 @@ def write_jms(filepath, *, checksum=3251, materials=(), regions=(),
                 tri.v0, tri.v1, tri.v2
                 )
             )
+
+def verify_jms(jms_data):
+    errors = []
+    crc, mats, regions, nodes, markers, verts, tris = jms_data
+    node_error = False
+
+    node_ct = len(nodes)
+    vert_ct = len(verts)
+    region_ct = len(regions)
+    mat_ct = len(mats)
+
+    if node_ct == 0:
+        errors.append("No nodes. Jms models must contain at least one node.")
+    elif node_ct >= 64:
+        errors.append("Too many nodes. Max count is 64.")
+        
+    if mat_ct > 256:
+        errors.append("Too many materials. Max count is 256.")
+
+    if region_ct > 32:
+        errors.append("Too many regions. Max count is 32.")
+
+    marker_name_cts = {}
+    for marker in markers:
+        marker_name_cts[marker.name] = marker_name_cts.get(marker.name, 0) + 1
+
+    if len(marker_name_cts) > 256:
+        errors.append("Too many unique marker names. Max count is 256.")
+
+    for name in sorted(marker_name_cts):
+        if not name.strip(" "):
+            errors.append("Detected unnamed markers.")
+        if marker_name_cts[name] > 32:
+            errors.append("Too many '%s' marker instances. Max count is 32.")
+
+    for i in range(node_ct):
+        n = nodes[i]
+        if n.first_child >= len(nodes):
+            errors.append("First child of node '%s' is invalid." % n.name)
+        elif n.sibling_index >= len(nodes):
+            errors.append("Sibling node of node '%s' is invalid." % n.name)
+        elif len(n.name) >= 32:
+            errors.append("Node name node '%s' is too long." % n.name)
+
+    if errors:
+        return errors
+
+    err_str = "Invalid %s index in %s(s)."
+    for tri in tris:
+        if tri.v0 >= vert_ct or tri.v1 >= vert_ct or tri.v2 >= vert_ct:
+            errors.append(err_str % ("vertex", "triangle"))
+        elif tri.region >= region_ct:
+            errors.append(err_str % ("region", "triangle"))
+        elif tri.shader >= mat_ct:
+            errors.append(err_str % ("shader", "triangle"))
+        else:
+            continue
+        break
+
+    for region_name in regions:
+        if len(region_name) >= 32:
+            errors.append("Region name '%s' is too long." % region_name)
+
+    for marker in markers:
+        if marker.parent >= node_ct:
+            errors.append(err_str % ("parent", "marker"))
+        elif marker.region >= region_ct:
+            errors.append(err_str % ("region", "marker"))
+        elif len(marker.name) >= 32:
+            errors.append("Marker name '%s' is too long." % marker.name)
+        else:
+            continue
+        break
+
+    for vert in verts:
+        if vert.node_0 >= node_ct:
+            errors.append(err_str % ("node_0", "vertex"))
+        elif vert.node_1 >= node_ct:
+            errors.append(err_str % ("node_1", "vertex"))
+        else:
+            continue
+        break
+
+    return errors
