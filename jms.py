@@ -53,16 +53,17 @@ class JmsMaterial:
 
 class JmsMarker:
     __slots__ = (
-        "name",
+        "name", "permutation",
         "region", "parent",
         "rot_i", "rot_j", "rot_k", "rot_w",
         "pos_x", "pos_y", "pos_z",
         "radius",
         )
-    def __init__(self, name="", region=-1, parent=0,
+    def __init__(self, name="", permutation="", region=-1, parent=0,
                  rot_i=0.0, rot_j=0.0, rot_k=0.0, rot_w=1.0,
                  pos_x=0.0, pos_y=0.0, pos_z=0.0, radius=0.0):
         self.name = name
+        self.permutation = permutation
         self.parent = parent
         self.region = region
         self.rot_i = rot_i
@@ -76,11 +77,12 @@ class JmsMarker:
 
     def __repr__(self):
         return """JmsMarker(name=%s,
+    permutation=%s,
     region=%s,  parent=%s,
     i=%s, j=%s, k=%s, w=%s,
     x=%s, y=%s, z=%s,
     radius=%s
-)""" % (self.name, self.region, self.parent,
+)""" % (self.name, self.permutation, self.region, self.parent,
         self.rot_i, self.rot_j, self.rot_k, self.rot_w,
         self.pos_x, self.pos_y, self.pos_z, self.radius)
 
@@ -154,7 +156,7 @@ class JmsMeshData:
         self.tris  = tris  if tris  else []
 
 
-class JmsModel:
+class JmsModel(JmsMeshData):
     name = ""
 
     node_list_checksum = 0
@@ -163,10 +165,9 @@ class JmsModel:
     markers = ()
     regions = ()
 
-    perm_meshes = ()
-
     def __init__(self, name="", node_list_checksum=0, nodes=None,
-                 materials=None, markers=None, regions=None, perm_meshes=None):
+                 materials=None, markers=None, regions=None,
+                 verts=None, tris=None):
         self.name = name
         self.node_list_checksum = node_list_checksum
         self.nodes = nodes if nodes else []
@@ -174,7 +175,164 @@ class JmsModel:
         self.regions = regions if regions else []
         self.markers = markers if markers else []
 
+        JmsMeshData.__init__(self, verts, tris)
+
+    def verify_nodes_match(self, other_jms):
+        errors = list(verify_jms(other_jms))
+        if len(other_jms.nodes) != len(self.nodes):
+            errors.append("Node counts do not match.")
+            return
+
+        for i in range(len(self.nodes)):
+            fn = self.nodes[i]
+            n = other_jms.nodes[i]
+            if fn.name != n.name:
+                errors.append("Names of nodes '%s' do not match." % i)
+            elif fn.first_child != n.first_child:
+                errors.append("First children of node '%s' do not match." % n.name)
+            elif fn.sibling_index != n.sibling_index:
+                errors.append("Sibling index of node '%s' do not match." % n.name)
+            elif (abs(fn.rot_i - n.rot_i) > 0.00001 or
+                  abs(fn.rot_j - n.rot_j) > 0.00001 or
+                  abs(fn.rot_k - n.rot_k) > 0.00001 or
+                  abs(fn.rot_w - n.rot_w) > 0.00001):
+                errors.append("Rotations of node '%s' do not match." % n.name)
+            elif (abs(fn.pos_x - n.pos_x) > 0.000001 or
+                  abs(fn.pos_y - n.pos_y) > 0.000001 or
+                  abs(fn.pos_z - n.pos_z) > 0.000001):
+                errors.append("Positions of node '%s' do not match." % n.name)
+
+        return errors
+
+    def verify_jms(self):
+        errors = []
+
+        crc = self.node_list_checksum
+        nodes = self.nodes
+        mats  = self.materials
+        markers = self.markers
+        regions = self.regions
+
+        if isinstance(self, MergedJmsModel):
+            perm_meshes = self.perm_meshes
+        else:
+            perm_meshes = {self.name: JmsMeshData(self.verts, self.tris)}
+
+        node_error = False
+
+        node_ct = len(nodes)
+        region_ct = len(regions)
+        mat_ct = len(mats)
+
+        if node_ct == 0:
+            errors.append("No nodes. Jms models must contain at least one node.")
+        elif node_ct >= 64:
+            errors.append("Too many nodes. Max count is 64.")
+
+        if mat_ct > 256:
+            errors.append("Too many materials. Max count is 256.")
+
+        if region_ct > 32:
+            errors.append("Too many regions. Max count is 32.")
+
+        marker_name_cts = {}
+        for marker in markers:
+            marker_name_cts[marker.name] = marker_name_cts.get(marker.name, 0) + 1
+
+        if len(marker_name_cts) > 256:
+            errors.append("Too many unique marker names. Max count is 256.")
+
+        for name in sorted(marker_name_cts):
+            if not name.strip(" "):
+                errors.append("Detected unnamed markers.")
+            if marker_name_cts[name] > 32:
+                errors.append("Too many '%s' marker instances. Max count is 32.")
+
+        for i in range(node_ct):
+            n = nodes[i]
+            if n.first_child >= len(nodes):
+                errors.append("First child of node '%s' is invalid." % n.name)
+            elif n.sibling_index >= len(nodes):
+                errors.append("Sibling node of node '%s' is invalid." % n.name)
+            elif len(n.name) >= 32:
+                errors.append("Node name node '%s' is too long." % n.name)
+
+        if errors:
+            return errors
+
+        err_str = "Invalid %s index in %s(s)."
+        for region_name in regions:
+            if len(region_name) >= 32:
+                errors.append("Region name '%s' is too long." % region_name)
+
+        for marker in markers:
+            if marker.parent >= node_ct:
+                errors.append(err_str % ("parent", "marker"))
+            elif marker.region >= region_ct:
+                errors.append(err_str % ("region", "marker"))
+            elif len(marker.name) >= 32:
+                errors.append("Marker name '%s' is too long." % marker.name)
+            else:
+                continue
+            break
+
+        for perm_name in sorted(perm_meshes):
+            verts = perm_meshes[perm_name].verts
+            tris  = perm_meshes[perm_name].tris
+            vert_ct = len(verts)
+            for tri in tris:
+                if (tri.v0 < 0 or tri.v1 < 0 or tri.v2 < 0 or
+                    tri.v0 >= vert_ct or tri.v1 >= vert_ct or tri.v2 >= vert_ct):
+                    errors.append(err_str % ("vertex", "triangle"))
+                elif tri.region >= region_ct:
+                    errors.append(err_str % ("region", "triangle"))
+                elif tri.shader >= mat_ct:
+                    errors.append(err_str % ("shader", "triangle"))
+                else:
+                    continue
+                break
+
+            for vert in verts:
+                if vert.node_0 >= node_ct:
+                    errors.append(err_str % ("node_0", "vertex"))
+                elif vert.node_1 >= node_ct:
+                    errors.append(err_str % ("node_1", "vertex"))
+                else:
+                    continue
+                break
+
+        return errors
+
+
+class MergedJmsModel(JmsModel):
+    perm_meshes = ()
+
+    def __init__(self, perm_meshes=None, *args):
+        JmsModel.__init__(self, *args)
         self.perm_meshes = perm_meshes if perm_meshes else {}
+
+    def merge_jms_models(self, *jms_models):
+        all_errors = {}
+        first_nodes = None
+        self.__init__()
+
+        if not jms_models:
+            return
+
+        jms_data = jms_models[0]
+        for other_jms_data in jms_models[1: ]:
+            errors = jms_data.verify_nodes_match(other_jms_data)
+            if errors:
+                all_errors[other_jms_data.name] = errors
+
+        if all_errors:
+            return all_errors
+
+
+        # TODO: Merge jms models into self
+
+
+        return all_errors
 
 
 def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
@@ -183,9 +341,8 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
     materials = jms_data.materials
     markers = jms_data.markers
     regions = jms_data.regions
-
-    perm_mesh = jms_data.perm_meshes[perm_name] = JmsMeshData()
-    vertices, triangles = perm_mesh.verts, perm_mesh.tris
+    verts = jms_data.verts
+    tris = jms_data.tris
 
     jms_string = jms_string.replace("\n", "\t")
 
@@ -249,7 +406,7 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
         dat_i += 1
         for i in range(len(markers)):
             markers[i] = JmsMarker(
-                data[dat_i], int(data[dat_i+1]), int(data[dat_i+2]),
+                data[dat_i], perm_name, int(data[dat_i+1]), int(data[dat_i+2]),
                 float(data[dat_i+3]), float(data[dat_i+4]),
                 float(data[dat_i+5]), float(data[dat_i+6]),
                 float(data[dat_i+7]), float(data[dat_i+8]), float(data[dat_i+9]),
@@ -283,10 +440,10 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
     # read the vertices
     try:
         i = 0
-        vertices.extend((None, ) * int(data[dat_i]))
+        verts.extend((None, ) * int(data[dat_i]))
         dat_i += 1
-        for i in range(len(vertices)):
-            vertices[i] = JmsVertex(
+        for i in range(len(verts)):
+            verts[i] = JmsVertex(
                 int(data[dat_i]),
                 float(data[dat_i+1]), float(data[dat_i+2]), float(data[dat_i+3]),
                 float(data[dat_i+4]), float(data[dat_i+5]), float(data[dat_i+6]),
@@ -297,7 +454,7 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
             i += 1
     except Exception:
         print("Failed to read vertices.")
-        del vertices[i: ]
+        del verts[i: ]
         return jms_data
 
     if stop_at == "triangles": return jms_data
@@ -305,10 +462,10 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
     # read the triangles
     try:
         i = 0
-        triangles.extend((None, ) * int(data[dat_i]))
+        tris.extend((None, ) * int(data[dat_i]))
         dat_i += 1
-        for i in range(len(triangles)):
-            triangles[i] = JmsTriangle(
+        for i in range(len(tris)):
+            tris[i] = JmsTriangle(
                 int(data[dat_i]), int(data[dat_i+1]),
                 int(data[dat_i+2]), int(data[dat_i+3]), int(data[dat_i+4]),
                 )
@@ -316,14 +473,21 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
             i += 1
     except Exception:
         print("Failed to read triangles.")
-        del triangles[i: ]
+        del tris[i: ]
         return jms_data
 
     return jms_data
 
 
-def write_jms(filepath, *, checksum=3251, materials=(), regions=(),
-              nodes=(), markers=(), vertices=(), triangles=()):
+def write_jms(filepath, jms_data):
+    checksum = jms_data.node_list_checksum
+    materials = jms_data.materials
+    regions = jms_data.regions
+    nodes = jms_data.nodes
+    markers = jms_data.markers
+    verts = jms_data.verts
+    tris = jms_data.tris
+
     # If the path doesnt exist, create it
     if not exists(dirname(filepath)):
         makedirs(dirname(filepath))
@@ -375,8 +539,8 @@ def write_jms(filepath, *, checksum=3251, materials=(), regions=(),
         for region in regions:
             f.write("%s\n" % region[: 31])
 
-        f.write("%s\n" % len(vertices))
-        for vert in vertices:
+        f.write("%s\n" % len(verts))
+        for vert in verts:
             f.write("%s\n%s\t%s\t%s\n%s\t%s\t%s\n%s\n%s\n%s\t%s\t%s\n" % (
                 vert.node_0,
                 float_to_str(vert.pos_x),
@@ -393,160 +557,13 @@ def write_jms(filepath, *, checksum=3251, materials=(), regions=(),
                 )
             )
 
-        f.write("%s\n" % len(triangles))
-        for tri in triangles:
+        f.write("%s\n" % len(tris))
+        for tri in tris:
             f.write("%s\t%s\n%s\t%s\t%s\n" % (
                 tri.region, tri.shader,
                 tri.v0, tri.v1, tri.v2
                 )
             )
 
-def verify_jms(jms_data):
-    errors = []
-
-    crc = jms_data.node_list_checksum
-    nodes = jms_data.nodes
-    mats  = jms_data.materials
-    markers = jms_data.markers
-    regions = jms_data.regions
-
-    perm_meshes = jms_data.perm_meshes
-
-    node_error = False
-
-    node_ct = len(nodes)
-    region_ct = len(regions)
-    mat_ct = len(mats)
-
-    if node_ct == 0:
-        errors.append("No nodes. Jms models must contain at least one node.")
-    elif node_ct >= 64:
-        errors.append("Too many nodes. Max count is 64.")
-
-    if mat_ct > 256:
-        errors.append("Too many materials. Max count is 256.")
-
-    if region_ct > 32:
-        errors.append("Too many regions. Max count is 32.")
-
-    marker_name_cts = {}
-    for marker in markers:
-        marker_name_cts[marker.name] = marker_name_cts.get(marker.name, 0) + 1
-
-    if len(marker_name_cts) > 256:
-        errors.append("Too many unique marker names. Max count is 256.")
-
-    for name in sorted(marker_name_cts):
-        if not name.strip(" "):
-            errors.append("Detected unnamed markers.")
-        if marker_name_cts[name] > 32:
-            errors.append("Too many '%s' marker instances. Max count is 32.")
-
-    for i in range(node_ct):
-        n = nodes[i]
-        if n.first_child >= len(nodes):
-            errors.append("First child of node '%s' is invalid." % n.name)
-        elif n.sibling_index >= len(nodes):
-            errors.append("Sibling node of node '%s' is invalid." % n.name)
-        elif len(n.name) >= 32:
-            errors.append("Node name node '%s' is too long." % n.name)
-
-    if errors:
-        return errors
-
-    err_str = "Invalid %s index in %s(s)."
-    for region_name in regions:
-        if len(region_name) >= 32:
-            errors.append("Region name '%s' is too long." % region_name)
-
-    for marker in markers:
-        if marker.parent >= node_ct:
-            errors.append(err_str % ("parent", "marker"))
-        elif marker.region >= region_ct:
-            errors.append(err_str % ("region", "marker"))
-        elif len(marker.name) >= 32:
-            errors.append("Marker name '%s' is too long." % marker.name)
-        else:
-            continue
-        break
-
-    for perm_name in sorted(perm_meshes):
-        verts = perm_meshes[perm_name].verts
-        tris  = perm_meshes[perm_name].tris
-        vert_ct = len(verts)
-        for tri in tris:
-            if tri.v0 >= vert_ct or tri.v1 >= vert_ct or tri.v2 >= vert_ct:
-                errors.append(err_str % ("vertex", "triangle"))
-            elif tri.region >= region_ct:
-                errors.append(err_str % ("region", "triangle"))
-            elif tri.shader >= mat_ct:
-                errors.append(err_str % ("shader", "triangle"))
-            else:
-                continue
-            break
-
-        for vert in verts:
-            if vert.node_0 >= node_ct:
-                errors.append(err_str % ("node_0", "vertex"))
-            elif vert.node_1 >= node_ct:
-                errors.append(err_str % ("node_1", "vertex"))
-            else:
-                continue
-            break
-
-    return errors
-
-
-def merge_jms_models(merged_jms, *jms_models):
-    all_errors = {}
-    first_nodes = None
-
-    if (merged_jms.name or merged_jms.nodes or merged_jms.materials or
-        merged_jms.markers or merged_jms.regions or merged_jms.perm_meshes):
-        all_errors['merged_jms'] = (
-            "JmsModel instance to merge models into was not empty.", )
-        return all_errors
-
-    for jms_data in jms_models:
-        jms_name = jms_data.name
-        errors = verify_jms(jms_data)
-
-        if errors:
-            all_errors[jms_name] = errors
-            continue
-        elif first_nodes is None:
-            first_nodes = jms_data.nodes
-            continue
-
-        nodes = jms_data.nodes
-        errors = []
-        if len(nodes) != len(first_nodes):
-            errors.append("Node counts do not match.")
-            nodes = ()
-
-        for i in range(len(nodes)):
-            fn = first_nodes[i]
-            n = nodes[i]
-            if fn.name != n.name:
-                errors.append("Names of nodes '%s' do not match." % i)
-            elif fn.first_child != n.first_child:
-                errors.append("First children of node '%s' do not match." % n.name)
-            elif fn.sibling_index != n.sibling_index:
-                errors.append("Sibling index of node '%s' do not match." % n.name)
-            elif (abs(fn.rot_i - n.rot_i) > 0.00001 or
-                  abs(fn.rot_j - n.rot_j) > 0.00001 or
-                  abs(fn.rot_k - n.rot_k) > 0.00001 or
-                  abs(fn.rot_w - n.rot_w) > 0.00001):
-                errors.append("Rotations of node '%s' do not match." % n.name)
-            elif (abs(fn.pos_x - n.pos_x) > 0.000001 or
-                  abs(fn.pos_y - n.pos_y) > 0.000001 or
-                  abs(fn.pos_z - n.pos_z) > 0.000001):
-                errors.append("Positions of node '%s' do not match." % n.name)
-
-        if errors:
-            all_errors[jms_name] = errors
-
-
-    # TODO: Merge jms models into merged_jms
-
-    return all_errors
+# PLACEHOLDER ALIAS
+verify_jms = JmsModel.verify_jms
