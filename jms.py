@@ -27,13 +27,33 @@ class JmsNode:
         self.pos_z = pos_z
 
     def __repr__(self):
-        return """JmsNode(%s,
+        return """JmsNode(name=%s,
     first_child=%s, sibling_index=%s,
     i=%s, j=%s, k=%s, w=%s,
     x=%s, y=%s, z=%s
 )""" % (self.name, self.first_child, self.sibling_index,
         self.rot_i, self.rot_j, self.rot_k, self.rot_w,
         self.pos_x, self.pos_y, self.pos_z)
+
+    def __eq__(self, other):
+        if not isinstance(other, JmsNode):
+            return False
+        elif self.name != other.name:
+            return False
+        elif self.first_child != other.first_child:
+            return False
+        elif self.sibling_index != other.sibling_index:
+            return False
+        elif (abs(self.rot_i - other.rot_i) > 0.00001 or
+              abs(self.rot_j - other.rot_j) > 0.00001 or
+              abs(self.rot_k - other.rot_k) > 0.00001 or
+              abs(self.rot_w - other.rot_w) > 0.00001):
+            return False
+        elif (abs(self.pos_x - other.pos_x) > 0.000001 or
+              abs(self.pos_y - other.pos_y) > 0.000001 or
+              abs(self.pos_z - other.pos_z) > 0.000001):
+            return False
+        return True
 
 
 class JmsMaterial:
@@ -85,6 +105,28 @@ class JmsMarker:
 )""" % (self.name, self.permutation, self.region, self.parent,
         self.rot_i, self.rot_j, self.rot_k, self.rot_w,
         self.pos_x, self.pos_y, self.pos_z, self.radius)
+
+    def __eq__(self, other):
+        if not isinstance(other, JmsMarker):
+            return False
+        elif self.name != other.name:
+            return False
+        elif self.permutation != other.permutation:
+            return False
+        elif self.region != other.region:
+            return False
+        elif abs(self.radius - other.radius) > 0.00001:
+            return False
+        elif (abs(self.rot_i - other.rot_i) > 0.00001 or
+              abs(self.rot_j - other.rot_j) > 0.00001 or
+              abs(self.rot_k - other.rot_k) > 0.00001 or
+              abs(self.rot_w - other.rot_w) > 0.00001):
+            return False
+        elif (abs(self.pos_x - other.pos_x) > 0.000001 or
+              abs(self.pos_y - other.pos_y) > 0.000001 or
+              abs(self.pos_z - other.pos_z) > 0.000001):
+            return False
+        return True
 
 
 class JmsVertex:
@@ -147,60 +189,64 @@ class JmsTriangle:
         self.v0, self.v1, self.v2)
 
 
-class JmsMeshData:
-    verts = ()
-    tris = ()
-
-    def __init__(self, verts=None, tris=None):
-        self.verts = verts if verts else []
-        self.tris  = tris  if tris  else []
-
-
-class JmsModel(JmsMeshData):
+class JmsModel:
     name = ""
+
+    perm_name = "__base"
+    lod_level = "superhigh"
+    is_random_perm = True
 
     node_list_checksum = 0
     nodes = ()
     materials = ()
-    markers = ()
     regions = ()
+    markers = ()
+    verts   = ()
+    tris    = ()
 
     def __init__(self, name="", node_list_checksum=0, nodes=None,
                  materials=None, markers=None, regions=None,
                  verts=None, tris=None):
+
+        name = name.strip(" ")
+        perm_name = name
+        if name.startswith("~"):
+            self.is_random_perm = False
+            perm_name = perm_name.lstrip("~")
+
+        for lod_name in ("superhigh", "high", "medium", "superlow", "low"):
+            if perm_name.lower().endswith(lod_name):
+                perm_name = perm_name[: -len(lod_name)].strip(" ")
+                break
+
         self.name = name
+        self.perm_name = perm_name
         self.node_list_checksum = node_list_checksum
         self.nodes = nodes if nodes else []
         self.materials = materials if materials else []
         self.regions = regions if regions else []
         self.markers = markers if markers else []
+        self.verts   = verts   if verts   else []
+        self.tris    = tris    if tris    else []
 
-        JmsMeshData.__init__(self, verts, tris)
-
-    def verify_nodes_match(self, other_jms):
+    def verify_models_match(self, other_jms):
         errors = list(verify_jms(other_jms))
         if len(other_jms.nodes) != len(self.nodes):
             errors.append("Node counts do not match.")
             return
+        elif len(other_jms.materials) != len(self.materials):
+            errors.append("Material counts do not match.")
+            return
 
         for i in range(len(self.nodes)):
-            fn = self.nodes[i]
-            n = other_jms.nodes[i]
-            if fn.name != n.name:
-                errors.append("Names of nodes '%s' do not match." % i)
-            elif fn.first_child != n.first_child:
-                errors.append("First children of node '%s' do not match." % n.name)
-            elif fn.sibling_index != n.sibling_index:
-                errors.append("Sibling index of node '%s' do not match." % n.name)
-            elif (abs(fn.rot_i - n.rot_i) > 0.00001 or
-                  abs(fn.rot_j - n.rot_j) > 0.00001 or
-                  abs(fn.rot_k - n.rot_k) > 0.00001 or
-                  abs(fn.rot_w - n.rot_w) > 0.00001):
-                errors.append("Rotations of node '%s' do not match." % n.name)
-            elif (abs(fn.pos_x - n.pos_x) > 0.000001 or
-                  abs(fn.pos_y - n.pos_y) > 0.000001 or
-                  abs(fn.pos_z - n.pos_z) > 0.000001):
-                errors.append("Positions of node '%s' do not match." % n.name)
+            if self.nodes[i] != other_jms.nodes[i]:
+                errors.append("Nodes '%s' do not match." % i)
+
+        for i in range(len(self.materials)):
+            mat = self.materials[i]
+            other_mat = other_jms.materials[i]
+            if mat.name != other_mat.name:
+                errors.append("Names of materials '%s' do not match." % i)
 
         return errors
 
@@ -216,7 +262,7 @@ class JmsModel(JmsMeshData):
         if isinstance(self, MergedJmsModel):
             perm_meshes = self.perm_meshes
         else:
-            perm_meshes = {self.name: JmsMeshData(self.verts, self.tris)}
+            perm_meshes = {self.name: self}
 
         node_error = False
 
@@ -304,33 +350,100 @@ class JmsModel(JmsMeshData):
         return errors
 
 
-class MergedJmsModel(JmsModel):
+class JmsMeshData:
+    verts = ()
+    tris  = ()
+    def __init__(self, verts=(), tris=()):
+        self.verts = verts if verts else []
+        self.tris  = tris  if tris  else []
+
+
+class MergedJmsPermutationMesh:
+    markers = ()
+    lod_meshes = ()
+    is_random_perm = True
+
+    def __init__(self):
+        self.markers = []
+        self.lod_meshes = {}
+
+
+class MergedJmsRegion:
+    name = ""
     perm_meshes = ()
 
-    def __init__(self, perm_meshes=None, *args):
-        JmsModel.__init__(self, *args)
-        self.perm_meshes = perm_meshes if perm_meshes else {}
+    def __init__(self, name, *jms_models):
+        self.name = name
+        self.perm_meshes = {}
 
-    def merge_jms_models(self, *jms_models):
-        all_errors = {}
-        first_nodes = None
-        self.__init__()
+        for jms_model in jms_models:
+            self.merge_jms_model(jms_model)
 
-        if not jms_models:
+    def merge_jms_model(self, jms_model):
+        try:
+            reg_idx = jms_model.regions.index(self.name)
+        except ValueError:
+            # this region is not in the jms model provided
             return
 
-        jms_data = jms_models[0]
-        for other_jms_data in jms_models[1: ]:
-            errors = jms_data.verify_nodes_match(other_jms_data)
-            if errors:
-                all_errors[other_jms_data.name] = errors
+        lod_level = jms_model.lod_level
+        perm_name = jms_model.perm_name
 
-        if all_errors:
-            return all_errors
+        if perm_name in self.perm_meshes:
+            perm_mesh = self.perm_meshes[perm_name] 
+        else:
+            perm_mesh = self.perm_meshes[perm_name] = MergedJmsPermutationMesh()
+            perm_mesh.is_random_perm = jms_model.is_random_perm
+
+            # copy the markers from the first JmsModel
+            # we're given for this region
+            for marker in jms_model.markers:
+                if marker.region == reg_idx:
+                    perm_mesh.markers.append(marker)
 
 
-        # TODO: Merge jms models into self
+        # TODO: Add the triangles and verts(need to prune unneeded verts
+        # from the list of verts, and adjust triangle indices as necessary)
 
+
+class MergedJmsModel:
+    node_list_checksum = 0
+    nodes = ()
+    materials = ()
+    regions = ()
+
+    def __init__(self, *jms_models):
+        self.nodes = []
+        self.materials = []
+        self.regions = {}
+
+        for jms_model in jms_models:
+            self.merge_jms_model(jms_model)
+
+    verify_models_match = JmsModel.verify_models_match
+
+    def merge_jms_model(self, other_model):
+        all_errors = {}
+        first_nodes = None
+
+        if not other_model:
+            return
+
+        if not self.nodes:
+            self.node_list_checksum = other_model.node_list_checksum
+            self.nodes = list(other_model.nodes)
+            self.materials = []
+            self.regions = {}
+
+        errors = self.verify_models_match(other_model)
+        if errors:
+            return errors
+
+        for region in other_model.regions:
+            if region not in self.regions:
+                self.regions[region] = MergedJmsRegion(region)
+
+            self.regions[region].merge_jms_model(other_model)
 
         return all_errors
 
@@ -349,7 +462,7 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
     data = tuple(d for d in jms_string.split("\t") if d)
 
     if data[0] != "8200":
-        print("JMS identifier not found.")
+        print("JMS identifier '8200' not found.")
         return jms_data
 
     try:
