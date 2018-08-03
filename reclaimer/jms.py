@@ -181,6 +181,12 @@ class JmsTriangle:
         self.v1 = v1
         self.v2 = v2
 
+    def __getitem__(self, index):
+        if   index == 0: return self.v0
+        elif index == 1: return self.v1
+        elif index == 2: return self.v2
+        raise IndexError("Triangle indices must be in range(0, 3)")
+
     def __repr__(self):
         return """JmsTriangle(
     region=%s, shader=%s,
@@ -372,9 +378,11 @@ class PermutationMesh:
 class MergedJmsRegion:
     name = ""
     perm_meshes = ()
+    _split_by_shader = True
 
-    def __init__(self, name, *jms_models):
+    def __init__(self, name, *jms_models, split_by_shader=True):
         self.name = name
+        self._split_by_shader = split_by_shader
         self.perm_meshes = {}
 
         for jms_model in jms_models:
@@ -406,7 +414,7 @@ class MergedJmsRegion:
         mesh_data = perm_mesh.lod_meshes.setdefault(lod_level, {})
 
         src_verts = jms_model.verts
-        src_tris = jms_model.tris
+        src_tris  = jms_model.tris
         region_verts = []
         region_tris = []
 
@@ -437,8 +445,7 @@ class MergedJmsRegion:
                 region_tris[i] = tri
                 i += 1
 
-        if len(mat_nums) == 1:
-            # optimization for when only one material is used on this region
+        if len(mat_nums) == 1 or not self._split_by_shader:
             for mat_num in mat_nums: break
 
             mesh_data[mat_num] = GeometryMesh()
@@ -472,8 +479,7 @@ class MergedJmsRegion:
             mat_tris.extend([None] * tri_ct)
             for tri in region_tris:
                 if tri.shader == mat_num:
-                    # store as a tuple rather than a JmsTriangle
-                    mat_tris[i] = (tri.v0, tri.v1, tri.v2)
+                    mat_tris[i] = tri
                     i += 1
 
 
