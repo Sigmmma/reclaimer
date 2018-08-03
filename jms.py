@@ -214,9 +214,10 @@ class JmsModel:
             self.is_random_perm = False
             perm_name = perm_name.lstrip("~")
 
-        for lod_name in ("superhigh", "high", "medium", "superlow", "low"):
-            if perm_name.lower().endswith(lod_name):
-                perm_name = perm_name[: -len(lod_name)].strip(" ")
+        for lod_level in ("superhigh", "high", "medium", "superlow", "low"):
+            if perm_name.lower().endswith(lod_level):
+                perm_name = perm_name[: -len(lod_level)].strip(" ")
+                self.lod_level = lod_level
                 break
 
         self.name = name
@@ -350,7 +351,7 @@ class JmsModel:
         return errors
 
 
-class JmsMeshData:
+class GeometryMesh:
     verts = ()
     tris  = ()
     def __init__(self, verts=(), tris=()):
@@ -358,7 +359,7 @@ class JmsMeshData:
         self.tris  = tris  if tris  else []
 
 
-class MergedJmsPermutationMesh:
+class PermutationMesh:
     markers = ()
     lod_meshes = ()
     is_random_perm = True
@@ -380,6 +381,7 @@ class MergedJmsRegion:
             self.merge_jms_model(jms_model)
 
     def merge_jms_model(self, jms_model):
+        assert isinstance(jms_model, JmsModel)
         try:
             reg_idx = jms_model.regions.index(self.name)
         except ValueError:
@@ -392,7 +394,7 @@ class MergedJmsRegion:
         if perm_name in self.perm_meshes:
             perm_mesh = self.perm_meshes[perm_name] 
         else:
-            perm_mesh = self.perm_meshes[perm_name] = MergedJmsPermutationMesh()
+            perm_mesh = self.perm_meshes[perm_name] = PermutationMesh()
             perm_mesh.is_random_perm = jms_model.is_random_perm
 
             # copy the markers from the first JmsModel
@@ -401,9 +403,78 @@ class MergedJmsRegion:
                 if marker.region == reg_idx:
                     perm_mesh.markers.append(marker)
 
+        mesh_data = perm_mesh.lod_meshes.setdefault(lod_level, {})
 
-        # TODO: Add the triangles and verts(need to prune unneeded verts
-        # from the list of verts, and adjust triangle indices as necessary)
+        src_verts = jms_model.verts
+        src_tris = jms_model.tris
+        region_verts = []
+        region_tris = []
+
+        vert_map = dict()
+        v_base = len(region_verts)
+        tri_ct = 0
+        mat_nums = set()
+        for tri in src_tris:
+            if tri.region == reg_idx:
+                tri.v0 = vert_map.setdefault(tri.v0, v_base + len(vert_map))
+                tri.v1 = vert_map.setdefault(tri.v1, v_base + len(vert_map))
+                tri.v2 = vert_map.setdefault(tri.v2, v_base + len(vert_map))
+                mat_nums.add(tri.shader)
+                tri_ct += 1
+
+        if tri_ct == 0:
+            return
+
+        # collect all the verts and triangles used by this region
+        region_verts.extend([None] * len(vert_map))
+        for i, j in vert_map.items():
+            region_verts[j] = src_verts[i]
+
+        i = len(region_tris)
+        region_tris.extend([None] * tri_ct)
+        for tri in src_tris:
+            if tri.region == reg_idx:
+                region_tris[i] = tri
+                i += 1
+
+        if len(mat_nums) == 1:
+            # optimization for when only one material is used on this region
+            for mat_num in mat_nums: break
+
+            mesh_data[mat_num] = GeometryMesh()
+            mesh_data[mat_num].verts = region_verts
+            mesh_data[mat_num].tris  = region_tris
+            return
+
+        # make a mesh for each material
+        for mat_num in mat_nums:
+            if mat_num not in mesh_data:
+                mesh_data[mat_num] = GeometryMesh()
+
+            mat_verts = mesh_data[mat_num].verts
+            mat_tris  = mesh_data[mat_num].tris
+
+            vert_map = dict()
+            v_base = len(mat_verts)
+            tri_ct = 0
+            for tri in region_tris:
+                if tri.shader == mat_num:
+                    tri.v0 = vert_map.setdefault(tri.v0, v_base + len(vert_map))
+                    tri.v1 = vert_map.setdefault(tri.v1, v_base + len(vert_map))
+                    tri.v2 = vert_map.setdefault(tri.v2, v_base + len(vert_map))
+                    tri_ct += 1
+
+            mat_verts.extend([None] * len(vert_map))
+            for i, j in vert_map.items():
+                mat_verts[j] = region_verts[i]
+
+            i = len(mat_tris)
+            mat_tris.extend([None] * tri_ct)
+            for tri in region_tris:
+                if tri.shader == mat_num:
+                    # store as a tuple rather than a JmsTriangle
+                    mat_tris[i] = (tri.v0, tri.v1, tri.v2)
+                    i += 1
 
 
 class MergedJmsModel:
