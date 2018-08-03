@@ -294,10 +294,10 @@ class Stripifier():
             self.tri_counts[tex_index] = len(tris)
             self.all_degens[tex_index] = []
 
-            for tri in tris:
-                v0 = tuple(tri[0]) + (tex_index, )
-                v1 = tuple(tri[1]) + (tex_index, )
-                v2 = tuple(tri[2]) + (tex_index, )
+            for src_tri in tris:
+                v0 = tuple(src_tri[0]) + (tex_index, )
+                v1 = tuple(src_tri[1]) + (tex_index, )
+                v2 = tuple(src_tri[2]) + (tex_index, )
 
                 # connected faces in a triangle strip must share vert,
                 # coordinates, uv coordinates, and normals. This is
