@@ -8,7 +8,7 @@ from .util import float_to_str
 class JmsNode:
     __slots__ = (
         "name",
-        "first_child", "sibling_index",
+        "first_child", "sibling_index", "parent_index",
         "rot_i", "rot_j", "rot_k", "rot_w",
         "pos_x", "pos_y", "pos_z",
         )
@@ -25,6 +25,7 @@ class JmsNode:
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.pos_z = pos_z
+        self.parent_index = -1
 
     def __repr__(self):
         return """JmsNode(name=%s,
@@ -58,12 +59,14 @@ class JmsNode:
 
 class JmsMaterial:
     __slots__ = (
-        "name",
-        "tiff_path",
+        "name", "tiff_path",
+        "shader_path", "shader_type"
         )
     def __init__(self, name="__unnamed", tiff_path="<none>"):
         self.name = name
         self.tiff_path = tiff_path
+        self.shader_path = name
+        self.shader_type = "shader"
 
     def __repr__(self):
         return """JmsMaterial(name=%s,
@@ -226,6 +229,10 @@ class JmsModel:
                 self.lod_level = lod_level
                 break
 
+        node_list_checksum = node_list_checksum & 0xFFffFFff
+        if node_list_checksum >= (1<<31):
+            node_list_checksum = node_list_checksum - 0x100000000
+
         self.name = name
         self.perm_name = perm_name
         self.node_list_checksum = node_list_checksum
@@ -236,14 +243,92 @@ class JmsModel:
         self.verts   = verts   if verts   else []
         self.tris    = tris    if tris    else []
 
+    def verify_nodes_valid(self):
+        errors = []
+        if len(self.nodes) == 0:
+            errors.append("No nodes. Jms models must contain at least one node.")
+        elif len(self.nodes) >= 64:
+            errors.append("Too many nodes. Max count is 64.")
+
+        for i in range(len(self.nodes)):
+            n = self.nodes[i]
+            if n.first_child >= len(self.nodes):
+                errors.append("First child of node '%s' is invalid." % n.name)
+            elif n.sibling_index >= len(self.nodes):
+                errors.append("Sibling node of node '%s' is invalid." % n.name)
+            elif len(n.name) >= 32:
+                errors.append("Node name node '%s' is too long." % n.name)
+
+        if self.nodes and self.nodes[0].sibling_index != -1:
+            errors.append("Root node must not have siblings.")
+
+        seen_hierarchy = set()
+        for node in self.nodes:
+            sib_idx = node.sibling_index
+            child_idx = node.first_child
+            if sib_idx in seen_hierarchy or child_idx in seen_hierarchy:
+                errors.append("Node hierarchy is janked up. " +
+                              "Can't really explain why tho.")
+
+            if sib_idx >= 0:
+                seen_hierarchy.add(sib_idx)
+
+            if child_idx >= 0:
+                seen_hierarchy.add(child_idx)
+
+        # TODO: Check hierarchy for non-halo sorting
+        if not errors:
+            # check all nodes to make sure their hierarchy is valid
+            all_seen_siblings = set()
+            all_seen_children = set()
+
+            for node in self.nodes:
+                seen_siblings = set()
+                seen_children = set()
+
+                sib_idx = node.sibling_index
+                child_idx = node.first_child
+
+                if sib_idx >= 0 and sib_idx in all_seen_siblings:
+                    errors.append(("Sibling index in node '%s' is reused " +
+                                   "in another node.") % node.name)
+
+                if child_idx >= 0 and child_idx in all_seen_children:
+                    errors.append(("Child index in node '%s' is reused " +
+                                   "in another node.") % node.name)
+
+                all_seen_siblings.add(sib_idx)
+                all_seen_children.add(child_idx)
+
+                while sib_idx >= 0:
+                    sib_node = self.nodes[sib_idx]
+                    if sib_idx in seen_siblings:
+                        errors.append("Circular reference in siblings " +
+                                      "of node '%s'." % node.name)
+
+                    seen_siblings.add(sib_idx)
+                    sib_idx = sib_node.sibling_index
+
+                while child_idx >= 0:
+                    child_node = self.nodes[child_idx]
+                    if child_idx in seen_children:
+                        errors.append("Circular reference in children " +
+                                      "of node '%s'." % node.name)
+
+                    seen_children.add(child_idx)
+                    child_idx = child_node.first_child
+
+
+        return errors
+
     def verify_models_match(self, other_jms):
         errors = list(verify_jms(other_jms))
         if len(other_jms.nodes) != len(self.nodes):
             errors.append("Node counts do not match.")
-            return
+            return errors
         elif len(other_jms.materials) != len(self.materials):
             errors.append("Material counts do not match.")
-            return
+            return errors
 
         for i in range(len(self.nodes)):
             if self.nodes[i] != other_jms.nodes[i]:
@@ -258,10 +343,7 @@ class JmsModel:
         return errors
 
     def verify_jms(self):
-        errors = []
-
         crc = self.node_list_checksum
-        nodes = self.nodes
         mats  = self.materials
         markers = self.markers
         regions = self.regions
@@ -273,14 +355,11 @@ class JmsModel:
 
         node_error = False
 
-        node_ct = len(nodes)
+        node_ct = len(self.nodes)
         region_ct = len(regions)
         mat_ct = len(mats)
 
-        if node_ct == 0:
-            errors.append("No nodes. Jms models must contain at least one node.")
-        elif node_ct >= 64:
-            errors.append("Too many nodes. Max count is 64.")
+        errors = self.verify_nodes_valid()
 
         if mat_ct > 256:
             errors.append("Too many materials. Max count is 256.")
@@ -300,15 +379,6 @@ class JmsModel:
                 errors.append("Detected unnamed markers.")
             if marker_name_cts[name] > 32:
                 errors.append("Too many '%s' marker instances. Max count is 32.")
-
-        for i in range(node_ct):
-            n = nodes[i]
-            if n.first_child >= len(nodes):
-                errors.append("First child of node '%s' is invalid." % n.name)
-            elif n.sibling_index >= len(nodes):
-                errors.append("Sibling node of node '%s' is invalid." % n.name)
-            elif len(n.name) >= 32:
-                errors.append("Node name node '%s' is too long." % n.name)
 
         if errors:
             return errors
@@ -488,6 +558,9 @@ class MergedJmsModel:
     nodes = ()
     materials = ()
     regions = ()
+            
+    _u_scale = 1.0
+    _v_scale = 1.0
 
     def __init__(self, *jms_models):
         self.nodes = []
@@ -496,6 +569,58 @@ class MergedJmsModel:
 
         for jms_model in jms_models:
             self.merge_jms_model(jms_model)
+
+    @property
+    def u_scale(self):
+        return self._u_scale
+    @u_scale.setter
+    def u_scale(self, new_scale):
+        factor = 0 if new_scale == 0 else self._u_scale / new_scale
+        for region in self.regions.values():
+            for perm_mesh in region.perm_meshes.values():
+                for meshes in perm_mesh.lod_meshes.values():
+                    for lod_mesh_list in perm_mesh.lod_meshes.values():
+                        for mesh in lod_mesh_list.values():
+                            for vert in mesh.verts:
+                                # nesting from the pits of hell
+                                vert.tex_u *= factor
+
+        self._u_scale = new_scale
+
+    @property
+    def v_scale(self):
+        return self._v_scale
+    @v_scale.setter
+    def v_scale(self, new_scale):
+        factor = 0 if new_scale == 0 else self._v_scale / new_scale
+        for region in self.regions.values():
+            for perm_mesh in region.perm_meshes.values():
+                for meshes in perm_mesh.lod_meshes.values():
+                    for lod_mesh_list in perm_mesh.lod_meshes.values():
+                        for mesh in lod_mesh_list.values():
+                            for vert in mesh.verts:
+                                # nesting from the pits of hell
+                                vert.tex_v *= factor
+
+        self._v_scale = new_scale
+
+    def calc_uv_scales(self):
+        u_scale = self.u_scale
+        v_scale = self.v_scale
+        calc_u_scale = 0.0
+        calc_v_scale = 0.0
+        for region in self.regions.values():
+            for perm_mesh in region.perm_meshes.values():
+                for meshes in perm_mesh.lod_meshes.values():
+                    for lod_mesh_list in perm_mesh.lod_meshes.values():
+                        for mesh in lod_mesh_list.values():
+                            for vert in mesh.verts:
+                                scale = abs(vert.tex_u * u_scale)
+                                calc_u_scale = max(scale, calc_u_scale)
+                                scale = abs(vert.tex_v * v_scale)
+                                calc_v_scale = max(scale, calc_v_scale)
+
+        return calc_u_scale, calc_v_scale
 
     verify_models_match = JmsModel.verify_models_match
 
@@ -509,7 +634,7 @@ class MergedJmsModel:
         if not self.nodes:
             self.node_list_checksum = other_model.node_list_checksum
             self.nodes = list(other_model.nodes)
-            self.materials = []
+            self.materials = list(other_model.materials)
             self.regions = {}
 
         errors = self.verify_models_match(other_model)
@@ -543,7 +668,10 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
         return jms_data
 
     try:
-        jms_data.node_list_checksum = int(data[1])
+        node_list_checksum = int(data[1]) & 0xFFffFFff
+        if node_list_checksum >= (1<<31):
+            node_list_checksum = node_list_checksum - 0x100000000
+        jms_data.node_list_checksum = node_list_checksum
     except Exception:
         print("Could not read node list checksum.")
         return jms_data
