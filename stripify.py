@@ -60,11 +60,11 @@ class Stripifier():
                 tri = last_tri
                 break
 
-            last_neighbor_i = (neighbor_i + 1 + strip_dir)%3
+            last_neighbor_i = (neighbor_i + 1 + strip_dir) % 3
 
             # get which index the last tri was in the new tri so we can
             # orient outselves and figure out which edge to travel next
-            neighbor_i = (tri.index(last_tri)-4 + 1 + strip_dir)%3
+            neighbor_i = (tri.index(last_tri) - 4 + 1 + strip_dir) % 3
 
             # reverse the direction of travel
             # and set the triangle as seen
@@ -80,20 +80,20 @@ class Stripifier():
             strip = [tri[2], tri[0]]
 
         # if the strip direction should be reversed
-        if strip_dir != False:
+        if strip_dir != self._winding:
             # reverse the first 2 verts
             strip = strip[::-1]
             strip_reversed = True
 
         # get the max coordinate value of these first 2 verts and their uvs
         v0_i = tri[neighbor_i]
-        v1_i = tri[(1+neighbor_i)%3]
+        v1_i = tri[(1 + neighbor_i) % 3]
 
         '''loop over triangles until the length is maxed or
         we reach a triangle without a neighbor on that edge'''
         while not(tri[3] or id(tri) in seen or strip_len > self.max_strip_len):
             # get the index of the vert that will be added to the strip
-            v_i = tri[(neighbor_i + 2)%3]
+            v_i = tri[(neighbor_i + 2) % 3]
 
             # add the vert to the strip
             strip.append(v_i)
@@ -106,7 +106,7 @@ class Stripifier():
             # have the next triangle chosen from its second edge,
             # while every even numbered triangle will have the
             # next triangle chosen from its 3rd edge.
-            tri = tri[4 + (neighbor_i + 1 + strip_dir)%3]
+            tri = tri[4 + (neighbor_i + 1 + strip_dir) % 3]
 
             # reverse the direction of travel, set the last triangle
             # as added and seen, and increment the strip length
@@ -120,7 +120,8 @@ class Stripifier():
 
             # get which index the last tri was in the new tri so we can
             # orient outselves and figure out which edge to travel next
-            neighbor_i = tri.index(last_tri)-4
+            neighbor_i = tri.index(last_tri) - 4
+
         return strip, strip_reversed
 
     def link_strips(self):
@@ -220,14 +221,13 @@ class Stripifier():
                     # if the strip being added is empty, skip it
                     if len1 == 0:
                         continue
-
-                    if len0 + len1 + add_degen + degen_tris_added > max_len:
+                    elif len0 + len1 + add_degen + degen_tris_added > max_len:
                         # total length will be over max. dont try to combine
                         break
 
                     # add to the degens list
-                    for i in range(2+degen_tris_added+add_degen):
-                        strip0_degens.append(len(strip0)+i)
+                    for i in range(2 + degen_tris_added + add_degen):
+                        strip0_degens.append(len(strip0) + i)
 
                     # if a degen needs to be added, repeat the last vert
                     if add_degen:
