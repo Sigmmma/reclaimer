@@ -5,6 +5,10 @@ from math import sqrt
 DEFAULT_TEX = 0
 MAX_STRIP_LEN = 2**32-4
 
+# TODO: Make stripifier utilize a winding to specify if
+# the triangles are left or right wound:
+#     [0, 1, 2] in left winding == [0, 2, 1] in right winding
+
 class Stripifier():
     ''''''
     # the max length a strip can be
@@ -13,12 +17,14 @@ class Stripifier():
     # whether or not the strips have all been linked together
     linked = False
 
+    _winding = False
+
     # whether or not to link strips together with 2 degen tris
     degen_link = True
 
-    def __init__(self, all_tris=None, *args, **kwargs):
+    def __init__(self, all_tris=None, winding=False, *args, **kwargs):
         '''class initialization'''
-        self.load_mesh(all_tris)
+        self.load_mesh(all_tris, winding)
 
     def calc_strip(self, tri, neighbor_i=0, set_added=1):
         '''Given a starting triangle and the edge to start navigating,
@@ -69,12 +75,12 @@ class Stripifier():
         seen = set()
 
         # make a strip starting with the first 2 verts to the triangle
-        strip = tri[neighbor_i:neighbor_i+2]
+        strip = tri[neighbor_i: neighbor_i + 2]
         if neighbor_i == 2:
             strip = [tri[2], tri[0]]
 
         # if the strip direction should be reversed
-        if strip_dir:
+        if strip_dir != False:
             # reverse the first 2 verts
             strip = strip[::-1]
             strip_reversed = True
@@ -245,7 +251,7 @@ class Stripifier():
 
         self.linked = True
 
-    def load_mesh(self, all_tris=None):
+    def load_mesh(self, all_tris=None, winding=False):
         '''Loads a list of triangles into the stripifier.'''
         # Maps each unique vert/uv/norm/color combo to
         # the index it is stored in in vert_data
@@ -276,6 +282,8 @@ class Stripifier():
         # whether or not the strips have been linked together
         self.linked = False
 
+        self._winding = winding
+
         if all_tris is None:
             return
         elif isinstance(all_tris, (list, tuple)):
@@ -293,11 +301,19 @@ class Stripifier():
             self.all_strips[tex_index] = []
             self.tri_counts[tex_index] = len(tris)
             self.all_degens[tex_index] = []
+            if not tris:
+                continue
 
+            iterable = hasattr(tris[0], "__iter__")
             for src_tri in tris:
-                v0 = tuple(src_tri[0]) + (tex_index, )
-                v1 = tuple(src_tri[1]) + (tex_index, )
-                v2 = tuple(src_tri[2]) + (tex_index, )
+                if iterable:
+                    v0 = tuple(src_tri[0]) + (tex_index, )
+                    v1 = tuple(src_tri[1]) + (tex_index, )
+                    v2 = tuple(src_tri[2]) + (tex_index, )
+                else:
+                    v0 = (src_tri[0], tex_index)
+                    v1 = (src_tri[1], tex_index)
+                    v2 = (src_tri[2], tex_index)
 
                 # connected faces in a triangle strip must share vert,
                 # coordinates, uv coordinates, and normals. This is
