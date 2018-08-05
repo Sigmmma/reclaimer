@@ -82,13 +82,13 @@ class JmsMarker:
         "pos_x", "pos_y", "pos_z",
         "radius",
         )
-    def __init__(self, name="", permutation="", region=-1, parent=0,
+    def __init__(self, name="", permutation="", region=0, parent=0,
                  rot_i=0.0, rot_j=0.0, rot_k=0.0, rot_w=1.0,
                  pos_x=0.0, pos_y=0.0, pos_z=0.0, radius=0.0):
         self.name = name
         self.permutation = permutation
         self.parent = parent
-        self.region = region
+        self.region = max(0, region)
         self.rot_i = rot_i
         self.rot_j = rot_j
         self.rot_k = rot_k
@@ -145,6 +145,10 @@ class JmsVertex:
                  norm_i=0.0, norm_j=0.0, norm_k=0.0,
                  node_1=-1, node_1_weight=0.0,
                  tex_u=0, tex_v=0, tex_w=0):
+        if node_1_weight <= 0:
+            node_1 = -1
+            node_1_weight = 0
+
         self.node_0 = node_0
         self.pos_x = pos_x
         self.pos_y = pos_y
@@ -430,6 +434,7 @@ class JmsModel:
 class GeometryMesh:
     verts = ()
     tris  = ()
+    local_nodes = []
     def __init__(self, verts=(), tris=()):
         self.verts = verts if verts else []
         self.tris  = tris  if tris  else []
@@ -517,6 +522,8 @@ class MergedJmsRegion:
 
         if len(mat_nums) == 1 or not self._split_by_shader:
             for mat_num in mat_nums: break
+            if not self._split_by_shader:
+                mat_num = -1
 
             mesh_data[mat_num] = GeometryMesh()
             mesh_data[mat_num].verts = region_verts
@@ -652,6 +659,7 @@ class MergedJmsModel:
 
 def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
     jms_data = JmsModel(perm_name)
+    perm_name = jms_data.perm_name
     nodes = jms_data.nodes
     materials = jms_data.materials
     markers = jms_data.markers
