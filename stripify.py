@@ -41,7 +41,7 @@ class Stripifier():
 
         strip_len = 2
         last_neighbor_i = neighbor_i
-        strip_dir = False
+        strip_dir = self._winding
         strip_reversed = False
 
         # keep track of which tris have been seen
@@ -79,12 +79,12 @@ class Stripifier():
         if neighbor_i == 2:
             strip = [tri[2], tri[0]]
 
+        strip_reversed = strip_dir == self._winding
+
         # if the strip direction should be reversed
-        if strip_dir:
+        if strip_reversed:
             # reverse the first 2 verts
             strip = strip[::-1]
-
-        strip_reversed = strip_dir != self._winding
 
         # get the max coordinate value of these first 2 verts and their uvs
         v0_i = tri[neighbor_i]
@@ -144,6 +144,7 @@ class Stripifier():
         degen_link = bool(self.degen_link)
 
         degen_tris_added = 2*degen_link
+        winding = self._winding
 
         for tex_index in all_strips:
             strips = all_strips[tex_index]
@@ -200,11 +201,13 @@ class Stripifier():
                 while True:
                     try:
                         # if the set of strips has run out, get the next set
-                        if not len(curr_strips):
+                        if not curr_strips:
                             strips_i = strip_lengths.pop(0)
                             curr_strips = sorted_strips.pop(strips_i)
                             curr_dirs   = sorted_dirs.pop(strips_i)
                     except (KeyError, IndexError):
+                        if strip0_dir != winding:
+                            strip0.insert(0, strip0[0])
                         strip1 = strip1_dir = None
                         break
 
