@@ -709,7 +709,12 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
             node = nodes[parent_idx]
             if node.first_child > 0:
                 sib_idx = node.first_child
+                seen_nodes = set()
                 while sib_idx >= 0:
+                    if (sib_idx in seen_nodes or sib_idx == parent_idx or
+                        sib_idx >= len(nodes)):
+                        break
+                    seen_nodes.add(sib_idx)
                     parented_nodes.add(sib_idx)
                     sib_node = nodes[sib_idx]
                     sib_node.parent_index = parent_idx
