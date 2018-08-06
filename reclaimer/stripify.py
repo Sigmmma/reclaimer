@@ -80,10 +80,11 @@ class Stripifier():
             strip = [tri[2], tri[0]]
 
         # if the strip direction should be reversed
-        if strip_dir != self._winding:
+        if strip_dir:
             # reverse the first 2 verts
             strip = strip[::-1]
-            strip_reversed = True
+
+        strip_reversed = strip_dir != self._winding
 
         # get the max coordinate value of these first 2 verts and their uvs
         v0_i = tri[neighbor_i]
