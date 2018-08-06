@@ -5,9 +5,6 @@ from math import sqrt
 DEFAULT_TEX = 0
 MAX_STRIP_LEN = 2**32-4
 
-# TODO: Make stripifier utilize a winding to specify if
-# the triangles are left or right wound:
-#     [0, 1, 2] in left winding == [0, 2, 1] in right winding
 
 class Stripifier():
     ''''''
@@ -345,33 +342,34 @@ class Stripifier():
                 #        edge1, edge2, edge3]
                 tri = [v0_i,  v1_i,  v2_i,  False,
                        None, None, None,
-                       edges[0], edges[1], edges[2]]
+                       edges[0][::-1], edges[1][::-1], edges[2][::-1]]
 
                 # loop over all 3 edges
                 for i in (0, 1, 2):
                     edge = edges[i]
                     rev_edge = edge[::-1]
 
-                    if rev_edge in t_by_e:
+                    if edge in t_by_e:
                         # this takes care of update edges, which
                         # is when more than two tris share an edge.
-                        while rev_edge in t_by_e:
+                        while edge in t_by_e:
                             update_edge_num = edge[2] + 1
                             edge     = (edge[0], edge[1], update_edge_num)
                             rev_edge = (edge[1], edge[0], update_edge_num)
-                        tri[7 + i] = edge
+                        tri[7 + i] = rev_edge
 
                     # get the triangle that shares this edge
-                    conn_tri = t_by_e.get(edge)
+                    conn_tri = t_by_e.get(rev_edge)
+
                     if conn_tri:
                         # Some triangle shares this edge, so add it
                         # to this triangle as one of its siblings and
                         # add this triangle to it as one of its siblings
                         tri[4 + i] = conn_tri
-                        conn_tri[conn_tri.index(rev_edge)-3] = tri
+                        conn_tri[conn_tri.index(edge)-3] = tri
 
                     # neighbor edges are travelled in reverse.
-                    t_by_e[rev_edge] = tri
+                    t_by_e[edge] = tri
 
     def make_strips(self):
         '''Takes all loaded triangles and

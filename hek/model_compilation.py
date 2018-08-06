@@ -22,8 +22,9 @@ LOD_NAMES = ("superhigh", "high", "medium", "low", "superlow")
 def compile_gbxmodel(mod2_tag, merged_jms):
     tagdata = mod2_tag.data.tagdata
 
-    tagdata.base_map_u_scale = merged_jms.u_scale
-    tagdata.base_map_v_scale = merged_jms.v_scale
+    u_scale, v_scale = merged_jms.calc_uv_scales()
+    tagdata.base_map_u_scale = merged_jms.u_scale = max(1.0, u_scale)
+    tagdata.base_map_v_scale = merged_jms.v_scale = max(1.0, v_scale)
     tagdata.node_list_checksum = merged_jms.node_list_checksum
 
     # make nodes
@@ -83,16 +84,13 @@ def compile_gbxmodel(mod2_tag, merged_jms):
             mod2_perm.flags.cannot_be_chosen_randomly = not perm.is_random_perm
 
             perm_added = False
-            skipped_lods = []
             for i in range(len(LOD_NAMES)):
-                lod_name = LOD_NAMES[i]
-                if not perm.lod_meshes.get(lod_name):
-                    if skipped_lods is not None:
-                        skipped_lods.append(i)
+                if LOD_NAMES[i] not in perm.lod_meshes:
                     continue
-
+                elif not perm.lod_meshes[LOD_NAMES[i]]:
+                    continue
                 geom_index = len(geom_meshes)
-                lod_mesh = perm.lod_meshes[lod_name]
+                lod_mesh = perm.lod_meshes[LOD_NAMES[i]]
                 geom_meshes.append(lod_mesh)
 
                 # figure out which nodes this mesh utilizes
@@ -104,17 +102,13 @@ def compile_gbxmodel(mod2_tag, merged_jms):
                         if vert.node_1_weight > 0:
                             this_meshes_nodes.add(vert.node_1)
 
-                all_lod_nodes[lod_name].update(this_meshes_nodes)
+                all_lod_nodes[LOD_NAMES[i]].update(this_meshes_nodes)
 
-                lods_to_set = list(range(i, 5))
-                if skipped_lods:
-                    lods_to_set.extend(skipped_lods)
-                    skipped_lods = None
-
-                for i in lods_to_set:
+                while i < 5:
                     setattr(mod2_perm,
                             "%s_geometry_block" % LOD_NAMES[i],
                             geom_index)
+                    i += 1
 
                 perm_added = True
 

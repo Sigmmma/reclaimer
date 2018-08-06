@@ -702,6 +702,18 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
                 )
             dat_i += 10
             i += 1
+            
+        parented_nodes = set()
+        # setup the parent node hierarchy
+        for parent_idx in range(len(nodes)):
+            node = nodes[parent_idx]
+            if node.first_child > 0:
+                sib_idx = node.first_child
+                while sib_idx >= 0:
+                    parented_nodes.add(sib_idx)
+                    sib_node = nodes[sib_idx]
+                    sib_node.parent_index = parent_idx
+                    sib_idx = sib_node.sibling_index
     except Exception:
         print("Failed to read nodes.")
         del nodes[i: ]
