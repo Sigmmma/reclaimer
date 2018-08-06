@@ -6,6 +6,19 @@ DEFAULT_TEX = 0
 MAX_STRIP_LEN = 2**32-4
 
 
+class StripTri:
+    __slots__ = (
+        "verts", "siblings", "edges", "added"
+        )
+
+    def __init__(self, v0, v1, v2):
+        self.verts    = [v0, v1, v2]
+        self.siblings = [None, None, None]
+        self.edges    = [(v1_i, v0_i, 0),
+                         (v2_i, v1_i, 0),
+                         (v0_i, v2_i, 0)]
+
+
 class Stripifier():
     ''''''
     # the max length a strip can be
@@ -335,27 +348,28 @@ class Stripifier():
                     vert_map[v2] = v2_i = len(vert_data)
                     vert_data.append(v2)
 
-                edges = [(v0_i, v1_i, 0), (v1_i, v2_i, 0), (v2_i, v0_i, 0)]
+                edges = ((v0_i, v1_i, 0), (v1_i, v2_i, 0), (v2_i, v0_i, 0))
 
                 #       [vert1, vert2, vert3, added,
                 #        sib1,  sib2,  sib3,
                 #        edge1, edge2, edge3]
                 tri = [v0_i,  v1_i,  v2_i,  False,
                        None, None, None,
-                       edges[0][::-1], edges[1][::-1], edges[2][::-1]]
+                       (v1_i, v0_i, 0), (v2_i, v1_i, 0), (v0_i, v2_i, 0)]
 
                 # loop over all 3 edges
                 for i in (0, 1, 2):
-                    edge = edges[i]
-                    rev_edge = edge[::-1]
+                    v0_i, v1_i, update_edge_num = edge = edges[i]
+                    rev_edge = (v1_i, v0_i, update_edge_num)
 
                     if edge in t_by_e:
                         # this takes care of update edges, which
                         # is when more than two tris share an edge.
                         while edge in t_by_e:
-                            update_edge_num = edge[2] + 1
-                            edge     = (edge[0], edge[1], update_edge_num)
-                            rev_edge = (edge[1], edge[0], update_edge_num)
+                            update_edge_num += 1
+                            edge = (v0_i, v1_i, update_edge_num)
+
+                        rev_edge = (v1_i, v0_i, update_edge_num)
                         tri[7 + i] = rev_edge
 
                     # get the triangle that shares this edge
