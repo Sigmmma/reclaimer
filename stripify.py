@@ -40,7 +40,6 @@ class Stripifier():
         neighbor_i = neighbor_i%3
 
         strip_len = 2
-        last_neighbor_i = neighbor_i
         strip_dir = self._winding
         strip_reversed = False
 
@@ -59,8 +58,6 @@ class Stripifier():
             if tri is None or tri[3] or id(tri) in seen:
                 tri = last_tri
                 break
-
-            last_neighbor_i = (neighbor_i + 1 + strip_dir) % 3
 
             # get which index the last tri was in the new tri so we can
             # orient outselves and figure out which edge to travel next
@@ -341,7 +338,7 @@ class Stripifier():
                     vert_map[v2] = v2_i = len(vert_data)
                     vert_data.append(v2)
 
-                edges = [(v0_i, v1_i), (v1_i, v2_i), (v2_i, v0_i)]
+                edges = [(v0_i, v1_i, 0), (v1_i, v2_i, 0), (v2_i, v0_i, 0)]
 
                 #       [vert1, vert2, vert3, added,
                 #        sib1,  sib2,  sib3,
@@ -352,17 +349,29 @@ class Stripifier():
 
                 # loop over all 3 edges
                 for i in (0, 1, 2):
+                    edge = edges[i]
+                    rev_edge = edge[::-1]
+
+                    if rev_edge in t_by_e:
+                        # this takes care of update edges, which
+                        # is when more than two tris share an edge.
+                        while rev_edge in t_by_e:
+                            update_edge_num = edge[2] + 1
+                            edge     = (edge[0], edge[1], update_edge_num)
+                            rev_edge = (edge[1], edge[0], update_edge_num)
+                        tri[7 + i] = edge
+
                     # get the triangle that shares this edge
-                    conn_tri = t_by_e.get(edges[i])
+                    conn_tri = t_by_e.get(edge)
                     if conn_tri:
                         # Some triangle shares this edge, so add it
                         # to this triangle as one of its siblings and
                         # add this triangle to it as one of its siblings
-                        tri[4+i] = conn_tri
-                        conn_tri[conn_tri.index(edges[i][::-1])-3] = tri
+                        tri[4 + i] = conn_tri
+                        conn_tri[conn_tri.index(rev_edge)-3] = tri
 
                     # neighbor edges are travelled in reverse.
-                    t_by_e[edges[i][::-1]] = tri
+                    t_by_e[rev_edge] = tri
 
     def make_strips(self):
         '''Takes all loaded triangles and
