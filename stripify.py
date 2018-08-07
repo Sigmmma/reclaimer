@@ -6,17 +6,31 @@ DEFAULT_TEX = 0
 MAX_STRIP_LEN = 2**32-4
 
 
-class StripTri:
+class StripTri(list):
     __slots__ = (
-        "verts", "siblings", "edges", "added"
+        "siblings", "sibling_edges", "added",
+        "get_sibling_index", "get_edge_index"
         )
 
     def __init__(self, v0, v1, v2):
-        self.verts    = [v0, v1, v2]
+        list.__init__(self, (v0, v1, v2))
+        self.added = False
         self.siblings = [None, None, None]
-        self.edges    = [(v1_i, v0_i, 0),
-                         (v2_i, v1_i, 0),
-                         (v0_i, v2_i, 0)]
+        self.sibling_edges = [(v1, v0, 0),
+                              (v2, v1, 0),
+                              (v0, v2, 0)]
+
+    def __setattr__(self, attr_name, new_val):
+        if attr_name == "sibling_edges":
+            self.get_edge_index = new_val.index
+        elif attr_name == "siblings":
+            self.get_sibling_index = new_val.index
+        object.__setattr__(self, attr_name, new_val)
+
+    def __add__(self, new_val): raise NotImplementedError()
+    def __iadd__(self, new_val): raise NotImplementedError()
+    def append(self): raise NotImplementedError()
+    def extend(self): raise NotImplementedError()
 
 
 class Stripifier():
@@ -62,16 +76,16 @@ class Stripifier():
         while True:
             # set the last triangle as this one
             last_tri = tri
-            tri = tri[4 + neighbor_i]
+            tri = tri.siblings[neighbor_i]
 
             # exit if the strip has ended
-            if tri is None or tri[3] or id(tri) in seen:
+            if tri is None or tri.added or id(tri) in seen:
                 tri = last_tri
                 break
 
             # get which index the last tri was in the new tri so we can
             # orient outselves and figure out which edge to travel next
-            neighbor_i = (tri.index(last_tri) - 4 + 1 + strip_dir) % 3
+            neighbor_i = (tri.get_sibling_index(last_tri) + 1 + strip_dir) % 3
 
             # reverse the direction of travel
             # and set the triangle as seen
@@ -82,7 +96,7 @@ class Stripifier():
         seen = set()
 
         # make a strip starting with the first 2 verts to the triangle
-        strip = tri[neighbor_i: neighbor_i + 2]
+        strip = list(tri[neighbor_i: neighbor_i + 2])
         if neighbor_i == 2:
             strip = [tri[2], tri[0]]
 
@@ -99,7 +113,7 @@ class Stripifier():
 
         '''loop over triangles until the length is maxed or
         we reach a triangle without a neighbor on that edge'''
-        while not(tri[3] or id(tri) in seen or strip_len > self.max_strip_len):
+        while not(tri.added or id(tri) in seen or strip_len > self.max_strip_len):
             # get the index of the vert that will be added to the strip
             v_i = tri[(neighbor_i + 2) % 3]
 
@@ -114,11 +128,11 @@ class Stripifier():
             # have the next triangle chosen from its second edge,
             # while every even numbered triangle will have the
             # next triangle chosen from its 3rd edge.
-            tri = tri[4 + (neighbor_i + 1 + strip_dir) % 3]
+            tri = tri.siblings[(neighbor_i + 1 + strip_dir) % 3]
 
             # reverse the direction of travel, set the last triangle
             # as added and seen, and increment the strip length
-            last_tri[3] = set_added
+            last_tri.added = set_added
             strip_dir = not strip_dir
             seen.add(id(last_tri))
             strip_len += 1
@@ -128,7 +142,7 @@ class Stripifier():
 
             # get which index the last tri was in the new tri so we can
             # orient outselves and figure out which edge to travel next
-            neighbor_i = tri.index(last_tri) - 4
+            neighbor_i = tri.get_sibling_index(last_tri)
 
         return strip, strip_reversed
 
@@ -348,14 +362,8 @@ class Stripifier():
                     vert_map[v2] = v2_i = len(vert_data)
                     vert_data.append(v2)
 
+                tri = StripTri(v0_i, v1_i, v2_i)
                 edges = ((v0_i, v1_i, 0), (v1_i, v2_i, 0), (v2_i, v0_i, 0))
-
-                #       [vert1, vert2, vert3, added,
-                #        sib1,  sib2,  sib3,
-                #        edge1, edge2, edge3]
-                tri = [v0_i,  v1_i,  v2_i,  False,
-                       None, None, None,
-                       (v1_i, v0_i, 0), (v2_i, v1_i, 0), (v0_i, v2_i, 0)]
 
                 # loop over all 3 edges
                 for i in (0, 1, 2):
@@ -370,7 +378,7 @@ class Stripifier():
                             edge = (v0_i, v1_i, update_edge_num)
 
                         rev_edge = (v1_i, v0_i, update_edge_num)
-                        tri[7 + i] = rev_edge
+                        tri.sibling_edges[i] = rev_edge
 
                     # get the triangle that shares this edge
                     conn_tri = t_by_e.get(rev_edge)
@@ -379,8 +387,8 @@ class Stripifier():
                         # Some triangle shares this edge, so add it
                         # to this triangle as one of its siblings and
                         # add this triangle to it as one of its siblings
-                        tri[4 + i] = conn_tri
-                        conn_tri[conn_tri.index(edge)-3] = tri
+                        tri.siblings[i] = conn_tri
+                        conn_tri.siblings[conn_tri.get_edge_index(edge)] = tri
 
                     # neighbor edges are travelled in reverse.
                     t_by_e[edge] = tri
@@ -410,7 +418,7 @@ class Stripifier():
                 e_i += 1
 
                 # if the triangle has already been added
-                if tri_0[3]:
+                if tri_0.added:
                     continue
 
                 # calculate the 3 different possible strips
