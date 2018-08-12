@@ -138,14 +138,18 @@ class JmsVertex:
         "node_0",
         "pos_x", "pos_y", "pos_z",
         "norm_i", "norm_j", "norm_k",
+        "binorm_i", "binorm_j", "binorm_k",
+        "tangent_i", "tangent_j", "tangent_k",
         "node_1", "node_1_weight",
         "tex_u", "tex_v", "tex_w",
         )
     def __init__(self, node_0=0,
                  pos_x=0.0, pos_y=0.0, pos_z=0.0,
-                 norm_i=0.0, norm_j=0.0, norm_k=0.0,
+                 norm_i=0.0, norm_j=0.0, norm_k=1.0,
                  node_1=-1, node_1_weight=0.0,
-                 tex_u=0, tex_v=0, tex_w=0):
+                 tex_u=0, tex_v=0, tex_w=0,
+                 binorm_i=0.0,  binorm_j=1.0,  binorm_k=0.0,
+                 tangent_i=1.0, tangent_j=0.0, tangent_k=0.0):
         if node_1_weight <= 0:
             node_1 = -1
             node_1_weight = 0
@@ -157,6 +161,12 @@ class JmsVertex:
         self.norm_i = norm_i
         self.norm_j = norm_j
         self.norm_k = norm_k
+        self.binorm_i = binorm_i
+        self.binorm_j = binorm_j
+        self.binorm_k = binorm_k
+        self.tangent_i = tangent_i
+        self.tangent_j = tangent_j
+        self.tangent_k = tangent_k
         self.node_1 = node_1
         self.node_1_weight = node_1_weight
         self.tex_u = tex_u
@@ -185,23 +195,22 @@ class JmsVertex:
     def __eq__(self, other):
         if not isinstance(other, JmsVertex):
             return False
+        elif (abs(self.pos_z  - other.pos_z)  > 0.00001 or
+              abs(self.norm_k - other.norm_k) > 0.00001):
+            return False
+        elif (abs(self.pos_x - other.pos_x) > 0.00001 or
+              abs(self.pos_y - other.pos_y) > 0.00001):
+            return False
+        elif (abs(self.norm_i - other.norm_i) > 0.00001 or
+              abs(self.norm_j - other.norm_j) > 0.00001):
+            return False
         elif self.node_1_weight != other.node_1_weight:
             return False
         elif self.node_0 != other.node_0 or self.node_1 != other.node_1:
             return False
-        elif (abs(self.tex_u - other.tex_u) > 0.00001 or
-              abs(self.tex_v - other.tex_v) > 0.00001):
-            # dont need to check w as it's never used(its a stub)
-            return False
-        elif (abs(self.pos_x - other.pos_x) > 0.00001 or
-              abs(self.pos_y - other.pos_y) > 0.00001 or
-              abs(self.pos_z - other.pos_z) > 0.00001):
-            return False
-        elif (abs(self.norm_i - other.norm_i) > 0.00001 or
-              abs(self.norm_j - other.norm_j) > 0.00001 or
-              abs(self.norm_k - other.norm_k) > 0.00001):
-            return False
-        return True
+
+        return (abs(self.tex_u - other.tex_u) <= 0.00001 and
+                abs(self.tex_v - other.tex_v) <= 0.00001)
 
 
 class JmsTriangle:
@@ -276,23 +285,73 @@ class JmsModel:
         self.verts   = verts   if verts   else []
         self.tris    = tris    if tris    else []
 
-    def optimize_geometry(self):
-        orig_idx = 0
+    def calculate_vertex_normals(self):
+        seen = set((-1, ))
+        verts = self.verts
+        vert_ct = len(verts)
+
+        v_indices = (0, 1, 2)
+        for tri in self.tris:
+            for tri_i in v_indices:
+                v_i = tri[tri_i]
+                if v_i >= vert_ct or v_i in seen:
+                    continue
+
+                seen.add(v_i)
+                v0 = verts[v_i]
+                v1 = verts[tri[(tri_i + 1) % 3]]
+                v2 = verts[tri[(tri_i + 2) % 3]]
+
+                # calculate and set the binormal and tangent of v0
+
+    def optimize_geometry(self, exact_compare=True):
         verts = self.verts
         vert_ct = len(verts)
 
         # this will map the verts to prune to the vert they are identical to
         dup_vert_map = {}
+        is_added = dup_vert_map.__contains__
+        get_vert = verts.__getitem__
 
-        # loop over all verts and figure out which ones to replace with others
-        while orig_idx + 1 < vert_ct:
-            if orig_idx not in dup_vert_map:
-                vert_a = verts[orig_idx]
-                for i in range(orig_idx + 1, vert_ct):
-                    if i not in dup_vert_map and vert_a == verts[i]:
+        if exact_compare:
+            # loop over all verts and figure out which ones to replace with others
+            for orig_idx in range(vert_ct - 1):
+                if not is_added(orig_idx):
+                    vert_a = get_vert(orig_idx)
+                    vert_a_x = vert_a.pos_x;  vert_a_y = vert_a.pos_y;  vert_a_z = vert_a.pos_z
+                    vert_a_i = vert_a.norm_i; vert_a_j = vert_a.norm_j; vert_a_k = vert_a.norm_k
+                    vert_a_u = vert_a.tex_u;  vert_a_v = vert_a.tex_v
+                    vert_a_n0 = vert_a.node_0; vert_a_n1 = vert_a.node_1
+                    vert_a_n1w = vert_a.node_1_weight
+                    for i in range(orig_idx + 1, vert_ct):
+                        if is_added(i):
+                            continue
+
+                        vert_b = get_vert(i)
+                        if vert_a_z != vert_b.pos_z or vert_a_k != vert_b.norm_k:
+                            continue
+                        elif vert_a_x != vert_b.pos_x or vert_a_y != vert_b.pos_y:
+                            continue
+                        elif vert_a_i != vert_b.norm_i or vert_a_j != vert_b.norm_j:
+                            continue
+                        elif vert_a_n1w != vert_b.node_1_weight:
+                            continue
+                        elif vert_a_n0 != vert_b.node_0 or vert_a_n1 != vert_b.node_1:
+                            continue
+                        elif vert_a_u != vert_b.tex_u or vert_a_v != vert_b.tex_v:
+                            continue
+
                         dup_vert_map[i] = orig_idx
-
-            orig_idx += 1
+        else:
+            # loop over all verts and figure out which ones to replace with others
+            for orig_idx in range(vert_ct - 1):
+                if not is_added(orig_idx):
+                    vert_a = get_vert(orig_idx)
+                    for i in range(orig_idx + 1, vert_ct):
+                        if is_added(i):
+                            continue
+                        elif get_vert(i) == vert_a:
+                            dup_vert_map[i] = orig_idx
 
         if not dup_vert_map:
             # nothing to optimize away

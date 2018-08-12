@@ -1,7 +1,7 @@
 from math import sqrt
 from struct import Struct as PyStruct
 
-from reclaimer.jms import GeometryMesh
+from reclaimer.jms import GeometryMesh, JmsVertex
 from reclaimer.stripify import Stripifier
 from reclaimer.hek.defs.mod2 import mod2_def,\
      triangle as mod2_tri_struct, fast_uncompressed_vertex as mod2_vert_struct
@@ -18,6 +18,19 @@ mod2_tri_strip_def = BlockDef(
     )
 
 LOD_NAMES = ("superhigh", "high", "medium", "low", "superlow")
+MAX_STRIP_LEN = 32763 * 3
+
+EMPTY_GEOM_VERTS = (
+    JmsVertex(0, 0.000000001, 0.0, 0.0,
+              0.0, 0.0, 1.0,
+              -1, 0.0, 0.0, 0.0),
+    JmsVertex(0, 0.0, 0.000000001, 0.0,
+              0.0, 0.0, 1.0,
+              -1, 0.0, 0.0, 1.0),
+    JmsVertex(0, 0.0, 0.0, 0.000000001,
+              0.0, 0.0, 1.0,
+              -1, 0.0, 1.0, 0.0),
+    )
 
 def compile_gbxmodel(mod2_tag, merged_jms):
     tagdata = mod2_tag.data.tagdata
@@ -51,12 +64,23 @@ def compile_gbxmodel(mod2_tag, merged_jms):
 
     # make shader references
     mod2_shaders = tagdata.shaders.STEPTREE
+    shdr_perm_indices_by_name = {}
+    for mod2_shader in mod2_shaders:
+        shdr_name = mod2_shader.shader.filepath.split("\\")[-1]
+        shdr_perm_indices = shdr_perm_indices_by_name.setdefault(shdr_name, [])
+        shdr_perm_indices.append(mod2_shader.permutation_index)
+
     del mod2_shaders[:]
     for mat in merged_jms.materials:
         mod2_shaders.append()
         mod2_shader = mod2_shaders[-1]
         mod2_shader.shader.tag_class.set_to(mat.shader_type)
         mod2_shader.shader.filepath = mat.shader_path
+
+        shdr_name = mod2_shader.shader.filepath.split("\\")[-1]
+        shdr_perm_indices = shdr_perm_indices_by_name.get(shdr_name)
+        if shdr_perm_indices:
+            mod2_shader.permutation_index = shdr_perm_indices.pop(0)
 
 
     # make regions
@@ -147,7 +171,7 @@ def compile_gbxmodel(mod2_tag, merged_jms):
         return ("Cannot add more than 256 geometries to a model. "
                 "Each material in each region in each permutation "
                 "in each LOD is counted as a single geometry.\n"
-                "This model would contain %s geometries." % len(geom_meshes))
+                "This model would contain %s geometries." % len(geom_meshes), )
 
     # make the markers
     mod2_marker_headers = tagdata.markers.STEPTREE
@@ -208,24 +232,27 @@ def compile_gbxmodel(mod2_tag, merged_jms):
 
             stripifier = Stripifier()
             stripifier.load_mesh(geom_mesh.tris, True)
-            stripifier.max_strip_len = 32760
             stripifier.make_strips()
             stripifier.link_strips()
 
-            all_strips = stripifier.all_strips[0]
-            if len(all_strips) == 1:
-                mesh_list.append(GeometryMesh(all_verts, all_strips[0]))
-                continue
+            strips = stripifier.all_strips.get(0)
+            if not strips:
+                all_verts = EMPTY_GEOM_VERTS
+                tri_strip = (0, 1, 2)
+            else:
+                tri_strip = strips[0]
+                if len(tri_strip) > MAX_STRIP_LEN:
+                    return (
+                        ("Too many triangles ya fuck. Max triangles per "
+                         "geometry is %s.\nThis geometry is %s after linking "
+                         "all strips.") % (MAX_STRIP_LEN, len(tri_strip)), )
 
-            print("FUCK FUCK FUCK")
-            for strip in all_strips:
-                geom_mesh = GeometryMesh()
+            mesh_list.append(GeometryMesh(all_verts, tri_strip))
 
 
     # make the geometries
     mod2_geoms = tagdata.geometries.STEPTREE
     del mod2_geoms[:]
-    centroid = [0, 0, 0]
     vert_packer = PyStruct(">14f2h2f").pack_into
     for geom_idx in range(len(stripped_geom_meshes)):
         mod2_geoms.append()
@@ -240,12 +267,15 @@ def compile_gbxmodel(mod2_tag, merged_jms):
 
                 tris  = geom_mesh.tris
                 verts = geom_mesh.verts
+                vert_ct = len(verts)
                 mod2_verts.extend(len(verts))
-
                 mod2_part.shader_index = mat_idx
-                mod2_part.centroid_translation[:] = centroid
+
+                cent_x = cent_y = cent_z = 0
 
                 # TODO: Modify this to take into account local nodes
+
+
                 # make a raw vert reflexive and replace the one in the part
                 mod2_part.uncompressed_vertices = mod2_verts_def.build()
                 mod2_verts = mod2_part.uncompressed_vertices.STEPTREE = \
@@ -256,12 +286,16 @@ def compile_gbxmodel(mod2_tag, merged_jms):
                         mod2_verts, i,
                         vert.pos_x / 100,  vert.pos_y / 100,  vert.pos_z / 100,
                         vert.norm_i, vert.norm_j, vert.norm_k,
-                        # TODO: Calculate the binormal and tangent
-                        0, 0, 0,
-                        0, 0, 0,
+                        vert.binorm_i, vert.binorm_j, vert.binorm_k,
+                        vert.tangent_i, vert.tangent_j, vert.tangent_k,
                         vert.tex_u, 1 - vert.tex_v, vert.node_0, vert.node_1,
                         1 - vert.node_1_weight, vert.node_1_weight)
                     i += 68
+                    cent_x += vert.pos_x / vert_ct
+                    cent_y += vert.pos_y / vert_ct
+                    cent_z += vert.pos_z / vert_ct
+
+                mod2_part.centroid_translation[:] = [cent_x, cent_y, cent_z]
 
                 # make a raw tri reflexive and replace the one in the part
                 mod2_part.triangles = mod2_tri_strip_def.build()
