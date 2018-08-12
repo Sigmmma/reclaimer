@@ -200,7 +200,8 @@ def compile_gbxmodel(mod2_tag, merged_jms):
             geom_mesh = geom_meshes[geom_idx][mat_idx]
             all_verts = geom_mesh.verts
 
-            stripifier = Stripifier(geom_mesh.tris, True)
+            stripifier = Stripifier()
+            stripifier.load_mesh(geom_mesh.tris, True)
             stripifier.max_strip_len = 32760
             stripifier.make_strips()
             stripifier.link_strips()
