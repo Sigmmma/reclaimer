@@ -286,15 +286,11 @@ class JmsModel:
 
         # loop over all verts and figure out which ones to replace with others
         while orig_idx + 1 < vert_ct:
-            if orig_idx in dup_vert_map:
-                # vert optimized out, continue
-                orig_idx += 1
-                continue
-
-            vert_a = verts[orig_idx]
-            for i in range(orig_idx + 1, vert_ct):
-                if i not in dup_vert_map and vert_a == verts[i]:
-                    dup_vert_map[i] = orig_idx
+            if orig_idx not in dup_vert_map:
+                vert_a = verts[orig_idx]
+                for i in range(orig_idx + 1, vert_ct):
+                    if i not in dup_vert_map and vert_a == verts[i]:
+                        dup_vert_map[i] = orig_idx
 
             orig_idx += 1
 
@@ -302,40 +298,39 @@ class JmsModel:
             # nothing to optimize away
             return
 
-        replace_map = dict(dup_vert_map)
+        # remap any duplicate triangle vert indices to the original
+        get_mapped_vert = dup_vert_map.get
+        for tri in self.tris:
+            tri.v0 = get_mapped_vert(tri.v0, tri.v0)
+            tri.v1 = get_mapped_vert(tri.v1, tri.v1)
+            tri.v2 = get_mapped_vert(tri.v2, tri.v2)
+
+        # copy the verts list so we can modify it without side-effects
+        new_vert_ct = vert_ct - len(dup_vert_map)
+        self.verts = new_verts = self.verts[: new_vert_ct]
+
+        shift_map = {}
         copy_idx = vert_ct - 1
         # loop over all duplicate vert indices and move any vertices
         # on the high end of the vert list down to fill in the empty
         # spaces left by the duplicate verts we're removing.
         for dup_i in sorted(dup_vert_map):
-            while copy_idx in replace_map and copy_idx > dup_i:
+            while copy_idx in dup_vert_map:
                 # keep looping until we get to a vert we can move
                 # from its high index to overwrite the low index dup
                 copy_idx -= 1
 
-            if copy_idx <= dup_i:
+            if copy_idx <= dup_i or dup_i >= new_vert_ct:
                 # cant copy any lower. all upper index verts are duplicates
                 break
 
             # move the vert from its high index to the low index dup
-            verts[dup_i] = verts[copy_idx]
-            replace_map[copy_idx] = dup_i
+            new_verts[dup_i] = verts[copy_idx]
+            shift_map[copy_idx] = dup_i
+            copy_idx -= 1
 
-        # loop over all vert indices being replaced and change their
-        # destination index if their current destination is being replaced
-        replacing = True
-        while replacing:
-            replacing = False
-            for dup_idx in sorted(replace_map):
-                orig_idx = replace_map[dup_idx]
-                if orig_idx in replace_map:
-                    replace_map[dup_idx] = replace_map[orig_idx]
-                    replacing = True
-
-        # prune the duplicate verts and remap any triangle vert indices
-        del self.verts[vert_ct - len(dup_vert_map): ]
-        get_mapped_vert = replace_map.get
-        vert_ct = len(self.verts)
+        # remap any triangle vert indices
+        get_mapped_vert = shift_map.get
         for tri in self.tris:
             tri.v0 = get_mapped_vert(tri.v0, tri.v0)
             tri.v1 = get_mapped_vert(tri.v1, tri.v1)
@@ -588,14 +583,15 @@ class MergedJmsRegion:
         region_tris = []
 
         vert_map = dict()
+        get_add_vert = vert_map.setdefault
         v_base = len(region_verts)
         tri_ct = 0
         mat_nums = set()
         for tri in src_tris:
             if tri.region == reg_idx:
-                tri.v0 = vert_map.setdefault(tri.v0, v_base + len(vert_map))
-                tri.v1 = vert_map.setdefault(tri.v1, v_base + len(vert_map))
-                tri.v2 = vert_map.setdefault(tri.v2, v_base + len(vert_map))
+                tri.v0 = get_add_vert(tri.v0, v_base + len(vert_map))
+                tri.v1 = get_add_vert(tri.v1, v_base + len(vert_map))
+                tri.v2 = get_add_vert(tri.v2, v_base + len(vert_map))
                 mat_nums.add(tri.shader)
                 tri_ct += 1
 
@@ -633,13 +629,14 @@ class MergedJmsRegion:
             mat_tris  = mesh_data[mat_num].tris
 
             vert_map = dict()
+            get_add_vert = vert_map.setdefault
             v_base = len(mat_verts)
             tri_ct = 0
             for tri in region_tris:
                 if tri.shader == mat_num:
-                    tri.v0 = vert_map.setdefault(tri.v0, v_base + len(vert_map))
-                    tri.v1 = vert_map.setdefault(tri.v1, v_base + len(vert_map))
-                    tri.v2 = vert_map.setdefault(tri.v2, v_base + len(vert_map))
+                    tri.v0 = get_add_vert(tri.v0, v_base + len(vert_map))
+                    tri.v1 = get_add_vert(tri.v1, v_base + len(vert_map))
+                    tri.v2 = get_add_vert(tri.v2, v_base + len(vert_map))
                     tri_ct += 1
 
             mat_verts.extend([None] * len(vert_map))
