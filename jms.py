@@ -1,4 +1,5 @@
 import re
+import math
 
 from os import makedirs
 from os.path import dirname, exists
@@ -50,9 +51,9 @@ class JmsNode:
               abs(self.rot_k - other.rot_k) > 0.00001 or
               abs(self.rot_w - other.rot_w) > 0.00001):
             return False
-        elif (abs(self.pos_x - other.pos_x) > 0.000001 or
-              abs(self.pos_y - other.pos_y) > 0.000001 or
-              abs(self.pos_z - other.pos_z) > 0.000001):
+        elif (abs(self.pos_x - other.pos_x) > 0.00001 or
+              abs(self.pos_y - other.pos_y) > 0.00001 or
+              abs(self.pos_z - other.pos_z) > 0.00001):
             return False
         return True
 
@@ -162,6 +163,13 @@ class JmsVertex:
         self.tex_v = tex_v
         self.tex_w = tex_w
 
+        norm_len = self.norm_i**2 + self.norm_j**2 + self.norm_k**2
+        if norm_len > 0.0:
+            norm_len = math.sqrt(norm_len)
+            self.norm_i /= norm_len
+            self.norm_j /= norm_len
+            self.norm_k /= norm_len
+
     def __repr__(self):
         return """JmsVertex(node_0=%s,
     x=%s, y=%s, z=%s,
@@ -173,6 +181,27 @@ class JmsVertex:
         self.norm_i, self.norm_j, self.norm_k,
         self.node_1, self.node_1_weight,
         self.tex_u, self.tex_v, self.tex_w)
+
+    def __eq__(self, other):
+        if not isinstance(other, JmsVertex):
+            return False
+        elif self.node_1_weight != other.node_1_weight:
+            return False
+        elif self.node_0 != other.node_0 or self.node_1 != other.node_1:
+            return False
+        elif (abs(self.tex_u - other.tex_u) > 0.00001 or
+              abs(self.tex_v - other.tex_v) > 0.00001):
+            # dont need to check w as it's never used(its a stub)
+            return False
+        elif (abs(self.pos_x - other.pos_x) > 0.00001 or
+              abs(self.pos_y - other.pos_y) > 0.00001 or
+              abs(self.pos_z - other.pos_z) > 0.00001):
+            return False
+        elif (abs(self.norm_i - other.norm_i) > 0.00001 or
+              abs(self.norm_j - other.norm_j) > 0.00001 or
+              abs(self.norm_k - other.norm_k) > 0.00001):
+            return False
+        return True
 
 
 class JmsTriangle:
@@ -246,6 +275,71 @@ class JmsModel:
         self.markers = markers if markers else []
         self.verts   = verts   if verts   else []
         self.tris    = tris    if tris    else []
+
+    def optimize_geometry(self):
+        orig_idx = 0
+        verts = self.verts
+        vert_ct = len(verts)
+
+        # this will map the verts to prune to the vert they are identical to
+        dup_vert_map = {}
+
+        # loop over all verts and figure out which ones to replace with others
+        while orig_idx + 1 < vert_ct:
+            if orig_idx in dup_vert_map:
+                # vert optimized out, continue
+                orig_idx += 1
+                continue
+
+            vert_a = verts[orig_idx]
+            for i in range(orig_idx + 1, vert_ct):
+                if i not in dup_vert_map and vert_a == verts[i]:
+                    dup_vert_map[i] = orig_idx
+
+            orig_idx += 1
+
+        if not dup_vert_map:
+            # nothing to optimize away
+            return
+
+        replace_map = dict(dup_vert_map)
+        copy_idx = vert_ct - 1
+        # loop over all duplicate vert indices and move any vertices
+        # on the high end of the vert list down to fill in the empty
+        # spaces left by the duplicate verts we're removing.
+        for dup_i in sorted(dup_vert_map):
+            while copy_idx in replace_map and copy_idx > dup_i:
+                # keep looping until we get to a vert we can move
+                # from its high index to overwrite the low index dup
+                copy_idx -= 1
+
+            if copy_idx <= dup_i:
+                # cant copy any lower. all upper index verts are duplicates
+                break
+
+            # move the vert from its high index to the low index dup
+            verts[dup_i] = verts[copy_idx]
+            replace_map[copy_idx] = dup_i
+
+        # loop over all vert indices being replaced and change their
+        # destination index if their current destination is being replaced
+        replacing = True
+        while replacing:
+            replacing = False
+            for dup_idx in sorted(replace_map):
+                orig_idx = replace_map[dup_idx]
+                if orig_idx in replace_map:
+                    replace_map[dup_idx] = replace_map[orig_idx]
+                    replacing = True
+
+        # prune the duplicate verts and remap any triangle vert indices
+        del self.verts[vert_ct - len(dup_vert_map): ]
+        get_mapped_vert = replace_map.get
+        vert_ct = len(self.verts)
+        for tri in self.tris:
+            tri.v0 = get_mapped_vert(tri.v0, tri.v0)
+            tri.v1 = get_mapped_vert(tri.v1, tri.v1)
+            tri.v2 = get_mapped_vert(tri.v2, tri.v2)
 
     def verify_nodes_valid(self):
         errors = []

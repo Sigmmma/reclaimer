@@ -96,10 +96,9 @@ class Stripifier():
         seen = set()
 
         # make a strip starting with the first 2 verts to the triangle
+        strip = list(tri[neighbor_i: neighbor_i + 2])
         if neighbor_i == 2:
             strip = [tri[2], tri[0]]
-        else:
-            strip = list(tri[neighbor_i: neighbor_i + 2])
 
         strip_reversed = strip_dir == self._winding
 
@@ -176,40 +175,36 @@ class Stripifier():
             if not len(strips):
                 continue
 
-            # a mapping that stores the strips from shortest to longest
-            sorted_strips = {}
-            sorted_dirs = {}
-
-            # sort the strips and their facing directions by length
-            for i in range(len(strips)):
-                strip     = strips[i]
-                face_dir  = face_dirs[i]
-                strip_len = len(strip)
-
-                same_len_strips = sorted_strips.get(strip_len, [])
-                same_len_strip_dirs = sorted_dirs.get(strip_len, [])
-
-                same_len_strips.append(strip)
-                same_len_strip_dirs.append(face_dir)
-
-                sorted_strips[strip_len] = same_len_strips
-                sorted_dirs[strip_len]   = same_len_strip_dirs
-
             # make lists to hold the new strips, degens, and dirs
             new_degens = []
             new_strips = []
             new_face_dirs = []
 
-            strip_lengths = list(sorted(sorted_strips.keys()))
+            # a mapping that stores the strips from shortest to longest
+            sorted_strips = {}
 
-            # get the first set of strips to link together
-            strips_i = strip_lengths.pop(0)
-            curr_strips = sorted_strips.pop(strips_i)
-            curr_dirs   = sorted_dirs.pop(strips_i)
+            # sort the strips and their facing directions by length
+            for i in range(len(strips)):
+                strips_by_face_dir = sorted_strips.setdefault(bool(face_dirs[i]), {})
+                same_len_strips = strips_by_face_dir.setdefault(len(strips[i]), [])
+                same_len_strips.append(strips[i])
+
+            strips_to_connect = []
+            strips_to_connect_dirs = []
+            for face_dir in sorted(sorted_strips):
+                for strip_len in sorted(sorted_strips[face_dir]):
+                    same_len_strips = sorted_strips[face_dir][strip_len]
+                    strips_to_connect_dirs.extend(
+                        (face_dir, ) * len(same_len_strips))
+                    strips_to_connect.extend(same_len_strips)
 
             # get the first strip to link together
-            strip0_dir = curr_dirs.pop(0)
-            strip0 = curr_strips.pop(0)
+            strip_i = 0
+            if strips_to_connect:
+                strip0     = strips_to_connect[strip_i]
+                strip0_dir = strips_to_connect_dirs[strip_i]
+            else:
+                strip0 = strip0_dir = None
 
             '''keep linking strips together till none are left'''
             while strip0 is not None:
@@ -221,21 +216,17 @@ class Stripifier():
 
                 # link strips together until their length is maxed
                 while True:
-                    try:
-                        # if the set of strips has run out, get the next set
-                        if not curr_strips:
-                            strips_i = strip_lengths.pop(0)
-                            curr_strips = sorted_strips.pop(strips_i)
-                            curr_dirs   = sorted_dirs.pop(strips_i)
-                    except (KeyError, IndexError):
+                    if strip_i >= len(strips_to_connect):
                         if strip0_dir != winding:
                             strip0.insert(0, strip0[0])
                         strip1 = strip1_dir = None
                         break
 
                     # get the strip to link to
-                    strip1_dir = curr_dirs.pop(0)
-                    strip1 = curr_strips.pop(0)
+                    strip1 = strips_to_connect[strip_i]
+                    strip1_dir = strips_to_connect_dirs[strip_i]
+
+                    strip_i += 1
 
                     len0 = len(strip0)
                     len1 = len(strip1)
@@ -347,18 +338,17 @@ class Stripifier():
                 # Need to split strips up by texture coordinates as well.
 
                 v0_i = vert_map.get(v0)
+                v1_i = vert_map.get(v1)
+                v2_i = vert_map.get(v2)
+
                 # get if this first vert doesnt already exist
                 if v0_i is None:
                     vert_map[v0] = v0_i = len(vert_data)
                     vert_data.append(v0)
-
-                v1_i = vert_map.get(v1)
                 # get if this second vert doesnt already exist
                 if v1_i is None:
                     vert_map[v1] = v1_i = len(vert_data)
                     vert_data.append(v1)
-
-                v2_i = vert_map.get(v2)
                 # get if this third vert doesnt already exist
                 if v2_i is None:
                     vert_map[v2] = v2_i = len(vert_data)
