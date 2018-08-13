@@ -274,7 +274,7 @@ def compile_gbxmodel(mod2_tag, merged_jms):
                 cent_x = cent_y = cent_z = 0
 
                 # TODO: Modify this to take into account local nodes
-
+                # honestly though, who the fuck is going to care? fuck it.
 
                 # make a raw vert reflexive and replace the one in the part
                 mod2_part.uncompressed_vertices = mod2_verts_def.build()

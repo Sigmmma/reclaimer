@@ -310,24 +310,22 @@ class JmsModel:
 
         # this will map the verts to prune to the vert they are identical to
         dup_vert_map = {}
-        is_added = dup_vert_map.__contains__
-        get_vert = verts.__getitem__
 
         if exact_compare:
             # loop over all verts and figure out which ones to replace with others
             for orig_idx in range(vert_ct - 1):
-                if not is_added(orig_idx):
-                    vert_a = get_vert(orig_idx)
+                if orig_idx not in dup_vert_map:
+                    vert_a = verts[orig_idx]
                     vert_a_x = vert_a.pos_x;  vert_a_y = vert_a.pos_y;  vert_a_z = vert_a.pos_z
                     vert_a_i = vert_a.norm_i; vert_a_j = vert_a.norm_j; vert_a_k = vert_a.norm_k
                     vert_a_u = vert_a.tex_u;  vert_a_v = vert_a.tex_v
                     vert_a_n0 = vert_a.node_0; vert_a_n1 = vert_a.node_1
                     vert_a_n1w = vert_a.node_1_weight
                     for i in range(orig_idx + 1, vert_ct):
-                        if is_added(i):
+                        if i in dup_vert_map:
                             continue
 
-                        vert_b = get_vert(i)
+                        vert_b = verts[i]
                         if vert_a_z != vert_b.pos_z or vert_a_k != vert_b.norm_k:
                             continue
                         elif vert_a_x != vert_b.pos_x or vert_a_y != vert_b.pos_y:
@@ -345,12 +343,10 @@ class JmsModel:
         else:
             # loop over all verts and figure out which ones to replace with others
             for orig_idx in range(vert_ct - 1):
-                if not is_added(orig_idx):
-                    vert_a = get_vert(orig_idx)
+                if orig_idx not in dup_vert_map:
+                    vert_a = verts[orig_idx]
                     for i in range(orig_idx + 1, vert_ct):
-                        if is_added(i):
-                            continue
-                        elif get_vert(i) == vert_a:
+                        if i not in dup_vert_map and verts[i] == vert_a:
                             dup_vert_map[i] = orig_idx
 
         if not dup_vert_map:
