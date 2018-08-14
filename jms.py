@@ -635,7 +635,7 @@ class MergedJmsRegion:
         src_verts = jms_model.verts
         src_tris  = jms_model.tris
         region_verts = []
-        region_tris = []
+        region_tris = [None] * len(src_tris)
 
         vert_map = dict()
         get_add_vert = vert_map.setdefault
@@ -644,26 +644,30 @@ class MergedJmsRegion:
         mat_nums = set()
         for tri in src_tris:
             if tri.region == reg_idx:
+                tri = JmsTriangle(tri.region, tri.shader, tri.v0, tri.v1, tri.v2)
                 tri.v0 = get_add_vert(tri.v0, v_base + len(vert_map))
                 tri.v1 = get_add_vert(tri.v1, v_base + len(vert_map))
                 tri.v2 = get_add_vert(tri.v2, v_base + len(vert_map))
                 mat_nums.add(tri.shader)
+                region_tris[tri_ct] = tri
                 tri_ct += 1
 
         if tri_ct == 0:
             return
 
+
         # collect all the verts and triangles used by this region
         region_verts.extend([None] * len(vert_map))
         for i, j in vert_map.items():
-            region_verts[j] = src_verts[i]
+            v = src_verts[i]
+            region_verts[j] = JmsVertex(
+                v.node_0, v.pos_x, v.pos_y, v.pos_z,
+                v.norm_i, v.norm_j, v.norm_k, v.node_1, v.node_1_weight,
+                v.tex_u, v.tex_v, v.tex_w,
+                v.binorm_i,  v.binorm_j, v. binorm_k,
+                v.tangent_i, v.tangent_j, v.tangent_k)
 
-        i = len(region_tris)
-        region_tris.extend([None] * tri_ct)
-        for tri in src_tris:
-            if tri.region == reg_idx:
-                region_tris[i] = tri
-                i += 1
+        del region_tris[tri_ct: ]
 
         if len(mat_nums) == 1 or not self._split_by_shader:
             for mat_num in mat_nums: break
