@@ -74,10 +74,11 @@ def compile_gbxmodel(mod2_tag, merged_jms):
     for mat in merged_jms.materials:
         mod2_shaders.append()
         mod2_shader = mod2_shaders[-1]
-        mod2_shader.shader.tag_class.set_to(mat.shader_type)
-        mod2_shader.shader.filepath = mat.shader_path
+        if mat.shader_type:
+            mod2_shader.shader.tag_class.set_to(mat.shader_type)
+            mod2_shader.shader.filepath = mat.shader_path
 
-        shdr_name = mod2_shader.shader.filepath.split("\\")[-1]
+        shdr_name = mod2_shader.shader.filepath.split("\\")[-1].lower()
         shdr_perm_indices = shdr_perm_indices_by_name.get(shdr_name)
         if shdr_perm_indices:
             mod2_shader.permutation_index = shdr_perm_indices.pop(0)
