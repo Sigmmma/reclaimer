@@ -67,7 +67,7 @@ class JmsMaterial:
         self.name = name
         self.tiff_path = tiff_path
         self.shader_path = name
-        self.shader_type = "shader"
+        self.shader_type = ""
 
     def __repr__(self):
         return """JmsMaterial(name=%s,
