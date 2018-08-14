@@ -215,9 +215,6 @@ class Stripifier():
             while strip0 is not None:
                 # make a new degens list and get the current strip direction
                 strip0_degens = []
-                new_degens.append(strip0_degens)
-                new_face_dirs.append(strip0_dir)
-                new_strips.append(strip0)
 
                 # link strips together until their length is maxed
                 while True:
@@ -267,6 +264,10 @@ class Stripifier():
                     # merge the strips
                     strip0.extend(strip1)
 
+                new_degens.append(strip0_degens)
+                new_face_dirs.append(strip0_dir)
+                new_strips.append(strip0)
+
                 # restart the cycle on the next strip
                 strip0 = strip1
                 strip0_dir = strip1_dir
@@ -315,8 +316,8 @@ class Stripifier():
         elif isinstance(all_tris, (list, tuple)):
             all_tris = {DEFAULT_TEX:all_tris}
         elif not isinstance(all_tris, dict):
-            raise TypeError("'all_tris' argument must be either a list"+
-                            ", tuple, or dict, not %s"%type(all_tris))
+            raise TypeError("'all_tris' argument must be either a list" +
+                            ", tuple, or dict, not %s" % type(all_tris))
 
         # loop over all meshes by texture
         for tex_index in all_tris:
