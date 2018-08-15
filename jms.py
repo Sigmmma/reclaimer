@@ -15,7 +15,7 @@ class JmsNode:
         )
     def __init__(self, name="", first_child=-1, sibling_index=-1,
                  rot_i=0.0, rot_j=0.0, rot_k=0.0, rot_w=1.0,
-                 pos_x=0.0, pos_y=0.0, pos_z=0.0):
+                 pos_x=0.0, pos_y=0.0, pos_z=0.0, parent_index=-1):
         self.name = name
         self.sibling_index = sibling_index
         self.first_child = first_child
@@ -26,7 +26,7 @@ class JmsNode:
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.pos_z = pos_z
-        self.parent_index = -1
+        self.parent_index = parent_index
 
     def __repr__(self):
         return """JmsNode(name=%s,
@@ -63,11 +63,12 @@ class JmsMaterial:
         "name", "tiff_path",
         "shader_path", "shader_type"
         )
-    def __init__(self, name="__unnamed", tiff_path="<none>"):
+    def __init__(self, name="__unnamed", tiff_path="<none>",
+                 shader_path=None, shader_type=""):
         self.name = name
         self.tiff_path = tiff_path
-        self.shader_path = name
-        self.shader_type = ""
+        self.shader_path = shader_path if shader_path else name
+        self.shader_type = shader_type
 
     def __repr__(self):
         return """JmsMaterial(name=%s,
@@ -790,8 +791,18 @@ class MergedJmsModel:
 
         if not self.nodes:
             self.node_list_checksum = other_model.node_list_checksum
-            self.nodes = list(other_model.nodes)
-            self.materials = list(other_model.materials)
+            self.nodes = nodes = []
+            self.materials = materials = []
+            for node in other_model.nodes:
+                nodes.append(
+                    JmsNode(node.name, node.first_child, node.sibling_index,
+                     node.rot_i, node.rot_j, node.rot_k, node.rot_w,
+                     node.pos_x, node.pos_y, node.pos_z, node.parent_index))
+
+            for mat in other_model.materials:
+                materials.append(JmsMaterial(
+                    mat.name, mat.tiff_path, mat.shader_path, mat.shader_type))
+
             self.regions = {}
 
         errors = self.verify_models_match(other_model)
