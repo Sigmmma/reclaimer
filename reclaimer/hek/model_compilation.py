@@ -74,9 +74,11 @@ def compile_gbxmodel(mod2_tag, merged_jms):
     for mat in merged_jms.materials:
         mod2_shaders.append()
         mod2_shader = mod2_shaders[-1]
+        mod2_shader.shader.filepath = mat.shader_path
         if mat.shader_type:
             mod2_shader.shader.tag_class.set_to(mat.shader_type)
-            mod2_shader.shader.filepath = mat.shader_path
+        else:
+            mod2_shader.shader.tag_class.set_to("shader")
 
         shdr_name = mod2_shader.shader.filepath.split("\\")[-1].lower()
         shdr_perm_indices = shdr_perm_indices_by_name.get(shdr_name)
@@ -242,11 +244,12 @@ def compile_gbxmodel(mod2_tag, merged_jms):
                 tri_strip = (0, 1, 2)
             else:
                 tri_strip = strips[0]
-                if len(tri_strip) > MAX_STRIP_LEN:
-                    return (
-                        ("Too many triangles ya fuck. Max triangles per "
-                         "geometry is %s.\nThis geometry is %s after linking "
-                         "all strips.") % (MAX_STRIP_LEN, len(tri_strip)), )
+
+            if len(tri_strip) > MAX_STRIP_LEN:
+                return (
+                    ("Too many triangles ya fuck. Max triangles per "
+                     "geometry is %s.\nThis geometry is %s after linking "
+                     "all strips.") % (MAX_STRIP_LEN, len(tri_strip)), )
 
             mesh_list.append(GeometryMesh(all_verts, tri_strip))
 

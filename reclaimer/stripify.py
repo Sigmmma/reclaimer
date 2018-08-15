@@ -176,63 +176,56 @@ class Stripifier():
             if not len(strips):
                 continue
 
-            # a mapping that stores the strips from shortest to longest
-            sorted_strips = {}
-            sorted_dirs = {}
-
             # sort the strips and their facing directions by length
+            sorted_strips_by_dir = [{}, {}]
             for i in range(len(strips)):
-                strip     = strips[i]
-                face_dir  = face_dirs[i]
-                strip_len = len(strip)
+                sorted_strips_by_dir[int(face_dirs[i])].setdefault(
+                    len(strips[i]), []).append(strips[i])
 
-                same_len_strips = sorted_strips.get(strip_len, [])
-                same_len_strip_dirs = sorted_dirs.get(strip_len, [])
+            strips_by_dir = []
+            for face_dir in (0, 1):
+                i = 0
+                strips_by_len = sorted_strips_by_dir[face_dir]
+    
+                total_len = 0
+                for same_len_strips in strips_by_len.values():
+                    total_len += len(same_len_strips)
+                    
+                sorted_strips = [None] * total_len
+                strips_by_dir.append(sorted_strips)
+                for strip_len in sorted(strips_by_len):
+                    for strip in strips_by_len[strip_len]:
+                        sorted_strips[i] = strip
+                        i += 1
 
-                same_len_strips.append(strip)
-                same_len_strip_dirs.append(face_dir)
-
-                sorted_strips[strip_len] = same_len_strips
-                sorted_dirs[strip_len]   = same_len_strip_dirs
+            fully_sorted_strips = (strips_by_dir[int(winding)] +
+                                   strips_by_dir[int(not winding)])
+            reverse_dir_at = len(strips_by_dir[int(winding)])
 
             # make lists to hold the new strips, degens, and dirs
             new_degens = []
             new_strips = []
             new_face_dirs = []
 
-            strip_lengths = list(sorted(sorted_strips.keys()))
-
             # get the first set of strips to link together
-            strips_i = strip_lengths.pop(0)
-            curr_strips = sorted_strips.pop(strips_i)
-            curr_dirs   = sorted_dirs.pop(strips_i)
+            strip_i = 1
+            strip_ct = len(fully_sorted_strips)
 
             # get the first strip to link together
-            strip0_dir = curr_dirs.pop(0)
-            strip0 = curr_strips.pop(0)
+            strip0 = fully_sorted_strips[0]
+            strip0_dir = winding
 
             '''keep linking strips together till none are left'''
-            while strip0 is not None:
+            while strip_i < strip_ct:
                 # make a new degens list and get the current strip direction
                 strip0_degens = []
 
                 # link strips together until their length is maxed
-                while True:
-                    try:
-                        # if the set of strips has run out, get the next set
-                        if not curr_strips:
-                            strips_i = strip_lengths.pop(0)
-                            curr_strips = sorted_strips.pop(strips_i)
-                            curr_dirs   = sorted_dirs.pop(strips_i)
-                    except (KeyError, IndexError):
-                        if strip0_dir != winding:
-                            strip0.insert(0, strip0[0])
-                        strip1 = strip1_dir = None
-                        break
-
-                    # get the strip to link to
-                    strip1_dir = curr_dirs.pop(0)
-                    strip1 = curr_strips.pop(0)
+                while strip_i < strip_ct:
+                    strip1_dir = winding
+                    strip1 = fully_sorted_strips[strip_i]
+                    if strip_i >= reverse_dir_at:
+                        strip1_dir = not winding
 
                     len0 = len(strip0)
                     len1 = len(strip1)
@@ -241,6 +234,7 @@ class Stripifier():
                     because if they do they'll need a degen between them'''
                     add_degen = (end_dir0 == strip1_dir)
 
+                    strip_i += 1
                     # if the strip being added is empty, skip it
                     if len1 == 0:
                         continue
@@ -263,6 +257,9 @@ class Stripifier():
 
                     # merge the strips
                     strip0.extend(strip1)
+
+                if strip0_dir != winding:
+                    strip0.insert(0, strip0[0])
 
                 new_degens.append(strip0_degens)
                 new_face_dirs.append(strip0_dir)
@@ -316,7 +313,7 @@ class Stripifier():
         elif isinstance(all_tris, (list, tuple)):
             all_tris = {DEFAULT_TEX:all_tris}
         elif not isinstance(all_tris, dict):
-            raise TypeError("'all_tris' argument must be either a list" +
+            raise TypeError("'all_tris' argument must be either a list"
                             ", tuple, or dict, not %s" % type(all_tris))
 
         # loop over all meshes by texture
