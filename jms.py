@@ -773,10 +773,10 @@ class MergedJmsModel:
                     for lod_mesh_list in perm_mesh.lod_meshes.values():
                         for mesh in lod_mesh_list.values():
                             for vert in mesh.verts:
-                                scale = abs(vert.tex_u * u_scale)
-                                calc_u_scale = max(scale, calc_u_scale)
-                                scale = abs(vert.tex_v * v_scale)
-                                calc_v_scale = max(scale, calc_v_scale)
+                                calc_u_scale = max(abs(vert.tex_u * u_scale),
+                                                   calc_u_scale)
+                                calc_v_scale = max(abs(vert.tex_v * v_scale),
+                                                   calc_v_scale)
 
         return calc_u_scale, calc_v_scale
 

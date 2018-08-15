@@ -815,7 +815,7 @@ def extract_model(tagdata, tag_path, **kw):
                                         ni, nj, nk,
                                         v[9]//3, 1.0 - (v[10]/32767),
                                         u_scale * v[6]/32767,
-                                        v_scale *(1.0 - v[7]/32767)))
+                                        1.0 - v_scale * v[7]/32767))
                             elif compressed:
                                 for v in part.compressed_vertices.STEPTREE:
                                     n = v[3]
@@ -832,7 +832,7 @@ def extract_model(tagdata, tag_path, **kw):
                                         ni, nj, nk,
                                         v[9]//3, 1.0 - (v[10]/32767),
                                         u_scale * v[6]/32767,
-                                        v_scale *(1.0 - v[7]/32767)))
+                                        1.0 - v_scale * v[7]/32767))
                             elif not compressed and unparsed:
                                 vert_data = part.uncompressed_vertices.STEPTREE.data
                                 for off in range(0, len(vert_data), 68):
@@ -843,7 +843,7 @@ def extract_model(tagdata, tag_path, **kw):
                                         v[3], v[4], v[5],
                                         node_map[v[15]], max(0, min(1, v[17])),
                                         u_scale * v[12],
-                                        v_scale * (1.0 - v[13])))
+                                        1.0 - v_scale * v[13]))
                             else:
                                 for v in part.uncompressed_vertices.STEPTREE:
                                     verts.append(JmsVertex(
@@ -852,7 +852,7 @@ def extract_model(tagdata, tag_path, **kw):
                                         v[3], v[4], v[5],
                                         node_map[v[15]], max(0, min(1, v[17])),
                                         u_scale * v[12],
-                                        v_scale * (1.0 - v[13])))
+                                        1.0 - v_scale * v[13]))
                         except Exception:
                             print(format_exc())
                             print("If you see this, tell Moses to stop "
