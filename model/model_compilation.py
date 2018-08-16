@@ -1,8 +1,8 @@
 from math import sqrt
 from struct import Struct as PyStruct
 
-from reclaimer.jms import GeometryMesh, JmsVertex
-from reclaimer.stripify import Stripifier
+from reclaimer.model.jms import GeometryMesh, JmsVertex
+from reclaimer.model.stripify import Stripifier
 from reclaimer.hek.defs.mod2 import mod2_def,\
      triangle as mod2_tri_struct, fast_uncompressed_vertex as mod2_vert_struct
 from reclaimer.common_descs import raw_reflexive, BlockDef
@@ -295,7 +295,8 @@ def compile_gbxmodel(mod2_tag, merged_jms):
                         vert.norm_i, vert.norm_j, vert.norm_k,
                         vert.binorm_i, vert.binorm_j, vert.binorm_k,
                         vert.tangent_i, vert.tangent_j, vert.tangent_k,
-                        vert.tex_u, 1 - vert.tex_v, vert.node_0, vert.node_1,
+                        vert.tex_u / u_scale, (1 - vert.tex_v) / v_scale,
+                        vert.node_0, vert.node_1,
                         1 - vert.node_1_weight, vert.node_1_weight)
                     i += 68
                     cent_x += vert.pos_x / vert_ct

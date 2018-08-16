@@ -3,7 +3,7 @@ import math
 
 from os import makedirs
 from os.path import dirname, exists
-from .util import float_to_str
+from reclaimer.util import float_to_str
 
 
 class JmsNode:
@@ -717,8 +717,8 @@ class MergedJmsModel:
     materials = ()
     regions = ()
             
-    _u_scale = 1.0
-    _v_scale = 1.0
+    u_scale = 1.0
+    v_scale = 1.0
 
     def __init__(self, *jms_models):
         self.nodes = []
@@ -727,40 +727,6 @@ class MergedJmsModel:
 
         for jms_model in jms_models:
             self.merge_jms_model(jms_model)
-
-    @property
-    def u_scale(self):
-        return self._u_scale
-    @u_scale.setter
-    def u_scale(self, new_scale):
-        factor = 0 if new_scale == 0 else self._u_scale / new_scale
-        for region in self.regions.values():
-            for perm_mesh in region.perm_meshes.values():
-                for meshes in perm_mesh.lod_meshes.values():
-                    for lod_mesh_list in perm_mesh.lod_meshes.values():
-                        for mesh in lod_mesh_list.values():
-                            for vert in mesh.verts:
-                                # nesting from the pits of hell
-                                vert.tex_u *= factor
-
-        self._u_scale = new_scale
-
-    @property
-    def v_scale(self):
-        return self._v_scale
-    @v_scale.setter
-    def v_scale(self, new_scale):
-        factor = 0 if new_scale == 0 else self._v_scale / new_scale
-        for region in self.regions.values():
-            for perm_mesh in region.perm_meshes.values():
-                for meshes in perm_mesh.lod_meshes.values():
-                    for lod_mesh_list in perm_mesh.lod_meshes.values():
-                        for mesh in lod_mesh_list.values():
-                            for vert in mesh.verts:
-                                # nesting from the pits of hell
-                                vert.tex_v *= factor
-
-        self._v_scale = new_scale
 
     def calc_uv_scales(self):
         u_scale = self.u_scale
