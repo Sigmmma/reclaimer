@@ -43,9 +43,6 @@ class Stripifier():
 
     _winding = False
 
-    # whether or not to link strips together with 2 degen tris
-    degen_link = True
-
     def __init__(self, all_tris=None, winding=False, *args, **kwargs):
         '''class initialization'''
         self.load_mesh(all_tris, winding)
@@ -150,22 +147,14 @@ class Stripifier():
     def link_strips(self):
         '''Links the strips that are currently loaded together into one
         large strip. This will introduce degenerate triangles into the
-        mesh to link strips. 
-
-        If degen_link is True, 2-3 additional degen triangles will be added 
-        between strips. Otherwise, 0-1 degen triangles will be added.
-        The variance depends on both strips directions and strip0's length.'''
+        mesh to link strips.'''
         if self.linked:
             return
 
         all_strips = self.all_strips
-        all_degens = self.all_degens
         all_face_dirs = self.all_face_dirs
 
         max_len = self.max_strip_len
-        degen_link = bool(self.degen_link)
-
-        degen_tris_added = 2*degen_link
         winding = self._winding
 
         for tex_index in all_strips:
@@ -193,7 +182,7 @@ class Stripifier():
                     
                 sorted_strips = [None] * total_len
                 strips_by_dir.append(sorted_strips)
-                for strip_len in sorted(strips_by_len):
+                for strip_len in reversed(sorted(strips_by_len)):
                     for strip in strips_by_len[strip_len]:
                         sorted_strips[i] = strip
                         i += 1
@@ -203,7 +192,6 @@ class Stripifier():
             reverse_dir_at = len(strips_by_dir[int(winding)])
 
             # make lists to hold the new strips, degens, and dirs
-            new_degens = []
             new_strips = []
             new_face_dirs = []
 
@@ -213,63 +201,52 @@ class Stripifier():
 
             # get the first strip to link together
             strip0 = fully_sorted_strips[0]
-            strip0_dir = winding
+            strip0_dir = winding if reverse_dir_at > 0 else not winding
 
             '''keep linking strips together till none are left'''
-            while strip_i < strip_ct:
-                # make a new degens list and get the current strip direction
-                strip0_degens = []
+            while strip_i < strip_ct or not new_strips:
+                strip1 = strip1_dir = None
+                if strip0_dir != winding:
+                    strip0.insert(0, strip0[0])
 
                 # link strips together until their length is maxed
                 while strip_i < strip_ct:
                     strip1_dir = winding
                     strip1 = fully_sorted_strips[strip_i]
                     if strip_i >= reverse_dir_at:
-                        strip1_dir = not winding
+                        strip1_dir = not strip1_dir
 
                     len0 = len(strip0)
                     len1 = len(strip1)
                     end_dir0 = (strip0_dir == (len0 % 2))
-                    '''find out if the strips face the opposite direction
-                    because if they do they'll need a degen between them'''
                     add_degen = (end_dir0 == strip1_dir)
 
                     strip_i += 1
                     # if the strip being added is empty, skip it
-                    if len1 == 0:
-                        continue
-                    elif len0 + len1 + add_degen + degen_tris_added > max_len:
+                    if len0 + len1 + add_degen + 2 > max_len:
                         # total length will be over max. dont try to combine
                         break
-
-                    # add to the degens list
-                    for i in range(2 + degen_tris_added + add_degen):
-                        strip0_degens.append(len(strip0) + i)
+                    elif len1 == 0:
+                        continue
 
                     # if a degen needs to be added, repeat the last vert
                     if add_degen:
                         strip0.append(strip0[-1])
 
                     # create the extra degenerate triangles
-                    if degen_link:
-                        strip0.append(strip0[-1])
-                        strip1.insert(0, strip1[0])
+                    strip0.append(strip0[-1])
+                    strip1.insert(0, strip1[0])
 
                     # merge the strips
                     strip0.extend(strip1)
 
-                if strip0_dir != winding:
-                    strip0.insert(0, strip0[0])
-
-                new_degens.append(strip0_degens)
                 new_face_dirs.append(strip0_dir)
                 new_strips.append(strip0)
 
                 # restart the cycle on the next strip
-                strip0 = strip1
                 strip0_dir = strip1_dir
+                strip0 = strip1
 
-            all_degens[tex_index]    = new_degens
             all_strips[tex_index]    = new_strips
             all_face_dirs[tex_index] = new_face_dirs
 
@@ -299,10 +276,6 @@ class Stripifier():
         '''Stores tri counts for each subobject separated by tex_index'''
         self.tri_counts = {}
 
-        '''Stores the indexes of the degenerate triangles for each strip
-        in each tex_index'''
-        self.all_degens = {}
-
         # whether or not the strips have been linked together
         self.linked = False
 
@@ -324,7 +297,6 @@ class Stripifier():
             self.all_face_dirs[tex_index] = []
             self.all_strips[tex_index] = []
             self.tri_counts[tex_index] = len(tris)
-            self.all_degens[tex_index] = []
             if not tris:
                 continue
 
@@ -403,7 +375,6 @@ class Stripifier():
             tris = all_tris_by_edges[tex_index]
             self.all_face_dirs[tex_index] = face_dirs = []
             self.all_strips[tex_index] = strips = []
-            self.all_degens[tex_index] = degens = []
 
             tri_count = self.tri_counts[tex_index]
             edges = list(tris.keys())
@@ -435,6 +406,5 @@ class Stripifier():
 
                 face_dirs.append(rev)
                 strips.append(strip)
-                degens.append([])
 
                 tris_added += len(strip) - 2
