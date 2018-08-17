@@ -165,31 +165,63 @@ class Stripifier():
             if not len(strips):
                 continue
 
-            # sort the strips and their facing directions by length
-            sorted_strips_by_dir = [{}, {}]
-            for i in range(len(strips)):
-                sorted_strips_by_dir[int(face_dirs[i])].setdefault(
-                    len(strips[i]), []).append(strips[i])
+            even_fore_strips = []
+            even_back_strips = []
+            odd_fore_strips = []
+            odd_back_strips = []
+            strip_ct = len(strips)
 
-            strips_by_dir = []
-            for face_dir in (0, 1):
-                i = 0
-                strips_by_len = sorted_strips_by_dir[face_dir]
-    
-                total_len = 0
-                for same_len_strips in strips_by_len.values():
-                    total_len += len(same_len_strips)
-                    
-                sorted_strips = [None] * total_len
-                strips_by_dir.append(sorted_strips)
-                for strip_len in reversed(sorted(strips_by_len)):
-                    for strip in strips_by_len[strip_len]:
-                        sorted_strips[i] = strip
-                        i += 1
+            for i in range(strip_ct):
+                face_dir = face_dirs[i]
+                is_odd = len(strips[i]) & 1
+                if face_dir:
+                    if is_odd:
+                        odd_back_strips.append(strips[i])
+                    else:
+                        even_back_strips.append(strips[i])
+                elif is_odd:
+                    odd_fore_strips.append(strips[i])
+                else:
+                    even_fore_strips.append(strips[i])
 
-            fully_sorted_strips = (strips_by_dir[int(winding)] +
-                                   strips_by_dir[int(not winding)])
-            reverse_dir_at = len(strips_by_dir[int(winding)])
+            fully_sorted_strips = [None] * strip_ct
+            fully_sorted_face_dirs = [None] * strip_ct
+            i = 0
+            facing = True
+            all_even_strips = (even_back_strips, even_fore_strips)
+            if not winding:
+                facing = False
+                all_even_strips = (even_fore_strips, even_back_strips)
+
+            for even_strips in all_even_strips:
+                for s in even_strips:
+                    fully_sorted_strips[i] = s
+                    fully_sorted_face_dirs[i] = facing
+                    i += 1
+                facing = not facing
+
+            face_dir = False
+            interleave_ct = min(len(odd_fore_strips), len(odd_back_strips))
+            j = 0
+            while j < interleave_ct:
+                fully_sorted_strips[i] = odd_back_strips[j]
+                fully_sorted_face_dirs[i] = True
+                i += 1
+                fully_sorted_strips[i] = odd_fore_strips[j]
+                fully_sorted_face_dirs[i] = False
+                i += 1
+                j += 1
+
+            if len(odd_fore_strips) != len(odd_back_strips):
+                face_dir = False
+                odd_strips = odd_fore_strips
+                if len(odd_back_strips) > interleave_ct:
+                    face_dir = True
+                    odd_strips = odd_back_strips
+
+                fully_sorted_strips[i: ] = odd_strips[j: ]
+                fully_sorted_face_dirs[i: ] = (face_dir, ) * (
+                    len(odd_strips) - j)
 
             # make lists to hold the new strips, degens, and dirs
             new_strips = []
@@ -201,20 +233,19 @@ class Stripifier():
 
             # get the first strip to link together
             strip0 = fully_sorted_strips[0]
-            strip0_dir = winding if reverse_dir_at > 0 else not winding
+            strip0_dir = fully_sorted_face_dirs[0]
 
             '''keep linking strips together till none are left'''
             while strip_i < strip_ct or not new_strips:
                 strip1 = strip1_dir = None
                 if strip0_dir != winding:
                     strip0.insert(0, strip0[0])
+                    strip0_dir = not strip0_dir
 
                 # link strips together until their length is maxed
                 while strip_i < strip_ct:
-                    strip1_dir = winding
                     strip1 = fully_sorted_strips[strip_i]
-                    if strip_i >= reverse_dir_at:
-                        strip1_dir = not strip1_dir
+                    strip1_dir = fully_sorted_face_dirs[strip_i]
 
                     len0 = len(strip0)
                     len1 = len(strip1)
