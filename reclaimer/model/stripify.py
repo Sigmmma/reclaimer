@@ -167,22 +167,25 @@ class Stripifier():
 
             even_fore_strips = []
             even_back_strips = []
-            odd_fore_strips = []
-            odd_back_strips = []
+            odd_strips = []
             strip_ct = len(strips)
 
             for i in range(strip_ct):
                 face_dir = face_dirs[i]
-                is_odd = len(strips[i]) & 1
+                is_even = not (len(strips[i]) & 1)
                 if face_dir:
-                    if is_odd:
-                        odd_back_strips.append(strips[i])
-                    else:
+                    if is_even:
                         even_back_strips.append(strips[i])
-                elif is_odd:
-                    odd_fore_strips.append(strips[i])
-                else:
+                    elif winding:
+                        odd_strips.append(strips[i])
+                    else:
+                        odd_strips.append(list(reversed(strips[i])))
+                elif is_even:
                     even_fore_strips.append(strips[i])
+                elif winding:
+                    odd_strips.append(list(reversed(strips[i])))
+                else:
+                    odd_strips.append(strips[i])
 
             fully_sorted_strips = [None] * strip_ct
             fully_sorted_face_dirs = [None] * strip_ct
@@ -200,28 +203,10 @@ class Stripifier():
                     i += 1
                 facing = not facing
 
-            face_dir = False
-            interleave_ct = min(len(odd_fore_strips), len(odd_back_strips))
-            j = 0
-            while j < interleave_ct:
-                fully_sorted_strips[i] = odd_back_strips[j]
-                fully_sorted_face_dirs[i] = True
+            for j in range(len(odd_strips)):
+                fully_sorted_strips[i] = odd_strips[j]
+                fully_sorted_face_dirs[i] = winding
                 i += 1
-                fully_sorted_strips[i] = odd_fore_strips[j]
-                fully_sorted_face_dirs[i] = False
-                i += 1
-                j += 1
-
-            if len(odd_fore_strips) != len(odd_back_strips):
-                face_dir = False
-                odd_strips = odd_fore_strips
-                if len(odd_back_strips) > interleave_ct:
-                    face_dir = True
-                    odd_strips = odd_back_strips
-
-                fully_sorted_strips[i: ] = odd_strips[j: ]
-                fully_sorted_face_dirs[i: ] = (face_dir, ) * (
-                    len(odd_strips) - j)
 
             # make lists to hold the new strips, degens, and dirs
             new_strips = []
