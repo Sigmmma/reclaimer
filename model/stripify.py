@@ -189,13 +189,13 @@ class Stripifier():
 
             fully_sorted_strips = [None] * strip_ct
             fully_sorted_face_dirs = [None] * strip_ct
-            i = 0
             facing = True
             all_even_strips = (even_back_strips, even_fore_strips)
             if not winding:
                 facing = False
                 all_even_strips = (even_fore_strips, even_back_strips)
 
+            i = 0
             for even_strips in all_even_strips:
                 for s in even_strips:
                     fully_sorted_strips[i] = s
