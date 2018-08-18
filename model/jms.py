@@ -64,7 +64,7 @@ class JmsMaterial:
         "shader_path", "shader_type"
         )
     def __init__(self, name="__unnamed", tiff_path="<none>",
-                 shader_path=None, shader_type=""):
+                 shader_path="", shader_type=""):
         self.name = name
         self.tiff_path = tiff_path
         self.shader_path = shader_path if shader_path else name

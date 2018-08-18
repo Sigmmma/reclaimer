@@ -13,7 +13,7 @@ smet_attrs = Struct("smet attrs",
             "unfiltered"
             ),
         Pad(34),
-        dependency("meter map", "bitm"),
+        dependency("map", "bitm"),
         Pad(32),
         ),
 
