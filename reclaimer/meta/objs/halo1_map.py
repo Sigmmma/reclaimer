@@ -10,7 +10,7 @@ from reclaimer.os_hek.defs.gelc    import gelc_def
 from reclaimer.os_v4_hek.defs.coll import fast_coll_def
 from reclaimer.os_v4_hek.defs.sbsp import fast_sbsp_def
 from reclaimer.os_v4_hek.handler   import OsV4HaloHandler
-from .halo1_rsrc_map import Halo1RsrcMap, inject_sound_data
+from .halo1_rsrc_map import Halo1RsrcMap, inject_sound_data, get_is_xbox_map
 from .byteswapping import raw_block_def, byteswap_animation,\
      byteswap_uncomp_verts, byteswap_comp_verts, byteswap_tris,\
      byteswap_coll_bsp, byteswap_sbsp_meta, byteswap_scnr_script_syntax_data,\
@@ -328,7 +328,7 @@ class Halo1Map(HaloMap):
 
             # to enable compatibility with my bitmap converter we'll set the
             # base address to a certain constant based on the console platform
-            is_xbox = "xbox" in engine or engine in ("stubbs", "shadowrun_beta")
+            is_xbox = get_is_xbox_map(engine)
 
             new_pixels_offset = 0
 

@@ -935,14 +935,14 @@ trans_shdr_first_map_type = (
     )
 detail_mask = (
     "none",
-    "red_inverse",
-    "red",
-    "green_inverse",
-    "green",
-    "blue_inverse",
-    "blue",
-    "alpha_inverse",
-    "alpha"
+    "reflection_mask_inverse",
+    "reflection_mask",
+    "self_illumination_mask_inverse",
+    "self_illumination_mask",
+    "color_change_mask_inverse",
+    "color_change_mask",
+    "auxiliary_mask_inverse",
+    "auxiliary_mask"
     )
 
 # Descriptors

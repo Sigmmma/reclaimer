@@ -12,6 +12,9 @@ bitmap_exts = ('bitmap',)*853
 sound_exts  = ('sound',)*376
 loc_exts    = tuple(loc_exts.get(i, 'unicode_string_list') for i in range(176))
 
+def get_is_xbox_map(engine):
+    return "xbox" in engine or engine in ("stubbs", "shadowrun_beta")
+
 
 def inject_sound_data(map_data, rsrc_data, rawdata_ref, map_magic):
     if not rawdata_ref.size:
@@ -195,6 +198,7 @@ class Halo1RsrcMap(HaloMap):
         engine     = self.engine
         map_data   = self.map_data
         tag_index  = self.tag_index
+        is_xbox = get_is_xbox_map(engine)
 
         if tag_cls == "bitm":
             # set the size of the compressed plate data to nothing
@@ -252,7 +256,7 @@ class Halo1RsrcMap(HaloMap):
 
             # to enable compatibility with my bitmap converter we'll set the
             # base address to a certain constant based on the console platform
-            is_xbox = "xbox" in engine or engine in ("stubbs", "shadowrun_beta")
+            is_xbox = get_is_xbox_map(engine)
             for bitmap in meta.bitmaps.STEPTREE:
                 pixel_data = map_data
                 if might_be_in_rsrc and bitmap.flags.data_in_resource_map:

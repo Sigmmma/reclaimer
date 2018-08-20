@@ -8,9 +8,12 @@ class Str_Tag(HekTag):
 
         for i in range(len(strings)):
             # replace all instances of \r and \n with \r\n
-            new_string = ""
+            split_strings = []
             for s in strings[i].data.split('\r'):
-                for ss in s.split('\n'):
-                    new_string += ss + "\r\n"
+                split_strings.extend(s.split('\n'))
+
+            new_string = split_strings.pop(0)
+            for s in split_strings:
+                new_string += s + "\r\n"
 
             strings[i].data = new_string
