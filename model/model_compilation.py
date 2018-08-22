@@ -118,10 +118,12 @@ def compile_gbxmodel(mod2_tag, merged_jms):
     tagdata = mod2_tag.data.tagdata
 
     u_scale, v_scale = merged_jms.calc_uv_scales()
-    if u_scale > 1:
-        tagdata.base_map_u_scale = merged_jms.u_scale = u_scale
-    if v_scale > 1:
-        tagdata.base_map_v_scale = merged_jms.v_scale = v_scale
+    if u_scale < 1:
+        u_scale = 1
+    if v_scale < 1:
+        v_scale = 1
+    tagdata.base_map_u_scale = merged_jms.u_scale = u_scale
+    tagdata.base_map_v_scale = merged_jms.v_scale = v_scale
 
     tagdata.node_list_checksum = merged_jms.node_list_checksum
 
