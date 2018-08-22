@@ -1,5 +1,5 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.pphy import PphyTag
 from supyr_struct.defs.tag_def import TagDef
 
 density_comment = """Densities(grams per milliliter)\n
@@ -31,11 +31,12 @@ pphy_body = Struct("tagdata",
         "uses damped wind",
         "no gravity"
         ),
-    #these next three are courtesy of Sparky. I had
-    #no idea these existed till I looked in Eschaton
-    FlFloat("wind coefficient", VISIBLE=False),
-    FlFloat("wind sine modifier", VISIBLE=False),
-    FlFloat("z translation rate", VISIBLE=False),
+    # these next three are courtesy of Sparky. I had
+    # no idea these existed till I looked in Eschaton.
+    # kavawuvi figured out how to calculate them(see PphyTag)
+    FlFloat("scaled_density", VISIBLE=False),
+    FlFloat("water gravity scale", VISIBLE=False),
+    FlFloat("air gravity scale", VISIBLE=False),
     Pad(16),
     Float("density", SIDETIP="g/mL", COMMENT=density_comment),#g/mL
     Float("air friction"),
@@ -53,5 +54,5 @@ pphy_def = TagDef("pphy",
     blam_header('pphy'),
     pphy_body,
 
-    ext=".point_physics", endian=">", tag_cls=HekTag
+    ext=".point_physics", endian=">", tag_cls=PphyTag
     )
