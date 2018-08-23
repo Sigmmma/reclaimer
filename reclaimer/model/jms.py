@@ -66,17 +66,18 @@ class JmsMaterial:
         "properties"
         )
     def __init__(self, name="__unnamed", tiff_path="<none>",
-                 shader_path="", shader_type=""):
-        self.properties = ""
+                 shader_path="", shader_type="", properties=""):
         for c in "!@#$%^&*-.":
             if c in name:
-                self.properties += c
+                if c not in properties:
+                    properties += c
                 name = name.replace(c, '')
 
         self.name = name
         self.tiff_path = tiff_path
         self.shader_path = shader_path if shader_path else name
         self.shader_type = shader_type
+        self.properties = properties
 
     def __repr__(self):
         return """JmsMaterial(name=%s,
@@ -775,7 +776,8 @@ class MergedJmsModel:
 
             for mat in other_model.materials:
                 materials.append(JmsMaterial(
-                    mat.name, mat.tiff_path, mat.shader_path, mat.shader_type))
+                    mat.name, mat.tiff_path, mat.shader_path, mat.shader_type,
+                    mat.properties))
 
             self.regions = {}
 
@@ -1009,7 +1011,7 @@ def write_jms(filepath, jms_data):
 
         f.write("%s\n" % len(materials))
         for mat in materials:
-            f.write("%s\n%s\n" % (mat.name, mat.tiff_path))
+            f.write("%s\n%s\n" % (mat.name + mat.properties, mat.tiff_path))
 
         f.write("%s\n" % len(markers))
         for marker in markers:
