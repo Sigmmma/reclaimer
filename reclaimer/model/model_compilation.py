@@ -46,8 +46,10 @@ EMPTY_GEOM_VERTS = (
 def generate_shader(jms_material, tags_dir, data_dir=""):
     shdr_type = jms_material.shader_type
     shdr_path = jms_material.shader_path
+
     if not shdr_path:
         return
+
     tag_path = "%s.%s" % (os.path.join(tags_dir, shdr_path), shdr_type)
     if os.path.isfile(tag_path):
         # dont make shaders that already exist
@@ -79,7 +81,7 @@ def generate_shader(jms_material, tags_dir, data_dir=""):
     if jms_material.tiff_path and data_dir:
         bitmap_path = os.path.relpath(
             jms_material.tiff_path.replace("/", "\\"),
-            data_dir.replace("/", "\\"))
+            data_dir.replace("/", "\\")).strip(" ")
         if bitmap_path.startswith("."):
             bitmap_path = ""
 

@@ -1,5 +1,6 @@
-import re
 import math
+import re
+import traceback
 
 from os import makedirs
 from os.path import dirname, exists
@@ -61,10 +62,17 @@ class JmsNode:
 class JmsMaterial:
     __slots__ = (
         "name", "tiff_path",
-        "shader_path", "shader_type"
+        "shader_path", "shader_type",
+        "properties"
         )
     def __init__(self, name="__unnamed", tiff_path="<none>",
                  shader_path="", shader_type=""):
+        self.properties = ""
+        for c in "!@#$%^&*-.":
+            if c in name:
+                self.properties += c
+                name = name.replace(c, '')
+
         self.name = name
         self.tiff_path = tiff_path
         self.shader_path = shader_path if shader_path else name
@@ -808,6 +816,7 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
             node_list_checksum = node_list_checksum - 0x100000000
         jms_data.node_list_checksum = node_list_checksum
     except Exception:
+        print(traceback.format_exc())
         print("Could not read node list checksum.")
         return jms_data
 
@@ -847,6 +856,7 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
                     sib_node.parent_index = parent_idx
                     sib_idx = sib_node.sibling_index
     except Exception:
+        print(traceback.format_exc())
         print("Failed to read nodes.")
         del nodes[i: ]
         return jms_data
@@ -863,6 +873,7 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
             dat_i += 2
             i += 1
     except Exception:
+        print(traceback.format_exc())
         print("Failed to read materials.")
         del materials[i: ]
         return jms_data
@@ -885,6 +896,7 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
             dat_i += 11
             i += 1
     except Exception:
+        print(traceback.format_exc())
         print("Failed to read markers.")
         del markers[i: ]
         return jms_data
@@ -901,6 +913,7 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
             dat_i += 1
             i += 1
     except Exception:
+        print(traceback.format_exc())
         print("Failed to read regions.")
         del regions[i: ]
         return jms_data
@@ -913,16 +926,23 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
         verts.extend((None, ) * int(data[dat_i]))
         dat_i += 1
         for i in range(len(verts)):
+            try:
+                u = float(data[dat_i+9])
+                v = float(data[dat_i+10])
+                w = float(data[dat_i+11])
+            except Exception:
+                u = v = w = 0
+
             verts[i] = JmsVertex(
                 int(data[dat_i]),
                 float(data[dat_i+1]), float(data[dat_i+2]), float(data[dat_i+3]),
                 float(data[dat_i+4]), float(data[dat_i+5]), float(data[dat_i+6]),
-                int(data[dat_i+7]), float(data[dat_i+8]),
-                float(data[dat_i+9]), float(data[dat_i+10]), float(data[dat_i+11])
+                int(data[dat_i+7]), float(data[dat_i+8]), u, v, w
                 )
             dat_i += 12
             i += 1
     except Exception:
+        print(traceback.format_exc())
         print("Failed to read vertices.")
         del verts[i: ]
         return jms_data
@@ -942,6 +962,7 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
             dat_i += 5
             i += 1
     except Exception:
+        print(traceback.format_exc())
         print("Failed to read triangles.")
         del tris[i: ]
         return jms_data
