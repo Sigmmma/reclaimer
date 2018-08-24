@@ -324,7 +324,6 @@ class JmsModel:
                 z1 = v2.pos_z - v0.pos_z;
 
 
-                # TODO: Fix these coordinates having the wrong handedness
                 s0 = v1.tex_u - v0.tex_u;
                 s1 = v2.tex_u - v0.tex_u;
                 t0 = v1.tex_v - v0.tex_v;
@@ -336,9 +335,9 @@ class JmsModel:
 
                 r = 1 / r
 
-                bi = (s0 * x1 - s1 * x0) * r
-                bj = (s0 * y1 - s1 * y0) * r
-                bk = (s0 * z1 - s1 * z0) * r
+                bi = -(s0 * x1 - s1 * x0) * r
+                bj = -(s0 * y1 - s1 * y0) * r
+                bk = -(s0 * z1 - s1 * z0) * r
                 b_len = sqrt(bi**2 + bj**2 + bk**2)
 
                 ti = (t1 * x0 - t0 * x1) * r
@@ -360,6 +359,9 @@ class JmsModel:
 
         for i in range(vert_ct):
             vert = verts[i]
+            ni = vert.norm_i
+            nj = vert.norm_j
+            nk = vert.norm_k
             b = binormals[i]
             t = tangents[i]
 
