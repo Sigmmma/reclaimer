@@ -171,21 +171,30 @@ class Stripifier():
             strip_ct = len(strips)
 
             for i in range(strip_ct):
+                strip = strips[i]
                 face_dir = face_dirs[i]
-                is_even = not (len(strips[i]) & 1)
+                is_even = not (len(strip) & 1)
                 if face_dir:
                     if is_even:
-                        even_back_strips.append(strips[i])
+                        if winding and len(strip) == 4:
+                            even_fore_strips.append(
+                                [strip[0], strip[2], strip[1], strip[3]])
+                        else:
+                            even_back_strips.append(strip)
                     elif winding:
-                        odd_strips.append(strips[i])
+                        odd_strips.append(strip)
                     else:
-                        odd_strips.append(list(reversed(strips[i])))
+                        odd_strips.append(list(reversed(strip)))
                 elif is_even:
-                    even_fore_strips.append(strips[i])
+                    if winding and len(strip) == 4:
+                        even_back_strips.append(
+                            [strip[0], strip[2], strip[1], strip[3]])
+                    else:
+                        even_fore_strips.append(strip)
                 elif winding:
-                    odd_strips.append(list(reversed(strips[i])))
+                    odd_strips.append(list(reversed(strip)))
                 else:
-                    odd_strips.append(strips[i])
+                    odd_strips.append(strip)
 
             fully_sorted_strips = [None] * strip_ct
             fully_sorted_face_dirs = [None] * strip_ct
