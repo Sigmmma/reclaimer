@@ -299,20 +299,79 @@ class JmsModel:
         seen = set((-1, ))
         verts = self.verts
         vert_ct = len(verts)
+        sqrt = math.sqrt
 
         v_indices = (0, 1, 2)
+        binormals = [[0, 0, 0, 0] for i in range(vert_ct)]
+        tangents  = [[0, 0, 0, 0] for i in range(vert_ct)]
         for tri in self.tris:
             for tri_i in v_indices:
                 v_i = tri[tri_i]
-                if v_i >= vert_ct or v_i in seen:
+                if v_i >= vert_ct:
                     continue
 
-                seen.add(v_i)
                 v0 = verts[v_i]
                 v1 = verts[tri[(tri_i + 1) % 3]]
                 v2 = verts[tri[(tri_i + 2) % 3]]
+                b = binormals[v_i]
+                t = tangents[v_i]
 
-                # calculate and set the binormal and tangent of v0
+                x0 = v1.pos_x - v0.pos_x;
+                x1 = v2.pos_x - v0.pos_x;
+                y0 = v1.pos_y - v0.pos_y;
+                y1 = v2.pos_y - v0.pos_y;
+                z0 = v1.pos_z - v0.pos_z;
+                z1 = v2.pos_z - v0.pos_z;
+
+
+                # TODO: Fix these coordinates having the wrong handedness
+                s0 = v1.tex_u - v0.tex_u;
+                s1 = v2.tex_u - v0.tex_u;
+                t0 = v1.tex_v - v0.tex_v;
+                t1 = v2.tex_v - v0.tex_v;
+
+                r = s0 * t1 - s1 * t0
+                if r == 0:
+                    continue
+
+                r = 1 / r
+
+                bi = (s0 * x1 - s1 * x0) * r
+                bj = (s0 * y1 - s1 * y0) * r
+                bk = (s0 * z1 - s1 * z0) * r
+                b_len = sqrt(bi**2 + bj**2 + bk**2)
+
+                ti = (t1 * x0 - t0 * x1) * r
+                tj = (t1 * y0 - t0 * y1) * r
+                tk = (t1 * z0 - t0 * z1) * r
+                t_len = sqrt(ti**2 + tj**2 + tk**2)
+
+                if b_len:
+                    b[0] += bi / b_len
+                    b[1] += bj / b_len
+                    b[2] += bk / b_len
+                    b[3] += 1
+
+                if t_len:
+                    t[0] += ti / t_len
+                    t[1] += tj / t_len
+                    t[2] += tk / t_len
+                    t[3] += 1
+
+        for i in range(vert_ct):
+            vert = verts[i]
+            b = binormals[i]
+            t = tangents[i]
+
+            if b[3]:
+                vert.binorm_i = b[0] / b[3]
+                vert.binorm_j = b[1] / b[3]
+                vert.binorm_k = b[2] / b[3]
+
+            if t[3]:
+                vert.tangent_i = t[0] / t[3]
+                vert.tangent_j = t[1] / t[3]
+                vert.tangent_k = t[2] / t[3]
 
     def optimize_geometry(self, exact_compare=True):
         verts = self.verts
@@ -629,7 +688,7 @@ class MergedJmsRegion:
         perm_name = jms_model.perm_name
 
         if perm_name in self.perm_meshes:
-            perm_mesh = self.perm_meshes[perm_name] 
+            perm_mesh = self.perm_meshes[perm_name]
         else:
             perm_mesh = self.perm_meshes[perm_name] = PermutationMesh()
             perm_mesh.is_random_perm = jms_model.is_random_perm
@@ -725,7 +784,7 @@ class MergedJmsModel:
     nodes = ()
     materials = ()
     regions = ()
-            
+
     u_scale = 1.0
     v_scale = 1.0
 
@@ -840,7 +899,7 @@ def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
                 )
             dat_i += 10
             i += 1
-            
+
         parented_nodes = set()
         # setup the parent node hierarchy
         for parent_idx in range(len(nodes)):
