@@ -1,6 +1,8 @@
 import math
 try:
-    import collada
+    #import collada
+    # Null the import to collada since we're not using it
+    collada = None
 except ImportError:
     collada = None
 
