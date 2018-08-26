@@ -128,6 +128,17 @@ def compile_gbxmodel(mod2_tag, merged_jms):
     tagdata.base_map_v_scale = merged_jms.v_scale = v_scale
 
     tagdata.node_list_checksum = merged_jms.node_list_checksum
+    
+
+    errors = []
+    if len(merged_jms.materials) > 256:
+        errors.append("Too many materials. Max count is 256.")
+
+    if len(merged_jms.regions) > 32:
+        errors.append("Too many regions. Max count is 32.")
+
+    if errors:
+        return errors
 
     # make nodes
     mod2_nodes = tagdata.nodes.STEPTREE
