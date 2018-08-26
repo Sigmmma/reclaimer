@@ -9,7 +9,7 @@ curr_dir = dirname(__file__)
 
 #               YYYY.MM.DD
 release_date = "2018.08.24"
-version = (2, 0, 1)
+version = (2, 0, 2)
 
 try:
     try:
@@ -42,6 +42,7 @@ games built with the Blam engine',
         'reclaimer.hek.defs.objs',
         'reclaimer.meta',
         'reclaimer.meta.objs',
+        'reclaimer.model',
         'reclaimer.misc',
         'reclaimer.misc.defs',
         'reclaimer.misc.defs.objs',
