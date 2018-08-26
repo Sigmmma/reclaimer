@@ -46,6 +46,6 @@ def jms_model_from_dae(filepath, model_name=None):
         mats.append(JmsMaterial("__unnamed"))
 
     return
-
+    # idk if i'll ever implement this. collada is just too complex
 
     return model
