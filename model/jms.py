@@ -381,44 +381,53 @@ class JmsModel:
 
         # this will map the verts to prune to the vert they are identical to
         dup_vert_map = {}
+        similar_vert_map = {}
 
         if exact_compare:
+            for i in range(len(verts)):
+                v = verts[i]
+                similar_vert_map.setdefault(
+                    (v.pos_x, v.pos_y, v.pos_z), []).append(i)
+
             # loop over all verts and figure out which ones to replace with others
-            for orig_idx in range(vert_ct - 1):
-                if orig_idx not in dup_vert_map:
-                    vert_a = verts[orig_idx]
-                    vert_a_x = vert_a.pos_x;  vert_a_y = vert_a.pos_y;  vert_a_z = vert_a.pos_z
-                    vert_a_i = vert_a.norm_i; vert_a_j = vert_a.norm_j; vert_a_k = vert_a.norm_k
-                    vert_a_u = vert_a.tex_u;  vert_a_v = vert_a.tex_v
-                    vert_a_n0 = vert_a.node_0; vert_a_n1 = vert_a.node_1
-                    vert_a_n1w = vert_a.node_1_weight
-                    for i in range(orig_idx + 1, vert_ct):
-                        if i in dup_vert_map:
-                            continue
+            for similar_vert_indices in similar_vert_map.values():
+                orig_idx = similar_vert_indices[0]
 
-                        vert_b = verts[i]
-                        if vert_a_z != vert_b.pos_z or vert_a_k != vert_b.norm_k:
-                            continue
-                        elif vert_a_x != vert_b.pos_x or vert_a_y != vert_b.pos_y:
-                            continue
-                        elif vert_a_i != vert_b.norm_i or vert_a_j != vert_b.norm_j:
-                            continue
-                        elif vert_a_n1w != vert_b.node_1_weight:
-                            continue
-                        elif vert_a_n0 != vert_b.node_0 or vert_a_n1 != vert_b.node_1:
-                            continue
-                        elif vert_a_u != vert_b.tex_u or vert_a_v != vert_b.tex_v:
-                            continue
+                vert_a = verts[orig_idx]
+                vert_a_x = vert_a.pos_x;  vert_a_y = vert_a.pos_y;  vert_a_z = vert_a.pos_z
+                vert_a_i = vert_a.norm_i; vert_a_j = vert_a.norm_j; vert_a_k = vert_a.norm_k
+                vert_a_u = vert_a.tex_u;  vert_a_v = vert_a.tex_v
+                vert_a_n0 = vert_a.node_0; vert_a_n1 = vert_a.node_1
+                vert_a_n1w = vert_a.node_1_weight
+                for i in similar_vert_indices[1: ]:
+                    vert_b = verts[i]
+                    if (vert_a_k != vert_b.norm_k or
+                        vert_a_i != vert_b.norm_i or
+                        vert_a_j != vert_b.norm_j):
+                        continue
+                    elif vert_a_n1w != vert_b.node_1_weight:
+                        continue
+                    elif vert_a_n0 != vert_b.node_0 or vert_a_n1 != vert_b.node_1:
+                        continue
+                    elif vert_a_u != vert_b.tex_u or vert_a_v != vert_b.tex_v:
+                        continue
 
-                        dup_vert_map[i] = orig_idx
+                    dup_vert_map[i] = orig_idx
         else:
+            for i in range(len(verts)):
+                v = verts[i]
+                similar_vert_map.setdefault(
+                    (round(v.pos_x + 0.001, 3),
+                     round(v.pos_y + 0.001, 3),
+                     round(v.pos_z + 0.001, 3)), []).append(i)
+
             # loop over all verts and figure out which ones to replace with others
-            for orig_idx in range(vert_ct - 1):
-                if orig_idx not in dup_vert_map:
-                    vert_a = verts[orig_idx]
-                    for i in range(orig_idx + 1, vert_ct):
-                        if i not in dup_vert_map and verts[i] == vert_a:
-                            dup_vert_map[i] = orig_idx
+            for similar_vert_indices in similar_vert_map.values():
+                orig_idx = similar_vert_indices[0]
+                vert_a = verts[orig_idx]
+                for i in similar_vert_indices[1: ]:
+                    if verts[i] == vert_a:
+                        dup_vert_map[i] = orig_idx
 
         if not dup_vert_map:
             # nothing to optimize away
@@ -541,7 +550,7 @@ class JmsModel:
         return errors
 
     def verify_models_match(self, other_jms):
-        errors = list(verify_jms(other_jms))
+        errors = list(other_jms.verify_jms())
         if len(other_jms.nodes) != len(self.nodes):
             errors.append("Node counts do not match.")
             return errors
@@ -579,26 +588,6 @@ class JmsModel:
         mat_ct = len(mats)
 
         errors = self.verify_nodes_valid()
-
-        if mat_ct > 256:
-            errors.append("Too many materials. Max count is 256.")
-
-        if region_ct > 32:
-            errors.append("Too many regions. Max count is 32.")
-
-        marker_name_cts = {}
-        for marker in markers:
-            marker_name_cts[marker.name] = marker_name_cts.get(marker.name, 0) + 1
-
-        if len(marker_name_cts) > 256:
-            errors.append("Too many unique marker names. Max count is 256.")
-
-        for name in sorted(marker_name_cts):
-            if not name.strip(" "):
-                errors.append("Detected unnamed markers.")
-            if marker_name_cts[name] > 32:
-                errors.append("Too many '%s' marker instances. Max count is 32.")
-
         if errors:
             return errors
 
@@ -855,7 +844,10 @@ class MergedJmsModel:
         return all_errors
 
 
-def read_jms(jms_string, stop_at="", perm_name="__unnamed"):
+def read_jms(jms_string, stop_at="", perm_name=None):
+    if perm_name is None:
+        perm_name = "__unnamed"
+
     jms_data = JmsModel(perm_name)
     perm_name = jms_data.perm_name
     nodes = jms_data.nodes
@@ -1118,6 +1110,3 @@ def write_jms(filepath, jms_data):
                 tri.v0, tri.v1, tri.v2
                 )
             )
-
-# PLACEHOLDER ALIAS
-verify_jms = JmsModel.verify_jms
