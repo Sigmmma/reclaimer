@@ -384,7 +384,7 @@ def extract_bitmaps(tagdata, tag_path, **kw):
                 }.get(fmt, FORMAT_A8)
 
         tex_info["texture_type"] = {
-            "texture 2d": TYPE_2D, "texture 3d": TYPE_3D,
+            "texture_2d": TYPE_2D, "texture_3d": TYPE_3D,
             "cubemap":TYPE_CUBEMAP}.get(typ, TYPE_2D)
 
         for i in range(bitmap.mipmaps + 1):
