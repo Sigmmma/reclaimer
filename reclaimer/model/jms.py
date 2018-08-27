@@ -554,19 +554,10 @@ class JmsModel:
         if len(other_jms.nodes) != len(self.nodes):
             errors.append("Node counts do not match.")
             return errors
-        elif len(other_jms.materials) != len(self.materials):
-            errors.append("Material counts do not match.")
-            return errors
 
         for i in range(len(self.nodes)):
             if self.nodes[i] != other_jms.nodes[i]:
                 errors.append("Nodes '%s' do not match." % i)
-
-        for i in range(len(self.materials)):
-            mat = self.materials[i]
-            other_mat = other_jms.materials[i]
-            if mat.name != other_mat.name:
-                errors.append("Names of materials '%s' do not match." % i)
 
         return errors
 
@@ -667,7 +658,7 @@ class MergedJmsRegion:
         for jms_model in jms_models:
             self.merge_jms_model(jms_model)
 
-    def merge_jms_model(self, jms_model):
+    def merge_jms_model(self, jms_model, merged_jms_materials):
         assert isinstance(jms_model, JmsModel)
         try:
             reg_idx = jms_model.regions.index(self.name)
@@ -697,6 +688,16 @@ class MergedJmsRegion:
         region_verts = []
         region_tris = [None] * len(src_tris)
 
+        mat_indices_by_name, i = {}, 0
+        for mat in merged_jms_materials:
+            mat_indices_by_name.setdefault(mat.name, []).append(i)
+            i += 1
+
+        mat_map, i = [0] * len(jms_model.materials), 0
+        for mat in jms_model.materials:
+            mat_map[i] = mat_indices_by_name[mat.name].pop(0)
+            i += 1
+
         vert_map = dict()
         get_add_vert = vert_map.setdefault
         v_base = len(region_verts)
@@ -704,17 +705,17 @@ class MergedJmsRegion:
         mat_nums = set()
         for tri in src_tris:
             if tri.region == reg_idx:
-                tri = JmsTriangle(tri.region, tri.shader, tri.v0, tri.v1, tri.v2)
+                mat_num = mat_map[tri.shader]
+                tri = JmsTriangle(tri.region, mat_num, tri.v0, tri.v1, tri.v2)
                 tri.v0 = get_add_vert(tri.v0, v_base + len(vert_map))
                 tri.v1 = get_add_vert(tri.v1, v_base + len(vert_map))
                 tri.v2 = get_add_vert(tri.v2, v_base + len(vert_map))
-                mat_nums.add(tri.shader)
+                mat_nums.add(mat_num)
                 region_tris[tri_ct] = tri
                 tri_ct += 1
 
         if tri_ct == 0:
             return
-
 
         # collect all the verts and triangles used by this region
         region_verts.extend([None] * len(vert_map))
@@ -724,7 +725,7 @@ class MergedJmsRegion:
                 v.node_0, v.pos_x, v.pos_y, v.pos_z,
                 v.norm_i, v.norm_j, v.norm_k, v.node_1, v.node_1_weight,
                 v.tex_u, v.tex_v, v.tex_w,
-                v.binorm_i,  v.binorm_j, v. binorm_k,
+                v.binorm_i,  v.binorm_j,  v. binorm_k,
                 v.tangent_i, v.tangent_j, v.tangent_k)
 
         del region_tris[tri_ct: ]
@@ -835,11 +836,24 @@ class MergedJmsModel:
         if errors:
             return errors
 
+        new_mat_counts = {}
+        for mat in self.materials:
+            new_mat_counts[mat.name] = new_mat_counts.get(mat.name, 0) - 1
+
+        default_mats = {}
+        for mat in other_model.materials:
+            default_mats.setdefault(mat.name, mat)
+            new_mat_counts[mat.name] = new_mat_counts.get(mat.name, 0) + 1
+
+        for mat_name, mat_ct in new_mat_counts.items():
+            if mat_ct > 0:
+                self.materials.extend((default_mats[mat_name], ) * mat_ct)
+
         for region in other_model.regions:
             if region not in self.regions:
                 self.regions[region] = MergedJmsRegion(region)
 
-            self.regions[region].merge_jms_model(other_model)
+            self.regions[region].merge_jms_model(other_model, self.materials)
 
         return all_errors
 

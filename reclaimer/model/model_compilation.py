@@ -123,6 +123,8 @@ def generate_shader(jms_material, tags_dir, data_dir=""):
 def compile_gbxmodel(mod2_tag, merged_jms):
     tagdata = mod2_tag.data.tagdata
 
+    tagdata.flags.parts_have_local_nodes = False
+
     u_scale, v_scale = merged_jms.calc_uv_scales()
     if u_scale < 1:
         u_scale = 1
@@ -400,9 +402,9 @@ def compile_gbxmodel(mod2_tag, merged_jms):
                         vert.node_0, vert.node_1,
                         1 - vert.node_1_weight, vert.node_1_weight)
                     i += 68
-                    cent_x += vert.pos_x / vert_ct
-                    cent_y += vert.pos_y / vert_ct
-                    cent_z += vert.pos_z / vert_ct
+                    cent_x += vert.pos_x / (vert_ct * 100)
+                    cent_y += vert.pos_y / (vert_ct * 100)
+                    cent_z += vert.pos_z / (vert_ct * 100)
 
                 mod2_part.centroid_translation[:] = [cent_x, cent_y, cent_z]
 
