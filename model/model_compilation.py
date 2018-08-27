@@ -78,10 +78,14 @@ def generate_shader(jms_material, tags_dir, data_dir=""):
         return
 
     bitmap_path = ""
-    if jms_material.tiff_path and data_dir:
-        bitmap_path = os.path.relpath(
-            jms_material.tiff_path.replace("/", "\\"),
-            data_dir.replace("/", "\\")).strip(" ")
+    if jms_material.tiff_path not in ('', '<none>') and data_dir:
+        try:
+            bitmap_path = os.path.relpath(
+                jms_material.tiff_path.replace("/", "\\"),
+                data_dir.replace("/", "\\")).strip(" ")
+        except Exception:
+            pass
+
         if bitmap_path.startswith("."):
             bitmap_path = ""
 
