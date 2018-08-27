@@ -206,21 +206,21 @@ class JmsVertex:
         if not isinstance(other, JmsVertex):
             return False
         elif (abs(self.pos_z  - other.pos_z)  > 0.00001 or
-              abs(self.norm_k - other.norm_k) > 0.00001):
+              abs(self.norm_k - other.norm_k) > 0.0001):
             return False
         elif (abs(self.pos_x - other.pos_x) > 0.00001 or
               abs(self.pos_y - other.pos_y) > 0.00001):
             return False
-        elif (abs(self.norm_i - other.norm_i) > 0.00001 or
-              abs(self.norm_j - other.norm_j) > 0.00001):
+        elif (abs(self.norm_i - other.norm_i) > 0.0001 or
+              abs(self.norm_j - other.norm_j) > 0.0001):
             return False
-        elif self.node_1_weight != other.node_1_weight:
+        elif abs(self.node_1_weight - other.node_1_weight) > 0.0001:
             return False
         elif self.node_0 != other.node_0 or self.node_1 != other.node_1:
             return False
 
-        return (abs(self.tex_u - other.tex_u) <= 0.00001 and
-                abs(self.tex_v - other.tex_v) <= 0.00001)
+        return (abs(self.tex_u - other.tex_u) <= 0.0001 and
+                abs(self.tex_v - other.tex_v) <= 0.0001)
 
 
 class JmsTriangle:
@@ -391,28 +391,33 @@ class JmsModel:
 
             # loop over all verts and figure out which ones to replace with others
             for similar_vert_indices in similar_vert_map.values():
-                orig_idx = similar_vert_indices[0]
-
-                vert_a = verts[orig_idx]
-                vert_a_x = vert_a.pos_x;  vert_a_y = vert_a.pos_y;  vert_a_z = vert_a.pos_z
-                vert_a_i = vert_a.norm_i; vert_a_j = vert_a.norm_j; vert_a_k = vert_a.norm_k
-                vert_a_u = vert_a.tex_u;  vert_a_v = vert_a.tex_v
-                vert_a_n0 = vert_a.node_0; vert_a_n1 = vert_a.node_1
-                vert_a_n1w = vert_a.node_1_weight
-                for i in similar_vert_indices[1: ]:
-                    vert_b = verts[i]
-                    if (vert_a_i != vert_b.norm_i or
-                        vert_a_j != vert_b.norm_j or
-                        vert_a_k != vert_b.norm_k):
-                        continue
-                    elif vert_a_n1w != vert_b.node_1_weight:
-                        continue
-                    elif vert_a_n0 != vert_b.node_0 or vert_a_n1 != vert_b.node_1:
-                        continue
-                    elif vert_a_u != vert_b.tex_u or vert_a_v != vert_b.tex_v:
+                for i in range(len(similar_vert_indices) - 1):
+                    orig_idx = similar_vert_indices[i]
+                    if orig_idx in dup_vert_map:
                         continue
 
-                    dup_vert_map[i] = orig_idx
+                    vert_a = verts[orig_idx]
+                    vert_a_i = vert_a.norm_i; vert_a_j = vert_a.norm_j; vert_a_k = vert_a.norm_k
+                    vert_a_u = vert_a.tex_u;  vert_a_v = vert_a.tex_v
+                    vert_a_n0 = vert_a.node_0; vert_a_n1 = vert_a.node_1
+                    vert_a_n1w = vert_a.node_1_weight
+                    for j in similar_vert_indices[i + 1: ]:
+                        if j in dup_vert_map:
+                            continue
+
+                        vert_b = verts[j]
+                        if (vert_a_i != vert_b.norm_i or
+                            vert_a_j != vert_b.norm_j or
+                            vert_a_k != vert_b.norm_k):
+                            continue
+                        elif vert_a_n1w != vert_b.node_1_weight:
+                            continue
+                        elif vert_a_n0 != vert_b.node_0 or vert_a_n1 != vert_b.node_1:
+                            continue
+                        elif vert_a_u != vert_b.tex_u or vert_a_v != vert_b.tex_v:
+                            continue
+
+                        dup_vert_map[j] = orig_idx
         else:
             for i in range(len(verts)):
                 v = verts[i]
@@ -423,11 +428,15 @@ class JmsModel:
 
             # loop over all verts and figure out which ones to replace with others
             for similar_vert_indices in similar_vert_map.values():
-                orig_idx = similar_vert_indices[0]
-                vert_a = verts[orig_idx]
-                for i in similar_vert_indices[1: ]:
-                    if verts[i] == vert_a:
-                        dup_vert_map[i] = orig_idx
+                for i in range(len(similar_vert_indices) - 1):
+                    orig_idx = similar_vert_indices[i]
+                    if orig_idx in dup_vert_map:
+                        continue
+
+                    vert_a = verts[orig_idx]
+                    for j in similar_vert_indices[i + 1: ]:
+                        if j not in dup_vert_map and verts[j] == vert_a:
+                            dup_vert_map[j] = orig_idx
 
         if not dup_vert_map:
             # nothing to optimize away
