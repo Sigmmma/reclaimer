@@ -401,9 +401,9 @@ class JmsModel:
                 vert_a_n1w = vert_a.node_1_weight
                 for i in similar_vert_indices[1: ]:
                     vert_b = verts[i]
-                    if (vert_a_k != vert_b.norm_k or
-                        vert_a_i != vert_b.norm_i or
-                        vert_a_j != vert_b.norm_j):
+                    if (vert_a_i != vert_b.norm_i or
+                        vert_a_j != vert_b.norm_j or
+                        vert_a_k != vert_b.norm_k):
                         continue
                     elif vert_a_n1w != vert_b.node_1_weight:
                         continue
