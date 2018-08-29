@@ -517,9 +517,9 @@ class Halo1Map(HaloMap):
 
         elif tag_cls == "pphy":
             # set the meta-only values to 0
-            meta.wind_coefficient = 0
-            meta.wind_sine_modifier = 0
-            meta.z_translation_rate = 0
+            meta.scaled_density = 0
+            meta.water_gravity_scale = 0
+            meta.air_gravity_scale = 0
 
             # scale friction values
             meta.air_friction /= 10000
