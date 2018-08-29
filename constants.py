@@ -20,6 +20,8 @@ XBOX_INDEX_MAGIC           = 0x803A6000
 STUBBS_INDEX_MAGIC         = 0x8038B000
 SHADOWRUN_BETA_INDEX_MAGIC = 0x8069E000
 H2_ALPHA_INDEX_MAGIC       = 0x80061000
+H2_XBOX_INDEX_MAGIC        = 0x80061000  # this at least appears to be the
+                                         # case in the singleplayer maps
 H2V_MP_INDEX_MAGIC         = 0x01400000  # only applies to multiplayer maps.
 #                                          pointers below this index magic
 #                                          actually point to resource maps.
