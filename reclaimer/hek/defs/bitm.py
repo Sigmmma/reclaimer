@@ -266,7 +266,7 @@ bitm_body = Struct("tagdata",
     UInt16("sprite spacing", SIDETIP="pixels"),
     Pad(2),
     reflexive("sequences", sequence, 256, DYN_NAME_PATH='.sequence_name'),
-    reflexive("bitmaps", bitmap),
+    reflexive("bitmaps", bitmap, 2048),
     SIZE=108, WIDGET=HaloBitmapTagFrame
     )
 
