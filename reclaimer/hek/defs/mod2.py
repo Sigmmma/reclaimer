@@ -1,5 +1,5 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.mod2 import Mod2Tag
 from supyr_struct.defs.tag_def import TagDef
 
 def get():
@@ -213,6 +213,18 @@ node = Struct('node',
     QStruct('translation', INCLUDE=xyz_float),
     QStruct('rotation', INCLUDE=ijkw_float),
     Float('distance from parent'),
+    Pad(32),
+
+    # xbox specific values
+    LFloat('unknown', ENDIAN='<', DEFAULT=1.0, VISIBLE=False),
+    QStruct("rot_jj_kk", GUI_NAME="[1-2j^2-2k^2]   2[ij+kw]   2[ik-jw]",
+        INCLUDE=ijk_float, ENDIAN='<', VISIBLE=False),
+    QStruct("rot_kk_ii", GUI_NAME="2[ij-kw]   [1-2k^2-2i^2]   2[jk+iw]",
+        INCLUDE=ijk_float, ENDIAN='<', VISIBLE=False),
+    QStruct("rot_ii_jj", GUI_NAME="2[ik+jw]   2[jk-iw]   [1-2i^2-2j^2]",
+        INCLUDE=ijk_float, ENDIAN='<', VISIBLE=False),
+    QStruct('translation to root', INCLUDE=xyz_float,
+            ENDIAN='<', VISIBLE=False),
     SIZE=156,
     )
 
@@ -285,12 +297,12 @@ mod2_def = TagDef("mod2",
     blam_header('mod2', 5),
     mod2_body,
 
-    ext=".gbxmodel", endian=">", tag_cls=HekTag
+    ext=".gbxmodel", endian=">", tag_cls=Mod2Tag
     )
 
 fast_mod2_def = TagDef("mod2",
     blam_header('mod2', 5),
     fast_mod2_body,
 
-    ext=".gbxmodel", endian=">", tag_cls=HekTag
+    ext=".gbxmodel", endian=">", tag_cls=Mod2Tag
     )

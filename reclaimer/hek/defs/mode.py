@@ -77,30 +77,6 @@ fast_part[9]  = raw_reflexive("uncompressed vertices", fast_uncompressed_vertex)
 fast_part[10] = raw_reflexive("compressed vertices", fast_compressed_vertex)
 fast_part[11] = raw_reflexive("triangles", triangle)
 
-node = Struct('node',
-    ascii_str32("name"),
-    dyn_senum16('next sibling node', DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16('first child node', DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16('parent node', DYN_NAME_PATH="..[DYN_I].name"),
-    Pad(2),
-
-    QStruct('translation', INCLUDE=xyz_float),
-    QStruct('rotation', INCLUDE=ijkw_float),
-    Float('distance from parent'),
-    Pad(32),
-
-    # xbox specific values
-    LFloat('unknown', ENDIAN='<', DEFAULT=1.0),
-    QStruct("rot_jj_kk", GUI_NAME="[1-2j^2-2k^2]   2[ij+kw]   2[ik-jw]",
-        INCLUDE=ijk_float, ENDIAN='<'),
-    QStruct("rot_kk_ii", GUI_NAME="2[ij-kw]   [1-2k^2-2i^2]   2[jk+iw]",
-        INCLUDE=ijk_float, ENDIAN='<'),
-    QStruct("rot_ii_jj", GUI_NAME="2[ik+jw]   2[jk-iw]   [1-2i^2-2j^2]",
-        INCLUDE=ijk_float, ENDIAN='<'),
-    QStruct('translation to root', INCLUDE=xyz_float, ENDIAN='<'),
-    SIZE=156,
-    )
-
 region = Struct('region',
     ascii_str32("name"),
     Pad(32),
@@ -119,7 +95,6 @@ fast_geometry = Struct('geometry',
     reflexive("parts", fast_part, 32),
     SIZE=48
     )
-
 
 mode_body = Struct('tagdata',
     Bool32('flags',
