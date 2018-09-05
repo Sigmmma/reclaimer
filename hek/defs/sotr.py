@@ -75,17 +75,6 @@ sotr_alpha_inputs = (
     'negative one',
     'negative one half',
 
-    'map alpha 0',
-    'map alpha 1',
-    'map alpha 2',
-    'map alpha 3',
-    {NAME: 'vertex_alpha_0', GUI_NAME: 'vertex alpha 0 / diffuse light'},
-    {NAME: 'vertex_alpha_1', GUI_NAME: 'vertex alpha 1 / fade(perpendicular)'},
-    'scratch alpha 0',
-    'scratch alpha 1',
-    'constant alpha 0',
-    'constant alpha 1',
-
     'map blue 0',
     'map blue 1',
     'map blue 2',
@@ -96,6 +85,17 @@ sotr_alpha_inputs = (
     'scratch blue 1',
     'constant blue 0',
     'constant blue 1',
+
+    'map alpha 0',
+    'map alpha 1',
+    'map alpha 2',
+    'map alpha 3',
+    {NAME: 'vertex_alpha_0', GUI_NAME: 'vertex alpha 0 / diffuse light'},
+    {NAME: 'vertex_alpha_1', GUI_NAME: 'vertex alpha 1 / fade(perpendicular)'},
+    'scratch alpha 0',
+    'scratch alpha 1',
+    'constant alpha 0',
+    'constant alpha 1',
     )
 sotr_alpha_outputs = (
     'discard',
@@ -114,11 +114,11 @@ stage = Struct("stage",
     Bool16("flags" ,
         "color mux",
         "alpha mux",
-        "A-out controls color0 animation",
+        "a-out controls color0 animation",
         ),
     Pad(2),
 
-    SEnum16("color0 source", *function_names),
+    SEnum16("constant color0 source", *function_names),
     SEnum16("color0 anim function", *animation_functions),
     float_sec("color0 anim period"),
     QStruct("color0 anim lower bound", INCLUDE=argb_float),
@@ -126,33 +126,33 @@ stage = Struct("stage",
     QStruct("color1", INCLUDE=argb_float),
 
     Struct('color',
-        Struct('input A', 
+        Struct('input A',
             SEnum16('input', GUI_NAME='', *sotr_color_inputs),
             SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
-        Struct('input B', 
+        Struct('input B',
             SEnum16('input', GUI_NAME='', *sotr_color_inputs),
             SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
-        Struct('input C', 
+        Struct('input C',
             SEnum16('input', GUI_NAME='', *sotr_color_inputs),
             SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
-        Struct('input D', 
+        Struct('input D',
             SEnum16('input', GUI_NAME='', *sotr_color_inputs),
             SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
 
-        Struct('output AB', 
+        Struct('output AB',
             SEnum16('output', GUI_NAME='', *sotr_color_outputs),
             SEnum16('function', *sotr_color_output_functions),
             ORIENT='h'
             ),
-        Struct('output CD', 
+        Struct('output CD',
             SEnum16('output', GUI_NAME='', *sotr_color_outputs),
             SEnum16('function', *sotr_color_output_functions),
             ORIENT='h'
@@ -162,22 +162,22 @@ stage = Struct("stage",
         ),
 
     Struct('alpha',
-        Struct('input A', 
+        Struct('input A',
             SEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
             SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
-        Struct('input B', 
+        Struct('input B',
             SEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
             SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
-        Struct('input C', 
+        Struct('input C',
             SEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
             SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
             ),
-        Struct('input D', 
+        Struct('input D',
             SEnum16('input', GUI_NAME='', *sotr_alpha_inputs),
             SEnum16('mapped_to', *sotr_input_mappings),
             ORIENT='h'
@@ -207,7 +207,7 @@ map = Struct("map",
     float_deg("map rotation"),  # degrees
     float_zero_to_one("map bias"),
     dependency("bitmap", "bitm"),
-                              
+
     #shader animations
     Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
     Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
@@ -246,7 +246,7 @@ sotr_body = Struct("tagdata",
     SIZE=108,
     )
 
-    
+
 def get():
     return sotr_def
 
