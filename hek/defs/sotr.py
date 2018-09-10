@@ -118,7 +118,9 @@ stage = Struct("stage",
         ),
     Pad(2),
 
-    SEnum16("constant color0 source", *function_names),
+    SEnum16("color0 source", *function_names,
+        COMMENT="If set to 'none', color0 is calculated by blending the\n"
+                "two bounds below based on the 'color0 anim function'."),
     SEnum16("color0 anim function", *animation_functions),
     float_sec("color0 anim period"),
     QStruct("color0 anim lower bound", INCLUDE=argb_float),
