@@ -25,7 +25,7 @@ only indirectly affect the lit texture."""
 
 deca_body = Struct("tagdata",
     #Decal Properties
-    Bool16("meter shader flags",
+    Bool16("flags",
         "geometry inherited by next decal in chain",
         "interpolate color in hsv",
         "more colors",
