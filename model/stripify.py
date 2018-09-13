@@ -258,9 +258,10 @@ class Stripifier():
                     if add_degen:
                         strip0.append(strip0[-1])
 
-                    # create the extra degenerate triangles
-                    strip0.append(strip0[-1])
-                    strip1.insert(0, strip1[0])
+                    if strip0[-1] != strip1[0]:
+                        # create the extra degenerate triangles
+                        strip0.append(strip0[-1])
+                        strip1.insert(0, strip1[0])
 
                     # merge the strips
                     strip0.extend(strip1)
