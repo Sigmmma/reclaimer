@@ -431,7 +431,7 @@ netgame_flag = Struct("netgame flag",
     )
 
 netgame_equipment = Struct("netgame equipment",
-    Bool32("type",
+    Bool32("flags",
         "levitate"
         ),
     SEnum16("type 0", *location_types),
@@ -450,7 +450,7 @@ netgame_equipment = Struct("netgame equipment",
     )
 
 starting_equipment = Struct("starting equipment",
-    Bool32("type",
+    Bool32("flags",
         "no grenades",
         "plasma grenades",
         ),
