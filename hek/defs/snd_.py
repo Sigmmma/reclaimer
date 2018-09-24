@@ -92,7 +92,7 @@ snd__body = Struct("tagdata",
         "fit to adpcm blocksize",
         "split long sound into permutations"
         ),
-    SEnum16("class", *sound_classes),
+    SEnum16("sound class", *sound_classes),
     SEnum16("sample rate",
         {NAME: "khz_22", GUI_NAME: "22kHz"},
         {NAME: "khz_44", GUI_NAME: "44kHz"},
