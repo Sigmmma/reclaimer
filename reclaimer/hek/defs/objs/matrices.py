@@ -3,6 +3,16 @@ This module implements some basic matrix classes
 '''
 from math import log, sqrt
 
+def multiply_quaternions(q0, q1):
+    assert len(q0) == 4
+    assert len(q1) == 4
+    i =  q0[0] * q1[3] + q0[1] * q1[2] - q0[2] * q1[1] + q0[3] * q1[0]
+    j = -q0[0] * q1[2] + q0[1] * q1[3] + q0[2] * q1[0] + q0[3] * q1[1]
+    k =  q0[0] * q1[1] - q0[1] * q1[0] + q0[2] * q1[3] + q0[3] * q1[2]
+    w = -q0[0] * q1[0] - q0[1] * q1[1] - q0[2] * q1[2] + q0[3] * q1[3]
+    return type(q0)(i, j, k, w)
+
+
 def quaternion_to_matrix(i, j, k, w):
     return Matrix([
         (2*(0.5 - j*j - k*k),   2*(i*j + k*w),         2*(i*k - j*w)),

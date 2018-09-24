@@ -157,7 +157,7 @@ class AntrTag(HekTag):
 
         for i in range(self.data.tagdata.animations.size):
             if self.decompress_anim(i):
-                compressed_indices.append(i)
+                decompressed_indices.append(i)
 
         return decompressed_indices
 

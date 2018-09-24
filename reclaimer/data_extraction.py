@@ -422,6 +422,35 @@ def extract_bitmaps(tagdata, tag_path, **kw):
         arby.save_to_file()
 
 
+def extract_unicode_string_list(tagdata, tag_path, **kw):
+    return extract_string_list(tagdata, tag_path, "utf-16-le", **kw)
+
+
+def extract_string_list(tagdata, tag_path, encoding="latin-1", **kw):
+    filepath = join(kw['out_dir'], splitext(tag_path)[0] + ".txt")
+    if isfile(filepath) and not kw.get('overwrite', True):
+        return
+
+    out_data = b""
+    for b in tagdata.strings.STEPTREE:
+        string = b.data
+        string += "\r\n###END-STRING###\r\n"  # cr + lf
+        out_data += string.encode(encoding)
+
+    try:
+        folderpath = dirname(filepath)
+        # If the path doesnt exist, create it
+        if not exists(folderpath):
+            makedirs(folderpath)
+
+        with open(filepath, "wb") as f:
+            if encoding == "utf-16-le":
+                f.write(b"\xFF\xFE")  # little endian unicode sig
+            f.write(out_data)
+    except Exception:
+        return format_exc()
+
+
 def extract_hud_message_text(tagdata, tag_path, **kw):
     filepath = join(kw['out_dir'], splitext(tag_path)[0] + ".hmt")
     if isfile(filepath) and not kw.get('overwrite', True):
@@ -900,8 +929,7 @@ h1_data_extractors = {
     #'coll', 'sbsp',
     #'antr', 'magy',
     #'font', 'unic',
-    #'str#', 'ustr',  # there is literally no reason to rip these two
-    #                   two since mozz can fully make/edit these tags
+    'str#': extract_string_list, 'ustr': extract_unicode_string_list,
     "bitm": extract_bitmaps, "snd!": extract_h1_sounds,
     "hmt ": extract_hud_message_text, 'scnr': extract_h1_scnr_data,
     }
