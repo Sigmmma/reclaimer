@@ -2,6 +2,11 @@ from .coll import *
 from .objs.tag import HekTag
 from supyr_struct.defs.block_def import BlockDef
 
+# TEST CODE
+#import random
+#def Pad(size):
+#    return UIntBig("unknown%s" % random.getrandbits(10), SIZE=size)
+
 # the order is an array of vertices first, then an array of lightmap vertices.
 # 
 uncompressed_vertex = QStruct("uncompressed vertex",
@@ -179,6 +184,7 @@ mirror = Struct("mirror",
     QStruct("plane", INCLUDE=plane),
     # might be padding, might not be
     BytesRaw("unknown", VISIBLE=False, SIZE=20),
+    #Pad(20),
     dependency("shader", valid_shaders),
     reflexive("vertices", vertex, 512),
     SIZE=64
@@ -208,9 +214,10 @@ cluster = Struct("cluster",
     dyn_senum16('weather',
         DYN_NAME_PATH="tagdata.weather_palettes.STEPTREE[DYN_I].name"),
 
-    # almost certain this is padding
-    BytesRaw("unknown", SIZE=30, VISIBLE=False),
-    #Pad(30),
+    # almost certain this is padding, though a value in the third
+    # and fourth bytes is non-zero in meta, but not in a tag, so idk.
+    #BytesRaw("unknown", SIZE=30, VISIBLE=False),
+    Pad(30),
 
     reflexive("predicted resources", predicted_resource, 1024, VISIBLE=False),
     reflexive("subclusters", subcluster, 4096),
@@ -234,6 +241,7 @@ cluster_portal = Struct("cluster portal",
 
     # might be padding, might not be
     BytesRaw("unknown", VISIBLE=False, SIZE=24),
+    #Pad(24),
     reflexive("vertices", vertex, 128),
     SIZE=64
     )
@@ -248,7 +256,7 @@ breakable_surface = Struct("breakable surface",
 
 fog_plane = Struct("fog plane",
     SInt16("front region"),
-    Pad(2),
+    Pad(2),  # non-zero in meta some times
     QStruct("plane", INCLUDE=plane),
     reflexive("vertices", vertex, 4096),
     SIZE=32
@@ -438,9 +446,9 @@ sbsp_body = Struct("tagdata",
         DYN_NAME_PATH='.name'),
     rawdata_ref("sound pas data", max_size=131072),
 
-    Pad(24),
-    reflexive("markers", marker, 1024,
-        DYN_NAME_PATH='.name'),
+    UInt32("unknown", VISIBLE=False),
+    Pad(20),
+    reflexive("markers", marker, 1024, DYN_NAME_PATH='.name'),
     reflexive("detail objects", detail_object, 1),
 
     # the runtime decals reflexive is populated ONLY by the
@@ -463,7 +471,7 @@ fast_sbsp_body[27] = raw_reflexive("lens flare markers", lens_flare_marker, 6553
 fast_sbsp_body[32] = raw_reflexive("breakable surfaces", breakable_surface, 256)
 fast_sbsp_body[40] = raw_reflexive("pathfinding surfaces", pathfinding_surface, 131072)
 fast_sbsp_body[41] = raw_reflexive("pathfinding edges", pathfinding_edge, 262144)
-fast_sbsp_body[46] = raw_reflexive("markers", marker, 1024, DYN_NAME_PATH='.name')
+fast_sbsp_body[47] = raw_reflexive("markers", marker, 1024, DYN_NAME_PATH='.name')
 
 
 sbsp_meta_header_def = BlockDef("sbsp meta header",
