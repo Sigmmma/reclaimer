@@ -296,7 +296,6 @@ class JmsModel:
         self.tris    = tris    if tris    else []
 
     def calculate_vertex_normals(self):
-        seen = set((-1, ))
         verts = self.verts
         vert_ct = len(verts)
         sqrt = math.sqrt
