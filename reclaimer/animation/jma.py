@@ -153,7 +153,7 @@ def write_jma(filepath, jma_data):
         makedirs(dirname(filepath))
 
     with open(filepath, "w", encoding='latin1') as f:
-        f.write("16392\n")  # 
+        f.write("16392\n")  # unknown constant
         f.write("%s\n" % len(jma_data.frames))
         f.write("30\n")  # I'm guessing this is the frame-rate?
         f.write("1\n")   # And maybe this is the number of "actors"?
@@ -169,9 +169,9 @@ def write_jma(filepath, jma_data):
         for frame in jma_data.frames:
             for nf in frame:
                 f.write("%s\t%s\t%s\n%s\t%s\t%s\t%s\n%s\n" % (
-                    float_to_str(nf.pos_x),
-                    float_to_str(nf.pos_y),
-                    float_to_str(nf.pos_z),
+                    float_to_str(nf.pos_x * 100),
+                    float_to_str(nf.pos_y * 100),
+                    float_to_str(nf.pos_z * 100),
                     float_to_str(nf.rot_i),
                     float_to_str(nf.rot_j),
                     float_to_str(nf.rot_k),
