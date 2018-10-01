@@ -18,6 +18,7 @@ try:
 except ImportError:
     arbytmap = Arbytmap = None
 
+from copy import deepcopy
 from os import makedirs
 from os.path import dirname, exists, join, isfile, splitext
 from struct import Struct as PyStruct, unpack, pack_into
@@ -32,7 +33,8 @@ from supyr_struct.field_types import FieldType
 from reclaimer.util import is_protected_tag, fourcc, is_reserved_tag
 from reclaimer.h2.util import *
 from reclaimer.adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
-from reclaimer.hek.defs.objs.matrices import Matrix, matrix_to_quaternion
+from reclaimer.hek.defs.objs.matrices import Matrix, matrix_to_quaternion,\
+     euler_to_quat, multiply_quaternions
 from reclaimer.hek.defs.objs.p8_palette import load_palette
 from reclaimer.hek.defs.hmt_ import icon_types as hmt_icon_types
 from reclaimer.hsc import get_hsc_data_block, hsc_bytecode_to_string
@@ -925,6 +927,16 @@ def extract_model(tagdata, tag_path, **kw):
                 markers, regions, verts, tris))
 
 
+def apply_frame_info_to_state(state, dx=0, dy=0, dz=0, dyaw=0):
+    x, y, z = state.pos_x + dx, state.pos_y + dy, state.pos_z + dz
+    i, j, k, w = multiply_quaternions(
+        [state.rot_i, state.rot_j, state.rot_k, state.rot_w],
+        euler_to_quat(-dyaw, 0, 0),
+        )
+    #rot = (angleaxis -dyaw [1,0,0]) as quat + frame_node_rotation[f][n]
+    return JmaNodeState(i, j, k, w, x, y, z, state.scale)
+
+
 def extract_animation(tagdata, tag_path, **kw):
     filepath_base = join(kw['out_dir'], dirname(tag_path), "animations")
     endian = "<" if kw.get('halo_map') else ">"
@@ -945,15 +957,20 @@ def extract_animation(tagdata, tag_path, **kw):
 
     for anim in tagdata.animations.STEPTREE:
         try:
+            right_anim = anim.name == "zstand flame aim-still"
             anim_type = anim.type.enum_name
             frame_info_type = anim.frame_info_type.enum_name.lower()
             world_relative = anim.flags.world_relative
 
-            has_dxdy = "dx,dy" in frame_info_type
+            has_dxdy = "dx" in frame_info_type
             has_dz   = "dz" in frame_info_type
             has_dyaw = "dyaw" in frame_info_type
 
             anim_ext = get_anim_ext(anim_type, frame_info_type, world_relative)
+
+            filepath = join(filepath_base, anim.name + anim_ext)
+            if not kw.get('overwrite', True) and isfile(filepath):
+                return
 
             frame_count = anim.frame_count
             node_count  = anim.node_count
@@ -1000,87 +1017,98 @@ def extract_animation(tagdata, tag_path, **kw):
                       "than it is expected to contain: '%s'" % anim.name)
                 continue
 
+
             # sum the frame info changes for each frame
-            finfo_i = 0
-            last_root_node_info = [0, 0, 0, 0]
-            root_node_infos = tuple([] for i in range(anim.frame_count))
+            off = 0
+            root_node_infos = [[0, 0, 0, 0] for i in range(anim.frame_count + 1)]
+            dx = dy = dz = dyaw = 0.0
             for f in range(anim.frame_count):
-                dx = dy = dz = dyaw = 0.0
+                x, y, z, yaw = root_node_infos[f - 1]
+                root_node_infos[f][:] = [x + dx, y + dy, z + dz, yaw + dyaw]
+
                 if has_dxdy:
-                    dx, dy = unpack_dxdy(frame_info[finfo_i: finfo_i + 8])
-                    finfo_i += 8
+                    dx, dy = unpack_dxdy(frame_info[off: off + 8])
+                    off += 8
 
                 if has_dz:
-                    dz = unpack_float(frame_info[finfo_i: finfo_i + 4])[0]
-                    finfo_i += 4
+                    dz = unpack_float(frame_info[off: off + 4])[0]
+                    off += 4
 
                 if has_dyaw:
-                    dyaw = unpack_float(frame_info[finfo_i: finfo_i + 4])[0]
-                    finfo_i += 4
+                    dyaw = unpack_float(frame_info[off: off + 4])[0]
+                    off += 4
 
-                x, y, z, yaw = last_root_node_info
-                root_node_infos[f][:] = [x + dx, y + dy, z + dz, yaw + dyaw]
-                last_root_node_info = root_node_infos[f]
+            root_node_infos.pop(-1)
 
 
-            ddata_i = 0
+            off = 0
+            def_node_states = []
             if anim_type == "overlay":
-                node_states = []
-                anim_frames.append(node_states)
-                for n in range(anim.node_count):
-                    i = j = k = x = y = z = 0.0
-                    w = scale = 1.0
-                    if not trans_flags[n]:
-                        x, y, z = unpack_trans(
-                            default_data[ddata_i: ddata_i + 12])
-                        ddata_i += 12
+                anim_frames.append(def_node_states)
 
-                    if not rot_flags[n]:
-                        i, j, k, w = unpack_ijkw(
-                            default_data[ddata_i: ddata_i + 8])
-                        i, j, k, w = i/32767, j/32767, k/32767, w/32767
-                        ddata_i += 8
+            for n in range(anim.node_count):
+                i = j = k = x = y = z = 0.0
+                w = scale = 1.0
+                if not rot_flags[n]:
+                    i, j, k, w = unpack_ijkw(default_data[off: off + 8])
+                    i, j, k, w = i/32767, j/32767, k/32767, w/32767
+                    off += 8
 
-                    if not scale_flags[n]:
-                        scale = unpack_float(
-                            default_data[ddata_i: ddata_i + 4])[0]
-                        ddata_i += 4
+                if not trans_flags[n]:
+                    x, y, z = unpack_trans(default_data[off: off + 12])
+                    off += 12
 
-                    node_states.append(JmaNodeState(i, j, k, w, x, y, z, scale))
+                if not scale_flags[n]:
+                    scale = unpack_float(default_data[off: off + 4])[0]
+                    off += 4
+
+                def_node_states.append(JmaNodeState(i, j, k, w, x, y, z, scale))
 
 
-            fdata_i = 0
+            off = 0
             for f in range(anim.frame_count):
                 node_states = []
                 anim_frames.append(node_states)
                 for n in range(anim.node_count):
-                    i = j = k = x = y = z = 0.0
-                    w = scale = 1.0
-                    if trans_flags[n]:
-                        x, y, z = unpack_trans(
-                            frame_data[fdata_i: fdata_i + 12])
-                        fdata_i += 12
-
+                    def_state = def_node_states[n]
                     if rot_flags[n]:
-                        i, j, k, w = unpack_ijkw(
-                            frame_data[fdata_i: fdata_i + 8])
+                        i, j, k, w = unpack_ijkw(frame_data[off: off + 8])
                         i, j, k, w = i/32767, j/32767, k/32767, w/32767
-                        fdata_i += 8
+                        off += 8
+                    else:
+                        i, j, k, w = (def_state.rot_i, def_state.rot_j,
+                                      def_state.rot_k, def_state.rot_w)
+
+                    if trans_flags[n]:
+                        x, y, z = unpack_trans(frame_data[off: off + 12])
+                        off += 12
+                    else:
+                        x, y, z = def_state.pos_x, def_state.pos_y, def_state.pos_z
 
                     if scale_flags[n]:
-                        scale = unpack_float(
-                            frame_data[fdata_i: fdata_i + 4])[0]
-                        fdata_i += 4
-
-                    if n == 0:
-                        dx, dy, dz, dyaw = root_node_infos[f]
-                        x, y, z, = x + dx, y + dy, z + dz
-                        
+                        scale = unpack_float(frame_data[off: off + 4])[0]
+                        off += 4
+                    else:
+                        scale = def_state.scale
 
                     node_states.append(JmaNodeState(i, j, k, w, x, y, z, scale))
 
+                    if n == 0:
+                        node_states[-1] = apply_frame_info_to_state(
+                            node_states[-1], *root_node_infos[f])
+
+
+            if anim_type != "overlay":
+                # copy the first frame to the last frame
+                node_states = deepcopy(anim_frames[0])
+                anim_frames.append(node_states)
+
+                if root_node_infos:
+                    node_states[0] = apply_frame_info_to_state(
+                        node_states[0], *root_node_infos[0])
+
             write_jma(
-                join(filepath_base, anim.name + anim_ext),
+                filepath,
                 JmaAnimation(
                     anim.name, anim.node_list_checksum,
                     anim_type, frame_info_type, anim.flags.world_relative,
@@ -1095,9 +1123,8 @@ h1_data_extractors = {
     'phys': extract_physics,
     'mode': extract_model, 'mod2': extract_model,
     'antr': extract_animation, 'magy': extract_animation,
-    #'coll': extract_collision, 'sbsp': extract_collision,
-    #'font',
-    #'unic',
+    #'coll': extract_collision,
+    #'sbsp': None, 'font': None, 'unic': None,
     'str#': extract_string_list, 'ustr': extract_unicode_string_list,
     "bitm": extract_bitmaps, "snd!": extract_h1_sounds,
     "hmt ": extract_hud_message_text, 'scnr': extract_h1_scnr_data,

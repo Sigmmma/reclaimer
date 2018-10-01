@@ -1,7 +1,18 @@
 '''
 This module implements some basic matrix classes
 '''
-from math import log, sqrt
+from math import log, sqrt, cos, sin, pi
+
+
+def euler_to_quat(y, p, r):
+    '''Angles are expected to be in radians.'''
+    c0, c1, c2 = cos(y / 2), cos(p / 2), cos(r / 2)
+    s1, s2, s3 = sin(y / 2), sin(p / 2), sin(r / 2)
+    return (s1*s2*c2*+ c0*c1*s3,
+            s1*c1*c2 + c0*s2*s3,
+            c0*s2*c2 - s1*c1*s3,
+            c0*c1*c2 - s1*s2*s3)
+
 
 def multiply_quaternions(q0, q1):
     assert len(q0) == 4
@@ -10,7 +21,7 @@ def multiply_quaternions(q0, q1):
     j = -q0[0] * q1[2] + q0[1] * q1[3] + q0[2] * q1[0] + q0[3] * q1[1]
     k =  q0[0] * q1[1] - q0[1] * q1[0] + q0[2] * q1[3] + q0[3] * q1[2]
     w = -q0[0] * q1[0] - q0[1] * q1[1] - q0[2] * q1[2] + q0[3] * q1[3]
-    return type(q0)(i, j, k, w)
+    return type(q0)((i, j, k, w))
 
 
 def quaternion_to_matrix(i, j, k, w):
@@ -52,7 +63,7 @@ def matrix_to_quaternion(matrix):
         k = 0.25 * s
         w = (m10 - m01) / s
 
-    return (i, j, k, w)
+    return i, j, k, w
 
 
 class MatrixRow(list):
