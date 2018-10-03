@@ -938,6 +938,9 @@ def apply_frame_info_to_state(state, dx=0, dy=0, dz=0, dyaw=0):
 
 
 def extract_animation(tagdata, tag_path, **kw):
+    if not tagdata.animations.STEPTREE:
+        return
+
     filepath_base = join(kw['out_dir'], dirname(tag_path), "animations")
     endian = "<" if kw.get('halo_map') else ">"
     unpack_trans = PyStruct(endian + "3f").unpack
@@ -952,8 +955,13 @@ def extract_animation(tagdata, tag_path, **kw):
                                   node.next_sibling_node_index))
 
     if not anim_nodes:
-        print("Animation tag is missing its nodes. Cannot extract animations.")
-        return
+        for i in range(tagdata.animations.STEPTREE[0].node_count):
+            anim_nodes.append(JmaNode("fake_node%s" % i, -1, i + 1))
+
+        anim_nodes[0].first_child = 1
+        anim_nodes[-1].first_child = -1
+        anim_nodes[0].sibling_index = anim_nodes[-1].sibling_index = -1
+
 
     for anim in tagdata.animations.STEPTREE:
         try:
@@ -1007,9 +1015,8 @@ def extract_animation(tagdata, tag_path, **kw):
                 print("Skipping animation with less default_data " +
                       "than it is expected to contain: '%s'" % anim.name)
                 continue
-            elif anim.flags.compressed_data and uncomp_data_size > anim.offset_to_compressed_data:
-                print("Skipping animation without uncompressed " +
-                      "animation data: '%s'" % anim.name)
+            elif anim.flags.compressed_data:
+                print("Skipping animation: '%s'" % anim.name)
                 continue
             elif uncomp_data_size > len(frame_data):
                 print("Skipping animation with less frame_data " +
