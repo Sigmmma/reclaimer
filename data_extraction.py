@@ -19,6 +19,7 @@ except ImportError:
     arbytmap = Arbytmap = None
 
 from copy import deepcopy
+from math import sqrt
 from os import makedirs
 from os.path import dirname, exists, join, isfile, splitext
 from struct import Struct as PyStruct, unpack, pack_into
@@ -34,7 +35,7 @@ from reclaimer.util import is_protected_tag, fourcc, is_reserved_tag
 from reclaimer.h2.util import *
 from reclaimer.adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
 from reclaimer.hek.defs.objs.matrices import Matrix, matrix_to_quaternion,\
-     euler_to_quat, multiply_quaternions
+     axis_angle_to_quat, quat_to_axis_angle, multiply_quaternions
 from reclaimer.hek.defs.objs.p8_palette import load_palette
 from reclaimer.hek.defs.hmt_ import icon_types as hmt_icon_types
 from reclaimer.hsc import get_hsc_data_block, hsc_bytecode_to_string
@@ -930,10 +931,9 @@ def extract_model(tagdata, tag_path, **kw):
 def apply_frame_info_to_state(state, dx=0, dy=0, dz=0, dyaw=0):
     x, y, z = state.pos_x + dx, state.pos_y + dy, state.pos_z + dz
     i, j, k, w = multiply_quaternions(
-        [state.rot_i, state.rot_j, state.rot_k, state.rot_w],
-        euler_to_quat(-dyaw, 0, 0),
+        axis_angle_to_quat(1, 0, 0, -dyaw),
+        (state.rot_i, state.rot_j, state.rot_k, state.rot_w),
         )
-    #rot = (angleaxis -dyaw [1,0,0]) as quat + frame_node_rotation[f][n]
     return JmaNodeState(i, j, k, w, x, y, z, state.scale)
 
 
@@ -957,7 +957,6 @@ def extract_animation(tagdata, tag_path, **kw):
 
     for anim in tagdata.animations.STEPTREE:
         try:
-            right_anim = anim.name == "zstand flame aim-still"
             anim_type = anim.type.enum_name
             frame_info_type = anim.frame_info_type.enum_name.lower()
             world_relative = anim.flags.world_relative
@@ -1020,12 +1019,10 @@ def extract_animation(tagdata, tag_path, **kw):
 
             # sum the frame info changes for each frame
             off = 0
-            root_node_infos = [[0, 0, 0, 0] for i in range(anim.frame_count + 1)]
+            root_node_infos = [[0.0, 0.0, 0.0, 0.0] for i in
+                               range(anim.frame_count + 1)]
             dx = dy = dz = dyaw = 0.0
             for f in range(anim.frame_count):
-                x, y, z, yaw = root_node_infos[f - 1]
-                root_node_infos[f][:] = [x + dx, y + dy, z + dz, yaw + dyaw]
-
                 if has_dxdy:
                     dx, dy = unpack_dxdy(frame_info[off: off + 8])
                     off += 8
@@ -1038,7 +1035,8 @@ def extract_animation(tagdata, tag_path, **kw):
                     dyaw = unpack_float(frame_info[off: off + 4])[0]
                     off += 4
 
-            root_node_infos.pop(-1)
+                x, y, z, yaw = root_node_infos[f]
+                root_node_infos[f + 1][:] = [x + dx, y + dy, z + dz, yaw + dyaw]
 
 
             off = 0
@@ -1051,7 +1049,17 @@ def extract_animation(tagdata, tag_path, **kw):
                 w = scale = 1.0
                 if not rot_flags[n]:
                     i, j, k, w = unpack_ijkw(default_data[off: off + 8])
-                    i, j, k, w = i/32767, j/32767, k/32767, w/32767
+                    rot_len = i**2 + j**2 + k**2 + w**2
+                    if rot_len:
+                        rot_len = sqrt(rot_len)
+                        i /= rot_len
+                        j /= rot_len
+                        k /= rot_len
+                        w /= rot_len
+                    else:
+                        i = j = k = 0.0
+                        w = 1.0
+
                     off += 8
 
                 if not trans_flags[n]:
@@ -1073,7 +1081,16 @@ def extract_animation(tagdata, tag_path, **kw):
                     def_state = def_node_states[n]
                     if rot_flags[n]:
                         i, j, k, w = unpack_ijkw(frame_data[off: off + 8])
-                        i, j, k, w = i/32767, j/32767, k/32767, w/32767
+                        rot_len = i**2 + j**2 + k**2 + w**2
+                        if rot_len:
+                            rot_len = sqrt(rot_len)
+                            i /= rot_len
+                            j /= rot_len
+                            k /= rot_len
+                            w /= rot_len
+                        else:
+                            i = j = k = 0.0
+                            w = 1.0
                         off += 8
                     else:
                         i, j, k, w = (def_state.rot_i, def_state.rot_j,
@@ -1104,8 +1121,14 @@ def extract_animation(tagdata, tag_path, **kw):
                 anim_frames.append(node_states)
 
                 if root_node_infos:
+                    # add the last root info to the last frame, but make
+                    # sure to remove the frame_info from the first frame
+                    dx0, dy0, dz0, dyaw0 = root_node_infos[0]
+                    dx1, dy1, dz1, dyaw1 = root_node_infos[-1]
+
                     node_states[0] = apply_frame_info_to_state(
-                        node_states[0], *root_node_infos[0])
+                        node_states[0], dx1 - dx0, dy1 - dy0,
+                        dz1 - dz0, dyaw1 - dyaw0)
 
             write_jma(
                 filepath,
