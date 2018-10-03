@@ -955,6 +955,10 @@ def extract_animation(tagdata, tag_path, **kw):
                                   node.next_sibling_node_index))
 
     if not anim_nodes:
+        print("WARNING: Animation tag missing nodes.\n"
+              "\tFake nodes will be created to allow compiling the animations.\n"
+              "\tAnimation tags compiled from these files won't import onto\n"
+              "\ttheir gbxmodel in 3DS Max, as their node names won't match.")
         for i in range(tagdata.animations.STEPTREE[0].node_count):
             anim_nodes.append(JmaNode("fake_node%s" % i, -1, i + 1))
 
@@ -1004,23 +1008,24 @@ def extract_animation(tagdata, tag_path, **kw):
             default_data_size = anim.node_count * (12 + 8 + 4) - frame_size
             uncomp_data_size = frame_size * anim.frame_count
             if len(anim_nodes) != anim.node_count:
-                print("Skipping animation with different number of nodes " +
+                print("Skipping animation with different number of nodes "
                       "than the tag contains: '%s'" % anim.name)
                 continue
             elif frame_info_size > len(frame_info):
-                print("Skipping animation with less frame_info data " +
+                print("Skipping animation with less frame_info data "
                       "than it is expected to contain: '%s'" % anim.name)
                 continue
             elif default_data_size > len(default_data):
-                print("Skipping animation with less default_data " +
+                print("Skipping animation with less default_data "
                       "than it is expected to contain: '%s'" % anim.name)
-                continue
-            elif anim.flags.compressed_data:
-                print("Skipping animation: '%s'" % anim.name)
                 continue
             elif uncomp_data_size > len(frame_data):
-                print("Skipping animation with less frame_data " +
+                print("Skipping animation with less frame_data "
                       "than it is expected to contain: '%s'" % anim.name)
+                continue
+            elif anim.flags.compressed_data and sum(default_data) == 0:
+                print("Skipping compressed animation without uncompressed "
+                      "animation data: '%s'" % anim.name)
                 continue
 
 
