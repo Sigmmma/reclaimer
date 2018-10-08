@@ -737,6 +737,7 @@ class Halo1Map(HaloMap):
                 b.fade_out_time /= 30
 
         elif tag_cls == "snd!":
+            meta.maximum_bend_per_second = meta.maximum_bend_per_second ** 30
             for pitch_range in meta.pitch_ranges.STEPTREE:
                 for permutation in pitch_range.permutations.STEPTREE:
                     if permutation.compression.enum_name == "none":
