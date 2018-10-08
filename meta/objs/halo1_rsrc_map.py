@@ -219,6 +219,7 @@ class Halo1RsrcMap(HaloMap):
                 bitmap.bitmap_data_pointer = bitmap.base_address = 0
 
         elif tag_cls == "snd!":
+            meta.maximum_bend_per_second = meta.maximum_bend_per_second ** 30
             for pitch_range in meta.pitch_ranges.STEPTREE:
                 for permutation in pitch_range.permutations.STEPTREE:
                     if permutation.compression.enum_name == "none":
