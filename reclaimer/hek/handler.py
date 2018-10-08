@@ -7,10 +7,11 @@ from os.path import abspath, basename, exists, isfile, join, normpath, splitext
 
 from binilla.handler import Handler
 from supyr_struct.buffer import BytearrayBuffer
-from ..field_types import *
-from .defs.objs.tag import HekTag
+from supyr_struct.defs.util import sanitize_path
+from reclaimer.field_types import *
+from reclaimer.hek.defs.objs.tag import HekTag
 from traceback import format_exc
-from .defs import __all__ as all_def_names
+from reclaimer.hek.defs import __all__ as all_def_names
 
 
 def bytes_to_hex(taghash):
@@ -352,7 +353,7 @@ class HaloHandler(Handler):
         #if the string is empty, then it doesnt NOT exist, so return False
         if not node.filepath:
             return False
-        filepath = join(self.tagsdir, node.filepath)
+        filepath = sanitize_path(join(self.tagsdir, node.filepath))
         
         try:
             ext = '.' + node.tag_class.enum_name
@@ -369,7 +370,7 @@ class HaloHandler(Handler):
         node = parent[attr_index]
         if not node.filepath:
             return False
-        filepath = join(self.tagsdir, node.filepath)
+        filepath = sanitize_path(join(self.tagsdir, node.filepath))
         
         try:
             ext = '.' + node.tag_class.enum_name

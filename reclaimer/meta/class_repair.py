@@ -168,6 +168,7 @@ def repair_DeLa(tag_id, index_array, map_data, magic, repair, engine):
 
     ct, moff, _ = read_reflexive(map_data, tag_offset + 992 - magic)
     repair_dependency_array(*(args + (b'aLeD', moff, ct, 80)))
+    # FINISH THIS
 
 
 def repair_dobc(tag_id, index_array, map_data, magic, repair, engine):
