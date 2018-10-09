@@ -1,6 +1,35 @@
 from reclaimer.meta.halo1_map_fast_functions import *
 
 
+def get_tagc_refs(meta_offset, map_data, magic, repaired):
+    try:
+        ct, moff, _ = read_reflexive(map_data, meta_offset - magic)
+    except Exception:
+        return (), ()
+
+    if ct > 200 or ct <= 0 or moff != meta_offset + 12:
+        return (), ()
+
+    # might be Soul, but need to check tag classes to make sure
+    try:
+        reffed_ids = []
+        reffed_types = []
+        for moff2 in iter_reflexive_offs(map_data, meta_offset - magic, 16):
+            map_data.seek(moff2 - magic + 12)
+            tag_id = int.from_bytes(map_data.read(4), "little") & 0xFFFF
+            if tag_id == 0xFFFF:
+                continue
+
+            reffed_ids.append(tag_id)
+            reffed_types.append(repaired.get(tag_id))
+
+        return reffed_ids, reffed_types
+    except Exception:
+        pass
+
+    return (), ()
+
+
 def repair_hud_background(index_array, map_data, magic, repair, engine, offset):
     args = (index_array, map_data, magic, repair, engine, b'mtib')
     repair_dependency(*(args + (offset + 36, )))
@@ -157,6 +186,13 @@ def repair_DeLa(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency(*(args + (b'aLeD', moff + 8)))
         repair_dependency(*(args + (b'!dns', moff + 24)))
 
+    ct, _, __ = read_reflexive(map_data, tag_offset + 96 - magic)
+    if ct > 32:
+        # some people apparently think its cute to set this reflexive
+        # count so high so that tool just fails to compile the tag
+        map_data.seek(tag_offset + 96 - magic)
+        map_data.write(b'\x20\x00\x00\x00')
+
     repair_dependency(*(args + (b'rtsu', tag_offset + 236)))
     repair_dependency(*(args + (b'tnof', tag_offset + 252)))
     repair_dependency(*(args + (b'mtib', tag_offset + 340)))
@@ -168,7 +204,6 @@ def repair_DeLa(tag_id, index_array, map_data, magic, repair, engine):
 
     ct, moff, _ = read_reflexive(map_data, tag_offset + 992 - magic)
     repair_dependency_array(*(args + (b'aLeD', moff, ct, 80)))
-    # FINISH THIS
 
 
 def repair_dobc(tag_id, index_array, map_data, magic, repair, engine):
@@ -590,8 +625,8 @@ def repair_part(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency(*(args + (b'mtib', tag_offset + 0x4)))
     repair_dependency(*(args + (b'yhpp', tag_offset + 0x14)))
     repair_dependency(*(args + (b'toof', tag_offset + 0x24)))
-    repair_dependency(*(args + (b'effe', tag_offset + 0x48)))
-    repair_dependency(*(args + (b'effe', tag_offset + 0x58)))
+    repair_dependency(*(args + (None, tag_offset + 0x48)))
+    repair_dependency(*(args + (None, tag_offset + 0x58)))
     repair_dependency(*(args + (b'mtib', tag_offset + 0xFC)))
 
 
