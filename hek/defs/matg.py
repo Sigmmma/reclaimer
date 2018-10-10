@@ -154,10 +154,10 @@ rasterizer_data = Struct("rasterizer data",
             "tint edge density"
             ),
         Pad(2),
-        Float('refration amount', SIDETIP="pixels"),  # pixels
+        Float('refraction amount', SIDETIP="pixels"),  # pixels
         Float('distance falloff'),
         QStruct('tint color', INCLUDE=rgb_float),
-        Float('hyper-stealth refration amount', SIDETIP="pixels"),  # pixels
+        Float('hyper-stealth refraction amount', SIDETIP="pixels"),  # pixels
         Float('hyper-stealth distance falloff'),
         QStruct('hyper-stealth tint color', INCLUDE=rgb_float),
         ),
