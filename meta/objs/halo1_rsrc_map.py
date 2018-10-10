@@ -157,9 +157,13 @@ class Halo1RsrcMap(HaloMap):
 
     def get_meta(self, tag_id, reextract=False):
         '''Returns just the meta of the tag without any raw data.'''
+        if tag_id is None:
+            return
 
         # if we are given a 32bit tag id, mask it off
         tag_id &= 0xFFFF
+        if tag_id >= len(self.tag_index):
+            return
         tag_index_ref = self.tag_index.tag_index[tag_id]
         tag_cls = dict(
             sound="snd!", bitmap="bitm", font="font",

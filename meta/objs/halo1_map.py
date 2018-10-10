@@ -164,10 +164,11 @@ class Halo1Map(HaloMap):
                 for tag_id, offset in bsp_offsets.items():
                     header = sbsp_meta_header_def.build(rawdata=self.map_data,
                                                         offset=offset)
-                    self.bsp_headers[tag_id] = header
                     if header.sig != header.get_desc("DEFAULT", "sig"):
-                        print("Sbsp header is invalid for '%s'" %
-                              tag_index_array[tag_id].tag.tag_path)
+                        raise ValueError(
+                            "Sbsp header is invalid for '%s'" %
+                            tag_index_array[tag_id].tag.tag_path)
+                    self.bsp_headers[tag_id] = header
             else:
                 print("Could not read scenario tag")
 
@@ -207,7 +208,8 @@ class Halo1Map(HaloMap):
         Takes a tag reference id as the sole argument.
         Returns that tags meta data as a parsed block.
         '''
-        if tag_id is None: return
+        if tag_id is None:
+            return
         magic     = self.map_magic
         engine    = self.engine
         map_data  = self.map_data
@@ -216,7 +218,8 @@ class Halo1Map(HaloMap):
 
         # if we are given a 32bit tag id, mask it off
         tag_id &= 0xFFFF
-
+        if tag_id >= len(tag_index_array):
+            return
         tag_index_ref = tag_index_array[tag_id]
 
         if tag_id != tag_index.scenario_tag_id[0] or self.is_resource:

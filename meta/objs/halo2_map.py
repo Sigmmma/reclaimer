@@ -176,13 +176,17 @@ class Halo2Map(HaloMap):
         return extractor(meta, tag_index_ref.tag.tag_path, **kw)
 
     def get_meta(self, tag_id, reextract=False):
-        if tag_id is None: return
+        if tag_id is None:
+            return
+
         scnr_id = self.orig_tag_index.scenario_tag_id[0]
         tag_index_array = self.tag_index.tag_index
         shared_map    = self.maps.get("shared")
 
         # if we are given a 32bit tag id, mask it off
         tag_id &= 0xFFFF
+        if tag_id >= len(tag_index_array):
+            return
 
         if self.engine != "halo2alpha":
             matg_id = self.orig_tag_index.globals_tag_id[0]
