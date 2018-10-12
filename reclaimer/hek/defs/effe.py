@@ -145,7 +145,7 @@ effe_body = Struct("tagdata",
     Bool32("flags",
         {NAME: "deleted when inactive", GUI_NAME: "deleted when attachment deactivates"},
         {NAME: "required", GUI_NAME: "required for gameplay(cannot optimize)"},
-        #'unknown'  # found only in map meta data
+        "use in dedicated servers"
         ),
     dyn_senum16("loop start event",
         DYN_NAME_PATH=".events.events_array[DYN_I].NAME"),
