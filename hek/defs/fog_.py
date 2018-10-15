@@ -14,9 +14,9 @@ fog__body = Struct("tagdata",
         "is water",
         "atmospheric dominant",
         "fog screen only",
-		COMMENT=fog_comment
+        COMMENT=fog_comment
         ),
-                   
+
     Pad(84),
     #Density
     float_zero_to_one("maximum density"),
@@ -78,6 +78,6 @@ def get():
 fog__def = TagDef("fog ",
     blam_header('fog '),
     fog__body,
-    
+
     ext=".fog", endian=">", tag_cls=HekTag
     )
