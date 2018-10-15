@@ -3,28 +3,28 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 environment_shader_comment = """ENVIRONMENT SHADER
-Setting <true atmospheric fog> enables per-pixel atmospheric fog (for models) but disables 
-point/spot lights, planar fog, and the ability to control the atmospheric fog density for 
+Setting <true atmospheric fog> enables per-pixel atmospheric fog (for models) but disables
+point/spot lights, planar fog, and the ability to control the atmospheric fog density for
 this shader.
 
-Alpha-tested controls if the shader is masked by the diffuse alpha (or depending on 
+Alpha-tested controls if the shader is masked by the diffuse alpha (or depending on
 the environment shader type's setting) the bump map alpha. The transparancy is only 1-bit"""
 
 environment_shader_type_comment = """ENVIRONMENT SHADER TYPE
 Controls how diffuse maps are combined:
 
 NORMAL:
-Secondary detail map alpha controls blend between primary and secondary detail map. 
-Specular mask is alpha of blended primary and secondary detail map alpha multiplied by 
+Secondary detail map alpha controls blend between primary and secondary detail map.
+Specular mask is alpha of blended primary and secondary detail map alpha multiplied by
 alpha of micro detail map.
 
 BLENDED:
-Base map alpha controls blend between primary and secondary detail map. 
-Specular mask is alpha of blended primary and secondary detail map alpha multiplied by 
+Base map alpha controls blend between primary and secondary detail map.
+Specular mask is alpha of blended primary and secondary detail map alpha multiplied by
 alpha of micro detail map.
 
 BLENDED BASE SPECULAR:
-Same as BLENDED, except specular mask is alpha is base map multiplied with 
+Same as BLENDED, except specular mask is alpha is base map multiplied with
 the alpha of micro detail map."""
 
 bump_properties_comment = """BUMP PROPERTIES
@@ -34,22 +34,22 @@ tex_scroll_anim_comment = """TEXTURE SCROLLING ANIMATION
 Scrolls all 2D maps simultaneously."""
 
 self_illum_comment = """SELF-ILLUMINATION PROPERTIES
-There are three self-illumination effects which are added together. 
-Each effect has an <on color>, used when the shader is active, and an <off color>, used when 
+There are three self-illumination effects which are added together.
+Each effect has an <on color>, used when the shader is active, and an <off color>, used when
 the shader is not active. The self-illumination map is used as follows:
 * RED: primary mask
 * GREEN: secondary mask
 * BLUE: plasma mask
 * ALPHA: plasma animation reference
 
-Each effect also has an animation <function>, <period> and <phase>, used when the shader is 
-active. The primary and secondary effects simply modulate the <on color> by the animation 
-value to produce an animation color, and then blend between the animation color and the 
+Each effect also has an animation <function>, <period> and <phase>, used when the shader is
+active. The primary and secondary effects simply modulate the <on color> by the animation
+value to produce an animation color, and then blend between the animation color and the
 <off color> based on the shader's activation level, and finally modulate by the mask.
 
-The plasma shader compares the animation value with the alpha channel of the map (the plasma 
-animation reference) and produces a high value when they are similar and a dark value when 
-they are different. This value modulates the <plasma on color> to produce a plasma animation 
+The plasma shader compares the animation value with the alpha channel of the map (the plasma
+animation reference) and produces a high value when they are similar and a dark value when
+they are different. This value modulates the <plasma on color> to produce a plasma animation
 color, and the rest proceeds just like the primary and secondary effects."""
 
 specular_properties_comment = """SPECULAR PROPERTIES
@@ -88,7 +88,7 @@ diffuse = Struct("diffuse",
         ),
     Pad(26),
     dependency("base map", "bitm"),
-                   
+
     Pad(24),
     SEnum16("detail map function", *detail_map_functions),
     Pad(2),
@@ -114,20 +114,20 @@ bump_properties = Struct("bump properties",
     FlFloat("map scale y"),
     COMMENT=bump_properties_comment
     )
-	
+
 texture_scrolling = Struct("texture scrolling",
     anim_func_per_sca_macro("u-animation"),
     anim_func_per_sca_macro("v-animation"),
     COMMENT=tex_scroll_anim_comment
     )
-	
+
 self_illumination = Struct("self illumination",
     Bool16("flags",
         "unfiltered",
         ),
     Pad(2),
     Pad(24),
-	
+
     QStruct("primary on-color",  INCLUDE=rgb_float),
     QStruct("primary off-color", INCLUDE=rgb_float),
     anim_func_per_pha_macro("primary animation"),

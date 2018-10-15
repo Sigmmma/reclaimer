@@ -1,7 +1,29 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.wphi import WphiTag
 from supyr_struct.defs.tag_def import TagDef
 from .grhi import messaging_information, multitex_overlay, hud_background
+
+crosshair_types = (
+    "aim",
+    "zoom",
+    "charge",
+    "should reload",
+    "flash heat",
+    "flash total ammo",
+    "flash battery",
+    "reload/overheat",
+    "flash when firing and no ammo",
+    "flash when throwing grenade and no grenade",
+    "low ammo and none left to reload",
+    "should reload secondary trigger",
+    "flash secondary total ammo",
+    "flash secondary reload",
+    "flash when firing secondary and no ammo",
+    "low secondary ammo and none left to reload",
+    "primary trigger ready",
+    "secondary trigger ready",
+    "flash when firing with depleted battery",
+    )
 
 attached_state = SEnum16("state attached to",
     "total ammo",
@@ -209,27 +231,7 @@ overlay = Struct("overlay",
     )
 
 crosshair = Struct("crosshair",
-    SEnum16("crosshair type",
-        "aim",
-        "zoom",
-        "charge",
-        "should reload",
-        "flash heat",
-        "flash total ammo",
-        "flash battery",
-        "reload/overheat",
-        "flash when firing and no ammo",
-        "flash when throwing grenade and no grenade",
-        "low ammo and none left to reload",
-        "should reload secondary trigger",
-        "flash secondary total ammo",
-        "flash secondary reload",
-        "flash when firing secondary and no ammo",
-        "low secondary ammo and none left to reload",
-        "primary trigger ready",
-        "secondary trigger ready",
-        "flash when firing with depleted battery",
-        ),
+    SEnum16("crosshair type", *crosshair_types),
     Pad(2),
     use_on_map_type,
 
@@ -320,9 +322,10 @@ wphi_body = Struct("tagdata",
     reflexive("number elements", number_element, 16),
     reflexive("crosshairs", crosshair, 19),
     reflexive("overlay elements", overlay_element, 16),
+    FlBool32("crosshair types", *crosshair_types, VISIBLE=False),
 
     # necessary for reticles to show up sometimes
-    BytesRaw("unknown", SIZE=16, VISIBLE=False),
+    Pad(12),
     reflexive("screen effect", screen_effect, 1),
 
     Pad(132),
@@ -338,5 +341,5 @@ wphi_def = TagDef("wphi",
     blam_header("wphi", 2),
     wphi_body,
 
-    ext=".weapon_hud_interface", endian=">", tag_cls=HekTag,
+    ext=".weapon_hud_interface", endian=">", tag_cls=WphiTag,
     )

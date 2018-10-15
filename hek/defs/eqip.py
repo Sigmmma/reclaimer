@@ -8,7 +8,7 @@ from supyr_struct.defs.tag_def import TagDef
 obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=3)
 
-eqip_attrs = Struct("equipment attrs",
+eqip_attrs = Struct("eqip attrs",
     SEnum16('powerup type',
         'none',
         'double speed',

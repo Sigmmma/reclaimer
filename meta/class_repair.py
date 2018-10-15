@@ -691,6 +691,10 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine):
     if engine == "yelo":
         repair_dependency(*(args + (b'oley', tag_offset)))
 
+    repair_dependency(*(args + (b'rtsu', tag_offset + 1396)))
+    repair_dependency(*(args + (b'rtsu', tag_offset + 1412)))
+    repair_dependency(*(args + (b' tmh', tag_offset + 1428)))
+
     ct, moff, _ = read_reflexive(map_data, tag_offset + 48 - magic)
     repair_dependency_array(*(args + (b' yks', moff, ct)))
 

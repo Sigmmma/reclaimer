@@ -14,11 +14,7 @@ effect = Struct("effect",
     )
 
 foot_body = Struct("tagdata",
-    reflexive("effects", effect, 13,
-        "walk", "run", "sliding", "shuffle", "jump", "jump land",
-        "biped unused1", "biped unused2",
-        "impact", "vehicle tire slip", "vehicle chassis slip",
-        "vehicle unused1", "vehicle unused2"),
+    reflexive("effects", effect, 13, *material_effect_types),
     SIZE=140,
     )
 
