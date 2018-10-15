@@ -162,7 +162,7 @@ class Halo1RsrcMap(HaloMap):
 
         # if we are given a 32bit tag id, mask it off
         tag_id &= 0xFFFF
-        if tag_id >= len(self.tag_index):
+        if tag_id >= len(self.tag_index.tag_index):
             return
         tag_index_ref = self.tag_index.tag_index[tag_id]
         tag_cls = dict(

@@ -552,7 +552,7 @@ reflexive_struct = Reflexive('reflexive',
 tag_ref_struct = TagRef('dependency',
     valid_tags,
     SInt32("path pointer", VISIBLE=False, EDITABLE=False),
-    SInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
+    SInt32("path length", MAX=MAX_TAG_PATH_LEN, VISIBLE=False, EDITABLE=False),
     tag_id_struct,
     ORIENT='h'
     )

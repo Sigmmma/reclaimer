@@ -134,6 +134,8 @@ CUBEMAP_PADDING = 128
 #indices, though I have seen some open sauce stuff go over 180,000.
 MAX_REFLEXIVE_COUNT = 2**31-1
 
+MAX_TAG_PATH_LEN = 243
+
 # maps tag class four character codes(fccs) in
 # their string encoding to their int encoding.
 tag_class_fcc_to_be_int = {}

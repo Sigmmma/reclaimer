@@ -40,6 +40,21 @@ materials_list = (
     "ice",
     "hunter_shield",
     )
+material_effect_types = (
+    "walk",
+    "run",
+    "sliding",
+    "shuffle",
+    "jump",
+    "jump_land",
+    "biped_unused1",
+    "biped_unused2",
+    "impact",
+    "vehicle_tire_slip",
+    "vehicle_chassis_slip",
+    "vehicle_unused1",
+    "vehicle_unused2"
+    )
 actor_types = (
     "elite",
     "jackal",
