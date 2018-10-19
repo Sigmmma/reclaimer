@@ -56,7 +56,15 @@ def get_map_version(header):
     return version
 
 
-def get_map_header(map_data, header_only=False):
+def get_map_header(map_file, header_only=False):
+    if hasattr(map_file, "read"):
+        orig_pos = map_file.tell()
+        map_file.seek(0)
+        map_data = map_file.read(2048)
+        map_file.seek(orig_pos)
+    else:
+        map_data = map_file
+
     sig   = map_data[:4]
     sig_b = sig.decode('latin-1').lower()
     sig_l = sig_b[::-1]
