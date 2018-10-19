@@ -174,7 +174,7 @@ def dependency(name='tag ref', valid_ids=None, **kwargs):
         valid_ids,
         INCLUDE=tag_ref_struct,
         STEPTREE=StrTagRef(
-            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=234),
+            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254),
         **kwargs
         )
 
@@ -684,7 +684,7 @@ def dependency_os(name='tag ref', valid_ids=None, **kwargs):
         valid_ids,
         INCLUDE=tag_ref_struct,
         STEPTREE=StrTagRef(
-            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=234),  # 10 < Halo1
+            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254),
         **kwargs
         )
 
