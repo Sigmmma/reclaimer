@@ -258,8 +258,8 @@ fog_plane = Struct("fog plane",
     SInt16("front region"),
     FlSEnum16("material type",
         *(tuple((materials_list[i], i) for i in
-           range(len(materials_list))) + (("NONE", -1), ))
-        ),  # non-zero in meta some times
+           range(len(materials_list))) + (("NONE", -1), )),
+        VISIBLE=False),  # calculated when compiled into map
     QStruct("plane", INCLUDE=plane),
     reflexive("vertices", vertex, 4096),
     SIZE=32
