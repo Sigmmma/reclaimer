@@ -90,23 +90,22 @@ def repair_unit_attrs(offset, index_array, map_data, magic, repair, engine):
 
         repair_dependency(*(args + (b'vtca', moff + 248)))
 
-        if engine == "yelo":
+        if "yelo" in engine:
             # seat extension
             for moff2 in iter_reflexive_offs(map_data, moff + 264 - magic, 100):
-                off = moff2 - magic
                 # seat boarding
-                for moff3 in iter_reflexive_offs(map_data, off + 28, 112):
+                for moff3 in iter_reflexive_offs(map_data, moff2 + 28 - magic, 112):
                     # seat keyframe action
-                    for moff4 in iter_reflexive_offs(map_data, moff3 + 76, 152):
-                        repair_dependency(*(args + (b'!tpj', moff3 + 48)))
-                        repair_dependency(*(args + (b'effe', moff3 + 68)))
+                    for moff4 in iter_reflexive_offs(map_data, moff3 + 76 - magic, 152):
+                        repair_dependency(*(args + (b'!tpj', moff4 + 48)))
+                        repair_dependency(*(args + (b'effe', moff4 + 68)))
 
                 # seat damage
-                for moff3 in iter_reflexive_offs(map_data, off + 40, 136):
+                for moff3 in iter_reflexive_offs(map_data, moff2 + 40 - magic, 136):
                     repair_dependency(*(args + (b'!tpj', moff3 + 4)))
                     repair_dependency(*(args + (b'!tpj', moff3 + 96)))
 
-    if engine == "yelo":
+    if "yelo" in engine:
         # unit extension
         for moff in iter_reflexive_offs(map_data, offset + 288 - magic, 60):
             # mounted states
@@ -688,8 +687,17 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
-    if engine == "yelo":
+    if "yelo" in engine:
         repair_dependency(*(args + (b'oley', tag_offset)))
+
+    for moff in iter_reflexive_offs(map_data, tag_offset + 1288 - magic, 64):
+        # OPEN SAUCE BSP MODIFIERS
+        for moff2 in iter_reflexive_offs(map_data, moff + 4 - magic, 124):
+            repair_dependency_array(*(args + (b'mtib', moff2 + 36, 4)))
+
+        for moff2 in iter_reflexive_offs(map_data, moff + 16 - magic, 44):
+            for moff3 in iter_reflexive_offs(map_data, moff2 + 32 - magic, 20):
+                repair_dependency(*(args + (b' yks', moff3 + 4)))
 
     repair_dependency(*(args + (b'rtsu', tag_offset + 1396)))
     repair_dependency(*(args + (b'rtsu', tag_offset + 1412)))
@@ -767,7 +775,7 @@ def repair_shader(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency(*(args + (b'mtib', tag_offset + 0x22C)))
         repair_dependency(*(args + (b'mtib', tag_offset + 0x2FC)))
         # shader environment os extension
-        if engine == "yelo":
+        if "yelo" in engine:
             ct, moff, _ = read_reflexive(map_data, tag_offset + 0xC8 - magic)
             repair_dependency_array(*(args + (b'mtib', moff + 8, ct, 100)))
 
@@ -777,7 +785,7 @@ def repair_shader(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency(*(args + (b'mtib', tag_offset + 0xB4)))
         repair_dependency(*(args + (b'mtib', tag_offset + 0x13C)))
         # shader model os extension
-        if engine == "yelo":
+        if "yelo" in engine:
             for moff in iter_reflexive_offs(
                     map_data, tag_offset + 0xC8 - magic, 192):
                 repair_dependency(*(args + (b'mtib', moff)))
