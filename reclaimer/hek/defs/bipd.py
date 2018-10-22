@@ -119,22 +119,17 @@ bipd_attrs = Struct("bipd attrs",
     QStruct("physics",
         # the default values below that aren't commented out are taken
         # from the cyborg.biped tag after saving it with guerilla.
-        FlFloat("ground camera contact multiplier",  DEFAULT=0.17364822328090668),#DEFAULT=1.0),
-        FlFloat("crouch camera velocity multiplier", DEFAULT=1/6),#DEFAULT=1.0),
-        FlFloat("ground surface height", DEFAULT=sqrt(2)/2,#DEFAULT=1.0,
+        FlFloat("cosine stationary turning threshold",  DEFAULT=0.17364822328090668),#DEFAULT=1.0),
+        FlFloat("crouch camera velocity", DEFAULT=1/6),#DEFAULT=1.0),
+        FlFloat("cosine maximum slope angle", DEFAULT=sqrt(2)/2,#DEFAULT=1.0,
                 TOOLTIP=("negative is walking on walls.\n > 0.707107 is " +
                          "floating with contact points off the ground")),
-        FlFloat("ground accel modifier inverse", DEFAULT=-0.3420201241970062),#DEFAULT=-0.0),
-        FlFloat("unknown", TOOLTIP="autoaim related?", DEFAULT=-sqrt(2)/2),#DEFAULT=-0.0),
-        FlFloat("ground accel modifier fp", DEFAULT=0.3420201241970062),#DEFAULT=0.0),
-        FlFloat("ground accel modifier 3p", DEFAULT=sqrt(2)/2, #DEFAULT=0.0,
+        FlFloat("neg sine downhill falloff angle", DEFAULT=-0.3420201241970062),#DEFAULT=-0.0),
+        FlFloat("neg sine downhill cutoff angle", TOOLTIP="autoaim related?", DEFAULT=-sqrt(2)/2),#DEFAULT=-0.0),
+        FlFloat("sine uphill falloff angle", DEFAULT=0.3420201241970062),#DEFAULT=0.0),
+        FlFloat("sine uphill cutoff angle", DEFAULT=sqrt(2)/2, #DEFAULT=0.0,
                 TOOLTIP="does the same thing as the fp accel modifier?"),
         FlSInt32("camera mass", DEFAULT=-1, TOOLTIP="unused?"),
-        COMMENT=(
-            "\nNames for these values are courtesy of Sparky.\n" +
-            "From what I understand though, these names are completely\n" +
-            "experimental, so don't trust that they are 100% accurate.\n"
-            ),
         VISIBLE=False, SIZE=32
         ),
 
