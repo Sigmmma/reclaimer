@@ -100,7 +100,7 @@ avto_body = Struct("tagdata",
         DYN_NAME_PATH='.unit.filepath'),
 
     Struct("animation",
-        ascii_str32("transform in anim"),
+        ascii_str32("transform out anim"),
         reflexive("keyframe actions", keyframe_action, 9,
             DYN_NAME_PATH='.effect_marker'),
         COMMENT=animation_comment

@@ -203,7 +203,7 @@ class Halo1Map(HaloMap):
         kw['halo_map'] = self
         return extractor(meta, tag_index_ref.tag.tag_path, **kw)
 
-    def get_meta(self, tag_id, reextract=False):
+    def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False):
         '''
         Takes a tag reference id as the sole argument.
         Returns that tags meta data as a parsed block.
@@ -238,7 +238,8 @@ class Halo1Map(HaloMap):
         if tag_cls is None:
             # couldn't determine the tag class
             return
-        elif self.is_indexed(tag_id):
+        elif self.is_indexed(tag_id) and (tag_cls != "snd!" or
+                                          not ignore_rsrc_sounds):
             # tag exists in a resource cache
             tag_id = tag_index_ref.meta_offset
 
