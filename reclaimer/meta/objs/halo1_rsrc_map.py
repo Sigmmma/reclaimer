@@ -188,7 +188,7 @@ class Halo1RsrcMap(HaloMap):
             desc['TYPE'].parser(
                 desc, parent=block, attr_index=0, rawdata=self.map_data,
                 tag_index=self.rsrc_header.tag_paths, tag_cls=tag_cls,
-                root_offset=tag_index_ref.meta_offset, **kwargs)
+                root_offset=tag_index_ref.meta_offset, indexed=True, **kwargs)
             FieldType.force_normal()
             self.inject_rawdata(block[0], tag_cls, tag_index_ref)
         except Exception:

@@ -20,13 +20,18 @@ exposed_parameter = Struct("exposed parameter",
     SIZE=80
     )
 
-efpg_body = Struct("tagdata",
-    efpp_attrs,
+efpg_attrs = Struct("efpg attrs",
     reflexive("shaders", shader, 12,
         DYN_NAME_PATH='.shader.filepath'),
     reflexive("shader indices", shader_index, 12),
     reflexive("exposed parameters", exposed_parameter, 32,
         DYN_NAME_PATH='.exposed_name'),
+    SIZE=36
+    )
+
+efpg_body = Struct("tagdata",
+    efpp_attrs,
+    efpg_attrs,
     SIZE=96
     )
 

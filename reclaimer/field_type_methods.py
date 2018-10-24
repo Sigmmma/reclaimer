@@ -74,20 +74,18 @@ def tag_ref_str_parser(self, desc, node=None, parent=None, attr_index=None,
     if "tag_index" in kwargs:
         tag_index = kwargs["tag_index"]
         tagid = parent.id.tag_table_index
-        if tagid >= 0 and tagid != 0xFFFF:
+        if tagid < 0 or tagid == 0xFFFF:
+            parent[attr_index] = ""
+        else:
+            if kwargs.get("indexed") and kwargs.get('tag_cls') == 'snd!':
+                # tag_index is a resource map tag_paths collection
+                parent.id[0] = tagid = sound_rsrc_id_map.get(tagid, tagid)
+
             try:
                 parent[attr_index] = tag_index[tagid].tag.tag_path
             except (AttributeError, IndexError):
-                # tag_index is a resource map tag_paths collection
-                if kwargs['tag_cls'] == 'snd!':
-                    # fix the sound reference tagid
-                    parent.id[0] = tagid = sound_rsrc_id_map[tagid]
-                    parent[attr_index] = tag_index[tagid].tag_path
-                else:
-                    # unable to get the tag path
-                    parent[attr_index] = ""
-        else:
-            parent[attr_index] = ""
+                # unable to get the tag path
+                parent[attr_index] = ""
     elif rawdata:
         # read and store the node
         rawdata.seek(root_offset + offset)
