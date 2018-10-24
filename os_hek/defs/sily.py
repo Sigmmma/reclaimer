@@ -2,7 +2,7 @@ from ...common_descs import *
 from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
-text_value_pair = Struct("effect_instance",
+text_value_pair = Struct("text value pair",
     Bool8("flags",
         "default setting",
         "unchanged setting",
