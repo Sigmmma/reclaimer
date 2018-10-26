@@ -60,21 +60,21 @@ def get_map_header(map_file, header_only=False):
     if hasattr(map_file, "read"):
         orig_pos = map_file.tell()
         map_file.seek(0)
-        map_data = map_file.read(2048)
+        header_data = map_file.read(2048)
         map_file.seek(orig_pos)
     else:
-        map_data = map_file
+        header_data = map_file
 
-    sig   = map_data[:4]
+    sig   = header_data[:4]
     sig_b = sig.decode('latin-1').lower()
     sig_l = sig_b[::-1]
-    ver_b = int.from_bytes(map_data[4:8], 'big')
-    ver_l = int.from_bytes(map_data[4:8], 'little')
+    ver_b = int.from_bytes(header_data[4:8], 'big')
+    ver_l = int.from_bytes(header_data[4:8], 'little')
     header_def = None
 
     if sig_l == "head":
         if ver_l == 8:
-            build_date = map_data[300: 324].decode("latin-1")
+            build_date = header_data[300: 324].decode("latin-1")
             if build_date == map_build_dates['halo2vista']:
                 header_def = h2v_map_header_full_def
                 if header_only:
@@ -88,7 +88,7 @@ def get_map_header(map_file, header_only=False):
             header_def = map_header_def
         elif ver_l == 7:
             header_def = map_header_def
-            build_date = map_data[64: 96].decode("latin-1")
+            build_date = header_data[64: 96].decode("latin-1")
             if build_date == map_build_dates['halo2alpha']:
                 h2_alpha_map_header_def
 
@@ -96,10 +96,10 @@ def get_map_header(map_file, header_only=False):
         if ver_b == 11:
             header_def = h3_map_header_def
 
-    elif map_data[704:708] == b'dehE' and map_data[1520:1524] == b'tofG':
+    elif header_data[704:708] == b'dehE' and header_data[1520:1524] == b'tofG':
         header_def = map_header_demo_def
 
-    elif map_data[:2] == b'\x78\xDA':
+    elif header_data[:2] == b'\x78\xDA':
         # zlib compressed halo 2 vista map.
         # decompress the 2048 byte header
         header_def = h2v_map_header_full_def
@@ -108,12 +108,12 @@ def get_map_header(map_file, header_only=False):
             header_def = h2v_map_header_def
             decomp_len = 2048
 
-        map_data = zlib.decompressobj().decompress(map_data, decomp_len)
+        map_file = zlib.decompressobj().decompress(map_file, decomp_len)
 
     if header_def is None:
         return None
 
-    return header_def.build(rawdata=map_data)
+    return header_def.build(rawdata=map_file)
 
 
 def get_tag_index(map_data, header=None):
