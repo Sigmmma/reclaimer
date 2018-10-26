@@ -3,7 +3,8 @@ from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 build_info = Struct("build info",
-    SEnum32("build stage",
+    Pad(2),
+    SEnum16("build stage",
         "ship",
         "alpha",
         "beta",

@@ -1,7 +1,7 @@
 from reclaimer.meta.halo1_map_fast_functions import *
 
 
-def get_tagc_refs(meta_offset, map_data, magic, repaired):
+def get_tagc_refs(meta_offset, map_data, magic, tag_classes_by_id):
     try:
         ct, moff, _ = read_reflexive(map_data, meta_offset - magic)
     except Exception:
@@ -21,7 +21,7 @@ def get_tagc_refs(meta_offset, map_data, magic, repaired):
                 continue
 
             reffed_ids.append(tag_id)
-            reffed_types.append(repaired.get(tag_id))
+            reffed_types.append(tag_classes_by_id.get(tag_id))
 
         return reffed_ids, reffed_types
     except Exception:
