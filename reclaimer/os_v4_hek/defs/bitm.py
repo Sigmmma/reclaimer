@@ -9,7 +9,6 @@ bitm_body[3] = Bool16("flags",
     "disable height map compression",
     "uniform sprite sequences",
     "sprite bug fix",
-    "processed by hboc",
     ("never share resources", 1<<13)
     )
 
