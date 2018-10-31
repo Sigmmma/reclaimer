@@ -182,7 +182,7 @@ h2_tag_type = Struct("tag header",
 
 h2_tag_header = Struct("tag header",
     UEnum32("tag class", INCLUDE=valid_h2_tags),
-    tag_id_struct,
+    UInt32("id"),
     UInt32("offset"),
     UInt32("size"),
     SIZE=16
@@ -201,8 +201,8 @@ h2_tag_index = Container("tag index",
     UInt32("tag types count"),
     UInt32("tag index offset"),
 
-    QStruct("scenario tag id", INCLUDE=tag_id_struct),
-    QStruct("globals tag id", INCLUDE=tag_id_struct),
+    UInt32("scenario tag id"),
+    UInt32("globals tag id"),
 
     UInt32("crc32"),
     UInt32("tag count"),

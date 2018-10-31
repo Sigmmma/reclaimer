@@ -17,7 +17,7 @@ INVALID_PATH_CHARS.update('<>:"|?*')
 
 
 def is_reserved_tag(tag_index_ref):
-    return (tuple(tag_index_ref.id[:]) == (0xFFFF, 0xFFFF) and
+    return (tag_index_ref.id == 0xFFffFFff and
             tag_index_ref.class_1.data == 0xFFFFFFFF)
 
 

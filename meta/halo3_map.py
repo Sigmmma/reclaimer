@@ -178,7 +178,7 @@ h3_tag_header = Struct("tag header",
 
 h3_root_tag_ref = Struct("root tag ref",
     UEnum32("tag class", INCLUDE=valid_h3_tags),
-    h3_tag_id_struct,
+    UInt32("id"),
     SIZE=8
     )
 
