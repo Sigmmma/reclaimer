@@ -180,7 +180,7 @@ tag_header = Struct("tag header",
     UEnum32("class 1", GUI_NAME="primary tag class", INCLUDE=valid_tags_os),
     UEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_tags_os),
     UEnum32("class 3", GUI_NAME="tertiary tag class", INCLUDE=valid_tags_os),
-    tag_id_struct,
+    UInt32("id"),
     UInt32("path offset"),
     UInt32("meta offset"),
     UInt32("indexed"),
@@ -197,7 +197,7 @@ tag_index_array = TagIndex("tag index",
 
 tag_index_xbox = Struct("tag index",
     UInt32("tag index offset"),
-    QStruct("scenario tag id", INCLUDE=tag_id_struct),
+    UInt32("scenario tag id"),
     UInt32("map id"),  # normally unused, but the scenario tag's header
     #                    can be used for spoofing the maps checksum
     UInt32("tag count"),
@@ -219,6 +219,9 @@ tipc[7] = LUInt32("vertex data size")
 tipc[9] = tipc[8]; tipc[8] = LUInt32("model data size")
 
 map_header_def = BlockDef(map_header)
+map_header_anni_def = BlockDef(map_header, endian=">")
 map_header_demo_def = BlockDef(map_header_demo)
+
 tag_index_xbox_def = BlockDef(tag_index_xbox)
 tag_index_pc_def = BlockDef(tag_index_pc)
+tag_index_anni_def = BlockDef(tag_index_pc, endian=">")

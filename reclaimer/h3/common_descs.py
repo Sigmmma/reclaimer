@@ -24,7 +24,7 @@ from ..common_descs import pi, irad, from_to, get_unit_scale,\
      yp_float_deg, ypr_float_deg, yp_float_rad, ypr_float_rad,\
      xyz_float, xy_float, argb_float, rgb_float, xrgb_byte, argb_byte,\
      ijkw_float, ijk_float, ij_float, yp_float, ypr_float,\
-     compressed_normal_32, materials_list, tag_id_struct,\
+     compressed_normal_32, materials_list,\
      rawdata_ref_struct, reflexive_struct, tag_ref_struct
 
 
@@ -143,14 +143,6 @@ def h3_blam_header(tagid, version=1):
     header_desc[5][DEFAULT] = version
     return header_desc
 
-# Because halo 3 maps are big endian, these are swapped around.
-# I guess it actually is a UInt32 masked off as 2 UInt16's
-h3_tag_id_struct = QStruct("id",
-    UInt16("table index", DEFAULT=0xFFFF),
-    UInt16("tag table index", DEFAULT=0xFFFF),
-    VISIBLE=False, EDITABLE=False
-    )
-
 
 valid_h3_tags = h3_tag_class(*h3_tag_class_fcc_to_ext.keys())
 
@@ -190,7 +182,7 @@ h3_tag_header = Struct("blam_header",
 
 h3_meta_tag_index_ref_struct = H3MetaTagIndexRef('h3 meta dependency',
     valid_h3_tags,
-    h3_tag_id_struct,
+    UInt32("id", VISIBLE=False),
     ORIENT='h'
     )
 
@@ -209,8 +201,8 @@ h3_meta_rawdata_ref_struct = H3MetaRawdataRef('h3 meta rawdata ref',
 h3_tag_index_ref_struct = H3TagIndexRef('dependency',
     valid_h3_tags,
     SInt32("path pointer", VISIBLE=False, EDITABLE=False),
-    SInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
-    h3_tag_id_struct,
+    SInt32("path length", MAX=254, VISIBLE=False, EDITABLE=False),
+    UInt32("id", VISIBLE=False),
     ORIENT='h'
     )
 

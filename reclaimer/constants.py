@@ -15,6 +15,7 @@ def inject_halo_constants():
 
 PCDEMO_INDEX_MAGIC         = 0x4BF10000
 PC_INDEX_MAGIC             = 0x40440000
+ANNIVERSARY_INDEX_MAGIC    = 0x004B8000
 CE_INDEX_MAGIC             = 0x40440000
 XBOX_INDEX_MAGIC           = 0x803A6000
 STUBBS_INDEX_MAGIC         = 0x8038B000
@@ -34,6 +35,7 @@ map_build_dates = {
     "halo1xbox":      "01.10.12.2276",
     "halo1xboxbeta":  "",
     "halo1pcdemo":    "01.00.00.0576",
+    "halo1anni":      "01.00.01.0563",
     "halo1pc":        "01.00.00.0564",
     "halo2alpha":     "02.01.07.4998",
     "halo2beta":      "02.06.28.07902",
@@ -53,6 +55,7 @@ map_versions = {
     "halo1xboxbeta":  5,
     "halo1pcdemo":    6,
     "halo1pc":        7,
+    "halo1anni":      7,
     "halo1ce":        609,
     "halo1yelo":      609,
     "halo2alpha":     7,
@@ -74,6 +77,7 @@ map_magics = {
     "halo1xboxbeta":  XBOX_INDEX_MAGIC,
     "halo1pcdemo":    PCDEMO_INDEX_MAGIC,
     "halo1pc":        PC_INDEX_MAGIC,
+    "halo1anni":      ANNIVERSARY_INDEX_MAGIC,
     "halo1ce":        CE_INDEX_MAGIC,
     "halo1yelo":      CE_INDEX_MAGIC,
     "halo2alpha":     H2_ALPHA_INDEX_MAGIC,

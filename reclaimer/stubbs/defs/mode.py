@@ -44,18 +44,20 @@ pc_part = Struct('part',
 
     #Pad(36),
     Struct("model meta info",
-        UEnum32("index type",  # name is a guess.  always 1?
+        UEnum16("index type",  # name is a guess.  always 1?
             ("uncompressed", 1),
             ),
+        Pad(2),
         UInt32("index count"),
         # THESE VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
         UInt32("indices magic offset"),
         UInt32("indices offset"),
 
-        UEnum32("vertex type",  # name is a guess
+        UEnum16("vertex type",  # name is a guess
             ("uncompressed", 4),
             ("compressed",   5),
             ),
+        Pad(2),
         UInt32("vertex count"),
         Pad(4),  # always 0?
         # THESE VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
