@@ -152,7 +152,7 @@ class Halo2Map(HaloMap):
                 ugh__id = None
                 for b in self.tag_index.tag_index:
                     if fourcc(b.class_1.data) == "ugh!":
-                        ugh__id = b.id.tag_table_index
+                        ugh__id = b.id & 0xFFff
                         break
 
                 self.ugh__meta = self.get_meta(ugh__id)

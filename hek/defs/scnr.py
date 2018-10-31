@@ -876,9 +876,9 @@ ai_conversation = Struct("ai conversation",
     )
 
 structure_bsp = Struct("structure bsp",
-    FlUInt32("bsp pointer", VISIBLE=False),
-    FlUInt32("bsp size", VISIBLE=False),
-    FlUInt32("bsp magic", VISIBLE=False),
+    UInt32("bsp pointer", VISIBLE=False),
+    UInt32("bsp size", VISIBLE=False),
+    UInt32("bsp magic", VISIBLE=False),
     Pad(4),
     dependency("structure bsp", "sbsp"),
     SIZE=32

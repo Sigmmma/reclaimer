@@ -25,6 +25,8 @@ def get_map_version(header):
         # use the same version integer of 7
         if build_date == map_build_dates["halo2alpha"]:
             version = "halo2alpha"
+        elif build_date == map_build_dates["halo1anni"]:
+            version = "halo1anni"
     elif version == "halo1xbox":
         if build_date is None:
             return
@@ -90,11 +92,13 @@ def get_map_header(map_file, header_only=False):
             header_def = map_header_def
             build_date = header_data[64: 96].decode("latin-1")
             if build_date == map_build_dates['halo2alpha']:
-                h2_alpha_map_header_def
+                header_def = h2_alpha_map_header_def
 
     elif sig_b == "head":
         if ver_b == 11:
             header_def = h3_map_header_def
+        elif ver_b == 7:
+            header_def = map_header_anni_def
 
     elif header_data[704:708] == b'dehE' and header_data[1520:1524] == b'tofG':
         header_def = map_header_demo_def
@@ -131,6 +135,8 @@ def get_tag_index(map_data, header=None):
         tag_index_def = tag_index_xbox_def
     elif version == "halo2alpha":
         tag_index_def = h2_alpha_tag_index_def
+    elif version == "halo1anni":
+        tag_index_def = tag_index_anni_def
     elif header.version.enum_name == "halo2":
         tag_index_def = h2_tag_index_def
     elif header.version.enum_name == "halo3":

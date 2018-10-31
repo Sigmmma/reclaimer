@@ -154,12 +154,6 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
             SIZE=".size", GUI_NAME=name.replace('_', ' '), **kwargs)
             )
 
-tag_id_struct = QStruct("id",
-    UInt16("tag table index", DEFAULT=0xFFFF),
-    UInt16("table index", DEFAULT=0xFFFF),
-    VISIBLE=False, EDITABLE=False
-    )
-
 
 def dependency(name='tag ref', valid_ids=None, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
@@ -531,21 +525,21 @@ anim_src_func_per_pha_sca_rot = Struct('',
 # This is the descriptor used wherever a tag references a rawdata chunk
 rawdata_ref_struct = RawdataRef('rawdata ref', 
     SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
-    FlBool32("flags",
+    Bool32("flags",
         "data in resource map",
         VISIBLE=False,
         ),
-    FlUInt32("raw pointer", VISIBLE=False),  # doesnt use magic
-    FlUInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
-    FlUInt32("id", VISIBLE=False),
+    UInt32("raw pointer", VISIBLE=False),  # doesnt use magic
+    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    UInt32("id", VISIBLE=False),
     ORIENT='h'
     )
 
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
     SInt32("size", VISIBLE=False),
-    FlUInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
-    FlUInt32("id", VISIBLE=False),  # 0 in meta it seems
+    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    UInt32("id", VISIBLE=False),  # 0 in meta it seems
     )
 
 # This is the descriptor used wherever a tag references another tag
@@ -553,7 +547,7 @@ tag_ref_struct = TagRef('dependency',
     valid_tags,
     SInt32("path pointer", VISIBLE=False, EDITABLE=False),
     SInt32("path length", MAX=MAX_TAG_PATH_LEN, VISIBLE=False, EDITABLE=False),
-    tag_id_struct,
+    UInt32("id", VISIBLE=False),
     ORIENT='h'
     )
 

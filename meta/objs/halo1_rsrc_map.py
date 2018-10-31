@@ -134,12 +134,11 @@ class Halo1RsrcMap(HaloMap):
 
             tag_ref = tags.tag_index[i]
             tag_ref.class_1.set_to(self.tag_classes[i])
-            tag_ref.id[:] = (i, 0)
+            tag_ref.id = i
 
             tag_ref.meta_offset  = rsrc_head.tag_headers[j].offset
             tag_ref.indexed      = 1
             tag_ref.tag.tag_path = rsrc_head.tag_paths[j].tag_path
-            tagid = (tag_ref.id[0], tag_ref.id[1])
 
         self.map_data.clear_cache()
 
@@ -147,7 +146,7 @@ class Halo1RsrcMap(HaloMap):
         if tag_cls != "snd!":
             return ()
 
-        tag_id = meta.promotion_sound.id[0]
+        tag_id = meta.promotion_sound.id & 0xFFff
         if tag_id == 0xFFFF: return ()
 
         tag_id = tag_id // 2
@@ -249,7 +248,7 @@ class Halo1RsrcMap(HaloMap):
         try:   loc_data = loc.map_data
         except Exception: loc_data = None
 
-        is_not_indexed = not self.is_indexed(tag_index_ref.id[0])
+        is_not_indexed = not self.is_indexed(tag_index_ref.id & 0xFFff)
         might_be_in_rsrc = engine in ("halo1pc", "halo1pcdemo",
                                       "halo1ce", "halo1yelo")
         might_be_in_rsrc &= not self.is_resource

@@ -65,7 +65,7 @@ def encode_tag_ref_str(self, node, parent=None, attr_index=None):
 
 
 def tag_ref_str_parser(self, desc, node=None, parent=None, attr_index=None,
-                   rawdata=None, root_offset=0, offset=0, **kwargs):
+                       rawdata=None, root_offset=0, offset=0, **kwargs):
     """
     """
     assert parent is not None and attr_index is not None, (
@@ -73,14 +73,13 @@ def tag_ref_str_parser(self, desc, node=None, parent=None, attr_index=None,
         "and not None when reading a data field.")
     if "tag_index" in kwargs:
         tag_index = kwargs["tag_index"]
-        tagid = parent.id.tag_table_index
+        tagid = parent.id & 0xFFFF
         if tagid < 0 or tagid == 0xFFFF:
             parent[attr_index] = ""
         else:
             if kwargs.get("indexed") and kwargs.get('tag_cls') == 'snd!':
                 # tag_index is a resource map tag_paths collection
-                parent.id[0] = tagid = sound_rsrc_id_map.get(tagid, tagid)
-
+                parent.id = tagid = sound_rsrc_id_map.get(tagid, tagid)
             try:
                 parent[attr_index] = tag_index[tagid].tag.tag_path
             except (AttributeError, IndexError):

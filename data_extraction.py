@@ -942,12 +942,14 @@ def extract_animation(tagdata, tag_path, **kw):
         return
 
     filepath_base = join(kw['out_dir'], dirname(tag_path), "animations")
-    endian = "<" if kw.get('halo_map') else ">"
+    endian = ">"
+    if kw.get('halo_map') and kw.get('halo_map').engine != "halo1anni":
+        endian = "<"
+
     unpack_trans = PyStruct(endian + "3f").unpack
     unpack_ijkw  = PyStruct(endian + "4h").unpack
     unpack_dxdy  = PyStruct(endian + "2f").unpack
     unpack_float = PyStruct(endian + "f").unpack
-    
 
     anim_nodes = []
     for node in tagdata.nodes.STEPTREE:

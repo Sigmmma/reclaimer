@@ -25,7 +25,7 @@ from ..common_descs import pi, irad, from_to, get_unit_scale,\
      yp_float_deg, ypr_float_deg, yp_float_rad, ypr_float_rad,\
      xyz_float, xy_float, argb_float, rgb_float, xrgb_byte, argb_byte,\
      ijkw_float, ijk_float, ij_float, yp_float, ypr_float,\
-     compressed_normal_32, materials_list, tag_id_struct,\
+     compressed_normal_32, materials_list,\
      rawdata_ref_struct, reflexive_struct, tag_ref_struct
 
 
@@ -268,7 +268,7 @@ def h2_meta_tag_ref(name='tag ref', valid_ids=None):
 
     return H2MetaTagRef(name,
         valid_ids,
-        tag_id_struct
+        UInt32("id", VISIBLE=False)
         )
 
 def h2_reflexive(*args, **kwargs):
@@ -428,7 +428,7 @@ h2_tag_header = Struct("blam_header",
 
 h2_meta_tag_index_ref_struct = H2MetaTagRef('h2 meta dependency',
     valid_h2_tags,
-    tag_id_struct,
+    UInt32("id", VISIBLE=False),
     ORIENT='h'
     )
 
@@ -447,8 +447,8 @@ h2_meta_rawdata_ref_struct = H2MetaRawdataRef('h2 meta rawdata ref',
 h2_tag_index_ref_struct = H2TagRef('dependency',
     valid_h2_tags,
     SInt32("path pointer", VISIBLE=False, EDITABLE=False),
-    SInt32("path length", MAX=243, VISIBLE=False, EDITABLE=False),
-    tag_id_struct,
+    SInt32("path length", MAX=254, VISIBLE=False, EDITABLE=False),
+    UInt32("id", VISIBLE=False),
     ORIENT='h'
     )
 
