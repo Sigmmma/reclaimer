@@ -225,8 +225,8 @@ node = Struct('node',
         INCLUDE=ijk_float, ENDIAN='<', VISIBLE=False),
     QStruct("rot_ii_jj", GUI_NAME="2[ik+jw]   2[jk-iw]   [1-2i^2-2j^2]",
         INCLUDE=ijk_float, ENDIAN='<', VISIBLE=False),
-    QStruct('translation to root', INCLUDE=xyz_float,
-            ENDIAN='<', VISIBLE=False),
+    QStruct('translation to root',
+        INCLUDE=xyz_float, ENDIAN='<', VISIBLE=False),
     SIZE=156,
     )
 

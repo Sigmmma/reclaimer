@@ -169,9 +169,8 @@ class Halo1Map(HaloMap):
                             rawdata=self.map_data, offset=offset)
 
                     if header.sig != header.get_desc("DEFAULT", "sig"):
-                        raise ValueError(
-                            "Sbsp header is invalid for '%s'" %
-                            tag_index_array[tag_id].tag.tag_path)
+                        print("Sbsp header is invalid for '%s'" %
+                              tag_index_array[tag_id].tag.tag_path)
                     self.bsp_headers[tag_id] = header
             else:
                 print("Could not read scenario tag")
@@ -226,12 +225,12 @@ class Halo1Map(HaloMap):
             return
         tag_index_ref = tag_index_array[tag_id]
 
-        if tag_id != tag_index.scenario_tag_id[0] or self.is_resource:
-            tag_cls = None
-            if tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
-                tag_cls = fourcc(tag_index_ref.class_1.data)
-        else:
+
+        tag_cls = None
+        if tag_id == tag_index.scenario_tag_id & 0xFFFF:
             tag_cls = "scnr"
+        elif tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
+            tag_cls = fourcc(tag_index_ref.class_1.data)
 
         # if we dont have a defintion for this tag_cls, then return nothing
         if self.get_meta_descriptor(tag_cls) is None:
@@ -274,7 +273,7 @@ class Halo1Map(HaloMap):
 
             return rsrc_map.get_meta(tag_id)
         elif not reextract:
-            if tag_id == tag_index.scenario_tag_id[0] and self.scnr_meta:
+            if tag_id == tag_index.scenario_tag_id & 0xFFff and self.scnr_meta:
                 return self.scnr_meta
             elif tag_cls == "matg" and self.matg_meta:
                 return self.matg_meta

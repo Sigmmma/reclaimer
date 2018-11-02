@@ -55,6 +55,21 @@ material_effect_types = (
     "vehicle_unused1",
     "vehicle_unused2"
     )
+object_types = (
+    "obje",
+    "bipd",
+    "vehi",
+    "weap",
+    "eqip",
+    "garb",
+    "proj",
+    "scen",
+    "mach",
+    "ctrl",
+    "lifi",
+    "plac",
+    "ssce",
+    )
 actor_types = (
     "elite",
     "jackal",

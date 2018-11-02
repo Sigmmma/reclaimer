@@ -179,7 +179,7 @@ extra_info = Struct("extra_info",
         UInt32("resource_data_size"),
         ),
     h2_meta_reflexive("resources", resource),
-    QStruct("sound_gestalt", INCLUDE=tag_id_struct),# points back to this tag?
+    UInt32("sound_gestalt"), # points back to this tag?
     SInt32("constant0", VISIBLE=False),
     SInt32("constant1", VISIBLE=False),
     SIZE=44
