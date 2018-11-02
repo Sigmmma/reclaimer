@@ -34,7 +34,7 @@ pphy_body = Struct("tagdata",
     # these next three are courtesy of Sparky. I had
     # no idea these existed till I looked in Eschaton.
     # kavawuvi figured out how to calculate them(see PphyTag)
-    FlFloat("scaled_density", VISIBLE=False),
+    FlFloat("scaled density", VISIBLE=False),
     FlFloat("water gravity scale", VISIBLE=False),
     FlFloat("air gravity scale", VISIBLE=False),
     Pad(16),

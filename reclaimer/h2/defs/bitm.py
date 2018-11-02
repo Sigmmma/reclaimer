@@ -103,8 +103,8 @@ bitmap = Struct("bitmap",
     UInt32("lod4 size", EDITABLE=False),
     UInt32("lod5 size", EDITABLE=False),
     UInt32("lod6 size", EDITABLE=False),
-    QStruct("datum",  # points back to this tag
-        INCLUDE=tag_id_struct, VISIBLE=False, EDITABLE=False
+    UInt32("datum",  # points back to this tag
+        VISIBLE=False, EDITABLE=False
         ),
     Pad(116 - 4*15 - 2*9 - 1*2),
     )

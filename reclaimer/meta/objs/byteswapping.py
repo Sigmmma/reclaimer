@@ -208,7 +208,7 @@ def byteswap_animation(anim):
     if len(frame_info) < frame_info_size:
         raise ValueError("Expected %s bytes of frame info in '%s', but got %s" %
                          (frame_info_size, anim.name, len(frame_info)))
-    elif len(default_data) < default_data_size:
+    elif default_data and len(default_data) < default_data_size:
         raise ValueError("Expected %s bytes of default data in '%s', but got %s" %
                          (default_data_size, anim.name, len(default_data)))
     elif len(frame_data) - comp_data_offset < uncomp_frame_data_size:

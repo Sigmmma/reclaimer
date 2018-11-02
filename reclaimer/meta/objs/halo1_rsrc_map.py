@@ -123,7 +123,7 @@ class Halo1RsrcMap(HaloMap):
         rsrc_tag_count = len(rsrc_head.tag_paths)//index_mul
         self.tag_classes += (def_cls,)*(rsrc_tag_count - len(self.tag_classes))
         tags.tag_index.extend(rsrc_tag_count)
-        tags.scenario_tag_id[:] = (0, 0)
+        tags.scenario_tag_id = 0
 
         tags.tag_count = rsrc_tag_count
         # fill in the fake tag_index

@@ -2,10 +2,6 @@ from .coll import *
 from .objs.tag import HekTag
 from supyr_struct.defs.block_def import BlockDef
 
-# TEST CODE
-#import random
-#def Pad(size):
-#    return UIntBig("unknown%s" % random.getrandbits(10), SIZE=size)
 
 # the order is an array of vertices first, then an array of lightmap vertices.
 # 
@@ -129,12 +125,13 @@ material = Struct("material",
                  "bspmagic relative pointer to the vertices."),
         VISIBLE=False
         ),
-    FlUEnum32("vertex type",  # name is a guess
+    FlUEnum16("vertex type",  # name is a guess
         ("unknown", 0),
         ("uncompressed", 2),
         ("compressed",   3),
         VISIBLE=False,
         ),
+    Pad(2),
     SInt32("lightmap vertices count", VISIBLE=False),
     SInt32("lightmap vertices offset", VISIBLE=False),
 
