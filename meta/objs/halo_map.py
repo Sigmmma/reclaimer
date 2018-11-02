@@ -29,7 +29,7 @@ def h2_alpha_to_h1_tag_index(map_header, tag_index):
     new_index_array = new_index.tag_index
 
     # copy information from the h2 index into the h1 index
-    new_index.scenario_tag_id[:] = tag_index.scenario_tag_id[:]
+    new_index.scenario_tag_id = tag_index.scenario_tag_id
     new_index.tag_index_offset = tag_index.tag_index_offset
     new_index.tag_count = tag_index.tag_count
 
@@ -57,7 +57,7 @@ def h2_to_h1_tag_index(map_header, tag_index):
     new_index_array = new_index.tag_index
 
     # copy information from the h2 index into the h1 index
-    new_index.scenario_tag_id[:] = tag_index.scenario_tag_id[:]
+    new_index.scenario_tag_id = tag_index.scenario_tag_id
     new_index.tag_index_offset = tag_index.tag_index_offset
     new_index.tag_count = tag_index.tag_count
 
@@ -74,6 +74,7 @@ def h2_to_h1_tag_index(map_header, tag_index):
             new_index_entry.class_1.data = new_index_entry.class_2.data =\
                                            new_index_entry.class_3.data =\
                                            0xFFFFFFFF
+            new_index_entry.id = 0xFFFFFFFF
             continue
         else:
             types = tag_types[old_index_entry.tag_class.data]
@@ -81,7 +82,6 @@ def h2_to_h1_tag_index(map_header, tag_index):
             new_index_entry.class_2 = types[1]
             new_index_entry.class_3 = types[2]
 
-            #new_index_entry.path_offset = ????
             new_index_entry.tag.tag_path = map_header.strings.\
                                            tag_name_table[i].tag_name
 
