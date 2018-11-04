@@ -98,42 +98,45 @@ def iter_reflexive_offs(map_data, refl_offset, struct_size,
     return range(start, start + count*struct_size, struct_size)
 
 
-def repair_dependency(index_array, map_data, magic, repair, engine, cls,
+def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
                       dep_offset, map_magic=None):
     if map_magic is None:
-        map_magic = magic
+        map_magic = tag_magic
 
-    dep_offset -= magic
-    if cls is None:
-        map_data.seek(dep_offset)
-        cls = map_data.read(4)
+    dep_offset -= tag_magic
 
     map_data.seek(dep_offset + 12)
     tag_id = int.from_bytes(map_data.read(4), "little") & 0xFFFF
 
-    if tag_id != 0xFFFF:
-        # if the class is obje or shdr, make sure to get the ACTUAL class
-        if cls in b'ejbo\x00meti\x00ived\x00tinu':
-            map_data.seek(index_array[tag_id].meta_offset - map_magic)
-            cls = object_class_bytes[
-                int.from_bytes(map_data.read(2), 'little')]
-        elif cls == b'rdhs':
-            map_data.seek(index_array[tag_id].meta_offset - map_magic + 36)
-            cls = shader_class_bytes[
-                int.from_bytes(map_data.read(2), 'little')]
-        elif cls in b'2dom\x00edom':
-            if "xbox" in engine:
-                cls = b'edom'
-            else:
-                cls = b'2dom'
+    if tag_id == 0xFFFF:
+        return
 
+    if cls is None:
         map_data.seek(dep_offset)
-        map_data.write(cls)
+        cls = map_data.read(4)
 
-        if tag_id not in repair:
-            repair[tag_id] = cls[::-1].decode('latin1')
-            #DEBUG
-            # print("        %s %s %s" % (tag_id, cls, dep_offset))
+    # if the class is obje or shdr, make sure to get the ACTUAL class
+    if cls in (b'ejbo', b'meti', b'ived', b'tinu'):
+        map_data.seek(index_array[tag_id].meta_offset - map_magic)
+        cls = object_class_bytes[
+            int.from_bytes(map_data.read(2), 'little')]
+    elif cls == b'rdhs':
+        map_data.seek(index_array[tag_id].meta_offset - map_magic + 36)
+        cls = shader_class_bytes[
+            int.from_bytes(map_data.read(2), 'little')]
+    elif cls in (b'2dom', b'edom'):
+        if "xbox" in engine:
+            cls = b'edom'
+        else:
+            cls = b'2dom'
+
+    map_data.seek(dep_offset)
+    map_data.write(cls)
+
+    if tag_id not in repair:
+        repair[tag_id] = cls[::-1].decode('latin1')
+        #DEBUG
+        # print("        %s %s %s" % (tag_id, cls, dep_offset))
 
 
 def repair_dependency_array(index_array, map_data, magic, repair, engine,

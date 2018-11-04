@@ -234,7 +234,7 @@ class Halo2Map(HaloMap):
             print(format_exc())
             return
 
-        self.record_map_cache_read(tag_id, 0)  # cant get size quickly enough
+        self.record_map_cache_read(tag_id, 0)
         if self.map_cache_over_limit():
             self.clear_map_cache()
 

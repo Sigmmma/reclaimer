@@ -56,12 +56,9 @@ class Halo1Map(HaloMap):
         if not sounds or self.is_resource:
             return
 
-        if id(sounds) != self.sound_rsrc_id:
-            pass
-        elif not(self.ce_rsrc_sound_indexes_by_path and
-                 self.ce_tag_indexs_by_paths):
-            pass
-        else:
+        if id(sounds) == self.sound_rsrc_id and (
+                self.ce_rsrc_sound_indexes_by_path and
+                self.ce_tag_indexs_by_paths):
             return
 
         self.sound_rsrc_id = id(sounds)
@@ -842,7 +839,8 @@ class Halo1Map(HaloMap):
     def load_all_resource_maps(self, maps_dir=""):
         if self.is_resource:
             return
-        elif self.engine not in ("halo1pc", "halo1pcdemo", "halo1ce", "halo1yelo"):
+        elif self.engine not in ("halo1pc", "halo1pcdemo",
+                                 "halo1ce", "halo1yelo"):
             return
 
         if not maps_dir:
