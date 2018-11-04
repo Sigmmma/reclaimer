@@ -80,8 +80,12 @@ def tag_ref_str_parser(self, desc, node=None, parent=None, attr_index=None,
             if kwargs.get("indexed") and kwargs.get('tag_cls') == 'snd!':
                 # tag_index is a resource map tag_paths collection
                 parent.id = tagid = sound_rsrc_id_map.get(tagid, tagid)
+
             try:
-                parent[attr_index] = tag_index[tagid].tag.tag_path
+                if kwargs.get("indexed"):
+                    parent[attr_index] = tag_index[tagid].tag_path
+                else:
+                    parent[attr_index] = tag_index[tagid].tag.tag_path
             except (AttributeError, IndexError):
                 # unable to get the tag path
                 parent[attr_index] = ""
