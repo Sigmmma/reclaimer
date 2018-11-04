@@ -33,7 +33,7 @@ def tag_ref_str_sizecalc(self, node, **kwargs):
     return 0
 
 def tag_ref_str_size(node=None, parent=None, attr_index=None,
-                 rawdata=None, new_value=None, **kwargs):
+                     rawdata=None, new_value=None, **kwargs):
     '''Used to retrieve or set the byte size of a Halo tag
     reference string. If the string is empty, the actual amount
     of bytes it takes up is zero, otherwise it is (1+length) bytes.

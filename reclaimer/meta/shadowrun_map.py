@@ -24,7 +24,8 @@ sr_tag_index_array = TagIndex("tag index",
 sr_tag_index = Struct("tag index",
     UInt32("tag index offset"),
     UInt32("scenario tag id"),
-    UInt32("map id"),
+    UInt32("map id"),  # normally unused, but the scenario tag's header
+    #                    can be used for spoofing the maps checksum
     UInt32("tag count"),
 
     UInt32("vertex parts count"),
