@@ -69,6 +69,8 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
 
         if encoding in ("ogg", "wma"):
             filepath += ".%s" % encoding
+        elif not encoding:
+            filepath += ".bin"
         else:
             filepath += ".wav"
 
@@ -77,7 +79,7 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
         if not overwrite and isfile(filepath):
             continue
 
-        if encoding in ("ogg", "wma"):
+        if encoding in ("ogg", "wma") or not encoding:
             try:
                 folderpath = dirname(filepath)
                 # If the path doesnt exist, create it
@@ -229,10 +231,12 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
 
     channels    = {0: 1,     1: 2,     2: 6    }.get(tagdata.encoding.data)
     sample_rate = {0: 22050, 1: 44100, 2: 32000}.get(tagdata.sample_rate.data)
-    compression = tagdata.compression.enum_name
+    compression = ""
+    if channels in (1, 2):
+        compression = tagdata.compression.enum_name
 
     if tagdata.encoding.enum_name == "codec":
-        return "    CANNOT YET EXTRACT THIS FORMAT."
+        pass # return "    CANNOT YET EXTRACT THIS FORMAT."
         '''
         The codec format seems to be encoded with wmaudio2.
 
