@@ -28,8 +28,8 @@ def jms_model_from_obj(obj_string, model_name=None):
     v_datas = {}
     v_data_by_idx = []
     norms_to_calc = {}
-    sg_warned = False
-    ngon_warned = False
+    sg_error = False
+    ngon_error = False
 
     # Reminder that obj's use 1 based indexing
     i = 0
@@ -66,14 +66,7 @@ def jms_model_from_obj(obj_string, model_name=None):
         elif token == "f":
             tri_data = [d for d in line.split(' ') if d]
             if len(tri_data) != 3:
-                if ngon_warned:
-                    pass
-                elif len(tri_data) == 4:
-                    print("Quads and n-gons are not supported.")
-                    ngon_warned = True
-                else:
-                    print("Invalid triangle vert count on line %s." % i)
-
+                ngon_error = True
                 continue
 
             v_indices = [0, 0, 0]
@@ -103,14 +96,21 @@ def jms_model_from_obj(obj_string, model_name=None):
                 mats.append(JmsMaterial(name))
                 mat_names[name] = mat_num
 
-        elif token == "s" and not sg_warned:
-            sg_warned = True
-            print("Smoothing groups not supported! Export with vertex normals.")
+        elif token == "s" and not sg_error:
+            sg_error = True
 
         else:
             # dont care about anything else
             pass
 
+    if sg_error or ngon_error:
+        if ngon_error:
+            print("Quads and n-gons are not supported.")
+
+        if sg_error:
+            print("Smoothing groups not supported! Export with vertex normals.")
+
+        return
 
     model.verts = verts = [None] * len(v_data_by_idx)
     for i in range(len(v_data_by_idx)):
