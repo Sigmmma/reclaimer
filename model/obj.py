@@ -29,9 +29,12 @@ def jms_model_from_obj(obj_string, model_name=None):
     v_data_by_idx = []
     norms_to_calc = {}
     sg_warned = False
+    ngon_warned = False
 
     # Reminder that obj's use 1 based indexing
+    i = 0
     for line in obj_string.split("\n"):
+        i += 1
         line = line.lstrip(' ')
         if not line or line[0] == "#":
             continue
@@ -45,34 +48,37 @@ def jms_model_from_obj(obj_string, model_name=None):
         if token == "v":
             loc_data = [d for d in line.split(' ') if d]
             if len(loc_data) != 3:
-                raise ValueError("Invalid vertex coordinates.")
+                raise ValueError("Invalid vertex coord on line %s." % i)
             v_locs.append(loc_data)
 
         elif token == "vt":
             uv_data = [d for d in line.split(' ') if d]
             if len(uv_data) not in (2, 3):
-                raise ValueError("Invalid vertex texture coordinates.")
+                raise ValueError("Invalid vertex texture coord on line %s." % i)
             v_uvs.append(uv_data)
 
         elif token == "vn":
             norm_data = [d for d in line.split(' ') if d]
             if len(norm_data) != 3:
-                raise ValueError("Invalid vertex normal.")
+                raise ValueError("Invalid vertex normal on line %s." % i)
             v_norms.append(norm_data)
 
         elif token == "f":
             tri_data = [d for d in line.split(' ') if d]
             if len(tri_data) != 3:
-                if len(tri_data) == 4:
-                    raise ValueError("Quads are not supported.")
-                elif len(tri_data) > 4:
-                    raise ValueError("N-gons are not supported.")
+                if ngon_warned:
+                    pass
+                elif len(tri_data) == 4:
+                    print("Quads and n-gons are not supported.")
+                    ngon_warned = True
                 else:
-                    raise ValueError("Invalid triangle vert count.")
+                    print("Invalid triangle vert count on line %s." % i)
+
+                continue
 
             v_indices = [0, 0, 0]
-            for i in range(len(tri_data)):
-                v_data = tuple(tri_data[i].replace(' ', '').split('/'))
+            for j in range(len(tri_data)):
+                v_data = tuple(tri_data[j].replace(' ', '').split('/'))
                 if not len(v_data[0]):
                     raise ValueError("Invalid triangle vert description.")
 
@@ -81,7 +87,7 @@ def jms_model_from_obj(obj_string, model_name=None):
                     v_datas[v_data] = len(v_data_by_idx)
 
                 v_idx = v_datas[v_data] - 1
-                v_indices[i] = v_idx
+                v_indices[j] = v_idx
                 if len(v_data) < 3 or not v_data[2]:
                     norms_to_calc.setdefault(v_idx, []).append(f_num)
 
