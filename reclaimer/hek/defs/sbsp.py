@@ -173,7 +173,7 @@ lens_flare_marker = Struct("lens flare marker",
     )
 
 surface_index = QStruct("surface index",
-    SInt32("index"),
+    SInt32("surface index"),
     SIZE=4
     )
 

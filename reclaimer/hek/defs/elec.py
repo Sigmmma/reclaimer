@@ -32,7 +32,7 @@ marker = Struct("marker",
 
 elec_body = Struct("tagdata",
     Pad(2),
-    SInt16("count"),
+    SInt16("effects count"),
 
     Pad(16),
     float_wu("near fade distance"),

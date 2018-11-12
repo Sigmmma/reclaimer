@@ -99,7 +99,7 @@ particle = Struct("particle",
         ),
     Pad(2),
 
-    QStruct("count",
+    QStruct("created count",
         SInt16("from", GUI_NAME=""),
         SInt16("to"), ORIENT='h'
         ),
