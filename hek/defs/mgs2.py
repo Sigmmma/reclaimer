@@ -54,8 +54,8 @@ mgs2_body = Struct("tagdata",
 
     #Bitmaps
     dependency("map", "bitm", COMMENT=bitmaps_comment),
-    SInt16("sequence index"),
-    SInt16("count"),
+    SInt16("map sequence index"),
+    SInt16("map count"),
     Pad(72),
 
     #Frame animation
