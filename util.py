@@ -22,7 +22,7 @@ def is_reserved_tag(tag_index_ref):
 
 
 def is_protected_tag(tagpath):
-    return tagpath in RESERVED_WINDOWS_FILENAME_MAP or (
+    return not tag_path or tagpath in RESERVED_WINDOWS_FILENAME_MAP or (
         not INVALID_PATH_CHARS.isdisjoint(set(tagpath)))
 
 
