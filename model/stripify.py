@@ -326,7 +326,9 @@ class Stripifier():
             if not tris:
                 continue
 
-            iterable = hasattr(tris[0], "__iter__")
+            iterable = (hasattr(tris[0], "__getitem__") and
+                        hasattr(tris[0][0], "__iter__"))
+            
             for src_tri in tris:
                 if iterable:
                     v0 = tuple(src_tri[0]) + (tex_index, )

@@ -12,7 +12,6 @@ from supyr_struct.buffer import BytearrayBuffer, BytesBuffer, PeekableMmap
 from supyr_struct.field_types import FieldType
 from supyr_struct.defs.frozen_dict import FrozenDict
 
-from ..resource import resource_def
 from ..halo_map import get_map_version, get_map_header,\
      get_tag_index, get_index_magic, get_map_magic, get_is_compressed_map,\
      decompress_map, map_header_demo_def, tag_index_pc_def
@@ -102,7 +101,7 @@ class HaloMap:
 
     # these are the different pieces of the map as parsed blocks
     map_header  = None
-    rsrc_header = None
+    rsrc_map    = None
     tag_index   = None
     orig_tag_index = None  # the tag index specific to the
     #                        halo version that this map is from
@@ -146,7 +145,7 @@ class HaloMap:
 
         self._ids_of_tags_read = set()
         if map_data_cache_limit is not None:
-            self.map_data_cache_limit = map_data_cache_limit
+            self.map_data_cache_limit = HaloMap.map_data_cache_limit
 
         self.maps = {} if maps is None else maps
 
