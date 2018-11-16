@@ -70,8 +70,8 @@ class Halo1Map(HaloMap):
 
             if sounds is not None:
                 i = 0
-                for tag_header in sounds.rsrc_header.tag_paths:
-                    rsrc_snd_map[tag_header.tag_path] = i
+                for tag_header in sounds.rsrc_map.data.tags:
+                    rsrc_snd_map[tag_header.tag.path] = i
                     i += 1
 
             i = 0
