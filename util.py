@@ -26,10 +26,6 @@ def is_protected_tag(tagpath):
         not INVALID_PATH_CHARS.isdisjoint(set(tagpath)))
 
 
-def fourcc(value):
-    return value.to_bytes(4, byteorder='big').decode(encoding='latin-1')
-
-
 def float_to_str(f, max_sig_figs=7):
     if f == POS_INF:
         return "1000000000000000000000000000000000000000"
@@ -38,7 +34,7 @@ def float_to_str(f, max_sig_figs=7):
 
     sig_figs = -1
     if abs(f) > 0:
-        sig_figs = int(max_sig_figs - log(abs(f), 10))
+        sig_figs = int(round(max_sig_figs - log(abs(f), 10)))
 
     if sig_figs < 0:
         return str(f).split(".")[0]
