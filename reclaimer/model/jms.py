@@ -358,9 +358,6 @@ class JmsModel:
 
         for i in range(vert_ct):
             vert = verts[i]
-            ni = vert.norm_i
-            nj = vert.norm_j
-            nk = vert.norm_k
             b = binormals[i]
             t = tangents[i]
 

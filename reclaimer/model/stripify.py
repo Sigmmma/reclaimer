@@ -43,12 +43,49 @@ class Stripifier():
 
     _winding = False
 
+    # don't edit any of these directly if you know what's good for you
+    vert_map = ()
+    vert_data = ()
+    all_tris_by_edges = ()
+    all_face_dirs = ()
+    all_strips = ()
+    tri_counts = ()
+
     def __init__(self, all_tris=None, winding=False, *args, **kwargs):
         '''class initialization'''
         self.load_mesh(all_tris, winding)
 
-    def calc_strip(self, tri, neighbor_i=0, set_added=1):
-        '''Given a starting triangle and the edge to start navigating,
+    def translate_strip(self, vert_indices):
+        '''
+        Given a triangle strip that this Stripifier instance
+        calculated, this method will return a de-indexed triangle strip.
+        The elements in the strip will be the vert data the triangles
+        contained when the current mesh was loaded.'''
+        vert_data = self.vert_data
+        return [vert_data[i][0] for i in vert_indices]
+
+    def get_strip(self, strip_i=0, tex_index=DEFAULT_TEX):
+        if tex_index not in self.all_strips:
+            raise ValueError("No texture index '%s'" % tex_index)
+        elif strip_i not in range(len(self.all_strips[tex_index])):
+            raise ValueError("Strip index '%s' not in range(%s)" %
+                             (strip_i, len(self.all_strips[tex_index])))
+
+        return self.all_strips[tex_index][strip_i]
+
+    def get_strip_count(self, tex_index=None):
+        '''
+        Returns the number of strips for the specified texture.
+        If unspecified, returns the number of all loaded strips.'''
+        indices = (tex_index, ) if tex_index is not None else self.all_strips
+        ct = 0
+        for i in indices:
+            ct += len(self.all_strips[i])
+        return ct
+
+    def calc_strip(self, tri, neighbor_i=0, set_added=True):
+        '''
+        Given a starting triangle and the edge to start navigating,
         this function will return a list of the verts that make up the
         longest strip it can find and whether the strip faces backward.
 
@@ -60,13 +97,9 @@ class Stripifier():
         # next triangle will be connected to
         neighbor_i = neighbor_i%3
 
-        strip_len = 2
         strip_dir = self._winding
-        strip_reversed = False
 
-        # keep track of which tris have been seen
         seen = set()
-
         set_added = bool(set_added)
 
         '''navigate the strip in reverse to find the best place to start'''
@@ -93,25 +126,14 @@ class Stripifier():
         seen = set()
 
         # make a strip starting with the first 2 verts to the triangle
-        if neighbor_i == 2:
-            strip = [tri[2], tri[0]]
-        else:
-            strip = list(tri[neighbor_i: neighbor_i + 2])
-
-        strip_reversed = strip_dir == self._winding
-
-        # if the strip direction should be reversed
-        if strip_reversed:
-            # reverse the first 2 verts
+        strip = [tri[neighbor_i], tri[(neighbor_i + 1) % 3]]
+        if strip_dir == self._winding:
             strip = strip[::-1]
-
-        # get the max coordinate value of these first 2 verts and their uvs
-        v0_i = tri[neighbor_i]
-        v1_i = tri[(1 + neighbor_i) % 3]
 
         '''loop over triangles until the length is maxed or
         we reach a triangle without a neighbor on that edge'''
-        while not(tri.added or id(tri) in seen or strip_len > self.max_strip_len):
+        curr_dir = strip_dir
+        while not(tri.added or id(tri) in seen or len(strip) > self.max_strip_len):
             # get the index of the vert that will be added to the strip
             v_i = tri[(neighbor_i + 2) % 3]
 
@@ -122,18 +144,13 @@ class Stripifier():
             last_tri = tri
 
             # Get the next triangle.
-            # Starting at 1, every odd numbered triangle will
-            # have the next triangle chosen from its second edge,
-            # while every even numbered triangle will have the
-            # next triangle chosen from its 3rd edge.
-            tri = tri.siblings[(neighbor_i + 1 + strip_dir) % 3]
+            tri = tri.siblings[(neighbor_i + 1 + curr_dir) % 3]
 
             # reverse the direction of travel, set the last triangle
             # as added and seen, and increment the strip length
             last_tri.added = set_added
-            strip_dir = not strip_dir
+            curr_dir = not curr_dir
             seen.add(id(last_tri))
-            strip_len += 1
 
             # exit if the strip has ended
             if tri is None: break
@@ -142,10 +159,11 @@ class Stripifier():
             # orient outselves and figure out which edge to travel next
             neighbor_i = tri.get_sibling_index(last_tri)
 
-        return strip, strip_reversed
+        return strip, strip_dir
 
     def link_strips(self):
-        '''Links the strips that are currently loaded together into one
+        '''
+        Links the strips that are currently loaded together into one
         large strip. This will introduce degenerate triangles into the
         mesh to link strips.'''
         if self.linked:
@@ -260,8 +278,7 @@ class Stripifier():
 
                     if strip0[-1] != strip1[0]:
                         # create the extra degenerate triangles
-                        strip0.append(strip0[-1])
-                        strip1.insert(0, strip1[0])
+                        strip0.extend((strip0[-1], strip1[0]))
 
                     # merge the strips
                     strip0.extend(strip1)
@@ -326,14 +343,15 @@ class Stripifier():
             if not tris:
                 continue
 
-            iterable = (hasattr(tris[0], "__getitem__") and
-                        hasattr(tris[0][0], "__iter__"))
+            make_tuple = (hasattr(tris[0], "__getitem__") and
+                          hasattr(tris[0][0], "__iter__") and
+                          not isinstance(tris[0][0], tuple))
             
             for src_tri in tris:
-                if iterable:
-                    v0 = tuple(src_tri[0]) + (tex_index, )
-                    v1 = tuple(src_tri[1]) + (tex_index, )
-                    v2 = tuple(src_tri[2]) + (tex_index, )
+                if make_tuple:
+                    v0 = (tuple(src_tri[0]), tex_index)
+                    v1 = (tuple(src_tri[1]), tex_index)
+                    v2 = (tuple(src_tri[2]), tex_index)
                 else:
                     v0 = (src_tri[0], tex_index)
                     v1 = (src_tri[1], tex_index)
@@ -363,7 +381,9 @@ class Stripifier():
                     vert_data.append(v2)
 
                 tri = StripTri(v0_i, v1_i, v2_i)
-                edges = ((v0_i, v1_i, 0), (v1_i, v2_i, 0), (v2_i, v0_i, 0))
+                edges = ((v0_i, v1_i, 0),
+                         (v1_i, v2_i, 0),
+                         (v2_i, v0_i, 0))
 
                 # loop over all 3 edges
                 for i in (0, 1, 2):
@@ -394,8 +414,7 @@ class Stripifier():
                     t_by_e[edge] = tri
 
     def make_strips(self):
-        '''Takes all loaded triangles and
-        creates triangle strips out of them.'''
+        '''Creates triangle strips out of the loaded mesh.'''
         all_tris_by_edges = self.all_tris_by_edges
 
         '''loop over all meshes by texture'''
@@ -411,7 +430,7 @@ class Stripifier():
             e_i = 0
 
             '''create triangle strips for this mesh'''
-            while tri_count > tris_added:
+            while tris_added < tri_count:
                 # get the first triangle in the strip
                 tri_0 = tris[edges[e_i]]
                 e_i += 1
@@ -421,18 +440,17 @@ class Stripifier():
                     continue
 
                 # calculate the 3 different possible strips
-                s0, _ = self.calc_strip(tri_0, 0, 0)
-                s1, _ = self.calc_strip(tri_0, 1, 0)
-                s2, _ = self.calc_strip(tri_0, 2, 0)
+                s0, _ = self.calc_strip(tri_0, 0, False)
+                s1, _ = self.calc_strip(tri_0, 1, False)
+                s2, _ = self.calc_strip(tri_0, 2, False)
 
                 lens = (len(s0), len(s1), len(s2))
 
                 # use only the largest strip
                 # Need to re-run the function so it can also
-                # flag the triangles in the strip as bring added
-                strip, rev = self.calc_strip(tri_0, lens.index(max(lens)), 1)
+                # flag the triangles in the strip as added.
+                strip_data = self.calc_strip(tri_0, lens.index(max(lens)), True)
+                strips.append(strip_data[0])
+                face_dirs.append(strip_data[1])
 
-                face_dirs.append(rev)
-                strips.append(strip)
-
-                tris_added += len(strip) - 2
+                tris_added += len(strips[-1]) - 2

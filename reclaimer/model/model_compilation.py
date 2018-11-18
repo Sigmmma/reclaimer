@@ -344,12 +344,11 @@ def compile_gbxmodel(mod2_tag, merged_jms):
             stripifier.make_strips()
             stripifier.link_strips()
 
-            strips = stripifier.all_strips.get(0)
-            if not strips:
+            if stripifier.get_strip_count() == 1:
+                tri_strip = stripifier.translate_strip(stripifier.get_strip())
+            else:
                 all_verts = EMPTY_GEOM_VERTS
                 tri_strip = (0, 1, 2)
-            else:
-                tri_strip = strips[0]
 
             if len(tri_strip) > MAX_STRIP_LEN:
                 return (
