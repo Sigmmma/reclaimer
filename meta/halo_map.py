@@ -125,7 +125,7 @@ def get_tag_index(map_data, header=None):
         header = get_map_header(map_data)
 
     map_data = decompress_map(map_data, header)
-    magic = 0
+    base_address = header.tag_index_header_offset
 
     tag_index_def = tag_index_pc_def
     version = get_map_version(header)
@@ -141,14 +141,15 @@ def get_tag_index(map_data, header=None):
         tag_index_def = h2_tag_index_def
     elif header.version.enum_name == "halo3":
         tag_index_def = h3_tag_index_def
-        magic = HALO3_INDEX_MAGIC
+        for partition in header.partitions:
+            if base_address in range(partition.load_address,
+                                     partition.load_address + partition.size):
+                base_address -= partition.load_address - partition.file_offset
+                break
 
-    if header.tag_index_header_offset - magic <= 0:
-        tag_index = tag_index_def.build()
-    else:
-        tag_index = tag_index_def.build(
-            rawdata=map_data, magic=get_map_magic(header),
-            offset=header.tag_index_header_offset - magic)
+    tag_index = tag_index_def.build(
+        rawdata=map_data, magic=get_map_magic(header),
+        offset=base_address, map_header=header)
 
     return tag_index
 

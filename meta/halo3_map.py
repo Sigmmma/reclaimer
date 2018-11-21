@@ -1,20 +1,74 @@
 from ..h3.common_descs import *
-from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.defs.tag_def import TagDef, BlockDef
 
 
-def virtual_ptr_to_file_ptr(v_ptr, **kwargs):
-    # UNFINISHED
-    return ptr
+def compute_partition_offset(parent=None, **kwargs):
+    partitions = parent.parent
+    partition_num = partitions.index(parent)
+    sections = partitions.parent.sections
+    file_offset = 4096*3
+    for i in range(2): # tag data is the third section
+        file_offset += sections[i].size
+
+    for i in range(partition_num):
+        file_offset += partitions[i].size
+
+    return file_offset
 
 
-def file_ptr_to_virtual_ptr(ptr, **kwargs):
-    # UNFINISHED
-    return v_ptr
+def compute_section_offset(parent=None, **kwargs):
+    sections = parent.parent
+    section_num = sections.index(parent)
+    file_offset = 4096*3
+    for i in range(section_num):
+        file_offset += sections[i].size
+
+    return file_offset
 
 
-def tag_name_table_name_pointer(parent=None, header=None, new_value=None,
-                                **kwargs):
-    start = virtual_ptr_to_file_ptr(header.tag_name_table_offset, **kwargs)
+def virtual_ptr_to_file_ptr(ptr, section=0, map_header=None, **kwargs):
+    if not map_header:
+        return ptr
+    elif section in (0, 1, 3):
+        for section in map_header.sections:
+            print(section)
+            if ptr in range(section.virtual_address,
+                            section.virtual_address + section.size):
+                return ptr - section.virtual_address + section.file_offset
+    else:
+        for partition in map_header.partitions:
+            if ptr in range(partition.load_address,
+                            partition.load_address + partition.size):
+                return ptr - partition.load_address + partition.file_offset
+    raise ValueError("Pointer '%s' is not in any partitions." % ptr)
+
+
+def file_ptr_to_virtual_ptr(ptr, section=0, map_header=None, **kwargs):
+    if not map_header:
+        return ptr
+    elif section in (0, 1, 3):
+        for section in map_header.sections:
+            if ptr in range(section.file_offset,
+                            section.file_offset + section.size):
+                return ptr - section.file_offset + section.virtual_address
+    else:
+        for partition in map_header.partitions:
+            if ptr in range(partition.file_offset,
+                            partition.file_offset + partition.size):
+                return ptr - partition.file_offset + partition.load_address
+    raise ValueError("Pointer '%s' is not in any partitions." % ptr)
+
+
+def string_id_table_name_pointer(parent=None, new_value=None, **kwargs):
+    start = parent.parent.parent.string_id_table_file_offset
+    if new_value is None:
+        if parent.offset == -1:
+            return start
+        return parent.offset + start
+    parent.offset = new_value - start
+
+def tag_name_table_name_pointer(parent=None, new_value=None, **kwargs):
+    start = parent.parent.parent.tag_name_table_file_offset
     if new_value is None:
         if parent.offset == -1:
             return start
@@ -22,43 +76,36 @@ def tag_name_table_name_pointer(parent=None, header=None, new_value=None,
     parent.offset = new_value - start
 
 
-def string_id_table_name_pointer(parent=None, header=None, new_value=None,
-                                 **kwargs):
-    start = virtual_ptr_to_file_ptr(header.string_id_table_offset, **kwargs)
-    if new_value is None:
-        if parent.offset == -1:
-            return start
-        return parent.offset + start
-    parent.offset = new_value - start
+def compute_string_id_index_offset(parent=None, **kw):
+    return virtual_ptr_to_file_ptr(parent.get_root().string_id_index_offset,
+                                   0, map_header=parent.get_root())
 
+def compute_string_id_table_offset(parent=None, **kw):
+    return virtual_ptr_to_file_ptr(parent.get_root().string_id_table_offset,
+                                   0, map_header=parent.get_root())
 
-def tag_name_index_pointer(parent=None, header=None, new_value=None, **kwargs):
-    if new_value is None:
-        return virtual_ptr_to_file_ptr(header.tag_name_index_offset, **kwargs)
-    header.tag_name_index_offset = file_ptr_to_virtual_ptr(new_value, **kwargs)
+def compute_tag_name_index_offset(parent=None, **kw):
+    return virtual_ptr_to_file_ptr(parent.get_root().tag_name_index_offset,
+                                   0, map_header=parent.get_root())
 
-
-def string_id_index_pointer(parent=None, header=None, new_value=None, **kwargs):
-    if new_value is None:
-        return virtual_ptr_to_file_ptr(header.string_id_index_offset, **kwargs)
-    header.string_id_index_offset = file_ptr_to_virtual_ptr(new_value, **kwargs)
+def compute_tag_name_table_offset(parent=None, **kw):
+    return virtual_ptr_to_file_ptr(parent.get_root().tag_name_table_offset,
+                                   0, map_header=parent.get_root())
 
 
 def tag_types_array_pointer(parent=None, new_value=None, **kwargs):
     if new_value is None:
-        return virtual_ptr_to_file_ptr(parent.tag_types_offset, **kwargs)
+        return virtual_ptr_to_file_ptr(parent.tag_types_offset, 2, **kwargs)
     parent.tag_types_offset = file_ptr_to_virtual_ptr(new_value, **kwargs)
-
 
 def tag_index_array_pointer(parent=None, new_value=None, **kwargs):
     if new_value is None:
-        return virtual_ptr_to_file_ptr(parent.tag_index_offset, **kwargs)
+        return virtual_ptr_to_file_ptr(parent.tag_index_offset, 2, **kwargs)
     parent.tag_index_offset = file_ptr_to_virtual_ptr(new_value, **kwargs)
-
 
 def root_tags_array_pointer(parent=None, new_value=None, **kwargs):
     if new_value is None:
-        return virtual_ptr_to_file_ptr(parent.root_tags_offset, **kwargs)
+        return virtual_ptr_to_file_ptr(parent.root_tags_offset, 2, **kwargs)
     parent.root_tags_offset = file_ptr_to_virtual_ptr(new_value, **kwargs)
 
 
@@ -75,16 +122,36 @@ tag_name_table_entry = Container("tag name table entry",
 
 string_id_table = Array("string id table",
     SIZE="..string_id_count", SUB_STRUCT=string_id_table_entry,
-    POINTER=string_id_index_pointer
+    POINTER=".string_id_index_file_offset"
     )
 
 tag_name_table = Array("tag name table",
     SIZE="..tag_name_count", SUB_STRUCT=tag_name_table_entry,
-    POINTER=tag_name_index_pointer
+    POINTER=".tag_name_index_file_offset"
+    )
+
+partition = Struct("partition",
+    UInt32("load address"),
+    UInt32("size"),
+    STEPTREE=Computed("file offset",
+        COMPUTE=compute_partition_offset, WIDGET=EntryFrame, WIDGET_WIDTH=10 
+        ),
+    SIZE=8
+    )
+
+section = Struct("section",
+    UInt32("virtual address"),
+    UInt32("size"),
+    STEPTREE=Computed("file offset",
+        COMPUTE=compute_section_offset, WIDGET=EntryFrame, WIDGET_WIDTH=10
+        ),
+    SIZE=8
     )
 
 h3_map_header = Struct("map header",
-    UEnum32('head', ('head', 'head'), EDITABLE=False, DEFAULT='head'),
+    UEnum32('head', ('head', 'head'),
+        EDITABLE=False, VISIBLE=False, DEFAULT='head'
+        ),
     UEnum32("version",
         ("halo1xbox",   5),
         ("halo1pcdemo", 6),
@@ -94,7 +161,7 @@ h3_map_header = Struct("map header",
         ("halo1ce", 609),
         ),
     UInt32("decomp len"),
-    UInt32("unknown0"),
+    UInt32("unknown0", VISIBLE=False),
     UInt32("tag index header offset"),
     UInt32("tag buffer offset"),
     UInt32("virtual size"),
@@ -108,16 +175,17 @@ h3_map_header = Struct("map header",
         "shared",
         "sharedsp",
         ),
-    UEnum16("unknown2"),
-    UEnum8("unknown3"),
-    UEnum8("unknown4"),
-    UEnum8("unknown5"),
-    UEnum8("unknown6"),
+    UInt16("unknown2", VISIBLE=False),
+    UInt8("unknown3", VISIBLE=False),
+    UInt8("unknown4", VISIBLE=False),
+    UInt8("unknown5", VISIBLE=False),
+    UInt8("unknown6", VISIBLE=False),
     Pad(20),
     UInt32("string id count"),
     UInt32("string id table size"),
     UInt32("string id index offset"),
     UInt32("string id table offset"),
+
     Pad(4),
     UInt32("unknown7"),
     UInt32("unknown8"),
@@ -130,35 +198,43 @@ h3_map_header = Struct("map header",
     UInt32("tag name table size"),
     UInt32("tag name index offset"),
 
-    BytesRaw("unknown9", SIZE=36),
+    BytesRaw("unknown9", SIZE=36, VISIBLE=False),
     UInt32("virtual base address"),
     UInt32("xkd version"),
-    Array("partitions",
-        SUB_STRUCT=QStruct("partition",
-            UInt32("load address"),
-            UInt32("size"),
-            SIZE=8
-            ),
-        SIZE=6
-        ),
+    Array("partitions", SUB_STRUCT=partition, SIZE=6),
 
-    BytesRaw("unknown10", SIZE=332),
-    Array("offset masks",
-        SUB_STRUCT=UInt32("mask"),
-        SIZE=4
+    BytesRaw("unknown10", SIZE=332, VISIBLE=False),
+    Array("offset masks", SUB_STRUCT=UInt32("mask"), SIZE=4,
+        NAME_MAP={"resource": 0, "locale": 1, "tag": 2, "debug": 3}
         ),
-    Array("sections",
-        SUB_STRUCT=QStruct("section",
-            UInt32("virtual address"),
-            UInt32("size"),
-            SIZE=8
-            ),
-        SIZE=4
+    Array("sections", SUB_STRUCT=section, SIZE=4,
+        NAME_MAP={"resource": 0, "locale": 1, "tag": 2, "debug": 3}
         ),
 
     Pad(11104),
     UEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
-    SIZE=4096*3
+    STEPTREE=Container("strings",
+        Computed("string id index file offset",
+            COMPUTE=compute_string_id_index_offset,
+            WIDGET=EntryFrame, WIDGET_WIDTH=10
+            ),
+        Computed("string id table file offset",
+            COMPUTE=compute_string_id_table_offset,
+            WIDGET=EntryFrame, WIDGET_WIDTH=10
+            ),
+        Computed("tag name index file offset",
+            COMPUTE=compute_tag_name_index_offset,
+            WIDGET=EntryFrame, WIDGET_WIDTH=10
+            ),
+        Computed("tag name table file offset",
+            COMPUTE=compute_tag_name_table_offset,
+            WIDGET=EntryFrame, WIDGET_WIDTH=10
+            ),
+        #Computed("test", COMPUTE=lambda **kw: print(kw.get('parent').parent)),
+        string_id_table,
+        tag_name_table,
+        ),
+    SIZE=4096*3, ENDIAN=">"
     )
 
 h3_tag_type = Struct("tag header",
@@ -214,8 +290,9 @@ h3_tag_index = Container("tag index",
 
     h3_tag_types_array,
     h3_tag_index_array,
-    h3_root_tags_array
+    h3_root_tags_array,
+    ENDIAN=">"
     )
 
-h3_map_header_def = BlockDef(h3_map_header, endian=">")
-h3_tag_index_def = BlockDef(h3_tag_index, endian=">")
+h3_map_header_def = BlockDef(h3_map_header)
+h3_tag_index_def = BlockDef(h3_tag_index)
