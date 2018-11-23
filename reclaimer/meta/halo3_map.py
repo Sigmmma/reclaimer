@@ -5,6 +5,9 @@ from supyr_struct.defs.tag_def import TagDef, BlockDef
 def compute_partition_offset(parent=None, **kwargs):
     partitions = parent.parent
     partition_num = partitions.index(parent)
+    if parent.size == 0:
+        return 0
+
     sections = partitions.parent.sections
     file_offset = 4096*3
     for i in range(2): # tag data is the third section
@@ -19,6 +22,9 @@ def compute_partition_offset(parent=None, **kwargs):
 def compute_section_offset(parent=None, **kwargs):
     sections = parent.parent
     section_num = sections.index(parent)
+    if parent.size == 0:
+        return 0
+
     file_offset = 4096*3
     for i in range(section_num):
         file_offset += sections[i].size
@@ -31,7 +37,6 @@ def virtual_ptr_to_file_ptr(ptr, section=0, map_header=None, **kwargs):
         return ptr
     elif section in (0, 1, 3):
         for section in map_header.sections:
-            print(section)
             if ptr in range(section.virtual_address,
                             section.virtual_address + section.size):
                 return ptr - section.virtual_address + section.file_offset
@@ -142,7 +147,7 @@ partition = Struct("partition",
 section = Struct("section",
     UInt32("virtual address"),
     UInt32("size"),
-    STEPTREE=Computed("file offset",
+    Computed("file offset",
         COMPUTE=compute_section_offset, WIDGET=EntryFrame, WIDGET_WIDTH=10
         ),
     SIZE=8
@@ -205,10 +210,10 @@ h3_map_header = Struct("map header",
 
     BytesRaw("unknown10", SIZE=332, VISIBLE=False),
     Array("offset masks", SUB_STRUCT=UInt32("mask"), SIZE=4,
-        NAME_MAP={"resource": 0, "locale": 1, "tag": 2, "debug": 3}
+        NAME_MAP={"debug": 0, "resource": 1, "tag": 2, "locale": 3}
         ),
     Array("sections", SUB_STRUCT=section, SIZE=4,
-        NAME_MAP={"resource": 0, "locale": 1, "tag": 2, "debug": 3}
+        NAME_MAP={"debug": 0, "resource": 1, "tag": 2, "locale": 3}
         ),
 
     Pad(11104),
