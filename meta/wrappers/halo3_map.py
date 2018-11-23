@@ -4,11 +4,11 @@ from os.path import exists, join
 from tkinter.filedialog import askopenfilename
 
 from .halo_map import *
-from reclaimer.h2.util import HALO2_MAP_TYPES, split_raw_pointer
+from reclaimer.h3.util import HALO3_MAP_TYPES, split_raw_pointer
 
 
 class Halo3Map(HaloMap):
-    ugh__meta = None
+    tag_index_map = ()
 
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
@@ -54,7 +54,6 @@ class Halo3Map(HaloMap):
                 print(format_exc())
 
     def setup_defs(self):
-        return
         if Halo3Map.defs:
             return
 
@@ -87,7 +86,73 @@ class Halo3Map(HaloMap):
             self.is_resource = True
             self.maps[HALO3_MAP_TYPES[map_type]] = self
 
+        self.tag_index_map = {}
+        tag_index_array = self.tag_index.tag_index
+        for i in range(len(tag_index_array)):
+            self.tag_index_map[tag_index_array[i].id & 0xFFff] = i
+
         if autoload_resources and (will_be_active or not self.is_resource):
             self.load_all_resource_maps(dirname(map_path))
 
         self.map_data.clear_cache()
+
+    def get_meta(self, tag_id, reextract=False):
+        if tag_id is None:
+            return
+        elif self.map_header.map_type.enum_name not in ("sp", "mp", "ui"):
+            # shared maps don't have a tag index
+            return
+
+        tag_index_array = self.tag_index.tag_index
+
+        # if we are given a 32bit tag id, mask it off
+        tag_id = self.tag_index_map.get(tag_id & 0xFFff, 0xFFff)
+        if tag_id >= len(tag_index_array):
+            return
+
+        tag_index_ref = tag_index_array[tag_id]
+
+        tag_cls = None
+        if tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
+            tag_cls = fourcc(tag_index_ref.class_1.data)
+
+        desc = self.get_meta_descriptor(tag_cls)
+        if desc is None or tag_cls is None:        return
+        elif reextract:                            pass
+        elif tag_id == scnr_id and self.scnr_meta: return self.scnr_meta
+        elif tag_id == matg_id and self.matg_meta: return self.matg_meta
+        elif tag_cls == "ugh!" and self.ugh__meta: return self.ugh__meta
+
+        block = [None]
+
+        try:
+            # read the meta data from the map
+            meta_magic = 0
+            offset = tag_index_ref.meta_offset
+            for partition in self.map_header.partitions:
+                if offset in range(partition.load_address,
+                                   partition.load_address + partition.size):
+                    meta_magic = partition.load_address - partition.file_offset
+                    offset -= meta_magic
+                    break
+
+            desc['TYPE'].parser(
+                desc, parent=block, attr_index=0, magic=meta_magic,
+                tag_index=tag_index_array, rawdata=self.map_data, offset=offset,
+                sections=self.map_header.sections, parsing_resource=True,
+                partitions=self.map_header.partitions)
+        except Exception:
+            print(format_exc())
+            return
+
+        self.record_map_cache_read(tag_id, 0)
+        if self.map_cache_over_limit():
+            self.clear_map_cache()
+
+        self.inject_rawdata(block[0], tag_cls, tag_index_ref)
+
+        return block[0]
+
+    def inject_rawdata(self, meta, tag_cls, tag_index_ref):
+        # get some rawdata that would be pretty annoying to do in the parser
+        return meta
