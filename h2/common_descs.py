@@ -26,15 +26,8 @@ from ..common_descs import pi, irad, from_to, get_unit_scale,\
      xyz_float, xy_float, argb_float, rgb_float, xrgb_byte, argb_byte,\
      ijkw_float, ijk_float, ij_float, yp_float, ypr_float,\
      compressed_normal_32, materials_list,\
-     rawdata_ref_struct, reflexive_struct, tag_ref_struct
+     rawdata_ref_struct, reflexive_struct, tag_ref_struct, string_id_meta
 
-
-def string_id_meta(name):
-    return StringID(name,
-        UInt16('id'),  # cant name it "index" as that is a method name
-        UInt8('unused', VISIBLE=False),
-        UInt8('length'),
-        )
 
 def string_id_tag(name):
     # encoding used is latin1 to take care of cases
