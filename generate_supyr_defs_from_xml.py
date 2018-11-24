@@ -12,7 +12,7 @@ name_only_field_types = set((
     "string_id_meta", "rawdata_ref", "dependency",
     "Float", "float_rad",
     "color_argb_float", "color_argb_uint32",
-    "color_xrgb_float", "color_xrgb_uint32", 
+    "color_rgb_float",  "color_xrgb_uint32", 
     "SInt8", "SInt16", "SInt32", "UInt8", "UInt16", "UInt32",
     ))
 
@@ -37,14 +37,14 @@ bool_field_types = set(("Bool8", "Bool16", "Bool32"))
 
 field_sizes = {
     "reflexive": 12, "rawdata_ref": 20, "dependency": 16,
-    "color_argb_float": 16, "color_argb_uint32": 16,
-    "color_xrgb_uint32": 4, "color_xrgb_uint32": 4,
+    "color_argb_float": 16, "color_argb_uint32": 4, 
+    "color_rgb_float": 12,  "color_xrgb_uint32": 4,
     "Float": 4, "float_rad": 4, "string_id_meta": 4,
-    "SInt8": 1, "SInt16": 2, "SInt32": 4,
-    "UInt8": 1, "UInt16": 2, "UInt32": 4,
+    "SInt8":  1, "SInt16":  2, "SInt32":  4,
+    "UInt8":  1, "UInt16":  2, "UInt32":  4,
     "SEnum8": 1, "SEnum16": 2, "SEnum32": 4,
     "UEnum8": 1, "UEnum16": 2, "UEnum32": 4,
-    "Bool8": 1, "Bool16": 2, "Bool32": 4,
+    "Bool8":  1, "Bool16":  2, "Bool32":  4,
 
     # special values
     "bit": 1, "opt": 1, "Pad": 4
@@ -86,7 +86,7 @@ class StructNode(list):
     value = 0
 
 
-def struct_node_to_supyr_desc(struct_node, descs_by_name,
+def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_names_by_desc,
                               parent_name="", indent=0):
     desc_name = struct_node.name
     if parent_name and struct_node.typ == "reflexive":
@@ -121,38 +121,57 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name,
             if struct_node.typ in string_field_types:
                 desc_str += " SIZE=%s" % struct_node.size
                 indent_str = ""
-            else:
-                desc_str += '\n'
 
             if struct_node.typ in enum_field_types:
                 i = 0
+                last_val = -1
+                enum_str = ""
                 for enum in struct_node:
-                    if enum.value == i:
-                        desc_str += '%s%s"%s",\n' % (
-                            indent_str, indent_str,
-                            enum.name.lstrip("_"))
+                    if enum.value == i or (enum.value - last_val == 1):
+                        enum_str += '%s"%s",\n' % (
+                            indent_str, enum.name)
                     else:
-                        desc_str += '%s%s("%s", %s),\n' % (
-                            indent_str, indent_str,
-                            enum.name.lstrip("_"), enum.value)
+                        enum_str += '%s("%s", %s),\n' % (
+                            indent_str, enum.name, enum.value)
                     i += 1
-                indent_str = ' ' * (4 * (indent + 1))
+                    last_val = enum.value
+
+                enum_str = "(\n%s%s)" % (enum_str, indent_str)
+                enum_name = "%s_%s" % (parent_name, desc_name)
+                if enum_str in enum_names_by_desc:
+                    enum_name = enum_names_by_desc[enum_str]
+                else:
+                    enum_names_by_desc[enum_str] = enum_name
+
+                desc_str += " *%s" % (enum_name)
+                indent_str = ""
+
+                #indent_str = ' ' * (4 * (indent + 1))
             elif struct_node.typ in bool_field_types:
+                desc_str += '\n'
                 i = 0
+                j = last_val = -1
                 for bit in struct_node:
-                    if bit.value == i:
+                    j += 1
+                    if bit.name in ("_%s" % j, "_%s" % (j + 1),
+                                    "bit_%s" % j, "bit_%s" % (j + 1)):
+                        continue
+
+                    if bit.value == i or (bit.value - last_val == 1):
                         desc_str += '%s%s"%s",\n' % (
                             indent_str, indent_str, bit.name)
                     else:
                         desc_str += '%s%s("%s", 1 << %s),\n' % (
                             indent_str, indent_str,
                             bit.name, bit.value)
+                    last_val = bit.value
                     i += 1
                 indent_str = ' ' * (4 * (indent + 1))
             elif struct_node.typ in ("BlockDef", "reflexive"):
+                desc_str += '\n'
                 for field in struct_node:
                     subdesc_str = struct_node_to_supyr_desc(
-                        field, descs_by_name, desc_name, 1)
+                        field, descs_by_name, enum_names_by_desc, desc_name, 1)
 
                     if field.typ == "reflexive":
                         desc_str += '    reflexive("%s", %s)' % (
@@ -198,13 +217,15 @@ def parse_xml_node(xml_node):
 
     xml_tag = xml_tag.replace("colour", "color")
 
-    if xml_tag == "tagref" and eval(xml_attribs.get(
-            'withclass', "false").capitalize()):
-        new_node.typ = "UInt32"
+    if xml_tag == "tagref" and not eval(xml_attribs.get(
+            'withclass', "true").capitalize()):
+        xml_tag = "uint32"
     elif xml_tag.startswith("colorf") and xml_attribs.get(
             'format', "rgb") == "rgb":
         xml_tag = "colorfnoalpha"
-    elif xml_tag in type_name_map:
+
+
+    if xml_tag in type_name_map:
         new_node.typ = type_name_map[xml_tag]
     else:
         raise TypeError("Unknown field type '%s'" % xml_node.tag)
@@ -228,7 +249,7 @@ def parse_xml_node(xml_node):
     if "index" in xml_attribs:
         new_node.value = eval(xml_attribs['index'])
     else:
-        new_node.value = eval(xml_attribs.get('value', "0"))
+        new_node.value = eval(xml_attribs.get('value', "None"))
 
     if new_node.offset is None:
         new_node.offset = new_node.value
@@ -259,8 +280,10 @@ def parse_xml_node(xml_node):
         if sub_node.typ == "reflexive":
             sub_node_size = 12
 
-        if last_node is not None and (sub_node.typ == "Pad" and
-                                      last_node.typ == "Pad"):
+        if "Enum" in new_node.typ or "Bool" in new_node.typ:
+            pass
+        elif last_node is not None and (sub_node.typ == "Pad" and
+                                        last_node.typ == "Pad"):
             # consolidate consecutive padding
             last_node.size += sub_node_size
             last_off = off + sub_node_size
@@ -270,9 +293,16 @@ def parse_xml_node(xml_node):
             # add missing padding
             pad_node = StructNode()
             pad_node.typ = "Pad"
+            pad_node.name = "unknown"
             pad_node.size = off - last_off
-            pad_node.offset = last_off
+            pad_node.offset = pad_node.value = last_off
             new_node.append(pad_node)
+            
+            added_names[pad_node.name] = added_names.get(
+                pad_node.name, 0) + 1
+            if added_names[pad_node.name] > 1:
+                pad_node.name += "_%s" % (added_names[pad_node.name] - 1)
+
             if pad_node.size < 0:
                 raise ValueError(
                     ("Negative padding size in '%s' at field "
@@ -320,15 +350,24 @@ for root, dirs, files in os.walk("."):
             continue
 
         descs_by_name = OrderedDict()
-        struct_node_to_supyr_desc(tag_struct_nodes, descs_by_name)
+        enum_names_by_desc = dict()
+        struct_node_to_supyr_desc(tag_struct_nodes, descs_by_name,
+                                  enum_names_by_desc)
 
         with open(os.path.join(root, xml_name) + ".py", "w+") as pyf:
             pyf.write(block_def_import_str)
+            enum_descs_by_name = {enum_names_by_desc[desc]: desc for
+                                  desc in enum_names_by_desc}
+
+            for desc_name in sorted(enum_descs_by_name):
+                pyf.write("\n\n")
+                desc_str = enum_descs_by_name[desc_name]
+                pyf.write("%s = %s" % (desc_name, desc_str.strip(",")))
 
             for desc_name in descs_by_name:
                 pyf.write("\n\n\n")
-                desc_str = descs_by_name[desc_name].strip(",")
-                pyf.write("%s = %s" % (desc_name, desc_str))
+                desc_str = descs_by_name[desc_name]
+                pyf.write("%s = %s" % (desc_name, desc_str.strip(",")))
 
 
 print("Finished")
