@@ -217,9 +217,13 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         if s_desc:
             if kwargs.get("parsing_resource"):
                 # parsing JUST metadata from a resource cache
+                node_size = node[0]
                 if 'steptree_parents' not in kwargs and 'magic' in kwargs:
                     # need to skip over the rawdata
-                    offset += node[0] + node[2] - kwargs['magic']
+                    offset += node_size + node[2] - kwargs['magic']
+
+                s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
+                node[0] = node_size
             elif 'magic' in kwargs:
                 # use magic offset if it is valid
                 if node[3]:
