@@ -3,8 +3,9 @@ import zlib
 from os.path import exists, join
 from tkinter.filedialog import askopenfilename
 
-from .halo_map import *
+from reclaimer.h3.defs import __all__ as all_h3_def_ids
 from reclaimer.h3.util import HALO3_MAP_TYPES, split_raw_pointer
+from .halo_map import *
 
 
 class Halo3Map(HaloMap):
@@ -58,7 +59,7 @@ class Halo3Map(HaloMap):
             return
 
         Halo3Map.defs = defs = {}
-        for fcc in ("bitm", ):
+        for fcc in all_h3_def_ids:
             try:
                 fcc2 = fcc
                 for char in "!#$*<>/ ":
