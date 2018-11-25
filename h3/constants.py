@@ -10,6 +10,9 @@ h3_tag_class_fcc_to_le_int = {}
 h3_tag_class_be_int_to_fcc = {}
 h3_tag_class_le_int_to_fcc = {}
 
+
+HALO3_MAP_TYPES = ("local", "mainmenu", "shared", "campaign")
+
 # maps tag class four character codes to the tags file extension
 # 177 tag classes
 nul_char = b"\x00".decode(encoding="latin-1")
