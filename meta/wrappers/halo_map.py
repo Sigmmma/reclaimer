@@ -137,6 +137,42 @@ def h3_to_h1_tag_index(map_header, tag_index):
     return new_index
 
 
+class StringIdManager:
+    strings = ()
+    set_offsets = ()
+
+    set_shift = 0
+    length_shift = 0
+
+    index_mask = 0
+    set_mask = 0
+    length_mask = 0
+
+    def __init__(self, strings, index_bits, set_bits, length_bits, sets):
+        self.strings = strings
+        self.set_offsets = tuple((s[0], s[1]) for s in sets)
+
+        self.set_shift = index_bits
+        self.length_shift = index_bits + set_bits
+
+        self.index_mask  = (1 << index_bits) - 1
+        self.set_mask    = (1 << set_bits) - 1
+        self.length_mask = (1 << length_bits) - 1
+
+    def get_string(self, string_id):
+        set_id = (string_id >> self.set_shift) & self.set_mask
+        index = (string_id & self.index_mask)
+        set_offset = self.set_offsets[set_id]
+        if index < set_offset[0]:
+            set_id -= 1
+            set_offset = self.set_offsets[set_id]
+
+        if set_id >= 0:
+            index += set_offset[1] - set_offset[0]
+
+        return self.strings[index]
+
+
 class HaloMap:
     map_data = None
     map_data_cache_limit = 50
@@ -152,6 +188,8 @@ class HaloMap:
 
     # the original tag_path of each tag in the map before any deprotection
     orig_tag_paths = None
+
+    string_id_manager = None
 
     # the parsed meta of the root tags in the map
     scnr_meta = None

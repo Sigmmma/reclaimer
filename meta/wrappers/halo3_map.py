@@ -3,6 +3,7 @@ import zlib
 from os.path import exists, join
 from tkinter.filedialog import askopenfilename
 
+from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
 from reclaimer.h3.defs import __all__ as all_h3_def_ids
 from reclaimer.h3.util import HALO3_MAP_TYPES, split_raw_pointer
 from .halo_map import *
@@ -10,6 +11,11 @@ from .halo_map import *
 
 class Halo3Map(HaloMap):
     tag_index_map = ()
+
+    string_id_set_offsets = (
+        (0x4B7, 0xC11), (0x0, 0x4B7), (0x0, 0xA7D),
+        (0x0, 0xB0F),   (0x0, 0xBAF), (0x0, 0xB63),
+        (0x0, 0xBBF),   (0x0, 0xBF0), (0x0, 0xC04))
 
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
@@ -59,11 +65,15 @@ class Halo3Map(HaloMap):
             return
 
         Halo3Map.defs = defs = {}
-        for fcc in all_h3_def_ids:
+        for fcc in h3_tag_class_fcc_to_ext:
             try:
                 fcc2 = fcc
                 for char in "!#$*<>/ ":
                     fcc2 = fcc2.replace(char, "_")
+
+                if fcc2 not in all_h3_def_ids:
+                    continue
+
                 exec("from reclaimer.h3.defs.%s import %s_meta_def" %
                      (fcc2, fcc2))
                 exec("defs['%s'] = %s_meta_def" % (fcc, fcc2))
@@ -81,6 +91,11 @@ class Halo3Map(HaloMap):
         HaloMap.load_map(self, map_path, **kwargs)
         tag_index = self.tag_index
         self.tag_index = h3_to_h1_tag_index(self.map_header, tag_index)
+
+        self.string_id_manager = StringIdManager(
+            self.map_header.strings.string_id_table,
+            16, 8, 8, self.string_id_set_offsets,
+            )
 
         map_type = self.map_header.map_type.data - 1
         if map_type > 0 and map_type < 4:
@@ -139,9 +154,11 @@ class Halo3Map(HaloMap):
 
             desc['TYPE'].parser(
                 desc, parent=block, attr_index=0, magic=meta_magic,
-                tag_index=tag_index_array, rawdata=self.map_data, offset=offset,
-                sections=self.map_header.sections, parsing_resource=True,
-                partitions=self.map_header.partitions)
+                tag_index=tag_index_array, rawdata=self.map_data,
+                offset=offset, parsing_resource=True,
+                map_sections=self.map_header.sections,
+                map_string_id_manager=self.string_id_manager,
+                map_partitions=self.map_header.partitions)
         except Exception:
             print(format_exc())
             return

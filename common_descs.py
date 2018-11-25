@@ -224,11 +224,20 @@ irad = 180/pi
 irad_per_sec_unit_scale = get_unit_scale(1/2, irad)
 irad_per_sec_sq_unit_scale = get_unit_scale(1/4, irad)
 
+
+def compute_stringid_string(parent=None, map_string_id_manager=None, **kwargs):
+    if parent and map_string_id_manager:
+        return map_string_id_manager.get_string(parent.string_id).string
+
+    return "COULD NOT LOCATE"
+
+
 def string_id_meta(name):
     return StringID(name,
-        UInt16('id'),  # cant name it "index" as that is a method name
-        UInt8('unused', VISIBLE=False),
-        UInt8('length'),
+        UInt32('string id', VISIBLE=False),
+        Computed("string", GUI_NAME="",
+            COMPUTE=compute_stringid_string, WIDGET=EntryFrame, WIDGET_WIDTH=32),
+        ORIENT="h"
         )
 
 def dyn_senum8(name, *args, **kwargs):
