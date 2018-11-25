@@ -54,7 +54,7 @@ RawdataRef   = FieldType(base=Struct,  name="RawdataRef", parser=rawdata_ref_par
 Reflexive    = FieldType(base=QStruct, name="Reflexive", parser=reflexive_parser)
 RawReflexive = FieldType(base=Reflexive, name="RawReflexive")
 TagRef       = FieldType(base=Struct,    name="TagRef",)
-StringID     = FieldType(base=QStruct, name="StringID")
+StringID     = FieldType(base=Struct, name="StringID")
 
 #The tag_index is the array that stores all the tag string paths and
 #meta datas in a map file. This FieldType exists so the Map_Magic
