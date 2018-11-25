@@ -521,7 +521,7 @@ halo_script = Struct("script",
     SEnum16("type", *script_types),
     SEnum16("return type", *script_object_types, EDITABLE=False),
     UInt32("root expression index", EDITABLE=False),
-    Void("decompiled script", WIDGET=HaloScriptTextFrame),
+    Computed("decompiled script", WIDGET=HaloScriptTextFrame),
     SIZE=92,
     )
 
@@ -530,7 +530,7 @@ halo_global = Struct("global",
     SEnum16("type", *script_object_types, EDITABLE=False),
     Pad(6),
     UInt32("initialization expression index", EDITABLE=False),
-    Void("decompiled script", WIDGET=HaloScriptTextFrame),
+    Computed("decompiled script", WIDGET=HaloScriptTextFrame),
     SIZE=92,
     )
 

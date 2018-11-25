@@ -224,6 +224,13 @@ irad = 180/pi
 irad_per_sec_unit_scale = get_unit_scale(1/2, irad)
 irad_per_sec_sq_unit_scale = get_unit_scale(1/4, irad)
 
+def string_id_meta(name):
+    return StringID(name,
+        UInt16('id'),  # cant name it "index" as that is a method name
+        UInt8('unused', VISIBLE=False),
+        UInt8('length'),
+        )
+
 def dyn_senum8(name, *args, **kwargs):
     kwargs.setdefault('DEFAULT', -1)
     kwargs.setdefault('WIDGET', DynamicEnumFrame)
@@ -298,6 +305,18 @@ from_to = QStruct('',
     Float("to"),
     ORIENT='h'
     )
+
+def color_argb_uint32(name, **kwargs):
+    return QStruct(name, INCLUDE=argb_byte, **kwargs)
+
+def color_xrgb_uint32(name, **kwargs):
+    return QStruct(name, INCLUDE=xrgb_byte, **kwargs)
+
+def color_argb_float(name, **kwargs):
+    return QStruct(name, INCLUDE=argb_float, **kwargs)
+
+def color_rgb_float(name, **kwargs):
+    return QStruct(name, INCLUDE=rgb_float, **kwargs)
 
 def from_to_deg(name, *args, **kwargs):
     return QStruct(name,
