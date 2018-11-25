@@ -73,7 +73,7 @@ type_name_map = {
 ignored_names = set(("comment", "revisions", "revision"))
 
 name_fix_replacements = dict(
-    index="idx", count="size", insert="ins", 
+    index="idx", count="size", insert="ins", parent="ancestor"
     )
 
 
@@ -249,7 +249,7 @@ def parse_xml_node(xml_node):
     if "index" in xml_attribs:
         new_node.value = eval(xml_attribs['index'])
     else:
-        new_node.value = eval(xml_attribs.get('value', "None"))
+        new_node.value = eval(xml_attribs.get('value', "0"))
 
     if new_node.offset is None:
         new_node.offset = new_node.value
