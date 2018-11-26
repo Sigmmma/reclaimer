@@ -232,12 +232,13 @@ def compute_stringid_string(parent=None, map_string_id_manager=None, **kwargs):
     return "COULD NOT LOCATE"
 
 
-def string_id_meta(name):
+def string_id_meta(name, **kwargs):
+    kwargs.setdefault(ORIENT, "h")
     return StringID(name,
         UInt32('string id', VISIBLE=False),
         Computed("string", GUI_NAME="",
             COMPUTE=compute_stringid_string, WIDGET=EntryFrame, WIDGET_WIDTH=32),
-        ORIENT="h"
+        **kwargs
         )
 
 def dyn_senum8(name, *args, **kwargs):
