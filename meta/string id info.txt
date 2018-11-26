@@ -1,0 +1,105 @@
+
+def password_to_aes(password) {
+    pass = password.encode(encoding="ascii")
+    key = bytearray(pass[i] ^ 0xA5 for i in range(16));
+    iv  = bytearray(key[i]  ^ 0x3C for i in range(16));
+    return key, iv
+
+
+# aes128 encryption keys
+
+# reach beta
+rs&m*l#/t%_()e;[	# all keys
+
+# all halos after reach beta
+letsallplaynice!	# tag name key
+ilikesafestrings	# stringid key
+halobungiereach!	# locale key
+
+
+# h3 beta stringids
+16, 8, 8
+startIndex=0x962	min=0x4CD
+startIndex=0x4CD
+startIndex=0x85C
+startIndex=0x8B4
+startIndex=0x911
+startIndex=0x8DA
+startIndex=0x921
+startIndex=0x94E
+
+
+# halo reach beta stringids
+16, 8, 8
+startIndex=0x13F3	min=0x464
+startIndex=0x464
+startIndex=0xA28
+startIndex=0xAD2
+startIndex=0xB37
+startIndex=0xC0C
+startIndex=0xC31
+startIndex=0xC36
+startIndex=0x11BE
+startIndex=0x1302
+startIndex=0x1311
+startIndex=0x136D
+startIndex=0x1385
+startIndex=0x1392
+startIndex=0x13B9
+
+
+# halo reach stringids
+17, 8, 7
+startIndex=0x16AA	min=0x4AE
+startIndex=0x4AE
+startIndex=0xB13
+startIndex=0xBEB
+startIndex=0xC55
+startIndex=0xD2E
+startIndex=0xD54
+startIndex=0xD59
+startIndex=0x1416
+startIndex=0x1585
+startIndex=0x1599
+startIndex=0x15FB
+startIndex=0x1613
+startIndex=0x1620
+startIndex=0x1649
+
+
+# halo 4 net test stringids
+18, 8, 6
+startIndex=0x1D02	min=0x5D1
+startIndex=0x5D1
+startIndex=0xDB9
+startIndex=0xEA0
+startIndex=0xF0A
+startIndex=0xFEE
+startIndex=0x101C
+startIndex=0x1031
+startIndex=0x19AA
+startIndex=0x1B81
+startIndex=0x1B9F
+startIndex=0x1C04
+startIndex=0x1C20
+startIndex=0x1C2D
+startIndex=0x1C5B
+
+
+# halo 4 stringids
+19, 8, 5
+startIndex=0x20BD	min=0x631
+startIndex=0x631
+startIndex=0xEA6
+startIndex=0xFB1
+startIndex=0x103E
+startIndex=0x1136
+startIndex=0x117D
+startIndex=0x11A8
+startIndex=0x1C95
+startIndex=0x1EA1
+startIndex=0x1ED4
+startIndex=0x1F57
+startIndex=0x1F8B
+startIndex=0x1F98
+startIndex=0x1FDA
