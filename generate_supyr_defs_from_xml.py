@@ -106,6 +106,7 @@ class StructNode(list):
 
 
 def fix_name_identifier(name):
+    orig_name = name
     if name[: 1] == "-" and name[1: 2] != "-":
         name = "neg_" + name[1: ]
 
@@ -121,7 +122,7 @@ def replace_struct_node_section(struct_node, start, count,
     new_node = StructNode()
     new_node.typ = typ
     new_node.size = size
-    new_node.name = name
+    new_node.name = fix_name_identifier(name)
     new_node.include = include
     new_node.offset = struct_node[start].offset
     new_node.visible = struct_node[start].visible
@@ -403,7 +404,7 @@ def optimize_struct_node(struct_node):
     optimize_numbered_arrays(struct_node)
 
 
-def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_names_by_desc,
+def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_desc,
                               parent_name="", indent=0):
     desc_name = struct_node.name
     if parent_name and struct_node.typ == "reflexive":
@@ -451,35 +452,55 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_names_by_desc,
 
                 enum_str = "(\n%s%s)" % (enum_str, indent_str)
                 enum_name = "%s_%s" % (parent_name, desc_name)
-                if enum_str in enum_names_by_desc:
-                    enum_name = enum_names_by_desc[enum_str]
+                if enum_str in enum_bool_names_by_desc:
+                    enum_name = enum_bool_names_by_desc[enum_str]
                 else:
-                    enum_names_by_desc[enum_str] = enum_name
+                    enum_bool_names_by_desc[enum_str] = enum_name
 
-                desc_str += "*%s" % (enum_name)
+                desc_str += "*%s" % enum_name
                 indent_str = ""
-
                 #indent_str = ' ' * (4 * (indent + 1))
+
             elif struct_node.typ in bool_field_types:
-                desc_str += '\n'
-                i = 0
-                j = last_val = -1
+                use_all_bits = True
+                j = -1
                 for bit in struct_node:
                     j += 1
-                    #if bit.name in ("_%s" % j, "_%s" % (j + 1),
-                    #                "bit_%s" % j, "bit_%s" % (j + 1)):
-                    #    continue
+                    if bit.name not in ("_%s" % j, "_%s" % (j + 1),
+                                        "bit_%s" % j, "bit_%s" % (j + 1)):
+                        use_all_bits = False
 
-                    if bit.value == i or (bit.value - last_val == 1):
-                        desc_str += '%s%s"%s",\n' % (
-                            indent_str, indent_str, bit.name)
-                    else:
-                        desc_str += '%s%s("%s", 1 << %s),\n' % (
-                            indent_str, indent_str,
-                            bit.name, bit.value)
-                    last_val = bit.value
-                    i += 1
-                indent_str = ' ' * (4 * (indent + 1))
+                if not use_all_bits:
+                    desc_str += '\n'
+                    i = 0
+                    j = last_val = -1
+                    for bit in struct_node:
+                        j += 1
+                        if bit.name in ("_%s" % j, "_%s" % (j + 1),
+                                        "bit_%s" % j, "bit_%s" % (j + 1)):
+                            continue
+
+                        if bit.value == i or (bit.value - last_val == 1):
+                            desc_str += '%s%s"%s",\n' % (
+                                indent_str, indent_str, bit.name)
+                        else:
+                            desc_str += '%s%s("%s", 1 << %s),\n' % (
+                                indent_str, indent_str,
+                                bit.name, bit.value)
+                        i += 1
+                        last_val = bit.value
+                    indent_str = ' ' * (4 * (indent + 1))
+                else:
+                    bit_ct = 8 * struct_node.size
+                    bools_str = 'tuple("bit_%%s" %% i for i in range(%s))' % bit_ct
+                    bools_name = "all_bits_used_%s" % bit_ct
+                    if bools_str not in enum_bool_names_by_desc:
+                        enum_bool_names_by_desc[bools_str] = bools_name
+
+                    desc_str += "*%s" % bools_name
+                    indent_str = ""
+
+
             elif struct_node.typ in ("BlockDef", "reflexive",
                                      "Struct", "QStruct"):
 
@@ -491,7 +512,7 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_names_by_desc,
 
                 for field in struct_node:
                     subdesc_str = struct_node_to_supyr_desc(
-                        field, descs_by_name, enum_names_by_desc, desc_name, 1)
+                        field, descs_by_name, enum_bool_names_by_desc, desc_name, 1)
 
                     if field.typ == "reflexive":
                         desc_str += '    reflexive("%s", %s)' % (
@@ -501,6 +522,12 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_names_by_desc,
 
                     desc_str += ",\n"
 
+        if not struct_node.visible:
+            add_newline = desc_str.endswith("\n")
+            desc_str += indent_str + "VISIBLE=False,"
+            if add_newline:
+                desc_str += "\n"
+
 
     if struct_node.typ in ("reflexive", "BlockDef"):
         desc_str += indent_str
@@ -509,8 +536,6 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_names_by_desc,
             desc_str += "TYPE=Struct, "
 
         desc_str += 'ENDIAN=">", SIZE=%s\n' % struct_node.size
-    elif not struct_node.visible:
-        desc_str += "VISIBLE=False, "
 
     desc_str = desc_str.rstrip(", ") + indent_str + ')'
 
@@ -669,18 +694,18 @@ for root, dirs, files in os.walk("."):
             continue
 
         descs_by_name = OrderedDict()
-        enum_names_by_desc = dict()
+        enum_bool_names_by_desc = dict()
         struct_node_to_supyr_desc(tag_struct_nodes, descs_by_name,
-                                  enum_names_by_desc)
+                                  enum_bool_names_by_desc)
 
         with open(os.path.join(root, xml_name) + ".py", "w+") as pyf:
             pyf.write(block_def_import_str)
-            enum_descs_by_name = {enum_names_by_desc[desc]: desc for
-                                  desc in enum_names_by_desc}
+            enum_bool_descs_by_name = {enum_bool_names_by_desc[desc]: desc for
+                                       desc in enum_bool_names_by_desc}
 
-            for desc_name in sorted(enum_descs_by_name):
+            for desc_name in sorted(enum_bool_descs_by_name):
                 pyf.write("\n\n")
-                desc_str = enum_descs_by_name[desc_name]
+                desc_str = enum_bool_descs_by_name[desc_name]
                 pyf.write("%s = %s" % (desc_name, desc_str.strip(",")))
 
             for desc_name in descs_by_name:
