@@ -309,10 +309,27 @@ def float_zero_to_inf(name, *args, **kwargs):
     return Float(name, *args, SIDETIP="[0,+inf]", **kwargs)
 
 
-from_to = QStruct('',
-    Float("from", GUI_NAME=''),
-    Float("to"),
-    ORIENT='h'
+from_to_float = QStruct('',
+    Float("from", GUI_NAME=''), Float("to"), ORIENT='h'
+    )
+from_to = from_to_float
+from_to_sint32 = QStruct('',
+    SInt32("from", GUI_NAME=''), SInt32("to"), ORIENT='h'
+    )
+from_to_sint16 = QStruct('',
+    SInt16("from", GUI_NAME=''), SInt16("to"), ORIENT='h'
+    )
+from_to_sint8 = QStruct('',
+    SInt8("from", GUI_NAME=''), SInt8("to"), ORIENT='h'
+    )
+from_to_uint32 = QStruct('',
+    UInt32("from", GUI_NAME=''), UInt32("to"), ORIENT='h'
+    )
+from_to_uint16 = QStruct('',
+    UInt16("from", GUI_NAME=''), UInt16("to"), ORIENT='h'
+    )
+from_to_uint8 = QStruct('',
+    UInt8("from", GUI_NAME=''), UInt8("to"), ORIENT='h'
     )
 
 def color_argb_uint32(name, **kwargs):
@@ -643,6 +660,21 @@ argb_uint32 = UInt32('argb_uint32',
     WIDGET=HaloUInt32ColorPickerFrame, COLOR_CHANNELS="argb", ORIENT="h")
 
 # rotations
+ijkw_sint16 = QStruct('ijkw_sint16',
+    SInt16("i", UNIT_SCALE=1/32767), SInt16("j", UNIT_SCALE=1/32767),
+    SInt16("k", UNIT_SCALE=1/32767), SInt16("w", UNIT_SCALE=1/32767,
+                                            DEFAULT=32767),
+    ORIENT='h'
+    )
+ijk_sint16 = QStruct('ijk_sint16',
+    SInt16("i", UNIT_SCALE=1/32767), SInt16("j", UNIT_SCALE=1/32767),
+    SInt16("k", UNIT_SCALE=1/32767),
+    ORIENT='h'
+    )
+ij_sint16 = QStruct('ij_sint16',
+    SInt16("i", UNIT_SCALE=1/32767), SInt16("j", UNIT_SCALE=1/32767),
+    ORIENT='h'
+    )
 ijkw_float = QStruct('ijkw_float',
     Float("i"), Float("j"), Float("k"), Float("w", DEFAULT=1.0),
     ORIENT='h'
