@@ -2,10 +2,16 @@ import os
 from collections import OrderedDict
 from xml.etree.ElementTree import ElementTree
 from traceback import format_exc
+from string import ascii_letters
 from supyr_struct.defs.util import str_to_identifier
 
 
+VALID_MODULE_NAME_CHARS = ascii_letters + '_' + '0123456789'
+
+
 # TODO: Make this properly handle tag id's which are only a 4 byte identifier
+# Need to fix bug with reflexives sometimes sharing names with earlier fields
+
 
 
 block_def_import_str = '''from reclaimer.common_descs import *
@@ -17,7 +23,7 @@ name_only_field_types = set((
     "float_deg", "yp_float_deg", "ypr_float_deg",
     "color_argb_float", "color_argb_uint32",
     "color_rgb_float",  "color_xrgb_uint32", 
-    "Float", "from_to_rad",
+    "Float", "from_to_rad", "ascii_str32",
     "SInt8", "SInt16", "SInt32", "UInt8", "UInt16", "UInt32",
     ))
 
@@ -45,7 +51,8 @@ array_allowed_fields = set((
     "color_rgb_float",  "color_xrgb_uint32",
     "Float", "float_rad", "string_id_meta",
     "SInt8", "SInt16", "SInt32",
-    "UInt8", "UInt16", "UInt32", "Pad"
+    "UInt8", "UInt16", "UInt32", "Pad",
+    "ascii_str32"
     ))
 
 
@@ -59,6 +66,7 @@ field_sizes = {
     "SEnum8": 1, "SEnum16": 2, "SEnum32": 4,
     "UEnum8": 1, "UEnum16": 2, "UEnum32": 4,
     "Bool8":  1, "Bool16":  2, "Bool32":  4,
+    "ascii_str32": 32,
 
     # special values
     "bit": 1, "opt": 1, "Pad": 4
@@ -84,7 +92,7 @@ type_name_map = {
     "bit": "bit", "option": "opt", "plugin": "BlockDef"
     }
 
-ignored_names = set(("comment", "revisions", "revision"))
+ignored_names = set(("comment", "revision"))
 
 name_fix_replacements = dict(
     index="idx", count="size", insert="ins", parent="ancestor"
@@ -128,7 +136,7 @@ def fix_name_identifier(name):
     if name[: 1] in "0123456789":
         name = "_" + name
 
-    name = str_to_identifier(name).rstrip("_")
+    name = str_to_identifier(name)
     return name_fix_replacements.get(name, name)
 
 
@@ -137,7 +145,7 @@ def replace_struct_node_section(struct_node, start, count, typ, size, name,
     new_node = StructNode()
     new_node.typ = typ
     new_node.size = size
-    new_node.name = fix_name_identifier(name)
+    new_node.name = fix_name_identifier(name).rstrip("_")
     new_node.desc_kw = desc_kw
     new_node.offset = struct_node[start].offset
     new_node.visible = struct_node[start].visible
@@ -478,25 +486,29 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
                               parent_name="", indent=0):
     optimize_struct_node(struct_node)
     added_names = dict()
-    add_zero_to = set()
+    add_num_to = set()
     for sub_node in struct_node:
         # take care of fields with the same name
         added_names[sub_node.name] = added_names.get(
             sub_node.name, 0) + 1
         if added_names[sub_node.name] > 1:
-            add_zero_to.add(sub_node.name)
+            add_num_to.add(sub_node.name)
             sub_node.name += "_%s" % (added_names[sub_node.name] - 1)
 
-    if add_zero_to:
+    if add_num_to:
         for sub_node in struct_node:
-            if sub_node.name in add_zero_to:
-                sub_node.name += "_0"
+            if sub_node.name not in add_num_to:
+                continue
+            added = 0
+            while "%s_%s" % (sub_node.name, added) in add_num_to:
+                added += 1
+            sub_node.name = "%s_%s" % (sub_node.name, added)
 
 
-    desc_name = struct_node.name
+    desc_name = struct_node_name = struct_node.name
     if struct_node.typ == "reflexive":
         if desc_name.endswith("s"):
-            desc_name = desc_name[: -1]
+            desc_name = struct_node_name = desc_name[: -1]
         if parent_name:
             desc_name = "%s_%s" % (parent_name, desc_name)
 
@@ -515,12 +527,12 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
         desc_str += str(struct_node.size)
         indent_str = ""
     else:
-        desc_str += '"%s", ' % struct_node.name
+        desc_str += '"%s", ' % struct_node_name
         if struct_node.typ in name_only_field_types:
             indent_str = ""
         else:
             if struct_node.typ in string_field_types:
-                desc_str += "SIZE=%s" % struct_node.size
+                desc_str += "SIZE=%s, " % struct_node.size
                 indent_str = ""
 
             if struct_node.typ in enum_field_types:
@@ -546,7 +558,6 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
 
                 desc_str += "*%s, " % enum_name
                 indent_str = ""
-                #indent_str = ' ' * (4 * (indent + 1))
 
             elif struct_node.typ in bool_field_types:
                 has_incremental_flags = True
@@ -564,7 +575,8 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
                             base_flag_num = flag_num
                             base_flag_name = flag_name
 
-                        if flag_num != base_flag_num + bit.offset:
+                        if (flag_num != base_flag_num + bit.offset or
+                            flag_name != base_flag_name):
                             has_incremental_flags = False
                             break
                     except Exception:
@@ -573,7 +585,17 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
 
                 if has_incremental_flags:
                     bits = len(struct_node)
-                    if base_flag_name in ("", "bit_"):
+                    if base_flag_name == "":
+                        base_name = struct_node.name
+                        if base_name.endswith("s"):
+                            base_name = base_name[: -1]
+
+                        bools_str = 'tuple("%s_%%s" %% i for i in range(%s))' % (
+                            base_name, bits)
+                        bools_name = "%s_bits" % desc_name
+                        if bools_str not in enum_bool_names_by_desc:
+                            enum_bool_names_by_desc[bools_str] = bools_name
+                    elif base_flag_name == "bit_":
                         bools_str = 'tuple("bit_%%s" %% i for i in range(%s))' % bits
                         bools_name = "unknown_flags_%s" % bits
                         if bools_str not in enum_bool_names_by_desc:
@@ -625,7 +647,8 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
 
                 for field in struct_node:
                     subdesc_str = struct_node_to_supyr_desc(
-                        field, descs_by_name, enum_bool_names_by_desc, desc_name, 1)
+                        field, descs_by_name, enum_bool_names_by_desc,
+                        desc_name, 1)
 
                     if field.typ == "reflexive":
                         desc_str += '    reflexive("%s", %s)' % (
@@ -659,15 +682,31 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
     return desc_str
 
 
-def parse_xml_node(xml_node):
+def parse_xml_node(xml_node, version_infos=None):
     new_node = StructNode()
     xml_tag = xml_node.tag.lower()
-    if xml_tag in ignored_names:
+    if version_infos is None:
+        version_infos = []
+
+    if xml_tag == "revisions":
+        for xml_subnode in xml_node:
+            xml_attribs = {key.lower(): xml_subnode.attrib[key]
+                           for key in xml_subnode.attrib}
+            author = xml_attribs.get('author', "unspecified")
+            version = xml_attribs.get('version', "1")
+            comment = ""
+            for comment in xml_subnode.itertext(): break
+            version_infos.append("revision: %s\t\tauthor: %s" % (version, author))
+            version_infos.append("\t%s" % comment)
+
+        version_infos.append("revision: %s\t\tauthor: Moses_of_Egypt" % (int(version) + 1, ))
+        version_infos.append("\tCleaned up and converted to SuPyr definition")
+        return None
+    elif xml_tag in ignored_names:
         return None
 
     xml_attribs = {key.lower(): xml_node.attrib[key]
                    for key in xml_node.attrib}
-
     xml_tag = xml_tag.replace("colour", "color")
 
     if xml_tag == "tagref" and not eval(xml_attribs.get(
@@ -684,7 +723,7 @@ def parse_xml_node(xml_node):
         raise TypeError("Unknown field type '%s'" % xml_node.tag)
 
     new_node.name = fix_name_identifier(
-        xml_attribs.get('name', "unnamed").lower())
+        xml_attribs.get('name', "unnamed").lower()).rstrip("_")
     new_node.offset = eval(xml_attribs.get('offset', "None"))
     new_node.visible = eval(xml_attribs.get('visible', "true").capitalize())
 
@@ -699,6 +738,9 @@ def parse_xml_node(xml_node):
     else:
         new_node.size = field_sizes.get(new_node.typ, 0)
 
+    if new_node.size == 32 and xml_tag == "ascii":
+        new_node.typ = "ascii_str32"
+
     if "index" in xml_attribs:
         new_node.value = eval(xml_attribs['index'])
     else:
@@ -709,15 +751,12 @@ def parse_xml_node(xml_node):
 
     sub_nodes_by_offset = {}
     for xml_subnode in xml_node:
-        new_sub_node = parse_xml_node(xml_subnode)
+        new_sub_node = parse_xml_node(xml_subnode, version_infos)
         if new_sub_node is not None:
             sub_nodes_by_offset[new_sub_node.offset] = new_sub_node
 
     for off in sorted(sub_nodes_by_offset):
         sub_node = sub_nodes_by_offset[off]
-        if sub_node.typ == "Pad":
-            sub_node.visible = True
-
         if sub_node.typ == "color_xrgb_uint32":
             # adjust for 4 byte based colors
             sub_node.offset -= 1
@@ -764,15 +803,19 @@ def parse_xml_node(xml_node):
         last_off = off + sub_node_size
         last_node = sub_node
 
+    for sub_node in new_node:
+        if sub_node.typ == "Pad" and not sub_node.visible:
+            sub_node.typ = "BytesRaw"
+
     return new_node
 
 
-def parse_xml(xml_path):
+def parse_xml(xml_path, version_infos):
     try:
         xml_root = ElementTree().parse(xml_path)
         tag_id = os.path.splitext(os.path.basename(xml_path))[0].strip(".")
-        nodes = parse_xml_node(xml_root)
-        nodes.name = fix_name_identifier(tag_id + (" " * (4 - len(tag_id))))
+        nodes = parse_xml_node(xml_root, version_infos)
+        nodes.name = fix_name_identifier(tag_id + ("_" * (4 - len(tag_id))))
     except:
         print(format_exc())
         nodes = None
@@ -788,7 +831,8 @@ for root, dirs, files in os.walk("."):
 
         xml_path = os.path.join(root, fname)
         print(xml_path)
-        tag_struct_nodes = parse_xml(xml_path)
+        version_infos = []
+        tag_struct_nodes = parse_xml(xml_path, version_infos)
         if tag_struct_nodes is None:
             continue
 
@@ -797,7 +841,21 @@ for root, dirs, files in os.walk("."):
         struct_node_to_supyr_desc(tag_struct_nodes, descs_by_name,
                                   enum_bool_names_by_desc)
 
-        with open(os.path.join(root, xml_name) + ".py", "w+") as pyf:
+        xml_filename = "".join(c if c in VALID_MODULE_NAME_CHARS
+                               else "_" for c in xml_name)
+        xml_filename += "_" * ((4 - (len(xml_filename) % 4)) % 4)
+
+        with open(os.path.join(root, xml_filename) + ".py", "w+") as pyf:
+            pyf.write("############# Credits and version info #############\n"
+                      "# Definition autogenerated from Assembly XML tag def\n"
+                      "#\n")
+                
+            for version_info_str in version_infos:
+                pyf.write("# %s\n" % version_info_str)
+
+            pyf.write("#\n"
+                      "####################################################\n")
+
             pyf.write(block_def_import_str)
             enum_bool_descs_by_name = {enum_bool_names_by_desc[desc]: desc for
                                        desc in enum_bool_names_by_desc}
