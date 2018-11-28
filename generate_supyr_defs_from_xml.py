@@ -5,6 +5,9 @@ from traceback import format_exc
 from supyr_struct.defs.util import str_to_identifier
 
 
+# TODO: Make this properly handle tag id's which are only a 4 byte identifier
+
+
 block_def_import_str = '''from reclaimer.common_descs import *
 from supyr_struct.defs.tag_def import TagDef'''
 
@@ -35,6 +38,15 @@ enum_field_types = set((
     ))
 
 bool_field_types = set(("Bool8", "Bool16", "Bool32"))
+
+
+array_allowed_fields = set((
+    "color_argb_float", "color_argb_uint32", 
+    "color_rgb_float",  "color_xrgb_uint32",
+    "Float", "float_rad", "string_id_meta",
+    "SInt8", "SInt16", "SInt32",
+    "UInt8", "UInt16", "UInt32", "Pad"
+    ))
 
 
 field_sizes = {
@@ -80,13 +92,15 @@ name_fix_replacements = dict(
 
 prefix_chains = [
     (("min_", "minimum_"), ("max_", "maximum_",)),
+    (("eular_angle_x_", "x_", ), ("y_", ), ("z_", )),
     ]
 
 suffix_chains = [
     (("_min", "_minimum"), ("_max", "_maximum",)),
-    (("_u",), ("_v",), ("_w",)), (("_y",), ("_p",), ("_r",)),
-    (("_x",), ("_y",), ("_z",), ("_w",)),  # some specify xyz instead of ijk
-    (("_i",), ("_j",), ("_k",), ("_w",)),
+    (("_u", "u"), ("_v", "v"), ("_w", "w")),
+    (("_y", "y", "yaw"), ("_p", "p", "pitch"), ("_r", "r", "roll")),
+    (("_x", "x"), ("_y", "y"), ("_z", "z"), ("_w", "w")),
+    (("_i", "i"), ("_j", "j"), ("_k", "k"), ("_w", "w")),
     (("_a", "_alpha", "alpha"), ("_r", "_red", "red"),
      ("_g", "_green", "green"), ("_b", "_blue", "blue")),
     (("_r", "_red", "red"), ("_g", "_green", "green"),
@@ -102,11 +116,12 @@ class StructNode(list):
     visible = True
     value = 0
 
-    include = ""
+    desc_kw = ()
 
 
 def fix_name_identifier(name):
     orig_name = name
+    name = name.replace("don't", "dont")
     if name[: 1] == "-" and name[1: 2] != "-":
         name = "neg_" + name[1: ]
 
@@ -117,17 +132,17 @@ def fix_name_identifier(name):
     return name_fix_replacements.get(name, name)
 
 
-def replace_struct_node_section(struct_node, start, count,
-                                typ, size, name, include):
+def replace_struct_node_section(struct_node, start, count, typ, size, name,
+                                desc_kw=None):
     new_node = StructNode()
     new_node.typ = typ
     new_node.size = size
     new_node.name = fix_name_identifier(name)
-    new_node.include = include
+    new_node.desc_kw = desc_kw
     new_node.offset = struct_node[start].offset
     new_node.visible = struct_node[start].visible
-    print("    Replacing %s '%s' with '%s' including '%s'" %
-          (count, struct_node[start].typ, typ, include))
+    print("    Replacing %s '%s' with '%s'" %
+          (count, struct_node[start].typ, typ))
     struct_node[start: start + count] = [new_node]
 
 
@@ -221,7 +236,7 @@ def optimize_common_structs(struct_node):
         typ_check = "Float"
         optimize = True
         new_typ = "QStruct"
-        new_include = ""
+        new_desc_kw = OrderedDict()
         new_size = 0
         field_names_str = field_names_str.strip("_")
         field_typ = struct_node[start].typ
@@ -249,11 +264,19 @@ def optimize_common_structs(struct_node):
                 new_size = 4
             else:
                 optimize = False
+        elif field_names_str == "eular_angle_x_y_z":
+            if not node_base_name: node_base_name = "rotation"
+
+            if field_typ == "float_rad":
+                new_typ = "ypr_float_rad"
+                typ_check = "float_rad"
+            else:
+                optimize = False
         elif field_names_str == "x_y_z":
             if not node_base_name: node_base_name = "position"
 
             if field_typ == "Float":
-                new_include = "xyz_float"
+                new_desc_kw["INCLUDE"] = "xyz_float"
                 new_size = 12
             else:
                 optimize = False
@@ -261,7 +284,7 @@ def optimize_common_structs(struct_node):
             if not node_base_name: node_base_name = "position"
 
             if field_typ == "Float":
-                new_include = "xy_float"
+                new_desc_kw["INCLUDE"] = "xy_float"
                 new_size = 8
             else:
                 optimize = False
@@ -269,10 +292,10 @@ def optimize_common_structs(struct_node):
             if not node_base_name: node_base_name = "rotation"
 
             if field_typ == "Float":
-                new_include = "ijkw_float"
+                new_desc_kw["INCLUDE"] = "ijkw_float"
                 new_size = 16
             elif field_typ == "SInt16":
-                new_include = "ijkw_sint16"
+                new_desc_kw["INCLUDE"] = "ijkw_sint16"
                 typ_check = "SInt16"
                 new_size = 8
             else:
@@ -281,13 +304,13 @@ def optimize_common_structs(struct_node):
             if not node_base_name: node_base_name = "rotation"
 
             if field_typ == "Float":
-                new_include = "ijk_float"
+                new_desc_kw["INCLUDE"] = "ijk_float"
                 new_size = 12
             elif field_typ == "float_rad":
                 new_typ = "ypr_float_rad"
                 typ_check = "float_rad"
             elif field_typ == "SInt16":
-                new_include = "ijk_sint16"
+                new_desc_kw["INCLUDE"] = "ijk_sint16"
                 typ_check = "SInt16"
                 new_size = 6
             else:
@@ -297,12 +320,12 @@ def optimize_common_structs(struct_node):
 
             new_size = 8
             if field_typ == "Float":
-                new_include = "ij_float"
+                new_desc_kw["INCLUDE"] = "ij_float"
             elif field_typ == "float_rad":
                 new_typ = "yp_float_rad"
                 typ_check = "float_rad"
             elif field_typ == "SInt16":
-                new_include = "ij_sint16"
+                new_desc_kw["INCLUDE"] = "ij_sint16"
                 typ_check = "SInt16"
                 new_size = 4
             else:
@@ -311,7 +334,7 @@ def optimize_common_structs(struct_node):
             if not node_base_name: node_base_name = "tex position"
 
             if field_typ == "Float":
-                new_include = "uv_float"
+                new_desc_kw["INCLUDE"] = "uv_float"
                 new_size = 8
             else:
                 optimize = False
@@ -342,12 +365,12 @@ def optimize_common_structs(struct_node):
 
             new_size = 8
             if field_typ == "Float":
-                new_include = "from_to"
+                new_desc_kw["INCLUDE"] = "from_to"
             elif field_typ == "float_rad":
                 new_typ = "from_to_rad"
                 typ_check = "float_rad"
             elif field_typ[1: ] in ("Int32", "Int16", "Int8"):
-                new_include = "from_to_" + field_typ.lower()
+                new_desc_kw["INCLUDE"] = "from_to_" + field_typ.lower()
                 typ_check = field_typ
                 if field_typ in ("UInt16", "SInt16"):
                     new_size = 4
@@ -366,7 +389,7 @@ def optimize_common_structs(struct_node):
 
         if optimize:
             replace_struct_node_section(struct_node, start, field_ct, new_typ,
-                                        new_size, node_base_name, new_include)
+                                        new_size, node_base_name, new_desc_kw)
 
         start += 1
 
@@ -376,25 +399,72 @@ def optimize_numbered_arrays(struct_node):
         struct_node.typ in enum_field_types):
         return
 
-    return
-    # TODO: MAKE THIS WORK
-    # REMINDER: Need to split by  _num  _num_  or  num_  depending
-    # on where in the field name the integer is
     start = 0
     while start < len(struct_node):
-        # keep checking fields in the node until it's finished
-        field_names_str = node_base_name = new_typ = ""
+        base_field_num = field_num = field_num_index = -1
+        base_field_name = field_name = first_field_name = ""
+        base_field_typ = ""
         field_ct = 0
+        while start + field_ct < len(struct_node):
+            field = struct_node[start + field_ct]
+            if field.typ not in array_allowed_fields:
+                break
 
-        if optimize:
-            for i in range(start, start + field_ct):
-                if struct_node[i].typ != typ_check:
-                    optimize = False
+            name = field.name.lower()
+            name_pieces = field.name.split("_")
+            if field_ct == 0:
+                while field_num_index != len(name_pieces):
+                    try:
+                        int(name_pieces[field_num_index])
+                        break
+                    except Exception:
+                        field_num_index += 1
+
+            if field_num_index == len(name_pieces):
+                # handle cases where the fields are the same name
+                if not first_field_name:
+                    first_field_name = base_field_name = name
+                    base_field_typ = field.typ
+
+                if first_field_name == name and base_field_typ == field.typ:
+                    field_ct += 1
+                else:
                     break
+                continue
 
-        if optimize:
-            replace_struct_node_section(struct_node, start, field_ct, new_typ,
-                                        new_size, node_base_name, new_include)
+            try:
+                field_num = int(name_pieces.pop(field_num_index))
+                field_name = "_".join(s for s in name_pieces)
+                if not field_name:
+                    pass
+                elif field_num_index == 0:
+                    field_name = "_" + field_name
+                elif field_num_index == -1:
+                    field_name = field_name + "_"
+
+                if field_ct == 0:
+                    base_field_num = field_num
+                    base_field_name = field_name
+                    base_field_typ = field.typ
+
+                if (field_num  != base_field_num + field_ct or
+                    field.typ  != base_field_typ or
+                    field_name != base_field_name):
+                    break
+            except:
+                break
+
+            field_ct += 1
+
+        base_field_name = base_field_name.strip("_")
+        if field_ct > 3 and base_field_typ in array_allowed_fields:
+            new_desc_kw = OrderedDict()
+            new_desc_kw["SUB_STRUCT"] = '%s("%s")' % (base_field_typ,
+                                                      base_field_name)
+            new_desc_kw["SIZE"] = field_ct
+            replace_struct_node_section(struct_node, start, field_ct, "Array",
+                                        field_ct, base_field_name + "_array",
+                                        new_desc_kw)
 
         start += 1
 
@@ -406,17 +476,34 @@ def optimize_struct_node(struct_node):
 
 def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_desc,
                               parent_name="", indent=0):
+    optimize_struct_node(struct_node)
+    added_names = dict()
+    add_zero_to = set()
+    for sub_node in struct_node:
+        # take care of fields with the same name
+        added_names[sub_node.name] = added_names.get(
+            sub_node.name, 0) + 1
+        if added_names[sub_node.name] > 1:
+            add_zero_to.add(sub_node.name)
+            sub_node.name += "_%s" % (added_names[sub_node.name] - 1)
+
+    if add_zero_to:
+        for sub_node in struct_node:
+            if sub_node.name in add_zero_to:
+                sub_node.name += "_0"
+
+
     desc_name = struct_node.name
-    if parent_name and struct_node.typ == "reflexive":
+    if struct_node.typ == "reflexive":
         if desc_name.endswith("s"):
             desc_name = desc_name[: -1]
-        desc_name = "%s_%s" % (parent_name, desc_name)
+        if parent_name:
+            desc_name = "%s_%s" % (parent_name, desc_name)
 
     if struct_node.typ == "BlockDef":
         indent = 1
 
     indent_str = ' ' * (4 * indent)
-    optimize_struct_node(struct_node)
     if struct_node.typ == "reflexive":
         desc_str = 'Struct('
     elif struct_node.typ == "BlockDef":
@@ -457,28 +544,62 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
                 else:
                     enum_bool_names_by_desc[enum_str] = enum_name
 
-                desc_str += "*%s" % enum_name
+                desc_str += "*%s, " % enum_name
                 indent_str = ""
                 #indent_str = ' ' * (4 * (indent + 1))
 
             elif struct_node.typ in bool_field_types:
-                use_all_bits = True
-                j = -1
+                has_incremental_flags = True
+                base_flag_num = flag_num = -1
+                base_flag_name = flag_name = ""
                 for bit in struct_node:
-                    j += 1
-                    if bit.name not in ("_%s" % j, "_%s" % (j + 1),
-                                        "bit_%s" % j, "bit_%s" % (j + 1)):
-                        use_all_bits = False
+                    name_pieces = bit.name.split("_")
+                    try:
+                        flag_num = int(name_pieces[-1])
+                        flag_name = "_".join(s for s in name_pieces[: -1])
+                        if flag_name:
+                            flag_name += "_"
 
-                if not use_all_bits:
+                        if bit.offset == 0:
+                            base_flag_num = flag_num
+                            base_flag_name = flag_name
+
+                        if flag_num != base_flag_num + bit.offset:
+                            has_incremental_flags = False
+                            break
+                    except Exception:
+                        has_incremental_flags = False
+                        break
+
+                if has_incremental_flags:
+                    bits = len(struct_node)
+                    if base_flag_name in ("", "bit_"):
+                        bools_str = 'tuple("bit_%%s" %% i for i in range(%s))' % bits
+                        bools_name = "unknown_flags_%s" % bits
+                        if bools_str not in enum_bool_names_by_desc:
+                            enum_bool_names_by_desc[bools_str] = bools_name
+                    elif base_flag_num == 0:
+                        bools_name = '("%s%%s" %% i for i in range(%s))' % (
+                            base_flag_name, bits)
+                    else:
+                        bools_name = '("%s%%s" %% i for i in range(%s, %s))' % (
+                            base_flag_name, base_flag_num, base_flag_num + bits)
+
+                    desc_str += "*%s, " % bools_name
+                    indent_str = ""
+                else:
                     desc_str += '\n'
                     i = 0
                     j = last_val = -1
                     for bit in struct_node:
                         j += 1
-                        if bit.name in ("_%s" % j, "_%s" % (j + 1),
-                                        "bit_%s" % j, "bit_%s" % (j + 1)):
-                            continue
+                        name_parts = bit.name.split("_")
+                        if len(name_parts) == 2 and name_parts[0] == "bit":
+                            try:
+                                int(name_parts[1])
+                                continue
+                            except Exception:
+                                pass
 
                         if bit.value == i or (bit.value - last_val == 1):
                             desc_str += '%s%s"%s",\n' % (
@@ -490,24 +611,16 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
                         i += 1
                         last_val = bit.value
                     indent_str = ' ' * (4 * (indent + 1))
-                else:
-                    bit_ct = 8 * struct_node.size
-                    bools_str = 'tuple("bit_%%s" %% i for i in range(%s))' % bit_ct
-                    bools_name = "all_bits_used_%s" % bit_ct
-                    if bools_str not in enum_bool_names_by_desc:
-                        enum_bool_names_by_desc[bools_str] = bools_name
-
-                    desc_str += "*%s" % bools_name
-                    indent_str = ""
 
 
             elif struct_node.typ in ("BlockDef", "reflexive",
-                                     "Struct", "QStruct"):
+                                     "Struct", "QStruct", "Array"):
 
                 if len(struct_node):
                     desc_str += '\n'
-                elif struct_node.include:
-                    desc_str += "INCLUDE=%s, " % struct_node.include
+                elif struct_node.desc_kw:
+                    for k, v in struct_node.desc_kw.items():
+                        desc_str += "%s=%s, " % (k, v)
                     indent_str = ""
 
                 for field in struct_node:
@@ -616,7 +729,6 @@ def parse_xml_node(xml_node):
 
     last_off = 0
     last_node = None
-    added_names = dict()
     for off in sorted(sub_nodes_by_offset):
         sub_node = sub_nodes_by_offset[off]
         sub_node_size = sub_node.size
@@ -630,7 +742,6 @@ def parse_xml_node(xml_node):
             # consolidate consecutive padding
             last_node.size += sub_node_size
             last_off = off + sub_node_size
-            #print("PADDED")
             continue
         elif off - last_off:
             # add missing padding
@@ -641,11 +752,6 @@ def parse_xml_node(xml_node):
             pad_node.size = off - last_off
             pad_node.offset = pad_node.value = last_off
             new_node.append(pad_node)
-            
-            added_names[pad_node.name] = added_names.get(
-                pad_node.name, 0) + 1
-            if added_names[pad_node.name] > 1:
-                pad_node.name += "_%s" % (added_names[pad_node.name] - 1)
 
             if pad_node.size < 0:
                 raise ValueError(
@@ -653,13 +759,6 @@ def parse_xml_node(xml_node):
                      "'%s' of type '%s' at offset '%s'") %
                     (new_node.name, sub_node.name,
                      sub_node.typ, sub_node.offset))
-            #print("PADDED")
-
-        # take care of fields with the same name
-        added_names[sub_node.name] = added_names.get(
-            sub_node.name, 0) + 1
-        if added_names[sub_node.name] > 1:
-            sub_node.name += "_%s" % (added_names[sub_node.name] - 1)
 
         new_node.append(sub_node)
         last_off = off + sub_node_size
