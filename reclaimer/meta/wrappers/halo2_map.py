@@ -123,9 +123,9 @@ class Halo2Map(HaloMap):
         Halo2Map.defs = defs = {}
         for fcc in ("ant!", "bitm", "hsc*", "pphy", "snd!", "trak", "ugh!"):
             try:
-                fcc2 = fcc
-                for char in "!#$*<>/ ":
-                    fcc2 = fcc2.replace(char, "_")
+                fcc2 = "".join(c if c in VALID_MODULE_NAME_CHARS
+                               else "_" for c in fcc)
+                fcc2 += "_" * ((4 - (len(fcc2) % 4)) % 4)
                 exec("from reclaimer.h2.defs.%s import %s_meta_def" %
                      (fcc2, fcc2))
                 exec("defs['%s'] = %s_meta_def" % (fcc, fcc2))

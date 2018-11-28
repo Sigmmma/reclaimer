@@ -8,7 +8,6 @@ from reclaimer.h3.defs import __all__ as all_h3_def_ids
 from reclaimer.h3.util import HALO3_MAP_TYPES, split_raw_pointer
 from .halo_map import *
 
-
 class Halo3Map(HaloMap):
     tag_index_map = ()
 
@@ -67,10 +66,9 @@ class Halo3Map(HaloMap):
         Halo3Map.defs = defs = {}
         for fcc in h3_tag_class_fcc_to_ext:
             try:
-                fcc2 = fcc
-                for char in "!#$*<>/ ":
-                    fcc2 = fcc2.replace(char, "_")
-
+                fcc2 = "".join(c if c in VALID_MODULE_NAME_CHARS
+                               else "_" for c in fcc)
+                fcc2 += "_" * ((4 - (len(fcc2) % 4)) % 4)
                 if fcc2 not in all_h3_def_ids:
                     continue
 

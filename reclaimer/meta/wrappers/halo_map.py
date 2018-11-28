@@ -5,6 +5,7 @@ from os.path import dirname, splitext, isfile
 from struct import unpack
 from tkinter.filedialog import asksaveasfilename
 from traceback import format_exc
+from string import ascii_letters
 
 from supyr_struct.defs.constants import *
 from supyr_struct.defs.util import *
@@ -17,6 +18,9 @@ from ..halo_map import get_map_version, get_map_header,\
      decompress_map, map_header_demo_def, tag_index_pc_def
 
 from reclaimer.util import is_protected_tag, fourcc
+
+
+VALID_MODULE_NAME_CHARS = ascii_letters + '_' + '0123456789'
 
 
 backslash_fix = re.compile(r"\\{2,}")
