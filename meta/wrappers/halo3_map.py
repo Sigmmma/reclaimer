@@ -5,7 +5,7 @@ from tkinter.filedialog import askopenfilename
 
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
 from reclaimer.h3.defs import __all__ as all_h3_def_ids
-from reclaimer.h3.util import HALO3_MAP_TYPES, split_raw_pointer
+from reclaimer.h3.util import HALO3_MAP_TYPES
 from .halo_map import *
 
 class Halo3Map(HaloMap):
@@ -92,7 +92,7 @@ class Halo3Map(HaloMap):
 
         self.string_id_manager = StringIdManager(
             self.map_header.strings.string_id_table,
-            16, 8, 8, self.string_id_set_offsets,
+            self.string_id_set_offsets,
             )
 
         map_type = self.map_header.map_type.data - 1

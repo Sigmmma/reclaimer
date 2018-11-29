@@ -24,8 +24,7 @@ class Halo2Handler(HaloHandler):
                 def_id = str(tagfile.read(4), 'latin-1')
             tagfile.seek(60);
             engine_id = tagfile.read(4)
-            if def_id in self.defs and engine_id in (
-                b'!MLB', b'BMAL', b'BALM', b'lbma'):
+            if def_id in self.defs and engine_id != "b2am":
                 return def_id
         except:
             return None
