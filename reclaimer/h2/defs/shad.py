@@ -11,23 +11,23 @@ rawdata_reflexive = h2_reflexive("data",
     )
 
 runtime_property = Struct("runtime property",
-    h2_tag_ref("diffuse map", "bitm"),
+    h2_dependency("diffuse map", "bitm"),
     Struct("lightmap",
-        h2_tag_ref("emissive map", "bitm"),
+        h2_dependency("emissive map", "bitm"),
         QStruct("emissive color", INCLUDE=rgb_float),
         Float("emissive power"),
         Float("resolution scale"),
         Float("half life"),
         Float("diffuse scale"),
         ),
-    h2_tag_ref("alpha test map", "bitm"),
-    h2_tag_ref("translucent map", "bitm"),
+    h2_dependency("alpha test map", "bitm"),
+    h2_dependency("translucent map", "bitm"),
     Struct("more lightmap",
         QStruct("transparent color", INCLUDE=rgb_float),
         Float("transparent alpha"),
         Float("foliage scale")
         ),
-    SIZE=112
+    SIZE=80
     )
 
 animation_property = Struct("animation property",
@@ -48,15 +48,15 @@ animation_property = Struct("animation property",
         "bitmap index",
         ),
     Pad(2),
-    string_id_tag("input name"),
-    string_id_tag("range name"),
+    h2_string_id("input name"),
+    h2_string_id("range name"),
     float_sec("time period"),
     rawdata_reflexive,
-    SIZE=28
+    SIZE=24
     )
 
 global_parameters = Struct("global parameters",
-    string_id_tag("material name"),
+    h2_string_id("material name"),
     UEnum16("type",
         "bitmap",
         "value",
@@ -64,11 +64,11 @@ global_parameters = Struct("global parameters",
         "switch",
         ),
     Pad(2),
-    h2_tag_ref("bitmap", "bitm"),
+    h2_dependency("bitmap", "bitm"),
     Float("constant value"),
     QStruct("constant color", INCLUDE=rgb_float),
     h2_reflexive("animation properties", animation_property, 1024),
-    SIZE=52
+    SIZE=40
     )
 
 postprocess_bitmap = QStruct("postprocess bitmap",
@@ -101,11 +101,11 @@ implementation = QStruct("implementation",
     )
 
 overlay = Struct("overlay",
-    string_id_tag("input name"),
-    string_id_tag("range name"),
+    h2_string_id("input name"),
+    h2_string_id("range name"),
     float_sec("time period"),
     rawdata_reflexive,
-    SIZE=24
+    SIZE=20
     )
 
 overlay_reference = QStruct("overlay reference",
@@ -130,9 +130,9 @@ color_property = QStruct("color property",
     INCLUDE=rgb_float, EDITABLE=False)
 
 shader_pass = Struct("pass",
-    h2_tag_ref("template", "spas"),
+    h2_dependency("template", "spas"),
     block_index,
-    SIZE=18
+    SIZE=10
     )
 
 old_implementation = QStruct("implementation",
@@ -168,20 +168,20 @@ bitmap_transform_overlay = Struct("bitmap transform overlay",
     UInt8("parameter index", EDITABLE=False),
     UInt8("transform index", EDITABLE=False),
     UInt8("animation property type", EDITABLE=False),
-    string_id_tag("input name"),
-    string_id_tag("range name"),
+    h2_string_id("input name"),
+    h2_string_id("range name"),
     float_sec("time period"),
     rawdata_reflexive,
-    SIZE=27
+    SIZE=23
     )
 
 value_overlay = Struct("value overlay",
     UInt8("parameter index", EDITABLE=False),
-    string_id_tag("input name"),
-    string_id_tag("range name"),
+    h2_string_id("input name"),
+    h2_string_id("range name"),
     float_sec("time period"),
     rawdata_reflexive,
-    SIZE=25
+    SIZE=21
     )
 
 color_overlay = Struct("color overlay", INCLUDE=value_overlay)
@@ -270,7 +270,7 @@ old_level_of_detail = Struct("old level of detail",
     h2_reflexive("textures", texture, 1024),
     h2_reflexive("vn constants", vertex_shader_constant, 1024),
     h2_reflexive("cn constants", vertex_shader_constant, 1024),
-    SIZE=224
+    SIZE=152
     )
 
 postprocess_definition = Struct("postprocess definitions",
@@ -292,7 +292,7 @@ postprocess_definition = Struct("postprocess definitions",
     h2_reflexive("color properties",  color_property,  2),
     h2_reflexive("value properties",  Float("value"),  6),
     h2_reflexive("old levels of detail", old_level_of_detail,  1024),
-    SIZE=184
+    SIZE=124
     )
 
 predicted_resource = Struct("predicted resource",
@@ -312,9 +312,9 @@ predicted_resource = Struct("predicted resource",
     SIZE=8, EDITABLE=False
     )
 
-shad_body = Struct("tagdata",
-    h2_tag_ref("template", "stem"),
-    string_id_tag("material name"),
+shad_meta_def = BlockDef("tagdata",
+    h2_dependency("template", "stem"),
+    h2_string_id("material name"),
     h2_reflexive("runtime properties", runtime_property, 1),
     Pad(2),
     Bool16("flags",
@@ -326,7 +326,7 @@ shad_body = Struct("tagdata",
     h2_reflexive("postprocess definition", postprocess_definition, 1),
     Pad(4),
     h2_reflexive("predicted resources", predicted_resource, 2048),
-    h2_tag_ref("light response", "slit"),
+    h2_dependency("light response", "slit"),
     UEnum16("shader lod bias",
         "none",
         {NAME: "times_4", GUI_NAME: "4x size"},
@@ -354,15 +354,5 @@ shad_body = Struct("tagdata",
     h2_reflexive("postprocess properties", UInt32("bitmap group index"), 5),
     Float("added depth bias offset"),
     Float("added depth bias slope scale"),
-    SIZE=128
-    )
-
-
-def get():
-    return shad_def
-
-shad_def = TagDef("shad",
-    h2_blam_header('shad'),
-    shad_body,
-    ext=".shader", endian="<", tag_cls=H2Tag
+    SIZE=84, ENDIAN="<", TYPE=Struct, 
     )

@@ -227,17 +227,24 @@ irad_per_sec_sq_unit_scale = get_unit_scale(1/4, irad)
 
 def compute_stringid_string(parent=None, map_string_id_manager=None, **kwargs):
     if parent and map_string_id_manager:
-        return map_string_id_manager.get_string(parent.string_id).string
+        return map_string_id_manager.get_string(parent)
 
     return "COULD NOT LOCATE"
 
 
-def string_id_meta(name, **kwargs):
+def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
+    if len_bit_ct is None:
+        len_bit_ct = 32 - index_bit_ct - set_bit_ct
+
+    kwargs.setdefault(STRINGID_IDX_BITS, index_bit_ct)
+    kwargs.setdefault(STRINGID_SET_BITS, set_bit_ct)
+    kwargs.setdefault(STRINGID_LEN_BITS, len_bit_ct)
     kwargs.setdefault(ORIENT, "h")
     return StringID(name,
         UInt32('string id', VISIBLE=False),
         Computed("string", GUI_NAME="",
-            COMPUTE=compute_stringid_string, WIDGET=EntryFrame, WIDGET_WIDTH=32),
+            COMPUTE=compute_stringid_string,
+            WIDGET=EntryFrame, WIDGET_WIDTH=32),
         **kwargs
         )
 
@@ -756,6 +763,20 @@ def blam_header_os(tagid, version=1):
 
 valid_tags_os = tag_class_os(*sorted(tag_class_fcc_to_ext_os.keys()))
 
+# i'm so cheeky, look at me abusing Courier New
+blam_engine_id = UEnum32("engine id",
+    ("halo_1", 'blam'),
+    ("halo_2", 'b2am'),
+    ("halo_3", 'b3am'),
+    ("halo_4", 'b4am'),
+    ("halo_5", 'b5am'),
+    ("halo_odst", 'ODST'),
+    ("halo_reach", 'bRam'),
+    ("halo_reach_beta", 'bRBm'),
+    ("halo_4_net_test", 'b4Tm'),
+    DEFAULT='blam', EDITABLE=False
+    )
+
 # Descriptors
 tag_header_os = Struct("blam header",
     Pad(36),
@@ -771,10 +792,7 @@ tag_header_os = Struct("blam header",
     UInt16("version", DEFAULT=1, EDITABLE=False),
     UInt8("integrity0", DEFAULT=0, EDITABLE=False),
     UInt8("integrity1", DEFAULT=255, EDITABLE=False),
-    UEnum32("engine id",
-        ("halo 1", 'blam'),
-        DEFAULT='blam', EDITABLE=False
-        ),
+    blam_engine_id,
     VISIBLE=False, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
     )
 

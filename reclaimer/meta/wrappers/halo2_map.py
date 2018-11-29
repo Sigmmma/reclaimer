@@ -121,7 +121,7 @@ class Halo2Map(HaloMap):
             return
 
         Halo2Map.defs = defs = {}
-        for fcc in ("ant!", "bitm", "hsc*", "pphy", "snd!", "trak", "ugh!"):
+        for fcc in ("ant!", "bitm", "hsc*", "pphy", "snd!", "shad", "trak", "ugh!"):
             try:
                 fcc2 = "".join(c if c in VALID_MODULE_NAME_CHARS
                                else "_" for c in fcc)

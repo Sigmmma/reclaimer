@@ -39,8 +39,8 @@ sound_dialogue_info = Struct("sound_dialogue_info",
 # UInt32("blkf_sig")
 #
 encoded_permutation_section = Struct("encoded_permutation_section",
-    h2_meta_rawdata_ref("encoded_data"),
-    h2_meta_reflexive("sound_dialogue_infos", sound_dialogue_info),
+    h2_rawdata_ref("encoded_data"),
+    h2_reflexive("sound_dialogue_infos", sound_dialogue_info),
     SIZE=16
     )
 
@@ -104,7 +104,7 @@ playback_scale = Struct("playback_scale",
     SIZE=20
     )
 
-import_name = string_id_meta("import_name")
+import_name = h2_string_id("import_name")
 
 pitch_range_parameter = Struct("pitch_range_parameter",
     SInt16("natural_pitch"),
@@ -143,9 +143,9 @@ custom_playback = Struct("custom_playback",
         ),
     UInt32("unknown2"),
     UInt32("unknown3"),
-    h2_meta_reflexive("filter", custom_playback_filter),
-    h2_meta_reflexive("pitch_lfo", custom_playback_pitch_lfo),
-    h2_meta_reflexive("filter_lfo", custom_playback_filter_lfo),
+    h2_reflexive("filter", custom_playback_filter),
+    h2_reflexive("pitch_lfo", custom_playback_pitch_lfo),
+    h2_reflexive("filter_lfo", custom_playback_filter_lfo),
     UInt32("unknown4"),
     SIZE=52
     )
@@ -164,8 +164,8 @@ perm_chunk = Struct("perm_chunk",
     )
 
 promotion = Struct("promotion",
-    h2_meta_reflexive("rules", promotion_rule, 32767),
-    h2_meta_reflexive("runtime_timers", promotion_runtime_timer),
+    h2_reflexive("rules", promotion_rule, 32767),
+    h2_reflexive("runtime_timers", promotion_runtime_timer),
     Pad(12),
     SIZE=28
     )
@@ -178,7 +178,7 @@ extra_info = Struct("extra_info",
         UInt32("section_data_size"),
         UInt32("resource_data_size"),
         ),
-    h2_meta_reflexive("resources", resource),
+    h2_reflexive("resources", resource),
     UInt32("sound_gestalt"), # points back to this tag?
     SInt32("constant0", VISIBLE=False),
     SInt32("constant1", VISIBLE=False),
@@ -186,16 +186,16 @@ extra_info = Struct("extra_info",
     )
 
 ugh__meta_def = BlockDef("ugh!",
-    h2_meta_reflexive("playback_parameters", playback_parameter, 32767),
-    h2_meta_reflexive("playback_scales",     playback_scale,     32767),
-    h2_meta_reflexive("import_names",        import_name,        32767),
-    h2_meta_reflexive("pitch_range_parameters", pitch_range_parameter, 32767),
-    h2_meta_reflexive("pitch_ranges", pitch_range, 32767),
-    h2_meta_reflexive("permutations", permutation, 32767),
-    h2_meta_reflexive("custom_playbacks",   custom_playback,   127),
-    h2_meta_reflexive("runtime_perm_flags", runtime_perm_flag, 32767),
-    h2_meta_reflexive("perm_chunks", perm_chunk, 32767),
-    h2_meta_reflexive("promotions",  promotion,  127),
-    h2_meta_reflexive("extra_infos", extra_info, 32767),
+    h2_reflexive("playback_parameters", playback_parameter, 32767),
+    h2_reflexive("playback_scales",     playback_scale,     32767),
+    h2_reflexive("import_names",        import_name,        32767),
+    h2_reflexive("pitch_range_parameters", pitch_range_parameter, 32767),
+    h2_reflexive("pitch_ranges", pitch_range, 32767),
+    h2_reflexive("permutations", permutation, 32767),
+    h2_reflexive("custom_playbacks",   custom_playback,   127),
+    h2_reflexive("runtime_perm_flags", runtime_perm_flag, 32767),
+    h2_reflexive("perm_chunks", perm_chunk, 32767),
+    h2_reflexive("promotions",  promotion,  127),
+    h2_reflexive("extra_infos", extra_info, 32767),
     ENDIAN="<", TYPE=Struct, SIZE=88
     )

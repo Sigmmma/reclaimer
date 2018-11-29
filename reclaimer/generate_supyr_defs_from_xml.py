@@ -14,7 +14,7 @@ VALID_MODULE_NAME_CHARS = ascii_letters + '_' + '0123456789'
 
 
 
-block_def_import_str = '''from reclaimer.common_descs import *
+block_def_import_str = '''from ..common_descs import *
 from supyr_struct.defs.tag_def import TagDef'''
 
 name_only_field_types = set((

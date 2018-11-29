@@ -16,9 +16,9 @@ vertex = Struct("vertex",
     )
 
 ant__meta_def = BlockDef("ant!",
-    string_id_meta("attachment marker name"),
-    h2_meta_tag_ref("bitmaps", "bitm"),
-    h2_meta_tag_ref("physics", "pphy"),
+    h2_string_id("attachment marker name"),
+    h2_dependency("bitmaps", "bitm"),
+    h2_dependency("physics", "pphy"),
 
     Pad(80),
     Float("spring strength coefficient"),
@@ -26,6 +26,6 @@ ant__meta_def = BlockDef("ant!",
     Float("cutoff pixels"),
 
     Pad(40),
-    h2_meta_reflexive("vertices", vertex, 20),
+    h2_reflexive("vertices", vertex, 20),
     ENDIAN="<", TYPE=Struct,
     )
