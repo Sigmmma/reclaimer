@@ -6,17 +6,21 @@ from struct import unpack
 # some reflexives are so massive that it's significantly faster to treat them
 # as raw data and just byteswap them using precalculated offsets and sizes
 RAW_REFLEXIVE_INFO = "RAW_REFLEXIVE_INFO"
+STRINGID_IDX_BITS = "STRINGID_IDX_BITS"
+STRINGID_SET_BITS = "STRINGID_SET_BITS"
+STRINGID_LEN_BITS = "STRINGID_LEN_BITS"
 COLOR_CHANNELS = "COLOR_CHANNELS"
 
 def inject_halo_constants():
     # add the new descriptor keywords to the sets
-    add_desc_keywords(RAW_REFLEXIVE_INFO, COLOR_CHANNELS)
+    add_desc_keywords(RAW_REFLEXIVE_INFO, COLOR_CHANNELS,
+                      STRINGID_IDX_BITS, STRINGID_SET_BITS, STRINGID_LEN_BITS)
 
 
 PCDEMO_INDEX_MAGIC         = 0x4BF10000
 PC_INDEX_MAGIC             = 0x40440000
-ANNIVERSARY_INDEX_MAGIC    = 0x004B8000
 CE_INDEX_MAGIC             = 0x40440000
+ANNIVERSARY_INDEX_MAGIC    = 0x004B8000
 XBOX_INDEX_MAGIC           = 0x803A6000
 STUBBS_INDEX_MAGIC         = 0x8038B000
 SHADOWRUN_BETA_INDEX_MAGIC = 0x8069E000
@@ -83,7 +87,7 @@ map_magics = {
     "halo2alpha":     H2_ALPHA_INDEX_MAGIC,
     "halo2beta":      0,
     "halo2epsilon":   0,
-    "halo2xbox":      0,  # Halo 2 and beyond dont use magic
+    "halo2xbox":      0,
     "halo2vista":     0,
     "halo3":          0,
     "halo4":          0,

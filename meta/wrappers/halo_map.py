@@ -145,27 +145,17 @@ class StringIdManager:
     strings = ()
     set_offsets = ()
 
-    set_shift = 0
-    length_shift = 0
-
-    index_mask = 0
-    set_mask = 0
-    length_mask = 0
-
-    def __init__(self, strings, index_bits, set_bits, length_bits, sets):
+    def __init__(self, strings, sets):
         self.strings = strings
         self.set_offsets = tuple((s[0], s[1]) for s in sets)
 
-        self.set_shift = index_bits
-        self.length_shift = index_bits + set_bits
+    def get_string(self, string_id_block):
+        string_id = string_id_block.string_id
+        set_idx_ct = string_id_block.STRINGID_IDX_BITS
+        set_bit_ct = string_id_block.STRINGID_SET_BITS
 
-        self.index_mask  = (1 << index_bits) - 1
-        self.set_mask    = (1 << set_bits) - 1
-        self.length_mask = (1 << length_bits) - 1
-
-    def get_string(self, string_id):
-        set_id = (string_id >> self.set_shift) & self.set_mask
-        index = (string_id & self.index_mask)
+        set_id = (string_id >> idx_bit_ct) & ((1 << set_bit_ct) - 1)
+        index = string_id & ((1 << set_idx_ct) - 1)
         set_offset = self.set_offsets[set_id]
         if index < set_offset[0]:
             set_id -= 1
@@ -174,7 +164,7 @@ class StringIdManager:
         if set_id >= 0:
             index += set_offset[1] - set_offset[0]
 
-        return self.strings[index]
+        return self.strings[index].string
 
 
 class HaloMap:
