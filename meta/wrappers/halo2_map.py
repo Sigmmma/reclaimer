@@ -168,6 +168,7 @@ class Halo2Map(HaloMap):
             print(format_exc())
             print("Could not read sound_cache_file_gestalt tag")
 
+        self.tag_index_manager = TagIndexManager(self.tag_index.tag_index)
         if autoload_resources and (will_be_active or not self.is_resource):
             self.load_all_resource_maps(dirname(map_path))
 
@@ -179,7 +180,7 @@ class Halo2Map(HaloMap):
         if extractor is None:
             return "No extractor for this type of tag."
         kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.tag.tag_path, **kw)
+        return extractor(meta, tag_index_ref.path, **kw)
 
     def get_meta(self, tag_id, reextract=False):
         if tag_id is None:
@@ -189,9 +190,9 @@ class Halo2Map(HaloMap):
         tag_index_array = self.tag_index.tag_index
         shared_map    = self.maps.get("shared")
 
-        # if we are given a 32bit tag id, mask it off
         tag_id &= 0xFFFF
-        if tag_id >= len(tag_index_array):
+        tag_index_ref = self.tag_index_manager.get_tag_index_ref(tag_id)
+        if tag_index_ref is None:
             return
 
         if self.engine != "halo2alpha":
@@ -229,7 +230,7 @@ class Halo2Map(HaloMap):
             # read the meta data from the map
             desc['TYPE'].parser(
                 desc, parent=block, attr_index=0, magic=self.map_magic,
-                tag_index=tag_index_array, rawdata=self.map_data, offset=offset)
+                tag_index_manager=self.tag_index_manager, rawdata=self.map_data, offset=offset)
         except Exception:
             print(format_exc())
             return
