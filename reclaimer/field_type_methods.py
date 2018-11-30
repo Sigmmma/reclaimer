@@ -55,10 +55,7 @@ def tag_ref_str_parser(self, desc, node=None, parent=None, attr_index=None,
         tag_id = parent.id
         if kwargs.get("indexed"):
             # tag_index is a resource map tag_paths collection
-            actual_tag_id = tag_id_manager.translate_tag_id(tag_id)
-            if actual_tag_id != 0xFFff:
-                actual_tag_id = actual_tag_id // 2
-            parent.id = actual_tag_id
+            parent.id = tag_id_manager.translate_tag_id(tag_id)
 
         tag_index_ref = tag_id_manager.get_tag_index_ref(tag_id)
         if tag_index_ref is None:
