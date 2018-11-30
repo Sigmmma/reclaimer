@@ -6,28 +6,10 @@ except Exception:
     ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
                      EntryFrame = SoundSampleFrame = DynamicArrayFrame =\
                      H2BitmapTagFrame = None
-from supyr_struct.defs.common_descs import *
-from supyr_struct.defs.block_def import BlockDef
+from ..common_descs import *
 from .field_types import *
 from .constants import *
-from supyr_struct.defs.util import *
-
-from ..common_descs import pi, irad, from_to, get_unit_scale,\
-     per_sec_unit_scale, per_sec_sq_unit_scale, sec_unit_scale,\
-     sec_sq_unit_scale, irad_per_sec_unit_scale, irad_per_sec_sq_unit_scale,\
-     dyn_senum8, dyn_senum16, dyn_senum32, ascii_str32,\
-     from_to_float, float_zero_to_one, float_neg_one_to_one,\
-     float_sec, float_deg, float_deg_sec,\
-     float_rad, float_rad_sec, float_rad_sec_sq,\
-     float_wu, float_wu_sec, float_wu_sec_sq, float_zero_to_inf,\
-     from_to_rad, from_to_wu, from_to_sec, from_to_deg, from_to_zero_to_one,\
-     from_to_rad_sec, from_to_wu_sec, from_to_neg_one_to_one,\
-     yp_float_deg, ypr_float_deg, yp_float_rad, ypr_float_rad,\
-     xyz_float, xy_float, argb_float, rgb_float, xrgb_byte, argb_byte,\
-     ijkw_float, ijk_float, ij_float, yp_float, ypr_float,\
-     compressed_normal_32, materials_list, from_to_sint16,\
-     rawdata_ref_struct, reflexive_struct, tag_ref_struct, string_id,\
-     blam_engine_id
+from .enums import *
 
 
 resource = Struct("resource",
@@ -90,9 +72,11 @@ def h2_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc)
 
 
 def h2_rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
-                        widget=TextFrame, **kwargs):
+                   widget=TextFrame, **kwargs):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(h2_rawdata_ref_struct)
+    if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
+    if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     kwargs.update(WIDGET=widget)
     ref_struct[0] = dict(ref_struct[0])
     ref_struct[0][VISIBLE] = False
@@ -106,14 +90,17 @@ def h2_rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
             SIZE=".size", GUI_NAME=name.replace('_', ' '), **kwargs)
             )
 
-def h2_rawdata_ref(name, f_type=BytearrayRaw, max_size=None, widget=None):
+def h2_rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
+                   widget=HaloRawdataFrame, **kwargs):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(h2_rawdata_ref_struct)
+    if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
+    if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
+        kwargs[MAX] = max_size
 
-    kwargs = {}
     if widget is not None:
         kwargs[WIDGET] = widget
 
@@ -122,7 +109,7 @@ def h2_rawdata_ref(name, f_type=BytearrayRaw, max_size=None, widget=None):
         STEPTREE=f_type("data", GUI_NAME="", SIZE=".size", **kwargs))
 
 
-def h2_dependency(name='tag ref', valid_ids=None):
+def h2_dependency(name='tag ref', valid_ids=None, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
         valid_ids = h2_tag_class(*valid_ids)
@@ -133,8 +120,11 @@ def h2_dependency(name='tag ref', valid_ids=None):
 
     return H2TagRef(name,
         valid_ids,
-        UInt32("id", VISIBLE=False)
-        Computed("filepath", COMPUTE=lambda *a, **kw: ""),
+        UInt32("id", VISIBLE=False),
+        STEPTREE=Computed("filepath",
+            COMPUTE=lambda *a, **kw: "NOT IMPLEMENTED"
+            ),
+        **kwargs
         )
 
 

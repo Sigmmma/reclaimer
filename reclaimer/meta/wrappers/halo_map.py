@@ -151,11 +151,11 @@ class StringIdManager:
 
     def get_string(self, string_id_block):
         string_id = string_id_block.string_id
-        set_idx_ct = string_id_block.STRINGID_IDX_BITS
+        idx_bit_ct = string_id_block.STRINGID_IDX_BITS
         set_bit_ct = string_id_block.STRINGID_SET_BITS
 
         set_id = (string_id >> idx_bit_ct) & ((1 << set_bit_ct) - 1)
-        index = string_id & ((1 << set_idx_ct) - 1)
+        index = string_id & ((1 << idx_bit_ct) - 1)
         set_offset = self.set_offsets[set_id]
         if index < set_offset[0]:
             set_id -= 1

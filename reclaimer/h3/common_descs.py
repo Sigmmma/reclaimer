@@ -5,28 +5,10 @@ try:
 except Exception:
     ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
                      EntryFrame = SoundSampleFrame = DynamicArrayFrame = None
-from supyr_struct.defs.common_descs import *
-from supyr_struct.defs.block_def import BlockDef
+from ..common_descs import *
 from .field_types import *
 from .constants import *
-from supyr_struct.defs.util import *
-
-from ..common_descs import pi, irad, from_to, get_unit_scale,\
-     per_sec_unit_scale, per_sec_sq_unit_scale, sec_unit_scale,\
-     sec_sq_unit_scale, irad_per_sec_unit_scale, irad_per_sec_sq_unit_scale,\
-     dyn_senum8, dyn_senum16, dyn_senum32, ascii_str32,\
-     float_zero_to_one, float_neg_one_to_one,\
-     float_sec, float_deg, float_deg_sec,\
-     float_rad, float_rad_sec, float_rad_sec_sq,\
-     float_wu, float_wu_sec, float_wu_sec_sq, float_zero_to_inf,\
-     from_to_rad, from_to_wu, from_to_sec, from_to_deg, from_to_zero_to_one,\
-     from_to_rad_sec, from_to_wu_sec, from_to_neg_one_to_one,\
-     yp_float_deg, ypr_float_deg, yp_float_rad, ypr_float_rad,\
-     xyz_float, xy_float, argb_float, rgb_float, xrgb_byte, argb_byte,\
-     ijkw_float, ijk_float, ij_float, yp_float, ypr_float,\
-     compressed_normal_32, materials_list,\
-     rawdata_ref_struct, reflexive_struct, tag_ref_struct, string_id,\
-     blam_engine_id
+from .enums import *
 
 
 def h3_tag_class(*args, **kwargs):
@@ -67,14 +49,17 @@ def h3_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc)
     return H3Reflexive(name, **desc)
 
 
-def h3_rawdata_ref(name, f_type=BytearrayRaw, max_size=None, widget=None):
+def h3_rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
+                   widget=HaloRawdataFrame, **kwargs):
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(h3_rawdata_ref_struct)
+    if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
+    if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
+        kwargs[MAX] = max_size
 
-    kwargs = {}
     if widget is not None:
         kwargs[WIDGET] = widget
 
@@ -83,7 +68,7 @@ def h3_rawdata_ref(name, f_type=BytearrayRaw, max_size=None, widget=None):
         STEPTREE=f_type("data", GUI_NAME="", SIZE=".size", **kwargs))
 
 
-def h3_dependency(name='tag ref', valid_ids=None):
+def h3_dependency(name='tag ref', valid_ids=None, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
         valid_ids = h3_tag_class(*valid_ids)
@@ -94,8 +79,10 @@ def h3_dependency(name='tag ref', valid_ids=None):
 
     return H3TagRef(name,
         valid_ids,
+        INCLUDE=tag_ref_struct,
         STEPTREE=StrTagRef(
             "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254),
+        **kwargs
         )
 
 def h3_blam_header(tagid, version=1):
@@ -159,7 +146,7 @@ h3_reflexive_struct = H3Reflexive('reflexive',
 
 h3_rawdata_ref_struct = H3RawdataRef('rawdata ref', 
     SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
-    Bool32("flags"),
+    Bool32("flags", VISIBLE=False),
     UInt32("raw pointer", VISIBLE=False),
     UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
     UInt32("id", VISIBLE=False),

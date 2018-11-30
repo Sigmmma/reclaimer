@@ -5,6 +5,27 @@ from .byteswapping import raw_block_def, byteswap_pcm16_samples
 from .halo_map import *
 
 
+# this is ultra hacky, but it seems to be the only
+# way to fix the tagid for the sounds resource map
+sound_rsrc_id_map = {
+    92: 15,  # sound\sfx\impulse\impacts\smallrock
+    93: 17,  # sound\sfx\impulse\impacts\medrocks
+    94: 19,  # sound\sfx\impulse\impacts\lrgrocks
+
+    125: 25,  # sound\sfx\impulse\impacts\metal_chips
+    126: 27,  # sound\sfx\impulse\impacts\metal_chip_med
+
+    372: 123,  # sound\sfx\impulse\shellcasings\double_shell_dirt
+    373: 125,  # sound\sfx\impulse\shellcasings\multi_shell_dirt
+    374: 127,  # sound\sfx\impulse\shellcasings\single_shell_metal
+    375: 129,  # sound\sfx\impulse\shellcasings\double_shell_metal
+    376: 131,  # sound\sfx\impulse\shellcasings\multi_shell_metal
+
+    1545: 529,  # sound\sfx\impulse\glass\glass_medium
+    1546: 531,  # sound\sfx\impulse\glass\glass_large
+    }
+
+
 # Tag classes aren't stored in the cache maps, so we need to
 # have a cache of them somewhere. Might as well do it manually
 loc_exts = {0:'font', 1:'font', 4:'hud_message_text', 56:'font', 58:'font'}
