@@ -39,10 +39,6 @@ h2_alpha_map_header = Struct("map header",
     SIZE=2048
     )
 
-tag_data = Container("tag",
-    CStrLatin1("tag path", POINTER=tag_path_pointer),
-    )
-
 tag_header = Struct("tag header",
     UEnum32("class 1", GUI_NAME="primary tag class", INCLUDE=valid_h2_tags),
     UEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_h2_tags),
@@ -52,7 +48,8 @@ tag_header = Struct("tag header",
     UInt32("meta offset"),
     Bool32("flags", *("flag_%s" % i for i in range(32))),  # this is a guess
     UInt32("pad"),
-    STEPTREE=tag_data, SIZE=32
+    STEPTREE=CStrLatin1("path", POINTER=tag_path_pointer),
+    SIZE=32
     )
 
 tag_index_array = TagIndex("tag index",

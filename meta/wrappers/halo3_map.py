@@ -8,9 +8,8 @@ from reclaimer.h3.defs import __all__ as all_h3_def_ids
 from reclaimer.h3.util import HALO3_MAP_TYPES
 from .halo_map import *
 
-class Halo3Map(HaloMap):
-    tag_index_map = ()
 
+class Halo3Map(HaloMap):
     root_tags = {}
 
     string_id_set_offsets = (
@@ -91,20 +90,18 @@ class Halo3Map(HaloMap):
         HaloMap.load_map(self, map_path, **kwargs)
         self.tag_index = h3_to_h1_tag_index(self.map_header, self.tag_index)
 
+        tag_index_array = self.tag_index.tag_index
+
         self.string_id_manager = StringIdManager(
             self.map_header.strings.string_id_table,
             self.string_id_set_offsets,
             )
+        self.tag_index_manager = TagIndexManager(tag_index_array)
 
         map_type = self.map_header.map_type.data - 1
         if map_type > 0 and map_type < 4:
             self.is_resource = True
             self.maps[HALO3_MAP_TYPES[map_type]] = self
-
-        self.tag_index_map = {}
-        tag_index_array = self.tag_index.tag_index
-        for i in range(len(tag_index_array)):
-            self.tag_index_map[tag_index_array[i].id & 0xFFff] = i
 
         if autoload_resources and (will_be_active or not self.is_resource):
             self.load_all_resource_maps(dirname(map_path))
@@ -124,25 +121,19 @@ class Halo3Map(HaloMap):
             # shared maps don't have a tag index
             return
 
-        tag_index_array = self.tag_index.tag_index
-
         # if we are given a 32bit tag id, mask it off
-        tag_id = self.tag_index_map.get(tag_id & 0xFFff, 0xFFff)
-        if tag_id >= len(tag_index_array):
+        tag_id &= 0xFFff
+        tag_index_ref = self.tag_index_manager.get_tag_index_ref(tag_id)
+        if tag_index_ref is None:
             return
-
-        tag_index_ref = tag_index_array[tag_id]
 
         tag_cls = None
         if tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
             tag_cls = fourcc(tag_index_ref.class_1.data)
 
         desc = self.get_meta_descriptor(tag_cls)
-        if desc is None or tag_cls is None:        return
-        elif reextract:                            pass
-        elif tag_id == scnr_id and self.scnr_meta: return self.scnr_meta
-        elif tag_id == matg_id and self.matg_meta: return self.matg_meta
-        elif tag_cls == "ugh!" and self.ugh__meta: return self.ugh__meta
+        if desc is None or tag_cls is None:
+            return
 
         block = [None]
 
@@ -159,7 +150,7 @@ class Halo3Map(HaloMap):
 
             desc['TYPE'].parser(
                 desc, parent=block, attr_index=0, magic=meta_magic,
-                tag_index=tag_index_array, rawdata=self.map_data,
+                tag_index_manager=self.tag_index_manager, rawdata=self.map_data,
                 offset=offset, parsing_resource=True,
                 map_sections=self.map_header.sections,
                 map_string_id_manager=self.string_id_manager,

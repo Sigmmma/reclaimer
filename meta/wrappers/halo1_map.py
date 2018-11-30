@@ -76,7 +76,7 @@ class Halo1Map(HaloMap):
 
             i = 0
             for tag_header in self.tag_index.tag_index:
-                inv_snd_map[tag_header.tag.tag_path] = i
+                inv_snd_map[tag_header.path] = i
                 i += 1
 
     def get_dependencies(self, meta, tag_id, tag_cls):
@@ -92,7 +92,7 @@ class Halo1Map(HaloMap):
             if   sounds is None: return ()
             elif rsrc_id >= len(sounds.tag_index.tag_index): return ()
 
-            tag_path = sounds.tag_index.tag_index[rsrc_id].tag.tag_path
+            tag_path = sounds.tag_index.tag_index[rsrc_id].path
             inv_snd_map = getattr(self, 'ce_tag_indexs_by_paths', {})
             tag_id = inv_snd_map.get(tag_path, 0xFFFF)
             if tag_id >= len(self.tag_index.tag_index): return ()
@@ -137,7 +137,7 @@ class Halo1Map(HaloMap):
         tag_index_array = tag_index.tag_index
 
         # record the original halo 1 tag_paths so we know if they change
-        self.orig_tag_paths = tuple(b.tag.tag_path for b in tag_index_array)
+        self.orig_tag_paths = tuple(b.path for b in tag_index_array)
 
         # make all contents of the map parasble
         self.basic_deprotection()
@@ -167,7 +167,7 @@ class Halo1Map(HaloMap):
 
                     if header.sig != header.get_desc("DEFAULT", "sig"):
                         print("Sbsp header is invalid for '%s'" %
-                              tag_index_array[tag_id].tag.tag_path)
+                              tag_index_array[tag_id].path)
                     self.bsp_headers[tag_id] = header
             else:
                 print("Could not read scenario tag")
@@ -201,7 +201,7 @@ class Halo1Map(HaloMap):
         if extractor is None:
             return "No extractor for this type of tag."
         kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.tag.tag_path, **kw)
+        return extractor(meta, tag_index_ref.path, **kw)
 
     def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False):
         '''
@@ -218,10 +218,9 @@ class Halo1Map(HaloMap):
 
         # if we are given a 32bit tag id, mask it off
         tag_id &= 0xFFFF
-        if tag_id >= len(tag_index_array):
+        tag_index_ref = self.tag_index_manager.get_tag_index_ref(tag_id)
+        if tag_index_ref is None:
             return
-        tag_index_ref = tag_index_array[tag_id]
-
 
         tag_cls = None
         if tag_id == tag_index.scenario_tag_id & 0xFFFF:
@@ -247,7 +246,7 @@ class Halo1Map(HaloMap):
             if tag_cls == "snd!" and "sounds" in self.maps:
                 rsrc_map = self.maps["sounds"]
                 sound_mapping = self.ce_rsrc_sound_indexes_by_path
-                tag_path = tag_index_ref.tag.tag_path
+                tag_path = tag_index_ref.path
                 if sound_mapping is None or tag_path not in sound_mapping:
                     return
 
@@ -290,7 +289,8 @@ class Halo1Map(HaloMap):
             FieldType.force_little()
             desc['TYPE'].parser(
                 desc, parent=block, attr_index=0, magic=magic,
-                tag_index=tag_index_array, rawdata=map_data, offset=offset)
+                tag_index_manager=self.tag_index_manager,
+                rawdata=map_data, offset=offset)
             FieldType.force_normal()
         except Exception:
             print(format_exc())

@@ -2,27 +2,6 @@ from supyr_struct.field_type_methods import *
 from .constants import *
 
 
-# this is ultra hacky, but it seems to be the only
-# way to fix the tagid for the sounds resource map
-sound_rsrc_id_map = {
-    92: 15,  # sound\sfx\impulse\impacts\smallrock
-    93: 17,  # sound\sfx\impulse\impacts\medrocks
-    94: 19,  # sound\sfx\impulse\impacts\lrgrocks
-
-    125: 25,  # sound\sfx\impulse\impacts\metal_chips
-    126: 27,  # sound\sfx\impulse\impacts\metal_chip_med
-
-    372: 123,  # sound\sfx\impulse\shellcasings\double_shell_dirt
-    373: 125,  # sound\sfx\impulse\shellcasings\multi_shell_dirt
-    374: 127,  # sound\sfx\impulse\shellcasings\single_shell_metal
-    375: 129,  # sound\sfx\impulse\shellcasings\double_shell_metal
-    376: 131,  # sound\sfx\impulse\shellcasings\multi_shell_metal
-
-    1545: 529,  # sound\sfx\impulse\glass\glass_medium
-    1546: 531,  # sound\sfx\impulse\glass\glass_large
-    }
-
-
 def tag_ref_str_sizecalc(self, node, **kwargs):
     '''
     Used to calculate the size of a tag reference string from a given string
@@ -71,26 +50,21 @@ def tag_ref_str_parser(self, desc, node=None, parent=None, attr_index=None,
     assert parent is not None and attr_index is not None, (
         "parent and attr_index must be provided " +
         "and not None when reading a data field.")
-    if "tag_index" in kwargs:
-        tag_index = kwargs["tag_index"]
-        tagid = parent.id & 0xFFFF
-        parent[attr_index] = ""
-        if tagid < 0 or tagid == 0xFFFF:
-            pass
-        elif kwargs.get("indexed"):
-            if kwargs.get('tag_cls') == 'snd!':
-                # tag_index is a resource map tag_paths collection
-                parent.id = tagid = sound_rsrc_id_map.get(tagid, tagid)
+    tag_id_manager = kwargs.get("tag_index_manager")
+    if tag_id_manager:
+        tag_id = parent.id
+        if kwargs.get("indexed"):
+            # tag_index is a resource map tag_paths collection
+            actual_tag_id = tag_id_manager.translate_tag_id(tag_id)
+            if actual_tag_id != 0xFFff:
+                actual_tag_id = actual_tag_id // 2
+            parent.id = actual_tag_id
 
-            try:
-                parent[attr_index] = tag_index[tagid].tag_path
-            except (AttributeError, IndexError):
-                pass
+        tag_index_ref = tag_id_manager.get_tag_index_ref(tag_id)
+        if tag_index_ref is None:
+            parent[attr_index] = ""
         else:
-            try:
-                parent[attr_index] = tag_index[tagid].tag.path
-            except (AttributeError, IndexError):
-                pass
+            parent[attr_index] = tag_index_ref.path
 
     elif rawdata:
         # read and store the node

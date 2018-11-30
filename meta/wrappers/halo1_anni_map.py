@@ -92,7 +92,7 @@ class Halo1AnniMap(Halo1Map):
             if   sounds is None: return ()
             elif rsrc_id >= len(sounds.tag_index.tag_index): return ()
 
-            tag_path = sounds.tag_index.tag_index[rsrc_id].tag.tag_path
+            tag_path = sounds.tag_index.tag_index[rsrc_id].path
             inv_snd_map = getattr(self, 'ce_tag_indexs_by_paths', {})
             tag_id = inv_snd_map.get(tag_path, 0xFFFF)
             if tag_id >= len(self.tag_index.tag_index): return ()
@@ -140,11 +140,10 @@ class Halo1AnniMap(Halo1Map):
         tag_index = self.tag_index
         tag_index_array = tag_index.tag_index
 
-        # if we are given a 32bit tag id, mask it off
         tag_id &= 0xFFFF
-        if tag_id >= len(tag_index_array):
+        tag_index_ref = self.tag_index_manager.get_tag_index_ref(tag_id)
+        if tag_index_ref is None:
             return
-        tag_index_ref = tag_index_array[tag_id]
 
         tag_cls = None
         if tag_id == tag_index.scenario_tag_id & 0xFFff:
@@ -182,7 +181,7 @@ class Halo1AnniMap(Halo1Map):
             with FieldType.force_big:
                 desc['TYPE'].parser(
                     desc, parent=block, attr_index=0, magic=magic,
-                    tag_index=tag_index_array, rawdata=map_data, offset=offset)
+                    tag_index_manager=self.tag_index_manager, rawdata=map_data, offset=offset)
         except Exception:
             print(format_exc())
             return
