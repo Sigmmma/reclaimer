@@ -49,7 +49,7 @@ def h2_alpha_to_h1_tag_index(map_header, tag_index):
         new_index_entry.pad = old_index_entry.flags
         new_index_entry.path_offset = old_index_entry.path_offset
         new_index_entry.meta_offset = old_index_entry.meta_offset
-        new_index_entry.tag.tag_path = old_index_entry.tag.tag_path
+        new_index_entry.path = old_index_entry.path
 
     return new_index
 
@@ -73,7 +73,7 @@ def h2_to_h1_tag_index(map_header, tag_index):
         new_index_array.append()
         new_index_entry = new_index_array[-1]
         if old_index_entry.tag_class.data not in tag_types:
-            new_index_entry.tag.tag_path = "reserved"
+            new_index_entry.path = "reserved"
             new_index_entry.class_1.data = new_index_entry.class_2.data =\
                                            new_index_entry.class_3.data =\
                                            0xFFFFFFFF
@@ -85,8 +85,8 @@ def h2_to_h1_tag_index(map_header, tag_index):
             new_index_entry.class_2 = types[1]
             new_index_entry.class_3 = types[2]
 
-            new_index_entry.tag.tag_path = map_header.strings.\
-                                           tag_name_table[i].tag_name
+            new_index_entry.path = map_header.strings.\
+                                   tag_name_table[i].tag_name
 
         new_index_entry.id = old_index_entry.id
         new_index_entry.meta_offset = old_index_entry.offset
@@ -117,7 +117,7 @@ def h3_to_h1_tag_index(map_header, tag_index):
         new_index_array.append()
         new_index_entry = new_index_array[-1]
         if old_index_entry.tag_type_index not in tag_types:
-            new_index_entry.tag.tag_path = "reserved"
+            new_index_entry.path = "reserved"
             new_index_entry.class_1.data = new_index_entry.class_2.data =\
                                            new_index_entry.class_3.data =\
                                            0xFFFFFFFF
@@ -129,8 +129,8 @@ def h3_to_h1_tag_index(map_header, tag_index):
             new_index_entry.class_2 = types[1]
             new_index_entry.class_3 = types[2]
 
-            new_index_entry.tag.tag_path = map_header.strings.\
-                                           tag_name_table[i].tag_name
+            new_index_entry.path = map_header.strings.\
+                                   tag_name_table[i].tag_name
 
         new_index_entry.id = old_index_entry.table_index
         new_index_entry.meta_offset = old_index_entry.offset
@@ -167,6 +167,28 @@ class StringIdManager:
         return self.strings[index].string
 
 
+class TagIndexManager:
+    _tag_index = ()
+    _tag_index_map = ()
+
+    def __init__(self, tag_index, tag_index_map=None):
+        self._tag_index = tag_index
+        if tag_index_map:
+            self._tag_index_map = dict(tag_index_map)
+        else:
+            self._tag_index_map = {}
+            for i in range(len(tag_index)):
+                self._tag_index_map[tag_index[i].id & 0xFFff] = i
+
+    def translate_tag_id(self, tag_id):
+        return self._tag_index_map.get(tag_id & 0xFFff, 0xFFff)
+
+    def get_tag_index_ref(self, tag_id):
+        tag_id = self.translate_tag_id(tag_id)
+        if tag_id in range(len(self._tag_index)):
+            return self._tag_index[tag_id]
+
+
 class HaloMap:
     map_data = None
     map_data_cache_limit = 50
@@ -184,6 +206,7 @@ class HaloMap:
     orig_tag_paths = None
 
     string_id_manager = None
+    tag_index_manager = None
 
     # the parsed meta of the root tags in the map
     scnr_meta = None
@@ -238,7 +261,7 @@ class HaloMap:
         i = 0
         found_counts = {}
         for b in self.tag_index.tag_index:
-            tag_path = backslash_fix.sub(r'\\', b.tag.tag_path)
+            tag_path = backslash_fix.sub(r'\\', b.path)
 
             tag_cls  = b.class_1.data
             name_id  = (tag_path, tag_cls)
@@ -251,7 +274,7 @@ class HaloMap:
             else:
                 found_counts[name_id] = 0
 
-            b.tag.tag_path = tag_path
+            b.path = tag_path
 
     def get_meta_descriptor(self, tag_cls):
         tagdef = self.defs.get(tag_cls)
@@ -352,6 +375,7 @@ class HaloMap:
             print("    Could not read tag index.")
             return
 
+        self.tag_index_manager = TagIndexManager(tag_index.tag_index)
         self.maps[map_header.map_name] = self
         if will_be_active:
             self.maps["active"] = self

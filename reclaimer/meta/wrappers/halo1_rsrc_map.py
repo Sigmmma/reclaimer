@@ -8,21 +8,21 @@ from .halo_map import *
 # this is ultra hacky, but it seems to be the only
 # way to fix the tagid for the sounds resource map
 sound_rsrc_id_map = {
-    92: 15,  # sound\sfx\impulse\impacts\smallrock
-    93: 17,  # sound\sfx\impulse\impacts\medrocks
-    94: 19,  # sound\sfx\impulse\impacts\lrgrocks
+    92: 7,  # sound\sfx\impulse\impacts\smallrock
+    93: 8,  # sound\sfx\impulse\impacts\medrocks
+    94: 9,  # sound\sfx\impulse\impacts\lrgrocks
 
-    125: 25,  # sound\sfx\impulse\impacts\metal_chips
-    126: 27,  # sound\sfx\impulse\impacts\metal_chip_med
+    125: 12,  # sound\sfx\impulse\impacts\metal_chips
+    126: 13,  # sound\sfx\impulse\impacts\metal_chip_med
 
-    372: 123,  # sound\sfx\impulse\shellcasings\double_shell_dirt
-    373: 125,  # sound\sfx\impulse\shellcasings\multi_shell_dirt
-    374: 127,  # sound\sfx\impulse\shellcasings\single_shell_metal
-    375: 129,  # sound\sfx\impulse\shellcasings\double_shell_metal
-    376: 131,  # sound\sfx\impulse\shellcasings\multi_shell_metal
+    372: 61,  # sound\sfx\impulse\shellcasings\double_shell_dirt
+    373: 62,  # sound\sfx\impulse\shellcasings\multi_shell_dirt
+    374: 63,  # sound\sfx\impulse\shellcasings\single_shell_metal
+    375: 64,  # sound\sfx\impulse\shellcasings\double_shell_metal
+    376: 65,  # sound\sfx\impulse\shellcasings\multi_shell_metal
 
-    1545: 529,  # sound\sfx\impulse\glass\glass_medium
-    1546: 531,  # sound\sfx\impulse\glass\glass_large
+    1545: 264,  # sound\sfx\impulse\glass\glass_medium
+    1546: 265,  # sound\sfx\impulse\glass\glass_large
     }
 
 
@@ -95,7 +95,7 @@ class Halo1RsrcMap(HaloMap):
         if extractor is None:
             return "No extractor for this type of tag."
         kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.tag.tag_path, **kw)
+        return extractor(meta, tag_index_ref.path, **kw)
 
     def load_map(self, map_path, **kwargs):
         will_be_active = kwargs.get("will_be_active", True)
@@ -160,8 +160,11 @@ class Halo1RsrcMap(HaloMap):
 
             tag_ref.meta_offset  = rsrc_map.data.tags[j].offset
             tag_ref.indexed      = 1
-            tag_ref.tag.tag_path = rsrc_map.data.tags[j].tag.path
+            tag_ref.path = rsrc_map.data.tags[j].tag.path
 
+        self.tag_index_manager = TagIndexManager(tags.tag_index)
+        self.snd_rsrc_tag_index_manager = TagIndexManager(tags.tag_index,
+                                                          sound_rsrc_id_map)
         self.map_data.clear_cache()
 
     def get_dependencies(self, meta, tag_id, tag_cls):
@@ -183,9 +186,9 @@ class Halo1RsrcMap(HaloMap):
 
         # if we are given a 32bit tag id, mask it off
         tag_id &= 0xFFFF
-        if tag_id >= len(self.tag_index.tag_index):
+        tag_index_ref = self.tag_index_manager.get_tag_index_ref(tag_id)
+        if tag_index_ref is None:
             return
-        tag_index_ref = self.tag_index.tag_index[tag_id]
         tag_cls = dict(
             sound="snd!", bitmap="bitm", font="font",
             unicode_string_list="ustr", hud_message_text="hmt ").get(
@@ -208,8 +211,9 @@ class Halo1RsrcMap(HaloMap):
             FieldType.force_little()
             desc['TYPE'].parser(
                 desc, parent=block, attr_index=0, rawdata=self.map_data,
-                tag_index=self.rsrc_map.data.tags, tag_cls=tag_cls,
-                root_offset=tag_index_ref.meta_offset, indexed=True, **kwargs)
+                tag_index_manager=self.snd_rsrc_tag_index_manager,
+                tag_cls=tag_cls, root_offset=tag_index_ref.meta_offset,
+                indexed=True, **kwargs)
             FieldType.force_normal()
             self.inject_rawdata(block[0], tag_cls, tag_index_ref)
         except Exception:

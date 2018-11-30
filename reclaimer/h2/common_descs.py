@@ -118,11 +118,14 @@ def h2_dependency(name='tag ref', valid_ids=None, **kwargs):
     elif valid_ids is None:
         valid_ids = valid_h2_tags
 
+    kwargs.setdefault(ORIENT, "h")
+
     return H2TagRef(name,
         valid_ids,
         UInt32("id", VISIBLE=False),
         STEPTREE=Computed("filepath",
-            COMPUTE=lambda *a, **kw: "NOT IMPLEMENTED"
+            COMPUTE=lambda *a, **kw: "NOT IMPLEMENTED",
+            WIDGET=EntryFrame, WIDGET_WIDTH=32
             ),
         **kwargs
         )

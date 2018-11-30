@@ -157,6 +157,7 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
 
 def dependency_uint32(name='tag ref', **kwargs):
     kwargs.setdefault(VISIBLE, False)
+    kwargs.setdefault(ORIENT, "h")
     return QStruct(name,
         UInt32("id"),
         STEPTREE=Computed("filepath",

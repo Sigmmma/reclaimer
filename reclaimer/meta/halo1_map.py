@@ -19,10 +19,9 @@ simply do:    abs_pointer = magic_pointer - magic
 def tag_path_pointer(parent=None, new_value=None, **kwargs):
     if parent is None:
         raise KeyError()
-    t_head = parent.parent
     if new_value is None:
-        return t_head.path_offset - kwargs.get('magic', 0)
-    t_head.path_offset = new_value + kwargs.get('magic', 0)
+        return parent.path_offset - kwargs.get('magic', 0)
+    parent.path_offset = new_value + kwargs.get('magic', 0)
 
 
 def tag_index_array_pointer(parent=None, new_value=None, **kwargs):
@@ -172,10 +171,6 @@ map_header = Struct("map header",
     SIZE=2048
     )
 
-tag_data = Container("tag",
-    CStrLatin1("tag path", POINTER=tag_path_pointer),
-    )
-
 tag_header = Struct("tag header",
     UEnum32("class 1", GUI_NAME="primary tag class", INCLUDE=valid_tags_os),
     UEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_tags_os),
@@ -188,7 +183,8 @@ tag_header = Struct("tag header",
     # the bitmaps, sounds, or loc cache that the meta data is located in.
     # NOTE: indexed is NOT a bitfield, if it is non-zero it is True
     UInt32("pad"),
-    STEPTREE=tag_data, SIZE=32
+    STEPTREE=CStrLatin1("path", POINTER=tag_path_pointer),
+    SIZE=32
     )
 
 tag_index_array = TagIndex("tag index",
