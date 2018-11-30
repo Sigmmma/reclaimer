@@ -172,10 +172,8 @@ class Halo1RsrcMap(HaloMap):
             return ()
 
         tag_id = meta.promotion_sound.id & 0xFFff
-        if tag_id == 0xFFFF: return ()
-
-        tag_id = tag_id // 2
-        if tag_id >= len(self.tag_index.tag_index): return ()
+        if tag_id not in range(len(self.tag_index.tag_index)):
+            return ()
 
         return [self.tag_index.tag_index[tag_id]]
 
