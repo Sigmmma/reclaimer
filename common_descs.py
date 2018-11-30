@@ -155,6 +155,18 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
             )
 
 
+def dependency_uint32(name='tag ref', **kwargs):
+    kwargs.setdefault(VISIBLE, False)
+    return QStruct(name,
+        UInt32("id"),
+        STEPTREE=Computed("filepath",
+            COMPUTE=lambda *a, **kw: "NOT IMPLEMENTED",
+            WIDGET=EntryFrame, WIDGET_WIDTH=32
+            ),
+        **kwargs
+        )
+
+
 def dependency(name='tag ref', valid_ids=None, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
@@ -169,6 +181,30 @@ def dependency(name='tag ref', valid_ids=None, **kwargs):
         INCLUDE=tag_ref_struct,
         STEPTREE=StrTagRef(
             "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254),
+        **kwargs
+        )
+
+
+def compute_stringid_string(parent=None, map_string_id_manager=None, **kwargs):
+    if parent and map_string_id_manager:
+        return map_string_id_manager.get_string(parent)
+
+    return "COULD NOT LOCATE"
+
+
+def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
+    if len_bit_ct is None:
+        len_bit_ct = 32 - index_bit_ct - set_bit_ct
+
+    kwargs.setdefault(STRINGID_IDX_BITS, index_bit_ct)
+    kwargs.setdefault(STRINGID_SET_BITS, set_bit_ct)
+    kwargs.setdefault(STRINGID_LEN_BITS, len_bit_ct)
+    kwargs.setdefault(ORIENT, "h")
+    return StringID(name,
+        UInt32('string id', VISIBLE=False),
+        Computed("string", GUI_NAME="",
+            COMPUTE=compute_stringid_string,
+            WIDGET=EntryFrame, WIDGET_WIDTH=32),
         **kwargs
         )
 
@@ -223,30 +259,6 @@ sec_sq_unit_scale = get_unit_scale(1/4)
 irad = 180/pi
 irad_per_sec_unit_scale = get_unit_scale(1/2, irad)
 irad_per_sec_sq_unit_scale = get_unit_scale(1/4, irad)
-
-
-def compute_stringid_string(parent=None, map_string_id_manager=None, **kwargs):
-    if parent and map_string_id_manager:
-        return map_string_id_manager.get_string(parent)
-
-    return "COULD NOT LOCATE"
-
-
-def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
-    if len_bit_ct is None:
-        len_bit_ct = 32 - index_bit_ct - set_bit_ct
-
-    kwargs.setdefault(STRINGID_IDX_BITS, index_bit_ct)
-    kwargs.setdefault(STRINGID_SET_BITS, set_bit_ct)
-    kwargs.setdefault(STRINGID_LEN_BITS, len_bit_ct)
-    kwargs.setdefault(ORIENT, "h")
-    return StringID(name,
-        UInt32('string id', VISIBLE=False),
-        Computed("string", GUI_NAME="",
-            COMPUTE=compute_stringid_string,
-            WIDGET=EntryFrame, WIDGET_WIDTH=32),
-        **kwargs
-        )
 
 def dyn_senum8(name, *args, **kwargs):
     kwargs.setdefault('DEFAULT', -1)
