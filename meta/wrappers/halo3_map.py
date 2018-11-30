@@ -11,6 +11,8 @@ from .halo_map import *
 class Halo3Map(HaloMap):
     tag_index_map = ()
 
+    root_tags = {}
+
     string_id_set_offsets = (
         (0x4B7, 0xC11), (0x0, 0x4B7), (0x0, 0xA7D),
         (0x0, 0xB0F),   (0x0, 0xBAF), (0x0, 0xB63),
@@ -87,8 +89,7 @@ class Halo3Map(HaloMap):
         autoload_resources = kwargs.get("autoload_resources", True)
         will_be_active = kwargs.get("will_be_active", True)
         HaloMap.load_map(self, map_path, **kwargs)
-        tag_index = self.tag_index
-        self.tag_index = h3_to_h1_tag_index(self.map_header, tag_index)
+        self.tag_index = h3_to_h1_tag_index(self.map_header, self.tag_index)
 
         self.string_id_manager = StringIdManager(
             self.map_header.strings.string_id_table,
@@ -107,6 +108,12 @@ class Halo3Map(HaloMap):
 
         if autoload_resources and (will_be_active or not self.is_resource):
             self.load_all_resource_maps(dirname(map_path))
+
+        self.root_tags = {}
+        for b in self.orig_tag_index.root_tags:
+            meta = self.get_meta(b.id)
+            if meta:
+                root_tags[b.id] = root_tags[b.tag_class.enum_name] = meta
 
         self.map_data.clear_cache()
 

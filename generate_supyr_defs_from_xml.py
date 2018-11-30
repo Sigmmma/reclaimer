@@ -1,5 +1,7 @@
 import os
 from collections import OrderedDict
+from copy import deepcopy
+from datetime import datetime
 from xml.etree.ElementTree import ElementTree
 from traceback import format_exc
 from string import ascii_letters
@@ -9,20 +11,20 @@ from supyr_struct.defs.util import str_to_identifier
 VALID_MODULE_NAME_CHARS = ascii_letters + '_' + '0123456789'
 
 
-# TODO: Make this properly handle tag id's which are only a 4 byte identifier
 # Need to fix bug with reflexives sometimes sharing names with earlier fields
+#     Occurs in lswd, chgd, and sbsp
 
 
-
-block_def_import_str = '''from ..common_descs import *
-from supyr_struct.defs.tag_def import TagDef'''
+engine_specific_field_types = set((
+    "string_id", "rawdata_ref", "dependency", "reflexive"
+    ))
 
 name_only_field_types = set((
-    "string_id_meta", "rawdata_ref", "dependency",
+    "string_id", "rawdata_ref", "dependency", "dependency_uint32",
     "float_rad", "yp_float_rad", "ypr_float_rad",
     "float_deg", "yp_float_deg", "ypr_float_deg",
     "color_argb_float", "color_argb_uint32",
-    "color_rgb_float",  "color_xrgb_uint32", 
+    "color_rgb_float",  "color_xrgb_uint32",
     "Float", "from_to_rad", "ascii_str32",
     "SInt8", "SInt16", "SInt32", "UInt8", "UInt16", "UInt32",
     ))
@@ -33,7 +35,7 @@ do_not_indent_field_types.add("BytesRaw")
 do_not_indent_field_types.add("StrLatin1")
 do_not_indent_field_types.add("StrUTF16")
 do_not_indent_field_types.add("Pad")
-do_not_indent_field_types.add("string_id_meta")
+do_not_indent_field_types.add("string_id")
 
 string_field_types = set((
     "BytesRaw", "StrLatin1", "StrUTF16",
@@ -43,13 +45,15 @@ enum_field_types = set((
     "SEnum8", "SEnum16", "SEnum32", "UEnum8", "UEnum16", "UEnum32"
     ))
 
-bool_field_types = set(("Bool8", "Bool16", "Bool32"))
+bool_field_types = set((
+    "Bool8", "Bool16", "Bool32"
+    ))
 
 
 array_allowed_fields = set((
-    "color_argb_float", "color_argb_uint32", 
+    "color_argb_float", "color_argb_uint32",
     "color_rgb_float",  "color_xrgb_uint32",
-    "Float", "float_rad", "string_id_meta",
+    "Float", "float_rad", "string_id",
     "SInt8", "SInt16", "SInt32",
     "UInt8", "UInt16", "UInt32", "Pad",
     "ascii_str32"
@@ -58,23 +62,24 @@ array_allowed_fields = set((
 
 field_sizes = {
     "reflexive": 12, "rawdata_ref": 20, "dependency": 16,
-    "color_argb_float": 16, "color_argb_uint32": 4, 
+    "color_argb_float": 16, "color_argb_uint32": 4,
     "color_rgb_float": 12,  "color_xrgb_uint32": 4,
-    "Float": 4, "float_rad": 4, "string_id_meta": 4,
+    "Float": 4, "float_rad": 4, "string_id": 4,
     "SInt8":  1, "SInt16":  2, "SInt32":  4,
     "UInt8":  1, "UInt16":  2, "UInt32":  4,
     "SEnum8": 1, "SEnum16": 2, "SEnum32": 4,
     "UEnum8": 1, "UEnum16": 2, "UEnum32": 4,
     "Bool8":  1, "Bool16":  2, "Bool32":  4,
-    "ascii_str32": 32,
+    "ascii_str32": 32, "dependency_uint32": 4,
 
     # special values
     "bit": 1, "opt": 1, "Pad": 4
     }
 
 type_name_map = {
-    "raw": "BytesRaw", "undefined": "Pad",
-    "reflexive": "reflexive", "dataref": "rawdata_ref", "tagref": "dependency",
+    "raw": "BytesRaw", "undefined": "Pad", "array": "Array",
+    "reflexive": "reflexive", "dataref": "rawdata_ref",
+    "tagref": "dependency", "tagref_uint32": "dependency_uint32",
     "float32": "Float", "float": "Float", "degree": "float_rad",
     "int8": "SInt8",  "int16": "SInt16",  "int32": "SInt32",
     "uint8": "UInt8", "uint16": "UInt16", "uint32": "UInt32",
@@ -82,7 +87,7 @@ type_name_map = {
     "uenum8": "UEnum8", "uenum16": "UEnum16", "uenum32": "UEnum32",
     "bitfield8": "Bool8", "bitfield16": "Bool16", "bitfield32": "Bool32",
     "ascii": "StrLatin1", "utf16": "StrUTF16",
-    "stringid": "string_id_meta",
+    "stringid": "string_id",
     "colorf": "color_argb_float", "color32": "color_argb_uint32",
     "colorfnoalpha": "color_rgb_float", "color24": "color_xrgb_uint32",
 
@@ -92,7 +97,9 @@ type_name_map = {
     "bit": "bit", "option": "opt", "plugin": "BlockDef"
     }
 
-ignored_names = set(("comment", "revision"))
+ignored_names = set((
+    "comment", "revision"
+    ))
 
 name_fix_replacements = dict(
     index="idx", count="size", insert="ins", parent="ancestor"
@@ -141,7 +148,7 @@ def fix_name_identifier(name):
 
 
 def replace_struct_node_section(struct_node, start, count, typ, size, name,
-                                desc_kw=None):
+                                report_optimize=True, desc_kw=None):
     new_node = StructNode()
     new_node.typ = typ
     new_node.size = size
@@ -149,12 +156,13 @@ def replace_struct_node_section(struct_node, start, count, typ, size, name,
     new_node.desc_kw = desc_kw
     new_node.offset = struct_node[start].offset
     new_node.visible = struct_node[start].visible
-    print("    Replacing %s '%s' with '%s'" %
-          (count, struct_node[start].typ, typ))
+    if report_optimize:
+        print("    Replacing %s '%s' with '%s'" %
+              (count, struct_node[start].typ, typ))
     struct_node[start: start + count] = [new_node]
 
 
-def optimize_common_structs(struct_node):
+def optimize_common_structs(struct_node, engine_name, report_optimize):
     if (struct_node.typ in bool_field_types or
         struct_node.typ in enum_field_types):
         return
@@ -397,12 +405,13 @@ def optimize_common_structs(struct_node):
 
         if optimize:
             replace_struct_node_section(struct_node, start, field_ct, new_typ,
-                                        new_size, node_base_name, new_desc_kw)
+                                        new_size, node_base_name, report_optimize,
+                                        new_desc_kw)
 
         start += 1
 
 
-def optimize_numbered_arrays(struct_node):
+def optimize_numbered_arrays(struct_node, engine_name, report_optimize):
     if (struct_node.typ in bool_field_types or
         struct_node.typ in enum_field_types):
         return
@@ -467,24 +476,30 @@ def optimize_numbered_arrays(struct_node):
         base_field_name = base_field_name.strip("_")
         if field_ct > 3 and base_field_typ in array_allowed_fields:
             new_desc_kw = OrderedDict()
-            new_desc_kw["SUB_STRUCT"] = '%s("%s")' % (base_field_typ,
-                                                      base_field_name)
-            new_desc_kw["SIZE"] = field_ct
+            sub_struct_string = '%s("%s")' % (base_field_typ, base_field_name)
+            if base_field_typ in engine_specific_field_types:
+                sub_struct_string = "%s_%s" % (engine_name, sub_struct_string)
+
+            new_desc_kw.update(SIZE=field_ct, SUB_STRUCT=sub_struct_string)
             replace_struct_node_section(struct_node, start, field_ct, "Array",
                                         field_ct, base_field_name + "_array",
-                                        new_desc_kw)
+                                        report_optimize, new_desc_kw)
 
         start += 1
 
 
-def optimize_struct_node(struct_node):
-    optimize_common_structs(struct_node)
-    optimize_numbered_arrays(struct_node)
+def optimize_struct_node(struct_node, engine_name, report_optimize):
+    optimize_common_structs(struct_node, engine_name, report_optimize)
+    optimize_numbered_arrays(struct_node, engine_name, report_optimize)
 
 
-def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_desc,
-                              parent_name="", indent=0):
-    optimize_struct_node(struct_node)
+def struct_node_to_supyr_desc(struct_node, descs_by_name,
+                              enum_bool_names_by_desc,
+                              shared_enum_bool_names_by_desc,
+                              engine_name, parent_name="", indent=0,
+                              report_optimize=True):
+    optimize_struct_node(struct_node, engine_name, report_optimize)
+
     added_names = dict()
     add_num_to = set()
     for sub_node in struct_node:
@@ -521,7 +536,10 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
     elif struct_node.typ == "BlockDef":
         desc_str = 'BlockDef('
     else:
-        desc_str = '%s%s(' % (indent_str, struct_node.typ)
+        if struct_node.typ in engine_specific_field_types:
+            desc_str = "%s%s_%s(" % (indent_str, engine_name, struct_node.typ)
+        else:
+            desc_str = '%s%s(' % (indent_str, struct_node.typ)
 
     if struct_node.typ == "Pad":
         desc_str += str(struct_node.size)
@@ -553,6 +571,8 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
                 enum_name = "%s_%s" % (parent_name, desc_name)
                 if enum_str in enum_bool_names_by_desc:
                     enum_name = enum_bool_names_by_desc[enum_str]
+                elif enum_str in shared_enum_bool_names_by_desc:
+                    enum_name = shared_enum_bool_names_by_desc[enum_str]
                 else:
                     enum_bool_names_by_desc[enum_str] = enum_name
 
@@ -593,12 +613,14 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
                         bools_str = 'tuple("%s_%%s" %% i for i in range(%s))' % (
                             base_name, bits)
                         bools_name = "%s_bits" % desc_name
-                        if bools_str not in enum_bool_names_by_desc:
+                        if (bools_str not in enum_bool_names_by_desc and
+                            bools_str not in shared_enum_bool_names_by_desc):
                             enum_bool_names_by_desc[bools_str] = bools_name
                     elif base_flag_name == "bit_":
                         bools_str = 'tuple("bit_%%s" %% i for i in range(%s))' % bits
                         bools_name = "unknown_flags_%s" % bits
-                        if bools_str not in enum_bool_names_by_desc:
+                        if (bools_str not in enum_bool_names_by_desc and
+                            bools_str not in shared_enum_bool_names_by_desc):
                             enum_bool_names_by_desc[bools_str] = bools_name
                     elif base_flag_num == 0:
                         bools_name = '("%s%%s" %% i for i in range(%s))' % (
@@ -648,11 +670,12 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
                 for field in struct_node:
                     subdesc_str = struct_node_to_supyr_desc(
                         field, descs_by_name, enum_bool_names_by_desc,
-                        desc_name, 1)
+                        shared_enum_bool_names_by_desc, engine_name,
+                        desc_name, 1, report_optimize)
 
                     if field.typ == "reflexive":
-                        desc_str += '    reflexive("%s", %s)' % (
-                            field.name, subdesc_str)
+                        desc_str += '    %s_reflexive("%s", %s)' % (
+                            engine_name, field.name, subdesc_str)
                     else:
                         desc_str += subdesc_str
 
@@ -683,7 +706,6 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name, enum_bool_names_by_des
 
 
 def parse_xml_node(xml_node, version_infos=None):
-    new_node = StructNode()
     xml_tag = xml_node.tag.lower()
     if version_infos is None:
         version_infos = []
@@ -705,13 +727,20 @@ def parse_xml_node(xml_node, version_infos=None):
     elif xml_tag in ignored_names:
         return None
 
+    new_node = StructNode()
     xml_attribs = {key.lower(): xml_node.attrib[key]
                    for key in xml_node.attrib}
     xml_tag = xml_tag.replace("colour", "color")
 
+    new_node.name = fix_name_identifier(
+        xml_attribs.get('name', "unnamed").lower()).rstrip("_")
+    new_node.offset = eval(xml_attribs.get('offset', "None"))
+    new_node.visible = eval(xml_attribs.get('visible', "true").capitalize())
+
     if xml_tag == "tagref" and not eval(xml_attribs.get(
             'withclass', "true").capitalize()):
-        xml_tag = "uint32"
+        xml_tag = "tagref_uint32"
+        new_node.visible = False
     elif xml_tag.startswith("colorf") and xml_attribs.get(
             'format', "rgb") == "rgb":
         xml_tag = "colorfnoalpha"
@@ -721,11 +750,6 @@ def parse_xml_node(xml_node, version_infos=None):
         new_node.typ = type_name_map[xml_tag]
     else:
         raise TypeError("Unknown field type '%s'" % xml_node.tag)
-
-    new_node.name = fix_name_identifier(
-        xml_attribs.get('name', "unnamed").lower()).rstrip("_")
-    new_node.offset = eval(xml_attribs.get('offset', "None"))
-    new_node.visible = eval(xml_attribs.get('visible', "true").capitalize())
 
     if "basesize" in xml_attribs:
         new_node.size = eval(xml_attribs['basesize'])
@@ -823,40 +847,116 @@ def parse_xml(xml_path, version_infos):
     return nodes
 
 
-for root, dirs, files in os.walk("."):
-    for fname in files:
-        xml_name, ext = os.path.splitext(fname)
-        if ext.lower() != ".xml":
-            continue
+timestamp = datetime.now().strftime("%Y/%m/%d  %H:%M")
+for _, dirs, __ in os.walk("xml/"):
+    tag_def_dirs = dict.fromkeys(dirs)
+    for tag_def_dir in tag_def_dirs:
+        for _, __, files in os.walk(os.path.join("xml", tag_def_dir)):
+            tag_def_dirs[tag_def_dir] = tuple(f[: -4] for f in files if
+                                              f.lower().endswith(".xml"))
+    break
 
-        xml_path = os.path.join(root, fname)
-        print(xml_path)
+
+for tag_def_dir in sorted(tag_def_dirs):
+    defs_dir = os.path.join(tag_def_dir, "defs")
+    os.makedirs(defs_dir, exist_ok=True)
+
+    common_descs_filepath = os.path.join(tag_def_dir, "common_descs.py")
+    enum_descs_filepath = os.path.join(tag_def_dir, "enums.py")
+    if not os.path.exists(common_descs_filepath):
+        with open(common_descs_filepath, "w+") as pyf:
+            pyf.write('''from reclaimer.common_descs import *\n''')
+
+    # make the all import in the __init__
+    with open(os.path.join(defs_dir, "__init__.py"), "w+") as pyf:
+        pyf.write('__all__ = (')
+        i = 0
+        for fname in sorted(tag_def_dirs[tag_def_dir]):
+            if i % 8 == 0:
+                pyf.write('\n    ')
+            module_name = "".join(c if c in VALID_MODULE_NAME_CHARS
+                                  else "_" for c in fname)
+            module_name += "_" * ((4 - (len(module_name) % 4)) % 4)
+            pyf.write('"%s", ' % module_name)
+            i += 1
+        pyf.write('\n    )\n')
+
+
+    all_enum_bool_names_by_desc = {}
+    shared_enum_bool_names_by_desc = {}
+    all_version_infos = {}
+    all_tag_struct_nodes = {}
+
+    # convert all xml's into struct node trees
+    print("Parsing XML's...")
+    for fname in tag_def_dirs[tag_def_dir]:
+        xml_path = os.path.join("xml", tag_def_dir, fname + ".xml")
         version_infos = []
         tag_struct_nodes = parse_xml(xml_path, version_infos)
         if tag_struct_nodes is None:
-            continue
+            print('Could not parse: %s' % xml_path)
+        else:
+            all_version_infos[fname] = version_infos
+            all_tag_struct_nodes[fname] = tag_struct_nodes
+
+
+    print("Collecting shared enums...")
+    # for the first pass, we collect all shared enums
+    for fname in sorted(all_tag_struct_nodes):
+        descs_by_name = OrderedDict()
+        enum_bool_names_by_desc = {}
+        struct_node_to_supyr_desc(deepcopy(all_tag_struct_nodes[fname]),
+                                  descs_by_name, enum_bool_names_by_desc,
+                                  shared_enum_bool_names_by_desc,
+                                  tag_def_dir, report_optimize=False)
+        for desc_str, desc_name in enum_bool_names_by_desc.items():
+            if desc_str in all_enum_bool_names_by_desc:
+                shared_enum_bool_names_by_desc[desc_str] = desc_name
+
+            all_enum_bool_names_by_desc[desc_str] = desc_name
+
+
+    # write out the shared enums
+    with open(enum_descs_filepath, "w+") as pyf:
+        pyf.write('''from reclaimer.enums import *\n''')
+        shared_enum_bool_descs_by_name = {
+            shared_enum_bool_names_by_desc[desc]: desc for
+            desc in shared_enum_bool_names_by_desc}
+        for desc_name in sorted(shared_enum_bool_descs_by_name):
+            desc_str = shared_enum_bool_descs_by_name[desc_name]
+            pyf.write("\n%s = %s\n" % (desc_name, desc_str.strip(",")))
+
+
+    print("Writing definitions...")
+    # on the second pass, we actually write the definitions
+    for module_name in sorted(all_tag_struct_nodes):
+        print(module_name)
+        version_infos = all_version_infos[module_name]
+        tag_struct_nodes = all_tag_struct_nodes[module_name]
 
         descs_by_name = OrderedDict()
-        enum_bool_names_by_desc = dict()
+        enum_bool_names_by_desc = {}
         struct_node_to_supyr_desc(tag_struct_nodes, descs_by_name,
-                                  enum_bool_names_by_desc)
-
-        xml_filename = "".join(c if c in VALID_MODULE_NAME_CHARS
-                               else "_" for c in xml_name)
-        xml_filename += "_" * ((4 - (len(xml_filename) % 4)) % 4)
-
-        with open(os.path.join(root, xml_filename) + ".py", "w+") as pyf:
+                                  enum_bool_names_by_desc,
+                                  shared_enum_bool_names_by_desc,
+                                  tag_def_dir, report_optimize=True)
+        
+        module_name = "".join(c if c in VALID_MODULE_NAME_CHARS
+                              else "_" for c in module_name)
+        module_name += "_" * ((4 - (len(module_name) % 4)) % 4)
+        with open(os.path.join(defs_dir, module_name) + ".py", "w+") as pyf:
             pyf.write("############# Credits and version info #############\n"
-                      "# Definition autogenerated from Assembly XML tag def\n"
-                      "#\n")
-                
+                      "# Definition generated from Assembly XML tag def\n"
+                      "#\t Date generated: %s\n#\n" % timestamp)
+
             for version_info_str in version_infos:
                 pyf.write("# %s\n" % version_info_str)
 
             pyf.write("#\n"
                       "####################################################\n")
 
-            pyf.write(block_def_import_str)
+            pyf.write('''from ..common_descs import *
+from supyr_struct.defs.tag_def import TagDef''')
             enum_bool_descs_by_name = {enum_bool_names_by_desc[desc]: desc for
                                        desc in enum_bool_names_by_desc}
 

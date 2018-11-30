@@ -1,0 +1,37 @@
+class structs that inherit from superclasses will begin with their
+superclass's structs in order. so object, then unit, then biped.
+
+render_method
+	shader
+	shader_beam
+	shader_contrail
+	shader_cortana
+	shader_custom
+	shader_decal
+	shader_foliage
+	shader_halogram
+	shader_light_volume
+	shader_particle
+	shader_skin
+	shader_terrain
+	shader_water
+
+
+object
+	crate
+	creature
+	device
+		device_control
+		device_machine
+		device_terminal
+	effect_scenery
+	item
+		equipment
+		weapon
+	projectile
+	scenery
+	sound_scenery
+	unit
+		biped
+		giant
+		vehicle

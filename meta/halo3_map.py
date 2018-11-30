@@ -246,8 +246,8 @@ h3_tag_type = Struct("tag header",
     UEnum32("class 1", GUI_NAME="primary tag class",   INCLUDE=valid_h3_tags),
     UEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_h3_tags),
     UEnum32("class 3", GUI_NAME="tertiary tag class",  INCLUDE=valid_h3_tags),
-    UInt32("string id"),  # specifies the string containing the file
-    #                       extension for this class(i.e: bitm = bitmap)
+    h3_string_id("string id"),  # specifies the string containing the file
+    #                             extension for this class(i.e: bitm = bitmap)
     )
 
 h3_tag_header = Struct("tag header",
