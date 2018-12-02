@@ -61,3 +61,18 @@ def h2_rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                                offset=orig_offset, **kwargs)
         raise e
 
+
+def h2_tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
+                      rawdata=None, root_offset=0, offset=0, **kwargs):
+    # parse tag_class and id(if meta) or path length(if not meta)
+    # TODO: Make this work
+    node[1] = 0xFFffFFff
+    node[2] = 0
+    return offset + 8
+
+    
+def h2_tag_ref_serializer(self, node, parent=None, attr_index=None,
+                          writebuffer=None, root_offset=0, offset=0, **kwargs):
+    # serialize tag_class and id(if meta) or path length(if not meta)
+    # TODO: Make this work
+    return offset + 8
