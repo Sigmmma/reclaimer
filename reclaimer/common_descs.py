@@ -155,13 +155,22 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
             )
 
 
+def get_meta_dependency_filepath(parent=None, tag_index_manager=None, **kwargs):
+    if tag_index_manager and parent:
+        tag_index_ref = tag_index_manager.get_tag_index_ref(parent.id)
+        if tag_index_ref:
+            parent.filepath = tag_index_ref.path
+            return
+    parent.filepath = ""
+
+
 def dependency_uint32(name='tag ref', **kwargs):
     kwargs.setdefault(VISIBLE, False)
     kwargs.setdefault(ORIENT, "h")
     return QStruct(name,
         UInt32("id"),
         STEPTREE=Computed("filepath",
-            COMPUTE=lambda *a, **kw: "NOT IMPLEMENTED",
+            COMPUTE_READ=get_meta_dependency_filepath,
             WIDGET=EntryFrame, WIDGET_WIDTH=32
             ),
         **kwargs
@@ -186,13 +195,6 @@ def dependency(name='tag ref', valid_ids=None, **kwargs):
         )
 
 
-def compute_stringid_string(parent=None, map_string_id_manager=None, **kwargs):
-    if parent and map_string_id_manager:
-        return map_string_id_manager.get_string(parent)
-
-    return "COULD NOT LOCATE"
-
-
 def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
     if len_bit_ct is None:
         len_bit_ct = 32 - index_bit_ct - set_bit_ct
@@ -203,8 +205,10 @@ def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
     kwargs.setdefault(ORIENT, "h")
     return StringID(name,
         UInt32('string id', VISIBLE=False),
-        Computed("string", GUI_NAME="",
-            COMPUTE=compute_stringid_string,
+        STEPTREE=WritableComputed("string",
+            COMPUTE_READ=read_string_id_string,
+            COMPUTE_WRITE=write_string_id_string,
+            SIZE=get_set_string_id_size, GUI_NAME="",
             WIDGET=EntryFrame, WIDGET_WIDTH=32),
         **kwargs
         )

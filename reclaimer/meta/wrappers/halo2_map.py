@@ -147,6 +147,10 @@ class Halo2Map(HaloMap):
         else:
             self.tag_index = h2_to_h1_tag_index(self.map_header, tag_index)
 
+        self.string_id_manager = StringIdManager(
+            self.map_header.strings.string_id_table, (),
+            )
+        self.tag_index_manager = TagIndexManager(self.tag_index.tag_index)
         map_type = self.map_header.map_type.data - 1
         if map_type > 0 and map_type < 4:
             self.is_resource = True
@@ -168,7 +172,6 @@ class Halo2Map(HaloMap):
             print(format_exc())
             print("Could not read sound_cache_file_gestalt tag")
 
-        self.tag_index_manager = TagIndexManager(self.tag_index.tag_index)
         if autoload_resources and (will_be_active or not self.is_resource):
             self.load_all_resource_maps(dirname(map_path))
 
@@ -230,7 +233,9 @@ class Halo2Map(HaloMap):
             # read the meta data from the map
             desc['TYPE'].parser(
                 desc, parent=block, attr_index=0, magic=self.map_magic,
-                tag_index_manager=self.tag_index_manager, rawdata=self.map_data, offset=offset)
+                tag_index_manager=self.tag_index_manager,
+                map_string_id_manager=self.string_id_manager,
+                rawdata=self.map_data, offset=offset)
         except Exception:
             print(format_exc())
             return

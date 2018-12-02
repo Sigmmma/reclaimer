@@ -91,7 +91,6 @@ class Halo3Map(HaloMap):
         self.tag_index = h3_to_h1_tag_index(self.map_header, self.tag_index)
 
         tag_index_array = self.tag_index.tag_index
-
         self.string_id_manager = StringIdManager(
             self.map_header.strings.string_id_table,
             self.string_id_set_offsets,
@@ -110,7 +109,7 @@ class Halo3Map(HaloMap):
         for b in self.orig_tag_index.root_tags:
             meta = self.get_meta(b.id)
             if meta:
-                root_tags[b.id] = root_tags[b.tag_class.enum_name] = meta
+                self.root_tags[b.id] = self.root_tags[b.tag_class.enum_name] = meta
 
         self.map_data.clear_cache()
 
@@ -150,8 +149,8 @@ class Halo3Map(HaloMap):
 
             desc['TYPE'].parser(
                 desc, parent=block, attr_index=0, magic=meta_magic,
-                tag_index_manager=self.tag_index_manager, rawdata=self.map_data,
-                offset=offset, parsing_resource=True,
+                rawdata=self.map_data, offset=offset, parsing_resource=True,
+                tag_index_manager=self.tag_index_manager,
                 map_sections=self.map_header.sections,
                 map_string_id_manager=self.string_id_manager,
                 map_partitions=self.map_header.partitions)

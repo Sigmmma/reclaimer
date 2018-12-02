@@ -50,14 +50,14 @@ def tag_ref_str_parser(self, desc, node=None, parent=None, attr_index=None,
     assert parent is not None and attr_index is not None, (
         "parent and attr_index must be provided " +
         "and not None when reading a data field.")
-    tag_id_manager = kwargs.get("tag_index_manager")
-    if tag_id_manager:
+    tag_index_manager = kwargs.get("tag_index_manager")
+    if tag_index_manager:
         tag_id = parent.id
         if kwargs.get("indexed"):
             # tag_index is a resource map tag_paths collection
-            parent.id = tag_id_manager.translate_tag_id(tag_id)
+            parent.id = tag_index_manager.translate_tag_id(tag_id)
 
-        tag_index_ref = tag_id_manager.get_tag_index_ref(tag_id)
+        tag_index_ref = tag_index_manager.get_tag_index_ref(tag_id)
         if tag_index_ref is None:
             parent[attr_index] = ""
         else:
@@ -75,6 +75,57 @@ def tag_ref_str_parser(self, desc, node=None, parent=None, attr_index=None,
         parent[attr_index] = desc.get(DEFAULT, self.default())
 
     return offset
+
+
+def read_string_id_string(parent=None, attr_index=None, rawdata=None, offset=0,
+                          map_string_id_manager=None, **kwargs):
+    assert parent is not None
+    if map_string_id_manager:
+        parent[attr_index] = map_string_id_manager.get_string(parent)
+    elif "magic" not in kwargs:
+        desc = parent.desc
+        str_len = (parent[0] & 0xFFffFFff) >> (desc[STRINGID_IDX_BITS] +
+                                               desc[STRINGID_SET_BITS])
+        if str_len:
+            rawdata.seek(offset)
+            parent[attr_index] = rawdata.read(str_len).decode(
+                encoding="latin-1")
+            return offset + str_len + 1  # add 1 for the null terminator
+        else:
+            parent[attr_index] = ""
+    else:
+        parent[attr_index] = ""
+
+
+def write_string_id_string(parent=None, attr_index=None,
+                           writebuffer=None, offset=0, **kwargs):
+    assert parent is not None
+    if "magic" in kwargs:
+        return
+
+    raw_string = parent.string.encode(encoding="latin-1") + b'\x00'
+    writebuffer.seek(offset)
+    writebuffer.write(raw_string)
+    return offset + len(raw_string)
+
+
+def get_set_string_id_size(parent=None, attr_index=None,
+                           new_value=None, **kwargs):
+    desc = parent.desc
+    string_id = parent[0]
+    idx_set_bit_ct = desc[STRINGID_IDX_BITS] + desc[STRINGID_SET_BITS]
+    len_bit_ct = desc[STRINGID_LEN_BITS]
+    if new_value is None:
+        return (string_id & 0xFFffFFff) >> idx_set_bit_ct
+
+    # computed fields will always need to compute the size to
+    # set on their own rather than using any supplied new_value,
+    # as it should always be equal to 0, but not None.
+    new_value = len(parent.string)
+    assert new_value >= 0 and new_value < (1 << len_bit_ct)
+
+    parent[0] = (string_id & ((1 << idx_set_bit_ct) - 1)) + (
+        new_value << idx_set_bit_ct)
 
 
 def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
@@ -235,3 +286,19 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                                parent=parent, attr_index=attr_index,
                                offset=orig_offset, **kwargs)
         raise e
+
+
+def tag_ref_str_serializer(self, node, parent=None, attr_index=None,
+                           writebuffer=None, root_offset=0, offset=0, **kwargs):
+    if "magic" in kwargs:
+        # don't serialize the string 
+        return offset
+
+    node_bytes = self.encoder(node, parent, attr_index)
+    writebuffer.seek(root_offset + offset)
+    writebuffer.write(node_bytes)
+    size = parent.get_size(attr_index, root_offset=root_offset,
+                           offset=offset, **kwargs)
+    if size - len(node_bytes):
+        writebuffer.write(b'\x00'*(size - len(node_bytes)))
+    return offset + size

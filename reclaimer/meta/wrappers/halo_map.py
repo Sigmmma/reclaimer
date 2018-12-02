@@ -79,14 +79,14 @@ def h2_to_h1_tag_index(map_header, tag_index):
                                            0xFFFFFFFF
             new_index_entry.id = 0xFFFFFFFF
             continue
-        else:
-            types = tag_types[old_index_entry.tag_class.data]
-            new_index_entry.class_1 = types[0]
-            new_index_entry.class_2 = types[1]
-            new_index_entry.class_3 = types[2]
 
-            new_index_entry.path = map_header.strings.\
-                                   tag_name_table[i].tag_name
+        types = tag_types[old_index_entry.tag_class.data]
+        new_index_entry.class_1 = types[0]
+        new_index_entry.class_2 = types[1]
+        new_index_entry.class_3 = types[2]
+
+        new_index_entry.path = map_header.strings.\
+                               tag_name_table[i].tag_name
 
         new_index_entry.id = old_index_entry.id
         new_index_entry.meta_offset = old_index_entry.offset
@@ -116,23 +116,16 @@ def h3_to_h1_tag_index(map_header, tag_index):
         old_index_entry = old_index_array[i]
         new_index_array.append()
         new_index_entry = new_index_array[-1]
-        if old_index_entry.tag_type_index not in tag_types:
-            new_index_entry.path = "reserved"
-            new_index_entry.class_1.data = new_index_entry.class_2.data =\
-                                           new_index_entry.class_3.data =\
-                                           0xFFFFFFFF
-            new_index_entry.id = 0xFFFFFFFF
-            continue
-        else:
-            types = tag_types[old_index_entry.tag_type_index]
-            new_index_entry.class_1 = types[0]
-            new_index_entry.class_2 = types[1]
-            new_index_entry.class_3 = types[2]
 
-            new_index_entry.path = map_header.strings.\
-                                   tag_name_table[i].tag_name
+        types = tag_types[old_index_entry.tag_type_index]
+        new_index_entry.class_1 = types[0]
+        new_index_entry.class_2 = types[1]
+        new_index_entry.class_3 = types[2]
 
-        new_index_entry.id = old_index_entry.table_index
+        new_index_entry.path = map_header.strings.\
+                               tag_name_table[i].tag_name
+
+        new_index_entry.id = (old_index_entry.table_index << 16) + i
         new_index_entry.meta_offset = old_index_entry.offset
         if new_index_entry.meta_offset == 0:
             # might flag sbsp and ltmp tags as indexed
@@ -156,13 +149,14 @@ class StringIdManager:
 
         set_id = (string_id >> idx_bit_ct) & ((1 << set_bit_ct) - 1)
         index = string_id & ((1 << idx_bit_ct) - 1)
-        set_offset = self.set_offsets[set_id]
-        if index < set_offset[0]:
-            set_id -= 1
+        if set_id in range(len(self.set_offsets)):
             set_offset = self.set_offsets[set_id]
+            if index < set_offset[0]:
+                set_id -= 1
+                set_offset = self.set_offsets[set_id]
 
-        if set_id >= 0:
-            index += set_offset[1] - set_offset[0]
+            if set_id >= 0:
+                index += set_offset[1] - set_offset[0]
 
         return self.strings[index].string
 
@@ -180,8 +174,13 @@ class TagIndexManager:
             for i in range(len(tag_index)):
                 self._tag_index_map[tag_index[i].id & 0xFFff] = i
 
+        # 0xFFff is reserved to mean NULL, so don't map it
+        self._tag_index_map.pop(0xFFff, None)
+
     def translate_tag_id(self, tag_id):
-        return self._tag_index_map.get(tag_id & 0xFFff, 0xFFff)
+        if tag_id & 0xFFff in range(len(self._tag_index)):
+            return tag_id & 0xFFff
+        return self._tag_index_map.get((tag_id >> 16) & 0xFFff, 0xFFff)
 
     def get_tag_index_ref(self, tag_id):
         tag_id = self.translate_tag_id(tag_id)
@@ -375,7 +374,6 @@ class HaloMap:
             print("    Could not read tag index.")
             return
 
-        self.tag_index_manager = TagIndexManager(tag_index.tag_index)
         self.maps[map_header.map_name] = self
         if will_be_active:
             self.maps["active"] = self

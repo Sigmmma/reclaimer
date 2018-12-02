@@ -88,7 +88,7 @@ def h2_rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
         INCLUDE=ref_struct, ORIENT="v",
         STEPTREE=f_type("data",
             SIZE=".size", GUI_NAME=name.replace('_', ' '), **kwargs)
-            )
+        )
 
 def h2_rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
                    widget=HaloRawdataFrame, **kwargs):
@@ -106,7 +106,8 @@ def h2_rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
 
     return H2RawdataRef(name,
         INCLUDE=ref_struct,
-        STEPTREE=f_type("data", GUI_NAME="", SIZE=".size", **kwargs))
+        STEPTREE=f_type("data", GUI_NAME="", SIZE=".size", **kwargs)
+        )
 
 
 def h2_dependency(name='tag ref', valid_ids=None, **kwargs):
@@ -123,10 +124,10 @@ def h2_dependency(name='tag ref', valid_ids=None, **kwargs):
     return H2TagRef(name,
         valid_ids,
         UInt32("id", VISIBLE=False),
-        STEPTREE=Computed("filepath",
-            COMPUTE=lambda *a, **kw: "NOT IMPLEMENTED",
-            WIDGET=EntryFrame, WIDGET_WIDTH=32
-            ),
+        SInt32("path length",
+            MAX=MAX_TAG_PATH_LEN, OFFSET=4, VISIBLE=False, EDITABLE=False),
+        STEPTREE=StrTagRef(
+            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254),
         **kwargs
         )
 
@@ -248,12 +249,6 @@ h2_tag_header = Struct("blam_header",
     VISIBLE=False, SIZE=64
     )
 
-
-h2_tag_index_ref_struct = H2TagRef('dependency',
-    valid_h2_tags,
-    UInt32("id", VISIBLE=False),
-    ORIENT='h'
-    )
 
 h2_reflexive_struct = H2Reflexive('reflexive',
     SInt32("size", VISIBLE=False),
