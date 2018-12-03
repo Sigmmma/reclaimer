@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 phmo_list_shape_shape_type = (
@@ -75,7 +77,7 @@ phmo_rigid_bodie_shape_type = (
 
 phmo_unknown_2 = Struct("unknown_2", 
     h3_string_id("unknown_0"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     ENDIAN=">", SIZE=24
     )
@@ -83,7 +85,7 @@ phmo_unknown_2 = Struct("unknown_2",
 
 phmo_unknown_3 = Struct("unknown_3", 
     h3_string_id("name"),
-    Array("unknown_array", SIZE=5, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=5),
     Pad(8),
     ENDIAN=">", SIZE=32
     )
@@ -157,7 +159,7 @@ phmo_unknown_4 = Struct("unknown_4",
 
 
 phmo_node_edge_constraint_unknown_0 = Struct("unknown_0", 
-    Array("unknown_array", SIZE=6, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=6, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
@@ -404,7 +406,7 @@ phmo_polyhedron_four_vector = Struct("polyhedron_four_vector",
 
 
 phmo_polyhedron_plane_equation = Struct("polyhedron_plane_equation", 
-    Array("unknown_array", SIZE=4, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=4),
     ENDIAN=">", SIZE=16
     )
 
@@ -419,7 +421,7 @@ phmo_list = Struct("list",
     SInt32("child_shapes_size"),
     UInt32("child_shapes_capacity"),
     BytesRaw("unknown_3", SIZE=12, VISIBLE=False),
-    Array("unknown_array", SIZE=8, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     ENDIAN=">", SIZE=80
     )
 
@@ -566,13 +568,13 @@ phmo_phantom = Struct("phantom",
     )
 
 
-phmo_meta_def = BlockDef("phmo", 
+phmo_body = Struct("tagdata", 
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     Float("mass"),
     Float("low_frequency_decativation_scale"),
     Float("high_frequency_decativation_scale"),
     BytesRaw("unknown_1", SIZE=8, VISIBLE=False),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     h3_reflexive("unknown_2", phmo_unknown_2),
     h3_reflexive("unknown_3", phmo_unknown_3),
     h3_reflexive("phantom_types", phmo_phantom_type),
@@ -602,5 +604,16 @@ phmo_meta_def = BlockDef("phmo",
     BytesRaw("ball_and_socket_constraint_block", SIZE=36, VISIBLE=False),
     h3_reflexive("phantoms", phmo_phantom),
     BytesRaw("unknown_6", SIZE=8, VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=416
+    ENDIAN=">", SIZE=416
+    )
+
+
+def get():
+    return phmo_def
+
+phmo_def = TagDef("phmo",
+    h3_blam_header('phmo'),
+    phmo_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["phmo"], endian=">", tag_cls=H3Tag
     )

@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -179,7 +181,7 @@ gint_camera_track = Struct("camera_track",
 
 
 gint_unknown_7 = Struct("unknown_7", 
-    Array("unknown_array", SIZE=19, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
@@ -226,7 +228,7 @@ gint_seat_camera_track = Struct("camera_track",
 
 
 gint_seat_unknown_6 = Struct("unknown_6", 
-    Array("unknown_array", SIZE=19, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
@@ -313,7 +315,7 @@ gint_buckling_parameter = Struct("buckling_parameter",
     SInt32("unknown_1"),
     Float("unknown_2"),
     SInt32("unknown_3"),
-    Array("unknown_array", SIZE=5, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=5),
     h3_string_id("marker"),
     Float("scan_distance_1_float"),
     Float("scan_distance_2_float"),
@@ -332,7 +334,7 @@ gint_buckling_parameter = Struct("buckling_parameter",
     )
 
 
-gint_meta_def = BlockDef("gint", 
+gint_body = Struct("tagdata", 
     SEnum16("object_type", *bloc_object_type),
     Bool16("flags_0", 
         "does_not_cast_shadow",
@@ -486,5 +488,16 @@ gint_meta_def = BlockDef("gint",
     Float("leg_attach_radius"),
     h3_reflexive("buckling_parameters", gint_buckling_parameter),
     Float("toe_joint_extended_fraction"),
-    TYPE=Struct, ENDIAN=">", SIZE=820
+    ENDIAN=">", SIZE=820
+    )
+
+
+def get():
+    return gint_def
+
+gint_def = TagDef("gint",
+    h3_blam_header('gint'),
+    gint_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["gint"], endian=">", tag_cls=H3Tag
     )

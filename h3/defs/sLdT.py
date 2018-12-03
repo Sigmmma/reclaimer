@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -96,7 +98,7 @@ sLdT_lightmap_meshe_unknown_water = Struct("unknown_water",
 sLdT_lightmap_meshe = Struct("meshe", 
     h3_reflexive("parts", sLdT_lightmap_meshe_part),
     h3_reflexive("subparts", sLdT_lightmap_meshe_subpart),
-    Array("vertex_buffer_index_array", SIZE=8, SUB_STRUCT=SInt16("vertex_buffer_index")),
+    Array("vertex_buffer_index_array", SUB_STRUCT=SInt16("vertex_buffer_index"), SIZE=8),
     SInt16("index_buffer_index_1"),
     SInt16("index_buffer_index_2"),
     Bool8("flags", 
@@ -128,8 +130,8 @@ sLdT_lightmap_compression_info = Struct("compression_info",
 
 
 sLdT_lightmap_unknown_nodey = Struct("unknown_nodey", 
-    Array("unknown_array", SIZE=8, SUB_STRUCT=Float("unknown"), VISIBLE=False),
-    Array("node_index_array", SIZE=4, SUB_STRUCT=SInt8("node_index"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
+    Array("node_index_array", SUB_STRUCT=SInt8("node_index"), SIZE=4, VISIBLE=False),
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -239,7 +241,7 @@ sLdT_airprobe = Struct("airprobe",
 
 
 sLdT_unknown_2 = Struct("unknown_2", 
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown", SIZE=72, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=80
@@ -261,7 +263,7 @@ sLdT_unknown_3 = Struct("unknown_3",
     )
 
 
-sLdT_meta_def = BlockDef("sLdT", 
+sLdT_body = Struct("tagdata", 
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     h3_reflexive("lightmap", sLdT_lightmap),
     BytesRaw("unknown_1", SIZE=24, VISIBLE=False),
@@ -269,5 +271,16 @@ sLdT_meta_def = BlockDef("sLdT",
     h3_reflexive("unknown_2", sLdT_unknown_2),
     h3_reflexive("unknown_3", sLdT_unknown_3),
     BytesRaw("unknown_4", SIZE=12, VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=88
+    ENDIAN=">", SIZE=88
+    )
+
+
+def get():
+    return sLdT_def
+
+sLdT_def = TagDef("sLdT",
+    h3_blam_header('sLdT'),
+    sLdT_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["sLdT"], endian=">", tag_cls=H3Tag
     )

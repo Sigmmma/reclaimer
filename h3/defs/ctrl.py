@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 ctrl_triggers_when = (
@@ -170,7 +172,7 @@ ctrl_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
     )
 
 
-ctrl_meta_def = BlockDef("ctrl", 
+ctrl_body = Struct("tagdata", 
     SEnum16("object_type", *bloc_object_type),
     Bool16("flags_0", 
         "does_not_cast_shadow",
@@ -243,5 +245,16 @@ ctrl_meta_def = BlockDef("ctrl",
     h3_dependency("on"),
     h3_dependency("off"),
     h3_dependency("deny"),
-    TYPE=Struct, ENDIAN=">", SIZE=460
+    ENDIAN=">", SIZE=460
+    )
+
+
+def get():
+    return ctrl_def
+
+ctrl_def = TagDef("ctrl",
+    h3_blam_header('ctrl'),
+    ctrl_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["ctrl"], endian=">", tag_cls=H3Tag
     )

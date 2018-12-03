@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -38,7 +40,7 @@ beam_beam_system_import_data = Struct("import_data",
     h3_dependency("bitmap"),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     SInt32("unknown_2", VISIBLE=False),
-    Array("unknown_array", SIZE=6, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=6, VISIBLE=False),
     BytesRaw("unknown_3", SIZE=4, VISIBLE=False),
     h3_reflexive("functions", beam_beam_system_import_data_function),
     ENDIAN=">", SIZE=60
@@ -60,7 +62,7 @@ beam_beam_system_shader_propertie_shader_map = Struct("shader_map",
 
 
 beam_beam_system_shader_propertie_argument = Struct("argument", 
-    Array("arg_array", SIZE=4, SUB_STRUCT=Float("arg")),
+    Array("arg_array", SUB_STRUCT=Float("arg"), SIZE=4),
     ENDIAN=">", SIZE=16
     )
 
@@ -118,7 +120,7 @@ beam_beam_system_shader_propertie = Struct("shader_propertie",
     SInt32("unknown_5", VISIBLE=False),
     SInt32("unknown_6", VISIBLE=False),
     BytesRaw("unknown_7", SIZE=4, VISIBLE=False),
-    Array("unknown_array", SIZE=8, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=8, VISIBLE=False),
     ENDIAN=">", SIZE=132
     )
 
@@ -150,7 +152,7 @@ beam_beam_system = Struct("beam_system",
     h3_reflexive("unknown_0", beam_beam_system_unknown_0),
     h3_reflexive("import_data", beam_beam_system_import_data),
     h3_reflexive("shader_properties", beam_beam_system_shader_propertie),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     SInt32("unknown_2", VISIBLE=False),
     BytesRaw("unknown_3", SIZE=36, VISIBLE=False),
@@ -227,7 +229,18 @@ beam_beam_system = Struct("beam_system",
     )
 
 
-beam_meta_def = BlockDef("beam", 
+beam_body = Struct("tagdata", 
     h3_reflexive("beam_system", beam_beam_system),
-    TYPE=Struct, ENDIAN=">", SIZE=12
+    ENDIAN=">", SIZE=12
+    )
+
+
+def get():
+    return beam_def
+
+beam_def = TagDef("beam",
+    h3_blam_header('beam'),
+    beam_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["beam"], endian=">", tag_cls=H3Tag
     )

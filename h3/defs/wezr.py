@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 wezr_capture_the_flag_variant_game_mode = (
@@ -1318,7 +1320,7 @@ wezr_sandbox_editor_variant = Struct("sandbox_editor_variant",
     )
 
 
-wezr_meta_def = BlockDef("wezr", 
+wezr_body = Struct("tagdata", 
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     h3_reflexive("trait_profiles", wezr_trait_profile),
     h3_reflexive("slayer_variants", wezr_slayer_variant),
@@ -1331,5 +1333,16 @@ wezr_meta_def = BlockDef("wezr",
     h3_reflexive("juggernaut_variants", wezr_juggernaut_variant),
     h3_reflexive("vip_variants", wezr_vip_variant),
     h3_reflexive("sandbox_editor_variants", wezr_sandbox_editor_variant),
-    TYPE=Struct, ENDIAN=">", SIZE=136
+    ENDIAN=">", SIZE=136
+    )
+
+
+def get():
+    return wezr_def
+
+wezr_def = TagDef("wezr",
+    h3_blam_header('wezr'),
+    wezr_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["wezr"], endian=">", tag_cls=H3Tag
     )

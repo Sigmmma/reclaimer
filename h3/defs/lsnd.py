@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -8,7 +8,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 lsnd_track_output_effect = (
@@ -60,7 +62,7 @@ lsnd_detail_sound = Struct("detail_sound",
     )
 
 
-lsnd_meta_def = BlockDef("lsnd", 
+lsnd_body = Struct("tagdata", 
     Bool32("flags", 
         "deafening_to_ais",
         "not_a_loop",
@@ -80,5 +82,16 @@ lsnd_meta_def = BlockDef("lsnd",
     SInt16("unknown_3", VISIBLE=False),
     h3_reflexive("tracks", lsnd_track),
     h3_reflexive("detail_sounds", lsnd_detail_sound),
-    TYPE=Struct, ENDIAN=">", SIZE=64
+    ENDIAN=">", SIZE=64
+    )
+
+
+def get():
+    return lsnd_def
+
+lsnd_def = TagDef("lsnd",
+    h3_blam_header('lsnd'),
+    lsnd_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["lsnd"], endian=">", tag_cls=H3Tag
     )

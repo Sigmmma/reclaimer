@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -36,7 +38,7 @@ cntl_contrail_system_import_data = Struct("import_data",
     h3_dependency("bitmap"),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     SInt32("unknown_2", VISIBLE=False),
-    Array("unknown_array", SIZE=6, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=6, VISIBLE=False),
     BytesRaw("unknown_3", SIZE=4, VISIBLE=False),
     h3_reflexive("functions", cntl_contrail_system_import_data_function),
     ENDIAN=">", SIZE=60
@@ -58,7 +60,7 @@ cntl_contrail_system_shader_propertie_shader_map = Struct("shader_map",
 
 
 cntl_contrail_system_shader_propertie_argument = Struct("argument", 
-    Array("arg_array", SIZE=4, SUB_STRUCT=Float("arg")),
+    Array("arg_array", SUB_STRUCT=Float("arg"), SIZE=4),
     ENDIAN=">", SIZE=16
     )
 
@@ -116,7 +118,7 @@ cntl_contrail_system_shader_propertie = Struct("shader_propertie",
     SInt32("unknown_5", VISIBLE=False),
     SInt32("unknown_6", VISIBLE=False),
     BytesRaw("unknown_7", SIZE=4, VISIBLE=False),
-    Array("unknown_array", SIZE=8, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=8, VISIBLE=False),
     ENDIAN=">", SIZE=132
     )
 
@@ -191,7 +193,7 @@ cntl_contrail_system = Struct("contrail_system",
     h3_reflexive("unknown_14", cntl_contrail_system_unknown_14),
     h3_reflexive("import_data", cntl_contrail_system_import_data),
     h3_reflexive("shader_properties", cntl_contrail_system_shader_propertie),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown_15", SIZE=4, VISIBLE=False),
     SInt32("unknown_16", VISIBLE=False),
     Pad(16),
@@ -238,7 +240,18 @@ cntl_contrail_system = Struct("contrail_system",
     )
 
 
-cntl_meta_def = BlockDef("cntl", 
+cntl_body = Struct("tagdata", 
     h3_reflexive("contrail_system", cntl_contrail_system),
-    TYPE=Struct, ENDIAN=">", SIZE=12
+    ENDIAN=">", SIZE=12
+    )
+
+
+def get():
+    return cntl_def
+
+cntl_def = TagDef("cntl",
+    h3_blam_header('cntl'),
+    cntl_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["cntl"], endian=">", tag_cls=H3Tag
     )

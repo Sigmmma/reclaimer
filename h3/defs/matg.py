@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -16,7 +16,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -125,10 +127,10 @@ matg_sound = Struct("sound",
 
 matg_camera = Struct("camera", 
     h3_dependency("default_unit_camera_track"),
-    Array("unknown_array_0", SIZE=24, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array_0", SUB_STRUCT=Float("unknown"), SIZE=24, VISIBLE=False),
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
-    Array("unknown_array_1", SIZE=11, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array_1", SUB_STRUCT=Float("unknown"), SIZE=11, VISIBLE=False),
     ENDIAN=">", SIZE=160
     )
 
@@ -399,7 +401,7 @@ matg_falling_damage = Struct("falling_damage",
 
 
 matg_material_water_drag_propertie = Struct("water_drag_propertie", 
-    Array("unknown_array", SIZE=9, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=9),
     Pad(4),
     VISIBLE=False,
     ENDIAN=">", SIZE=40
@@ -522,7 +524,7 @@ matg_metagame_global = Struct("metagame_global",
     )
 
 
-matg_meta_def = BlockDef("matg", 
+matg_body = Struct("tagdata", 
     BytesRaw("unknown_0", SIZE=172, VISIBLE=False),
     SEnum32("language", *ugh__language_language),
     h3_reflexive("havok_cleanup_resources", matg_havok_cleanup_resource),
@@ -664,5 +666,16 @@ matg_meta_def = BlockDef("matg",
     SInt16("unknown_40", VISIBLE=False),
     h3_dependency("effect_globals"),
     BytesRaw("unknown_41", SIZE=172, VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=1536
+    ENDIAN=">", SIZE=1536
+    )
+
+
+def get():
+    return matg_def
+
+matg_def = TagDef("matg",
+    h3_blam_header('matg'),
+    matg_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["matg"], endian=">", tag_cls=H3Tag
     )

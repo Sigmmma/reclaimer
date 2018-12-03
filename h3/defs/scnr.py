@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -18,7 +18,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 scnr_ai_objective_role_filter = (
@@ -404,7 +406,7 @@ scnr_structure_bsp = Struct("structure_bsp",
     SInt32("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     BytesRaw("unknown_2", SIZE=8, VISIBLE=False),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     h3_dependency("cubemap"),
     h3_dependency("wind"),
     SInt32("unknown_3", VISIBLE=False),
@@ -2366,7 +2368,7 @@ scnr_trigger_volume = Struct("trigger_volume",
     SInt16("object_name"),
     SInt16("unknown_0", VISIBLE=False),
     h3_string_id("node_name"),
-    Array("unknown_array", SIZE=6, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=6, VISIBLE=False),
     QStruct("position", INCLUDE=xyz_float),
     QStruct("extents", INCLUDE=xyz_float),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
@@ -2386,7 +2388,7 @@ scnr_zoneset_switch_trigger_volume = Struct("zoneset_switch_trigger_volume",
 
 
 scnr_multiplayer_constants_override = Struct("multiplayer_constants_override", 
-    Array("unknown_array", SIZE=5, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=5),
     ENDIAN=">", SIZE=20
     )
 
@@ -2512,7 +2514,7 @@ scnr_squad_base_squad_starting_location = Struct("starting_location",
     SInt16("command_script_index"),
     SInt16("unknown_4", VISIBLE=False),
     h3_string_id("initial_state"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     h3_reflexive("multi_state", scnr_squad_base_squad_starting_location_multi_state),
     ENDIAN=">", SIZE=136
     )
@@ -2534,7 +2536,7 @@ scnr_squad_base_squad = Struct("base_squad",
     SInt16("command_script_index"),
     SInt16("unknown_3", VISIBLE=False),
     h3_string_id("initial_state"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     h3_reflexive("multi_state", scnr_squad_base_squad_multi_state),
     h3_reflexive("starting_locations", scnr_squad_base_squad_starting_location),
     ENDIAN=">", SIZE=96
@@ -2683,7 +2685,7 @@ scnr_ai_pathfinding_data_unknown_1 = Struct("unknown_1",
 
 
 scnr_ai_pathfinding_data_unknown_2 = Struct("unknown_2", 
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=8
     )
@@ -2732,7 +2734,7 @@ scnr_ai_pathfinding_data_unknown_6 = Struct("unknown_6",
     h3_string_id("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     SInt16("unknown_2", VISIBLE=False),
-    Array("unknown_array", SIZE=14, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=14, VISIBLE=False),
     SInt32("unknown_3", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=68
@@ -3042,7 +3044,7 @@ scnr_fog = Struct("fog",
 scnr_camera_effect = Struct("camera_effect", 
     h3_string_id("name"),
     h3_dependency("effect"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -3362,7 +3364,7 @@ scnr_flock_source = Struct("source",
     yp_float_rad("starting"),
     Float("radius"),
     Float("weight"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     ENDIAN=">", SIZE=36
     )
 
@@ -3433,7 +3435,7 @@ scnr_simulation_definition_table = Struct("simulation_definition_table",
 
 
 scnr_unknown_22 = Struct("unknown_22", 
-    Array("unknown_array", SIZE=8, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=8, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
@@ -3456,7 +3458,7 @@ scnr_ai_objective_role_condition = Struct("condition",
 
 
 scnr_ai_objective_role_unknown_8 = Struct("unknown_8", 
-    Array("unknown_array", SIZE=5, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=5, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=10
     )
@@ -3474,7 +3476,7 @@ scnr_ai_objective_role_point_geometry = Struct("point_geometry",
 
 
 scnr_ai_objective_role = Struct("role", 
-    Array("unknown_array", SIZE=6, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=6, VISIBLE=False),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     ascii_str32("command_script_name_1"),
     ascii_str32("command_script_name_2"),
@@ -3691,7 +3693,7 @@ scnr_lightmap_airprobe = Struct("lightmap_airprobe",
     )
 
 
-scnr_meta_def = BlockDef("scnr", 
+scnr_body = Struct("tagdata", 
     SEnum16("map_type", *zone_map_type),
     Bool16("flags", 
         ("characters_use_previous_mission_weapons", 1 << 5),
@@ -3793,7 +3795,7 @@ scnr_meta_def = BlockDef("scnr",
     BytesRaw("unknown_17", SIZE=36, VISIBLE=False),
     h3_reflexive("scenario_cluster_data", scnr_scenario_cluster_data),
     BytesRaw("unknown_18", SIZE=12, VISIBLE=False),
-    Array("object_salts_array", SIZE=32, SUB_STRUCT=SInt32("object_salts"), VISIBLE=False),
+    Array("object_salts_array", SUB_STRUCT=SInt32("object_salts"), SIZE=32, VISIBLE=False),
     h3_reflexive("spawn_data", scnr_spawn_data),
     h3_dependency("sound_effects_collection"),
     h3_reflexive("crates", scnr_crate),
@@ -3831,5 +3833,16 @@ scnr_meta_def = BlockDef("scnr",
     h3_reflexive("cortana_effects", scnr_cortana_effect),
     h3_reflexive("lightmap_airprobes", scnr_lightmap_airprobe),
     BytesRaw("unknown_28", SIZE=12, VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=1976
+    ENDIAN=">", SIZE=1976
+    )
+
+
+def get():
+    return scnr_def
+
+scnr_def = TagDef("scnr",
+    h3_blam_header('scnr'),
+    scnr_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["scnr"], endian=">", tag_cls=H3Tag
     )

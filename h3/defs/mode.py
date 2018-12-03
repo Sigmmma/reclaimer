@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -85,7 +87,7 @@ mode_marker_group = Struct("marker_group",
 mode_material_propertie = Struct("propertie", 
     SInt16("type"),
     SInt16("int_value"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     Float("real_value"),
     ENDIAN=">", SIZE=12
     )
@@ -152,7 +154,7 @@ mode_meshe_unknown_water = Struct("unknown_water",
 mode_meshe = Struct("meshe", 
     h3_reflexive("parts", mode_meshe_part),
     h3_reflexive("subparts", mode_meshe_subpart),
-    Array("vertex_buffer_index_array", SIZE=8, SUB_STRUCT=SInt16("vertex_buffer_index")),
+    Array("vertex_buffer_index_array", SUB_STRUCT=SInt16("vertex_buffer_index"), SIZE=8),
     SInt16("index_buffer_index_1"),
     SInt16("index_buffer_index_2"),
     Bool8("flags", 
@@ -184,8 +186,8 @@ mode_compression_info = Struct("compression_info",
 
 
 mode_unknown_nodey = Struct("unknown_nodey", 
-    Array("unknown_array", SIZE=8, SUB_STRUCT=Float("unknown"), VISIBLE=False),
-    Array("node_index_array", SIZE=4, SUB_STRUCT=SInt8("node_index"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
+    Array("node_index_array", SUB_STRUCT=SInt8("node_index"), SIZE=4, VISIBLE=False),
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -253,7 +255,7 @@ mode_unknown_yo = Struct("unknown_yo",
 
 
 mode_unknown_9 = Struct("unknown_9", 
-    Array("unknown_array", SIZE=7, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=7, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=28
     )
@@ -274,7 +276,7 @@ mode_runtime_node = Struct("runtime_node",
     )
 
 
-mode_meta_def = BlockDef("mode", 
+mode_body = Struct("tagdata", 
     h3_string_id("name"),
     Bool16("flags", 
         ("force_node_maps", 1 << 2),
@@ -308,5 +310,16 @@ mode_meta_def = BlockDef("mode",
     BytesRaw("unknown_a", SIZE=192, VISIBLE=False),
     h3_reflexive("unknown_10", mode_unknown_10),
     h3_reflexive("runtime_nodes", mode_runtime_node),
-    TYPE=Struct, ENDIAN=">", SIZE=460
+    ENDIAN=">", SIZE=460
+    )
+
+
+def get():
+    return mode_def
+
+mode_def = TagDef("mode",
+    h3_blam_header('mode'),
+    mode_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["mode"], endian=">", tag_cls=H3Tag
     )

@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 jmad_animation_desired_compression = (
@@ -258,7 +260,7 @@ jmad_animation = Struct("animation",
     h3_reflexive("unknown_2", jmad_animation_unknown_2),
     h3_reflexive("object_space_parent_nodes", jmad_animation_object_space_parent_node),
     h3_reflexive("leg_anchoring", jmad_animation_leg_anchoring),
-    Array("unknown_array", SIZE=5, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=5, VISIBLE=False),
     ENDIAN=">", SIZE=136
     )
 
@@ -466,7 +468,7 @@ jmad_raw_information_group = Struct("raw_information_group",
     )
 
 
-jmad_meta_def = BlockDef("jmad", 
+jmad_body = Struct("tagdata", 
     h3_dependency("parent_animation_graph"),
     Bool8("inheritance_flags", 
         "inherit_root_trans_scale_only",
@@ -509,5 +511,16 @@ jmad_meta_def = BlockDef("jmad",
     h3_rawdata_ref("last_import_results"),
     BytesRaw("unknown", SIZE=12, VISIBLE=False),
     h3_reflexive("raw_information_groups", jmad_raw_information_group),
-    TYPE=Struct, ENDIAN=">", SIZE=260
+    ENDIAN=">", SIZE=260
+    )
+
+
+def get():
+    return jmad_def
+
+jmad_def = TagDef("jmad",
+    h3_blam_header('jmad'),
+    jmad_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["jmad"], endian=">", tag_cls=H3Tag
     )

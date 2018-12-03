@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -157,7 +159,7 @@ term_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
     )
 
 
-term_meta_def = BlockDef("term", 
+term_body = Struct("tagdata", 
     SEnum16("object_type", *bloc_object_type),
     Bool16("flags_0", 
         "does_not_cast_shadow",
@@ -235,19 +237,30 @@ term_meta_def = BlockDef("term",
     h3_dependency("error_sound"),
     h3_dependency("dummy_strings_0"),
     h3_dependency("terminal_strings_0"),
-    Array("unknown_array_0", SIZE=4, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array_0", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     h3_dependency("error_strings_0"),
     h3_dependency("dummy_strings_1"),
     h3_dependency("terminal_strings_1"),
-    Array("unknown_array_1", SIZE=4, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array_1", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     h3_dependency("error_strings_1"),
     h3_dependency("dummy_strings_2"),
     h3_dependency("terminal_strings_2"),
-    Array("unknown_array_2", SIZE=4, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array_2", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     h3_dependency("error_strings_2"),
     h3_dependency("dummy_strings_3"),
     h3_dependency("terminal_strings_3"),
-    Array("unknown_array_3", SIZE=4, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array_3", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     h3_dependency("error_strings_3"),
-    TYPE=Struct, ENDIAN=">", SIZE=720
+    ENDIAN=">", SIZE=720
+    )
+
+
+def get():
+    return term_def
+
+term_def = TagDef("term",
+    h3_blam_header('term'),
+    term_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["term"], endian=">", tag_cls=H3Tag
     )

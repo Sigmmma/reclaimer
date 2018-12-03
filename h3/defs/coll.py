@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -155,7 +157,7 @@ coll_region_permutation_bsp_mopp_code = Struct("bsp_mopp_code",
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     SInt32("data_size"),
     UInt32("data_capacity"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     h3_reflexive("data", coll_region_permutation_bsp_mopp_code_data),
     BytesRaw("unknown_2", SIZE=4, VISIBLE=False),
     ENDIAN=">", SIZE=64
@@ -201,7 +203,7 @@ coll_node = Struct("node",
     )
 
 
-coll_meta_def = BlockDef("coll", 
+coll_body = Struct("tagdata", 
     SInt32("collision_model_checksum"),
     BytesRaw("unknown", SIZE=12, VISIBLE=False),
     Bool32("flags", 
@@ -211,5 +213,16 @@ coll_meta_def = BlockDef("coll",
     h3_reflexive("regions", coll_region),
     h3_reflexive("pathfinding_spheres", coll_pathfinding_sphere),
     h3_reflexive("nodes", coll_node),
-    TYPE=Struct, ENDIAN=">", SIZE=68
+    ENDIAN=">", SIZE=68
+    )
+
+
+def get():
+    return coll_def
+
+coll_def = TagDef("coll",
+    h3_blam_header('coll'),
+    coll_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["coll"], endian=">", tag_cls=H3Tag
     )

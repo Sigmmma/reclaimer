@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -14,7 +14,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 char_general_propertie_actor_type = (
@@ -643,7 +645,7 @@ char_act_attachment = Struct("act_attachment",
     )
 
 
-char_meta_def = BlockDef("char", 
+char_body = Struct("tagdata", 
     Bool32("character_flags", *unknown_flags_32),
     h3_dependency("parent_character"),
     h3_dependency("unit"),
@@ -682,5 +684,16 @@ char_meta_def = BlockDef("char",
     h3_reflexive("equipment_properties", char_equipment_propertie),
     h3_reflexive("metagame_properties", char_metagame_propertie),
     h3_reflexive("act_attachments", char_act_attachment),
-    TYPE=Struct, ENDIAN=">", SIZE=468
+    ENDIAN=">", SIZE=468
+    )
+
+
+def get():
+    return char_def
+
+char_def = TagDef("char",
+    h3_blam_header('char'),
+    char_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["char"], endian=">", tag_cls=H3Tag
     )

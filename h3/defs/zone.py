@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 active_members_bits = tuple("active_member_%s" % i for i in range(32))
@@ -20,7 +22,7 @@ active_members_bits = tuple("active_member_%s" % i for i in range(32))
 
 zone_resource_type = Struct("resource_type", 
     BytesRaw("guid", SIZE=16),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt16("unknown")),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4),
     h3_string_id("name"),
     ENDIAN=">", SIZE=28
     )
@@ -753,7 +755,7 @@ zone_prediction_d2_tag = Struct("prediction_d2_tag",
     )
 
 
-zone_meta_def = BlockDef("zone", 
+zone_body = Struct("tagdata", 
     SEnum16("map_type", *zone_map_type),
     SInt16("flags"),
     h3_reflexive("resource_types", zone_resource_type),
@@ -790,5 +792,16 @@ zone_meta_def = BlockDef("zone",
     h3_reflexive("prediction_d2_tags", zone_prediction_d2_tag),
     SInt32("campaign_id"),
     SInt32("map_id"),
-    TYPE=Struct, ENDIAN=">", SIZE=532
+    ENDIAN=">", SIZE=532
+    )
+
+
+def get():
+    return zone_def
+
+zone_def = TagDef("zone",
+    h3_blam_header('zone'),
+    zone_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["zone"], endian=">", tag_cls=H3Tag
     )

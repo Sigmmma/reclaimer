@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,11 +10,13 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-uise_meta_def = BlockDef("uise", 
+uise_body = Struct("tagdata", 
     h3_dependency("error"),
     h3_dependency("vertical_navigation"),
     h3_dependency("horizontal_navigation"),
@@ -35,5 +37,16 @@ uise_meta_def = BlockDef("uise",
     h3_dependency("matchmaking_advance_sound"),
     h3_dependency("rank_up"),
     h3_dependency("matchmaking_party_up_sound"),
-    TYPE=Struct, ENDIAN=">", SIZE=320
+    ENDIAN=">", SIZE=320
+    )
+
+
+def get():
+    return uise_def
+
+uise_def = TagDef("uise",
+    h3_blam_header('uise'),
+    uise_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["uise"], endian=">", tag_cls=H3Tag
     )

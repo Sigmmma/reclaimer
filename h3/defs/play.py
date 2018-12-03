@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: -DeToX-
 # 	Created layout of plugin
@@ -14,7 +14,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -77,11 +79,22 @@ play_segment = Struct("segment",
     )
 
 
-play_meta_def = BlockDef("play", 
+play_body = Struct("tagdata", 
     h3_reflexive("compression_codecs", play_compression_codec),
     h3_reflexive("external_cache_references", play_external_cache_reference),
     h3_reflexive("raw_pages", play_raw_page),
     h3_reflexive("sizes", play_size),
     h3_reflexive("segments", play_segment),
-    TYPE=Struct, ENDIAN=">", SIZE=60
+    ENDIAN=">", SIZE=60
+    )
+
+
+def get():
+    return play_def
+
+play_def = TagDef("play",
+    h3_blam_header('play'),
+    play_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["play"], endian=">", tag_cls=H3Tag
     )
