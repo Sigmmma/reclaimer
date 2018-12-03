@@ -88,7 +88,7 @@ def read_string_id_string(parent=None, attr_index=None, rawdata=None, offset=0,
                                                desc[STRINGID_SET_BITS])
         if str_len:
             rawdata.seek(offset)
-            parent[attr_index] = rawdata.read(str_len).decode(
+            parent[attr_index] = rawdata.read(str_len).strip('\x00').decode(
                 encoding="latin-1")
             return offset + str_len + 1  # add 1 for the null terminator
         else:
@@ -117,13 +117,13 @@ def get_set_string_id_size(parent=None, attr_index=None,
     len_bit_ct = desc[STRINGID_LEN_BITS]
     if new_value is None:
         return (string_id & 0xFFffFFff) >> idx_set_bit_ct
-
-    # computed fields will always need to compute the size to
-    # set on their own rather than using any supplied new_value,
-    # as it should always be equal to 0, but not None.
-    new_value = len(parent.string)
-    assert new_value >= 0 and new_value < (1 << len_bit_ct)
-
+    elif new_value > (1 << len_bit_ct):
+        raise ValueError("String ID's cannot be longer than %s characters." %
+                         ((1 << len_bit_ct) - 1))
+    elif new_value > 0:
+        new_value -= 1  # subtract the null delimiter
+    else:
+        assert new_value == 0
     parent[0] = (string_id & ((1 << idx_set_bit_ct) - 1)) + (
         new_value << idx_set_bit_ct)
 
@@ -136,7 +136,7 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
         __lsi__ = list.__setitem__
         orig_offset = offset
         if node is None:
-            parent[attr_index] = node = desc.get(BLOCK_CLS, self.node_cls)\
+            parent[attr_index] = node = desc.get(NODE_CLS, self.node_cls)\
                 (desc, parent=parent)
 
         # If there is rawdata to build the structure from
@@ -220,7 +220,7 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
     try:
         orig_offset = offset
         if node is None:
-            parent[attr_index] = node = desc.get(BLOCK_CLS, self.node_cls)\
+            parent[attr_index] = node = desc.get(NODE_CLS, self.node_cls)\
                 (desc, parent=parent, init_attrs=rawdata is None)
 
         # If there is rawdata to build the structure from

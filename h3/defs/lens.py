@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -61,7 +63,7 @@ lens_rotation = Struct("rotation",
     )
 
 
-lens_meta_def = BlockDef("lens", 
+lens_body = Struct("tagdata", 
     float_rad("falloff_angle"),
     float_rad("cutoff_angle"),
     Float("occlusion_radius"),
@@ -70,7 +72,7 @@ lens_meta_def = BlockDef("lens",
     Float("near_fade_distance"),
     Float("far_fade_distance"),
     h3_dependency("bitmap"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     float_rad("rotation_function_scale"),
     SInt16("unknown_2", VISIBLE=False),
     SInt16("unknown_3", VISIBLE=False),
@@ -81,5 +83,16 @@ lens_meta_def = BlockDef("lens",
     h3_reflexive("unknown_5", lens_unknown_5),
     h3_reflexive("rotation", lens_rotation),
     BytesRaw("unknown_6", SIZE=24, VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=152
+    ENDIAN=">", SIZE=152
+    )
+
+
+def get():
+    return lens_def
+
+lens_def = TagDef("lens",
+    h3_blam_header('lens'),
+    lens_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["lens"], endian=">", tag_cls=H3Tag
     )

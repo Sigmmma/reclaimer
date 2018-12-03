@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 ugh__platform_codec_encoding = (
@@ -225,7 +227,7 @@ ugh__extra_info_encoded_permutation_section_unknown_unknown_unknown_1 = Struct("
 
 
 ugh__extra_info_encoded_permutation_section_unknown_unknown_unknown_2 = Struct("unknown_2", 
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt16("unknown")),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4),
     ENDIAN=">", SIZE=8
     )
 
@@ -258,7 +260,7 @@ ugh__extra_info = Struct("extra_info",
     )
 
 
-ugh__meta_def = BlockDef("ugh_", 
+ugh__body = Struct("tagdata", 
     h3_reflexive("platform_codec", ugh__platform_codec),
     h3_reflexive("playback_parameters", ugh__playback_parameter),
     h3_reflexive("scales", ugh__scale),
@@ -274,5 +276,16 @@ ugh__meta_def = BlockDef("ugh_",
     h3_reflexive("permutation_chunks", ugh__permutation_chunk),
     h3_reflexive("promotions", ugh__promotion),
     h3_reflexive("extra_info", ugh__extra_info),
-    TYPE=Struct, ENDIAN=">", SIZE=184
+    ENDIAN=">", SIZE=184
+    )
+
+
+def get():
+    return ugh__def
+
+ugh__def = TagDef("ugh!",
+    h3_blam_header('ugh!'),
+    ugh__body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["ugh!"], endian=">", tag_cls=H3Tag
     )

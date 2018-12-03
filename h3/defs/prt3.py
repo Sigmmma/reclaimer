@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -44,7 +46,7 @@ prt3_import_data = Struct("import_data",
     h3_dependency("bitmap"),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     SInt32("unknown_2", VISIBLE=False),
-    Array("unknown_array", SIZE=6, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=6, VISIBLE=False),
     BytesRaw("unknown_3", SIZE=4, VISIBLE=False),
     h3_reflexive("functions", prt3_import_data_function),
     ENDIAN=">", SIZE=60
@@ -66,7 +68,7 @@ prt3_shader_propertie_shader_map = Struct("shader_map",
 
 
 prt3_shader_propertie_argument = Struct("argument", 
-    Array("arg_array", SIZE=4, SUB_STRUCT=Float("arg")),
+    Array("arg_array", SUB_STRUCT=Float("arg"), SIZE=4),
     ENDIAN=">", SIZE=16
     )
 
@@ -124,7 +126,7 @@ prt3_shader_propertie = Struct("shader_propertie",
     SInt32("unknown_5", VISIBLE=False),
     SInt32("unknown_6", VISIBLE=False),
     BytesRaw("unknown_7", SIZE=4, VISIBLE=False),
-    Array("unknown_array", SIZE=8, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=8, VISIBLE=False),
     ENDIAN=">", SIZE=132
     )
 
@@ -143,7 +145,7 @@ prt3_unknown_22 = Struct("unknown_22",
     )
 
 
-prt3_meta_def = BlockDef("prt3", 
+prt3_body = Struct("tagdata", 
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     h3_reflexive("unknown_1", prt3_unknown_1),
     BytesRaw("unknown_2", SIZE=44, VISIBLE=False),
@@ -151,7 +153,7 @@ prt3_meta_def = BlockDef("prt3",
     h3_reflexive("unknown_3", prt3_unknown_3),
     h3_reflexive("import_data", prt3_import_data),
     h3_reflexive("shader_properties", prt3_shader_propertie),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown_4", SIZE=4, VISIBLE=False),
     SInt32("unknown_5", VISIBLE=False),
     SInt8("input_0"),
@@ -200,5 +202,16 @@ prt3_meta_def = BlockDef("prt3",
     BytesRaw("unknown_20", SIZE=12, VISIBLE=False),
     h3_reflexive("unknown_21", prt3_unknown_21),
     h3_reflexive("unknown_22", prt3_unknown_22),
-    TYPE=Struct, ENDIAN=">", SIZE=404
+    ENDIAN=">", SIZE=404
+    )
+
+
+def get():
+    return prt3_def
+
+prt3_def = TagDef("prt3",
+    h3_blam_header('prt3'),
+    prt3_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["prt3"], endian=">", tag_cls=H3Tag
     )

@@ -232,6 +232,7 @@ class HaloMap:
 
     defs = None
     maps = None
+    tag_headers = None
 
     def __init__(self, maps=None, map_data_cache_limit=None):
         self.bsp_magics = {}

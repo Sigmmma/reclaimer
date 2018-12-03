@@ -179,7 +179,7 @@ extra_info = Struct("extra_info",
         UInt32("resource_data_size"),
         ),
     h2_reflexive("resources", resource),
-    UInt32("sound_gestalt"), # points back to this tag?
+    dependency_uint32("sound_gestalt"), # points back to this tag?
     SInt32("constant0", VISIBLE=False),
     SInt32("constant1", VISIBLE=False),
     SIZE=44

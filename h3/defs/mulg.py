@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -14,7 +14,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 mulg_runtime_assault_event_event = (
@@ -869,7 +871,7 @@ mulg_runtime_infection_event = Struct("infection_event",
 
 mulg_runtime_multiplayer_constant_weapon = Struct("weapon", 
     h3_dependency("weapon", VISIBLE=False),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=32
     )
@@ -877,7 +879,7 @@ mulg_runtime_multiplayer_constant_weapon = Struct("weapon",
 
 mulg_runtime_multiplayer_constant_vehicle = Struct("vehicle", 
     h3_dependency("vehicle", VISIBLE=False),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=32
     )
@@ -902,12 +904,12 @@ mulg_runtime_multiplayer_constant_equipment = Struct("equipment",
 
 
 mulg_runtime_multiplayer_constant = Struct("multiplayer_constant", 
-    Array("unknown_array_0", SIZE=26, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array_0", SUB_STRUCT=Float("unknown"), SIZE=26, VISIBLE=False),
     h3_reflexive("weapons", mulg_runtime_multiplayer_constant_weapon),
     h3_reflexive("vehicles", mulg_runtime_multiplayer_constant_vehicle),
     h3_reflexive("projectiles", mulg_runtime_multiplayer_constant_projectile),
     h3_reflexive("equipment", mulg_runtime_multiplayer_constant_equipment),
-    Array("unknown_array_1", SIZE=40, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array_1", SUB_STRUCT=Float("unknown"), SIZE=40, VISIBLE=False),
     Float("maximum_random_spawn_bias"),
     Float("teleporter_recharge_time"),
     Float("grenade_danger_weight"),
@@ -920,7 +922,7 @@ mulg_runtime_multiplayer_constant = Struct("multiplayer_constant",
     Float("vehicle_danger_lead_time"),
     Float("vehicle_nearby_player_distance"),
     h3_dependency("hill_shader"),
-    Array("unknown_array_2", SIZE=4, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array_2", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     h3_dependency("bomb_explode_effect"),
     h3_dependency("unknown_0"),
     h3_dependency("bomb_explode_damage_effect"),
@@ -1004,8 +1006,19 @@ mulg_runtime = Struct("runtime",
     )
 
 
-mulg_meta_def = BlockDef("mulg", 
+mulg_body = Struct("tagdata", 
     h3_reflexive("universal", mulg_universal),
     h3_reflexive("runtime", mulg_runtime),
-    TYPE=Struct, ENDIAN=">", SIZE=24
+    ENDIAN=">", SIZE=24
+    )
+
+
+def get():
+    return mulg_def
+
+mulg_def = TagDef("mulg",
+    h3_blam_header('mulg'),
+    mulg_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["mulg"], endian=">", tag_cls=H3Tag
     )

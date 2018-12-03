@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -8,7 +8,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -24,7 +26,7 @@ cine_cinematic_scene = Struct("cinematic_scene",
     )
 
 
-cine_meta_def = BlockDef("cine", 
+cine_body = Struct("tagdata", 
     SInt32("unknown_0"),
     h3_reflexive("scene_unknown", cine_scene_unknown),
     h3_dependency("import_scenario"),
@@ -42,5 +44,16 @@ cine_meta_def = BlockDef("cine",
     h3_reflexive("cinematic_scenes", cine_cinematic_scene),
     h3_rawdata_ref("import_script_1"),
     h3_rawdata_ref("import_script_2"),
-    TYPE=Struct, ENDIAN=">", SIZE=176
+    ENDIAN=">", SIZE=176
+    )
+
+
+def get():
+    return cine_def
+
+cine_def = TagDef("cine",
+    h3_blam_header('cine'),
+    cine_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["cine"], endian=">", tag_cls=H3Tag
     )

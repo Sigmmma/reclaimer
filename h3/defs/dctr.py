@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: -DeToX-
 # 	Created layout of plugin
@@ -8,11 +8,13 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-dctr_meta_def = BlockDef("dctr", 
+dctr_body = Struct("tagdata", 
     h3_dependency("model"),
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
     SInt32("unknown_1", VISIBLE=False),
@@ -24,5 +26,16 @@ dctr_meta_def = BlockDef("dctr",
     Float("brightness_base"),
     Float("brightness_shadow"),
     BytesRaw("unknown_4", SIZE=36, VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=128
+    ENDIAN=">", SIZE=128
+    )
+
+
+def get():
+    return dctr_def
+
+dctr_def = TagDef("dctr",
+    h3_blam_header('dctr'),
+    dctr_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["dctr"], endian=">", tag_cls=H3Tag
     )

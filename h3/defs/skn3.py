@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -14,7 +14,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -79,9 +81,20 @@ skn3_bitmap_widget = Struct("bitmap_widget",
     )
 
 
-skn3_meta_def = BlockDef("skn3", 
+skn3_body = Struct("tagdata", 
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     h3_reflexive("text_widgets", skn3_text_widget),
     h3_reflexive("bitmap_widgets", skn3_bitmap_widget),
-    TYPE=Struct, ENDIAN=">", SIZE=28
+    ENDIAN=">", SIZE=28
+    )
+
+
+def get():
+    return skn3_def
+
+skn3_def = TagDef("skn3",
+    h3_blam_header('skn3'),
+    skn3_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["skn3"], endian=">", tag_cls=H3Tag
     )

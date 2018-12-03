@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -28,10 +30,10 @@ drdf_response = Struct("response",
     Float("unknown_7", VISIBLE=False),
     SInt16("unknown_8", VISIBLE=False),
     SInt16("unknown_9", VISIBLE=False),
-    Array("unknown_array_0", SIZE=4, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array_0", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     SInt16("unknown_10", VISIBLE=False),
     SInt16("unknown_11", VISIBLE=False),
-    Array("unknown_array_1", SIZE=7, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array_1", SUB_STRUCT=Float("unknown"), SIZE=7, VISIBLE=False),
     Float("low_frequency_vibration_duration"),
     h3_rawdata_ref("low_frequency_vibration_function"),
     Float("high_frequency_vibration_duration"),
@@ -55,7 +57,18 @@ drdf_response = Struct("response",
     )
 
 
-drdf_meta_def = BlockDef("drdf", 
+drdf_body = Struct("tagdata", 
     h3_reflexive("responses", drdf_response),
-    TYPE=Struct, ENDIAN=">", SIZE=12
+    ENDIAN=">", SIZE=12
+    )
+
+
+def get():
+    return drdf_def
+
+drdf_def = TagDef("drdf",
+    h3_blam_header('drdf'),
+    drdf_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["drdf"], endian=">", tag_cls=H3Tag
     )

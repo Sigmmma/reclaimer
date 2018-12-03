@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,11 +10,13 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-pphy_meta_def = BlockDef("pphy", 
+pphy_body = Struct("tagdata", 
     Bool32("flags", *unknown_flags_32),
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
@@ -26,5 +28,16 @@ pphy_meta_def = BlockDef("pphy",
     Float("surface_friction"),
     Float("elasticity"),
     BytesRaw("unknown_4", SIZE=12, VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=64
+    ENDIAN=">", SIZE=64
+    )
+
+
+def get():
+    return pphy_def
+
+pphy_def = TagDef("pphy",
+    h3_blam_header('pphy'),
+    pphy_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["pphy"], endian=">", tag_cls=H3Tag
     )

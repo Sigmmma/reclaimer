@@ -4,8 +4,8 @@ from os.path import exists, join
 from tkinter.filedialog import askopenfilename
 
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
-from reclaimer.h3.defs import __all__ as all_h3_def_ids
 from reclaimer.h3.util import HALO3_MAP_TYPES
+from reclaimer.h3.handler import Halo3Handler
 from .halo_map import *
 
 
@@ -19,6 +19,33 @@ class Halo3Map(HaloMap):
 
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
+        self.setup_tag_headers()
+
+    def setup_tag_headers(self):
+        if Halo3Map.tag_headers is not None:
+            return
+
+        tag_headers = Halo3Map.tag_headers = {}
+        for def_id in sorted(self.defs):
+            if def_id in tag_headers or len(def_id) != 4:
+                continue
+            h_desc, h_block = self.defs[def_id].descriptor[0], [None]
+            h_desc['TYPE'].parser(h_desc, parent=h_block, attr_index=0)
+            tag_headers[def_id] = bytes(
+                h_block[0].serialize(buffer=BytearrayBuffer(),
+                                     calc_pointers=False))
+
+    def setup_defs(self):
+        if Halo3Map.defs is None:
+            print("    Loading Halo 3 tag definitions...")
+            Halo3Map.handler = Halo3Handler(build_reflexive_cache=False,
+                                            build_raw_data_cache=False)
+
+            Halo3Map.defs = FrozenDict(Halo3Map.handler.defs)
+            print("        Finished")
+
+        # make a shallow copy for this instance to manipulate
+        self.defs = dict(self.defs)
 
     def load_all_resource_maps(self, maps_dir=""):
         map_paths = {name: None for name in HALO3_MAP_TYPES[1:]}
@@ -60,29 +87,10 @@ class Halo3Map(HaloMap):
             except Exception:
                 print(format_exc())
 
-    def setup_defs(self):
-        if Halo3Map.defs:
-            return
-
-        Halo3Map.defs = defs = {}
-        for fcc in h3_tag_class_fcc_to_ext:
-            try:
-                fcc2 = "".join(c if c in VALID_MODULE_NAME_CHARS
-                               else "_" for c in fcc)
-                fcc2 += "_" * ((4 - (len(fcc2) % 4)) % 4)
-                if fcc2 not in all_h3_def_ids:
-                    continue
-
-                exec("from reclaimer.h3.defs.%s import %s_meta_def" %
-                     (fcc2, fcc2))
-                exec("defs['%s'] = %s_meta_def" % (fcc, fcc2))
-            except Exception:
-                print(format_exc())
-
     def get_meta_descriptor(self, tag_cls):
         tagdef = self.defs.get(tag_cls)
         if tagdef is not None:
-            return tagdef.descriptor
+            return tagdef.descriptor[1]
 
     def load_map(self, map_path, **kwargs):
         autoload_resources = kwargs.get("autoload_resources", True)
@@ -133,6 +141,8 @@ class Halo3Map(HaloMap):
         desc = self.get_meta_descriptor(tag_cls)
         if desc is None or tag_cls is None:
             return
+        elif not reextract and self.root_tags.get(tag_cls):
+            return self.root_tags[tag_cls]
 
         block = [None]
 
@@ -149,7 +159,7 @@ class Halo3Map(HaloMap):
 
             desc['TYPE'].parser(
                 desc, parent=block, attr_index=0, magic=meta_magic,
-                rawdata=self.map_data, offset=offset, parsing_resource=True,
+                rawdata=self.map_data, offset=offset,
                 tag_index_manager=self.tag_index_manager,
                 map_sections=self.map_header.sections,
                 map_string_id_manager=self.string_id_manager,
@@ -168,4 +178,7 @@ class Halo3Map(HaloMap):
 
     def inject_rawdata(self, meta, tag_cls, tag_index_ref):
         # get some rawdata that would be pretty annoying to do in the parser
+        return meta
+
+    def meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs):
         return meta

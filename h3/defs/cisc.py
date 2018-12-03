@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -8,7 +8,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -27,7 +29,7 @@ cisc_puppet = Struct("puppet",
     h3_dependency("puppet_animation"),
     h3_dependency("puppet_object"),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     SInt32("unknown_1", VISIBLE=False),
     h3_rawdata_ref("import_script"),
     h3_reflexive("unknown_2", cisc_puppet_unknown_2),
@@ -120,7 +122,7 @@ cisc_shot_import_script = Struct("import_script",
 
 cisc_shot_frame = Struct("frame", 
     QStruct("position", INCLUDE=xyz_float),
-    Array("unknown_array", SIZE=8, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     Float("fov"),
     Bool32("flags", 
         "enable_depth_of_field",
@@ -156,7 +158,7 @@ cisc_shot = Struct("shot",
 cisc_texture_camera_shot_frame = Struct("frame", 
     SInt32("unknown", VISIBLE=False),
     QStruct("position", INCLUDE=xyz_float),
-    Array("unknown_array", SIZE=8, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     Float("fov"),
     Bool32("flags", 
         "enable_depth_of_field",
@@ -183,7 +185,7 @@ cisc_texture_camera = Struct("texture_camera",
     )
 
 
-cisc_meta_def = BlockDef("cisc", 
+cisc_body = Struct("tagdata", 
     h3_string_id("name"),
     ascii_str32("anchor_name"),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
@@ -193,5 +195,16 @@ cisc_meta_def = BlockDef("cisc",
     h3_reflexive("texture_cameras", cisc_texture_camera),
     h3_rawdata_ref("import_script_1"),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=120
+    ENDIAN=">", SIZE=120
+    )
+
+
+def get():
+    return cisc_def
+
+cisc_def = TagDef("cisc",
+    h3_blam_header('cisc'),
+    cisc_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["cisc"], endian=">", tag_cls=H3Tag
     )

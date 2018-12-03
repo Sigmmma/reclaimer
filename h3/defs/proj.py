@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 proj_detonation_timer_starts = (
@@ -211,7 +213,7 @@ proj_claymore_grenade = Struct("claymore_grenade",
     float_rad("unknown_0"),
     float_rad("unknown_1"),
     float_rad("unknown_2"),
-    Array("unknown_array", SIZE=9, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=9),
     ENDIAN=">", SIZE=48
     )
 
@@ -231,7 +233,7 @@ proj_shotgun_propertie = Struct("shotgun_propertie",
     )
 
 
-proj_meta_def = BlockDef("proj", 
+proj_body = Struct("tagdata", 
     SEnum16("object_type", *bloc_object_type),
     Bool16("flags_0", 
         "does_not_cast_shadow",
@@ -340,5 +342,16 @@ proj_meta_def = BlockDef("proj",
     h3_reflexive("claymore_grenade", proj_claymore_grenade),
     h3_reflexive("firebomb_grenade", proj_firebomb_grenade),
     h3_reflexive("shotgun_properties", proj_shotgun_propertie),
-    TYPE=Struct, ENDIAN=">", SIZE=672
+    ENDIAN=">", SIZE=672
+    )
+
+
+def get():
+    return proj_def
+
+proj_def = TagDef("proj",
+    h3_blam_header('proj'),
+    proj_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["proj"], endian=">", tag_cls=H3Tag
     )

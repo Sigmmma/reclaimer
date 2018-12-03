@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -14,7 +14,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -148,7 +150,7 @@ scn3_group_widget_model_widget_camera_refinement_zoom_data_2 = Struct("zoom_data
 
 scn3_group_widget_model_widget_camera_refinement = Struct("camera_refinement", 
     h3_string_id("biped", VISIBLE=False),
-    Array("unknown_array", SIZE=8, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     h3_reflexive("zoom_data_1", scn3_group_widget_model_widget_camera_refinement_zoom_data_1),
     h3_reflexive("zoom_data_2", scn3_group_widget_model_widget_camera_refinement_zoom_data_2),
     VISIBLE=False,
@@ -207,7 +209,7 @@ scn3_button_key_legend = Struct("button_key_legend",
     )
 
 
-scn3_meta_def = BlockDef("scn3", 
+scn3_body = Struct("tagdata", 
     Bool32("flags", *unknown_flags_32),
     h3_string_id("name"),
     SInt16("unknown_0", VISIBLE=False),
@@ -231,5 +233,16 @@ scn3_meta_def = BlockDef("scn3",
     ascii_str32("script_title"),
     SInt16("script_index"),
     SInt16("unknown_1", VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=168
+    ENDIAN=">", SIZE=168
+    )
+
+
+def get():
+    return scn3_def
+
+scn3_def = TagDef("scn3",
+    h3_blam_header('scn3'),
+    scn3_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["scn3"], endian=">", tag_cls=H3Tag
     )

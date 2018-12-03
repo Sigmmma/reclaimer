@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 sncl_sound_classe_cache_miss_mode = (
@@ -85,7 +87,18 @@ sncl_sound_classe = Struct("sound_classe",
     )
 
 
-sncl_meta_def = BlockDef("sncl", 
+sncl_body = Struct("tagdata", 
     h3_reflexive("sound_classes", sncl_sound_classe),
-    TYPE=Struct, ENDIAN=">", SIZE=12
+    ENDIAN=">", SIZE=12
+    )
+
+
+def get():
+    return sncl_def
+
+sncl_def = TagDef("sncl",
+    h3_blam_header('sncl'),
+    sncl_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["sncl"], endian=">", tag_cls=H3Tag
     )
