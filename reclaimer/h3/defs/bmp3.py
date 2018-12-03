@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,11 +12,13 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-bmp3_meta_def = BlockDef("bmp3", 
+bmp3_body = Struct("tagdata", 
     Bool32("flags", 
         ("scale_to_bounds", 1 << 3),
         "replace_with_blur",
@@ -43,5 +45,16 @@ bmp3_meta_def = BlockDef("bmp3",
     SInt16("unknown_3", VISIBLE=False),
     h3_string_id("data_source_name"),
     h3_string_id("sprite_data_source_name"),
-    TYPE=Struct, ENDIAN=">", SIZE=92
+    ENDIAN=">", SIZE=92
+    )
+
+
+def get():
+    return bmp3_def
+
+bmp3_def = TagDef("bmp3",
+    h3_blam_header('bmp3'),
+    bmp3_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["bmp3"], endian=">", tag_cls=H3Tag
     )

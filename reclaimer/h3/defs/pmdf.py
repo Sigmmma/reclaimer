@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -65,7 +67,7 @@ pmdf_meshe_unknown_water = Struct("unknown_water",
 pmdf_meshe = Struct("meshe", 
     h3_reflexive("parts", pmdf_meshe_part),
     h3_reflexive("subparts", pmdf_meshe_subpart),
-    Array("vertex_buffer_index_array", SIZE=8, SUB_STRUCT=SInt16("vertex_buffer_index")),
+    Array("vertex_buffer_index_array", SUB_STRUCT=SInt16("vertex_buffer_index"), SIZE=8),
     SInt16("index_buffer_index_1"),
     SInt16("index_buffer_index_2"),
     Bool8("flags", 
@@ -97,8 +99,8 @@ pmdf_compression_info = Struct("compression_info",
 
 
 pmdf_unknown_nodey = Struct("unknown_nodey", 
-    Array("unknown_array", SIZE=8, SUB_STRUCT=Float("unknown"), VISIBLE=False),
-    Array("node_index_array", SIZE=4, SUB_STRUCT=SInt8("node_index"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
+    Array("node_index_array", SUB_STRUCT=SInt8("node_index"), SIZE=4, VISIBLE=False),
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -172,7 +174,7 @@ pmdf_unknown_5 = Struct("unknown_5",
     )
 
 
-pmdf_meta_def = BlockDef("pmdf", 
+pmdf_body = Struct("tagdata", 
     SInt32("unknown_0", VISIBLE=False),
     h3_reflexive("meshes", pmdf_meshe),
     h3_reflexive("compression_info", pmdf_compression_info),
@@ -188,5 +190,16 @@ pmdf_meta_def = BlockDef("pmdf",
     UInt16("zone_asset_index"),
     SInt32("useless_padding", VISIBLE=False),
     h3_reflexive("unknown_5", pmdf_unknown_5),
-    TYPE=Struct, ENDIAN=">", SIZE=144
+    ENDIAN=">", SIZE=144
+    )
+
+
+def get():
+    return pmdf_def
+
+pmdf_def = TagDef("pmdf",
+    h3_blam_header('pmdf'),
+    pmdf_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["pmdf"], endian=">", tag_cls=H3Tag
     )

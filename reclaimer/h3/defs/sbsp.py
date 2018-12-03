@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -28,7 +30,7 @@ sbsp_structure_seam_seam_cluster = Struct("seam_cluster",
 
 
 sbsp_structure_seam = Struct("structure_seam", 
-    Array("unknown_array", SIZE=4, SUB_STRUCT=UInt32("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=UInt32("unknown"), SIZE=4, VISIBLE=False),
     h3_reflexive("unknown", sbsp_structure_seam_unknown),
     h3_reflexive("seam_clusters", sbsp_structure_seam_seam_cluster),
     ENDIAN=">", SIZE=40
@@ -106,7 +108,7 @@ sbsp_fog = Struct("fog",
 sbsp_camera_effect = Struct("camera_effect", 
     h3_string_id("name"),
     h3_dependency("effect"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -157,7 +159,7 @@ sbsp_cluster_collision_mopp_code = Struct("collision_mopp_code",
     BytesRaw("unknown_2", SIZE=4, VISIBLE=False),
     SInt32("data_size"),
     UInt32("data_capacity"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     h3_reflexive("data", sbsp_cluster_collision_mopp_code_data),
     BytesRaw("unknown_3", SIZE=4, VISIBLE=False),
     ENDIAN=">", SIZE=64
@@ -212,7 +214,7 @@ sbsp_cluster = Struct("cluster",
     SInt8("unknown_1", VISIBLE=False),
     SInt16("background_sound_environment_index"),
     SInt16("sound_clusters_a_index", VISIBLE=False),
-    Array("unknown_array", SIZE=5, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=5, VISIBLE=False),
     SInt16("runtime_decal_start_index"),
     SInt16("runtime_decal_entry_count"),
     SInt16("flags"),
@@ -247,7 +249,7 @@ sbsp_cluster = Struct("cluster",
 sbsp_material_propertie = Struct("propertie", 
     SInt16("type"),
     SInt16("int_value"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     Float("real_value"),
     ENDIAN=">", SIZE=12
     )
@@ -360,7 +362,7 @@ sbsp_pathfinding_data_object_ref = Struct("object_ref",
 sbsp_pathfinding_data_pathfinding_hint = Struct("pathfinding_hint", 
     SInt16("next_hint_index"),
     Pad(2),
-    Array("hint_data_array", SIZE=8, SUB_STRUCT=SInt16("hint_data")),
+    Array("hint_data_array", SUB_STRUCT=SInt16("hint_data"), SIZE=8),
     ENDIAN=">", SIZE=20
     )
 
@@ -577,7 +579,7 @@ sbsp_instanced_geometry_instance = Struct("instanced_geometry_instance",
     SInt16("lightmapping_policy"),
     BytesRaw("unknown_2", SIZE=4, VISIBLE=False),
     h3_reflexive("collision_definitions", sbsp_instanced_geometry_instance_collision_definition),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown_3", SIZE=4, VISIBLE=False),
     ENDIAN=">", SIZE=120
     )
@@ -638,7 +640,7 @@ sbsp_meshes_0_unknown_water = Struct("unknown_water",
 sbsp_meshes_0 = Struct("meshes_0", 
     h3_reflexive("parts", sbsp_meshes_0_part),
     h3_reflexive("subparts", sbsp_meshes_0_subpart),
-    Array("vertex_buffer_index_array", SIZE=8, SUB_STRUCT=SInt16("vertex_buffer_index")),
+    Array("vertex_buffer_index_array", SUB_STRUCT=SInt16("vertex_buffer_index"), SIZE=8),
     SInt16("index_buffer_index_1"),
     SInt16("index_buffer_index_2"),
     Bool8("flags", 
@@ -670,8 +672,8 @@ sbsp_compression_info_0 = Struct("compression_info_0",
 
 
 sbsp_unknown_nodey_0 = Struct("unknown_nodey_0", 
-    Array("unknown_array", SIZE=8, SUB_STRUCT=Float("unknown"), VISIBLE=False),
-    Array("node_index_array", SIZE=4, SUB_STRUCT=SInt8("node_index"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
+    Array("node_index_array", SUB_STRUCT=SInt8("node_index"), SIZE=4, VISIBLE=False),
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -827,7 +829,7 @@ sbsp_collision_mopp_code = Struct("collision_mopp_code",
     BytesRaw("unknown_2", SIZE=4, VISIBLE=False),
     SInt32("data_size"),
     UInt32("data_capacity"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     h3_reflexive("data", sbsp_collision_mopp_code_data),
     BytesRaw("unknown_3", SIZE=4, VISIBLE=False),
     ENDIAN=">", SIZE=64
@@ -851,7 +853,7 @@ sbsp_breakable_surface_mopp_code = Struct("breakable_surface_mopp_code",
     BytesRaw("unknown_2", SIZE=4, VISIBLE=False),
     SInt32("data_size"),
     UInt32("data_capacity"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     h3_reflexive("data", sbsp_breakable_surface_mopp_code_data),
     BytesRaw("unknown_3", SIZE=4, VISIBLE=False),
     ENDIAN=">", SIZE=64
@@ -922,7 +924,7 @@ sbsp_meshes_1_unknown_water = Struct("unknown_water",
 sbsp_meshes_1 = Struct("meshes_1", 
     h3_reflexive("parts", sbsp_meshes_1_part),
     h3_reflexive("subparts", sbsp_meshes_1_subpart),
-    Array("vertex_buffer_index_array", SIZE=8, SUB_STRUCT=SInt16("vertex_buffer_index")),
+    Array("vertex_buffer_index_array", SUB_STRUCT=SInt16("vertex_buffer_index"), SIZE=8),
     SInt16("index_buffer_index_1"),
     SInt16("index_buffer_index_2"),
     Bool8("flags", 
@@ -954,8 +956,8 @@ sbsp_compression_info_1 = Struct("compression_info_1",
 
 
 sbsp_unknown_nodey_1 = Struct("unknown_nodey_1", 
-    Array("unknown_array", SIZE=8, SUB_STRUCT=Float("unknown"), VISIBLE=False),
-    Array("node_index_array", SIZE=4, SUB_STRUCT=SInt8("node_index"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
+    Array("node_index_array", SUB_STRUCT=SInt8("node_index"), SIZE=4, VISIBLE=False),
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -1030,7 +1032,7 @@ sbsp_leaf_system = Struct("leaf_system",
     )
 
 
-sbsp_meta_def = BlockDef("sbsp", 
+sbsp_body = Struct("tagdata", 
     SInt32("bsp_checksum"),
     SInt32("unknown_0", VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
@@ -1117,5 +1119,16 @@ sbsp_meta_def = BlockDef("sbsp",
     UInt16("zone_asset_index_3"),
     SInt32("useless_padding_2", VISIBLE=False),
     SInt32("unknown_22", VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=904
+    ENDIAN=">", SIZE=904
+    )
+
+
+def get():
+    return sbsp_def
+
+sbsp_def = TagDef("sbsp",
+    h3_blam_header('sbsp'),
+    sbsp_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["sbsp"], endian=">", tag_cls=H3Tag
     )

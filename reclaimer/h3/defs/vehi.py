@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -18,7 +18,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 vehi_friction_point_friction_type = (
@@ -205,7 +207,7 @@ vehi_camera_track = Struct("camera_track",
 
 
 vehi_unknown_7 = Struct("unknown_7", 
-    Array("unknown_array", SIZE=19, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
@@ -252,7 +254,7 @@ vehi_seat_camera_track = Struct("camera_track",
 
 
 vehi_seat_unknown_6 = Struct("unknown_6", 
-    Array("unknown_array", SIZE=19, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
@@ -423,7 +425,7 @@ vehi_dropship_motion_propertie = Struct("dropship_motion_propertie",
     Float("unknown_3"),
     Float("lift_acceleration"),
     Float("drop_acceleration"),
-    Array("unknown_array", SIZE=6, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=6),
     float_rad("unknown_4"),
     Float("unknown_5"),
     float_rad("unknown_6"),
@@ -442,14 +444,14 @@ vehi_antigravity_motion_propertie = Struct("antigravity_motion_propertie",
     Float("maximum_right_slide"),
     Float("slide_acceleration"),
     Float("slide_deceleration"),
-    Array("unknown_array_0", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array_0", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     Float("traction"),
     Pad(4),
     Float("turning_rate"),
     h3_string_id("unknown_1"),
-    Array("unknown_array_1", SIZE=4, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array_1", SUB_STRUCT=Float("unknown"), SIZE=4),
     h3_string_id("unknown_2"),
-    Array("unknown_array_2", SIZE=7, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array_2", SUB_STRUCT=Float("unknown"), SIZE=7),
     float_rad("unknown_3"),
     ENDIAN=">", SIZE=112
     )
@@ -498,8 +500,8 @@ vehi_helicopter_motion_propertie = Struct("helicopter_motion_propertie",
     h3_string_id("thrust_front_left"),
     h3_string_id("thrust_front_right"),
     h3_string_id("thrust"),
-    Array("unknown_array_0", SIZE=4, SUB_STRUCT=float_rad("unknown")),
-    Array("unknown_array_1", SIZE=15, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array_0", SUB_STRUCT=float_rad("unknown"), SIZE=4),
+    Array("unknown_array_1", SUB_STRUCT=Float("unknown"), SIZE=15),
     float_rad("unknown_1"),
     float_rad("unknown_2"),
     Float("unknown_3"),
@@ -540,9 +542,9 @@ vehi_antigravity_engine_motion_propertie = Struct("antigravity_engine_motion_pro
     h3_dependency("change_gear_sound"),
     Float("unknown_0"),
     h3_string_id("unknown_1"),
-    Array("unknown_array_0", SIZE=6, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array_0", SUB_STRUCT=Float("unknown"), SIZE=6),
     float_rad("unknown_2"),
-    Array("unknown_array_1", SIZE=5, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array_1", SUB_STRUCT=Float("unknown"), SIZE=5),
     ENDIAN=">", SIZE=112
     )
 
@@ -623,7 +625,7 @@ vehi_phantom_shape = Struct("phantom_shape",
     BytesRaw("unknown_1", SIZE=12, VISIBLE=False),
     SInt32("unknown_2", VISIBLE=False),
     BytesRaw("unknown_3", SIZE=16, VISIBLE=False),
-    Array("unknown_array", SIZE=7, SUB_STRUCT=Float("unknown")),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=7),
     BytesRaw("unknown_4", SIZE=4, VISIBLE=False),
     SInt32("multisphere_count"),
     Bool32("flags", 
@@ -667,7 +669,7 @@ vehi_phantom_shape = Struct("phantom_shape",
     )
 
 
-vehi_meta_def = BlockDef("vehi", 
+vehi_body = Struct("tagdata", 
     SEnum16("object_type", *bloc_object_type),
     Bool16("flags_0", 
         "does_not_cast_shadow",
@@ -871,5 +873,16 @@ vehi_meta_def = BlockDef("vehi",
     h3_dependency("running_effect"),
     h3_dependency("unknown_response_0"),
     h3_dependency("unknown_response_1"),
-    TYPE=Struct, ENDIAN=">", SIZE=1100
+    ENDIAN=">", SIZE=1100
+    )
+
+
+def get():
+    return vehi_def
+
+vehi_def = TagDef("vehi",
+    h3_blam_header('vehi'),
+    vehi_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["vehi"], endian=">", tag_cls=H3Tag
     )

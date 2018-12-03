@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -35,7 +37,7 @@ lst3_list_widget_item = Struct("list_widget_item",
     )
 
 
-lst3_meta_def = BlockDef("lst3", 
+lst3_body = Struct("tagdata", 
     Bool32("flags", 
         ("horizontal", 1 << 4),
         "loops",
@@ -58,5 +60,16 @@ lst3_meta_def = BlockDef("lst3",
     h3_reflexive("list_widget_items", lst3_list_widget_item),
     h3_dependency("up_arrow_bitmap"),
     h3_dependency("down_arrow_bitmap"),
-    TYPE=Struct, ENDIAN=">", SIZE=112
+    ENDIAN=">", SIZE=112
+    )
+
+
+def get():
+    return lst3_def
+
+lst3_def = TagDef("lst3",
+    h3_blam_header('lst3'),
+    lst3_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["lst3"], endian=">", tag_cls=H3Tag
     )

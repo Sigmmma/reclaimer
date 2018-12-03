@@ -170,8 +170,7 @@ def dependency_uint32(name='tag ref', **kwargs):
     return QStruct(name,
         UInt32("id"),
         STEPTREE=Computed("filepath",
-            COMPUTE_READ=get_meta_dependency_filepath,
-            WIDGET=EntryFrame, WIDGET_WIDTH=32
+            COMPUTE_READ=get_meta_dependency_filepath, WIDGET_WIDTH=32
             ),
         **kwargs
         )
@@ -208,8 +207,10 @@ def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
         STEPTREE=WritableComputed("string",
             COMPUTE_READ=read_string_id_string,
             COMPUTE_WRITE=write_string_id_string,
+            COMPUTE_SIZECALC=(lambda node, **kw: len(node) + bool(node)),
             SIZE=get_set_string_id_size, GUI_NAME="",
-            WIDGET=EntryFrame, WIDGET_WIDTH=32),
+            WIDGET_WIDTH=32, NODE_CLS=str, MAX=(1 << len_bit_ct)
+            ),
         **kwargs
         )
 

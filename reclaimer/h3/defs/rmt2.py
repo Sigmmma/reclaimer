@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -8,7 +8,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -59,7 +61,7 @@ rmt2_shader_map = Struct("shader_map",
     )
 
 
-rmt2_meta_def = BlockDef("rmt2", 
+rmt2_body = Struct("tagdata", 
     h3_dependency("vertex_shader"),
     h3_dependency("pixel_shader"),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
@@ -71,5 +73,16 @@ rmt2_meta_def = BlockDef("rmt2",
     h3_reflexive("unknown_5", rmt2_unknown_5),
     h3_reflexive("shader_maps", rmt2_shader_map),
     BytesRaw("unknown_6", SIZE=12, VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=132
+    ENDIAN=">", SIZE=132
+    )
+
+
+def get():
+    return rmt2_def
+
+rmt2_def = TagDef("rmt2",
+    h3_blam_header('rmt2'),
+    rmt2_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["rmt2"], endian=">", tag_cls=H3Tag
     )

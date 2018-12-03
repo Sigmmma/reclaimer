@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: -DeToX-
 # 	Created layout of plugin
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -32,7 +34,7 @@ bsdt_unknown1 = Struct("unknown1",
     )
 
 
-bsdt_meta_def = BlockDef("bsdt", 
+bsdt_body = Struct("tagdata", 
     Float("maximum_vitality"),
     h3_dependency("effect"),
     h3_dependency("sound"),
@@ -44,5 +46,16 @@ bsdt_meta_def = BlockDef("bsdt",
     BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
     h3_reflexive("unknown1", bsdt_unknown1),
     BytesRaw("unknown_3", SIZE=4, VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=160
+    ENDIAN=">", SIZE=160
+    )
+
+
+def get():
+    return bsdt_def
+
+bsdt_def = TagDef("bsdt",
+    h3_blam_header('bsdt'),
+    bsdt_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["bsdt"], endian=">", tag_cls=H3Tag
     )

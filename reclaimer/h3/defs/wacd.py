@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -8,11 +8,13 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-wacd_meta_def = BlockDef("wacd", 
+wacd_body = Struct("tagdata", 
     h3_dependency("focus"),
     h3_dependency("unfocus"),
     h3_dependency("unknown_0"),
@@ -49,5 +51,16 @@ wacd_meta_def = BlockDef("wacd",
     h3_dependency("unknown_27"),
     h3_dependency("unknown_28"),
     h3_dependency("unknown_29"),
-    TYPE=Struct, ENDIAN=">", SIZE=576
+    ENDIAN=">", SIZE=576
+    )
+
+
+def get():
+    return wacd_def
+
+wacd_def = TagDef("wacd",
+    h3_blam_header('wacd'),
+    wacd_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["wacd"], endian=">", tag_cls=H3Tag
     )

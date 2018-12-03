@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -75,7 +77,7 @@ bkey_bitmap_widget = Struct("bitmap_widget",
     )
 
 
-bkey_meta_def = BlockDef("bkey", 
+bkey_body = Struct("tagdata", 
     Bool32("flags", *unknown_flags_32),
     h3_string_id("name"),
     SInt16("unknown", VISIBLE=False),
@@ -92,5 +94,16 @@ bkey_meta_def = BlockDef("bkey",
     h3_dependency("strings"),
     h3_reflexive("text_widgets", bkey_text_widget),
     h3_reflexive("bitmap_widgets", bkey_bitmap_widget),
-    TYPE=Struct, ENDIAN=">", SIZE=84
+    ENDIAN=">", SIZE=84
+    )
+
+
+def get():
+    return bkey_def
+
+bkey_def = TagDef("bkey",
+    h3_blam_header('bkey'),
+    bkey_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["bkey"], endian=">", tag_cls=H3Tag
     )

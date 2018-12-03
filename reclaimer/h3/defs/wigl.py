@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -14,7 +14,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 wigl_alert_icon = (
@@ -91,7 +93,7 @@ wigl_dialog = Struct("dialog",
     SInt16("unknown_1", VISIBLE=False),
     h3_string_id("title"),
     h3_string_id("body"),
-    Array("option_array", SIZE=4, SUB_STRUCT=h3_string_id("option")),
+    Array("option_array", SUB_STRUCT=h3_string_id("option"), SIZE=4),
     h3_string_id("key_legend"),
     SEnum16("default_option", *wigl_dialog_default_option),
     SInt16("unknown_2", VISIBLE=False),
@@ -105,7 +107,7 @@ wigl_global_data_source = Struct("global_data_source",
     )
 
 
-wigl_meta_def = BlockDef("wigl", 
+wigl_body = Struct("tagdata", 
     SInt16("inc_text_update_period"),
     SInt16("inc_text_block_character"),
     Float("near_clip_plane_distance"),
@@ -136,5 +138,16 @@ wigl_meta_def = BlockDef("wigl",
     SInt32("scroll_speed_transition_wait_time"),
     SInt32("held_scroll_speed"),
     SInt32("attract_video_idle_wait"),
-    TYPE=Struct, ENDIAN=">", SIZE=352
+    ENDIAN=">", SIZE=352
+    )
+
+
+def get():
+    return wigl_def
+
+wigl_def = TagDef("wigl",
+    h3_blam_header('wigl'),
+    wigl_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["wigl"], endian=">", tag_cls=H3Tag
     )

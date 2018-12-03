@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -14,7 +14,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 effe_event_part_camera_mode = (
@@ -47,7 +49,7 @@ effe_event_particle_system_coordinate_system = (
 effe_location = Struct("location", 
     h3_string_id("marker_name"),
     SInt32("unknown", VISIBLE=False),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     ENDIAN=">", SIZE=12
     )
 
@@ -110,14 +112,14 @@ effe_event_particle_system_emitter_unknown_21 = Struct("unknown_21",
 
 
 effe_event_particle_system_emitter_unknown_39 = Struct("unknown_39", 
-    Array("unknown_array", SIZE=4, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
 effe_event_particle_system_emitter_compiled_function = Struct("compiled_function", 
-    Array("unknown_array", SIZE=16, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=64
     )
@@ -190,7 +192,7 @@ effe_event_particle_system_emitter = Struct("emitter",
     h3_rawdata_ref("unknown_19"),
     BytesRaw("unknown_20", SIZE=8, VISIBLE=False),
     h3_dependency("particle_physics"),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     h3_reflexive("unknown_21", effe_event_particle_system_emitter_unknown_21),
     SInt8("input_9"),
     SInt8("input_range_9"),
@@ -257,7 +259,7 @@ effe_event_particle_system_emitter = Struct("emitter",
 
 
 effe_event_particle_system = Struct("particle_system", 
-    Array("unknown_array_0", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array_0", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     h3_dependency("particle"),
     SInt16("unknown_0", VISIBLE=False),
     SInt16("location_index"),
@@ -267,7 +269,7 @@ effe_event_particle_system = Struct("particle_system",
     SEnum16("camera_mode", *effe_event_part_camera_mode),
     SInt16("sort_bias"),
     Bool16("flags", *unknown_flags_16),
-    Array("unknown_array_1", SIZE=4, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array_1", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
     Float("amount_size"),
@@ -283,7 +285,7 @@ effe_event_particle_system = Struct("particle_system",
 effe_event = Struct("event", 
     h3_string_id("name"),
     SInt32("unknown", VISIBLE=False),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     Float("skip_fraction"),
     QStruct("delay_bounds", INCLUDE=from_to),
     QStruct("duration_bounds", INCLUDE=from_to),
@@ -301,7 +303,7 @@ effe_unknown_9 = Struct("unknown_9",
     )
 
 
-effe_meta_def = BlockDef("effe", 
+effe_body = Struct("tagdata", 
     Bool32("flags", 
         ("dark_casings", 1 << 10),
         ),
@@ -309,7 +311,7 @@ effe_meta_def = BlockDef("effe",
     Float("unknown_1", VISIBLE=False),
     BytesRaw("unknown_2", SIZE=4, VISIBLE=False),
     Float("unknown_3", VISIBLE=False),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     SInt16("loop_start_event"),
     SInt16("unknown_4", VISIBLE=False),
     BytesRaw("unknown_5", SIZE=4, VISIBLE=False),
@@ -324,5 +326,16 @@ effe_meta_def = BlockDef("effe",
     Float("unknown_7", VISIBLE=False),
     Float("unknown_8", VISIBLE=False),
     h3_reflexive("unknown_9", effe_unknown_9),
-    TYPE=Struct, ENDIAN=">", SIZE=104
+    ENDIAN=">", SIZE=104
+    )
+
+
+def get():
+    return effe_def
+
+effe_def = TagDef("effe",
+    h3_blam_header('effe'),
+    effe_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["effe"], endian=">", tag_cls=H3Tag
     )

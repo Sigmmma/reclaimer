@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -14,7 +14,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 jpt__category = (
@@ -78,7 +80,7 @@ jpt__player_response = Struct("player_response",
     )
 
 
-jpt__meta_def = BlockDef("jpt_", 
+jpt__body = Struct("tagdata", 
     QStruct("radius", INCLUDE=from_to),
     Float("cutoff_scale"),
     Bool32("flags_0", 
@@ -150,5 +152,16 @@ jpt__meta_def = BlockDef("jpt_",
     Float("outward_velocity"),
     Float("outward_radius"),
     Float("outward_exponent"),
-    TYPE=Struct, ENDIAN=">", SIZE=240
+    ENDIAN=">", SIZE=240
+    )
+
+
+def get():
+    return jpt__def
+
+jpt__def = TagDef("jpt!",
+    h3_blam_header('jpt!'),
+    jpt__body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["jpt!"], endian=">", tag_cls=H3Tag
     )

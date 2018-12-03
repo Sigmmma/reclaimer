@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 sily_parameter = (
@@ -655,10 +657,21 @@ sily_text_value_pair = Struct("text_value_pair",
     )
 
 
-sily_meta_def = BlockDef("sily", 
+sily_body = Struct("tagdata", 
     SEnum32("parameter", *sily_parameter),
     h3_string_id("name"),
     h3_string_id("description"),
     h3_reflexive("text_value_pairs", sily_text_value_pair),
-    TYPE=Struct, ENDIAN=">", SIZE=24
+    ENDIAN=">", SIZE=24
+    )
+
+
+def get():
+    return sily_def
+
+sily_def = TagDef("sily",
+    h3_blam_header('sily'),
+    sily_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["sily"], endian=">", tag_cls=H3Tag
     )

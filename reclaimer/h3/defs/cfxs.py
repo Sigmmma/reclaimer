@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: -DeToX-
 # 	Mapped plugin structure a new.
@@ -10,11 +10,13 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-cfxs_meta_def = BlockDef("cfxs", 
+cfxs_body = Struct("tagdata", 
     Bool16("flags_0", 
         "disable_brightness",
         ("disable_overexposure", 1 << 2),
@@ -109,5 +111,16 @@ cfxs_meta_def = BlockDef("cfxs",
     Float("base_4"),
     Float("min_4"),
     Float("max_4"),
-    TYPE=Struct, ENDIAN=">", SIZE=228
+    ENDIAN=">", SIZE=228
+    )
+
+
+def get():
+    return cfxs_def
+
+cfxs_def = TagDef("cfxs",
+    h3_blam_header('cfxs'),
+    cfxs_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["cfxs"], endian=">", tag_cls=H3Tag
     )

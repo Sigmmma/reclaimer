@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -140,7 +142,7 @@ grup_model_widget_camera_refinement_zoom_data_2 = Struct("zoom_data_2",
 
 grup_model_widget_camera_refinement = Struct("camera_refinement", 
     h3_string_id("biped", VISIBLE=False),
-    Array("unknown_array", SIZE=8, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     h3_reflexive("zoom_data_1", grup_model_widget_camera_refinement_zoom_data_1),
     h3_reflexive("zoom_data_2", grup_model_widget_camera_refinement_zoom_data_2),
     VISIBLE=False,
@@ -168,7 +170,7 @@ grup_model_widget = Struct("model_widget",
     )
 
 
-grup_meta_def = BlockDef("grup", 
+grup_body = Struct("tagdata", 
     Bool32("flags", 
         ("initially_hidden", 1 << 3),
         ),
@@ -188,5 +190,16 @@ grup_meta_def = BlockDef("grup",
     h3_reflexive("text_widgets", grup_text_widget),
     h3_reflexive("bitmap_widgets", grup_bitmap_widget),
     h3_reflexive("model_widgets", grup_model_widget),
-    TYPE=Struct, ENDIAN=">", SIZE=92
+    ENDIAN=">", SIZE=92
+    )
+
+
+def get():
+    return grup_def
+
+grup_def = TagDef("grup",
+    h3_blam_header('grup'),
+    grup_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["grup"], endian=">", tag_cls=H3Tag
     )

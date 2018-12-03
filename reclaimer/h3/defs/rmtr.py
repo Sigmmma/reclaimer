@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -36,7 +38,7 @@ rmtr_import_data = Struct("import_data",
     h3_dependency("bitmap"),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     SInt32("unknown_2", VISIBLE=False),
-    Array("unknown_array", SIZE=6, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=6, VISIBLE=False),
     BytesRaw("unknown_3", SIZE=4, VISIBLE=False),
     h3_reflexive("functions", rmtr_import_data_function),
     ENDIAN=">", SIZE=60
@@ -58,7 +60,7 @@ rmtr_shader_propertie_shader_map = Struct("shader_map",
 
 
 rmtr_shader_propertie_argument = Struct("argument", 
-    Array("arg_array", SIZE=4, SUB_STRUCT=Float("arg")),
+    Array("arg_array", SUB_STRUCT=Float("arg"), SIZE=4),
     ENDIAN=">", SIZE=16
     )
 
@@ -116,21 +118,32 @@ rmtr_shader_propertie = Struct("shader_propertie",
     SInt32("unknown_5", VISIBLE=False),
     SInt32("unknown_6", VISIBLE=False),
     BytesRaw("unknown_7", SIZE=4, VISIBLE=False),
-    Array("unknown_array", SIZE=8, SUB_STRUCT=SInt16("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=8, VISIBLE=False),
     ENDIAN=">", SIZE=132
     )
 
 
-rmtr_meta_def = BlockDef("rmtr", 
+rmtr_body = Struct("tagdata", 
     h3_dependency("base_render_method"),
     h3_reflexive("unknown_0", rmtr_unknown_0),
     h3_reflexive("import_data", rmtr_import_data),
     h3_reflexive("shader_properties", rmtr_shader_propertie),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     SInt32("unknown_2", VISIBLE=False),
-    Array("material_array", SIZE=4, SUB_STRUCT=h3_string_id("material"), VISIBLE=False),
-    Array("global_material_index_array", SIZE=4, SUB_STRUCT=SInt16("global_material_index"), VISIBLE=False),
+    Array("material_array", SUB_STRUCT=h3_string_id("material"), SIZE=4, VISIBLE=False),
+    Array("global_material_index_array", SUB_STRUCT=SInt16("global_material_index"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown_3", SIZE=4, VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=92
+    ENDIAN=">", SIZE=92
+    )
+
+
+def get():
+    return rmtr_def
+
+rmtr_def = TagDef("rmtr",
+    h3_blam_header('rmtr'),
+    rmtr_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["rmtr"], endian=">", tag_cls=H3Tag
     )

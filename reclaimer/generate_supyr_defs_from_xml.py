@@ -531,10 +531,8 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name,
         indent = 1
 
     indent_str = ' ' * (4 * indent)
-    if struct_node.typ == "reflexive":
+    if struct_node.typ in ("reflexive", "BlockDef"):
         desc_str = 'Struct('
-    elif struct_node.typ == "BlockDef":
-        desc_str = 'BlockDef('
     else:
         if struct_node.typ in engine_specific_field_types:
             desc_str = "%s%s_%s(" % (indent_str, engine_name, struct_node.typ)
@@ -545,7 +543,11 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name,
         desc_str += str(struct_node.size)
         indent_str = ""
     else:
-        desc_str += '"%s", ' % struct_node_name
+        if struct_node.typ == "BlockDef":
+            desc_str += '"tagdata", '
+        else:
+            desc_str += '"%s", ' % struct_node_name
+
         if struct_node.typ in name_only_field_types:
             indent_str = ""
         else:
@@ -692,7 +694,6 @@ def struct_node_to_supyr_desc(struct_node, descs_by_name,
         desc_str += indent_str
         if struct_node.typ == "BlockDef":
             desc_name += "_meta_def"
-            desc_str += "TYPE=Struct, "
 
         desc_str += 'ENDIAN=">", SIZE=%s\n' % struct_node.size
 
@@ -858,6 +859,10 @@ for _, dirs, __ in os.walk("xml/"):
 
 
 for tag_def_dir in sorted(tag_def_dirs):
+
+    # TODO: Make this more versatile
+    tag_engine_cls_name = tag_def_dir.upper() + "Tag"
+
     defs_dir = os.path.join(tag_def_dir, "defs")
     os.makedirs(defs_dir, exist_ok=True)
 
@@ -929,10 +934,10 @@ for tag_def_dir in sorted(tag_def_dirs):
 
     print("Writing definitions...")
     # on the second pass, we actually write the definitions
-    for module_name in sorted(all_tag_struct_nodes):
-        print(module_name)
-        version_infos = all_version_infos[module_name]
-        tag_struct_nodes = all_tag_struct_nodes[module_name]
+    for tag_cls in sorted(all_tag_struct_nodes):
+        print(tag_cls)
+        version_infos = all_version_infos[tag_cls]
+        tag_struct_nodes = all_tag_struct_nodes[tag_cls]
 
         descs_by_name = OrderedDict()
         enum_bool_names_by_desc = {}
@@ -940,9 +945,9 @@ for tag_def_dir in sorted(tag_def_dirs):
                                   enum_bool_names_by_desc,
                                   shared_enum_bool_names_by_desc,
                                   tag_def_dir, report_optimize=True)
-        
+
         module_name = "".join(c if c in VALID_MODULE_NAME_CHARS
-                              else "_" for c in module_name)
+                              else "_" for c in tag_cls)
         module_name += "_" * ((4 - (len(module_name) % 4)) % 4)
         with open(os.path.join(defs_dir, module_name) + ".py", "w+") as pyf:
             pyf.write("############# Credits and version info #############\n"
@@ -955,7 +960,9 @@ for tag_def_dir in sorted(tag_def_dirs):
             pyf.write("#\n"
                       "####################################################\n")
 
-            pyf.write('''from ..common_descs import *
+            pyf.write('''
+from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef''')
             enum_bool_descs_by_name = {enum_bool_names_by_desc[desc]: desc for
                                        desc in enum_bool_names_by_desc}
@@ -968,7 +975,24 @@ from supyr_struct.defs.tag_def import TagDef''')
             for desc_name in descs_by_name:
                 pyf.write("\n\n\n")
                 desc_str = descs_by_name[desc_name]
+                if desc_name == "%s_meta_def" % module_name:
+                    desc_name = "%s_body" % module_name
                 pyf.write("%s = %s" % (desc_name, desc_str.strip(",")))
 
+
+            pyf.write('\n\n\ndef get():\n    return %s_def' % module_name)
+
+            if "_" in tag_cls:
+                print("    MUST SET THIS TAG CLASS STRING MANUALLY")
+                pyf.write("\n\n#  REMINDER: Set this tag class string manually.")
+
+            pyf.write('''\n
+%s_def = TagDef("%s",
+    %s_blam_header('%s'),
+    %s_body,
+
+    ext=".%%s" %% %s_tag_class_fcc_to_ext["%s"], endian=">", tag_cls=%s
+    )''' % (module_name, tag_cls, tag_def_dir, tag_cls, module_name,
+            tag_def_dir, tag_cls, tag_engine_cls_name))
 
 print("Finished")

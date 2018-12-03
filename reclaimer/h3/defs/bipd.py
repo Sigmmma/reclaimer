@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -18,7 +18,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -185,7 +187,7 @@ bipd_camera_track = Struct("camera_track",
 
 
 bipd_unknown_7 = Struct("unknown_7", 
-    Array("unknown_array", SIZE=19, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
@@ -232,7 +234,7 @@ bipd_seat_camera_track = Struct("camera_track",
 
 
 bipd_seat_unknown_6 = Struct("unknown_6", 
-    Array("unknown_array", SIZE=19, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
@@ -414,7 +416,7 @@ bipd_contact_point = Struct("contact_point",
     )
 
 
-bipd_meta_def = BlockDef("bipd", 
+bipd_body = Struct("tagdata", 
     SEnum16("object_type", *bloc_object_type),
     Bool16("flags_0", 
         "does_not_cast_shadow",
@@ -634,7 +636,7 @@ bipd_meta_def = BlockDef("bipd",
     float_rad("uphill_cutoff_angle"),
     Float("downhill_velocity_scale"),
     Float("uphill_velocity_scale"),
-    Array("unknown_array_0", SIZE=7, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array_0", SUB_STRUCT=Float("unknown"), SIZE=7, VISIBLE=False),
     Float("falling_velocity_scale"),
     Float("unknown_11", VISIBLE=False),
     float_rad("bank_angle"),
@@ -656,13 +658,24 @@ bipd_meta_def = BlockDef("bipd",
     SInt16("death_spawn_count"),
     SInt16("unknown_13", VISIBLE=False),
     BytesRaw("unknown_14", SIZE=4, VISIBLE=False),
-    Array("unknown_array_1", SIZE=4, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array_1", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     float_rad("unknown_15", VISIBLE=False),
     float_rad("unknown_16", VISIBLE=False),
     BytesRaw("unknown_17", SIZE=8, VISIBLE=False),
-    Array("unknown_array_2", SIZE=8, SUB_STRUCT=Float("unknown"), VISIBLE=False),
+    Array("unknown_array_2", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     float_rad("unknown_18", VISIBLE=False),
     float_rad("unknown_19", VISIBLE=False),
-    Array("unknown_array_3", SIZE=5, SUB_STRUCT=Float("unknown"), VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=1248
+    Array("unknown_array_3", SUB_STRUCT=Float("unknown"), SIZE=5, VISIBLE=False),
+    ENDIAN=">", SIZE=1248
+    )
+
+
+def get():
+    return bipd_def
+
+bipd_def = TagDef("bipd",
+    h3_blam_header('bipd'),
+    bipd_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["bipd"], endian=">", tag_cls=H3Tag
     )

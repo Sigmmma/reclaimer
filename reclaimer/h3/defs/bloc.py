@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -16,7 +16,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
@@ -176,7 +178,7 @@ bloc_metagame_propertie = Struct("metagame_propertie",
     )
 
 
-bloc_meta_def = BlockDef("bloc", 
+bloc_body = Struct("tagdata", 
     SEnum16("object_type", *bloc_object_type),
     Bool16("flags_0", 
         "does_not_cast_shadow",
@@ -225,6 +227,17 @@ bloc_meta_def = BlockDef("bloc",
         ),
     Pad(2),
     h3_reflexive("metagame_properties", bloc_metagame_propertie),
-    Array("unknown_array", SIZE=4, SUB_STRUCT=SInt8("unknown"), VISIBLE=False),
-    TYPE=Struct, ENDIAN=">", SIZE=268
+    Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
+    ENDIAN=">", SIZE=268
+    )
+
+
+def get():
+    return bloc_def
+
+bloc_def = TagDef("bloc",
+    h3_blam_header('bloc'),
+    bloc_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["bloc"], endian=">", tag_cls=H3Tag
     )

@@ -23,7 +23,6 @@ __all__ = ("Halo1Map", "Halo1RsrcMap")
 class Halo1Map(HaloMap):
     ce_rsrc_sound_indexes_by_path = None
     ce_tag_indexs_by_paths = None
-    tag_headers = None
     sound_rsrc_id = None
     defs = None
 

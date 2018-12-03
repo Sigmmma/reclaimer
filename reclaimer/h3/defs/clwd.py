@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -12,7 +12,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 clwd_integration_type = (
@@ -41,7 +43,7 @@ clwd_link = Struct("link",
     )
 
 
-clwd_meta_def = BlockDef("clwd", 
+clwd_body = Struct("tagdata", 
     Bool32("flags", 
         "doesn_t_use_wind",
         "uses_grid_attach_top",
@@ -65,5 +67,16 @@ clwd_meta_def = BlockDef("clwd",
     h3_reflexive("indices", clwd_indice),
     BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
     h3_reflexive("links", clwd_link),
-    TYPE=Struct, ENDIAN=">", SIZE=148
+    ENDIAN=">", SIZE=148
+    )
+
+
+def get():
+    return clwd_def
+
+clwd_def = TagDef("clwd",
+    h3_blam_header('clwd'),
+    clwd_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["clwd"], endian=">", tag_cls=H3Tag
     )

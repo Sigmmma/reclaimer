@@ -147,7 +147,7 @@ partition = Struct("partition",
     UInt32("load address"),
     UInt32("size"),
     STEPTREE=Computed("file offset",
-        COMPUTE_READ=compute_partition_offset, WIDGET=EntryFrame, WIDGET_WIDTH=10 
+        COMPUTE_READ=compute_partition_offset, WIDGET_WIDTH=10 
         ),
     SIZE=8
     )
@@ -156,7 +156,7 @@ section = Struct("section",
     UInt32("virtual address"),
     UInt32("size"),
     Computed("file offset",
-        COMPUTE_READ=compute_section_offset, WIDGET=EntryFrame, WIDGET_WIDTH=10
+        COMPUTE_READ=compute_section_offset, WIDGET_WIDTH=10
         ),
     SIZE=8
     )
@@ -228,20 +228,16 @@ h3_map_header = Struct("map header",
     UEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
     STEPTREE=Container("strings",
         Computed("string id index file offset",
-            COMPUTE_READ=compute_string_id_index_offset,
-            WIDGET=EntryFrame, WIDGET_WIDTH=10
+            COMPUTE_READ=compute_string_id_index_offset, WIDGET_WIDTH=10
             ),
         Computed("string id table file offset",
-            COMPUTE_READ=compute_string_id_table_offset,
-            WIDGET=EntryFrame, WIDGET_WIDTH=10
+            COMPUTE_READ=compute_string_id_table_offset, WIDGET_WIDTH=10
             ),
         Computed("tag name index file offset",
-            COMPUTE_READ=compute_tag_name_index_offset,
-            WIDGET=EntryFrame, WIDGET_WIDTH=10
+            COMPUTE_READ=compute_tag_name_index_offset, WIDGET_WIDTH=10
             ),
         Computed("tag name table file offset",
-            COMPUTE_READ=compute_tag_name_table_offset,
-            WIDGET=EntryFrame, WIDGET_WIDTH=10
+            COMPUTE_READ=compute_tag_name_table_offset, WIDGET_WIDTH=10
             ),
         string_id_table,
         tag_name_table,

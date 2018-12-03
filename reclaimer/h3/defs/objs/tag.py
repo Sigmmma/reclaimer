@@ -1,4 +1,4 @@
 from ....hek.defs.objs.tag import *
 
-class H2Tag(HekTag):
+class H3Tag(Tag):
     pass

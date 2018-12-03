@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -14,7 +14,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 hlmt_model_object_data_type = (
@@ -113,7 +115,7 @@ hlmt_variant_object = Struct("object",
 
 hlmt_variant = Struct("variant", 
     h3_string_id("name"),
-    Array("model_region_index_array", SIZE=16, SUB_STRUCT=SInt8("model_region_index")),
+    Array("model_region_index_array", SUB_STRUCT=SInt8("model_region_index"), SIZE=16),
     h3_reflexive("regions", hlmt_variant_region),
     h3_reflexive("objects", hlmt_variant_object),
     SInt32("instance_group_index"),
@@ -421,7 +423,7 @@ hlmt_unknown_5 = Struct("unknown_5",
     )
 
 
-hlmt_meta_def = BlockDef("hlmt", 
+hlmt_body = Struct("tagdata", 
     h3_dependency("model"),
     h3_dependency("collision_model"),
     h3_dependency("animation"),
@@ -477,5 +479,16 @@ hlmt_meta_def = BlockDef("hlmt",
     h3_reflexive("unknown_5", hlmt_unknown_5),
     h3_dependency("shield_impact_third_person"),
     h3_dependency("shield_impact_first_person"),
-    TYPE=Struct, ENDIAN=">", SIZE=392
+    ENDIAN=">", SIZE=392
+    )
+
+
+def get():
+    return hlmt_def
+
+hlmt_def = TagDef("hlmt",
+    h3_blam_header('hlmt'),
+    hlmt_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["hlmt"], endian=">", tag_cls=H3Tag
     )

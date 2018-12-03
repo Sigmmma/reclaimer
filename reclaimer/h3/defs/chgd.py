@@ -1,6 +1,6 @@
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
-#	 Date generated: 2018/11/30  01:44
+#	 Date generated: 2018/12/03  04:56
 #
 # revision: 1		author: Assembly
 # 	Generated plugin from scratch.
@@ -10,7 +10,9 @@
 # 	Cleaned up and converted to SuPyr definition
 #
 ####################################################
+
 from ..common_descs import *
+from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 chgd_hud_global_biped = (
@@ -102,9 +104,9 @@ chgd_hud_global = Struct("hud_global",
     color_argb_uint32("_13_waypoint_blip"),
     color_argb_uint32("_14_distant_waypoint_blip"),
     color_argb_uint32("_15_waypoint"),
-    Array("_array_0", SIZE=6, SUB_STRUCT=color_argb_uint32("")),
+    Array("_array_0", SUB_STRUCT=color_argb_uint32(""), SIZE=6),
     color_argb_uint32("_22_text_fade_in"),
-    Array("_array_1", SIZE=5, SUB_STRUCT=color_argb_uint32("")),
+    Array("_array_1", SUB_STRUCT=color_argb_uint32(""), SIZE=5),
     h3_reflexive("hud_attributes", chgd_hud_global_hud_attribute),
     h3_reflexive("hud_sounds", chgd_hud_global_hud_sound),
     h3_dependency("unknown_0"),
@@ -188,7 +190,7 @@ chgd_player_training_data = Struct("player_training_data",
     )
 
 
-chgd_meta_def = BlockDef("chgd", 
+chgd_body = Struct("tagdata", 
     h3_reflexive("hud_globals", chgd_hud_global),
     h3_reflexive("hud_shaders", chgd_hud_shader),
     h3_reflexive("unknown_0", chgd_unknown_0),
@@ -214,5 +216,16 @@ chgd_meta_def = BlockDef("chgd",
     h3_dependency("birthday_party_effect"),
     h3_dependency("campaign_flood_mask"),
     h3_dependency("campaign_flood_mask_tile"),
-    TYPE=Struct, ENDIAN=">", SIZE=240
+    ENDIAN=">", SIZE=240
+    )
+
+
+def get():
+    return chgd_def
+
+chgd_def = TagDef("chgd",
+    h3_blam_header('chgd'),
+    chgd_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["chgd"], endian=">", tag_cls=H3Tag
     )
