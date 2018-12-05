@@ -194,6 +194,10 @@ def dependency(name='tag ref', valid_ids=None, **kwargs):
         )
 
 
+def zone_asset(name, **kwargs):
+    return ZoneAsset(name, INCLUDE=zone_asset_struct, **kwargs)
+
+
 def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
     if len_bit_ct is None:
         len_bit_ct = 32 - index_bit_ct - set_bit_ct
@@ -629,6 +633,14 @@ predicted_resource = Struct('predicted resource',
         ),
     SInt16('resource index'),
     UInt32('tag index'),
+    )
+
+zone_asset_struct = ZoneAsset("zone asset",
+    UInt16("salt"),
+    UInt16("idx"),
+    UInt32("size", EDITABLE=False),  # normally unused, but we use it for the 
+    #                                  data size when the tag is extracted
+    STEPTREE=BytesRaw("data", SIZE=get_set_zone_asset_size)
     )
 
 extra_layers_block = dependency("extra layer", valid_shaders)
