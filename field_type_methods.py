@@ -15,7 +15,7 @@ def get_set_zone_asset_size(node=None, parent=None, attr_index=None,
                             rawdata=None, new_value=None, **kwargs):
     if new_value is not None:
         parent.size = new_value
-    elif "magic" in kwargs:
+    elif "map_pointer_converter" in kwargs:
         return 0
     return parent.size
 
@@ -90,7 +90,7 @@ def read_string_id_string(parent=None, attr_index=None, rawdata=None, offset=0,
     assert parent is not None
     if map_string_id_manager:
         parent[attr_index] = map_string_id_manager.get_string(parent)
-    elif "magic" not in kwargs:
+    elif "map_pointer_converter" not in kwargs:
         desc = parent.desc
         str_len = (parent[0] & 0xFFffFFff) >> (desc[STRINGID_IDX_BITS] +
                                                desc[STRINGID_SET_BITS])
@@ -111,7 +111,7 @@ def read_string_id_string(parent=None, attr_index=None, rawdata=None, offset=0,
 def write_string_id_string(parent=None, attr_index=None,
                            writebuffer=None, offset=0, **kwargs):
     assert parent is not None
-    if "magic" in kwargs:
+    if "map_pointer_converter" in kwargs:
         return offset
 
     raw_string = parent.string.encode(encoding="latin-1") + b'\x00'
@@ -183,22 +183,22 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
 
         s_desc = desc.get('STEPTREE')
         if s_desc:
-            magic = kwargs.get('magic')
-            if magic is None:
-                pass
-            elif (node[1] - magic < 0 or node[1] - magic +
-                  node[0]*s_desc['SUB_STRUCT'].get('SIZE', 0) > len(rawdata)):
-                # the reflexive is corrupt for some reason
-                #    (ex: bad hek+ extraction)
-                node.size = node.pointer = 0
+            pointer_converter = kwargs.get('map_pointer_converter')
+            if pointer_converter is not None:
+                file_ptr = pointer_converter.v_ptr_to_f_ptr(node[1])
+                if (file_ptr < 0 or file_ptr +
+                    node[0]*s_desc['SUB_STRUCT'].get('SIZE', 0) > len(rawdata)):
+                    # the reflexive is corrupt for some reason
+                    #    (ex: bad hek+ extraction)
+                    node[0] = node[1] = 0
 
             if not node[0]:
                 # reflexive is empty. no need to provide rawdata
                 s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
-            elif magic is not None:
+            elif pointer_converter is not None:
                 # parsing tag from a map
                 s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', rawdata,
-                                      root_offset, node[1] - magic, **kwargs)
+                                      root_offset, file_ptr, **kwargs)
             elif 'steptree_parents' not in kwargs:
                 offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
                                                rawdata, root_offset, offset,
@@ -248,30 +248,29 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
 
         s_desc = desc.get('STEPTREE')
         if s_desc:
+            pointer_converter = kwargs.get("map_pointer_converter")
             if kwargs.get("parsing_resource"):
                 # parsing JUST metadata from a resource cache
                 node_size = node[0]
-                if 'steptree_parents' not in kwargs and 'magic' in kwargs:
+                if 'steptree_parents' not in kwargs and pointer_converter is not None:
                     # need to skip over the rawdata
-                    offset += node_size + node[2] - kwargs['magic']
+                    offset += node_size + node[2]
 
                 s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
                 node[0] = node_size
-            elif 'magic' in kwargs:
-                # use magic offset if it is valid
-                if node[3]:
-                    nonmagic_offset = node[3] - kwargs["magic"]
-                else:
-                    nonmagic_offset = node[2]
+            elif pointer_converter is not None:
+                file_ptr = pointer_converter.v_ptr_to_f_ptr(node[3])
+                if not node[3] or file_ptr < 0:
+                    file_ptr = node[2]
 
-                if not node[0] or (nonmagic_offset + node[0] > len(rawdata) or
-                                   nonmagic_offset <= 0):
+                if not node[0] or (file_ptr + node[0] > len(rawdata) or
+                                   file_ptr <= 0):
                     # data is stored in a resource map, or the size is invalid
                     s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
                 else:
                     s_desc['TYPE'].parser(
                         s_desc, None, node, 'STEPTREE', rawdata,
-                        root_offset, nonmagic_offset, **kwargs)
+                        root_offset, file_ptr, **kwargs)
             elif 'steptree_parents' not in kwargs:
                 offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
                                                rawdata, root_offset, offset,
@@ -301,7 +300,7 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
 
 def tag_ref_str_serializer(self, node, parent=None, attr_index=None,
                            writebuffer=None, root_offset=0, offset=0, **kwargs):
-    if "magic" in kwargs:
+    if "map_pointer_converter" in kwargs:
         # don't serialize the string
         return offset
 

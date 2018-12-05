@@ -135,11 +135,8 @@ def h3_to_h1_tag_index(map_header, tag_index):
 
 
 class MapPointerConverter:
-
-    class ChunkInfo:
-        __slots__ = (
-            "v_addr", "f_addr", "size", "v_addr_range", "f_addr_range"
-            )
+    '''Handles converting virtual pointers to/from file pointers in maps.'''
+    class PageInfo:
         def __init__(self, v_addr=0, f_addr=0, size=0):
             self.v_addr = v_addr
             self.f_addr = f_addr
@@ -147,30 +144,43 @@ class MapPointerConverter:
             self.v_addr_range = range(self.v_addr, self.v_addr + self.size)
             self.f_addr_range = range(self.f_addr, self.f_addr + self.size)
 
-    _chunk_infos = ()
+    _page_infos = ()
 
-    def __init__(self, sections=(), partitions=()):
-        unsorted_chunk_infos = []
-        for sect in sections:
-            unsorted_chunk_infos.append(MapPointerConverter.ChunkInfo(
-                sect.virtual_address, sect.file_offset, sect.size))
+    @property
+    def mapped_size(self):
+        size = 0
+        for page in self._page_infos:
+            size += page.size
+        return size
 
-        for part in partitions:
-            unsorted_chunk_infos.append(MapPointerConverter.ChunkInfo(
-                part.load_address, part.file_offset, part.size))
+    def __init__(self, *pages):
+        self._page_infos = []
+        for v_addr, f_addr, size in pages:
+            self.add_page_info(v_addr, f_addr, size)
 
-        chunk_info_map = {info.v_addr for info in unsorted_chunk_infos}
-        self._chunk_infos = list(chunk_info_map[i] for i in
-                                 sorted(chunk_info_map))
+    def add_page_info(self, v_addr, f_addr, size):
+        if size < 0:
+            return
 
-    def virtual_ptr_to_file_ptr(ptr):
-        for info in self._chunk_infos:
+        new_page = MapPointerConverter.PageInfo(v_addr, f_addr, size)
+        i = 0
+        for page in self._page_infos:
+            # insert the new page based on its virtual pointer
+            if v_addr <= page.v_addr:
+                break
+            i += 1
+        self._page_infos.insert(i, new_page)
+
+    def v_ptr_to_f_ptr(self, ptr):
+        '''Converts a virtual pointer in a map into a file pointer.'''
+        for info in self._page_infos:
             if ptr in info.v_addr_range:
                 return ptr - info.v_addr + info.f_addr
         return -0x7FffFFff
 
-    def file_ptr_to_virtual_ptr(ptr):
-        for info in self._chunk_infos:
+    def f_ptr_to_v_ptr(self, ptr):
+        '''Converts a file pointer in a map into a virtual pointer.'''
+        for info in self._page_infos:
             if ptr in info.f_addr_range:
                 return ptr + info.v_addr - info.f_addr
         return -0x7FffFFff
@@ -435,6 +445,7 @@ class HaloMap:
         self.index_magic = get_index_magic(map_header)
         self.map_magic   = get_map_magic(map_header)
         self.tag_index   = tag_index
+        self.map_pointer_converter = MapPointerConverter()
 
     def unload_map(self, keep_resources_loaded=True):
         keep_resources_loaded &= self.is_resource 
