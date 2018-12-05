@@ -142,6 +142,12 @@ class Halo1Map(HaloMap):
         # make all contents of the map parasble
         self.basic_deprotection()
 
+        # add the tag data section
+        self.map_pointer_converter.add_page_info(
+            self.index_magic, self.map_header.tag_index_header_offset,
+            self.map_header.tag_data_size
+            )
+
         # get the scenario meta
         try:
             self.scnr_meta = self.get_meta(tag_index.scenario_tag_id & 0xFFff)
@@ -169,12 +175,45 @@ class Halo1Map(HaloMap):
                         print("Sbsp header is invalid for '%s'" %
                               tag_index_array[tag_id].path)
                     self.bsp_headers[tag_id] = header
+                    tag_index_array[tag_id].meta_offset = header.meta_pointer
             else:
                 print("Could not read scenario tag")
 
         except Exception:
             print(format_exc())
             print("Could not read scenario tag")
+
+        last_bsp_end = 0
+        # add the bsp sections
+        for tag_id in self.bsp_headers:
+            self.map_pointer_converter.add_page_info(
+                self.bsp_magics[tag_id],
+                self.bsp_header_offsets[tag_id],
+                self.bsp_sizes[tag_id])
+
+            bsp_end = self.bsp_header_offsets[tag_id] + self.bsp_sizes[tag_id]
+            if last_bsp_end < bsp_end:
+                last_bsp_end = bsp_end
+
+        # add the raw data section
+        self.map_pointer_converter.add_page_info(
+            last_bsp_end, last_bsp_end,
+            tag_index.model_data_offset - last_bsp_end,
+            )
+        # add the model data section
+        if tag_index.SIZE == 40:
+            # PC tag index
+            self.map_pointer_converter.add_page_info(
+                0, tag_index.model_data_offset,
+                tag_index.model_data_size,
+                )
+        else:
+            # XBOX tag index
+            self.map_pointer_converter.add_page_info(
+                0, tag_index.model_data_offset,
+                (self.map_header.tag_index_header_offset -
+                 tag_index.model_data_offset),
+                )
 
         # get the globals meta
         try:
@@ -276,25 +315,18 @@ class Halo1Map(HaloMap):
 
         desc = self.get_meta_descriptor(tag_cls)
         block = [None]
-        offset = tag_index_ref.meta_offset - magic
-        if tag_cls == "sbsp":
-            # bsps use their own magic because they are stored in
-            # their own section of the map, directly after the header
-            magic  = (self.bsp_magics[tag_id] -
-                      self.bsp_header_offsets[tag_id])
-            offset = self.bsp_headers[tag_id].meta_pointer - magic
+        offset = self.map_pointer_converter.v_ptr_to_f_ptr(
+            tag_index_ref.meta_offset)
 
         try:
             # read the meta data from the map
-            FieldType.force_little()
-            desc['TYPE'].parser(
-                desc, parent=block, attr_index=0, magic=magic,
-                tag_index_manager=self.tag_index_manager,
-                rawdata=map_data, offset=offset)
-            FieldType.force_normal()
+            with FieldType.force_little:
+                desc['TYPE'].parser(
+                    desc, parent=block, attr_index=0, rawdata=map_data,
+                    map_pointer_converter=self.map_pointer_converter,
+                    tag_index_manager=self.tag_index_manager, offset=offset)
         except Exception:
             print(format_exc())
-            FieldType.force_normal()
             return
 
         self.record_map_cache_read(tag_id, 0)  # cant get size quickly enough

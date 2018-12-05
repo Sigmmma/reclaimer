@@ -162,6 +162,7 @@ class Halo1RsrcMap(HaloMap):
             tag_ref.indexed      = 1
             tag_ref.path = rsrc_map.data.tags[j].tag.path
 
+        self.map_pointer_converter = MapPointerConverter((0, 0, 0xFFffFFff))
         self.tag_index_manager = TagIndexManager(tags.tag_index)
         self.snd_rsrc_tag_index_manager = TagIndexManager(tags.tag_index,
                                                           sound_rsrc_id_map)
@@ -197,7 +198,10 @@ class Halo1RsrcMap(HaloMap):
         if desc is None or self.engine not in ("halo1ce", "halo1yelo"):
             return
         elif tag_cls != 'snd!':
-            kwargs['magic'] = 0
+            # the pitch ranges pointer in resource sound tags is invalid, so
+            # for sounds we treat it as if we're parsing a tag(pointerless).
+            # only provide a pointer converter for bitmap and loc maps.
+            kwargs['map_pointer_converter'] = self.map_pointer_converter
 
         block = [None]
 

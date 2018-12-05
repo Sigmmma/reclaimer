@@ -161,9 +161,9 @@ def get_tag_index(map_data, header=None):
 
 def get_index_magic(header):
     version = get_map_version(header)
-    if version == "halo2vista" and header.map_type.enum_name == "mp":
-        return H2V_MP_INDEX_MAGIC
-    elif version == "halo3":
+    if version == "halo2vista":
+        return header.virtual_address
+    elif version in ("halo3", "halo4", "halo5", "haloreach"):
         base_address = header.tag_index_header_offset
         for partition in header.partitions:
             if base_address in range(partition.load_address,
@@ -175,7 +175,7 @@ def get_index_magic(header):
 
 def get_map_magic(header):
     magic = get_index_magic(header)
-    if header.version.enum_name != "halo3":
+    if header.version.enum_name not in ("halo3", "halo4", "halo5", "haloreach"):
         magic -= header.tag_index_header_offset
 
     return magic

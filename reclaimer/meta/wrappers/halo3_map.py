@@ -108,12 +108,18 @@ class Halo3Map(HaloMap):
         self.tag_index = h3_to_h1_tag_index(self.map_header, self.tag_index)
 
         tag_index_array = self.tag_index.tag_index
+        self.tag_index_manager = TagIndexManager(tag_index_array)
         self.string_id_manager = StringIdManager(
             self.map_header.strings.string_id_table,
             self.string_id_set_offsets,
             )
-        self.tag_index_manager = TagIndexManager(tag_index_array)
-        self.map_pointer_converter = MapPointerConverter()
+        for sect in self.map_header.sections:
+            self.map_pointer_converter.add_page_info(
+                sect.virtual_address, sect.file_offset, sect.size)
+
+        for part in self.map_header.partitions:
+            self.map_pointer_converter.add_page_info(
+                part.load_address, part.file_offset, part.size)
 
         self.root_tags = {}
         for b in self.orig_tag_index.root_tags:
@@ -145,35 +151,29 @@ class Halo3Map(HaloMap):
             return
 
         tag_cls = None
-        if tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
+        full_tag_cls_name = tag_index_ref.class_1.enum_name
+        if full_tag_cls_name not in ("<INVALID>", "NONE"):
             tag_cls = fourcc(tag_index_ref.class_1.data)
 
         desc = self.get_meta_descriptor(tag_cls)
         if desc is None or tag_cls is None:
             return
-        elif not reextract and self.root_tags.get(tag_cls):
-            return self.root_tags[tag_cls]
+        elif not reextract and self.root_tags.get(full_tag_cls_name):
+            return self.root_tags[full_tag_cls_name]
 
         block = [None]
 
         try:
             # read the meta data from the map
-            meta_magic = 0
-            offset = tag_index_ref.meta_offset
-            for partition in self.map_header.partitions:
-                if offset in range(partition.load_address,
-                                   partition.load_address + partition.size):
-                    meta_magic = partition.load_address - partition.file_offset
-                    offset -= meta_magic
-                    break
+            offset = self.map_pointer_converter.v_ptr_to_f_ptr(
+                tag_index_ref.meta_offset)
 
             desc['TYPE'].parser(
-                desc, parent=block, attr_index=0, magic=meta_magic,
+                desc, parent=block, attr_index=0,
                 rawdata=self.map_data, offset=offset,
                 tag_index_manager=self.tag_index_manager,
-                map_sections=self.map_header.sections,
                 map_string_id_manager=self.string_id_manager,
-                map_partitions=self.map_header.partitions)
+                map_pointer_converter=self.map_pointer_converter,)
         except Exception:
             print(format_exc())
             return
