@@ -201,10 +201,10 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                              sample_rate, channels, overwrite, decode_adpcm)
 
 
-def get_sound_name(string_ids, import_names, index):
+def get_sound_name(import_names, index):
     if index < 0 or index >= len(import_names):
         return ""
-    return get_string_id_string(string_ids, import_names[index])
+    return import_names[index].string
 
 
 def extract_h2_sounds(tagdata, tag_path, **kw):
@@ -216,7 +216,6 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
     overwrite = kw.get('overwrite', True)
     decode_adpcm = kw.get('decode_adpcm', True)
     tagpath_base = join(kw['out_dir'], splitext(tag_path)[0])
-    string_ids = halo_map.map_header.strings.string_id_table
 
     ugh__meta = halo_map.ugh__meta
     if ugh__meta is None:
@@ -273,7 +272,7 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
         pr = pitch_ranges[i]
         pitchpath_base = tagpath_base
         if pr_count > 1:
-            name = get_sound_name(string_ids, import_names, pr.import_name_index)
+            name = get_sound_name(import_names, pr.import_name_index)
             if not name: name = str(i)
 
             same_pr_ct = same_pr_names.get(name, 0)
@@ -289,7 +288,7 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
 
         for j in range(perm_index, perm_index + perm_count):
             perm = permutations[j]
-            name = get_sound_name(string_ids, import_names, perm.import_name_index)
+            name = get_sound_name(import_names, perm.import_name_index)
             if not name: name = str(j)
             permpath_base = join(pitchpath_base, name)
 

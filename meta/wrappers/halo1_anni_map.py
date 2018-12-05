@@ -168,20 +168,16 @@ class Halo1AnniMap(Halo1Map):
 
         desc = self.get_meta_descriptor(tag_cls)
         block = [None]
-        offset = tag_index_ref.meta_offset - magic
-        if tag_cls == "sbsp":
-            # bsps use their own magic because they are stored in
-            # their own section of the map, directly after the header
-            magic  = (self.bsp_magics[tag_id] -
-                      self.bsp_header_offsets[tag_id])
-            offset = self.bsp_headers[tag_id].meta_pointer - magic
+        offset = self.map_pointer_converter.v_ptr_to_f_ptr(
+            tag_index_ref.meta_offset)
 
         try:
             # read the meta data from the map
             with FieldType.force_big:
                 desc['TYPE'].parser(
-                    desc, parent=block, attr_index=0, magic=magic,
-                    tag_index_manager=self.tag_index_manager, rawdata=map_data, offset=offset)
+                    desc, parent=block, attr_index=0, rawdata=map_data,
+                    map_pointer_converter=self.map_pointer_converter,
+                    tag_index_manager=self.tag_index_manager, offset=offset)
         except Exception:
             print(format_exc())
             return

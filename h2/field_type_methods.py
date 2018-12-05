@@ -24,17 +24,17 @@ def h2_rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
 
         s_desc = desc.get('STEPTREE')
         if s_desc:
-            if 'magic' in kwargs:
-                magic_offset = node[1] - kwargs["magic"]
-
-                if not node[0] or (magic_offset + node[0] > len(rawdata) or
-                                   magic_offset <= 0):
+            pointer_converter = kwargs.get("map_pointer_converter")
+            if pointer_converter is not None:
+                file_ptr = pointer_converter.v_ptr_to_f_ptr(node[1])
+                if not node[0] or (file_ptr + node[0] > len(rawdata) or
+                                   file_ptr <= 0):
                     # data is stored in a resource map, or the size is invalid
                     s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
                 else:
                     s_desc['TYPE'].parser(
                         s_desc, None, node, 'STEPTREE', rawdata,
-                        root_offset, magic_offset, **kwargs)
+                        root_offset, file_ptr, **kwargs)
             elif 'steptree_parents' not in kwargs:
                 offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
                                                rawdata, root_offset, offset,
@@ -74,7 +74,7 @@ def h2_tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         # If there is rawdata to build the structure from
         if rawdata is not None:
             offsets = desc['ATTR_OFFS']
-            if "magic" in kwargs:
+            if "map_pointer_converter" in kwargs:
                 attr_indices = (0, 1)
                 node[2] = 0
             else:
@@ -133,7 +133,7 @@ def h2_tag_ref_serializer(self, node, parent=None, attr_index=None,
             kwargs['steptree_parents'].append(node)
 
         # loop once for each node in the node
-        if "magic" in kwargs:
+        if "map_pointer_converter" in kwargs:
             attr_indices = (0, 1)
         else:
             attr_indices = (0, 2)

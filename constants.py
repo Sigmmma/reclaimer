@@ -24,12 +24,7 @@ ANNIVERSARY_INDEX_MAGIC    = 0x004B8000
 XBOX_INDEX_MAGIC           = 0x803A6000
 STUBBS_INDEX_MAGIC         = 0x8038B000
 SHADOWRUN_BETA_INDEX_MAGIC = 0x8069E000
-H2_ALPHA_INDEX_MAGIC       = 0x80061000
-H2_XBOX_INDEX_MAGIC        = 0x80061000  # this at least appears to be the
-                                         # case in the singleplayer maps
-H2V_MP_INDEX_MAGIC         = 0x01400000  # only applies to multiplayer maps.
-#                                          pointers below this index magic
-#                                          actually point to resource maps.
+H2_XBOX_INDEX_MAGIC        = 0x80061000
 
 
 map_build_dates = {
@@ -84,15 +79,10 @@ map_magics = {
     "halo1anni":      ANNIVERSARY_INDEX_MAGIC,
     "halo1ce":        CE_INDEX_MAGIC,
     "halo1yelo":      CE_INDEX_MAGIC,
-    "halo2alpha":     H2_ALPHA_INDEX_MAGIC,
-    "halo2beta":      0,
-    "halo2epsilon":   0,
-    "halo2xbox":      0,
-    "halo2vista":     0,
-    "halo3":          0,
-    "halo4":          0,
-    "halo5":          0,
-    "halo_reach":     0,
+    "halo2alpha":     H2_XBOX_INDEX_MAGIC,
+    "halo2beta":      H2_XBOX_INDEX_MAGIC,
+    "halo2epsilon":   H2_XBOX_INDEX_MAGIC,
+    "halo2xbox":      H2_XBOX_INDEX_MAGIC,
     }
 
 # bitmap types
