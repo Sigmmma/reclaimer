@@ -41,6 +41,7 @@ NO_LOC_REFS = NodepathRef(False)
 
 class HaloHandler(Handler):
     frozen_imp_paths = all_def_names
+    tag_header_engine_id = "blam"
     default_defs_path = "reclaimer.hek.defs"
     tag_fcc_match_set = frozenset()
     tag_filepath_match_set = frozenset()
@@ -176,8 +177,8 @@ class HaloHandler(Handler):
                 f.seek(36)
                 def_id = str(f.read(4), 'latin-1')
                 f.seek(60)
-                engine_id = f.read(4)
-            if def_id in self.defs and engine_id == b'blam':
+                engine_id = f.read(4).decode(encoding='latin-1')
+            if def_id in self.defs and engine_id == self.tag_header_engine_id:
                 return def_id
         except Exception:
             return None

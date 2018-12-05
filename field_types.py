@@ -54,10 +54,11 @@ that raw data refs, reflexives, and tag references exist.'''
 RawdataRef   = FieldType(base=Struct,  name="RawdataRef", parser=rawdata_ref_parser)
 Reflexive    = FieldType(base=QStruct, name="Reflexive", parser=reflexive_parser)
 RawReflexive = FieldType(base=Reflexive, name="RawReflexive")
-TagRef   = FieldType(base=Struct, name="TagRef")
+TagRef       = FieldType(base=Struct, name="TagRef")
 
-StringID = FieldType(base=Struct, name="StringID")
-TagIndex = FieldType(base=Array, name="TagIndex")
+ZoneAsset = FieldType(base=QStruct, name="ZoneAsset")
+StringID  = FieldType(base=QStruct, name="StringID")
+TagIndex  = FieldType(base=Array, name="TagIndex")
 
 StrLatin1Enum = FieldType(base=StrRawLatin1, name="StrLatin1Enum",
                           is_block=True, is_data=True, data_cls=str,

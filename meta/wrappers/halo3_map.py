@@ -48,7 +48,16 @@ class Halo3Map(HaloMap):
         self.defs = dict(self.defs)
 
     def load_all_resource_maps(self, maps_dir=""):
-        map_paths = {name: None for name in HALO3_MAP_TYPES[1:]}
+        play_meta = self.root_tags.get("cache_file_resource_layout_table")
+        if not play_meta:
+            print("Could not get cache_file_resource_layout_table meta. "
+                  "Cannot determine resource maps.")
+            return
+
+        map_names = list(b.map_path.replace('\\', '/').split("/")[-1].lower()
+                         for b in play_meta.external_cache_references.STEPTREE)
+        self.rsrc_map_names = map_names
+        map_paths = {name: None for name in map_names}
         if not maps_dir:
             maps_dir = dirname(self.filepath)
 
@@ -81,7 +90,7 @@ class Halo3Map(HaloMap):
             map_path = map_paths[map_name]
             try:
                 if self.maps.get(map_name) is None and map_path:
-                    print("    Loading %s.map..." % map_name)
+                    print("    Loading %s..." % map_name)
                     type(self)(self.maps).load_map(map_path, will_be_active=False)
                     print("        Finished")
             except Exception:
@@ -104,6 +113,13 @@ class Halo3Map(HaloMap):
             self.string_id_set_offsets,
             )
         self.tag_index_manager = TagIndexManager(tag_index_array)
+        self.map_pointer_converter = MapPointerConverter()
+
+        self.root_tags = {}
+        for b in self.orig_tag_index.root_tags:
+            meta = self.get_meta(b.id)
+            if meta:
+                self.root_tags[b.id] = self.root_tags[b.tag_class.enum_name] = meta
 
         map_type = self.map_header.map_type.data - 1
         if map_type > 0 and map_type < 4:
@@ -112,12 +128,6 @@ class Halo3Map(HaloMap):
 
         if autoload_resources and (will_be_active or not self.is_resource):
             self.load_all_resource_maps(dirname(map_path))
-
-        self.root_tags = {}
-        for b in self.orig_tag_index.root_tags:
-            meta = self.get_meta(b.id)
-            if meta:
-                self.root_tags[b.id] = self.root_tags[b.tag_class.enum_name] = meta
 
         self.map_data.clear_cache()
 
