@@ -1,13 +1,16 @@
 #Written by gbMichelle with help from the adjutant and assembly plugin files
-from reclaimer.hek.defs.bitm import *
-from reclaimer.common_descs import *
-from supyr_struct.defs.block_def import BlockDef
+from ..common_descs import *
+from .objs.tag import *
+from reclaimer.hek.defs.bitm import sequence
+from supyr_struct.defs.tag_def import TagDef
+
 
 sequence_related = Struct("sequence thing",
     ascii_str32("sequence name"),
     UInt16("idx"),
     SIZE=40,
     )
+
 
 bitmap = Struct("bitmap",
     UEnum32('bitm id', ('bitm', 'bitm'), DEFAULT='bitm', EDITABLE=False),
@@ -101,16 +104,9 @@ bitmap = Struct("bitmap",
     UInt32("base address"),
     SIZE=48,
     )
-    
-raw_information = Struct("raw_information",
-    UInt16("asset salt", GUI_NAME="[zone] asset salt"),
-    UInt16("asset index", GUI_NAME="[zone] asset index"),
-    UInt32("unknown"),
-    SIZE=8
-    )
 
-    
-bitm_meta_def = BlockDef("bitm",
+
+bitm_body = Struct("tagdata",
     SInt16("unknown1"),
     SInt16("unknown2"),
     SInt16("unknown3"),
@@ -139,13 +135,22 @@ bitm_meta_def = BlockDef("bitm",
     rawdata_ref("processed pixel data"),
     reflexive("sequences", sequence, 256, DYN_NAME_PATH='.sequence_name'),
     reflexive("bitmaps", bitmap, 2048),
-    
+
     rawdata_ref("unknown6"),
     Pad(12),
-    reflexive("raw info normal", raw_information,
-              GUI_NAME="raw information [normal]"),
-    reflexive("raw info interleaved", raw_information,
-              GUI_NAME="raw information [interleaved]"),
-    
+    reflexive("zone assets normal", zone_asset_struct),
+    reflexive("zone assets interleaved", zone_asset_struct),
+
     ENDIAN=">", TYPE=Struct, SIZE=164
+    )
+
+
+def get():
+    return bitm_def
+
+bitm_def = TagDef("bitm",
+    h3_blam_header('bitm'),
+    bitm_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["bitm"], endian=">", tag_cls=H3Tag
     )

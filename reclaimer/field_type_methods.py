@@ -11,20 +11,28 @@ def tag_ref_str_sizecalc(self, node, **kwargs):
         return len(node) + 1
     return 0
 
+def get_set_zone_asset_size(node=None, parent=None, attr_index=None,
+                            rawdata=None, new_value=None, **kwargs):
+    if new_value is not None:
+        parent.size = new_value
+    elif "magic" in kwargs:
+        return 0
+    return parent.size
+
 def tag_ref_str_size(node=None, parent=None, attr_index=None,
                      rawdata=None, new_value=None, **kwargs):
     '''Used to retrieve or set the byte size of a Halo tag
     reference string. If the string is empty, the actual amount
     of bytes it takes up is zero, otherwise it is (1+length) bytes.
     This is to account for the delimiter.
-    
+
     When setting the size, the provided new_value is expected to
     be including the delimiter, so the reverse operation is applied.
     If the string's length is 1(only a delimiter), the bytes size
     is zero, but otherwise it is (length-1).
 
     Lengths of 1 cant exist.'''
-    
+
     if new_value is None:
         strlen = parent.path_length
         return strlen + bool(strlen)
@@ -88,20 +96,23 @@ def read_string_id_string(parent=None, attr_index=None, rawdata=None, offset=0,
                                                desc[STRINGID_SET_BITS])
         if str_len:
             rawdata.seek(offset)
-            parent[attr_index] = rawdata.read(str_len).strip('\x00').decode(
+            parent[attr_index] = rawdata.read(str_len).strip(b'\x00').decode(
                 encoding="latin-1")
-            return offset + str_len + 1  # add 1 for the null terminator
         else:
             parent[attr_index] = ""
+
+        offset += str_len + 1  # add 1 for the null terminator
     else:
         parent[attr_index] = ""
+
+    return offset
 
 
 def write_string_id_string(parent=None, attr_index=None,
                            writebuffer=None, offset=0, **kwargs):
     assert parent is not None
     if "magic" in kwargs:
-        return
+        return offset
 
     raw_string = parent.string.encode(encoding="latin-1") + b'\x00'
     writebuffer.seek(offset)
@@ -291,7 +302,7 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
 def tag_ref_str_serializer(self, node, parent=None, attr_index=None,
                            writebuffer=None, root_offset=0, offset=0, **kwargs):
     if "magic" in kwargs:
-        # don't serialize the string 
+        # don't serialize the string
         return offset
 
     node_bytes = self.encoder(node, parent, attr_index)

@@ -1,5 +1,11 @@
 from reclaimer.enums import *
 
+play_raw_page_compression_codec = (
+    "deflate",
+    "lzx",
+    ("NONE", -1)
+    )
+
 bloc_ai_propertie_leap_jump_speed = (
     "none",
     "down",

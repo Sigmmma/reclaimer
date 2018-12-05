@@ -134,6 +134,54 @@ def h3_to_h1_tag_index(map_header, tag_index):
     return new_index
 
 
+class MapPointerConverter:
+
+    class ChunkInfo:
+        __slots__ = (
+            "v_addr", "f_addr", "size", "v_addr_range", "f_addr_range"
+            )
+        def __init__(self, v_addr=0, f_addr=0, size=0):
+            self.v_addr = v_addr
+            self.f_addr = f_addr
+            self.size = size
+            self.v_addr_range = range(self.v_addr, self.v_addr + self.size)
+            self.f_addr_range = range(self.f_addr, self.f_addr + self.size)
+
+    _chunk_infos = ()
+
+    def __init__(self, sections=(), partitions=()):
+        unsorted_chunk_infos = []
+        for sect in sections:
+            unsorted_chunk_infos.append(MapPointerConverter.ChunkInfo(
+                sect.virtual_address, sect.file_offset, sect.size))
+
+        for part in partitions:
+            unsorted_chunk_infos.append(MapPointerConverter.ChunkInfo(
+                part.load_address, part.file_offset, part.size))
+
+        chunk_info_map = {info.v_addr for info in unsorted_chunk_infos}
+        self._chunk_infos = list(chunk_info_map[i] for i in
+                                 sorted(chunk_info_map))
+
+    def virtual_ptr_to_file_ptr(ptr):
+        for info in self._chunk_infos:
+            if ptr in info.v_addr_range:
+                return ptr - info.v_addr + info.f_addr
+        return -0x7FffFFff
+
+    def file_ptr_to_virtual_ptr(ptr):
+        for info in self._chunk_infos:
+            if ptr in info.f_addr_range:
+                return ptr + info.v_addr - info.f_addr
+        return -0x7FffFFff
+
+
+class ZoneDataManager:
+    # tags with zone references:
+    # bitm, jmad, mode, pmdf, sLdT, sbsp, snd!
+    pass
+
+
 class StringIdManager:
     strings = ()
     set_offsets = ()
@@ -204,8 +252,10 @@ class HaloMap:
     # the original tag_path of each tag in the map before any deprotection
     orig_tag_paths = None
 
+    rsrc_map_names = ()
     string_id_manager = None
     tag_index_manager = None
+    map_pointer_converter = None
 
     # the parsed meta of the root tags in the map
     scnr_meta = None

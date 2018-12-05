@@ -21,7 +21,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 
 play_compression_codec = Struct("compression_codec", 
-    BytesRaw("guid", SIZE=16),
+    BytesRaw("guid", SIZE=16, EDITABLE=False),
     ENDIAN=">", SIZE=16
     )
 
@@ -30,7 +30,7 @@ play_external_cache_reference = Struct("external_cache_reference",
     StrLatin1("map_path", SIZE=256),
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
-    BytesRaw("unknown_2", SIZE=4, VISIBLE=False),
+    UInt32("unknown_2", VISIBLE=False),
     ENDIAN=">", SIZE=264
     )
 
@@ -38,16 +38,18 @@ play_external_cache_reference = Struct("external_cache_reference",
 play_raw_page = Struct("raw_page", 
     SInt16("salt"),
     SInt8("flags"),
-    SInt8("compression_codec_index"),
-    SInt16("shared_cache_index"),
+    SEnum8("compression_codec", *play_raw_page_compression_codec),
+    dyn_senum16("shared_cache_index",
+        DYN_NAME_PATH=".....external_cache_references.STEPTREE[DYN_I].map_path"
+        ),
     SInt16("unknown_0"),
     UInt32("block_offset"),
     UInt32("compressed_block_size"),
     UInt32("uncompressed_block_size"),
-    SInt32("crc_checksum"),
-    BytesRaw("entire_buffer_hash", SIZE=20),
-    BytesRaw("first_chunk_hash", SIZE=20),
-    BytesRaw("last_chunk_hash", SIZE=20),
+    UInt32("crc_checksum"),
+    BytesRaw("entire_buffer_hash", SIZE=20, EDITABLE=False),
+    BytesRaw("first_chunk_hash", SIZE=20, EDITABLE=False),
+    BytesRaw("last_chunk_hash", SIZE=20, EDITABLE=False),
     SInt16("block_asset_count"),
     SInt16("unknown_1"),
     ENDIAN=">", SIZE=88
