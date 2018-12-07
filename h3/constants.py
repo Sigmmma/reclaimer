@@ -11,7 +11,7 @@ h3_tag_class_be_int_to_fcc = {}
 h3_tag_class_le_int_to_fcc = {}
 
 
-HALO3_MAP_TYPES = ("local", "mainmenu", "shared", "campaign")
+HALO3_SHARED_MAP_TYPES = ("mainmenu", "shared", "campaign")
 
 # maps tag class four character codes to the tags file extension
 # 177 tag classes

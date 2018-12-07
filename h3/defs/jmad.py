@@ -461,9 +461,7 @@ jmad_weapon_list = Struct("weapon_list",
 
 jmad_raw_information_group = Struct("raw_information_group", 
     SInt32("member_count"),
-    UInt16("zone_asset_salt"),
-    UInt16("zone_asset_index"),
-    SInt32("useless_padding", VISIBLE=False),
+    zone_asset("asset_data"),
     ENDIAN=">", SIZE=12
     )
 

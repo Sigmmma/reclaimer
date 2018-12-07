@@ -220,9 +220,7 @@ sLdT_lightmap = Struct("lightmap",
     h3_reflexive("unknown_5", sLdT_lightmap_unknown_5),
     BytesRaw("unknown_6", SIZE=12, VISIBLE=False),
     h3_reflexive("unknown_yo", sLdT_lightmap_unknown_yo),
-    UInt16("zone_asset_salt"),
-    UInt16("zone_asset_index"),
-    SInt32("useless_padding", VISIBLE=False),
+    zone_asset("asset_data"),
     ENDIAN=">", SIZE=436
     )
 

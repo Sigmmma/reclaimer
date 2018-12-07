@@ -4,12 +4,16 @@ from os.path import exists, join
 from tkinter.filedialog import askopenfilename
 
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
-from reclaimer.h3.util import HALO3_MAP_TYPES
+from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES
 from reclaimer.h3.handler import Halo3Handler
 from .halo_map import *
 
 
 class Halo3Map(HaloMap):
+    rawdata_manager = None
+
+    shared_map_names = ()
+
     root_tags = {}
 
     string_id_set_offsets = (
@@ -54,10 +58,7 @@ class Halo3Map(HaloMap):
                   "Cannot determine resource maps.")
             return
 
-        map_names = list(b.map_path.replace('\\', '/').split("/")[-1].lower()
-                         for b in play_meta.external_cache_references.STEPTREE)
-        self.rsrc_map_names = map_names
-        map_paths = {name: None for name in map_names}
+        map_paths = {name: None for name in self.shared_map_names}
         if not maps_dir:
             maps_dir = dirname(self.filepath)
 
@@ -101,6 +102,16 @@ class Halo3Map(HaloMap):
         if tagdef is not None:
             return tagdef.descriptor[1]
 
+    def load_root_tags(self):
+        new_root_tags = {}
+        for b in self.orig_tag_index.root_tags:
+            meta = self.get_meta(b.id)
+            if meta:
+                new_root_tags[b.id & 0xFFff] = meta
+                new_root_tags[b.tag_class.enum_name] = meta
+
+        self.root_tags = new_root_tags
+
     def load_map(self, map_path, **kwargs):
         autoload_resources = kwargs.get("autoload_resources", True)
         will_be_active = kwargs.get("will_be_active", True)
@@ -121,26 +132,28 @@ class Halo3Map(HaloMap):
             self.map_pointer_converter.add_page_info(
                 part.load_address, part.file_offset, part.size)
 
-        self.root_tags = {}
-        for b in self.orig_tag_index.root_tags:
-            meta = self.get_meta(b.id)
-            if meta:
-                self.root_tags[b.id] = self.root_tags[b.tag_class.enum_name] = meta
+        self.load_root_tags()
 
-        map_type = self.map_header.map_type.data - 1
-        if map_type > 0 and map_type < 4:
+        map_type = self.map_header.map_type.data
+        # ensure the sharable maps are also indexed under their internal names
+        if map_type >= 2 and map_type < 5:
             self.is_resource = True
-            self.maps[HALO3_MAP_TYPES[map_type]] = self
+            self.maps[HALO3_SHARED_MAP_TYPES[map_type - 2]] = self
 
+        play_meta = self.root_tags.get("cache_file_resource_layout_table")
+        if play_meta:
+            self.shared_map_names = list(
+                b.map_path.replace('\\', '/').split("/")[-1].lower()
+                for b in play_meta.external_cache_references.STEPTREE)
+
+        self.rawdata_manager = RawdataManager(self)
         if autoload_resources and (will_be_active or not self.is_resource):
             self.load_all_resource_maps(dirname(map_path))
 
         self.map_data.clear_cache()
 
     def get_meta(self, tag_id, reextract=False):
-        if tag_id is None:
-            return
-        elif self.map_header.map_type.enum_name not in ("sp", "mp", "ui"):
+        if tag_id is None or self.map_header.map_type.data > 2:
             # shared maps don't have a tag index
             return
 
