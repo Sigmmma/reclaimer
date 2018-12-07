@@ -54,6 +54,14 @@ def get_map_version(header):
             version = "halo2epsilon"
         elif build_date == map_build_dates['halo2vista']:
             version = "halo2vista"
+    elif version == "halo3":
+        if build_date == map_build_dates['halo3odst']:
+            version = "halo3odst"
+    elif version == "haloreach":
+        if build_date == map_build_dates['haloreachbeta']:
+            version = "haloreachbeta"
+        elif build_date == map_build_dates['halo4']:
+            version = "halo4"
 
     return version
 

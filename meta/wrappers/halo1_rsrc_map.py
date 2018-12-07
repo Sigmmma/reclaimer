@@ -112,7 +112,9 @@ class Halo1RsrcMap(HaloMap):
         if resource_type < 3 and not (pth.endswith('__pixels') or
                                       pth.endswith('__permutations')):
             tag_count = len(rsrc_map.data.tags)
-            if False:
+            if False and (
+                (resource_type == 1 and tag_count == -1) or
+                (resource_type == 2 and tag_count == -1))
                 # TODO: Finish the logic to determine stubbs pc maps
                 self.engine = "stubbspc"
             elif ((resource_type == 1 and tag_count == 1107) or
