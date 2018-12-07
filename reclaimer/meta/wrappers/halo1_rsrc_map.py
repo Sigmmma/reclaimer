@@ -111,7 +111,15 @@ class Halo1RsrcMap(HaloMap):
         self.engine   = "halo1ce"
         if resource_type < 3 and not (pth.endswith('__pixels') or
                                       pth.endswith('__permutations')):
-            self.engine = "halo1pc"
+            tag_count = len(rsrc_map.data.tags)
+            if False:
+                # TODO: Finish the logic to determine stubbs pc maps
+                self.engine = "stubbspc"
+            elif ((resource_type == 1 and tag_count == 1107) or
+                  (resource_type == 2 and tag_count == 7192)):
+                self.engine = "halo1pcdemo"
+            else:
+                self.engine = "halo1pc"
 
         # so we don't have to redo a lot of code, we'll make a
         # fake tag_index and map_header and just fill in info
