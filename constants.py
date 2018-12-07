@@ -35,15 +35,20 @@ map_build_dates = {
     "halo1xboxbeta":  "",
     "halo1pcdemo":    "01.00.00.0576",
     "halo1anni":      "01.00.01.0563",
+    "halo1ce":        "01.00.00.0609",
+    "halo1yelo":      "01.00.00.0609",
     "halo1pc":        "01.00.00.0564",
     "halo2alpha":     "02.01.07.4998",
     "halo2beta":      "02.06.28.07902",
     "halo2epsilon":   "02.08.28.09214",
     "halo2xbox":      "02.09.27.09809",
     "halo2vista":     "11081.07.04.30.0934.main",
+    "halo3beta":      "",  # SET THIS
     "halo3":          "11855.07.08.20.2317.halo3_ship",
-    "halo1ce":        "01.00.00.0609",
-    "halo1yelo":      "01.00.00.0609",
+    "halo3odst":      "13895.09.04.27.2201.atlas_relea",
+    "haloreachbeta":  "11860.10.07.24.0147.omaha_relea",
+    "haloreach":      "",  # SET THIS
+    "halo4":          "20810.12.09.22.1647.main",
     }
 
 map_versions = {
@@ -62,7 +67,12 @@ map_versions = {
     "halo2epsilon":   8,
     "halo2xbox":      8,
     "halo2vista":     8,
+    "halo3beta":      9,
     "halo3":          11,
+    "halo3odst":      11,
+    "haloreachbeta":  12,
+    "haloreach":      12,
+    "halo4":          12,
     }
 
 # magic is actually the virtual address the map is loaded at. Halo 3 and
