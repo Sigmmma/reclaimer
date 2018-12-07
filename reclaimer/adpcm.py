@@ -24,7 +24,7 @@ ADPCM_BLOCKSIZE = 36
 PCM_BLOCKSIZE   = 130
 
 
-def _fast_decode_mono_adpcm_samples(samples):
+def _fast_decode_mono_adpcm_samples(samples, endian="<"):
     adpcm2lin = audioop.adpcm2lin
 
     pcm_size   = PCM_BLOCKSIZE
@@ -35,15 +35,19 @@ def _fast_decode_mono_adpcm_samples(samples):
     out_data = bytearray(block_ct * pcm_size)
 
     pcm_i = 0
-    unpacker = Struct("<hh").unpack_from
+    unpacker = Struct(endian + "hh").unpack_from
     for i in range(0, len(samples), adpcm_size):
         # why couldn't it be nice and just follow the same
         # step packing pattern where the first step is the
         # first 4 bits and the second is the last 4 bits.
         steps = bytes(((b<<4) + (b>>4))&0xFF for b in
                       samples[i + state_size: i + adpcm_size])
+        predictor = samples[i: i+2]
+        if endian == ">":
+            predictor = predictor[::-1]
+
         out_data[pcm_i: pcm_i + pcm_size] = (
-            samples[i: i+2] + adpcm2lin(steps, 2, unpacker(samples, i))[0]
+            predictor + adpcm2lin(steps, 2, unpacker(samples, i))[0]
             )
 
         pcm_i += pcm_size
@@ -51,11 +55,11 @@ def _fast_decode_mono_adpcm_samples(samples):
     return array("h", out_data)
 
 
-def decode_adpcm_samples(samples, channel_ct):
+def decode_adpcm_samples(samples, channel_ct, endian="<"):
     if channel_ct <= 0:
         return
     elif channel_ct == 1:
-        return _fast_decode_mono_adpcm_samples(samples)
+        return _fast_decode_mono_adpcm_samples(samples, endian)
 
     pcm_mask  = 1 << 16
     code_shifts = tuple(range(0, 8*4, 4))
@@ -76,6 +80,9 @@ def decode_adpcm_samples(samples, channel_ct):
             predictor = in_data[i]
             index     = in_data[i + 1]
             i += skip_size
+            if endian == ">":
+                predictor = (predictor >> 8) + ((predictor << 8) & 0xFF)
+                index = (index >> 8) + ((index << 8) & 0xFF)
 
             if predictor & 32768:
                 predictor -= pcm_mask

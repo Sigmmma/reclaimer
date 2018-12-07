@@ -186,9 +186,7 @@ pmdf_body = Struct("tagdata",
     h3_reflexive("unknown_3", pmdf_unknown_3),
     BytesRaw("unknown_4", SIZE=12, VISIBLE=False),
     h3_reflexive("unknown_yo", pmdf_unknown_yo),
-    UInt16("zone_asset_salt"),
-    UInt16("zone_asset_index"),
-    SInt32("useless_padding", VISIBLE=False),
+    zone_asset("asset_data"),
     h3_reflexive("unknown_5", pmdf_unknown_5),
     ENDIAN=">", SIZE=144
     )

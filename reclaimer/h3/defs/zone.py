@@ -14,10 +14,9 @@
 ####################################################
 
 from ..common_descs import *
-from .objs.tag import *
+from .defs.objs.tag import *
+from .defs.play import play_body
 from supyr_struct.defs.tag_def import TagDef
-
-active_members_bits = tuple("active_member_%s" % i for i in range(32))
 
 
 zone_resource_type = Struct("resource_type", 
@@ -35,84 +34,19 @@ zone_resource_structure_type = Struct("resource_structure_type",
     )
 
 
-zone_compression_codec = Struct("compression_codec", 
-    BytesRaw("guid", SIZE=16),
-    ENDIAN=">", SIZE=16
-    )
-
-
-zone_external_cache_reference = Struct("external_cache_reference", 
-    StrLatin1("map_path", SIZE=256),
-    SInt16("unknown_0", VISIBLE=False),
-    SInt16("unknown_1", VISIBLE=False),
-    BytesRaw("unknown_2", SIZE=4, VISIBLE=False),
-    ENDIAN=">", SIZE=264
-    )
-
-
-zone_raw_page = Struct("raw_page", 
-    SInt16("salt"),
-    SInt8("flags"),
-    SInt8("compression_codec_index"),
-    SInt16("shared_cache_index"),
-    SInt16("unknown_0"),
-    SInt32("block_offset"),
-    SInt32("compressed_block_size"),
-    SInt32("uncompressed_block_size"),
-    SInt32("crc_checksum"),
-    BytesRaw("entire_buffer_hash", SIZE=20),
-    BytesRaw("first_chunk_hash", SIZE=20),
-    BytesRaw("last_chunk_hash", SIZE=20),
-    SInt16("block_asset_count"),
-    SInt16("unknown_1"),
-    ENDIAN=">", SIZE=88
-    )
-
-
-zone_size_part = Struct("part", 
-    SInt32("unknown"),
-    SInt32("size"),
-    ENDIAN=">", SIZE=8
-    )
-
-
-zone_size = Struct("size", 
-    SInt32("overall_size"),
-    h3_reflexive("parts", zone_size_part),
-    ENDIAN=">", SIZE=16
-    )
-
-
-zone_segment = Struct("segment", 
-    SInt16("primary_page_index"),
-    SInt16("secondary_page_index"),
-    SInt32("primary_segment_offset"),
-    SInt32("secondary_segment_offset"),
-    SInt16("primary_size_index"),
-    SInt16("secondary_size_index"),
-    ENDIAN=">", SIZE=16
-    )
-
-
 zone_tag_resource_resource_fixup = Struct("resource_fixup", 
     SInt32("block_offset"),
-    Bool8("address_location_high_bits", 
-        ("fixup", 1 << 5),
-        "raw_page",
-        ),
-    UInt8("address_upper_bits"),
-    UInt16("address"),
-    ENDIAN=">", SIZE=8
+    h3_page_offset_info("address_info"),
+    ENDIAN=">", SIZE=8,
+    COMMENT="""
+Block Offset: Offset in tag data sub-buffer.
+Address: Fix-up address(either in the data sub-buffer, or a cache-resource offset."""
+
     )
 
 
 zone_tag_resource_resource_definition_fixup = Struct("resource_definition_fixup", 
-    Bool8("offset_location_high_bits", 
-        ("fixup", 1 << 5),
-        "raw_page",
-        ),
-    UInt8("offset_upper_bits"),
-    UInt16("offset"),
+    h3_page_offset_info("offset_info"),
     dyn_senum32("resource_structure_type",
         DYN_NAME_PATH="........resource_structure_types.STEPTREE[DYN_I].name.string",
         WIDGET_WIDTH=32
@@ -129,568 +63,51 @@ zone_tag_resource = Struct("tag_resource",
         WIDGET_WIDTH=32
         ),
     UInt8("flags"),
-    SInt32("fixup_information_offset"),
-    SInt32("fixup_information_length"),
-    SInt32("secondary_fixup_information_offset"),
+    SInt32("fixup_info_offset"),
+    SInt32("fixup_info_size"),
+    SInt32("secondary_fixup_info_offset"),
     SInt16("unknown"),
-    SInt16("play_segment_index"),
-    Bool8("root_definition_address_location_high_bits", 
-        ("fixup", 1 << 5),
-        "raw_page",
-        ),
-    UInt8("root_definition_address_upper_bits"),
-    UInt16("root_definition_address"),
+    SInt16("segment_index"),
+    h3_page_offset_info("root_definition_address_info"),
     h3_reflexive("resource_fixups", zone_tag_resource_resource_fixup),
     h3_reflexive("resource_definition_fixups", zone_tag_resource_resource_definition_fixup),
-    ENDIAN=">", SIZE=64
+    ENDIAN=">", SIZE=64,
     )
 
 
-zone_designer_zoneset_required_raw_pool = Struct("required_raw_pool", 
-    Bool32("active_members", *active_members_bits),
+zone_zoneset_raw_pool = Struct("raw_pool", 
+    Bool32("active_members", *("active_member_%s" % i for i in range(32))),
     ENDIAN=">", SIZE=4
     )
 
 
-zone_designer_zoneset_optional_raw_pool = Struct("optional_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_designer_zoneset_optional_raw_pool_2 = Struct("optional_raw_pool_2", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_designer_zoneset_resource_type = Struct("resource_type", 
-    BytesRaw("unknown", SIZE=20, VISIBLE=False),
+zone_zoneset_resource_type = QStruct("resource_type",
+    UInt16("unknown0"),
+    UInt16("unknown1"),
+    UInt16("unknown2"),
+    UInt16("unknown3"),
+    UInt16("unknown4"),
+    UInt16("unknown5"),
+    UInt16("unknown6"),
+    UInt16("unknown7"),
+    UInt16("unknown8"),
+    UInt16("unknown9"),
+    #BytesRaw("unknown", SIZE=20, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
 
 
-zone_designer_zoneset_required_tag_pool = Struct("required_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_designer_zoneset_optional_tag_pool = Struct("optional_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_designer_zoneset = Struct("designer_zoneset", 
-    h3_reflexive("required_raw_pool", zone_designer_zoneset_required_raw_pool),
+zone_zoneset = Struct("zoneset", 
+    h3_reflexive("required_raw_pool", zone_zoneset_raw_pool),
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    h3_reflexive("optional_raw_pool", zone_designer_zoneset_optional_raw_pool),
-    h3_reflexive("optional_raw_pool_2", zone_designer_zoneset_optional_raw_pool_2),
+    h3_reflexive("optional_raw_pool", zone_zoneset_raw_pool),
+    h3_reflexive("optional_raw_pool_2", zone_zoneset_raw_pool),
     BytesRaw("unknown_1", SIZE=20, VISIBLE=False),
     h3_string_id("set_name"),
-    h3_reflexive("resource_types", zone_designer_zoneset_resource_type),
-    h3_reflexive("required_tag_pool", zone_designer_zoneset_required_tag_pool),
-    h3_reflexive("optional_tag_pool", zone_designer_zoneset_optional_tag_pool),
-    BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
-    ENDIAN=">", SIZE=120
-    )
-
-
-zone_global_zoneset_required_raw_pool = Struct("required_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_global_zoneset_optional_raw_pool = Struct("optional_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_global_zoneset_optional_raw_pool_2 = Struct("optional_raw_pool_2", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_global_zoneset_resource_type = Struct("resource_type", 
-    BytesRaw("unknown", SIZE=20, VISIBLE=False),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=20
-    )
-
-
-zone_global_zoneset_required_tag_pool = Struct("required_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_global_zoneset_optional_tag_pool = Struct("optional_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_global_zoneset = Struct("global_zoneset", 
-    h3_reflexive("required_raw_pool", zone_global_zoneset_required_raw_pool),
-    BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    h3_reflexive("optional_raw_pool", zone_global_zoneset_optional_raw_pool),
-    h3_reflexive("optional_raw_pool_2", zone_global_zoneset_optional_raw_pool_2),
-    BytesRaw("unknown_1", SIZE=20, VISIBLE=False),
-    h3_string_id("set_name"),
-    h3_reflexive("resource_types", zone_global_zoneset_resource_type),
-    h3_reflexive("required_tag_pool", zone_global_zoneset_required_tag_pool),
-    h3_reflexive("optional_tag_pool", zone_global_zoneset_optional_tag_pool),
-    BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
-    ENDIAN=">", SIZE=120
-    )
-
-
-zone_unattached_zoneset_required_raw_pool = Struct("required_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_unattached_zoneset_optional_raw_pool = Struct("optional_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_unattached_zoneset_optional_raw_pool_2 = Struct("optional_raw_pool_2", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_unattached_zoneset_resource_type = Struct("resource_type", 
-    BytesRaw("unknown", SIZE=20, VISIBLE=False),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=20
-    )
-
-
-zone_unattached_zoneset_required_tag_pool = Struct("required_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_unattached_zoneset_optional_tag_pool = Struct("optional_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_unattached_zoneset = Struct("unattached_zoneset", 
-    h3_reflexive("required_raw_pool", zone_unattached_zoneset_required_raw_pool),
-    BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    h3_reflexive("optional_raw_pool", zone_unattached_zoneset_optional_raw_pool),
-    h3_reflexive("optional_raw_pool_2", zone_unattached_zoneset_optional_raw_pool_2),
-    BytesRaw("unknown_1", SIZE=20, VISIBLE=False),
-    h3_string_id("set_name"),
-    h3_reflexive("resource_types", zone_unattached_zoneset_resource_type),
-    h3_reflexive("required_tag_pool", zone_unattached_zoneset_required_tag_pool),
-    h3_reflexive("optional_tag_pool", zone_unattached_zoneset_optional_tag_pool),
-    BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
-    ENDIAN=">", SIZE=120
-    )
-
-
-zone_disc_forbidden_zoneset_required_raw_pool = Struct("required_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_disc_forbidden_zoneset_optional_raw_pool = Struct("optional_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_disc_forbidden_zoneset_optional_raw_pool_2 = Struct("optional_raw_pool_2", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_disc_forbidden_zoneset_resource_type = Struct("resource_type", 
-    BytesRaw("unknown", SIZE=20, VISIBLE=False),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=20
-    )
-
-
-zone_disc_forbidden_zoneset_required_tag_pool = Struct("required_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_disc_forbidden_zoneset_optional_tag_pool = Struct("optional_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_disc_forbidden_zoneset = Struct("disc_forbidden_zoneset", 
-    h3_reflexive("required_raw_pool", zone_disc_forbidden_zoneset_required_raw_pool),
-    BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    h3_reflexive("optional_raw_pool", zone_disc_forbidden_zoneset_optional_raw_pool),
-    h3_reflexive("optional_raw_pool_2", zone_disc_forbidden_zoneset_optional_raw_pool_2),
-    BytesRaw("unknown_1", SIZE=20, VISIBLE=False),
-    h3_string_id("set_name"),
-    h3_reflexive("resource_types", zone_disc_forbidden_zoneset_resource_type),
-    h3_reflexive("required_tag_pool", zone_disc_forbidden_zoneset_required_tag_pool),
-    h3_reflexive("optional_tag_pool", zone_disc_forbidden_zoneset_optional_tag_pool),
-    BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
-    ENDIAN=">", SIZE=120
-    )
-
-
-zone_disc_always_streaming_zoneset_required_raw_pool = Struct("required_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_disc_always_streaming_zoneset_optional_raw_pool = Struct("optional_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_disc_always_streaming_zoneset_optional_raw_pool_2 = Struct("optional_raw_pool_2", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_disc_always_streaming_zoneset_resource_type = Struct("resource_type", 
-    BytesRaw("unknown", SIZE=20, VISIBLE=False),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=20
-    )
-
-
-zone_disc_always_streaming_zoneset_required_tag_pool = Struct("required_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_disc_always_streaming_zoneset_optional_tag_pool = Struct("optional_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_disc_always_streaming_zoneset = Struct("disc_always_streaming_zoneset", 
-    h3_reflexive("required_raw_pool", zone_disc_always_streaming_zoneset_required_raw_pool),
-    BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    h3_reflexive("optional_raw_pool", zone_disc_always_streaming_zoneset_optional_raw_pool),
-    h3_reflexive("optional_raw_pool_2", zone_disc_always_streaming_zoneset_optional_raw_pool_2),
-    BytesRaw("unknown_1", SIZE=20, VISIBLE=False),
-    h3_string_id("set_name"),
-    h3_reflexive("resource_types", zone_disc_always_streaming_zoneset_resource_type),
-    h3_reflexive("required_tag_pool", zone_disc_always_streaming_zoneset_required_tag_pool),
-    h3_reflexive("optional_tag_pool", zone_disc_always_streaming_zoneset_optional_tag_pool),
-    BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
-    ENDIAN=">", SIZE=120
-    )
-
-
-zone_bsp_zoneset_required_raw_pool = Struct("required_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zoneset_optional_raw_pool = Struct("optional_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zoneset_optional_raw_pool_2 = Struct("optional_raw_pool_2", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zoneset_resource_type = Struct("resource_type", 
-    BytesRaw("unknown", SIZE=20, VISIBLE=False),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=20
-    )
-
-
-zone_bsp_zoneset_required_tag_pool = Struct("required_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zoneset_optional_tag_pool = Struct("optional_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zoneset = Struct("bsp_zoneset", 
-    h3_reflexive("required_raw_pool", zone_bsp_zoneset_required_raw_pool),
-    BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    h3_reflexive("optional_raw_pool", zone_bsp_zoneset_optional_raw_pool),
-    h3_reflexive("optional_raw_pool_2", zone_bsp_zoneset_optional_raw_pool_2),
-    BytesRaw("unknown_1", SIZE=20, VISIBLE=False),
-    h3_string_id("set_name"),
-    h3_reflexive("resource_types", zone_bsp_zoneset_resource_type),
-    h3_reflexive("required_tag_pool", zone_bsp_zoneset_required_tag_pool),
-    h3_reflexive("optional_tag_pool", zone_bsp_zoneset_optional_tag_pool),
-    BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
-    ENDIAN=">", SIZE=120
-    )
-
-
-zone_bsp_zonesets_2_required_raw_pool = Struct("required_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zonesets_2_optional_raw_pool = Struct("optional_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zonesets_2_optional_raw_pool_2 = Struct("optional_raw_pool_2", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zonesets_2_resource_type = Struct("resource_type", 
-    BytesRaw("unknown", SIZE=20, VISIBLE=False),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=20
-    )
-
-
-zone_bsp_zonesets_2_required_tag_pool = Struct("required_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zonesets_2_optional_tag_pool = Struct("optional_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zonesets_2 = Struct("bsp_zonesets_2", 
-    h3_reflexive("required_raw_pool", zone_bsp_zonesets_2_required_raw_pool),
-    BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    h3_reflexive("optional_raw_pool", zone_bsp_zonesets_2_optional_raw_pool),
-    h3_reflexive("optional_raw_pool_2", zone_bsp_zonesets_2_optional_raw_pool_2),
-    BytesRaw("unknown_1", SIZE=20, VISIBLE=False),
-    h3_string_id("set_name"),
-    h3_reflexive("resource_types", zone_bsp_zonesets_2_resource_type),
-    h3_reflexive("required_tag_pool", zone_bsp_zonesets_2_required_tag_pool),
-    h3_reflexive("optional_tag_pool", zone_bsp_zonesets_2_optional_tag_pool),
-    BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
-    ENDIAN=">", SIZE=120
-    )
-
-
-zone_bsp_zonesets_3_required_raw_pool = Struct("required_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zonesets_3_optional_raw_pool = Struct("optional_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zonesets_3_optional_raw_pool_2 = Struct("optional_raw_pool_2", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zonesets_3_resource_type = Struct("resource_type", 
-    BytesRaw("unknown", SIZE=20, VISIBLE=False),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=20
-    )
-
-
-zone_bsp_zonesets_3_required_tag_pool = Struct("required_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zonesets_3_optional_tag_pool = Struct("optional_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_bsp_zonesets_3 = Struct("bsp_zonesets_3", 
-    h3_reflexive("required_raw_pool", zone_bsp_zonesets_3_required_raw_pool),
-    BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    h3_reflexive("optional_raw_pool", zone_bsp_zonesets_3_optional_raw_pool),
-    h3_reflexive("optional_raw_pool_2", zone_bsp_zonesets_3_optional_raw_pool_2),
-    BytesRaw("unknown_1", SIZE=20, VISIBLE=False),
-    h3_string_id("set_name"),
-    h3_reflexive("resource_types", zone_bsp_zonesets_3_resource_type),
-    h3_reflexive("required_tag_pool", zone_bsp_zonesets_3_required_tag_pool),
-    h3_reflexive("optional_tag_pool", zone_bsp_zonesets_3_optional_tag_pool),
-    BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
-    ENDIAN=">", SIZE=120
-    )
-
-
-zone_cinematic_zoneset_required_raw_pool = Struct("required_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_cinematic_zoneset_optional_raw_pool = Struct("optional_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_cinematic_zoneset_optional_raw_pool_2 = Struct("optional_raw_pool_2", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_cinematic_zoneset_resource_type = Struct("resource_type", 
-    BytesRaw("unknown", SIZE=20, VISIBLE=False),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=20
-    )
-
-
-zone_cinematic_zoneset_required_tag_pool = Struct("required_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_cinematic_zoneset_optional_tag_pool = Struct("optional_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_cinematic_zoneset = Struct("cinematic_zoneset", 
-    h3_reflexive("required_raw_pool", zone_cinematic_zoneset_required_raw_pool),
-    BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    h3_reflexive("optional_raw_pool", zone_cinematic_zoneset_optional_raw_pool),
-    h3_reflexive("optional_raw_pool_2", zone_cinematic_zoneset_optional_raw_pool_2),
-    BytesRaw("unknown_1", SIZE=20, VISIBLE=False),
-    h3_string_id("set_name"),
-    h3_reflexive("resource_types", zone_cinematic_zoneset_resource_type),
-    h3_reflexive("required_tag_pool", zone_cinematic_zoneset_required_tag_pool),
-    h3_reflexive("optional_tag_pool", zone_cinematic_zoneset_optional_tag_pool),
-    BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
-    ENDIAN=">", SIZE=120
-    )
-
-
-zone_scenario_zoneset_required_raw_pool = Struct("required_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_scenario_zoneset_optional_raw_pool = Struct("optional_raw_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_scenario_zoneset_optional_raw_pool_2 = Struct("optional_raw_pool_2", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_scenario_zoneset_resource_type = Struct("resource_type", 
-    BytesRaw("unknown", SIZE=20, VISIBLE=False),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=20
-    )
-
-
-zone_scenario_zoneset_required_tag_pool = Struct("required_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_scenario_zoneset_optional_tag_pool = Struct("optional_tag_pool", 
-    Bool32("active_members", *active_members_bits),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=4
-    )
-
-
-zone_scenario_zoneset = Struct("scenario_zoneset", 
-    h3_reflexive("required_raw_pool", zone_scenario_zoneset_required_raw_pool),
-    BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    h3_reflexive("optional_raw_pool", zone_scenario_zoneset_optional_raw_pool),
-    h3_reflexive("optional_raw_pool_2", zone_scenario_zoneset_optional_raw_pool_2),
-    BytesRaw("unknown_1", SIZE=20, VISIBLE=False),
-    h3_string_id("set_name"),
-    h3_reflexive("resource_types", zone_scenario_zoneset_resource_type),
-    h3_reflexive("required_tag_pool", zone_scenario_zoneset_required_tag_pool),
-    h3_reflexive("optional_tag_pool", zone_scenario_zoneset_optional_tag_pool),
+    h3_reflexive("resource_types", zone_zoneset_resource_type),
+    h3_reflexive("required_tag_pool", zone_zoneset_raw_pool),
+    h3_reflexive("optional_tag_pool", zone_zoneset_raw_pool),
     BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
     ENDIAN=">", SIZE=120
     )
@@ -717,7 +134,12 @@ zone_scenario_bsp = Struct("scenario_bsp",
 
 
 zone_unknown_4 = Struct("unknown_4", 
-    BytesRaw("unknown", SIZE=20, VISIBLE=False),
+    UInt32("unknown0"),
+    UInt32("unknown1"),
+    UInt32("unknown2"),
+    UInt32("unknown3"),
+    UInt32("unknown4"),
+    #BytesRaw("unknown", SIZE=20, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
@@ -768,29 +190,26 @@ zone_body = Struct("tagdata",
         DYN_NAME_PATH='.name.string'),
     h3_reflexive("resource_structure_types", zone_resource_structure_type,
         DYN_NAME_PATH='.name.string'),
-    h3_reflexive("compression_codecs", zone_compression_codec),
-    h3_reflexive("external_cache_references", zone_external_cache_reference,
-        DYN_NAME_PATH='.map_path'),
-    h3_reflexive("raw_pages", zone_raw_page),
-    h3_reflexive("sizes", zone_size),
-    h3_reflexive("segments", zone_segment),
+    Struct("play_data", INCLUDE=play_body),
     h3_reflexive("tag_resources", zone_tag_resource),
-    h3_reflexive("designer_zonesets", zone_designer_zoneset),
-    h3_reflexive("global_zoneset", zone_global_zoneset),
-    BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    h3_reflexive("unattached_zoneset", zone_unattached_zoneset),
-    h3_reflexive("disc_forbidden_zoneset", zone_disc_forbidden_zoneset),
-    h3_reflexive("disc_always_streaming_zoneset", zone_disc_always_streaming_zoneset),
-    h3_reflexive("bsp_zonesets", zone_bsp_zoneset),
-    h3_reflexive("bsp_zonesets_2", zone_bsp_zonesets_2),
-    h3_reflexive("bsp_zonesets_3", zone_bsp_zonesets_3),
-    h3_reflexive("cinematic_zonesets", zone_cinematic_zoneset),
-    h3_reflexive("scenario_zonesets", zone_scenario_zoneset),
-    BytesRaw("unknown_1", SIZE=24, VISIBLE=False),
+    Struct("zonesets",
+        h3_reflexive("designer", zone_zoneset),
+        h3_reflexive("global", zone_zoneset),
+        BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
+        h3_reflexive("unattached", zone_zoneset),
+        h3_reflexive("disc_forbidden", zone_zoneset),
+        h3_reflexive("disc_always_streaming", zone_zoneset),
+        h3_reflexive("bsp_1", zone_zoneset),
+        h3_reflexive("bsp_2", zone_zoneset),
+        h3_reflexive("bsp_3", zone_zoneset),
+        h3_reflexive("cinematic", zone_zoneset),
+        h3_reflexive("scenario", zone_zoneset),
+        BytesRaw("unknown_1", SIZE=24, VISIBLE=False),
+        ),
     h3_reflexive("scenario_zoneset_groups", zone_scenario_zoneset_group),
     h3_reflexive("scenario_bsps", zone_scenario_bsp),
     BytesRaw("unknown_2", SIZE=36, VISIBLE=False),
-    h3_rawdata_ref("fixup_information"),
+    h3_rawdata_ref("fixup_info"),
     BytesRaw("unknown_3", SIZE=20, VISIBLE=False),
     h3_reflexive("unknown_4", zone_unknown_4),
     BytesRaw("unknown_5", SIZE=96, VISIBLE=False),

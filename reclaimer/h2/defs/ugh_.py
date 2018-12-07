@@ -150,9 +150,12 @@ custom_playback = Struct("custom_playback",
     SIZE=52
     )
 
-runtime_perm_flag = QStruct("runtime_perm_flag", UInt8("flags"), SIZE=1)
+runtime_permutation_flag = QStruct("runtime_permutation_flag",
+    UInt8("flags"),
+    SIZE=1
+    )
 
-perm_chunk = Struct("perm_chunk",
+permutation_chunk = Struct("permutation_chunk",
     UInt32("pointer"),
     UInt24("size"),  # this uses AT LEAST 3 bytes
     UInt8("flags"),  # sometimes some upper bits are set, which
@@ -187,14 +190,14 @@ extra_info = Struct("extra_info",
 
 ugh__meta_def = BlockDef("ugh!",
     h2_reflexive("playback_parameters", playback_parameter, 32767),
-    h2_reflexive("playback_scales",     playback_scale,     32767),
-    h2_reflexive("import_names",        import_name,        32767),
+    h2_reflexive("scales",       playback_scale,     32767),
+    h2_reflexive("import_names", import_name,        32767),
     h2_reflexive("pitch_range_parameters", pitch_range_parameter, 32767),
     h2_reflexive("pitch_ranges", pitch_range, 32767),
     h2_reflexive("permutations", permutation, 32767),
     h2_reflexive("custom_playbacks",   custom_playback,   127),
-    h2_reflexive("runtime_perm_flags", runtime_perm_flag, 32767),
-    h2_reflexive("perm_chunks", perm_chunk, 32767),
+    h2_reflexive("runtime_permutation_flags", runtime_permutation_flag, 32767),
+    h2_reflexive("permutation_chunks", permutation_chunk, 32767),
     h2_reflexive("promotions",  promotion,  127),
     h2_reflexive("extra_infos", extra_info, 32767),
     ENDIAN="<", TYPE=Struct, SIZE=88
