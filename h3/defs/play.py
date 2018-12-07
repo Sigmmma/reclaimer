@@ -40,9 +40,10 @@ play_raw_page = Struct("raw_page",
     SInt8("flags"),
     SEnum8("compression_codec", *play_raw_page_compression_codec),
     dyn_senum16("shared_cache_index",
-        DYN_NAME_PATH=".....external_cache_references.STEPTREE[DYN_I].map_path"
+        DYN_NAME_PATH=".....external_cache_references.STEPTREE[DYN_I].map_path",
+        WIDGET_WIDTH=32
         ),
-    SInt16("unknown_0"),
+    SInt16("unknown_page_index", SIDETIP="(Seems to be either the pages index, or -1)"),
     UInt32("block_offset"),
     UInt32("compressed_block_size"),
     UInt32("uncompressed_block_size"),
@@ -51,32 +52,31 @@ play_raw_page = Struct("raw_page",
     BytesRaw("first_chunk_hash", SIZE=20, EDITABLE=False),
     BytesRaw("last_chunk_hash", SIZE=20, EDITABLE=False),
     SInt16("block_asset_count"),
-    SInt16("unknown_1"),
+    SInt16("unknown"),
     ENDIAN=">", SIZE=88
     )
 
 
-play_size_part = Struct("part", 
-    SInt32("unknown"),
+play_raw_size_chunk = Struct("chunk",
+    # figure out what the crap this actually is
+    SInt32("offset"),
     SInt32("size"),
     ENDIAN=">", SIZE=8
     )
 
 
-play_size = Struct("size", 
-    SInt32("overall_size"),
-    h3_reflexive("parts", play_size_part),
+play_raw_size = Struct("raw_size",
+    SInt32("total_size"),
+    h3_reflexive("chunks", play_raw_size_chunk),
     ENDIAN=">", SIZE=16
     )
 
 
-play_segment = Struct("segment", 
-    SInt16("primary_page_index"),
-    SInt16("secondary_page_index"),
-    SInt32("primary_segment_offset"),
-    SInt32("secondary_segment_offset"),
-    SInt16("primary_size_index"),
-    SInt16("secondary_size_index"),
+play_segment = Struct("segment",
+    # doing these as arrays to allow iterating over them easily in later halo's
+    Array("page_indices",     SUB_STRUCT=SInt16("idx"),    SIZE=2, MIN=2, MAX=2),
+    Array("segment_offsets",  SUB_STRUCT=SInt32("offset"), SIZE=2, MIN=2, MAX=2),
+    Array("raw_size_indices", SUB_STRUCT=SInt16("size"),   SIZE=2, MIN=2, MAX=2),
     ENDIAN=">", SIZE=16
     )
 
@@ -85,7 +85,7 @@ play_body = Struct("tagdata",
     h3_reflexive("compression_codecs", play_compression_codec),
     h3_reflexive("external_cache_references", play_external_cache_reference),
     h3_reflexive("raw_pages", play_raw_page),
-    h3_reflexive("sizes", play_size),
+    h3_reflexive("raw_sizes", play_raw_size),
     h3_reflexive("segments", play_segment),
     ENDIAN=">", SIZE=60
     )

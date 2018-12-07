@@ -153,6 +153,17 @@ h3_rawdata_ref_struct = H3RawdataRef('rawdata ref',
     ORIENT='h'
     )
 
+h3_page_offset_info_struct = BitStruct("page_offset_info",
+    UBitInt("offset", SIZE=29),
+    Bit("fixup"),
+    Bit("raw_page"),
+    )
+
 
 def h3_string_id(name, **kwargs):
     return string_id(name, 16, 8, 8, **kwargs)
+
+
+def h3_page_offset_info(name):
+    return BitStruct(name, INCLUDE=h3_page_offset_info_struct, HIDE_TITLE=True)
+

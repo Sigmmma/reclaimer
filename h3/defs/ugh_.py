@@ -275,7 +275,7 @@ ugh__body = Struct("tagdata",
     BytesRaw("unknown_1", SIZE=8, VISIBLE=False),
     h3_reflexive("permutation_chunks", ugh__permutation_chunk),
     h3_reflexive("promotions", ugh__promotion),
-    h3_reflexive("extra_info", ugh__extra_info),
+    h3_reflexive("extra_infos", ugh__extra_info),
     ENDIAN=">", SIZE=184
     )
 

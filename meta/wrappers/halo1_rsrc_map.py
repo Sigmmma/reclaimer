@@ -107,8 +107,8 @@ class Halo1RsrcMap(HaloMap):
 
         # check if this is a pc or ce cache. cant rip pc ones
         pth = rsrc_map.data.tags[0].tag.path
-        self.filepath    = map_path
-        self.engine = "halo1ce"
+        self.filepath = map_path
+        self.engine   = "halo1ce"
         if resource_type < 3 and not (pth.endswith('__pixels') or
                                       pth.endswith('__permutations')):
             self.engine = "halo1pc"

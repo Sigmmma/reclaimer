@@ -7,6 +7,7 @@ from tkinter.filedialog import asksaveasfilename
 from traceback import format_exc
 from string import ascii_letters
 
+from reclaimer.util import is_protected_tag, fourcc
 from supyr_struct.defs.constants import *
 from supyr_struct.defs.util import *
 from supyr_struct.buffer import BytearrayBuffer, BytesBuffer, PeekableMmap
@@ -17,233 +18,18 @@ from ..halo_map import get_map_version, get_map_header,\
      get_tag_index, get_index_magic, get_map_magic, get_is_compressed_map,\
      decompress_map, map_header_demo_def, tag_index_pc_def
 
-from reclaimer.util import is_protected_tag, fourcc
+from .map_pointer_converter import MapPointerConverter
+from .string_id_manager import StringIdManager
+from .tag_index_manager import TagIndexManager
+from .tag_index_converters import h2_alpha_to_h1_tag_index,\
+     h2_to_h1_tag_index, h3_to_h1_tag_index
+from .rawdata_manager import RawdataManager
 
 
 VALID_MODULE_NAME_CHARS = ascii_letters + '_' + '0123456789'
 
 
 backslash_fix = re.compile(r"\\{2,}")
-
-
-def h2_alpha_to_h1_tag_index(map_header, tag_index):
-    new_index = tag_index_pc_def.build()
-    old_index_array = tag_index.tag_index
-    new_index_array = new_index.tag_index
-
-    # copy information from the h2 index into the h1 index
-    new_index.scenario_tag_id = tag_index.scenario_tag_id
-    new_index.tag_index_offset = tag_index.tag_index_offset
-    new_index.tag_count = tag_index.tag_count
-
-    for i in range(len(old_index_array)):
-        old_index_entry = old_index_array[i]
-        new_index_array.append()
-        new_index_entry = new_index_array[-1]
-
-        new_index_entry.class_1 = old_index_entry.class_1
-        new_index_entry.class_2 = old_index_entry.class_2
-        new_index_entry.class_3 = old_index_entry.class_3
-
-        new_index_entry.id  = old_index_entry.id
-        new_index_entry.pad = old_index_entry.flags
-        new_index_entry.path_offset = old_index_entry.path_offset
-        new_index_entry.meta_offset = old_index_entry.meta_offset
-        new_index_entry.path = old_index_entry.path
-
-    return new_index
-
-
-def h2_to_h1_tag_index(map_header, tag_index):
-    new_index = tag_index_pc_def.build()
-    old_index_array = tag_index.tag_index
-    new_index_array = new_index.tag_index
-
-    # copy information from the h2 index into the h1 index
-    new_index.scenario_tag_id = tag_index.scenario_tag_id
-    new_index.tag_index_offset = tag_index.tag_index_offset
-    new_index.tag_count = tag_index.tag_count
-
-    tag_types = {}
-    for typ in tag_index.tag_types:
-        tag_types[typ.class_1.data] = [typ.class_1, typ.class_2, typ.class_3]
-
-    for i in range(len(old_index_array)):
-        old_index_entry = old_index_array[i]
-        new_index_array.append()
-        new_index_entry = new_index_array[-1]
-        if old_index_entry.tag_class.data not in tag_types:
-            new_index_entry.path = "reserved"
-            new_index_entry.class_1.data = new_index_entry.class_2.data =\
-                                           new_index_entry.class_3.data =\
-                                           0xFFFFFFFF
-            new_index_entry.id = 0xFFFFFFFF
-            continue
-
-        types = tag_types[old_index_entry.tag_class.data]
-        new_index_entry.class_1 = types[0]
-        new_index_entry.class_2 = types[1]
-        new_index_entry.class_3 = types[2]
-
-        new_index_entry.path = map_header.strings.\
-                               tag_name_table[i].tag_name
-
-        new_index_entry.id = old_index_entry.id
-        new_index_entry.meta_offset = old_index_entry.offset
-        if new_index_entry.meta_offset == 0:
-            # might flag sbsp and ltmp tags as indexed
-            new_index_entry.indexed = 1
-
-    return new_index
-
-
-def h3_to_h1_tag_index(map_header, tag_index):
-    new_index = tag_index_pc_def.build()
-    old_index_array = tag_index.tag_index
-    new_index_array = new_index.tag_index
-
-    # copy information from the h2 index into the h1 index
-    #new_index.scenario_tag_id = tag_index.scenario_tag_id
-    new_index.tag_index_offset = tag_index.tag_index_offset
-    new_index.tag_count = tag_index.tag_count
-
-    tag_types = {}
-    for i in range(len(tag_index.tag_types)):
-        typ = tag_index.tag_types[i]
-        tag_types[i] = [typ.class_1, typ.class_2, typ.class_3]
-
-    for i in range(len(old_index_array)):
-        old_index_entry = old_index_array[i]
-        new_index_array.append()
-        new_index_entry = new_index_array[-1]
-
-        types = tag_types[old_index_entry.tag_type_index]
-        new_index_entry.class_1 = types[0]
-        new_index_entry.class_2 = types[1]
-        new_index_entry.class_3 = types[2]
-
-        new_index_entry.path = map_header.strings.\
-                               tag_name_table[i].tag_name
-
-        new_index_entry.id = (old_index_entry.table_index << 16) + i
-        new_index_entry.meta_offset = old_index_entry.offset
-        if new_index_entry.meta_offset == 0:
-            # might flag sbsp and ltmp tags as indexed
-            new_index_entry.indexed = 1
-
-    return new_index
-
-
-class MapPointerConverter:
-    '''Handles converting virtual pointers to/from file pointers in maps.'''
-    class PageInfo:
-        def __init__(self, v_addr=0, f_addr=0, size=0):
-            self.v_addr = v_addr
-            self.f_addr = f_addr
-            self.size = size
-            self.v_addr_range = range(self.v_addr, self.v_addr + self.size)
-            self.f_addr_range = range(self.f_addr, self.f_addr + self.size)
-
-    _page_infos = ()
-
-    @property
-    def mapped_size(self):
-        size = 0
-        for page in self._page_infos:
-            size += page.size
-        return size
-
-    def __init__(self, *pages):
-        self._page_infos = []
-        for v_addr, f_addr, size in pages:
-            self.add_page_info(v_addr, f_addr, size)
-
-    def add_page_info(self, v_addr, f_addr, size):
-        if size < 0:
-            return
-
-        new_page = MapPointerConverter.PageInfo(v_addr, f_addr, size)
-        i = 0
-        for page in self._page_infos:
-            # insert the new page based on its virtual pointer
-            if v_addr <= page.v_addr:
-                break
-            i += 1
-        self._page_infos.insert(i, new_page)
-
-    def v_ptr_to_f_ptr(self, ptr):
-        '''Converts a virtual pointer in a map into a file pointer.'''
-        for info in self._page_infos:
-            if ptr in info.v_addr_range:
-                return ptr - info.v_addr + info.f_addr
-        return -0x7FffFFff
-
-    def f_ptr_to_v_ptr(self, ptr):
-        '''Converts a file pointer in a map into a virtual pointer.'''
-        for info in self._page_infos:
-            if ptr in info.f_addr_range:
-                return ptr + info.v_addr - info.f_addr
-        return -0x7FffFFff
-
-
-class ZoneDataManager:
-    # tags with zone references:
-    # bitm, jmad, mode, pmdf, sLdT, sbsp, snd!
-    pass
-
-
-class StringIdManager:
-    strings = ()
-    set_offsets = ()
-
-    def __init__(self, strings, sets):
-        self.strings = strings
-        self.set_offsets = tuple((s[0], s[1]) for s in sets)
-
-    def get_string(self, string_id_block):
-        string_id = string_id_block.string_id
-        idx_bit_ct = string_id_block.STRINGID_IDX_BITS
-        set_bit_ct = string_id_block.STRINGID_SET_BITS
-
-        set_id = (string_id >> idx_bit_ct) & ((1 << set_bit_ct) - 1)
-        index = string_id & ((1 << idx_bit_ct) - 1)
-        if set_id in range(len(self.set_offsets)):
-            set_offset = self.set_offsets[set_id]
-            if index < set_offset[0]:
-                set_id -= 1
-                set_offset = self.set_offsets[set_id]
-
-            if set_id >= 0:
-                index += set_offset[1] - set_offset[0]
-
-        return self.strings[index].string
-
-
-class TagIndexManager:
-    _tag_index = ()
-    _tag_index_map = ()
-
-    def __init__(self, tag_index, tag_index_map=None):
-        self._tag_index = tag_index
-        if tag_index_map:
-            self._tag_index_map = dict(tag_index_map)
-        else:
-            self._tag_index_map = {}
-            for i in range(len(tag_index)):
-                self._tag_index_map[tag_index[i].id & 0xFFff] = i
-
-        # 0xFFff is reserved to mean NULL, so don't map it
-        self._tag_index_map.pop(0xFFff, None)
-
-    def translate_tag_id(self, tag_id):
-        if tag_id & 0xFFff in range(len(self._tag_index)):
-            return tag_id & 0xFFff
-        return self._tag_index_map.get((tag_id >> 16) & 0xFFff, 0xFFff)
-
-    def get_tag_index_ref(self, tag_id):
-        tag_id = self.translate_tag_id(tag_id)
-        if tag_id in range(len(self._tag_index)):
-            return self._tag_index[tag_id]
 
 
 class HaloMap:
@@ -262,7 +48,6 @@ class HaloMap:
     # the original tag_path of each tag in the map before any deprotection
     orig_tag_paths = None
 
-    rsrc_map_names = ()
     string_id_manager = None
     tag_index_manager = None
     map_pointer_converter = None
@@ -448,7 +233,7 @@ class HaloMap:
         self.map_pointer_converter = MapPointerConverter()
 
     def unload_map(self, keep_resources_loaded=True):
-        keep_resources_loaded &= self.is_resource 
+        keep_resources_loaded &= self.is_resource
         try: map_name = self.map_header.map_name
         except Exception: map_name = None
 
