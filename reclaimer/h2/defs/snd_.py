@@ -1,5 +1,5 @@
 from ..common_descs import *
-from supyr_struct.defs.tag_def import BlockDef
+from supyr_struct.defs.tag_def import TagDef
 
 sound_classes = (
     ("projectile impact", 0),
@@ -49,7 +49,7 @@ sound_classes = (
     ("multilingual test", 53),
     )
 
-snd__meta_def = BlockDef("snd!",
+snd__body = Struct("tagdata",
     Bool16("flags",
         "fit to adpcm blocksize",
         "split long sounds into permutations",
@@ -88,5 +88,16 @@ snd__meta_def = BlockDef("snd!",
     SInt8("custom_playback_index"),
     SInt16("extra_info_index"),
     SInt32("maximum_play_time"),
-    ENDIAN="<", TYPE=Struct, SIZE=20
+    ENDIAN="<", SIZE=20
+    )
+
+
+def get():
+    return snd__def
+
+snd__def = TagDef("snd!",
+    h2_blam_header('snd!'),
+    snd__body,
+
+    ext=".%s" % h2_tag_class_fcc_to_ext["snd!"], endian="<"
     )

@@ -14,8 +14,8 @@
 ####################################################
 
 from ..common_descs import *
-from .defs.objs.tag import *
-from .defs.play import play_body
+from .objs.tag import *
+from .play import play_body
 from supyr_struct.defs.tag_def import TagDef
 
 

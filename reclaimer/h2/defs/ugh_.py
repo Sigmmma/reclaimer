@@ -1,5 +1,5 @@
 from ..common_descs import *
-from supyr_struct.defs.tag_def import BlockDef
+from supyr_struct.defs.tag_def import TagDef
 
 from_to_cents = QStruct("", INCLUDE=from_to_sint16, SIDETIP="cents")
 
@@ -188,7 +188,7 @@ extra_info = Struct("extra_info",
     SIZE=44
     )
 
-ugh__meta_def = BlockDef("ugh!",
+ugh__body = Struct("tagdata",
     h2_reflexive("playback_parameters", playback_parameter, 32767),
     h2_reflexive("scales",       playback_scale,     32767),
     h2_reflexive("import_names", import_name,        32767),
@@ -200,5 +200,16 @@ ugh__meta_def = BlockDef("ugh!",
     h2_reflexive("permutation_chunks", permutation_chunk, 32767),
     h2_reflexive("promotions",  promotion,  127),
     h2_reflexive("extra_infos", extra_info, 32767),
-    ENDIAN="<", TYPE=Struct, SIZE=88
+    ENDIAN="<", SIZE=88
+    )
+
+
+def get():
+    return ugh__def
+
+ugh__def = TagDef("ugh!",
+    h2_blam_header('ugh!'),
+    ugh__body,
+
+    ext=".%s" % h2_tag_class_fcc_to_ext["ugh!"], endian="<"
     )

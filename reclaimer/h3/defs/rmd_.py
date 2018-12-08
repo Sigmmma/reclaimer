@@ -138,9 +138,9 @@ rmd__body = Struct("tagdata",
 def get():
     return rmd__def
 
-rmd__def = TagDef("rmd",
-    h3_blam_header('rmd'),
+rmd__def = TagDef("rmd ",
+    h3_blam_header('rmd '),
     rmd__body,
 
-    ext=".%s" % h3_tag_class_fcc_to_ext["rmd"], endian=">", tag_cls=H3Tag
+    ext=".%s" % h3_tag_class_fcc_to_ext["rmd "], endian=">", tag_cls=H3Tag
     )

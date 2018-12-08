@@ -1,25 +1,10 @@
 from .halo1_map import *
-from reclaimer.shadowrun_prototype.handler import ShadowrunPrototypeHandler
+from reclaimer.shadowrun_prototype.constants import sr_tag_class_fcc_to_ext
 from supyr_struct.defs.frozen_dict import FrozenDict
 
 
 class ShadowrunMap(Halo1Map):
     defs = None
 
-    def setup_tag_headers(self):
-        if ShadowrunMap.tag_headers is not None:
-            return
-
-        Halo1Map.setup_tag_headers(self)
-        tag_headers = ShadowrunMap.tag_headers = dict(Halo1Map.tag_headers)
-
-    def setup_defs(self):
-        if not ShadowrunMap.defs:
-            print("Loading Shadowrun tag definitions...")
-            ShadowrunMap.handler = ShadowrunPrototypeHandler(
-                build_reflexive_cache=False, build_raw_data_cache=False)
-            ShadowrunMap.defs = FrozenDict(ShadowrunMap.handler.defs)
-            print("    Finished")
-
-        # make a shallow copy for this instance to manipulate
-        self.defs = dict(self.defs)
+    tag_defs_module = "reclaimer.shadowrun_prototype.defs"
+    tag_classes_to_load = tuple(sorted(sr_tag_class_fcc_to_ext.keys()))
