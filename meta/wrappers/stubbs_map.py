@@ -1,4 +1,5 @@
 from .halo1_map import *
+from reclaimer.stubbs.constants import stubbs_tag_class_fcc_to_ext
 from reclaimer.stubbs.defs.antr import antr_def as stubbs_antr_def
 from reclaimer.stubbs.defs.coll import coll_def as stubbs_fast_coll_def
 from reclaimer.stubbs.defs.mode import mode_def as stubbs_mode_def
@@ -13,36 +14,28 @@ from supyr_struct.buffer import BytearrayBuffer
 class StubbsMap(Halo1Map):
     defs = None
 
-    def setup_tag_headers(self):
-        if StubbsMap.tag_headers is not None:
-            return
+    handler_class = StubbsHandler
 
-        Halo1Map.setup_tag_headers(self)
-        tag_headers = StubbsMap.tag_headers = dict(Halo1Map.tag_headers)
-
-        for b_def in (stubbs_antr_def, stubbs_fast_coll_def,
-                      stubbs_mode_def, stubbs_soso_def):
-            def_id, h_desc, h_block = b_def.def_id, b_def.descriptor[0], [None]
-            h_desc['TYPE'].parser(h_desc, parent=h_block, attr_index=0)
-            self.tag_headers[def_id] = bytes(
-                h_block[0].serialize(buffer=BytearrayBuffer(),
-                                     calc_pointers=False))
+    tag_defs_module = "reclaimer.stubbs.defs"
+    tag_classes_to_load = tuple(sorted(stubbs_tag_class_fcc_to_ext.keys()))
 
     def setup_defs(self):
-        if not StubbsMap.defs:
+        this_class = type(self)
+        if not this_class.defs:
             print("Loading Stubbs tag definitions...")
-            StubbsMap.handler = StubbsHandler(build_reflexive_cache=False,
-                                              build_raw_data_cache=False)
-            StubbsMap.defs = dict(StubbsMap.handler.defs)
+            this_class.defs = defs = {}
+            this_class.handler = self.handler_class(
+                build_reflexive_cache=False, build_raw_data_cache=False)
+            this_class.defs = dict(this_class.handler.defs)
 
             if self.engine == "stubbspc":
-                StubbsMap.defs["mode"] = stubbs_pc_mode_def
+                this_class.defs["mode"] = stubbs_pc_mode_def
             else:
-                StubbsMap.defs["mode"] = stubbs_mode_def
-            StubbsMap.defs["antr"] = stubbs_antr_def
-            StubbsMap.defs["coll"] = stubbs_fast_coll_def
-            StubbsMap.defs["sbsp"] = stubbs_fast_sbsp_def
-            StubbsMap.defs = FrozenDict(StubbsMap.handler.defs)
+                this_class.defs["mode"] = stubbs_mode_def
+            this_class.defs["antr"] = stubbs_antr_def
+            this_class.defs["coll"] = stubbs_fast_coll_def
+            this_class.defs["sbsp"] = stubbs_fast_sbsp_def
+            this_class.defs = FrozenDict(this_class.handler.defs)
             print("    Finished")
 
         # make a shallow copy for this instance to manipulate

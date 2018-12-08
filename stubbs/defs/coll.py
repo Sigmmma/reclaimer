@@ -5,24 +5,6 @@ from .objs.tag import StubbsTag
 shield = dict(shield)
 shield[2] = SEnum16("shield material type", *materials_list)
 
-node = Struct("node",
-    ascii_str32("name"),
-    dyn_senum16("region",
-        DYN_NAME_PATH=".....regions.regions_array[DYN_I].name"),
-    dyn_senum16("parent node",
-        DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16("next sibling node",
-        DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16("first child node",
-        DYN_NAME_PATH="..[DYN_I].name"),
-
-    Pad(8),
-    FlSInt16("unknown0", VISIBLE=False),
-    FlSInt16("unknown1", VISIBLE=False),
-    reflexive("bsps", permutation_bsp, 32),
-    SIZE=64
-    )
-
 permutation = Struct("permutation",
     ascii_str32("name"),
     ascii_str32("unknown"),

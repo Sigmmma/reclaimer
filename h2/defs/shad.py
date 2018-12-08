@@ -312,7 +312,7 @@ predicted_resource = Struct("predicted resource",
     SIZE=8, EDITABLE=False
     )
 
-shad_meta_def = BlockDef("tagdata",
+shad_body = Struct("tagdata",
     h2_dependency("template", "stem"),
     h2_string_id("material name"),
     h2_reflexive("runtime properties", runtime_property, 1),
@@ -354,5 +354,16 @@ shad_meta_def = BlockDef("tagdata",
     h2_reflexive("postprocess properties", UInt32("bitmap group index"), 5),
     Float("added depth bias offset"),
     Float("added depth bias slope scale"),
-    SIZE=84, ENDIAN="<", TYPE=Struct, 
+    ENDIAN="<", SIZE=84
+    )
+
+
+def get():
+    return shad_def
+
+shad_def = TagDef("shad",
+    h2_blam_header('shad'),
+    shad_body,
+
+    ext=".%s" % h2_tag_class_fcc_to_ext["shad"], endian="<"
     )

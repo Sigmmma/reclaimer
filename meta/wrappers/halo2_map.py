@@ -9,17 +9,17 @@ from reclaimer.h2.util import HALO2_MAP_TYPES, split_raw_pointer
 
 
 class Halo2Map(HaloMap):
+    '''Generation 2 map'''
     ugh__meta = None
+
+    tag_defs_module = "reclaimer.h2.defs"
+    tag_classes_to_load = (
+        "ant!", "bitm", "hsc*", "pphy", "snd!", "shad", "trak", "ugh!"
+        )
 
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
         self.setup_tag_headers()
-
-    def setup_tag_headers(self):
-        if Halo2Map.tag_headers is not None:
-            return
-
-        Halo2Map.tag_headers = {}
 
     def inject_rawdata(self, meta, tag_cls, tag_index_ref):
         # get some rawdata that would be pretty annoying to do in the parser
@@ -121,27 +121,6 @@ class Halo2Map(HaloMap):
                     print("        Finished")
             except Exception:
                 print(format_exc())
-
-    def setup_defs(self):
-        if Halo2Map.defs:
-            return
-
-        Halo2Map.defs = defs = {}
-        for fcc in ("ant!", "bitm", "hsc*", "pphy", "snd!", "shad", "trak", "ugh!"):
-            try:
-                fcc2 = "".join(c if c in VALID_MODULE_NAME_CHARS
-                               else "_" for c in fcc)
-                fcc2 += "_" * ((4 - (len(fcc2) % 4)) % 4)
-                exec("from reclaimer.h2.defs.%s import %s_meta_def" %
-                     (fcc2, fcc2))
-                exec("defs['%s'] = %s_meta_def" % (fcc, fcc2))
-            except Exception:
-                print(format_exc())
-
-    def get_meta_descriptor(self, tag_cls):
-        tagdef = self.defs.get(tag_cls)
-        if tagdef is not None:
-            return tagdef.descriptor
 
     def load_map(self, map_path, **kwargs):
         autoload_resources = kwargs.get("autoload_resources", True)

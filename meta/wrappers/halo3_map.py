@@ -6,15 +6,22 @@ from tkinter.filedialog import askopenfilename
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
 from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES
 from reclaimer.h3.handler import Halo3Handler
-from .halo_map import *
+from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
+from reclaimer.meta.wrappers.halo_map import *
 
 
 class Halo3Map(HaloMap):
+    '''Generation 3 map'''
     rawdata_manager = None
 
     shared_map_names = ()
 
     root_tags = {}
+
+    tag_defs_module = "reclaimer.h3.defs"
+    tag_classes_to_load = tuple(sorted(h3_tag_class_fcc_to_ext.keys()))
+
+    handler_class = Halo3Handler
 
     string_id_set_offsets = (
         (0x4B7, 0xC11), (0x0, 0x4B7), (0x0, 0xA7D),
@@ -24,32 +31,6 @@ class Halo3Map(HaloMap):
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
         self.setup_tag_headers()
-
-    def setup_tag_headers(self):
-        if Halo3Map.tag_headers is not None:
-            return
-
-        tag_headers = Halo3Map.tag_headers = {}
-        for def_id in sorted(self.defs):
-            if def_id in tag_headers or len(def_id) != 4:
-                continue
-            h_desc, h_block = self.defs[def_id].descriptor[0], [None]
-            h_desc['TYPE'].parser(h_desc, parent=h_block, attr_index=0)
-            tag_headers[def_id] = bytes(
-                h_block[0].serialize(buffer=BytearrayBuffer(),
-                                     calc_pointers=False))
-
-    def setup_defs(self):
-        if Halo3Map.defs is None:
-            print("    Loading Halo 3 tag definitions...")
-            Halo3Map.handler = Halo3Handler(build_reflexive_cache=False,
-                                            build_raw_data_cache=False)
-
-            Halo3Map.defs = FrozenDict(Halo3Map.handler.defs)
-            print("        Finished")
-
-        # make a shallow copy for this instance to manipulate
-        self.defs = dict(self.defs)
 
     def load_all_resource_maps(self, maps_dir=""):
         play_meta = self.root_tags.get("cache_file_resource_layout_table")

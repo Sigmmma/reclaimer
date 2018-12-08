@@ -56,38 +56,16 @@ def inject_sound_data(map_data, rsrc_data, rawdata_ref, map_magic):
 
 
 class Halo1RsrcMap(HaloMap):
+    '''Generation 1 resource map'''
     tag_classes = None
     tag_headers = None
+
+    tag_defs_module = "reclaimer.hek.defs"
+    tag_classes_to_load = ("bitm", "snd!", "font", "hmt ", "ustr")
 
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
         self.setup_tag_headers()
-
-    def setup_tag_headers(self):
-        if Halo1RsrcMap.tag_headers is not None:
-            return
-
-        tag_headers = Halo1RsrcMap.tag_headers = {}
-        for def_id in ("bitm", "snd!", "font", "hmt ", "ustr"):
-            h_desc, h_block = self.defs[def_id].descriptor[0], [None]
-            h_desc['TYPE'].parser(h_desc, parent=h_block, attr_index=0)
-            tag_headers[def_id] = bytes(
-                h_block[0].serialize(buffer=BytearrayBuffer(),
-                                     calc_pointers=False))
-
-    def setup_defs(self):
-        if Halo1RsrcMap.defs:
-            return
-
-        Halo1RsrcMap.defs = defs = {}
-        for fcc in ("bitm", "snd!", "font", "hmt ", "ustr"):
-            try:
-                fcc2 = fcc.replace("!", "_").replace(" ", "_")
-                exec("from reclaimer.hek.defs.%s import %s_def" %
-                     (fcc2, fcc2))
-                exec("defs['%s'] = %s_def" % (fcc, fcc2))
-            except Exception:
-                print(format_exc())
 
     def extract_tag_data(self, meta, tag_index_ref, **kw):
         extractor = data_extraction.h1_data_extractors.get(
@@ -112,13 +90,8 @@ class Halo1RsrcMap(HaloMap):
         if resource_type < 3 and not (pth.endswith('__pixels') or
                                       pth.endswith('__permutations')):
             tag_count = len(rsrc_map.data.tags)
-            if False and (
-                (resource_type == 1 and tag_count == -1) or
-                (resource_type == 2 and tag_count == -1))
-                # TODO: Finish the logic to determine stubbs pc maps
-                self.engine = "stubbspc"
-            elif ((resource_type == 1 and tag_count == 1107) or
-                  (resource_type == 2 and tag_count == 7192)):
+            if ((resource_type == 1 and tag_count == 1107) or
+                (resource_type == 2 and tag_count == 7192)):
                 self.engine = "halo1pcdemo"
             else:
                 self.engine = "halo1pc"
