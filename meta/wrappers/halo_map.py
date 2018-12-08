@@ -79,6 +79,9 @@ class HaloMap:
     maps = None
     tag_headers = None
 
+    tag_defs_module = ""
+    tag_classes_to_load = ()
+
     def __init__(self, maps=None, map_data_cache_limit=None):
         self.bsp_magics = {}
         self.bsp_sizes  = {}
@@ -92,6 +95,41 @@ class HaloMap:
             self.map_data_cache_limit = HaloMap.map_data_cache_limit
 
         self.maps = {} if maps is None else maps
+
+    def setup_tag_headers(self):
+        if type(self).tag_headers is not None:
+            return
+
+        tag_headers = type(self).tag_headers = {}
+        for def_id in sorted(self.defs):
+            if def_id in tag_headers or len(def_id) != 4:
+                continue
+            h_desc, h_block = self.defs[def_id].descriptor[0], [None]
+            h_desc['TYPE'].parser(h_desc, parent=h_block, attr_index=0)
+            tag_headers[def_id] = bytes(
+                h_block[0].serialize(buffer=BytearrayBuffer(),
+                                     calc_pointers=False))
+
+    def setup_defs(self):
+        assert type(self) is not HaloMap
+        if type(self).defs:
+            return
+
+        print("    Loading definitions in '%s'" % self.tag_defs_module)
+
+        type(self).defs = defs = {}
+        for fcc in type(self).tag_classes_to_load:
+            fcc2 = "".join(c if c in VALID_MODULE_NAME_CHARS
+                           else "_" for c in fcc)
+            fcc2 += "_" * ((4 - (len(fcc2) % 4)) % 4)
+            try:
+                # try to import the module, but ignore it if it doesnt exist
+                exec("from %s import %s" % (self.tag_defs_module, fcc2))
+                exec("defs['%s'] = %s.%s_def" % (fcc, fcc2, fcc2))
+            except ImportError:
+                continue
+            except Exception:
+                print(format_exc())
 
     def __del__(self):
         self.unload_map(False)
@@ -157,9 +195,6 @@ class HaloMap:
         raise NotImplementedError()
 
     def inject_rawdata(self, meta, tag_cls, tag_index_ref):
-        raise NotImplementedError()
-
-    def setup_defs(self):
         raise NotImplementedError()
 
     def get_meta(self, tag_id, reextract=False):

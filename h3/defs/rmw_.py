@@ -138,9 +138,9 @@ rmw__body = Struct("tagdata",
 def get():
     return rmw__def
 
-rmw__def = TagDef("rmw",
-    h3_blam_header('rmw'),
+rmw__def = TagDef("rmw ",
+    h3_blam_header('rmw '),
     rmw__body,
 
-    ext=".%s" % h3_tag_class_fcc_to_ext["rmw"], endian=">", tag_cls=H3Tag
+    ext=".%s" % h3_tag_class_fcc_to_ext["rmw "], endian=">", tag_cls=H3Tag
     )

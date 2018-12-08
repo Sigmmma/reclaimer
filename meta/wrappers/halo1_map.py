@@ -15,16 +15,23 @@ from .byteswapping import raw_block_def, byteswap_animation,\
      byteswap_coll_bsp, byteswap_sbsp_meta, byteswap_scnr_script_syntax_data,\
      byteswap_pcm16_samples
 from reclaimer import data_extraction
+from reclaimer.constants import tag_class_fcc_to_ext
 
 
 __all__ = ("Halo1Map", "Halo1RsrcMap")
 
 
 class Halo1Map(HaloMap):
+    '''Generation 1 map'''
     ce_rsrc_sound_indexes_by_path = None
     ce_tag_indexs_by_paths = None
     sound_rsrc_id = None
     defs = None
+
+    tag_defs_module = "reclaimer.hek.defs"
+    tag_classes_to_load = tuple(sorted(tag_class_fcc_to_ext.keys()))
+
+    handler_class = OsV4HaloHandler
 
     force_checksum = False
 
@@ -36,19 +43,24 @@ class Halo1Map(HaloMap):
         self.ce_tag_indexs_by_paths  = {}
         self.setup_tag_headers()
 
-    def setup_tag_headers(self):
-        if Halo1Map.tag_headers is not None:
-            return
+    def setup_defs(self):
+        this_class = type(self)
+        if this_class.defs is None:
+            this_class.defs = defs = {}
+            print("    Loading definitions in %s" %
+                  self.handler_class.default_defs_path)
+            this_class.handler = self.handler_class(
+                build_reflexive_cache=False, build_raw_data_cache=False)
 
-        tag_headers = Halo1Map.tag_headers = {}
-        for def_id in sorted(self.defs):
-            if def_id in tag_headers or len(def_id) != 4:
-                continue
-            h_desc, h_block = self.defs[def_id].descriptor[0], [None]
-            h_desc['TYPE'].parser(h_desc, parent=h_block, attr_index=0)
-            tag_headers[def_id] = bytes(
-                h_block[0].serialize(buffer=BytearrayBuffer(),
-                                     calc_pointers=False))
+            this_class.defs = dict(this_class.handler.defs)
+            this_class.defs["sbsp"] = fast_sbsp_def
+            this_class.defs["coll"] = fast_coll_def
+            this_class.defs["gelc"] = gelc_def
+            this_class.defs = FrozenDict(this_class.defs)
+            print("        Finished")
+
+        # make a shallow copy for this instance to manipulate
+        self.defs = dict(self.defs)
 
     def ensure_sound_maps_valid(self):
         sounds = self.maps.get("sounds")
@@ -111,22 +123,6 @@ class Halo1Map(HaloMap):
                 continue
             dependencies.append(node)
         return dependencies
-
-    def setup_defs(self):
-        if Halo1Map.defs is None:
-            print("    Loading Halo 1 OSv4 tag definitions...")
-            Halo1Map.handler = OsV4HaloHandler(build_reflexive_cache=False,
-                                               build_raw_data_cache=False)
-
-            Halo1Map.defs = dict(Halo1Map.handler.defs)
-            Halo1Map.defs["sbsp"] = fast_sbsp_def
-            Halo1Map.defs["coll"] = fast_coll_def
-            Halo1Map.defs["gelc"] = gelc_def
-            Halo1Map.defs = FrozenDict(Halo1Map.defs)
-            print("        Finished")
-
-        # make a shallow copy for this instance to manipulate
-        self.defs = dict(self.defs)
 
     def load_map(self, map_path, **kwargs):
         autoload_resources = kwargs.get("autoload_resources", True)

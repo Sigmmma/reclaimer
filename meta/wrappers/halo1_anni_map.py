@@ -59,25 +59,13 @@ class Halo1AnniMap(Halo1Map):
     tag_headers = None
     defs = None
 
+    handler_class = HaloHandler
+
     inject_rawdata = Halo1RsrcMap.inject_rawdata
 
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
         self.setup_tag_headers()
-
-    def setup_tag_headers(self):
-        if Halo1AnniMap.tag_headers is not None:
-            return
-
-        tag_headers = Halo1AnniMap.tag_headers = {}
-        for def_id in sorted(self.defs):
-            if def_id in tag_headers or len(def_id) != 4:
-                continue
-            h_desc, h_block = self.defs[def_id].descriptor[0], [None]
-            h_desc['TYPE'].parser(h_desc, parent=h_block, attr_index=0)
-            tag_headers[def_id] = bytes(
-                h_block[0].serialize(buffer=BytearrayBuffer(),
-                                     calc_pointers=False))
 
     def get_dependencies(self, meta, tag_id, tag_cls):
         if self.is_indexed(tag_id):
@@ -112,21 +100,6 @@ class Halo1AnniMap(Halo1Map):
                 continue
             dependencies.append(node)
         return dependencies
-
-    def setup_defs(self):
-        if Halo1AnniMap.defs is None:
-            print("    Loading Halo 1 tag definitions...")
-            Halo1AnniMap.handler = HaloHandler(build_reflexive_cache=False,
-                                               build_raw_data_cache=False)
-
-            Halo1AnniMap.defs = dict(Halo1AnniMap.handler.defs)
-            Halo1AnniMap.defs["sbsp"] = fast_sbsp_def
-            Halo1AnniMap.defs["coll"] = fast_coll_def
-            Halo1AnniMap.defs = FrozenDict(Halo1AnniMap.defs)
-            print("        Finished")
-
-        # make a shallow copy for this instance to manipulate
-        self.defs = dict(self.defs)
 
     def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False):
         '''

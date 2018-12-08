@@ -1,7 +1,7 @@
 from ..common_descs import *
-from supyr_struct.defs.block_def import BlockDef
+from supyr_struct.defs.tag_def import TagDef
 
-pphy_meta_def = BlockDef("pphy",
+pphy_body = BlockDef("tagdata",
     Bool32("flags",
         "flamethrower particle collision",
         "collides with structures",
@@ -21,5 +21,16 @@ pphy_meta_def = BlockDef("pphy",
     Float("water friction"),
     Float("surface friction"),
     Float("elasticity"),
-    ENDIAN="<", TYPE=Struct,
+    ENDIAN="<", SIZE=64
+    )
+
+
+def get():
+    return pphy_def
+
+pphy_def = TagDef("pphy",
+    h2_blam_header('pphy'),
+    pphy_body,
+
+    ext=".%s" % h2_tag_class_fcc_to_ext["pphy"], endian="<"
     )

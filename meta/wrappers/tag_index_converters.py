@@ -91,6 +91,13 @@ def h3_to_h1_tag_index(map_header, tag_index):
         old_index_entry = old_index_array[i]
         new_index_array.append()
         new_index_entry = new_index_array[-1]
+        if old_index_entry.tag_type_index not in tag_types:
+            new_index_entry.path = "reserved"
+            new_index_entry.class_1.data = new_index_entry.class_2.data =\
+                                           new_index_entry.class_3.data =\
+                                           0xFFFFFFFF
+            new_index_entry.id = 0xFFFFFFFF
+            continue
 
         types = tag_types[old_index_entry.tag_type_index]
         new_index_entry.class_1 = types[0]
