@@ -1,5 +1,3 @@
-import zlib
-
 from os.path import exists, join
 from tkinter.filedialog import askopenfilename
 
@@ -35,7 +33,7 @@ class Halo3Map(HaloMap):
     def load_all_resource_maps(self, maps_dir=""):
         play_meta = self.root_tags.get("cache_file_resource_layout_table")
         if not play_meta:
-            print("Could not get cache_file_resource_layout_table meta. "
+            print("Could not get cache_file_resource_layout_table meta.\n"
                   "Cannot determine resource maps.")
             return
 
@@ -115,12 +113,6 @@ class Halo3Map(HaloMap):
 
         self.load_root_tags()
 
-        map_type = self.map_header.map_type.data
-        # ensure the sharable maps are also indexed under their internal names
-        if map_type >= 2 and map_type < 5:
-            self.is_resource = True
-            self.maps[HALO3_SHARED_MAP_TYPES[map_type - 2]] = self
-
         play_meta = self.root_tags.get("cache_file_resource_layout_table")
         if play_meta:
             self.shared_map_names = list(
@@ -128,7 +120,19 @@ class Halo3Map(HaloMap):
                 for b in play_meta.external_cache_references.STEPTREE)
 
         self.rawdata_manager = RawdataManager(self)
-        if autoload_resources and (will_be_active or not self.is_resource):
+
+        map_type = self.map_header.map_type.data
+        if map_type >= 2 and map_type < 5:
+            self.is_resource = True
+            ext_cache_name = HALO3_SHARED_MAP_TYPES[map_type - 2]
+
+            for halo_map_name, halo_map in self.maps.items():
+                # update each map's rawdata_manager so each one
+                # knows what name the shared caches are named.
+                halo_map.rawdata_manager.add_shared_map_name(
+                    ext_cache_name, halo_map_name)
+
+        if autoload_resources and not self.is_resource:
             self.load_all_resource_maps(dirname(map_path))
 
         self.map_data.clear_cache()
