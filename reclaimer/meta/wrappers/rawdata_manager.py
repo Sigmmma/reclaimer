@@ -1,4 +1,4 @@
-
+import zlib
 
 class RawdataManager:
     # tags with zone references:
@@ -19,10 +19,19 @@ class RawdataManager:
             self.play_meta = parent_halo_map.root_tags.get(
                 "cache_file_resource_layout_table")
 
-    def add_halo_map_name_by_index(self, map_name, map_index):
+    def add_shared_map_name(self, ext_cache_name, map_name):
         assert isinstance(map_name, str)
-        assert isinstance(map_index, int)
-        self._map_index_to_name[map_index] = map_name
+        if not self._play_meta:
+            return
+
+        ext_cache_refs = self._play_meta.external_cache_references.STEPTREE
+        for i in range(len(ext_cache_refs)):
+            curr_ext_cache_name = ext_cache_refs[i].map_path.lower().\
+                                  replace("\\", "/").split("/")[-1].\
+                                  split(".")[0]
+            if curr_ext_cache_name == ext_cache_name:
+                self._map_index_to_name[i] = map_name
+                break
 
     def get_halo_map(self, map_index):
         if self._parent_halo_map:

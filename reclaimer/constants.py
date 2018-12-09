@@ -49,6 +49,8 @@ map_build_dates = {
     "haloreachbeta":   "11860.10.07.24.0147.omaha_relea",
     "haloreach":       "",  # SET THIS
     "halo4":           "20810.12.09.22.1647.main",
+    "halo4nettest":    "",  # SET THIS
+    "halo5":           "",  # SET THIS
     }
 
 map_versions = {
@@ -73,7 +75,23 @@ map_versions = {
     "haloreachbeta":   12,
     "haloreach":       12,
     "halo4":           12,
+    #"halo4nettest":    ????,
+    #"halo5":           ????,
     }
+
+GEN_1_HALO_ENGINES = ("halo1xboxdemo", "halo1xbox",
+                      "halo1ce", "halo1yelo",
+                      "halo1pcdemo", "halo1pc", "halo1anni", )
+
+GEN_1_ENGINES = GEN_1_HALO_ENGINES + (
+    "stubbs", "stubbspc", "shadowrun_proto", )
+
+GEN_2_ENGINES = ("halo2alpha", "halo2beta", "halo2epsilon",
+                 "halo2xbox", "halo2vista", )
+
+GEN_3_ENGINES = ("halo3", "halo3odst", "halo3beta",
+                 "haloreachbeta", "haloreach",
+                 "halo4", "halo4nettest", "halo5", )
 
 # magic is actually the virtual address the map is loaded at. Halo 3 and
 # beyond instead partition the map into sections with a virtual address for

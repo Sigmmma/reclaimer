@@ -29,7 +29,7 @@ def get_map_version(header):
             version = "halo1anni"
     elif version == "halo1xbox":
         if build_date is None:
-            return
+            version = None
         elif build_date == map_build_dates["stubbs"]:
             version = "stubbs"
         elif build_date == "":
@@ -43,7 +43,7 @@ def get_map_version(header):
             version = "shadowrun_proto"
     elif hasattr(header, "yelo_header") and (
             header.yelo_header.yelo.enum_name == "yelo"):
-        return "halo1yelo"
+        version = "halo1yelo"
     elif version == "halo2":
         version = None
         if build_date == map_build_dates['halo2beta']:
@@ -171,7 +171,7 @@ def get_index_magic(header):
     version = get_map_version(header)
     if version == "halo2vista":
         return header.virtual_address
-    elif version in ("halo3", "halo4", "halo5", "haloreach"):
+    elif version in GEN_3_ENGINES:
         base_address = header.tag_index_header_offset
         for partition in header.partitions:
             if base_address in range(partition.load_address,
@@ -183,7 +183,7 @@ def get_index_magic(header):
 
 def get_map_magic(header):
     magic = get_index_magic(header)
-    if header.version.enum_name not in ("halo3", "halo4", "halo5", "haloreach"):
+    if header.version.enum_name not in GEN_3_ENGINES:
         magic -= header.tag_index_header_offset
 
     return magic
