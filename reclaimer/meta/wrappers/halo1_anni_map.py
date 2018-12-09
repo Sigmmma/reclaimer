@@ -141,15 +141,17 @@ class Halo1AnniMap(Halo1Map):
 
         desc = self.get_meta_descriptor(tag_cls)
         block = [None]
-        offset = self.map_pointer_converter.v_ptr_to_f_ptr(
-            tag_index_ref.meta_offset)
+        pointer_converter = self.bsp_pointer_converters.get(
+            tag_id, self.map_pointer_converter)
+
+        offset = pointer_converter.v_ptr_to_f_ptr(tag_index_ref.meta_offset)
 
         try:
             # read the meta data from the map
             with FieldType.force_big:
                 desc['TYPE'].parser(
                     desc, parent=block, attr_index=0, rawdata=map_data,
-                    map_pointer_converter=self.map_pointer_converter,
+                    map_pointer_converter=pointer_converter,
                     tag_index_manager=self.tag_index_manager, offset=offset)
         except Exception:
             print(format_exc())

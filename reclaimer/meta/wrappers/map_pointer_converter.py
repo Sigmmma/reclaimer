@@ -26,7 +26,7 @@ class MapPointerConverter:
         return size
 
     def add_page_info(self, v_addr, f_addr, size):
-        if size < 0:
+        if size <= 0:
             return
 
         new_page = MapPointerConverter.PageInfo(v_addr, f_addr, size)

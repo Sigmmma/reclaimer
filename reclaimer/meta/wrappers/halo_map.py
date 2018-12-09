@@ -70,11 +70,6 @@ class HaloMap:
     #                  subtract this from a pointer to convert it to an offset.
     #                      map_magic = index_magic - index_header_offset
 
-    bsp_magics  = ()
-    bsp_sizes   = ()
-    bsp_headers = ()
-    bsp_header_offsets = ()
-
     defs = None
     maps = None
     tag_headers = None
@@ -83,10 +78,6 @@ class HaloMap:
     tag_classes_to_load = ()
 
     def __init__(self, maps=None, map_data_cache_limit=None):
-        self.bsp_magics = {}
-        self.bsp_sizes  = {}
-        self.bsp_header_offsets = {}
-        self.bsp_headers = {}
         self.orig_tag_paths = ()
         self.setup_defs()
 

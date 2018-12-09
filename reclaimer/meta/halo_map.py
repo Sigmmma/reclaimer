@@ -39,8 +39,8 @@ def get_map_version(header):
                 version = "halo1xboxdemo"
             else:
                 version = "stubbspc"
-        elif build_date == map_build_dates["shadowrun_beta"]:
-            version = "shadowrun_beta"
+        elif build_date == map_build_dates["shadowrun_proto"]:
+            version = "shadowrun_proto"
     elif hasattr(header, "yelo_header") and (
             header.yelo_header.yelo.enum_name == "yelo"):
         return "halo1yelo"

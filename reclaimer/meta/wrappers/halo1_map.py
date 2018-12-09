@@ -28,7 +28,7 @@ class Halo1Map(HaloMap):
     sound_rsrc_id = None
     defs = None
 
-    tag_defs_module = "reclaimer.hek.defs"
+    tag_defs_module = "reclaimer.os_v4_hek.defs"
     tag_classes_to_load = tuple(sorted(tag_class_fcc_to_ext.keys()))
 
     handler_class = OsV4HaloHandler
@@ -37,10 +37,23 @@ class Halo1Map(HaloMap):
 
     inject_rawdata = Halo1RsrcMap.inject_rawdata
 
+    bsp_magics  = ()
+    bsp_sizes   = ()
+    bsp_headers = ()
+    bsp_header_offsets = ()
+    bsp_pointer_converters = ()
+
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
         self.ce_rsrc_sound_indexes_by_path = {}
-        self.ce_tag_indexs_by_paths  = {}
+        self.ce_tag_indexs_by_paths = {}
+
+        self.bsp_magics = {}
+        self.bsp_sizes  = {}
+        self.bsp_header_offsets = {}
+        self.bsp_headers = {}
+        self.bsp_pointer_converters = {}
+
         self.setup_tag_headers()
 
     def setup_defs(self):
@@ -124,6 +137,42 @@ class Halo1Map(HaloMap):
             dependencies.append(node)
         return dependencies
 
+    def setup_sbsp_pointer_converters(self):
+        # get the scenario meta
+        if self.scnr_meta is None:
+            print("Cannot setup sbsp pointer converters without scenario tag.")
+            return
+
+        try:
+            for b in self.scnr_meta.structure_bsps.STEPTREE:
+                bsp_id = b.structure_bsp.id & 0xFFff
+                self.bsp_header_offsets[bsp_id] = b.bsp_pointer
+                self.bsp_magics[bsp_id]         = b.bsp_magic
+                self.bsp_sizes[bsp_id]          = b.bsp_size
+
+                self.bsp_pointer_converters[bsp_id] = MapPointerConverter(
+                    (b.bsp_magic, b.bsp_pointer, b.bsp_size)
+                    )
+
+            # read the sbsp headers
+            for tag_id, offset in self.bsp_header_offsets.items():
+                if self.engine == "halo1anni":
+                    with FieldType.force_big:
+                        header = sbsp_meta_header_def.build(
+                            rawdata=self.map_data, offset=offset)
+                else:
+                    header = sbsp_meta_header_def.build(
+                        rawdata=self.map_data, offset=offset)
+
+                if header.sig != header.get_desc("DEFAULT", "sig"):
+                    print("Sbsp header is invalid for '%s'" %
+                          tag_index_array[tag_id].path)
+                self.bsp_headers[tag_id] = header
+                self.tag_index.tag_index[tag_id].meta_offset = header.meta_pointer
+
+        except Exception:
+            print(format_exc())
+
     def load_map(self, map_path, **kwargs):
         autoload_resources = kwargs.get("autoload_resources", True)
         HaloMap.load_map(self, map_path, **kwargs)
@@ -144,58 +193,30 @@ class Halo1Map(HaloMap):
             self.map_header.tag_data_size
             )
 
-        # get the scenario meta
+        # cache the scenario meta
         try:
-            self.scnr_meta = self.get_meta(tag_index.scenario_tag_id & 0xFFff)
-            if self.scnr_meta is not None:
-                bsp_sizes   = self.bsp_sizes
-                bsp_magics  = self.bsp_magics
-                bsp_offsets = self.bsp_header_offsets
-                for b in self.scnr_meta.structure_bsps.STEPTREE:
-                    bsp = b.structure_bsp
-                    bsp_offsets[bsp.id & 0xFFff] = b.bsp_pointer
-                    bsp_magics[bsp.id & 0xFFff]  = b.bsp_magic
-                    bsp_sizes[bsp.id & 0xFFff]   = b.bsp_size
-
-                # read the sbsp headers
-                for tag_id, offset in bsp_offsets.items():
-                    if self.engine == "halo1anni":
-                        with FieldType.force_big:
-                            header = sbsp_meta_header_def.build(
-                                rawdata=self.map_data, offset=offset)
-                    else:
-                        header = sbsp_meta_header_def.build(
-                            rawdata=self.map_data, offset=offset)
-
-                    if header.sig != header.get_desc("DEFAULT", "sig"):
-                        print("Sbsp header is invalid for '%s'" %
-                              tag_index_array[tag_id].path)
-                    self.bsp_headers[tag_id] = header
-                    tag_index_array[tag_id].meta_offset = header.meta_pointer
-            else:
+            self.scnr_meta = self.get_meta(self.tag_index.scenario_tag_id)
+            if self.scnr_meta is None:
                 print("Could not read scenario tag")
-
         except Exception:
             print(format_exc())
             print("Could not read scenario tag")
+        
+        self.setup_sbsp_pointer_converters()
 
         last_bsp_end = 0
-        # add the bsp sections
+        # calculate the start of the rawdata section
         for tag_id in self.bsp_headers:
-            self.map_pointer_converter.add_page_info(
-                self.bsp_magics[tag_id],
-                self.bsp_header_offsets[tag_id],
-                self.bsp_sizes[tag_id])
-
             bsp_end = self.bsp_header_offsets[tag_id] + self.bsp_sizes[tag_id]
             if last_bsp_end < bsp_end:
                 last_bsp_end = bsp_end
-
-        # add the raw data section
+    
+        # add the rawdata section
         self.map_pointer_converter.add_page_info(
             last_bsp_end, last_bsp_end,
             tag_index.model_data_offset - last_bsp_end,
             )
+
         # add the model data section
         if tag_index.SIZE == 40:
             # PC tag index
@@ -311,16 +332,17 @@ class Halo1Map(HaloMap):
 
         desc = self.get_meta_descriptor(tag_cls)
         block = [None]
-        offset = self.map_pointer_converter.v_ptr_to_f_ptr(
-            tag_index_ref.meta_offset)
+        pointer_converter = self.bsp_pointer_converters.get(
+            tag_id, self.map_pointer_converter)
 
+        offset = pointer_converter.v_ptr_to_f_ptr(tag_index_ref.meta_offset)
         try:
             # read the meta data from the map
             with FieldType.force_little:
                 desc['TYPE'].parser(
                     desc, parent=block, attr_index=0, rawdata=map_data,
-                    map_pointer_converter=self.map_pointer_converter,
-                    tag_index_manager=self.tag_index_manager, offset=offset)
+                    map_pointer_converter=pointer_converter, offset=offset,
+                    tag_index_manager=self.tag_index_manager)
         except Exception:
             print(format_exc())
             return
