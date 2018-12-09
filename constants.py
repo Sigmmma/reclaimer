@@ -17,82 +17,82 @@ def inject_halo_constants():
                       STRINGID_IDX_BITS, STRINGID_SET_BITS, STRINGID_LEN_BITS)
 
 
-PCDEMO_INDEX_MAGIC         = 0x4BF10000
-PC_INDEX_MAGIC             = 0x40440000
-CE_INDEX_MAGIC             = 0x40440000
-ANNIVERSARY_INDEX_MAGIC    = 0x004B8000
-XBOX_INDEX_MAGIC           = 0x803A6000
-STUBBS_INDEX_MAGIC         = 0x8038B000
-SHADOWRUN_BETA_INDEX_MAGIC = 0x8069E000
-H2_XBOX_INDEX_MAGIC        = 0x80061000
+PCDEMO_INDEX_MAGIC          = 0x4BF10000
+PC_INDEX_MAGIC              = 0x40440000
+CE_INDEX_MAGIC              = 0x40440000
+ANNIVERSARY_INDEX_MAGIC     = 0x004B8000
+XBOX_INDEX_MAGIC            = 0x803A6000
+STUBBS_INDEX_MAGIC          = 0x8038B000
+SHADOWRUN_PROTO_INDEX_MAGIC = 0x8069E000
+H2_XBOX_INDEX_MAGIC         = 0x80061000
 
 
 map_build_dates = {
-    "stubbs":         "400",
-    "stubbspc":       "",
-    "shadowrun_beta": "01.12.07.0132",
-    "halo1xboxdemo":  "",
-    "halo1xbox":      "01.10.12.2276",
-    "halo1pcdemo":    "01.00.00.0576",
-    "halo1anni":      "01.00.01.0563",
-    "halo1ce":        "01.00.00.0609",
-    "halo1yelo":      "01.00.00.0609",
-    "halo1pc":        "01.00.00.0564",
-    "halo2alpha":     "02.01.07.4998",
-    "halo2beta":      "02.06.28.07902",
-    "halo2epsilon":   "02.08.28.09214",
-    "halo2xbox":      "02.09.27.09809",
-    "halo2vista":     "11081.07.04.30.0934.main",
-    "halo3beta":      "",  # SET THIS
-    "halo3":          "11855.07.08.20.2317.halo3_ship",
-    "halo3odst":      "13895.09.04.27.2201.atlas_relea",
-    "haloreachbeta":  "11860.10.07.24.0147.omaha_relea",
-    "haloreach":      "",  # SET THIS
-    "halo4":          "20810.12.09.22.1647.main",
+    "stubbs":          "400",
+    "stubbspc":        "",
+    "shadowrun_proto": "01.12.07.0132",
+    "halo1xboxdemo":   "",
+    "halo1xbox":       "01.10.12.2276",
+    "halo1pcdemo":     "01.00.00.0576",
+    "halo1anni":       "01.00.01.0563",
+    "halo1ce":         "01.00.00.0609",
+    "halo1yelo":       "01.00.00.0609",
+    "halo1pc":         "01.00.00.0564",
+    "halo2alpha":      "02.01.07.4998",
+    "halo2beta":       "02.06.28.07902",
+    "halo2epsilon":    "02.08.28.09214",
+    "halo2xbox":       "02.09.27.09809",
+    "halo2vista":      "11081.07.04.30.0934.main",
+    "halo3beta":       "",  # SET THIS
+    "halo3":           "11855.07.08.20.2317.halo3_ship",
+    "halo3odst":       "13895.09.04.27.2201.atlas_relea",
+    "haloreachbeta":   "11860.10.07.24.0147.omaha_relea",
+    "haloreach":       "",  # SET THIS
+    "halo4":           "20810.12.09.22.1647.main",
     }
 
 map_versions = {
-    "stubbs":         5,
-    "stubbspc":       5,
-    "shadowrun_beta": 5,
-    "halo1xboxdemo":  5,
-    "halo1xbox":      5,
-    "halo1pcdemo":    6,
-    "halo1pc":        7,
-    "halo1anni":      7,
-    "halo1ce":        609,
-    "halo1yelo":      609,
-    "halo2alpha":     7,
-    "halo2beta":      8,
-    "halo2epsilon":   8,
-    "halo2xbox":      8,
-    "halo2vista":     8,
-    "halo3beta":      9,
-    "halo3":          11,
-    "halo3odst":      11,
-    "haloreachbeta":  12,
-    "haloreach":      12,
-    "halo4":          12,
+    "stubbs":          5,
+    "stubbspc":        5,
+    "shadowrun_proto": 5,
+    "halo1xboxdemo":   5,
+    "halo1xbox":       5,
+    "halo1pcdemo":     6,
+    "halo1pc":         7,
+    "halo1anni":       7,
+    "halo1ce":         609,
+    "halo1yelo":       609,
+    "halo2alpha":      7,
+    "halo2beta":       8,
+    "halo2epsilon":    8,
+    "halo2xbox":       8,
+    "halo2vista":      8,
+    "halo3beta":       9,
+    "halo3":           11,
+    "halo3odst":       11,
+    "haloreachbeta":   12,
+    "haloreach":       12,
+    "halo4":           12,
     }
 
 # magic is actually the virtual address the map is loaded at. Halo 3 and
 # beyond instead partition the map into sections with a virtual address for
 # each section, meaning there is a "magic" for different parts of each map.
 map_magics = {
-    "stubbs":         STUBBS_INDEX_MAGIC,
-    "stubbspc":       PC_INDEX_MAGIC,
-    "shadowrun_beta": SHADOWRUN_BETA_INDEX_MAGIC,
-    "halo1xboxdemo":  XBOX_INDEX_MAGIC,
-    "halo1xbox":      XBOX_INDEX_MAGIC,
-    "halo1pcdemo":    PCDEMO_INDEX_MAGIC,
-    "halo1pc":        PC_INDEX_MAGIC,
-    "halo1anni":      ANNIVERSARY_INDEX_MAGIC,
-    "halo1ce":        CE_INDEX_MAGIC,
-    "halo1yelo":      CE_INDEX_MAGIC,
-    "halo2alpha":     H2_XBOX_INDEX_MAGIC,
-    "halo2beta":      H2_XBOX_INDEX_MAGIC,
-    "halo2epsilon":   H2_XBOX_INDEX_MAGIC,
-    "halo2xbox":      H2_XBOX_INDEX_MAGIC,
+    "stubbs":          STUBBS_INDEX_MAGIC,
+    "stubbspc":        PC_INDEX_MAGIC,
+    "shadowrun_proto": SHADOWRUN_PROTO_INDEX_MAGIC,
+    "halo1xboxdemo":   XBOX_INDEX_MAGIC,
+    "halo1xbox":       XBOX_INDEX_MAGIC,
+    "halo1pcdemo":     PCDEMO_INDEX_MAGIC,
+    "halo1pc":         PC_INDEX_MAGIC,
+    "halo1anni":       ANNIVERSARY_INDEX_MAGIC,
+    "halo1ce":         CE_INDEX_MAGIC,
+    "halo1yelo":       CE_INDEX_MAGIC,
+    "halo2alpha":      H2_XBOX_INDEX_MAGIC,
+    "halo2beta":       H2_XBOX_INDEX_MAGIC,
+    "halo2epsilon":    H2_XBOX_INDEX_MAGIC,
+    "halo2xbox":       H2_XBOX_INDEX_MAGIC,
     }
 
 # bitmap types
