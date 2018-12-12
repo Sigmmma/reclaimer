@@ -234,9 +234,6 @@ class BitmTag(HekTag):
                 # calculate how much padding to add to the xbox bitmaps
                 bitmap_pad, cubemap_pad = self.get_padding_size(i)
 
-                # add the number of bytes of padding to the total
-                total_data_size += bitmap_pad + cubemap_pad*sub_bitmap_count
-
                 # if this bitmap has padding on each of the sub-bitmaps
                 if cubemap_pad:
                     mipmap_count = self.bitmap_mipmaps_count(i) + 1
@@ -254,7 +251,11 @@ class BitmTag(HekTag):
 
             # add the number of bytes this bitmap is to the
             # total bytes so far(multiple by sub-bitmap count)
-            total_data_size += self.get_bitmap_size(i)*sub_bitmap_count
+            for pixel_data in pixel_data_block:
+                if isinstance(pixel_data, array):
+                    total_data_size += len(pixel_data) * pixel_data.itemsize
+                else:
+                    total_data_size += len(pixel_data)
 
         # update the total number of bytes of pixel data
         # in the tag by all the padding that was added

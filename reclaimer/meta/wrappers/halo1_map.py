@@ -60,17 +60,15 @@ class Halo1Map(HaloMap):
         this_class = type(self)
         if this_class.defs is None:
             this_class.defs = defs = {}
-            print("    Loading definitions in %s" %
-                  self.handler_class.default_defs_path)
+            print("    Loading definitions in %s" % self.tag_defs_module)
             this_class.handler = self.handler_class(
                 build_reflexive_cache=False, build_raw_data_cache=False)
 
             this_class.defs = dict(this_class.handler.defs)
-            this_class.defs["sbsp"] = fast_sbsp_def
             this_class.defs["coll"] = fast_coll_def
             this_class.defs["gelc"] = gelc_def
+            this_class.defs["sbsp"] = fast_sbsp_def
             this_class.defs = FrozenDict(this_class.defs)
-            print("        Finished")
 
         # make a shallow copy for this instance to manipulate
         self.defs = dict(self.defs)

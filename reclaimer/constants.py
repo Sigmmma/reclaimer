@@ -133,6 +133,12 @@ FORMAT_DXT1 = 14
 FORMAT_DXT3 = 15
 FORMAT_DXT5 = 16
 FORMAT_P8_BUMP = 17
+FORMAT_P8 = 18
+FORMAT_A32R32G32B32F = 19
+FORMAT_R32G32B32F = 20
+FORMAT_R16G16B16F = 21
+FORMAT_V8U8 = 22
+FORMAT_G8B8 = 23
 
 DXT_FORMATS = (FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5)
 
@@ -141,15 +147,24 @@ PALLETIZED_FORMATS = (FORMAT_P8_BUMP, )
 # These name maps must match the constants found in arbytmap
 TYPE_NAME_MAP = ("2D", "3D", "CUBE", "WHITE")
 
+# this map corrosponds to the bitmap formats
+# found in the "format" enum in the bitmap tag
 FORMAT_NAME_MAP = (
     "A8", "L8", "AL8", "A8L8",
     "UNUSED1", "UNUSED2",
     "R5G6B5",  "UNUSED3", "A1R5G5B5", "A4R4G4B4",
     "X8R8G8B8", "A8R8G8B8",
     "UNUSED4", "UNUSED5",
-    "DXT1", "DXT3", "DXT5", "P8-BUMP")
+    "DXT1", "DXT3", "DXT5", "P8-BUMP", "A8R8G8B8",
+    "A32R32G32B32F", "R32G32B32F", "R16G16B16F",
+    "V8U8", "G8B8", "UNUSED6", "UNUSED7", "UNUSED8",
+    "UNUSED9", "UNUSED10", "UNUSED11", "UNUSED12", "UNUSED13",
+    "DXT5A", "DXN", "CTX1", "DXT3A", "DXT3Y", "DXT5A", "DXT5Y", "DXT5AY")
 
-I_FORMAT_NAME_MAP = {FORMAT_NAME_MAP[i]: i for i in range(len(FORMAT_NAME_MAP))}
+I_FORMAT_NAME_MAP = {}
+for i in range(len(FORMAT_NAME_MAP)):
+    if i not in I_FORMAT_NAME_MAP:
+        I_FORMAT_NAME_MAP[FORMAT_NAME_MAP[i]] = i
 
 #each bitmap's number of bytes must be a multiple of 512
 BITMAP_PADDING = 512

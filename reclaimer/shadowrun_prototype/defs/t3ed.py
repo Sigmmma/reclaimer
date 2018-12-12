@@ -6,7 +6,7 @@ def get():
 
 t3ed_def = TagDef("t3ed",
     blam_header('t3ed'),
-    QStruct('tagdata',
+    Struct('tagdata',
         ),
 
     ext=".tech_3_effect_data", endian=">"

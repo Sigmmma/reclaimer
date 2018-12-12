@@ -123,7 +123,7 @@ class Halo1RsrcMap(HaloMap):
 
         self.maps[head.map_name] = self
         if will_be_active:
-            self.maps["active"] = self
+            self.maps["<active>"] = self
 
         rsrc_tag_count = len(rsrc_map.data.tags)//index_mul
         self.tag_classes += (def_cls,)*(rsrc_tag_count - len(self.tag_classes))

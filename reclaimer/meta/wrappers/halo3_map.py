@@ -1,11 +1,78 @@
 from os.path import exists, join
 from tkinter.filedialog import askopenfilename
 
-from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
-from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES
+from arbytmap.bitmap_io import swap_channels, get_pixel_bytes_size
+
+from reclaimer.h3.constants import h3_tag_class_fcc_to_ext, FORMAT_NAME_MAP
+from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES, get_virtual_dimension
 from reclaimer.h3.handler import Halo3Handler
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
 from reclaimer.meta.wrappers.halo_map import *
+
+
+__all__ = ("Halo3Map", )
+
+
+def get_bitmap_pixel_data(halo_map, bitm_meta, bitmap_index):
+    n_assets = bitm_meta.zone_assets_normal.STEPTREE
+    i_assets = bitm_meta.zone_assets_interleaved.STEPTREE
+    bitmap = bitm_meta.bitmaps.STEPTREE[bitmap_index]
+
+    bitm_fmt = FORMAT_NAME_MAP[bitmap.format.data]
+    v_height = get_virtual_dimension(bitm_fmt, bitmap.height)
+    v_width = get_virtual_dimension(bitm_fmt, bitmap.width)
+
+    pixel_data_size = get_pixel_bytes_size(bitm_fmt, v_width, v_height,
+                                           bitmap.depth)
+    if bitmap.type.enum_name == "cubemap":
+        pixel_data_size *= 6
+
+    if bitmap_index in range(len(n_assets)):
+        is_interleaved = False
+        pixel_data = halo_map.rawdata_manager.get_tag_resource_data(
+            n_assets[bitmap_index].idx, pixel_data_size, pixel_data_size)
+    elif bitmap_index in range(len(i_assets)):
+        is_interleaved = True
+        pixel_data = halo_map.rawdata_manager.get_tag_resource_data(
+            i_assets[bitmap_index].idx, pixel_data_size, pixel_data_size)
+    else:
+        return False, b''
+
+    return is_interleaved, pixel_data
+
+
+def inject_bitmap_data(halo_map, bitm_meta):
+    bitmaps = bitm_meta.bitmaps.STEPTREE
+    for i in range(len(bitmaps)):
+        bitmap = bitmaps[i]
+        bitm_fmt = FORMAT_NAME_MAP[bitmap.format.data]
+        
+        v_height = get_virtual_dimension(bitm_fmt, bitmap.height)
+        v_width = get_virtual_dimension(bitm_fmt, bitmap.width)
+
+        try:
+            pixel_data_size = get_pixel_bytes_size(bitm_fmt, v_width, v_height,
+                                                   bitmap.depth)
+        except KeyError:
+            # unknown bitmap format
+            continue
+
+        # TEMPORARY: Don't want to worry about mips for now
+        #bitmap.mipmaps = 0
+
+        is_interleaved, pixel_data_chunks = get_bitmap_pixel_data(
+            halo_map, bitm_meta, i)
+
+        all_pixel_data = bytearray()
+        for pixel_data in reversed(pixel_data_chunks):
+            all_pixel_data.extend(pixel_data)
+
+        if not all_pixel_data:
+            pass
+        elif not is_interleaved:
+            bitm_meta.zone_assets_normal.STEPTREE[i].data = all_pixel_data
+        else:
+            bitm_meta.zone_assets_interleaved.STEPTREE[i].data = all_pixel_data
 
 
 class Halo3Map(HaloMap):
@@ -29,52 +96,6 @@ class Halo3Map(HaloMap):
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
         self.setup_tag_headers()
-
-    def load_all_resource_maps(self, maps_dir=""):
-        play_meta = self.root_tags.get("cache_file_resource_layout_table")
-        if not play_meta:
-            print("Could not get cache_file_resource_layout_table meta.\n"
-                  "Cannot determine resource maps.")
-            return
-
-        map_paths = {name: None for name in self.shared_map_names}
-        if not maps_dir:
-            maps_dir = dirname(self.filepath)
-
-        # detect/ask for the map paths for the resource maps
-        for map_name in sorted(map_paths.keys()):
-            if self.maps.get(map_name) is not None:
-                # map already loaded
-                continue
-
-            map_path = join(maps_dir, map_name)
-            if exists(map_path + ".map"):
-                map_path += ".map"
-
-            while map_path and not exists(map_path):
-                map_path = askopenfilename(
-                    initialdir=maps_dir,
-                    title="Select the %s.map" % map_name,
-                    filetypes=((map_name, "*.map"),
-                               (map_name, "*.*")))
-
-                if map_path:
-                    maps_dir = dirname(map_path)
-                else:
-                    print("    You wont be able to extract from %s.map" % map_name)
-                    break
-
-            map_paths[map_name] = map_path
-
-        for map_name in sorted(map_paths.keys()):
-            map_path = map_paths[map_name]
-            try:
-                if self.maps.get(map_name) is None and map_path:
-                    print("    Loading %s..." % map_name)
-                    type(self)(self.maps).load_map(map_path, will_be_active=False)
-                    print("        Finished")
-            except Exception:
-                print(format_exc())
 
     def get_meta_descriptor(self, tag_cls):
         tagdef = self.defs.get(tag_cls)
@@ -116,7 +137,7 @@ class Halo3Map(HaloMap):
         play_meta = self.root_tags.get("cache_file_resource_layout_table")
         if play_meta:
             self.shared_map_names = list(
-                b.map_path.replace('\\', '/').split("/")[-1].lower()
+                b.map_path.lower().replace('\\', '/').split("/")[-1].split(".")[0]
                 for b in play_meta.external_cache_references.STEPTREE)
 
         self.rawdata_manager = RawdataManager(self)
@@ -126,16 +147,64 @@ class Halo3Map(HaloMap):
             self.is_resource = True
             ext_cache_name = HALO3_SHARED_MAP_TYPES[map_type - 2]
 
-            for halo_map_name, halo_map in self.maps.items():
+            for map_name, halo_map in self.maps.items():
                 # update each map's rawdata_manager so each one
                 # knows what name the shared caches are named.
-                halo_map.rawdata_manager.add_shared_map_name(
-                    ext_cache_name, halo_map_name)
+                if map_name != "<active>":
+                    halo_map.rawdata_manager.add_shared_map_name(
+                        ext_cache_name, self.map_header.map_name)
 
-        if autoload_resources and not self.is_resource:
+        if autoload_resources and map_type <= 2:
             self.load_all_resource_maps(dirname(map_path))
 
         self.map_data.clear_cache()
+
+    def load_all_resource_maps(self, maps_dir=""):
+        play_meta = self.root_tags.get("cache_file_resource_layout_table")
+        if not play_meta:
+            print("Could not get cache_file_resource_layout_table meta.\n"
+                  "Cannot determine resource maps.")
+            return
+
+        map_paths = {name: None for name in self.shared_map_names}
+        if not maps_dir:
+            maps_dir = dirname(self.filepath)
+
+        # detect/ask for the map paths for the resource maps
+        for map_name in sorted(map_paths.keys()):
+            map_name = map_name.split(".")[0]
+            if self.maps.get(map_name) is not None:
+                # map already loaded
+                continue
+
+            map_path = join(maps_dir, map_name)
+            if exists(map_path + ".map"):
+                map_path += ".map"
+
+            while map_path and not exists(map_path):
+                map_path = askopenfilename(
+                    initialdir=maps_dir,
+                    title="Select the %s.map" % map_name,
+                    filetypes=((map_name, "*.map"),
+                               (map_name, "*.*")))
+
+                if map_path:
+                    maps_dir = dirname(map_path)
+                else:
+                    print("    You wont be able to extract from %s.map" % map_name)
+                    break
+
+            map_paths[map_name] = map_path
+
+        for map_name in sorted(map_paths.keys()):
+            map_path = map_paths[map_name]
+            try:
+                if self.maps.get(map_name) is None and map_path:
+                    print("    Loading %s..." % map_name)
+                    type(self)(self.maps).load_map(map_path, will_be_active=False)
+                    print("        Finished")
+            except Exception:
+                print(format_exc())
 
     def get_meta(self, tag_id, reextract=False):
         if tag_id is None or self.map_header.map_type.data > 2:
@@ -186,6 +255,9 @@ class Halo3Map(HaloMap):
 
     def inject_rawdata(self, meta, tag_cls, tag_index_ref):
         # get some rawdata that would be pretty annoying to do in the parser
+        if tag_cls == "bitm":
+            inject_bitmap_data(self, meta)
+
         return meta
 
     def meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs):

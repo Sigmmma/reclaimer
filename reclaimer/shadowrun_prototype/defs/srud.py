@@ -6,7 +6,7 @@ def get():
 
 srud_def = TagDef("srud",
     blam_header('srud'),
-    QStruct('tagdata',
+    Struct('tagdata',
         BytesRaw("unknown", SIZE=5120),
         SIZE=5120
         ),

@@ -6,7 +6,7 @@ def get():
 
 srac_def = TagDef("srac",
     blam_header('srac'),
-    QStruct('tagdata',
+    Struct('tagdata',
         ),
 
     ext=".shadowrun_actor", endian=">"
