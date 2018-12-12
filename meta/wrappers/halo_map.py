@@ -115,8 +115,8 @@ class HaloMap:
             fcc2 += "_" * ((4 - (len(fcc2) % 4)) % 4)
             try:
                 # try to import the module, but ignore it if it doesnt exist
-                exec("from %s import %s" % (self.tag_defs_module, fcc2))
-                exec("defs['%s'] = %s.%s_def" % (fcc, fcc2, fcc2))
+                exec("from %s.%s import get" % (self.tag_defs_module, fcc2))
+                exec("defs['%s'] = get()" % fcc)
             except ImportError:
                 continue
             except Exception:
@@ -248,7 +248,7 @@ class HaloMap:
 
         self.maps[map_header.map_name] = self
         if will_be_active:
-            self.maps["active"] = self
+            self.maps["<active>"] = self
 
         self.filepath    = map_path
         self.engine      = engine
@@ -263,8 +263,8 @@ class HaloMap:
         try: map_name = self.map_header.map_name
         except Exception: map_name = None
 
-        if self.maps.get('active') is self:
-            self.maps.pop('active')
+        if self.maps.get('<active>') is self:
+            self.maps.pop('<active>')
         if self.maps.get(map_name) is self:
             self.maps.pop(map_name, None)
 
