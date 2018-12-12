@@ -16,13 +16,14 @@ class StubbsMap(Halo1Map):
 
     handler_class = StubbsHandler
 
-    tag_defs_module = "reclaimer.stubbs.defs"
+    tag_defs_module = StubbsHandler.default_defs_path
     tag_classes_to_load = tuple(sorted(stubbs_tag_class_fcc_to_ext.keys()))
 
     def setup_defs(self):
         this_class = type(self)
         if not this_class.defs:
-            print("Loading Stubbs tag definitions...")
+            print("    Loading definitions in %s" %
+                  self.handler_class.default_defs_path)
             this_class.defs = defs = {}
             this_class.handler = self.handler_class(
                 build_reflexive_cache=False, build_raw_data_cache=False)
@@ -36,7 +37,6 @@ class StubbsMap(Halo1Map):
             this_class.defs["coll"] = stubbs_fast_coll_def
             this_class.defs["sbsp"] = stubbs_fast_sbsp_def
             this_class.defs = FrozenDict(this_class.handler.defs)
-            print("    Finished")
 
         # make a shallow copy for this instance to manipulate
         self.defs = dict(self.defs)
