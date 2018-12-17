@@ -1,7 +1,7 @@
 from os.path import exists, join
 from tkinter.filedialog import askopenfilename
 
-from arbytmap.bitmap_io import swap_channels, get_pixel_bytes_size
+from arbytmap.bitmap_io import get_pixel_bytes_size
 
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext, FORMAT_NAME_MAP
 from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES, get_virtual_dimension
