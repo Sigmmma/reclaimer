@@ -290,6 +290,22 @@ class Matrix(list):
         return self
 
     @property
+    def determinant(self):
+        assert self.width == self.height, "Non-square matrices do not have determinants."
+        if self.width == 2:
+            return self[0][0] * self[1][1] - self[0][1] * self[1][0]
+
+        d = 0
+        sub_matrix = Matrix(width=self.width - 1, height=self.height - 1)
+        for i in range(self.width):
+            for j in range(sub_matrix.height):
+                for k in range(sub_matrix.width):
+                    sub_matrix[j][k] = self[j+1][(i + k + 1) % self.width]
+            d += self[0][i] * sub_matrix.determinant
+            
+        return d
+
+    @property
     def transpose(self):
         transpose = Matrix(width=self.height, height=self.width)
         for r in range(self.height):
@@ -298,9 +314,10 @@ class Matrix(list):
         return transpose
 
     @property
-    def inverse(self):
+    def inverse(self, determine_best_inverse=True):
         # cannot invert non-square matrices. check for that
-        assert self.width == self.height
+        assert self.width == self.height, "Cannot invert non-square matrix."
+        assert self.determinant != 0, "Matrix is non-invertible."
         regular = Matrix(self)
         inverse = Matrix(width=self.width, height=self.height)
 
@@ -311,10 +328,44 @@ class Matrix(list):
         # IN THE FUTURE I NEED TO REARRANGE THE MATRIX SO THE VALUES
         # ALONG THE DIAGONAL ARE GUARANTEED TO BE NON-ZERO. IF THAT
         # CANT BE ACCOMPLISHED FOR ANY COLUMN, ITS COMPONENT IS ZERO.
+        # EDIT: It's the future now
+
+        rearrange_rows = False
+        # determine if rows need to be rearranged to properly calculate inverse
+        for i in range(self.height):
+            largest = max(abs(regular[i][j]) for j in range(self.width))
+            if abs(regular[i][i]) < largest:
+                rearrange_rows = True
+                break
+
+        if rearrange_rows:
+            nz_diag_row_indices = list(set() for i in range(self.height))
+            valid_row_orders = {}
+
+            # determine which rows have a nonzero value on each diagonal
+            for i in range(self.height):
+                for j in range(self.width):
+                    if regular[i][j]:
+                        nz_diag_row_indices[j].add(i)
+
+            self._get_valid_diagonal_row_orders(nz_diag_row_indices,
+                                                valid_row_orders, regular,
+                                                determine_best_inverse)
+
+            assert valid_row_orders, "No valid way to rearrange rows to enable inversion."
+
+            # rearrange rows so diagonals are all non-zero
+            orig_regular = list(regular)
+            orig_inverse = list(inverse)
+            # get the highest weighted row order
+            new_row_order = valid_row_orders[max(valid_row_orders)]
+            for i in range(len(new_row_order)):
+                regular[i] = orig_regular[new_row_order[i]]
+                inverse[i] = orig_inverse[new_row_order[i]]
+
 
         for i in range(self.height):
             # divide both matrices by their diagonal values
-            # THIS DOES NOT MAKE SURE THAT THE DIAGONALS ARE NON-ZERO
             div = regular[i][i]
             regular[i] /= div
             inverse[i] /= div
@@ -339,3 +390,33 @@ class Matrix(list):
 
         return inverse
 
+    def _get_valid_diagonal_row_orders(self, row_indices, row_orders,
+                                       matrix, choose_best=True,
+                                       row_order=(), curr_row_idx=0):
+        row_order = list(row_order)
+        row_count = len(row_indices)
+        if not row_order:
+            row_order = [None] * row_count
+
+        # loop over each row with a non-zero value on this diagonal
+        for i in row_indices[curr_row_idx]:
+            if row_orders and not choose_best:
+                # found a valid row arrangement, don't keep checking
+                break
+            elif i in row_order:
+                continue
+
+            row_order[curr_row_idx] = i
+
+            if curr_row_idx + 1 < row_count:
+                # check the rest of the rows
+                self._get_valid_diagonal_row_orders(row_indices, row_orders,
+                                                    matrix, choose_best,
+                                                    row_order, curr_row_idx + 1)
+            else:
+                weight = 1.0
+                for j in range(len(row_order)):
+                    weight *= matrix[j][row_order[j]]
+
+                # freeze this row order in place
+                row_orders[weight] = tuple(row_order)
