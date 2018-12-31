@@ -25,7 +25,7 @@ lswd_body = Struct("tagdata",
     BytesRaw("unknown_0", SIZE=8, VISIBLE=False),
     h3_dependency("unknown_1", VISIBLE=False),
     BytesRaw("unknown_2", SIZE=52, VISIBLE=False),
-    h3_reflexive("unknown_0", lswd_unknown_0),
+    h3_reflexive("unknown_3", lswd_unknown_0),
     ENDIAN=">", SIZE=88
     )
 
