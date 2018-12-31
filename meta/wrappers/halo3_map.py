@@ -1,14 +1,18 @@
+from math import ceil, log
 from os.path import exists, join
 from tkinter.filedialog import askopenfilename
 
-from arbytmap.bitmap_io import get_pixel_bytes_size
 
+from reclaimer import data_extraction
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext, FORMAT_NAME_MAP
-from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES, get_virtual_dimension
+from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES, get_h3_pixel_bytes_size
 from reclaimer.h3.handler import Halo3Handler
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
 from reclaimer.meta.wrappers.halo_map import *
+from reclaimer.meta.gen3_resources.bitmap import s_tag_d3d_texture_def,\
+     s_tag_d3d_texture_interleaved_def
 
+from arbytmap.format_defs import VALID_FORMATS
 
 __all__ = ("Halo3Map", )
 
@@ -17,62 +21,85 @@ def get_bitmap_pixel_data(halo_map, bitm_meta, bitmap_index):
     n_assets = bitm_meta.zone_assets_normal.STEPTREE
     i_assets = bitm_meta.zone_assets_interleaved.STEPTREE
     bitmap = bitm_meta.bitmaps.STEPTREE[bitmap_index]
+    rawdata_manager = halo_map.rawdata_manager
 
-    bitm_fmt = FORMAT_NAME_MAP[bitmap.format.data]
-    v_height = get_virtual_dimension(bitm_fmt, bitmap.height)
-    v_width = get_virtual_dimension(bitm_fmt, bitmap.width)
-
-    pixel_data_size = get_pixel_bytes_size(bitm_fmt, v_width, v_height,
-                                           bitmap.depth)
-    if bitmap.type.enum_name == "cubemap":
-        pixel_data_size *= 6
-
-    if bitmap_index in range(len(n_assets)):
-        is_interleaved = False
-        pixel_data = halo_map.rawdata_manager.get_tag_resource_data(
-            n_assets[bitmap_index].idx, pixel_data_size, pixel_data_size)
-    elif bitmap_index in range(len(i_assets)):
-        is_interleaved = True
-        pixel_data = halo_map.rawdata_manager.get_tag_resource_data(
-            i_assets[bitmap_index].idx, pixel_data_size, pixel_data_size)
+    tag_rsrc_idx = tag_rsrc_info = d3d_texture = None
+    pixel_data = ()
+    if bitmap.interleaved_asset_index in range(len(i_assets)):
+        tag_rsrc_idx = i_assets[bitmap.interleaved_asset_index].idx
+        d3d_def = s_tag_d3d_texture_interleaved_def
     else:
-        return False, b''
+        tag_rsrc_idx = n_assets[bitmap_index].idx
+        d3d_def = s_tag_d3d_texture_def
 
-    return is_interleaved, pixel_data
+    if tag_rsrc_idx is not None:
+        fixup_data, _, __ = rawdata_manager.get_tag_resource_fixup(tag_rsrc_idx)
+        tag_rsrc_info = rawdata_manager.get_tag_resource(tag_rsrc_idx)
+
+        if fixup_data and tag_rsrc_info:
+            d3d_texture = d3d_def.build(rawdata=fixup_data)
+            pri_segment_size = d3d_texture.primary_page_data.size
+            sec_segment_size = d3d_texture.secondary_page_data.size
+
+            pixel_data = rawdata_manager.get_tag_resource_data(
+                tag_rsrc_idx, pri_segment_size, sec_segment_size)
+            print(d3d_texture)
+
+    return d3d_texture, pixel_data
 
 
 def inject_bitmap_data(halo_map, bitm_meta):
+    processed_pixel_data = bitm_meta.processed_pixel_data
     bitmaps = bitm_meta.bitmaps.STEPTREE
+    n_assets = bitm_meta.zone_assets_normal.STEPTREE
+    i_assets = bitm_meta.zone_assets_interleaved.STEPTREE
+
+    processed_pixel_data.data = bytearray()
     for i in range(len(bitmaps)):
         bitmap = bitmaps[i]
-        bitm_fmt = FORMAT_NAME_MAP[bitmap.format.data]
-        
-        v_height = get_virtual_dimension(bitm_fmt, bitmap.height)
-        v_width = get_virtual_dimension(bitm_fmt, bitmap.width)
-
+        bitmap.pixels_offset = len(processed_pixel_data.data)
         try:
-            pixel_data_size = get_pixel_bytes_size(bitm_fmt, v_width, v_height,
-                                                   bitmap.depth)
-        except KeyError:
+            if FORMAT_NAME_MAP[bitmap.format.data] not in VALID_FORMATS:
+                continue
+        except (KeyError, IndexError):
             # unknown bitmap format
             continue
 
-        # TEMPORARY: Don't want to worry about mips for now
-        #bitmap.mipmaps = 0
-
-        is_interleaved, pixel_data_chunks = get_bitmap_pixel_data(
+        d3d_texture, pixel_data_chunks = get_bitmap_pixel_data(
             halo_map, bitm_meta, i)
+        if not pixel_data_chunks:
+            continue
+        if len(pixel_data_chunks) == 1:
+            pixel_data_chunks.append(b'')
 
-        all_pixel_data = bytearray()
+        if hasattr(d3d_texture, "texture1"):
+            # slice out the main image and mips for each of the
+            # interleaved bitmaps(their storage isn't very intuitive)
+            pri_chunk, sec_chunk = pixel_data_chunks[: 2]
+            main_chunk, mips_chunk = bytearray(), bytearray()
+            pixel_data_chunks = [mips_chunk, main_chunk]
+            tex_num = int(bool(bitmap.interleaved_index))
+            other_tex_num = int(not tex_num)
+            tex_page = d3d_texture["texture%s" % tex_num].tex_page_index
+
+            if tex_page:
+                if not d3d_texture["texture%s" % other_tex_num].tex_page_index:
+                    main_chunk += sec_chunk
+                if tex_num:
+                    main_chunk += sec_chunk[len(sec_chunk) // 2: ]
+                else:
+                    main_chunk += sec_chunk[: len(sec_chunk) // 2]
+            elif tex_num:
+                main_chunk += pri_chunk[len(pri_chunk) // 4:
+                                        len(pri_chunk) // 2]
+            else:
+                main_chunk += pri_chunk[: len(pri_chunk) // 4]
+
+
+        bitmap.pixels_data_size = 0
         for pixel_data in reversed(pixel_data_chunks):
-            all_pixel_data.extend(pixel_data)
-
-        if not all_pixel_data:
-            pass
-        elif not is_interleaved:
-            bitm_meta.zone_assets_normal.STEPTREE[i].data = all_pixel_data
-        else:
-            bitm_meta.zone_assets_interleaved.STEPTREE[i].data = all_pixel_data
+            bitmap.pixels_data_size += len(pixel_data)
+            processed_pixel_data.data += pixel_data
 
 
 class Halo3Map(HaloMap):
@@ -206,6 +233,14 @@ class Halo3Map(HaloMap):
             except Exception:
                 print(format_exc())
 
+    def extract_tag_data(self, meta, tag_index_ref, **kw):
+        extractor = data_extraction.h3_data_extractors.get(
+            fourcc(tag_index_ref.class_1.data))
+        if extractor is None:
+            return "No extractor for this type of tag."
+        kw['halo_map'] = self
+        return extractor(meta, tag_index_ref.path, **kw)
+
     def get_meta(self, tag_id, reextract=False):
         if tag_id is None or self.map_header.map_type.data > 2:
             # shared maps don't have a tag index
@@ -229,7 +264,6 @@ class Halo3Map(HaloMap):
             return self.root_tags[full_tag_cls_name]
 
         block = [None]
-
         try:
             # read the meta data from the map
             offset = self.map_pointer_converter.v_ptr_to_f_ptr(
@@ -261,4 +295,10 @@ class Halo3Map(HaloMap):
         return meta
 
     def meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs):
+        if tag_cls == "bitm":
+            # make sure all bitmaps have data, and if they don't we don't
+            # consider this as a valid bitmap, so it shouldnt be a tag.
+            if not meta.processed_pixel_data.data:
+                return None
+
         return meta

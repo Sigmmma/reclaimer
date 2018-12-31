@@ -7,11 +7,13 @@ try:
         """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
         arbytmap.register_format(format_id=arbytmap.FORMAT_P8, depths=(8,8,8,8))
 
-    from arbytmap import Arbytmap, TYPE_2D, TYPE_3D, TYPE_CUBEMAP,\
+    from arbytmap import Arbytmap, bitmap_io, TYPE_2D, TYPE_3D, TYPE_CUBEMAP,\
          FORMAT_A8, FORMAT_L8, FORMAT_AL8, FORMAT_A8L8,\
          FORMAT_R5G6B5, FORMAT_A1R5G5B5, FORMAT_A4R4G4B4,\
          FORMAT_X8R8G8B8, FORMAT_A8R8G8B8,\
-         FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5,\
+         FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5, FORMAT_CTX1, FORMAT_DXN,\
+         FORMAT_DXT3Y, FORMAT_DXT3A, FORMAT_DXT3AY,\
+         FORMAT_DXT5Y, FORMAT_DXT5A, FORMAT_DXT5AY,\
          FORMAT_P8, FORMAT_V8U8, FORMAT_R8G8,\
          FORMAT_R16G16B16F, FORMAT_A16R16G16B16F,\
          FORMAT_R32G32B32F, FORMAT_A32R32G32B32F
@@ -33,6 +35,8 @@ from supyr_struct.field_types import FieldType
 
 from reclaimer.util import is_protected_tag, fourcc, is_reserved_tag
 from reclaimer.h2.util import *
+from reclaimer.h3.util import get_virtual_dimension,\
+     get_pixel_bytes_size, get_h3_pixel_bytes_size
 from reclaimer.adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
 from reclaimer.hek.defs.objs.matrices import Matrix, matrix_to_quaternion,\
      axis_angle_to_quat, quat_to_axis_angle, multiply_quaternions
@@ -53,7 +57,7 @@ CUBEMAP_PADDING = 128
 BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]{1, }')
 
 
-def get_pad_size(size, mod): return (mod - (size % mod)) % mod
+def get_pad_size(size, mod): return 
 
 
 def save_sound_perms(permlist, filepath_base, sample_rate,
@@ -320,32 +324,36 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
 
 def extract_bitmaps(tagdata, tag_path, **kw):
     filepath_base = join(kw['out_dir'], splitext(tag_path)[0])
+    ext = kw.get("bitmap_ext", "").strip(". ")
+    keep_alpha = kw.get("bitmap_keep_alpha", True)
     pix_data = tagdata.processed_pixel_data.STEPTREE
-    is_padded = False
-    if 'engine' in kw:
-        is_padded = "xbox" in kw['engine']
-    elif 'halo_map' in kw:
-        is_padded = "xbox" in kw['halo_map'].engine
+    if 'halo_map' in kw:
+        kw['engine'] = kw['halo_map'].engine
 
-    if is_padded:
-        # cant extract xbox bitmaps yet
-        return "    Cannot extract xbox bitmaps."
-    elif Arbytmap is None:
+    if not ext:
+        ext = "dds"
+
+    is_padded = "xbox" in kw.get('engine', '')
+    is_gen3 = hasattr(tagdata, "zone_assets_normal")
+    if Arbytmap is None:
         # cant extract xbox bitmaps yet
         return "    Arbytmap not loaded. Cannot extract bitmaps."
 
     arby = Arbytmap()
-    tex_infos = []
     bitm_i = 0
     multi_bitmap = len(tagdata.bitmaps.STEPTREE) > 1
+    size_calc = get_h3_pixel_bytes_size if is_gen3 else get_pixel_bytes_size
+    dim_calc = get_virtual_dimension if is_gen3 else None
+
     for bitmap in tagdata.bitmaps.STEPTREE:
         typ = bitmap.type.enum_name
         fmt = bitmap.format.enum_name
-        bpp = 1
         w = bitmap.width
         h = bitmap.height
         d = bitmap.depth
-        pix_off = bitmap.pixels_offset
+        tiled = False
+        if hasattr(bitmap, "format_flags"):
+            tiled = bitmap.format_flags.tiled
 
         filepath = filepath_base
         if multi_bitmap:
@@ -355,79 +363,65 @@ def extract_bitmaps(tagdata, tag_path, **kw):
         tex_block = []
         tex_info = dict(
             width=w, height=h, depth=d, mipmap_count=bitmap.mipmaps,
-            sub_bitmap_count=6 if typ == "cubemap" else 1, packed=True,
-            swizzled=bitmap.flags.swizzled, filepath=filepath + ".dds"
+            swizzled=bitmap.flags.swizzled, tiled=tiled, packed=True,
+            tile_mode=False, swizzle_mode=False, tile_method="DXGI",
+            packed_width_calc=dim_calc, packed_height_calc=dim_calc,
+            filepath=filepath + "." + ext, big_endian=is_gen3,
+            sub_bitmap_count=6 if typ == "cubemap" else 1,
             )
-        tex_infos.append(tex_info)
-
-        if fmt in ("a8", "y8", "ay8", "p8"):
-            tex_info["format"] = {"a8":  FORMAT_A8,  "y8": FORMAT_L8,
-                                  "ay8": FORMAT_AL8, "p8": FORMAT_A8}[fmt]
-        elif fmt == "p8-bump":
-            tex_info.update(
-                palette=P8_PALETTE.p8_palette_32bit_packed*(bitmap.mipmaps+1),
-                palette_packed=True, indexing_size=8, format=FORMAT_P8)
-        elif fmt in ("r5g6b5", "a1r5g5b5", "a4r4g4b4",
-                     "a8y8", "v8u8", "g8b8"):
-            bpp = 2
-            tex_info["format"] = {
-                "a8y8": FORMAT_A8L8, "v8u8": FORMAT_V8U8, "g8b8": FORMAT_R8G8,
-                "r5g6b5": FORMAT_R5G6B5, "a1r5g5b5": FORMAT_A1R5G5B5,
-                "a4r4g4b4": FORMAT_A4R4G4B4}[fmt]
-        elif fmt in ("x8r8g8b8", "a8r8g8b8"):
-            bpp = 4
-            tex_info["format"] = FORMAT_A8R8G8B8
-        elif fmt == "rgbfp16":
-            bpp = 6
-            tex_info["format"] = FORMAT_R16G16B16F
-        elif fmt == "rgbfp32":
-            bpp = 12
-            tex_info["format"] = FORMAT_A16R16G16B16F
-        elif fmt == "argbfp32":
-            bpp = 16
-            tex_info["format"] = FORMAT_A32R32G32B32F
-        else:
-            tex_info["format"] = {
-                "dxt1": FORMAT_DXT1, "dxt3": FORMAT_DXT3, "dxt5": FORMAT_DXT5
-                }.get(fmt, FORMAT_A8)
-
         tex_info["texture_type"] = {
             "texture_2d": TYPE_2D, "texture_3d": TYPE_3D,
-            "cubemap":TYPE_CUBEMAP}.get(typ, TYPE_2D)
+            "cubemap": TYPE_CUBEMAP}.get(typ, TYPE_2D)
 
-        for i in range(bitmap.mipmaps + 1):
-            if "dxt" in fmt:
-                w_texel = w//4
-                h_texel = h//4
-                if w%4: w_texel += 1
-                if h%4: h_texel += 1
+        if fmt == "p8-bump":
+            tex_info.update(
+                palette=P8_PALETTE.p8_palette_32bit_packed*(bitmap.mipmaps + 1),
+                palette_packed=True, indexing_size=8, format=FORMAT_P8)
+        else:
+            tex_info["format"] = {
+                "a8": FORMAT_A8, "y8": FORMAT_L8, "ay8": FORMAT_AL8,
+                "a8y8": FORMAT_A8L8, "p8": FORMAT_A8,
+                "v8u8": FORMAT_V8U8, "g8b8": FORMAT_R8G8,
+                "x8r8g8b8": FORMAT_A8R8G8B8, "a8r8g8b8": FORMAT_A8R8G8B8,
+                "r5g6b5": FORMAT_R5G6B5, "a1r5g5b5": FORMAT_A1R5G5B5,
+                "a4r4g4b4": FORMAT_A4R4G4B4,
+                "dxt1": FORMAT_DXT1, "dxt3": FORMAT_DXT3, "dxt5": FORMAT_DXT5,
+                "ctx1": FORMAT_CTX1, "dxn": FORMAT_DXN, "dxt5ay": FORMAT_DXT5AY,
+                "dxt3a": FORMAT_DXT3A, "dxt3y": FORMAT_DXT3Y,
+                "dxt5a": FORMAT_DXT5A, "dxt5y": FORMAT_DXT5Y,
+                "rgbfp16": FORMAT_R16G16B16F, "argbfp32": FORMAT_A32R32G32B32F,
+                "rgbfp32": FORMAT_R32G32B32F}.get(fmt, None)
 
-                mip_size = w_texel * h_texel * 8  # 8 bytes per texel
-                if fmt != "dxt1": mip_size *= 2
-            else:
-                mip_size = w * h * bpp
+        arby_fmt = tex_info["format"]
+        if arby_fmt is None:
+            continue
 
-            if typ == "cubemap":
-                if is_padded:
-                    mip_size += get_pad_size(mip_size, CUBEMAP_PADDING)
-                for i in range(6):
-                    tex_block.append(pix_data[pix_off: pix_off + mip_size])
-                    pix_off += mip_size
-            else:
-                mip_size *= d
-                tex_block.append(pix_data[pix_off: pix_off + mip_size])
+        pix_off = bitmap.pixels_offset
+        for m in range(bitmap.mipmaps + 1):
+            mip_size = size_calc(arby_fmt, w, h, d, m, tiled)
+            if is_padded and typ == "cubemap":
+                mip_size += ((CUBEMAP_PADDING - (mip_size % CUBEMAP_PADDING)) %
+                             CUBEMAP_PADDING)
+
+            for i in range(tex_info['sub_bitmap_count']):
+                off = bitmap_io.bitmap_bytes_to_array(
+                    pix_data, pix_off, tex_block, arby_fmt, 1, 1, 1, mip_size)
                 pix_off += mip_size
 
-            if w > 1: w = w//2
-            if h > 1: h = h//2
-            if d > 1: d = d//2
+        if is_padded and typ == "cubemap":
+            template = tuple(tex_block)
+            i = 0
+            for f in (0, 2, 1, 3, 4, 5):
+                for m in range(bitmap.mipmaps + 1):
+                    tex_block[m*6 + f] = template[i]
+                    i += 1
 
         if not tex_block:
             # nothing to extract
             continue
 
         arby.load_new_texture(texture_block=tex_block, texture_info=tex_info)
-        arby.save_to_file()
+        arby.save_to_file(keep_alpha=keep_alpha)
 
 
 def extract_unicode_string_list(tagdata, tag_path, **kw):
@@ -1176,4 +1170,8 @@ h2_data_extractors = {
 
     #'unic',
     "bitm": extract_bitmaps, "snd!": extract_h2_sounds,
+    }
+
+h3_data_extractors = {
+    "bitm": extract_bitmaps,
     }

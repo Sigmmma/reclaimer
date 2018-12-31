@@ -41,7 +41,6 @@ zone_tag_resource_resource_fixup = Struct("resource_fixup",
     COMMENT="""
 Block Offset: Offset in tag data sub-buffer.
 Address: Fix-up address(either in the data sub-buffer, or a cache-resource offset."""
-
     )
 
 
@@ -66,7 +65,10 @@ zone_tag_resource = Struct("tag_resource",
     SInt32("fixup_info_offset"),
     SInt32("fixup_info_size"),
     SInt32("secondary_fixup_info_offset"),
-    SInt16("unknown"),
+    Bool16("pages_used",
+        "primary",
+        "secondary",
+        ),
     SInt16("segment_index"),
     h3_page_offset_info("root_definition_address_info"),
     h3_reflexive("resource_fixups", zone_tag_resource_resource_fixup),

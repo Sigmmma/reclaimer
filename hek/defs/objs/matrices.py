@@ -235,6 +235,7 @@ class Matrix(list):
         assert self.width == other.height
         return self * other.inverse
 
+    __repr__ = __str__
     __radd__ = __add__
     __rsub__ = __sub__
     __rmul__ = __mul__
