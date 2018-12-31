@@ -103,14 +103,18 @@ class RawdataManager:
             raise ValueError("Unknown compression codec '%s'" %
                              raw_page.compression_codec.data)
 
+        if len(uncomp_data) < chunk_size:
+            # pad the data up to the requested size
+            uncomp_data += b'\x00' * (chunk_size - len(uncomp_data))
+
         return uncomp_data
 
     def get_tag_resource_fixup(self, tag_rsrc_index):
         tag_rsrc_info = self.get_tag_resource(tag_rsrc_index)
         if not tag_rsrc_info:
-            return ()
+            return (b'', (), ())
 
-        fixup_chunk = self.zone_meta.fixup_information.data[
+        fixup_chunk = self._zone_meta.fixup_info.data[
             tag_rsrc_info.fixup_info_offset:
             tag_rsrc_info.fixup_info_offset + tag_rsrc_info.fixup_info_size
             ]

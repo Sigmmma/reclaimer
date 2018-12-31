@@ -27,7 +27,7 @@ bitmap = Struct("bitmap",
         "texture 2d",
         "texture 3d",
         "cubemap",
-        "white",
+        "lightmap",
         EDITABLE=False
         ),
     SEnum16("format",
@@ -53,7 +53,7 @@ bitmap = Struct("bitmap",
         ("argbfp32", 19),
         ("rgbfp32", 20),
         ("rgbfp16", 21),
-        ("u8v8", 22),
+        ("v8u8", 22),
         "unused23",
         "unused24",
         "unused25",  # ui\halox\main_menu.bkd.bitmap is set to this
@@ -94,15 +94,15 @@ bitmap = Struct("bitmap",
     UInt16("registration point y"),
     UInt8("mipmaps"),
     UInt8("unknown0"),
-    UInt8("interleaved index"),
-    UInt8("unknown1"),
+    SInt8("interleaved asset index"),
+    SInt8("interleaved index"),
 
-    UInt32("pixels offset"),
-    UInt32("pixels meta size"),
-    UInt32("bitmap id unknown1"),
-    UInt32("bitmap data pointer"),
-    UInt32("bitmap id unknown2"),
-    UInt32("base address"),
+    SInt32("pixels offset"),     # only valid in tag form and more than 1 bitmap
+    SInt32("pixels data size"),  # only valid in tag form and more than 1 bitmap
+    SInt32("unknown1"),  # always 0?
+    SInt32("mipmap data off"),  # size of main image if mipmaps > 0, else 0
+    SInt32("unknown2"),  # always -1?
+    SInt32("unknown3"),  # always 0?
     SIZE=48,
     )
 

@@ -165,5 +165,5 @@ def h3_string_id(name, **kwargs):
 
 
 def h3_page_offset_info(name):
-    return BitStruct(name, INCLUDE=h3_page_offset_info_struct, HIDE_TITLE=True)
+    return BitStruct(name, INCLUDE=h3_page_offset_info_struct)
 

@@ -605,7 +605,7 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
         VISIBLE=False,
         ),
     UInt32("raw pointer", VISIBLE=False),  # doesnt use magic
-    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    UInt32("pointer", VISIBLE=False),
     UInt32("id", VISIBLE=False),
     ORIENT='h'
     )
@@ -613,7 +613,7 @@ rawdata_ref_struct = RawdataRef('rawdata ref',
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
     SInt32("size", VISIBLE=False),
-    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    UInt32("pointer", VISIBLE=False),
     UInt32("id", VISIBLE=False),  # 0 in meta it seems
     )
 
@@ -638,9 +638,7 @@ predicted_resource = Struct('predicted resource',
 zone_asset_struct = ZoneAsset("zone asset",
     UInt16("salt"),
     UInt16("idx"),
-    UInt32("size", EDITABLE=False),  # normally unused, but we use it for the 
-    #                                  data size when the tag is extracted
-    STEPTREE=BytesRaw("data", SIZE=get_set_zone_asset_size)
+    UInt32("unused", VISIBLE=False),
     )
 
 extra_layers_block = dependency("extra layer", valid_shaders)
@@ -651,12 +649,9 @@ damage_modifiers = QStruct("damage modifiers",
 
 # Miscellaneous shared descriptors
 compressed_normal_32 = BitStruct('compressed_norm32',
-    S1BitInt("i",
-        SIZE=11, UNIT_SCALE=1/1023, MIN=-1023, MAX=1023, WIDGET_WIDTH=10),
-    S1BitInt("j",
-        SIZE=11, UNIT_SCALE=1/1023, MIN=-1023, MAX=1023, WIDGET_WIDTH=10),
-    S1BitInt("k",
-        SIZE=10, UNIT_SCALE=1/511, MIN=-511, MAX=511, WIDGET_WIDTH=10),
+    S1BitInt("i", SIZE=11, UNIT_SCALE=1/1023, MIN=-1023, MAX=1023, WIDGET_WIDTH=10),
+    S1BitInt("j", SIZE=11, UNIT_SCALE=1/1023, MIN=-1023, MAX=1023, WIDGET_WIDTH=10),
+    S1BitInt("k", SIZE=10, UNIT_SCALE=1/511,  MIN=-511,  MAX=511,  WIDGET_WIDTH=10),
     ORIENT='h'
     )
 
