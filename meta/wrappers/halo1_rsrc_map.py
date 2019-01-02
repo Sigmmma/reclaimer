@@ -1,9 +1,9 @@
 from reclaimer import data_extraction
 
+from ...util import get_is_xbox_map
 from ..halo1_rsrc_map import lite_halo1_rsrc_map_def as halo1_rsrc_map_def
 from .byteswapping import raw_block_def, byteswap_pcm16_samples
 from .halo_map import *
-
 
 # this is ultra hacky, but it seems to be the only
 # way to fix the tagid for the sounds resource map
@@ -33,10 +33,6 @@ loc_exts = {0:'font', 1:'font', 4:'hud_message_text', 56:'font', 58:'font'}
 bitmap_exts = ('bitmap',)*853
 sound_exts  = ('sound',)*376
 loc_exts    = tuple(loc_exts.get(i, 'unicode_string_list') for i in range(176))
-
-
-def get_is_xbox_map(engine):
-    return "xbox" in engine or engine in ("stubbs", "shadowrun_beta")
 
 
 def inject_sound_data(map_data, rsrc_data, rawdata_ref, map_magic):

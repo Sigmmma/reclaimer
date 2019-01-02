@@ -20,6 +20,7 @@ try:
 except ImportError:
     arbytmap = Arbytmap = None
 
+from array import array
 from copy import deepcopy
 from math import sqrt
 from os import makedirs
@@ -33,7 +34,8 @@ from supyr_struct.defs.util import *
 from supyr_struct.defs.audio.wav import wav_def
 from supyr_struct.field_types import FieldType
 
-from reclaimer.util import is_protected_tag, fourcc, is_reserved_tag
+from reclaimer.util import is_protected_tag, is_reserved_tag, get_is_xbox_map,\
+     fourcc
 from reclaimer.h2.util import *
 from reclaimer.h3.util import get_virtual_dimension,\
      get_pixel_bytes_size, get_h3_pixel_bytes_size
@@ -333,7 +335,7 @@ def extract_bitmaps(tagdata, tag_path, **kw):
     if not ext:
         ext = "dds"
 
-    is_padded = "xbox" in kw.get('engine', '')
+    is_xbox = get_is_xbox_map(kw.get('engine', ''))
     is_gen3 = hasattr(tagdata, "zone_assets_normal")
     if Arbytmap is None:
         # cant extract xbox bitmaps yet
@@ -363,10 +365,10 @@ def extract_bitmaps(tagdata, tag_path, **kw):
         tex_block = []
         tex_info = dict(
             width=w, height=h, depth=d, mipmap_count=bitmap.mipmaps,
-            swizzled=bitmap.flags.swizzled, tiled=tiled, packed=True,
-            tile_mode=False, swizzle_mode=False, tile_method="DXGI",
+            swizzled=bitmap.flags.swizzled, big_endian=is_gen3,
+            packed=True, tiled=tiled, tile_method="DXGI",
             packed_width_calc=dim_calc, packed_height_calc=dim_calc,
-            filepath=filepath + "." + ext, big_endian=is_gen3,
+            filepath=filepath + "." + ext,
             )
         tex_info["texture_type"] = {
             "texture_2d": TYPE_2D, "texture_3d": TYPE_3D,
@@ -403,19 +405,33 @@ def extract_bitmaps(tagdata, tag_path, **kw):
         if arby_fmt is None:
             continue
 
-        pix_off = bitmap.pixels_offset
-        for m in range(bitmap.mipmaps + 1):
-            mip_size = size_calc(arby_fmt, w, h, d, m, tiled)
-            if is_padded and typ == "cubemap":
-                mip_size += ((CUBEMAP_PADDING - (mip_size % CUBEMAP_PADDING)) %
-                             CUBEMAP_PADDING)
+        i_max = tex_info["sub_bitmap_count"] if is_xbox else bitmap.mipmaps + 1
+        j_max = bitmap.mipmaps + 1 if is_xbox else tex_info['sub_bitmap_count']
+        off = bitmap.pixels_offset
+        for i in range(i_max):
+            if not is_xbox:
+                mip_size = size_calc(arby_fmt, w, h, d, i, tiled)
 
-            for i in range(tex_info['sub_bitmap_count']):
-                off = bitmap_io.bitmap_bytes_to_array(
-                    pix_data, pix_off, tex_block, arby_fmt, 1, 1, 1, mip_size)
-                pix_off += mip_size
+            for j in range(j_max):
+                if is_xbox:
+                    mip_size = size_calc(arby_fmt, w, h, d, j, tiled)
 
-        if is_padded and typ == "cubemap":
+                if fmt == arbytmap.FORMAT_P8:
+                    tex_block.append(
+                        array('B', pixel_data[off: off + mip_size]))
+                    off += len(tex_block[-1])
+                else:
+                    off = bitmap_io.bitmap_bytes_to_array(
+                        pix_data, off, tex_block,
+                        arby_fmt, 1, 1, 1, mip_size)
+
+            # skip the xbox alignment padding to get to the next texture
+            if is_xbox and typ == "cubemap":
+                off += ((CUBEMAP_PADDING - (off % CUBEMAP_PADDING)) %
+                        CUBEMAP_PADDING)
+
+
+        if is_xbox and typ == "cubemap":
             template = tuple(tex_block)
             i = 0
             for f in (0, 2, 1, 3, 4, 5):
@@ -427,7 +443,8 @@ def extract_bitmaps(tagdata, tag_path, **kw):
             # nothing to extract
             continue
 
-        arby.load_new_texture(texture_block=tex_block, texture_info=tex_info)
+        arby.load_new_texture(texture_block=tex_block, texture_info=tex_info,
+                              tile_mode=False, swizzle_mode=False)
         arby.save_to_file(keep_alpha=keep_alpha)
 
 
@@ -737,16 +754,16 @@ def extract_model(tagdata, tag_path, **kw):
             geoms_by_lod_region = geoms_by_perm_lod_region.setdefault(perm_name, {})
 
             perm_markers = markers_by_perm.setdefault(perm_name, [])
-
-            for m in perm.local_markers.STEPTREE:
-                trans = m.translation
-                rot = m.rotation
-                perm_markers.append(JmsMarker(
-                    m.name, perm_name, region_index, m.node_index,
-                    rot.i, rot.j, rot.k, rot.w,
-                    trans.x * 100, trans.y * 100, trans.z * 100,
-                    1.0
-                    ))
+            if hasattr(perm, "local_markers"):
+                for m in perm.local_markers.STEPTREE:
+                    trans = m.translation
+                    rot = m.rotation
+                    perm_markers.append(JmsMarker(
+                        m.name, perm_name, region_index, m.node_index,
+                        rot.i, rot.j, rot.k, rot.w,
+                        trans.x * 100, trans.y * 100, trans.z * 100,
+                        1.0
+                        ))
 
             last_geom_index = -1
             for lod_num in range(5):
