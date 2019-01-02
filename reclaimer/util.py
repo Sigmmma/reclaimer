@@ -26,6 +26,10 @@ def is_protected_tag(tagpath):
         not INVALID_PATH_CHARS.isdisjoint(set(tagpath)))
 
 
+def get_is_xbox_map(engine):
+    return "xbox" in engine or engine in ("stubbs", "shadowrun_proto")
+
+
 def float_to_str(f, max_sig_figs=7):
     if f == POS_INF:
         return "1000000000000000000000000000000000000000"
