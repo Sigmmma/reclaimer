@@ -38,7 +38,7 @@ matg_sound_global = Struct("sound_global",
     )
 
 
-matg_ai_global_gravemind_propertie = Struct("gravemind_propertie", 
+matg_ai_global_gravemind_propertie = QStruct("gravemind_propertie", 
     Float("minimum_retreat_time"),
     Float("ideal_retreat_time"),
     Float("maximum_retreat_time"),
@@ -135,7 +135,7 @@ matg_camera = Struct("camera",
     )
 
 
-matg_player_control_look_function = Struct("look_function", 
+matg_player_control_look_function = QStruct("look_function", 
     Float("scale"),
     VISIBLE=False,
     ENDIAN=">", SIZE=4
@@ -174,7 +174,7 @@ matg_player_control = Struct("player_control",
     )
 
 
-matg_difficulty = Struct("difficulty", 
+matg_difficulty = QStruct("difficulty", 
     Float("easy_enemy_damage"),
     Float("normal_enemy_damage"),
     Float("hard_enemy_damage"),
@@ -303,7 +303,7 @@ matg_difficulty = Struct("difficulty",
     Float("normal_player_vehicle_ram_chance"),
     Float("hard_player_vehicle_ram_chance"),
     Float("impossible_player_vehicle_ram_chance"),
-    BytesRaw("unknown", SIZE=132, VISIBLE=False),
+    Pad(132),
     ENDIAN=">", SIZE=644
     )
 
@@ -485,25 +485,25 @@ matg_cinematic_anchor = Struct("cinematic_anchor",
     )
 
 
-matg_metagame_global_medal = Struct("medal", 
+matg_metagame_global_medal = QStruct("medal", 
     Float("multiplier"),
     ENDIAN=">", SIZE=4
     )
 
 
-matg_metagame_global_difficulty = Struct("difficulty", 
+matg_metagame_global_difficulty = QStruct("difficulty", 
     Float("multiplier"),
     ENDIAN=">", SIZE=4
     )
 
 
-matg_metagame_global_primary_skull = Struct("primary_skull", 
+matg_metagame_global_primary_skull = QStruct("primary_skull", 
     Float("multiplier"),
     ENDIAN=">", SIZE=4
     )
 
 
-matg_metagame_global_secondary_skull = Struct("secondary_skull", 
+matg_metagame_global_secondary_skull = QStruct("secondary_skull", 
     Float("multiplier"),
     ENDIAN=">", SIZE=4
     )

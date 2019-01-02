@@ -8,6 +8,7 @@ from os.path import abspath, basename, exists, isfile, join, normpath, splitext
 from binilla.handler import Handler
 from supyr_struct.buffer import BytearrayBuffer
 from supyr_struct.defs.util import sanitize_path
+from reclaimer.data_extraction import h1_data_extractors
 from reclaimer.field_types import *
 from reclaimer.hek.defs.objs.tag import HekTag
 from traceback import format_exc
@@ -55,6 +56,8 @@ class HaloHandler(Handler):
     tag_ref_cache   = None
     reflexive_cache = None
     raw_data_cache  = None
+
+    tag_data_extractors = h1_data_extractors
 
     def __init__(self, *args, **kwargs):
         if not kwargs.pop("build_tag_ref_cache", True):

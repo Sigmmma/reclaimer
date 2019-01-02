@@ -57,7 +57,7 @@ play_raw_page = Struct("raw_page",
     )
 
 
-play_raw_size_chunk = Struct("chunk",
+play_raw_size_chunk = QStruct("chunk",
     # figure out what the crap this actually is
     SInt32("offset"),
     SInt32("size"),
