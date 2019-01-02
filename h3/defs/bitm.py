@@ -27,7 +27,7 @@ bitmap = Struct("bitmap",
         "texture 2d",
         "texture 3d",
         "cubemap",
-        "lightmap",
+        "multipage 2d",
         EDITABLE=False
         ),
     SEnum16("format",

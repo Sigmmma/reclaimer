@@ -367,11 +367,17 @@ def extract_bitmaps(tagdata, tag_path, **kw):
             tile_mode=False, swizzle_mode=False, tile_method="DXGI",
             packed_width_calc=dim_calc, packed_height_calc=dim_calc,
             filepath=filepath + "." + ext, big_endian=is_gen3,
-            sub_bitmap_count=6 if typ == "cubemap" else 1,
             )
         tex_info["texture_type"] = {
             "texture_2d": TYPE_2D, "texture_3d": TYPE_3D,
             "cubemap": TYPE_CUBEMAP}.get(typ, TYPE_2D)
+        tex_info["sub_bitmap_count"] = {
+            "texture_2d": 1, "texture_3d": 1,
+            "cubemap": 6, "multipage_2d": d}.get(typ, 1)
+        if typ == "multipage_2d":
+            tex_info.update(depth=1)
+            d = 1
+
 
         if fmt == "p8-bump":
             tex_info.update(
@@ -391,6 +397,7 @@ def extract_bitmaps(tagdata, tag_path, **kw):
                 "dxt5a": FORMAT_DXT5A, "dxt5y": FORMAT_DXT5Y,
                 "rgbfp16": FORMAT_R16G16B16F, "argbfp32": FORMAT_A32R32G32B32F,
                 "rgbfp32": FORMAT_R32G32B32F}.get(fmt, None)
+
 
         arby_fmt = tex_info["format"]
         if arby_fmt is None:
