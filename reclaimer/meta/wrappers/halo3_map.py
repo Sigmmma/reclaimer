@@ -38,12 +38,10 @@ def get_bitmap_pixel_data(halo_map, bitm_meta, bitmap_index):
 
         if fixup_data and tag_rsrc_info:
             d3d_texture = d3d_def.build(rawdata=fixup_data)
-            pri_segment_size = d3d_texture.primary_page_data.size
-            sec_segment_size = d3d_texture.secondary_page_data.size
-
             pixel_data = rawdata_manager.get_tag_resource_data(
-                tag_rsrc_idx, pri_segment_size, sec_segment_size)
-            print(d3d_texture)
+                tag_rsrc_idx,
+                d3d_texture.primary_page_data.size,
+                d3d_texture.secondary_page_data.size)
 
     return d3d_texture, pixel_data
 
@@ -59,42 +57,59 @@ def inject_bitmap_data(halo_map, bitm_meta):
         bitmap = bitmaps[i]
         bitmap.pixels_offset = len(processed_pixel_data.data)
         try:
-            if FORMAT_NAME_MAP[bitmap.format.data] not in VALID_FORMATS:
-                continue
+            fmt = FORMAT_NAME_MAP[bitmap.format.data]
         except (KeyError, IndexError):
             # unknown bitmap format
             continue
 
+        if fmt not in VALID_FORMATS:
+            continue
         d3d_texture, pixel_data_chunks = get_bitmap_pixel_data(
             halo_map, bitm_meta, i)
         if not pixel_data_chunks:
             continue
-        if len(pixel_data_chunks) == 1:
+        elif len(pixel_data_chunks) == 1:
             pixel_data_chunks.append(b'')
+
+        tex_stride = get_h3_pixel_bytes_size(
+            fmt, 32, 32, 1, 0, bitmap.format_flags.tiled)
 
         if hasattr(d3d_texture, "texture1"):
             # slice out the main image and mips for each of the
-            # interleaved bitmaps(their storage isn't very intuitive)
+            # interleaved bitmaps(their storage is very confusing)
             pri_chunk, sec_chunk = pixel_data_chunks[: 2]
             main_chunk, mips_chunk = bytearray(), bytearray()
-            pixel_data_chunks = [mips_chunk, main_chunk]
             tex_num = int(bool(bitmap.interleaved_index))
-            other_tex_num = int(not tex_num)
-            tex_page = d3d_texture["texture%s" % tex_num].tex_page_index
-
-            if tex_page:
-                if not d3d_texture["texture%s" % other_tex_num].tex_page_index:
-                    main_chunk += sec_chunk
-                if tex_num:
-                    main_chunk += sec_chunk[len(sec_chunk) // 2: ]
-                else:
-                    main_chunk += sec_chunk[: len(sec_chunk) // 2]
-            elif tex_num:
-                main_chunk += pri_chunk[len(pri_chunk) // 4:
-                                        len(pri_chunk) // 2]
+            tex_page0 = d3d_texture.texture0.tex_page_index
+            tex_page1 = d3d_texture.texture1.tex_page_index
+            if tex_num:
+                tex_page, other_tex_page = tex_page1, tex_page0
             else:
-                main_chunk += pri_chunk[: len(pri_chunk) // 4]
+                tex_page, other_tex_page = tex_page0, tex_page1
 
+            if tex_page0 == 0 and tex_page1 == 1:
+                # idky this is needed, but without it the second textures
+                # mipmaps will end up getting used as the first textures
+                # main image, and the first textures main image and mipmaps
+                # will end up getting used as the second textures mipmaps.
+                tex_num = (tex_num + 1) % 2
+
+            tex_skip_size = tex_num * tex_stride // 2
+
+            mips_start = 0
+            if tex_page == 0:
+                mips_start = bitmap.mipmap_data_off
+                main_chunk += pri_chunk[tex_skip_size: tex_skip_size + mips_start]
+            elif not other_tex_page:
+                main_chunk += sec_chunk
+            elif tex_num:
+                main_chunk += sec_chunk[len(sec_chunk) // 2: ]
+            else:
+                main_chunk += sec_chunk[: len(sec_chunk) // 2]
+
+            mips_chunk += pri_chunk[mips_start + tex_skip_size: ]
+
+            pixel_data_chunks = [mips_chunk, main_chunk]
 
         bitmap.pixels_data_size = 0
         for pixel_data in reversed(pixel_data_chunks):
@@ -121,29 +136,68 @@ class Halo3Map(HaloMap):
         (0x0, 0xBBF),   (0x0, 0xBF0), (0x0, 0xC04))
 
     def __init__(self, maps=None):
+        self.root_tags = {}
         HaloMap.__init__(self, maps)
         self.setup_tag_headers()
+
+    def basic_deprotection(self):
+        found_counts = {}
+        for b in self.tag_index.tag_index:
+            if b.path: continue
+
+            tag_path = self.map_header.map_name
+            tag_cls  = b.class_1.data
+            name_id  = (tag_path, tag_cls)
+            if name_id in found_counts:
+                tag_path = "%s_%s" % (tag_path, found_counts[name_id])
+                found_counts[name_id] += 1
+            else:
+                found_counts[name_id] = 0
+
+            b.path = tag_path
 
     def get_meta_descriptor(self, tag_cls):
         tagdef = self.defs.get(tag_cls)
         if tagdef is not None:
             return tagdef.descriptor[1]
 
-    def load_root_tags(self):
-        new_root_tags = {}
-        for b in self.orig_tag_index.root_tags:
-            meta = self.get_meta(b.id)
-            if meta:
-                new_root_tags[b.id & 0xFFff] = meta
-                new_root_tags[b.tag_class.enum_name] = meta
+    def get_root_tag(self, tag_id_or_cls):
+        if isinstance(tag_id_or_cls, str):
+            for b in self.orig_tag_index.root_tags:
+                if b.tag_class.enum_name == tag_id_or_cls:
+                    tag_id_or_cls = b.id
+                    break
 
-        self.root_tags = new_root_tags
+        if isinstance(tag_id_or_cls, int):
+            tag_id_or_cls &= 0xFFff
+            if tag_id_or_cls not in self.root_tags:
+                self.load_root_tags(tag_id_or_cls)
+
+        return self.root_tags.get(tag_id_or_cls)
+
+    def load_root_tags(self, tag_ids_to_load=()):
+        tag_classes_to_load_by_ids = {}
+        for b in self.orig_tag_index.root_tags:
+            tag_classes_to_load_by_ids[b.id] = b.tag_class.enum_name
+
+        if not tag_ids_to_load:
+            tag_ids_to_load = set(tag_classes_to_load_by_ids).difference(
+                ("scenario", "globals"))
+
+        for tag_id in tag_ids_to_load:
+            tag_cls = tag_classes_to_load_by_ids[tag_id]
+            meta = self.get_meta(tag_id)
+            if meta:
+                self.root_tags[tag_id & 0xFFff] = meta
+                if tag_cls:
+                    self.root_tags[tag_cls] = meta
 
     def load_map(self, map_path, **kwargs):
         autoload_resources = kwargs.get("autoload_resources", True)
         will_be_active = kwargs.get("will_be_active", True)
         HaloMap.load_map(self, map_path, **kwargs)
         self.tag_index = h3_to_h1_tag_index(self.map_header, self.tag_index)
+        self.basic_deprotection()
 
         tag_index_array = self.tag_index.tag_index
         self.tag_index_manager = TagIndexManager(tag_index_array)
@@ -300,5 +354,11 @@ class Halo3Map(HaloMap):
             # consider this as a valid bitmap, so it shouldnt be a tag.
             if not meta.processed_pixel_data.data:
                 return None
+            del meta.zone_assets_normal.STEPTREE[:]
+            del meta.zone_assets_interleaved.STEPTREE[:]
+
+        elif tag_cls in ("jmad", "mode", "pmdf", "sLdT", "sbsp", "snd!"):
+            # cannot extract these until rawdata extraction is implemented
+            return None
 
         return meta

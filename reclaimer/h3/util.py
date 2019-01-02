@@ -7,9 +7,10 @@ from ..util import *
 
 def get_virtual_dimension(bitm_fmt, dim, mip_level=0, tiled=False):
     dim = max(1, dim >> mip_level)
-    if bitm_fmt in ("A8L8", "A8R8G8B8", "X8R8G8B8", "A4R4G4B4", "R5G6B5"):
+    if bitm_fmt in ("A8R8G8B8", "X8R8G8B8"):
         stride = 32
-    elif bitm_fmt in ("A8", "L8", "AL8"):
+    elif bitm_fmt in ("A8", "L8", "AL8", "A8L8", "V8U8",
+                      "R5G6B5", "A1R5G5B5", "A4R4G4B4"):
         stride = 64
     else:
         stride = 128
@@ -22,7 +23,7 @@ def get_virtual_dimension(bitm_fmt, dim, mip_level=0, tiled=False):
     return dim
 
 
-def get_h3_pixel_bytes_size(bitm_fmt, width, height, depth, mip, tiled=False):
+def get_h3_pixel_bytes_size(bitm_fmt, width, height, depth, mip=0, tiled=False):
     #if width <= 16 or height <= 16:
     #    tiled = False
 

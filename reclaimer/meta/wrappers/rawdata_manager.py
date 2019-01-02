@@ -29,9 +29,9 @@ class RawdataManager:
         self._parent_halo_map = parent_halo_map
         self._map_index_to_name = {}
         if parent_halo_map:
-            self._zone_meta = parent_halo_map.root_tags.get(
+            self._zone_meta = parent_halo_map.get_root_tag(
                 "cache_file_resource_gestalt")
-            self._play_meta = parent_halo_map.root_tags.get(
+            self._play_meta = parent_halo_map.get_root_tag(
                 "cache_file_resource_layout_table")
 
     def add_shared_map_name(self, ext_cache_name, map_name):

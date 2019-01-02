@@ -135,7 +135,7 @@ zone_scenario_bsp = Struct("scenario_bsp",
     )
 
 
-zone_unknown_4 = Struct("unknown_4", 
+zone_unknown_4 = QStruct("unknown_4", 
     UInt32("unknown0"),
     UInt32("unknown1"),
     UInt32("unknown2"),
@@ -147,13 +147,13 @@ zone_unknown_4 = Struct("unknown_4",
     )
 
 
-zone_prediction_a = Struct("prediction_a", 
+zone_prediction_a = QStruct("prediction_a", 
     UInt32("key"),
     ENDIAN=">", SIZE=4
     )
 
 
-zone_prediction_b = Struct("prediction_b", 
+zone_prediction_b = QStruct("prediction_b", 
     SInt16("overall_index"),
     SInt16("a_count"),
     SInt32("a_index"),
@@ -161,14 +161,14 @@ zone_prediction_b = Struct("prediction_b",
     )
 
 
-zone_prediction_c = Struct("prediction_c", 
+zone_prediction_c = QStruct("prediction_c", 
     SInt16("overall_index"),
     SInt16("b_index"),
     ENDIAN=">", SIZE=4
     )
 
 
-zone_prediction_d_tag = Struct("prediction_d_tag", 
+zone_prediction_d_tag = QStruct("prediction_d_tag", 
     SInt16("c_count"),
     SInt16("c_index"),
     SInt16("a_count"),

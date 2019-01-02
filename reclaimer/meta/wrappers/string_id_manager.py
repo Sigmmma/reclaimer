@@ -23,4 +23,7 @@ class StringIdManager:
             if set_id >= 0:
                 index += set_offset[1] - set_offset[0]
 
+        if index not in range(len(self.strings)):
+            return ""
+
         return self.strings[index].string
