@@ -16,9 +16,10 @@ class TagIndexManager:
         self._tag_index_map.pop(0xFFff, None)
 
     def translate_tag_id(self, tag_id):
-        if tag_id & 0xFFff in range(len(self._tag_index)):
-            return tag_id & 0xFFff
-        return self._tag_index_map.get((tag_id >> 16) & 0xFFff, 0xFFff)
+        tag_id &= 0xFFff
+        if tag_id in self._tag_index_map:
+            return self._tag_index_map[tag_id]
+        return tag_id
 
     def get_tag_index_ref(self, tag_id):
         tag_id = self.translate_tag_id(tag_id)
