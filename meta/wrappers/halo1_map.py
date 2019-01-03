@@ -199,7 +199,7 @@ class Halo1Map(HaloMap):
         except Exception:
             print(format_exc())
             print("Could not read scenario tag")
-        
+
         self.setup_sbsp_pointer_converters()
 
         last_bsp_end = 0
@@ -208,7 +208,7 @@ class Halo1Map(HaloMap):
             bsp_end = self.bsp_header_offsets[tag_id] + self.bsp_sizes[tag_id]
             if last_bsp_end < bsp_end:
                 last_bsp_end = bsp_end
-    
+
         # add the rawdata section
         self.map_pointer_converter.add_page_info(
             last_bsp_end, last_bsp_end,
@@ -376,7 +376,7 @@ class Halo1Map(HaloMap):
         if tag_cls == "actv":
             # multiply grenade velocity by 30
             meta.grenades.grenade_velocity *= 30
-            
+
         elif tag_cls in ("antr", "magy"):
             # byteswap animation data
             for anim in meta.animations.STEPTREE:
@@ -539,7 +539,10 @@ class Halo1Map(HaloMap):
                     tris_block.STEPTREE  = raw_block_def.build()
 
                     # read the offsets of the vertices and indices from the map
-                    if model_magic is None:
+                    if engine == "stubbspc":
+                        verts_off = verts_start + info.vertices_reflexive_offset
+                        tris_off  = tris_start  + info.indices_reflexive_offset
+                    elif model_magic is None:
                         verts_off = verts_start + info.vertices_offset
                         tris_off  = tris_start  + info.indices_offset
                     else:
@@ -580,15 +583,9 @@ class Halo1Map(HaloMap):
                     tris_block.size  = len(tris_block.STEPTREE.data) // 6
 
                     # null out the model_meta_info
-                    info.index_type.data  = info.index_count  = 0
-                    info.vertex_type.data = info.vertex_count = 0
-                    info.indices_offset = info.vertices_offset  = 0
-                    if model_magic is None:
-                        info.indices_magic_offset  = 0
-                        info.vertices_magic_offset = 0
-                    else:
-                        info.indices_reflexive_offset  = 0
-                        info.vertices_reflexive_offset = 0
+                    for i in range(len(info)):
+                        if isinstance(info[i], int):
+                            info[i] = 0
 
         elif tag_cls == "pphy":
             # set the meta-only values to 0
@@ -689,7 +686,7 @@ class Halo1Map(HaloMap):
                             nmag = max(sqrt(ni**2 + nj**2 + nk**2), 0.00000000001)
                             bmag = max(sqrt(bi**2 + bj**2 + bk**2), 0.00000000001)
                             tmag = max(sqrt(ti**2 + tj**2 + tk**2), 0.00000000001)
-                            
+
                             # write the uncompressed data
                             uncomp_vert_nbt_packer(
                                 uncomp_buffer, out_off,
