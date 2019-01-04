@@ -4,6 +4,7 @@ from struct import Struct as PyStruct
 from tkinter.filedialog import askopenfilename
 
 from .halo_map import *
+from reclaimer.hek.defs.snd_ import snd__meta_stub_blockdef
 from reclaimer.hek.defs.sbsp import sbsp_meta_header_def
 from reclaimer.os_hek.defs.gelc    import gelc_def
 from reclaimer.os_v4_hek.defs.coll import fast_coll_def
@@ -287,6 +288,9 @@ class Halo1Map(HaloMap):
             return
 
         self.ensure_sound_maps_valid()
+        pointer_converter = self.bsp_pointer_converters.get(
+            tag_id, self.map_pointer_converter)
+        offset = tag_index_ref.meta_offset
 
         if tag_cls is None:
             # couldn't determine the tag class
@@ -294,7 +298,7 @@ class Halo1Map(HaloMap):
         elif self.is_indexed(tag_id) and (tag_cls != "snd!" or
                                           not ignore_rsrc_sounds):
             # tag exists in a resource cache
-            tag_id = tag_index_ref.meta_offset
+            tag_id = offset
 
             rsrc_map = None
             if tag_cls == "snd!" and "sounds" in self.maps:
@@ -321,7 +325,25 @@ class Halo1Map(HaloMap):
             if rsrc_map is None:
                 return
 
-            return rsrc_map.get_meta(tag_id)
+            meta = rsrc_map.get_meta(tag_id)
+            if tag_cls == "snd!":
+                # since we're reading the resource tag from the perspective of
+                # the map referencing it, we have more accurate information
+                # about which other sound it could be referencing. This is only
+                # a concern when dealing with open sauce resource maps, as they
+                # could have additional promotion sounds we cant statically map
+                try:
+                    # read the meta data from the map
+                    with FieldType.force_little:
+                        snd_stub = snd__meta_stub_blockdef.build(
+                            rawdata=map_data,
+                            offset=pointer_converter.v_ptr_to_f_ptr(offset),
+                            tag_index_manager=self.tag_index_manager)
+                    meta.promotion_sound = snd_stub.promotion_sound
+                except Exception:
+                    print(format_exc())
+
+            return meta
         elif not reextract:
             if tag_id == tag_index.scenario_tag_id & 0xFFff and self.scnr_meta:
                 return self.scnr_meta
@@ -330,16 +352,13 @@ class Halo1Map(HaloMap):
 
         desc = self.get_meta_descriptor(tag_cls)
         block = [None]
-        pointer_converter = self.bsp_pointer_converters.get(
-            tag_id, self.map_pointer_converter)
-
-        offset = pointer_converter.v_ptr_to_f_ptr(tag_index_ref.meta_offset)
         try:
             # read the meta data from the map
             with FieldType.force_little:
                 desc['TYPE'].parser(
                     desc, parent=block, attr_index=0, rawdata=map_data,
-                    map_pointer_converter=pointer_converter, offset=offset,
+                    map_pointer_converter=pointer_converter,
+                    offset=pointer_converter.v_ptr_to_f_ptr(offset),
                     tag_index_manager=self.tag_index_manager)
         except Exception:
             print(format_exc())
