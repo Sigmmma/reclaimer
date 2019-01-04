@@ -149,3 +149,8 @@ snd__def = TagDef("snd!",
 
     ext=".sound", endian=">", tag_cls=HekTag,
     )
+
+
+snd__meta_stub = dict(snd__body)
+snd__meta_stub[23] = Pad(12)
+snd__meta_stub_blockdef = BlockDef(snd__meta_stub)
