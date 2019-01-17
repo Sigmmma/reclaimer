@@ -218,13 +218,13 @@ class HaloMap:
             decomp_path = decomp_path[0] + "_DECOMP.map"
 
             if isfile(decomp_path):
-                decomp_path = ''
-                while not decomp_path:
-                    decomp_path = asksaveasfilename(
-                        initialdir=dirname(map_path),
-                        title="Decompress '%s' to..." % map_name,
-                        filetypes=(("mapfile", "*.map"),
-                                   ("All", "*.*")))
+                new_decomp_path = asksaveasfilename(
+                    initialdir=dirname(map_path),
+                    title="Decompress '%s' to..." % map_name,
+                    filetypes=(("mapfile", "*.map"),
+                               ("All", "*.*")))
+                if new_decomp_path:
+                    decomp_path = new_decomp_path
 
             if not(decomp_path.lower().endswith(".map") or
                    isfile(decomp_path + ".map")):
