@@ -2,10 +2,18 @@ import re
 try:
     import arbytmap
     if not hasattr(arbytmap, "FORMAT_P8"):
-        arbytmap.FORMAT_P8 = "P8-BUMP"
+        arbytmap.FORMAT_P8 = "P8"
 
         """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
-        arbytmap.register_format(format_id=arbytmap.FORMAT_P8, depths=(8,8,8,8))
+        arbytmap.register_format(format_id=arbytmap.FORMAT_P8,
+                                 depths=(8,8,8,8))
+
+    if not hasattr(arbytmap, "FORMAT_P8_BUMP"):
+        arbytmap.FORMAT_P8_BUMP = "P8-BUMP"
+
+        """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
+        arbytmap.register_format(format_id=arbytmap.FORMAT_P8_BUMP,
+                                 depths=(8,8,8,8))
 
     from arbytmap import Arbytmap, bitmap_io, TYPE_2D, TYPE_3D, TYPE_CUBEMAP,\
          FORMAT_A8, FORMAT_L8, FORMAT_AL8, FORMAT_A8L8,\
@@ -14,7 +22,7 @@ try:
          FORMAT_DXT1, FORMAT_DXT3, FORMAT_DXT5, FORMAT_CTX1, FORMAT_DXN,\
          FORMAT_DXT3Y, FORMAT_DXT3A, FORMAT_DXT3AY,\
          FORMAT_DXT5Y, FORMAT_DXT5A, FORMAT_DXT5AY,\
-         FORMAT_P8, FORMAT_V8U8, FORMAT_R8G8,\
+         FORMAT_P8_BUMP, FORMAT_P8, FORMAT_V8U8, FORMAT_R8G8,\
          FORMAT_R16G16B16F, FORMAT_A16R16G16B16F,\
          FORMAT_R32G32B32F, FORMAT_A32R32G32B32F
 except ImportError:
@@ -384,7 +392,7 @@ def extract_bitmaps(tagdata, tag_path, **kw):
         if fmt == "p8-bump":
             tex_info.update(
                 palette=P8_PALETTE.p8_palette_32bit_packed*(bitmap.mipmaps + 1),
-                palette_packed=True, indexing_size=8, format=FORMAT_P8)
+                palette_packed=True, indexing_size=8, format=FORMAT_P8_BUMP)
         else:
             tex_info["format"] = {
                 "a8": FORMAT_A8, "y8": FORMAT_L8, "ay8": FORMAT_AL8,
@@ -416,7 +424,7 @@ def extract_bitmaps(tagdata, tag_path, **kw):
                 if is_xbox:
                     mip_size = size_calc(arby_fmt, w, h, d, j, tiled)
 
-                if fmt == arbytmap.FORMAT_P8:
+                if fmt == arbytmap.FORMAT_P8_BUMP:
                     tex_block.append(
                         array('B', pixel_data[off: off + mip_size]))
                     off += len(tex_block[-1])
