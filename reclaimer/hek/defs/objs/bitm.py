@@ -10,11 +10,11 @@ P8_PALETTE = load_palette()
 try:
     import arbytmap as ab
 
-    if not hasattr(ab, "FORMAT_P8"):
-        ab.FORMAT_P8 = "P8-BUMP"
+    if not hasattr(ab, "FORMAT_P8_BUMP"):
+        ab.FORMAT_P8_BUMP = "P8-BUMP"
 
         """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
-        ab.register_format(format_id=ab.FORMAT_P8, depths=(8,8,8,8))
+        ab.register_format(format_id=ab.FORMAT_P8_BUMP, depths=(8,8,8,8))
 except (ImportError, AttributeError):
     ab = None
 
@@ -275,7 +275,7 @@ class BitmTag(HekTag):
         bytes_count = 0
         for mipmap in range(self.bitmap_mipmaps_count(b_index) + 1):
             mw, mh, md = ab.get_mipmap_dimensions(w, h, d, mipmap)
-            if fmt == ab.FORMAT_P8:
+            if fmt == ab.FORMAT_P8_BUMP:
                 bytes_count += mw*mh*md
             else:
                 bytes_count += ab.bitmap_io.get_pixel_bytes_size(fmt, mw, mh, md)
@@ -348,7 +348,7 @@ class BitmTag(HekTag):
             texinfo = tex_infos[i]
 
             # set the flags to the new value
-            flags.palletized = (format == ab.FORMAT_P8)
+            flags.palletized = (format == ab.FORMAT_P8_BUMP)
             flags.compressed = (format in ab.COMPRESSED_FORMATS)
 
             self.bitmap_width_height_depth(
@@ -395,7 +395,7 @@ class BitmTag(HekTag):
                 mipmap_count=mipmap_count-1, sub_bitmap_count=sub_bitmap_count,
                 swizzled=self.swizzled(), texture_type=TYPE_NAME_MAP[type]))
 
-            if format == ab.FORMAT_P8:
+            if format == ab.FORMAT_P8_BUMP:
                 tex_infos[-1]["palette"] = [
                     P8_PALETTE.p8_palette_32bit_packed]*mipmap_count
 
@@ -420,7 +420,7 @@ class BitmTag(HekTag):
                 for k in range(dim1):
                     if is_xbox: w, h, d = get_mip_dims(mw, mh, md, k)
 
-                    if format == ab.FORMAT_P8:
+                    if format == ab.FORMAT_P8_BUMP:
                         pixel_count = w*h
                         tex_block.append(array('B', rawdata[off: off+pixel_count]))
                         off += pixel_count
