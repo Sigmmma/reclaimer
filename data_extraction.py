@@ -238,7 +238,7 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
     import_names = ugh__meta.import_names.STEPTREE
     pitch_ranges = ugh__meta.pitch_ranges.STEPTREE
     permutations = ugh__meta.permutations.STEPTREE
-    perm_chunks  = ugh__meta.perm_chunks.STEPTREE
+    perm_chunks  = ugh__meta.permutation_chunks.STEPTREE
 
     same_pr_names = {}
 
