@@ -494,7 +494,7 @@ def extract_hud_message_text(tagdata, tag_path, **kw):
     for i in range(tagdata.messages.size):
         try:
             name = tagdata.messages.STEPTREE[i].name
-            string = parse_hmt_message(tagdata, i)
+            string = parse_hmt_message(tagdata, i)[0]
         except Exception:
             print(format_exc())
             continue
