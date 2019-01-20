@@ -16,16 +16,16 @@ character_tables = Struct("character tables",
     )
 
 character = QStruct("character",
-    SInt16("character"),
+    UInt16("character"),
     SInt16("character width"),
-    SInt16("bitmap width"),
-    SInt16("bitmap height"),
+    SInt16("bitmap width", EDITABLE=False),
+    SInt16("bitmap height", EDITABLE=False),
     SInt16("bitmap origin x"),
     SInt16("bitmap origin y"),
     SInt16("hardware character index"),
     Pad(2),
-    SInt32("pixels offset"),
-    SIZE=20
+    SInt32("pixels offset", EDITABLE=False),
+    SIZE=20, WIDGET=FontCharacterFrame
     )
 
 font_body = Struct("tagdata",
