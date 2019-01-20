@@ -8,7 +8,7 @@ except Exception:
                      HaloScriptSourceFrame = SoundSampleFrame =\
                      DynamicArrayFrame = DynamicEnumFrame =\
                      HaloScriptTextFrame = HaloBitmapTagFrame =\
-                     FontCharacterFrame = None
+                     FontCharacterFrame = MeterImageFrame = None
 
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
