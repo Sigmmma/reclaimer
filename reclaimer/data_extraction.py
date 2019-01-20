@@ -51,7 +51,7 @@ from reclaimer.adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
 from reclaimer.hek.defs.objs.matrices import Matrix, matrix_to_quaternion,\
      axis_angle_to_quat, quat_to_axis_angle, multiply_quaternions
 from reclaimer.hek.defs.objs.p8_palette import load_palette
-from reclaimer.hek.defs.hmt_ import icon_types as hmt_icon_types
+from reclaimer.hmt import parse_hmt_message
 from reclaimer.hsc import get_hsc_data_block, hsc_bytecode_to_string
 from reclaimer.model.jms import write_jms, JmsModel, JmsNode,\
      JmsMaterial, JmsMarker, JmsVertex, JmsTriangle
@@ -490,29 +490,16 @@ def extract_hud_message_text(tagdata, tag_path, **kw):
     if isfile(filepath) and not kw.get('overwrite', True):
         return
 
-    in_data  = tagdata.string.data
-    messages = tagdata.messages.STEPTREE
-    elements = tagdata.message_elements.STEPTREE
     out_data = b""
+    for i in range(tagdata.messages.size):
+        try:
+            name = tagdata.messages.STEPTREE[i].name
+            string = parse_hmt_message(tagdata, i)
+        except Exception:
+            print(format_exc())
+            continue
 
-    for m in messages:
-        string = ""
-        start = m.text_start
-        for i in range(m.element_index, m.element_index + m.element_count):
-            try:
-                elem = elements[i]
-                if elem.type.enum_name == "text":
-                    length  = elem.data.text.data
-                    string += in_data[start: start + length - 1]
-                    start  += length
-                elif elem.type.enum_name == "icon":
-                    string += "%%%s" % hmt_icon_types[elem.data.icon.data]
-                else:
-                    print("    UNKNOWN ELEMENT TYPE: %s" % elem.type.data)
-            except Exception:
-                print(format_exc())
-
-        out_data += ("%s=%s" % (m.name, string)).encode("utf-16-le")
+        out_data += ("%s=%s" % (name, string)).encode("utf-16-le")
         out_data += b"\x0D\x00\x0A\x00"  # cr + lf
 
     try:
