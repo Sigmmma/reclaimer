@@ -50,16 +50,13 @@ from reclaimer.h3.util import get_virtual_dimension,\
 from reclaimer.adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
 from reclaimer.hek.defs.objs.matrices import Matrix, matrix_to_quaternion,\
      axis_angle_to_quat, quat_to_axis_angle, multiply_quaternions
-from reclaimer.hek.defs.objs.p8_palette import load_palette
+from reclaimer.bitmaps.p8_palette import HALO_P8_PALETTE, STUBBS_P8_PALETTE
 from reclaimer.hmt import parse_hmt_message
 from reclaimer.hsc import get_hsc_data_block, hsc_bytecode_to_string
 from reclaimer.model.jms import write_jms, JmsModel, JmsNode,\
      JmsMaterial, JmsMarker, JmsVertex, JmsTriangle
 from reclaimer.animation.jma import JmaAnimation, JmaNode, JmaNodeState,\
      write_jma, get_anim_ext
-
-#load the palette for p-8 bump maps
-P8_PALETTE = load_palette()
 
 #each sub-bitmap(cubemap face) must be a multiple of 128 bytes
 CUBEMAP_PADDING = 128
@@ -336,14 +333,16 @@ def extract_bitmaps(tagdata, tag_path, **kw):
     filepath_base = join(kw['out_dir'], splitext(tag_path)[0])
     ext = kw.get("bitmap_ext", "").strip(". ")
     keep_alpha = kw.get("bitmap_keep_alpha", True)
+    engine = kw.pop('engine', '')
     pix_data = tagdata.processed_pixel_data.STEPTREE
     if 'halo_map' in kw:
-        kw['engine'] = kw['halo_map'].engine
+        engine = kw['halo_map'].engine
 
+    p8_palette = STUBBS_P8_PALETTE if "stubbs" in engine else HALO_P8_PALETTE
     if not ext:
         ext = "dds"
 
-    is_xbox = get_is_xbox_map(kw.get('engine', ''))
+    is_xbox = get_is_xbox_map(engine)
     is_gen3 = hasattr(tagdata, "zone_assets_normal")
     if Arbytmap is None:
         # cant extract xbox bitmaps yet
@@ -389,9 +388,9 @@ def extract_bitmaps(tagdata, tag_path, **kw):
             d = 1
 
 
-        if fmt == "p8-bump":
+        if fmt == "p8_bump":
             tex_info.update(
-                palette=P8_PALETTE.p8_palette_32bit_packed*(bitmap.mipmaps + 1),
+                palette=[p8_palette.p8_palette_32bit_packed]*(bitmap.mipmaps + 1),
                 palette_packed=True, indexing_size=8, format=FORMAT_P8_BUMP)
         else:
             tex_info["format"] = {
@@ -424,9 +423,9 @@ def extract_bitmaps(tagdata, tag_path, **kw):
                 if is_xbox:
                     mip_size = size_calc(arby_fmt, w, h, d, j, tiled)
 
-                if fmt == arbytmap.FORMAT_P8_BUMP:
+                if fmt == "p8_bump":
                     tex_block.append(
-                        array('B', pixel_data[off: off + mip_size]))
+                        array('B', pix_data[off: off + (mip_size // 4)]))
                     off += len(tex_block[-1])
                 else:
                     off = bitmap_io.bitmap_bytes_to_array(

@@ -1,6 +1,5 @@
 from ...hek.defs.jpt_ import *
 from ..common_descs import *
-from .objs.tag import StubbsTag
 
 jpt__body = dict(jpt__body)
 jpt__body[16] = dict(jpt__body[16])
@@ -31,5 +30,5 @@ jpt__def = TagDef("jpt!",
     blam_header_stubbs('jpt!', 6),
     jpt__body,
 
-    ext=".damage_effect", endian=">", tag_cls=StubbsTag
+    ext=".damage_effect", endian=">"
     )

@@ -1,11 +1,8 @@
 from os.path import splitext
 from array import array
 from reclaimer.constants import *
+from reclaimer.bitmaps.p8_palette import HALO_P8_PALETTE, STUBBS_P8_PALETTE
 from .tag import *
-from .p8_palette import load_palette
-
-#load the palette for p-8 bump maps
-P8_PALETTE = load_palette()
 
 try:
     import arbytmap as ab
@@ -22,6 +19,11 @@ except (ImportError, AttributeError):
 class BitmTag(HekTag):
 
     tex_infos = ()
+    p8_palette = None
+
+    def __init__(self, *args, **kwargs):
+        HekTag.__init__(self, *args, **kwargs)
+        self.p8_palette = HALO_P8_PALETTE
 
     def bitmap_count(self, new_value=None):
         if new_value is None:
@@ -397,7 +399,7 @@ class BitmTag(HekTag):
 
             if format == ab.FORMAT_P8_BUMP:
                 tex_infos[-1]["palette"] = [
-                    P8_PALETTE.p8_palette_32bit_packed]*mipmap_count
+                    self.p8_palette.p8_palette_32bit_packed]*mipmap_count
 
                 # set it to packed since if we need to drop channels
                 # then it needs to be unpacked with channels dropped

@@ -1,5 +1,4 @@
 from ...hek.defs.matg import *
-from .objs.tag import StubbsTag
 from supyr_struct.defs.tag_def import TagDef
 from ..common_descs import *
 

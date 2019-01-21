@@ -8,8 +8,8 @@ except ImportError:
 curr_dir = dirname(__file__)
 
 #               YYYY.MM.DD
-release_date = "2018.01.18"
-version = (2, 2, 1)
+release_date = "2018.01.20"
+version = (2, 2, 2)
 
 try:
     try:
@@ -34,6 +34,7 @@ games built with the Blam engine',
     packages=[
         'reclaimer',
         'reclaimer.animation',
+        'reclaimer.bitmaps',
         'reclaimer.h2',
         'reclaimer.h2.defs',
         'reclaimer.h2.defs.objs',
@@ -65,7 +66,8 @@ games built with the Blam engine',
         'reclaimer.stubbs.defs.objs',
         ],
     package_data={
-        '': ['*.txt', '*.md', '*.rst'],
+        '': ['*.txt', '*.md', '*.rst',
+             '*p8_palette_halo', '*p8_palette_stubbs'],
         },
     platforms=["POSIX", "Windows"],
     keywords="reclaimer, halo",

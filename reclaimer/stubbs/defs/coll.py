@@ -1,6 +1,5 @@
 from ...hek.defs.coll import *
 from ..common_descs import *
-from .objs.tag import StubbsTag
 
 shield = dict(shield)
 shield[2] = SEnum16("shield material type", *materials_list)
@@ -101,7 +100,7 @@ coll_def = TagDef("coll",
     blam_header_stubbs("coll", 11),
     coll_body,
 
-    ext=".model_collision_geometry", endian=">", tag_cls=StubbsTag
+    ext=".model_collision_geometry", endian=">", tag_cls=HekTag
     )
 
 fast_coll_def = TagDef("coll",

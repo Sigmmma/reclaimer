@@ -1,6 +1,5 @@
 from ...hek.defs.actr import *
 from ..common_descs import *
-from .objs.tag import StubbsTag
 
 actr_body = dict(actr_body)
 actr_body[3] = SEnum16("type", *actor_types)
@@ -24,5 +23,5 @@ actr_def = TagDef("actr",
     blam_header_stubbs('actr', 2),
     actr_body,
 
-    ext=".actor", endian=">", tag_cls=StubbsTag
+    ext=".actor", endian=">"
     )
