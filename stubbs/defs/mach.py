@@ -1,7 +1,6 @@
 from ...hek.defs.mach import *
 from .obje import *
 from .devi import *
-from .objs.tag import StubbsTag
 from supyr_struct.defs.tag_def import TagDef
 
 # replace the object_type enum one that uses

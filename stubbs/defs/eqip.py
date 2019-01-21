@@ -1,6 +1,5 @@
 from ...hek.defs.eqip import *
 from .obje import *
-from .objs.tag import StubbsTag
 from ..common_descs import *
 
 # replace the object_type enum one that uses

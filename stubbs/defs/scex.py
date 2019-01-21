@@ -1,6 +1,5 @@
 from ...hek.defs.scex import *
 from .schi import *
-from .objs.tag import StubbsTag
 from supyr_struct.defs.tag_def import TagDef
 
 scex_body = Struct("tagdata",

@@ -1,6 +1,5 @@
 from ...hek.defs.cdmg import *
 from ..common_descs import *
-from .objs.tag import StubbsTag
 
 cdmg_body = dict(cdmg_body)
 cdmg_body[5] = dict(cdmg_body[5])
@@ -29,5 +28,5 @@ cdmg_def = TagDef("cdmg",
     blam_header_stubbs('cdmg'),
     cdmg_body,
 
-    ext=".continuous_damage_effect", endian=">", tag_cls=StubbsTag
+    ext=".continuous_damage_effect", endian=">"
     )
