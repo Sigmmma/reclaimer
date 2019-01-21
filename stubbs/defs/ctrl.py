@@ -1,7 +1,6 @@
 from ...hek.defs.ctrl import *
 from .obje import *
 from .devi import *
-from .objs.tag import StubbsTag
 
 # replace the object_type enum one that uses
 # the correct default value for this object

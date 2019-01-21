@@ -4,7 +4,6 @@ THIS DEFINITION IS INCORRECT BECAUSE THE UNIT STRUCTURE IS DIFFERENT THAN HALO'S
 from ...hek.defs.bipd import *
 from .obje import *
 from .unit import *
-from .objs.tag import StubbsTag
 
 # replace the object_type enum one that uses
 # the correct default value for this object
@@ -26,5 +25,5 @@ bipd_def = TagDef("bipd",
     blam_header_stubbs('bipd', 3),
     bipd_body,
 
-    ext=".biped", endian=">", tag_cls=StubbsTag
+    ext=".biped", endian=">"
     )
