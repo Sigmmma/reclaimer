@@ -462,6 +462,15 @@ class Halo1Map(HaloMap):
         elif tag_cls == "effe":
             # mask away the meta-only flags
             meta.flags.data &= 3
+            for event in meta.events.STEPTREE:
+                # tool exceptions if any parts reference a damage effect
+                # tag type, but have an empty filepath for the reference
+                parts = event.parts.STEPTREE
+                for i in range(len(parts) - 1, -1, -1):
+                    part = parts[i]
+                    if (part.type.tag_class.enum_name == "damage_effect" and
+                        not part.type.filepath):
+                        parts.pop(i)
 
         elif tag_cls == "jpt!":
             # camera shaking wobble period by 30
