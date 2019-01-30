@@ -42,8 +42,8 @@ class HaloMap:
     map_header  = None
     rsrc_map    = None
     tag_index   = None
-    orig_tag_index = None  # the tag index specific to the
-    #                        halo version that this map is from
+    orig_tag_index = ()  # the tag index specific to the
+    #                      halo version that this map is from
 
     # the original tag_path of each tag in the map before any deprotection
     orig_tag_paths = None

@@ -53,6 +53,10 @@ def inject_sound_data(map_data, rsrc_data, rawdata_ref, map_magic):
 
 class Halo1RsrcMap(HaloMap):
     '''Generation 1 resource map'''
+
+    # the original resource map header
+    rsrc_map = None
+
     tag_classes = None
     tag_headers = None
 
@@ -79,8 +83,10 @@ class Halo1RsrcMap(HaloMap):
         resource_type = unpack("<I", map_data.read(4))[0]; map_data.seek(0)
         rsrc_map = self.rsrc_map = halo1_rsrc_map_def.build(rawdata=map_data)
 
+        self.orig_tag_index = rsrc_map.data.tags
+
         # check if this is a pc or ce cache. cant rip pc ones
-        pth = rsrc_map.data.tags[0].tag.path
+        pth = self.orig_tag_index[0].tag.path
         self.filepath = map_path
         self.engine   = "halo1ce"
         if resource_type < 3 and not (pth.endswith('__pixels') or
