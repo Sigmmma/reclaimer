@@ -309,16 +309,17 @@ class Halo1Map(HaloMap):
                     return
 
                 tag_id = sound_mapping[tag_path]//2
+
             elif tag_cls == "bitm" and "bitmaps" in self.maps:
                 rsrc_map = self.maps["bitmaps"]
                 tag_id = tag_id//2
 
             elif "loc" in self.maps:
                 rsrc_map = self.maps["loc"]
-                # this resource tag is in a yelo loc.map, which means
-                # we will need to set its tag class to what this map
-                # specifies it as or else the resource map wont know
-                # what type of tag to extract it as.
+                # this resource tag COULD be in a yelo loc.map, which
+                # means we will need to set its tag class to what this
+                # map specifies it as or else the resource map wont
+                # know what type of tag to extract it as.
                 rsrc_map.tag_index.tag_index[tag_id].class_1.set_to(
                     tag_index_ref.class_1.enum_name)
 
