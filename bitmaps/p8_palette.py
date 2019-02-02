@@ -20,12 +20,16 @@ class P8Palette():
     palette_directory = os.path.dirname(__file__)
     palette_filename = ""
 
+    palette_map_filename = ""
+
     def __init__(self, palette_filename=""):
         if palette_filename:
             self.palette_filename = palette_filename
 
-        with open("%s\\%s" % (self.palette_directory,
-                              self.palette_filename), 'rb') as f:
+        self.palette_map_filename = self.palette_filename + "_diff_map"
+
+        with open(os.path.join(self.palette_directory,
+                               self.palette_filename), 'rb') as f:
             palette_data = f.read(1024)
 
         # now build the array to convert p8 back to 32 bit
@@ -45,8 +49,8 @@ class P8Palette():
 
     def write_palette_image(self):
         width = height = 256
-        with open("%s\\%s.bmp" % (self.palette_directory,
-                                  self.palette_filename), 'wb+') as f:
+        with open(os.path.join(self.palette_directory,
+                               self.palette_filename + ".bmp"), 'wb+') as f:
             base = 138
             size = base + (width * height * 4)
             f.write(b"BM" + size.to_bytes(4, 'little'))
@@ -65,8 +69,8 @@ class P8Palette():
 
     def load_palette_map(self, generate_on_fail=True):
         try:
-            with open("%s\\%s_diff_map" % (self.palette_directory,
-                                           self.palette_filename), 'rb') as f:
+            with open(os.path.join(self.palette_directory,
+                                   self.palette_map_filename), 'rb') as f:
                 data = f.read(65536)
                 if len(data) != 65536:
                     raise ValueError("Cached smallest diff map is invalid.")
@@ -80,8 +84,8 @@ class P8Palette():
                     pass
 
     def cache_palette_map(self):
-        with open("%s\\%s_diff_map" % (self.palette_directory,
-                                       self.palette_filename), 'wb+') as f:
+        with open(os.path.join(self.palette_directory,
+                               self.palette_map_filename), 'wb+') as f:
             f.write(array("B", self.palette_map))
 
     def generate_palette_map(self):
