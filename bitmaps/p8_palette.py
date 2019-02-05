@@ -112,7 +112,7 @@ class P8Palette():
                         palette_map[true_rg] = i
 
     def argb_array_to_p8_array_best_fit_alpha(self, unpacked_pix):
-        if not palette_map_loaded:
+        if not self.palette_map_loaded:
             self.load_palette_map()
 
         color_map = self.palette_map
@@ -128,7 +128,7 @@ class P8Palette():
         return (self.p8_palette_32bit, indexing)
 
     def argb_array_to_p8_array_best_fit(self, unpacked_pix):
-        if not palette_map_loaded:
+        if not self.palette_map_loaded:
             self.load_palette_map()
 
         color_map = self.palette_map
