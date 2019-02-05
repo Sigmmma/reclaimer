@@ -13,8 +13,4 @@ class Str_Tag(HekTag):
                 for sub_s in s.split('\r'):
                     split_strings.extend(sub_s.split('\n'))
 
-            new_string = split_strings.pop(0)
-            for s in split_strings:
-                new_string += "\r\n" + s
-
-            strings[i].data = new_string
+            strings[i].data = "\r\n".join(split_strings)
