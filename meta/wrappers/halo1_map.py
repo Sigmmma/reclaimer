@@ -846,11 +846,15 @@ class Halo1Map(HaloMap):
                         b.name = name
                         names.add(name)
 
-            # divide the cutscene times by 30(they're in ticks)
+            # divide the cutscene times by 30(they're in ticks) and
+            # subtract the fade-in time from the up_time(normally added
+            # together as a total up-time in maps, but not in tag form)
             for b in meta.cutscene_titles.STEPTREE:
-                b.fade_in_time /= 30
-                b.up_time /= 30
+                b.up_time = max(b.up_time - b.fade_in_time, 0.0)
+
+                b.fade_in_time  /= 30
                 b.fade_out_time /= 30
+                b.up_time       /= 30
 
         elif tag_cls == "snd!":
             meta.maximum_bend_per_second = meta.maximum_bend_per_second ** 30
