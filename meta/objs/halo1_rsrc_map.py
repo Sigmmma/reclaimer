@@ -24,6 +24,7 @@ def set_tag_meta_pointers(block, meta_pointer, raw_pointer_base=0):
         if typ == RawdataRef:
             if getattr(sub_block, "data", None):
                 orig_size = sub_block.size
+                # pad data streams to multiples of 4 bytes for alignment
                 sub_block.data += b'\x00' * ((4 - (sub_block.size % 4)) % 4)
                 sub_block.size = orig_size
 
@@ -155,7 +156,13 @@ class Halo1RsrcMapTag(Tag):
             raise ValueError("'%s' is not in resource map" % tag_path)
 
         pix_head = self.data.tags[pixel_head_i]
+        bitmaps = new_tag.data.tagdata.bitmaps.STEPTREE
         new_pixels = new_tag.data.tagdata.processed_pixel_data.data
+        if len(bitmaps) == 1 and len(pix_head.tag.data) > len(new_pixels):
+            # super hacky, but it'll work for now. copy the end of the mipmap
+            # data from the old bitmap to the end of the new pixel data
+            new_pixels += pix_head.tag.data[len(new_pixels): ]
+
         if len(pix_head.tag.data) != len(new_pixels):
             raise ValueError(
                 "Replacement data length(%s) does not match original(%s)"
@@ -276,7 +283,6 @@ class Halo1RsrcMapTag(Tag):
                     sample_data.byteswap()
                     sample_data = sample_data.tobytes()
 
-                # pad each data stream to 4 multiples bytes for alignment
                 perm.samples.flags.data_in_resource_map = True
                 perm.mouth_data.flags.data_in_resource_map = False
                 perm.subtitle_data.flags.data_in_resource_map = False
