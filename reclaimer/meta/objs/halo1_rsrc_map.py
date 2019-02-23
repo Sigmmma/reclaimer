@@ -10,7 +10,7 @@ empty_rawdata_def = BlockDef("samples_stub", INCLUDE=rawdata_ref_struct)
 REMOVED_RSRC_TAG_DIR = "!rem\\"
 
 
-def wsdfas(block, meta_pointer, raw_pointer_base=0):
+def set_tag_meta_pointers(block, meta_pointer, raw_pointer_base=0):
     if not (hasattr(block, "desc") and hasattr(block, "__iter__")):
         return meta_pointer, raw_pointer_base
 
@@ -44,7 +44,7 @@ def wsdfas(block, meta_pointer, raw_pointer_base=0):
             if sub_block.STEPTREE:
                 meta_pointer += sub_block.size * sub_block.STEPTREE[0].SIZE
 
-        meta_pointer, raw_pointer_base = wsdfas(
+        meta_pointer, raw_pointer_base = set_tag_meta_pointers(
             sub_block, meta_pointer, raw_pointer_base)
 
     meta_pointer += (4 - (meta_pointer % 4)) % 4
@@ -308,7 +308,7 @@ class Halo1RsrcMapTag(Tag):
             if not (raw_head and meta_head):
                 return base_pointer
             raw_head.tag.path = tag_path + "__pixels"
-            wsdfas(tag_data, tag_data.SIZE)
+            set_tag_meta_pointers(tag_data, tag_data.SIZE)
 
         elif rsrc_type == "sounds":
             if tag_data.promotion_sound.filepath:
@@ -321,9 +321,9 @@ class Halo1RsrcMapTag(Tag):
                 return base_pointer
             raw_head.tag.path = tag_path + "__permutations"
 
-            wsdfas(tag_data, 0, tag_data.SIZE)
+            set_tag_meta_pointers(tag_data, 0, tag_data.SIZE)
         else:
-            wsdfas(tag_data, tag_data.SIZE)
+            set_tag_meta_pointers(tag_data, tag_data.SIZE)
 
         # fill out the tag headers
         meta_head.tag.path = tag_path
