@@ -43,6 +43,10 @@ pc_part = Struct('part',
 
     #Pad(36),
     Struct("model meta info",
+        # the offset fields in model_meta_info struct are the only
+        # thing different from halo model tags. if they weren't,
+        # this whole new part definition wouldn't be necessary.
+        UEnum16("index type",  # name is a guess.  always 1?
         UEnum16("index type",  # name is a guess.  always 1?
             ("uncompressed", 1),
             ),
