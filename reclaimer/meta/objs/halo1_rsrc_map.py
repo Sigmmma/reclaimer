@@ -165,7 +165,7 @@ class Halo1RsrcMapTag(Tag):
 
         if len(pix_head.tag.data) != len(new_pixels):
             raise ValueError(
-                "Replacement data length(%s) does not match original(%s)"
+                "%s:\n\tReplacement data length(%s) does not match original(%s)"
                 % (tag_path, len(new_pixels), len(pix_head.tag.data)))
         else:
             pix_head.tag.data = new_pixels

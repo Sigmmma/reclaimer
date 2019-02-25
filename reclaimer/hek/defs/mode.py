@@ -22,13 +22,14 @@ permutation = Struct('permutation',
     dyn_senum16('superhigh geometry block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
     Pad(2),
+
+    #reflexive("local markers", local_marker, 32, DYN_NAME_PATH=".name"),
     SIZE=88
     )
 
 part = Struct('part',
     Bool32('flags',
         'stripped',
-        'ZONER',
         ),
     dyn_senum16('shader index',
         DYN_NAME_PATH="tagdata.shaders.shaders_array[DYN_I].shader.filepath"),
