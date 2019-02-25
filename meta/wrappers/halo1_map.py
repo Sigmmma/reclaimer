@@ -17,6 +17,7 @@ from .byteswapping import raw_block_def, byteswap_animation,\
      byteswap_pcm16_samples
 from reclaimer import data_extraction
 from reclaimer.constants import tag_class_fcc_to_ext
+from reclaimer.util import compress_normal32, decompress_normal32
 
 
 __all__ = ("Halo1Map", "Halo1RsrcMap")
@@ -652,6 +653,9 @@ class Halo1Map(HaloMap):
             if engine == "halo1anni":
                 endian = ">"
 
+            comp_norm   = compress_normal32
+            decomp_norm = decompress_normal32
+
             comp_vert_nbt_unpacker = PyStruct(endian + "3I").unpack
             uncomp_vert_nbt_packer = PyStruct(endian + "12s9f8s").pack_into
 
@@ -691,26 +695,9 @@ class Halo1Map(HaloMap):
                         for i in range(vert_count):
                             n, b, t = comp_vert_nbt_unpacker(
                                 comp_buffer[in_off + 12: in_off + 24])
-                            ni = (n&1023) / 1023
-                            nj = ((n>>11)&1023) / 1023
-                            nk = ((n>>22)&511) / 511
-                            if (n>>10)&1: ni = ni - 1.0
-                            if (n>>21)&1: nj = nj - 1.0
-                            if (n>>31)&1: nk = nk - 1.0
-
-                            bi = (b&1023) / 1023
-                            bj = ((b>>11)&1023) / 1023
-                            bk = ((b>>22)&511) / 511
-                            if (b>>10)&1: bi = bi - 1.0
-                            if (b>>21)&1: bj = bj - 1.0
-                            if (b>>31)&1: bk = bk - 1.0
-
-                            ti = (t&1023) / 1023
-                            tj = ((t>>11)&1023) / 1023
-                            tk = ((t>>22)&511) / 511
-                            if (t>>10)&1: ti = ti - 1.0
-                            if (t>>21)&1: tj = tj - 1.0
-                            if (t>>31)&1: tk = tk - 1.0
+                            ni, nj, nk = decomp_norm(n)
+                            bi, bj, bk = decomp_norm(b)
+                            ti, tj, tk = decomp_norm(t)
 
                             nmag = max(sqrt(ni**2 + nj**2 + nk**2), 0.00000000001)
                             bmag = max(sqrt(bi**2 + bj**2 + bk**2), 0.00000000001)
@@ -731,12 +718,7 @@ class Halo1Map(HaloMap):
                         for i in range(lightmap_vert_count):
                             n, u, v = comp_vert_nuv_unpacker(
                                 comp_buffer[in_off: in_off + 8])
-                            ni = (n&1023) / 1023
-                            nj = ((n>>11)&1023) / 1023
-                            nk = ((n>>22)&511) / 511
-                            if (n>>10)&1: ni -= 1.0
-                            if (n>>21)&1: nj -= 1.0
-                            if (n>>31)&1: nk -= 1.0
+                            ni, nj, nk = decomp_norm(n)
                             mag = max(sqrt(ni**2 + nj**2 + nk**2), 0.00000000001)
 
                             # write the uncompressed data
@@ -760,32 +742,14 @@ class Halo1Map(HaloMap):
                             ni, nj, nk, bi, bj, bk, ti, tj, tk = \
                                 uncomp_vert_nbt_unpacker(
                                     uncomp_buffer[in_off + 12: in_off + 48])
-                            ni = int(min(ni, 1.0)*1023)
-                            nj = int(min(nj, 1.0)*1023)
-                            nk = int(min(nk, 1.0)*511)
-                            bi = int(min(bi, 1.0)*1023)
-                            bj = int(min(bj, 1.0)*1023)
-                            bk = int(min(bk, 1.0)*511)
-                            ti = int(min(ti, 1.0)*1023)
-                            tj = int(min(tj, 1.0)*1023)
-                            tk = int(min(tk, 1.0)*511)
-                            if ni < 0: ni = max(ni, -1023) + 2047
-                            if nj < 0: nj = max(nj, -1023) + 2047
-                            if nk < 0: nk = max(nk, -511)  + 1023
-                            if bi < 0: bi = max(bi, -1023) + 2047
-                            if bj < 0: bj = max(bj, -1023) + 2047
-                            if bk < 0: bk = max(bk, -511)  + 1023
-                            if ti < 0: ti = max(ti, -1023) + 2047
-                            if tj < 0: tj = max(tj, -1023) + 2047
-                            if tk < 0: tk = max(tk, -511)  + 1023
 
                             # write the compressed data
                             comp_vert_nbt_packer(
                                 comp_buffer, out_off,
                                 uncomp_buffer[in_off: in_off + 12],
-                                ni + (nj<<11) + (nk<<22),
-                                bi + (bj<<11) + (bk<<22),
-                                ti + (tj<<11) + (tk<<22),
+                                comp_norm(ni, nj, nk),
+                                comp_norm(bi, bj, bk),
+                                comp_norm(ti, tj, tk),
                                 uncomp_buffer[in_off + 48: in_off + 56])
 
                             in_off  += 56
@@ -794,16 +758,11 @@ class Halo1Map(HaloMap):
                         for i in range(lightmap_vert_count):
                             ni, nj, nk, u, v = uncomp_vert_nuv_unpacker(
                                 uncomp_buffer[in_off: in_off + 20])
-                            ni = int(min(ni, 1.0)*1023)
-                            nj = int(min(nj, 1.0)*1023)
-                            nk = int(min(nk, 1.0)*511)
-                            if ni < 0: ni = max(ni, -1023) + 2047
-                            if nj < 0: nj = max(nj, -1023) + 2047
-                            if nk < 0: nk = max(nk, -511)  + 1023
 
                             # write the compressed data
                             comp_vert_nuv_packer(
-                                comp_buffer, out_off,  ni + (nj<<11) + (nk<<22),
+                                comp_buffer, out_off,
+                                comp_norm(ni, nj, nk),
                                 int(min(max(u, -1.0), 1.0)*32767),
                                 int(min(max(v, -1.0), 1.0)*32767))
 
