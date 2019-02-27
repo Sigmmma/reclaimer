@@ -47,7 +47,6 @@ pc_part = Struct('part',
         # thing different from halo model tags. if they weren't,
         # this whole new part definition wouldn't be necessary.
         UEnum16("index type",  # name is a guess.  always 1?
-        UEnum16("index type",  # name is a guess.  always 1?
             ("uncompressed", 1),
             ),
         Pad(2),
