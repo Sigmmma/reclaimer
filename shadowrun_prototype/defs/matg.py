@@ -1,1 +1,1 @@
-from ...os_hek.defs.matg import *
+from ...hek.defs.matg import *

@@ -1,1 +1,1 @@
-from ...os_hek.defs.tagc import *
+from ...hek.defs.tagc import *

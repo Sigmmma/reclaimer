@@ -1,1 +1,1 @@
-from ...os_hek.defs.scnr import *
+from ...hek.defs.scnr import *

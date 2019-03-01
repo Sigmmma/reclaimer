@@ -1,1 +1,1 @@
-from ...os_hek.defs.obje import *
+from ...hek.defs.obje import *
