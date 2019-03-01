@@ -1,1 +1,1 @@
-from ...os_hek.defs.actv import *
+from ...hek.defs.actv import *
