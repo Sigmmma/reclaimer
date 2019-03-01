@@ -1,1 +1,1 @@
-from ...os_hek.defs.soso import *
+from ...hek.defs.soso import *
