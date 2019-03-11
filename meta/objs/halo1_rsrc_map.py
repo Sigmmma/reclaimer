@@ -4,6 +4,7 @@ from reclaimer.common_descs import rawdata_ref_struct
 from reclaimer.field_types import FieldType, RawdataRef, Reflexive, TagRef
 from supyr_struct.defs.block_def import BlockDef
 from supyr_struct.tag import Tag
+from ..wrappers.map_pointer_converter import MapPointerConverter
 
 empty_rawdata_def = BlockDef("samples_stub", INCLUDE=rawdata_ref_struct)
 
@@ -60,6 +61,7 @@ class Halo1RsrcMapTag(Tag):
 
     def __init__(self, *args, **kwargs):
         Tag.__init__(self, *args, **kwargs)
+        self.map_pointer_converter = MapPointerConverter((0, 0, 0xFFffFFff))
         self.setup_defs()
 
         try:
@@ -151,21 +153,54 @@ class Halo1RsrcMapTag(Tag):
             raise TypeError("Cannot add bitmap to %s resource map" %
                             self.data.resource_type.enum_name)
 
+        meta_head_i = self.tag_path_indices.get(tag_path)
         pixel_head_i = self.tag_path_indices.get(tag_path + "__pixels")
-        if pixel_head_i is None:
+        if None in (meta_head_i, pixel_head_i):
             raise ValueError("'%s' is not in resource map" % tag_path)
+        elif self.defs.get("bitm", None) is None:
+            raise TypeError("bitmap tag definition is not loaded.")
 
         pix_head = self.data.tags[pixel_head_i]
-        bitmaps = new_tag.data.tagdata.bitmaps.STEPTREE
+        new_bitmaps = new_tag.data.tagdata.bitmaps.STEPTREE
         new_pixels = new_tag.data.tagdata.processed_pixel_data.data
-        if len(bitmaps) == 1 and len(pix_head.tag.data) > len(new_pixels):
+
+        desc  = self.defs['bitm'].descriptor[1]
+        parent = [None]
+        with FieldType.force_little:
+            desc['TYPE'].parser(
+                desc, parent=parent, attr_index=0, parsing_resource=True,
+                rawdata=self.data.tags[meta_head_i].tag.data,
+                map_pointer_converter=self.map_pointer_converter)
+            orig_bitmaps = parent[0].bitmaps.STEPTREE
+
+        if len(orig_bitmaps) != len(new_bitmaps):
+            raise ValueError(
+                "%s:\nReplacement bitmap count(%s) does not match original(%s)"
+                % (tag_path, len(new_bitmaps), len(orig_bitmaps)))
+
+        for i in range(len(new_bitmaps)):
+            new_bitmap = new_bitmaps[i]
+            orig_bitmap = orig_bitmaps[i]
+            for attr_name in ("width", "height", "depth", "type", "format"):
+                new_bitm_attr = new_bitmap[attr_name]
+                orig_bitm_attr = orig_bitmap[attr_name]
+                if attr_name in ("type", "format"):
+                    new_bitm_attr = new_bitm_attr.enum_name
+                    orig_bitm_attr = orig_bitm_attr.enum_name
+
+                if new_bitm_attr != orig_bitm_attr:
+                    raise ValueError(
+                        "%s:\nReplacement bitmap %s(%s) does not match original(%s)"
+                        % (tag_path, attr_name, new_bitm_attr, orig_bitm_attr))
+
+        if len(new_bitmaps) == 1 and len(pix_head.tag.data) > len(new_pixels):
             # super hacky, but it'll work for now. copy the end of the mipmap
             # data from the old bitmap to the end of the new pixel data
             new_pixels += pix_head.tag.data[len(new_pixels): ]
 
         if len(pix_head.tag.data) != len(new_pixels):
             raise ValueError(
-                "%s:\n\tReplacement data length(%s) does not match original(%s)"
+                "%s:\nReplacement data length(%s) does not match original(%s)"
                 % (tag_path, len(new_pixels), len(pix_head.tag.data)))
         else:
             pix_head.tag.data = new_pixels
