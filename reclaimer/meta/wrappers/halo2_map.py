@@ -176,7 +176,7 @@ class Halo2Map(HaloMap):
         kw['halo_map'] = self
         return extractor(meta, tag_index_ref.path, **kw)
 
-    def get_meta(self, tag_id, reextract=False):
+    def get_meta(self, tag_id, reextract=False, **kw):
         if tag_id is None:
             return
         elif self.engine == "halo2alpha":
@@ -229,14 +229,22 @@ class Halo2Map(HaloMap):
                 tag_index_manager=self.tag_index_manager, offset=offset,)
         except Exception:
             print(format_exc())
+            if kw.get("allow_corrupt"):
+                return block[0]
             return
 
-        self.record_map_cache_read(tag_id, 0)
-        if self.map_cache_over_limit():
-            self.clear_map_cache()
+        meta = block[0]
+        try:
+            self.record_map_cache_read(tag_id, 0)
+            if self.map_cache_over_limit():
+                self.clear_map_cache()
 
-        self.inject_rawdata(block[0], tag_cls, tag_index_ref)
-        if tag_cls == "ugh!":
-            self.ugh__meta = block[0]
+            self.inject_rawdata(meta, tag_cls, tag_index_ref)
+            if tag_cls == "ugh!":
+                self.ugh__meta = meta
+        except Exception:
+            print(format_exc())
+            if not kw.get("allow_corrupt"):
+                meta = None
 
-        return block[0]
+        return meta

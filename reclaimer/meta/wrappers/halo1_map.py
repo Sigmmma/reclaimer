@@ -259,7 +259,7 @@ class Halo1Map(HaloMap):
         kw['halo_map'] = self
         return extractor(meta, tag_index_ref.path, **kw)
 
-    def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False):
+    def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, **kw):
         '''
         Takes a tag reference id as the sole argument.
         Returns that tags meta data as a parsed block.
@@ -364,20 +364,28 @@ class Halo1Map(HaloMap):
                     tag_index_manager=self.tag_index_manager)
         except Exception:
             print(format_exc())
+            if kw.get("allow_corrupt"):
+                return block[0]
             return
 
         meta = block[0]
-        if tag_cls == "bitm" and get_is_xbox_map(engine):
-            for bitmap in meta.bitmaps.STEPTREE:
-                # make sure to set this for all xbox bitmaps
-                # so they can be interpreted properly
-                bitmap.base_address = 1073751810
+        try:
+            if tag_cls == "bitm" and get_is_xbox_map(engine):
+                for bitmap in meta.bitmaps.STEPTREE:
+                    # make sure to set this for all xbox bitmaps
+                    # so they can be interpreted properly
+                    bitmap.base_address = 1073751810
 
-        self.record_map_cache_read(tag_id, 0)  # cant get size quickly enough
-        if self.map_cache_over_limit():
-            self.clear_map_cache()
+            self.record_map_cache_read(tag_id, 0)  # cant get size quickly enough
+            if self.map_cache_over_limit():
+                self.clear_map_cache()
 
-        self.inject_rawdata(meta, tag_cls, tag_index_ref)
+            if not kw.get("ignore_rawdata", False):
+                self.inject_rawdata(meta, tag_cls, tag_index_ref)
+        except Exception:
+            print(format_exc())
+            if not kw.get("allow_corrupt"):
+                meta = None
 
         return meta
 

@@ -298,7 +298,7 @@ script_object_types = (
     "boolean",
     "real",
     "short",
-    "long",
+    "long", # 8
 
 # DO NOT MODIFY ANY OF THESE SCRIPT ENUMS.
 # The exact lettering is important as the script extractor
@@ -311,7 +311,7 @@ script_object_types = (
     "cutscene_flag",
     "cutscene_camera_point",
     "cutscene_title",
-    "cutscene_recording",
+    "cutscene_recording", # 15
 
     "device_group",
     "ai",
@@ -321,8 +321,9 @@ script_object_types = (
     "conversation",
     "navpoint",
     "hud_message",
-    "object_list",
+    "object_list", # 23
 
+    # these 8 are references to tag types
     "sound",
     "effect",
     "damage",
@@ -330,27 +331,27 @@ script_object_types = (
     "animation_graph",
     "actor_variant",
     "damage_effect",
+    "object_definition", # 31
 
-    "object_definition",
     "game_difficulty",
     "team",
     "ai_default_state",
     "actor_type",
-    "hud_corner",
+    "hud_corner", # 36
 
     "object",
     "unit",
     "vehicle",
     "weapon",
     "device",
-    "scenery",
+    "scenery", # 42
 
     "object_name",
     "unit_name",
     "vehicle_name",
     "weapon_name",
     "device_name",
-    "scenery_name"
+    "scenery_name", # 48
     )
 
 

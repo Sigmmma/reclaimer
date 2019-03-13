@@ -91,6 +91,7 @@ h1_script_syntax_data = Struct("script syntax data header",
     UInt16("last_node"),
     BytesRaw("next", SIZE=4),
     Pointer32("first"),
+    SIZE=56,
     STEPTREE=WhileArray("nodes", SUB_STRUCT=fast_script_node)
     )
 

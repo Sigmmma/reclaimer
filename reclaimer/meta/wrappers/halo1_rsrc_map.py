@@ -163,7 +163,7 @@ class Halo1RsrcMap(HaloMap):
 
         return [self.tag_index.tag_index[tag_id]]
 
-    def get_meta(self, tag_id, reextract=False):
+    def get_meta(self, tag_id, reextract=False, **kw):
         '''Returns just the meta of the tag without any raw data.'''
         if tag_id is None:
             return
@@ -202,10 +202,13 @@ class Halo1RsrcMap(HaloMap):
                 tag_cls=tag_cls, root_offset=tag_index_ref.meta_offset,
                 indexed=True, **kwargs)
             FieldType.force_normal()
-            self.inject_rawdata(block[0], tag_cls, tag_index_ref)
+
+            if not kw.get("ignore_rawdata", False):
+                self.inject_rawdata(block[0], tag_cls, tag_index_ref)
         except Exception:
             print(format_exc())
-            return
+            if not kw.get("allow_corrupt"):
+                return
 
         return block[0]
 

@@ -188,7 +188,7 @@ class HaloMap:
     def inject_rawdata(self, meta, tag_cls, tag_index_ref):
         raise NotImplementedError()
 
-    def get_meta(self, tag_id, reextract=False):
+    def get_meta(self, tag_id, *a, **kw):
         raise NotImplementedError()
 
     def load_all_resource_maps(self, maps_dir=""):
