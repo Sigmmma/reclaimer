@@ -1,4 +1,8 @@
 import os
+
+from collections import OrderedDict
+from traceback import format_exc
+
 from array import array
 from reclaimer.common_descs import rawdata_ref_struct
 from reclaimer.field_types import FieldType, RawdataRef, Reflexive, TagRef
@@ -96,8 +100,10 @@ class Halo1RsrcMapTag(Tag):
             except Exception:
                 print(format_exc())
 
-    def load_resource_tags(self, *tags_dirs, ignored=()):
-        loaded_tags = {}
+    def load_resource_tags(self, *tags_dirs, ignored=(),
+                           tag_paths_to_load_by_tags_dirs=()):
+        tag_paths_to_load_by_tags_dirs = dict(tag_paths_to_load_by_tags_dirs)
+        loaded_tags = OrderedDict()
         usable_defs = {}
         rsrc_type = self.data.resource_type.enum_name
         if rsrc_type == "bitmaps":
@@ -110,6 +116,8 @@ class Halo1RsrcMapTag(Tag):
             usable_defs["unicode_string_list"] = self.defs.get("ustr")
 
         for tags_dir in tags_dirs:
+            tags_to_load = []
+            tag_paths_to_load_by_tags_dirs[tags_dir] = tags_to_load
             for root, dirs, files in os.walk(tags_dir):
                 for filename in sorted(files):
                     filepath = os.path.join(root, filename)
@@ -119,11 +127,20 @@ class Halo1RsrcMapTag(Tag):
 
                     if usable_defs.get(ext) and (tag_path not in ignored and
                                                  tag_path not in loaded_tags):
-                        try:
-                            loaded_tags[tag_path] = usable_defs[ext].build(
-                                filepath=filepath)
-                        except Exception:
-                            print("Could not load: '%s'" % tag_path)
+                        tags_to_load.append(tag_path + "." + ext)
+
+        for tags_dir, tag_paths in tag_paths_to_load_by_tags_dirs.items():
+            for tag_path in tag_paths:
+                try:
+                    filepath = os.path.join(tags_dir, tag_path)
+                    tag_path, ext = os.path.splitext(
+                        filepath.lower().split(tags_dir.lower())[-1])
+                    ext = ext.strip(".")
+                    loaded_tags[tag_path] = usable_defs[ext].build(
+                        filepath=filepath)
+                except Exception:
+                    print(format_exc())
+                    print("Could not load: '%s'" % tag_path)
 
         return loaded_tags
 

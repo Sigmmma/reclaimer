@@ -295,7 +295,7 @@ class Halo3Map(HaloMap):
         kw['halo_map'] = self
         return extractor(meta, tag_index_ref.path, **kw)
 
-    def get_meta(self, tag_id, reextract=False):
+    def get_meta(self, tag_id, reextract=False, **kw):
         if tag_id is None or self.map_header.map_type.data > 2:
             # shared maps don't have a tag index
             return
@@ -331,13 +331,20 @@ class Halo3Map(HaloMap):
                 map_pointer_converter=self.map_pointer_converter,)
         except Exception:
             print(format_exc())
+            if kw.get("allow_corrupt"):
+                return block[0]
             return
 
-        self.record_map_cache_read(tag_id, 0)
-        if self.map_cache_over_limit():
-            self.clear_map_cache()
+        try:
+            self.record_map_cache_read(tag_id, 0)
+            if self.map_cache_over_limit():
+                self.clear_map_cache()
 
-        self.inject_rawdata(block[0], tag_cls, tag_index_ref)
+            self.inject_rawdata(block[0], tag_cls, tag_index_ref)
+        except Exception:
+            print(format_exc())
+            if not kw.get("allow_corrupt"):
+                meta = None
 
         return block[0]
 

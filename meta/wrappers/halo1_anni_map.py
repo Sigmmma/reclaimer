@@ -101,7 +101,7 @@ class Halo1AnniMap(Halo1Map):
             dependencies.append(node)
         return dependencies
 
-    def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False):
+    def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, **kw):
         '''
         Takes a tag reference id as the sole argument.
         Returns that tags meta data as a parsed block.
@@ -155,16 +155,27 @@ class Halo1AnniMap(Halo1Map):
                     tag_index_manager=self.tag_index_manager, offset=offset)
         except Exception:
             print(format_exc())
+            if kw.get("allow_corrupt"):
+                return block[0]
             return
 
-
-        self.record_map_cache_read(tag_id, 0)  # cant get size quickly enough
-        if self.map_cache_over_limit():
-            self.clear_map_cache()
-
         meta = block[0]
-        self.inject_rawdata(meta, tag_cls, tag_index_ref)
+        try:
 
+            self.record_map_cache_read(tag_id, 0)  # cant get size quickly enough
+            if self.map_cache_over_limit():
+                self.clear_map_cache()
+
+            self.inject_rawdata(meta, tag_cls, tag_index_ref)
+            self.byteswap_anniversary_fields(meta, tag_cls)
+        except Exception:
+            print(format_exc())
+            if not kw.get("allow_corrupt"):
+                meta = None
+
+        return meta
+
+    def byteswap_anniversary_fields(self, meta, tag_cls):
 
         if tag_cls == "antr":
             unpack_header = PyStruct("<11i").unpack
@@ -415,9 +426,6 @@ class Halo1AnniMap(Halo1Map):
                          "swat", "sgla", "smet", "spla", "shdr"):
             meta.shdr_attrs.shader_type.data = end_swap_int16(
                 meta.shdr_attrs.shader_type.data)
-
-
-        return meta
 
     def inject_rawdata(self, meta, tag_cls, tag_index_ref):
         pass
