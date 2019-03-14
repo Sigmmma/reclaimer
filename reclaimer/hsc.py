@@ -37,7 +37,7 @@ h1_script_type = SEnum16("type", *h1_script_types)
 h1_return_type = SEnum16("return_type", *h1_script_object_types)
 
 
-# this is a more complete version of the faster script_node def below
+# this is a more complete version of the fast_script_node def below
 script_node = Struct("script_node",
     UInt16("salt"),
     Union("index_union",
@@ -201,6 +201,7 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
     if node_index < 0 or node_index >= len(nodes):
         return "", False, 0
 
+    tag_paths = kwargs.get("tag_paths", ())
     has_newlines = False
     node_strs = []
     i = 0
@@ -270,6 +271,9 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
             elif node_type == 8:
                 # long
                 node_str = str(cast_uint32_to_sint32(node.data))
+            elif node_type in range(24, 32) and node.data & 0xFFff in range(len(tag_paths)):
+                # tag reference
+                node_str = '"%s"' % tag_paths[node.data & 0xFFff]
             elif node_type < len(object_types):
                 # other
                 node_str = '"%s"' % get_string(string_data, node.string_offset)

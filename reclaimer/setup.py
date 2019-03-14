@@ -7,9 +7,7 @@ except ImportError:
 
 curr_dir = dirname(__file__)
 
-#               YYYY.MM.DD
-release_date = "2019.02.23"
-version = (2, 2, 8)
+import reclaimer
 
 try:
     try:
@@ -26,7 +24,7 @@ setup(
     description='A libray of SupyrStruct structures and objects for \
 games built with the Blam engine',
     long_description=long_desc,
-    version='%s.%s.%s' % version,
+    version='%s.%s.%s' % reclaimer.__version__,
     url='https://bitbucket.org/Moses_of_Egypt/reclaimer',
     author='Devin Bobadilla',
     author_email='MosesBobadilla@gmail.com',
