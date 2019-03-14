@@ -1,7 +1,8 @@
-from supyr_struct.defs.constants import *
-from binilla.constants import *
-from supyr_struct.defs.util import fcc
 from struct import unpack
+
+from supyr_struct.defs.constants import *
+from supyr_struct.defs.util import fcc
+from binilla.constants import *
 
 # some reflexives are so massive that it's significantly faster to treat them
 # as raw data and just byteswap them using precalculated offsets and sizes
