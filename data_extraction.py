@@ -519,6 +519,7 @@ def extract_hud_message_text(tagdata, tag_path, **kw):
 def extract_h1_scnr_data(tagdata, tag_path, **kw):
     filepath_base = join(kw['out_dir'], dirname(tag_path), "scripts")
     overwrite = kw.get('overwrite', True)
+    tag_paths = kw.get("tag_paths", ())
     # If the path doesnt exist, create it
     if not exists(filepath_base):
         makedirs(filepath_base)
@@ -573,7 +574,7 @@ def extract_h1_scnr_data(tagdata, tag_path, **kw):
                 sources[name] = hsc_bytecode_to_string(
                     syntax_data, string_data, i, tagdata.scripts.STEPTREE,
                     tagdata.globals.STEPTREE, typ, engine,
-                    global_uses=global_uses[name],
+                    global_uses=global_uses[name], tag_paths=tag_paths,
                     static_calls=static_calls[name])
 
             already_sorted = set()
@@ -591,8 +592,9 @@ def extract_h1_scnr_data(tagdata, tag_path, **kw):
                         next_need_to_sort[name] = source
 
                 if need_to_sort.keys() == next_need_to_sort.keys():
-                    print("Could not sort %s so dependencies come first." % typ)
+                    print("Could not sort these %ss so dependencies come first:" % typ)
                     for src in need_to_sort.values():
+                        print("\t%s" % src)
                         sorted_sources.append(src)
                     break
                 need_to_sort = next_need_to_sort
