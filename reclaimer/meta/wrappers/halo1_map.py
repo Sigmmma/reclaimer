@@ -4,6 +4,8 @@ from struct import Struct as PyStruct
 from tkinter.filedialog import askopenfilename
 
 from .halo_map import *
+from reclaimer.hsc import SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES,\
+     get_hsc_data_block
 from reclaimer.hek.defs.snd_ import snd__meta_stub_blockdef
 from reclaimer.hek.defs.sbsp import sbsp_meta_header_def
 from reclaimer.os_hek.defs.gelc    import gelc_def
@@ -797,21 +799,34 @@ class Halo1Map(HaloMap):
 
             # rename duplicate stuff that causes errors when compiling scripts
             if kwargs.get("rename_scnr_dups", False):
-                for refl in (meta.cutscene_flags, meta.cutscene_camera_points,
-                             meta.recorded_animations):
-                    names = set()
-                    blocks = refl.STEPTREE
-                    # go through the array in reverse so the last name is
-                    # considered the actual name and all others are renamed
-                    for i in range(len(blocks) -1, -1, -1):
-                        j = 0
-                        b = blocks[i]
-                        name = orig_name = b.name
-                        while name in names:
-                            name = ("DUP_%s_%s" % (j, orig_name))[:31]
-                            j += 1
-                        b.name = name
-                        names.add(name)
+                string_data = meta.script_string_data.data.decode("latin-1")
+                syntax_data = get_hsc_data_block(raw_syntax_data=meta.script_syntax_data.data)
+
+                # NOTE: For a list of all the script object types
+                # with their corrosponding enum value, check
+                #     reclaimer.enums.script_object_types
+                keep_these = {i: set() for i in
+                              SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES}
+                for i in range(min(syntax_data.last_node, len(syntax_data.nodes))):
+                    node = syntax_data.nodes[i]
+                    if node.type not in keep_these:
+                        continue
+
+                    keep_these[node.type].add(node.data & 0xFFff)
+
+                for script_object_type, reflexive_name in \
+                        SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES.items():
+                    keep = keep_these[script_object_type]
+                    reflexive = meta[reflexive_name].STEPTREE
+                    name_counts = {reflexive[i].name.lower(): int(i in keep)
+                                   for i in range(len(reflexive))}
+                    for i in range(len(reflexive)):
+                        if i in keep: continue
+                        name = reflexive[i].name.lower()
+                        ct = name_counts.setdefault(name, 0)
+                        if ct:
+                            reflexive[i].name = ("DUP%s_%s" % (ct, name))[: 31]
+                        name_counts[name] += 1
 
             # divide the cutscene times by 30(they're in ticks) and
             # subtract the fade-in time from the up_time(normally added
