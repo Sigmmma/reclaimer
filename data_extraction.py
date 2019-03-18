@@ -519,7 +519,7 @@ def extract_hud_message_text(tagdata, tag_path, **kw):
 def extract_h1_scnr_data(tagdata, tag_path, **kw):
     filepath_base = join(kw['out_dir'], dirname(tag_path), "scripts")
     overwrite = kw.get('overwrite', True)
-    tag_paths = kw.get("tag_paths", ())
+    hsc_node_strings_by_type = kw.get("hsc_node_strings_by_type", ())
     # If the path doesnt exist, create it
     if not exists(filepath_base):
         makedirs(filepath_base)
@@ -533,6 +533,7 @@ def extract_h1_scnr_data(tagdata, tag_path, **kw):
     if not syntax_data or not string_data:
         return "No script data to extract."
 
+    already_sorted = set()
     for typ, arr in (("global", tagdata.globals.STEPTREE),
                      ("script", tagdata.scripts.STEPTREE)):
         filepath = join(filepath_base, "%ss" % typ)
@@ -574,10 +575,10 @@ def extract_h1_scnr_data(tagdata, tag_path, **kw):
                 sources[name] = hsc_bytecode_to_string(
                     syntax_data, string_data, i, tagdata.scripts.STEPTREE,
                     tagdata.globals.STEPTREE, typ, engine,
-                    global_uses=global_uses[name], tag_paths=tag_paths,
+                    global_uses=global_uses[name],
+                    hsc_node_strings_by_type=hsc_node_strings_by_type,
                     static_calls=static_calls[name])
 
-            already_sorted = set()
             sorted_sources = []
             need_to_sort = sources
             while need_to_sort:
@@ -593,7 +594,7 @@ def extract_h1_scnr_data(tagdata, tag_path, **kw):
 
                 if need_to_sort.keys() == next_need_to_sort.keys():
                     print("Could not sort these %ss so dependencies come first:" % typ)
-                    for src in need_to_sort.values():
+                    for src in need_to_sort.keys():
                         print("\t%s" % src)
                         sorted_sources.append(src)
                     break
@@ -634,6 +635,11 @@ def extract_h1_scnr_data(tagdata, tag_path, **kw):
                 i += 1
         except Exception:
             return format_exc()
+
+    # TEMPORARY CODE
+    #from reclaimer.enums import TEST_PRINT_HSC_BUILT_IN_FUNCTIONS
+    #TEST_PRINT_HSC_BUILT_IN_FUNCTIONS()
+    # TEMPORARY CODE
 
 
 def extract_physics(tagdata, tag_path, **kw):
