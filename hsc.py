@@ -11,6 +11,10 @@ from reclaimer.h2.common_descs import script_types as h2_script_types,\
 from supyr_struct.defs.block_def import BlockDef
 from supyr_struct.field_types import FieldType
 
+try:
+    from reclaimer.enums import _script_built_in_functions_test
+except Exception:
+    _script_built_in_functions_test = None
 
 # in a list that begins with the keyed expression, this
 # is the number of nodes required before we will indent them.
@@ -32,6 +36,19 @@ START_INDENTING_AFTER = {
     "ai_debug_communication_focus": 1,
     }
 
+HSC_IS_PRIMITIVE   = 1 << 0
+HSC_IS_SCRIPT_CALL = 1 << 1
+HSC_IS_GLOBAL      = 1 << 2
+HSC_IS_GARBAGE_COLLECTABLE = 1 << 3
+
+SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES = dict((
+    (10, "scripts"), (11, "trigger_volumes"), (12, "cutscene_flags"),
+    (13, "cutscene_camera_points"), (14, "cutscene_titles"),
+    (15, "recorded_animations"), (16, "device_groups"),
+    (17, "encounters"), (18, "command_lists"),
+    (19, "player_starting_profiles"), (20, "ai_conversations"),
+    ) + tuple((i, "object_names") for i in range(37, 49)))
+
 
 h1_script_type = SEnum16("type", *h1_script_types)
 h1_return_type = SEnum16("return_type", *h1_script_object_types)
@@ -45,7 +62,9 @@ script_node = Struct("script_node",
             "constant_type":  Struct("constant_type", SInt16("value")),
             "function_index": Struct("function_index", SInt16("value")),
             "script_index":   Struct("script_index", SInt16("value")),
-            }
+            },
+        COMMENT="""
+For most intents and purposes, this value mirrors the 'type' field"""
         ),
     SEnum16("type", *h1_script_object_types),
     Bool16("flags",
@@ -108,20 +127,36 @@ def cast_uint32_to_float(uint32, packer=struct.Struct("<I"),
 
 
 def cast_uint32_to_sint16(uint32):
-    if uint32&0x8000:
-        return (uint32&0xFFFF)-0x10000
-    return uint32&0xFFFF
+    return ((uint32 + 0x8000) % 0x10000) - 0x8000
 
 
 def cast_uint32_to_sint32(uint32):
-    if uint32&0x80000000:
-        return uint32 - 0x100000000
-    return uint32
+    return ((uint32 + 0x80000000) % 0x100000000) - 0x80000000
 
 
-def get_string(string_data, start):
-    end = string_data.find("\x00", start)
-    string = string_data[start: end]
+def get_hsc_node_string(string_data, node, hsc_node_strings_by_type=()):
+    # if this is not a script or global, try to get the
+    # string from the provided hsc_node_strings_by_type
+    if (not(node.flags & (HSC_IS_SCRIPT_CALL | HSC_IS_GLOBAL)) and
+            node.type in hsc_node_strings_by_type):
+        hsc_node_strings = hsc_node_strings_by_type[node.type]
+
+        # "ai" script object types(17) use 32 bits of the
+        # data field to specify index instead of just 16.
+        mask = 0xFFffFFff if node.type == 17 else 0xFFff            
+        if node.data & mask in hsc_node_strings:
+            return hsc_node_strings[node.data & mask]
+
+    end = string_data.find("\x00", node.string_offset)
+    string = string_data[node.string_offset: end]
+    #if _script_built_in_functions_test is not None and node.type == 2:
+    #    if node.index_union not in range(len(_script_built_in_functions_test)):
+    #        _script_built_in_functions_test.extend(
+    #            [None] * (node.index_union + 1 -
+    #                      len(_script_built_in_functions_test)))
+    #    if _script_built_in_functions_test[node.index_union] is None:
+    #        _script_built_in_functions_test[node.index_union] = string
+
     return string
 
 
@@ -155,6 +190,37 @@ def get_hsc_data_block(raw_syntax_data=None, engine="halo1"):
     return syntax_data
 
 
+def get_h1_scenario_script_object_type_strings(scnr_data):
+    # NOTE: Still need to handle "hud_message", # 22
+    script_strings_by_type = {}
+    for script_object_type, reflexive_name in \
+            SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES.items():
+        names = {}
+        script_strings_by_type[script_object_type] = names
+
+        i = 0
+        for b in scnr_data[reflexive_name].STEPTREE:
+            names[i] = b.name
+            i += 1
+
+    i = 0
+    script_strings_by_type[35] = names = {}
+    for b in scnr_data.bipeds_palette.STEPTREE:
+        names[i] = b.name.filepath.split("/")[-1].split("\\")[-1]
+        i += 1
+
+    i = 0
+    script_strings_by_type[17] = names = {}
+    for enc in scnr_data.encounters.STEPTREE:
+        j = 0
+        for squad in enc.squads.STEPTREE:
+            names[i + (j << 16) + 0x80000000] = "%s/%s" % (enc.name, squad.name)
+            j += 1
+        i += 1
+
+    return script_strings_by_type
+
+
 def get_node_sibling_count(node, nodes):
     ct = 0
     seen = set()
@@ -174,15 +240,16 @@ def get_first_significant_node(node, nodes, string_data, parent=None,
                                last_begin_parenthese=None, started=False):
     if (not started) or get_node_sibling_count(node, nodes) <= 1:
         # node has one or no siblings, meaning it COULD be a begin block
-        if node.flags == 8:
+        if node.flags == HSC_IS_GARBAGE_COLLECTABLE:
             index, salt = node.data & 0xFFff, node.data >> 16
             if salt and index < len(nodes):
                 # node is parenthese. go deeper
                 return get_first_significant_node(
                     nodes[index], nodes, string_data, node, node, True)
 
-        func_name = get_string(string_data, node.string_offset)
-        if (node.flags & 1) and node.type == 2 and func_name == "begin":
+        func_name = get_hsc_node_string(string_data, node)
+        if ((node.flags & HSC_IS_PRIMITIVE) and
+                node.type == 2 and func_name == "begin"):
             index, salt = node.next_node & 0xFFff, node.next_node >> 16
             if salt and index < len(nodes):
                 return get_first_significant_node(
@@ -201,7 +268,7 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
     if node_index < 0 or node_index >= len(nodes):
         return "", False, 0
 
-    tag_paths = kwargs.get("tag_paths", ())
+    hsc_node_strings_by_type = kwargs.get("hsc_node_strings_by_type", ())
     has_newlines = False
     node_strs = []
     i = 0
@@ -215,8 +282,7 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
         node_type = node.type
         union_i = node.index_union
         node_str = ""
-        if node.flags == 8:
-            # check if ONLY is_garbage_collectable is set
+        if node.flags == HSC_IS_GARBAGE_COLLECTABLE:
             start_node = get_first_significant_node(node, nodes, string_data)
 
             child_node, salt = start_node.data & 0xFFff, start_node.data >> 16
@@ -236,24 +302,26 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
                         child_node, nodes, script_blocks, string_data,
                         object_types, indent, indent_size, **kwargs)
 
-        elif node.flags & 4:
-            # is_global is set
-            node_str = get_string(string_data, node.string_offset)
+        elif node.flags & HSC_IS_GLOBAL:
+            node_str = get_hsc_node_string(string_data, node,
+                                           hsc_node_strings_by_type)
             if "global_uses" in kwargs:
                 kwargs["global_uses"].add(node_str)
 
-        elif node.flags & 2 and union_i >= 0 and union_i < len(script_blocks):
+        elif (node.flags & HSC_IS_SCRIPT_CALL and
+              union_i >= 0 and union_i < len(script_blocks)):
             # is_script_call is set
             block = script_blocks[union_i]
             node_str = "(%s" % block.name
             if "static_calls" in kwargs:
                 kwargs["static_calls"].add(block.name)
 
-        elif node.flags & 1:
+        elif node.flags & HSC_IS_PRIMITIVE:
             # is_primitive is set
             if node_type in (2, 10):
                 # function/script name
-                node_str = get_string(string_data, node.string_offset)
+                node_str = get_hsc_node_string(string_data, node,
+                                               hsc_node_strings_by_type)
                 if node_type == 10 and "static_calls" in kwargs:
                     kwargs["static_calls"].add(node_str)
             elif node_type in (3, 4):
@@ -271,12 +339,10 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
             elif node_type == 8:
                 # long
                 node_str = str(cast_uint32_to_sint32(node.data))
-            elif node_type in range(24, 32) and node.data & 0xFFff in range(len(tag_paths)):
-                # tag reference
-                node_str = '"%s"' % tag_paths[node.data & 0xFFff]
             elif node_type < len(object_types):
                 # other
-                node_str = '"%s"' % get_string(string_data, node.string_offset)
+                node_str = '"%s"' % get_hsc_node_string(
+                    string_data, node, hsc_node_strings_by_type)
 
         node_strs.append((node_str, newl))
         node_index, salt = node.next_node & 0xFFff, node.next_node >> 16
