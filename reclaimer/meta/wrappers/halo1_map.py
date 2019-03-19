@@ -818,15 +818,14 @@ class Halo1Map(HaloMap):
                         SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES.items():
                     keep = keep_these[script_object_type]
                     reflexive = meta[reflexive_name].STEPTREE
-                    name_counts = {reflexive[i].name.lower(): int(i in keep)
-                                   for i in range(len(reflexive))}
+                    counts = {b.name.lower(): 0 for b in reflexive}
+                    for b in reflexive:
+                        counts[b.name.lower()] += 1
+
                     for i in range(len(reflexive)):
-                        if i in keep: continue
                         name = reflexive[i].name.lower()
-                        ct = name_counts.setdefault(name, 0)
-                        if ct:
-                            reflexive[i].name = ("DUP%s_%s" % (ct, name))[: 31]
-                        name_counts[name] += 1
+                        if counts[name] > 1 and i not in keep:
+                            reflexive[i].name = ("DUP%s~%s" % (i, name))[: 31]
 
             # divide the cutscene times by 30(they're in ticks) and
             # subtract the fade-in time from the up_time(normally added
