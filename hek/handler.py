@@ -20,6 +20,7 @@ def bytes_to_hex(taghash):
     return '0x' + '0'*(len(taghash)*2-len(hsh)) + hsh
 
 
+# TODO: DELETE THIS WHEN IT IS CONFIRMED THAT NOTHING REFERENCES IT
 def fps_60_related(desc):
     unit_scale = desc.get("UNIT_SCALE")
     if hasattr(unit_scale, "fps_60_scale") and unit_scale.fps_60_scale:
