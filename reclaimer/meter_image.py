@@ -15,8 +15,7 @@ def has_next_line(rawdata=None, *args, **kwargs):
     try:
         return len(rawdata.peek(6)) >= 6
     except Exception:
-        pass
-    return False
+        return False
 
 meter_line = Container("meter_line",
     FlUInt16("x_pos"),

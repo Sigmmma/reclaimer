@@ -1,1 +1,1 @@
-from ...hek.defs.antr import *
+from ...os_hek.defs.antr import *
