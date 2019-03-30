@@ -186,7 +186,7 @@ class Halo1Map(HaloMap):
         # record the original halo 1 tag_paths so we know if they change
         self.orig_tag_paths = tuple(b.path for b in tag_index_array)
 
-        # make all contents of the map parasble
+        # make all contents of the map parseable
         self.basic_deprotection()
 
         # add the tag data section
