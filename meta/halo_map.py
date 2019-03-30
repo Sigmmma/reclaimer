@@ -132,6 +132,9 @@ def get_tag_index(map_data, header=None):
     if header is None:
         header = get_map_header(map_data)
 
+    if header is None:
+        return None
+
     map_data = decompress_map(map_data, header)
     base_address = header.tag_index_header_offset
 
