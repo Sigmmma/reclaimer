@@ -374,3 +374,16 @@ class Halo1RsrcMap(HaloMap):
                 print(format_exc())
                 FieldType.force_normal()
                 raise
+
+    def generate_map_info_string(self):
+        string = HaloMap.generate_map_info_string(self)
+        string += """
+
+Tag index:
+    tag count         == %s
+    tag paths pointer == %s
+    tag index pointer == %s""" % (
+        self.tag_index.tag_count,
+        self.rsrc_map.data.tag_paths_pointer,
+        self.rsrc_map.data.tag_headers_pointer)
+        return string

@@ -6,6 +6,7 @@ from tkinter.filedialog import askopenfilename
 from .halo_map import *
 from reclaimer import data_extraction
 from reclaimer.h2.util import HALO2_MAP_TYPES, split_raw_pointer
+from reclaimer.util import is_reserved_tag
 
 
 class Halo2Map(HaloMap):
@@ -248,3 +249,48 @@ class Halo2Map(HaloMap):
                 meta = None
 
         return meta
+
+    def generate_map_info_string(self):
+        string = HaloMap.generate_map_info_string(self)
+        string += """
+
+Calculated information:
+    index magic    == %s
+    map magic      == %s
+""" % (self.index_magic, self.map_magic)
+
+        if self.engine == "halo2alpha":
+            string += (("""
+Tag index:
+    tag count           == %s
+    scenario tag id     == %s
+    index array pointer == %s""") %
+            (self.orig_tag_index.tag_count,
+             self.orig_tag_index.scenario_tag_id & 0xFFff,
+             self.tag_index.tag_index_offset))
+        else:
+            used_tag_count = 0
+            local_tag_count = 0
+            for index_ref in self.tag_index.tag_index:
+                if is_reserved_tag(index_ref):
+                    continue
+                elif index_ref.meta_offset != 0:
+                    local_tag_count += 1
+                used_tag_count += 1
+
+            string += (("""
+Tag index:
+    tag count           == %s
+    used tag count      == %s
+    local tag count     == %s
+    tag types count     == %s
+    scenario tag id     == %s
+    globals  tag id     == %s
+    index array pointer == %s""") %
+            (self.orig_tag_index.tag_count, used_tag_count, local_tag_count,
+             self.orig_tag_index.tag_types_count,
+             self.orig_tag_index.scenario_tag_id & 0xFFff,
+             self.orig_tag_index.globals_tag_id & 0xFFff,
+             self.tag_index.tag_index_offset))
+
+        return string
