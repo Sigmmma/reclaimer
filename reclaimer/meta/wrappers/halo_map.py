@@ -273,3 +273,42 @@ class HaloMap:
 
         try: self.map_data.close()
         except Exception: pass
+
+    def generate_map_info_string(self):
+        string = self.filepath
+        if hasattr(self.map_data, '__len__'):
+            decomp_size = str(len(self.map_data))
+        elif (hasattr(self.map_data, 'seek') and
+              hasattr(self.map_data, 'tell')):
+            curr_pos = self.map_data.tell()
+            self.map_data.seek(0, 2)
+            decomp_size = str(self.map_data.tell())
+            self.map_data.seek(curr_pos)
+        else:
+            decomp_size = "unknown"
+
+        if not self.is_compressed:
+            decomp_size += "(is already uncompressed)"
+
+        map_type = self.map_header.map_type.enum_name
+        if   map_type == "sp":     map_type = "singleplayer"
+        elif map_type == "mp":     map_type = "multiplayer"
+        elif map_type == "ui":     map_type = "mainmenu"
+        elif map_type == "shared":   map_type = "shared"
+        elif map_type == "sharedsp": map_type = "shared single player"
+        elif self.is_resource: map_type = "resource cache"
+        elif "INVALID" in map_type:  map_type = "unknown"
+
+        string += ((""""
+Header:
+    engine version      == %s
+    name                == %s
+    build date          == %s
+    type                == %s
+    decompressed size   == %s
+    index header offset == %s""") %
+        (self.engine, self.map_header.map_name,
+         self.map_header.build_date, map_type, decomp_size,
+         self.map_header.tag_index_header_offset))
+
+        return string
