@@ -960,3 +960,119 @@ class Halo1Map(HaloMap):
             except Exception:
                 self.maps.pop(map_name, None)
                 print(format_exc())
+
+    def generate_map_info_string(self):
+        string = HaloMap.generate_map_info_string(self)
+        index, header = self.tag_index, self.map_header
+
+        string += """
+
+Calculated information:
+    index magic    == %s
+    map magic      == %s
+
+Tag index:
+    tag count           == %s
+    scenario tag id     == %s
+    index array pointer == %s   non-magic == %s
+    model data pointer  == %s
+    meta data length    == %s
+    vertex parts count  == %s
+    index  parts count  == %s""" % (
+        self.index_magic, self.map_magic,
+        index.tag_count, index.scenario_tag_id & 0xFFff,
+        index.tag_index_offset, index.tag_index_offset - self.map_magic,
+        index.model_data_offset, header.tag_data_size,
+        index.vertex_parts_count, index.index_parts_count)
+
+        if index.SIZE == 36:
+            string += """
+    index parts pointer == %s   non-magic == %s""" % (
+        index.index_parts_offset, index.index_parts_offset - self.map_magic)
+        else:
+            string += """
+    vertex data size    == %s
+    index  data size    == %s
+    model  data size    == %s""" % (
+        index.vertex_data_size,
+        index.model_data_size - index.vertex_data_size,
+        index.model_data_size)
+
+        string += "\n\nSbsp magic and headers:\n"
+        for tag_id in self.bsp_magics:
+            header = self.bsp_headers.get(tag_id)
+            if header is None: continue
+
+            magic  = self.bsp_magics[tag_id]
+            string += """%s.structure_scenario_bsp
+        bsp base pointer               == %s
+        bsp magic                      == %s
+        bsp size                       == %s
+        bsp metadata pointer           == %s   non-magic == %s\n""" % (
+            index.tag_index[tag_id].path, self.bsp_header_offsets[tag_id],
+            magic, self.bsp_sizes[tag_id], header.meta_pointer,
+            header.meta_pointer - magic)
+
+        if self.engine != "halo1yelo":
+            return string
+
+        yelo    = header.yelo_header
+        flags   = yelo.flags
+        info    = yelo.build_info
+        version = yelo.tag_versioning
+        cheape  = yelo.cheape_definitions
+        rsrc    = yelo.resources
+        min_os  = info.minimum_os_build
+        string += """
+Yelo information:
+    Mod name              == %s
+    Memory upgrade amount == %sx
+
+    Flags:
+        uses memory upgrades       == %s
+        uses mod data files        == %s
+        is protected               == %s
+        uses game state upgrades   == %s
+        has compression parameters == %s
+
+    Build info:
+        build string  == %s
+        timestamp     == %s
+        stage         == %s
+        revision      == %s
+
+    Cheape:
+        build string      == %s
+        version           == %s.%s.%s
+        size              == %s
+        offset            == %s
+        decompressed size == %s
+
+    Versioning:
+        minimum open sauce     == %s.%s.%s
+        project yellow         == %s
+        project yellow globals == %s
+
+    Resources:
+        compression parameters header offset   == %s
+        tag symbol storage header offset       == %s
+        string id storage header offset        == %s
+        tag string to id storage header offset == %s\n""" % (
+            yelo.mod_name, yelo.memory_upgrade_multiplier,
+            bool(flags.uses_memory_upgrades),
+            bool(flags.uses_mod_data_files),
+            bool(flags.is_protected),
+            bool(flags.uses_game_state_upgrades),
+            bool(flags.has_compression_params),
+            info.build_string, info.timestamp, info.stage.enum_name,
+            info.revision, cheape.build_string,
+            info.cheape.maj, info.cheape.min, info.cheape.build,
+            cheape.size, cheape.offset, cheape.decompressed_size,
+            min_os.maj, min_os.min, min_os.build,
+            version.project_yellow, version.project_yellow_globals,
+            rsrc.compression_params_header_offset,
+            rsrc.tag_symbol_storage_header_offset,
+            rsrc.string_id_storage_header_offset,
+            rsrc.tag_string_to_id_storage_header_offset)
+
+        return string

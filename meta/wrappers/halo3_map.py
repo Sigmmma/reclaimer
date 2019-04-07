@@ -369,3 +369,33 @@ class Halo3Map(HaloMap):
             return None
 
         return meta
+
+    def generate_map_info_string(self):
+        string = HaloMap.generate_map_info_string(self)
+
+        string += """
+
+Tag index:
+    tag count           == %s
+    tag types count     == %s
+    root tags count     == %s
+    index array pointer == %s""" %
+        (self.orig_tag_index.tag_count,
+         self.orig_tag_index.tag_types_count,
+         self.orig_tag_index.root_tags_count,
+         self.tag_index.tag_index_offset - self.map_magic)
+
+        for arr_name, arr in (("Partitions", self.map_header.partitions),
+                              ("Sections", self.map_header.sections),):
+            string += "\n%s:\n" % arr_name
+            names = ("debug", "resource", "tag", "locale")\
+                    if arr.NAME_MAP else range(len(arr))
+            for name in names:
+                section = arr[name]
+                string += """
+    %s:
+        address == %s
+        size    == %s
+        offset  == %s""" %
+                (name, section[0], section[1], section.file_offset)
+        return string
