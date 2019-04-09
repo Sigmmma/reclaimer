@@ -27,16 +27,14 @@ def tag_class(*args, **kwargs):
     A macro for creating a tag_class enum desc with the
     enumerations set to the provided tag_class fcc's.
     '''
-    classes = []
-    default = 0xffffffff
-    for four_cc in args:
-        classes.append((tag_class_fcc_to_ext[four_cc], four_cc))
-
-    if len(classes) == 1:
-        default = classes[0][1]
+    class_mapping = kwargs.pop("class_mapping", tag_class_fcc_to_ext)
+    classes = tuple((class_mapping[fcc], fcc) for fcc in args)
+    default = classes[0][1] if len(classes) == 1 else 0xffffffff
 
     return UEnum32(
         'tag_class',
+        # NOTE: NONE is the expected enum_name in several places when checking
+        # the value of an enumerator. DO NOT EVER change it or its letter case
         *(tuple(sorted(classes)) + (("NONE", 0xffffffff),) ),
         DEFAULT=default, GUI_NAME='', WIDGET_WIDTH=20, **kwargs
         )
@@ -740,24 +738,13 @@ uv_float = QStruct('uv_float',
 #############################
 # Open Sauce related things #
 #############################
-def tag_class_os(*args):
+def tag_class_os(*args, **kwargs):
     '''
     A macro for creating an Open Sauce tag_class enum desc
     with the enumerations set to the provided tag_class fcc's.
     '''
-    default = 0xffffffff
-    classes = []
-    for four_cc in args:
-        classes.append((tag_class_fcc_to_ext_os[four_cc], four_cc))
-
-    if len(classes) == 1:
-        default = classes[0][1]
-
-    return UEnum32(
-        'tag_class',
-        *(tuple(classes) + (("NONE", 0xffffffff),) ),
-        DEFAULT=0xffffffff, GUI_NAME=''
-        )
+    kwargs["class_mapping"] = tag_class_fcc_to_ext_os
+    return tag_class(*args, **kwargs)
 
 
 def dependency_os(name='tag ref', valid_ids=None, **kwargs):

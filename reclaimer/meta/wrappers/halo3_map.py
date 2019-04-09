@@ -282,7 +282,13 @@ class Halo3Map(HaloMap):
             try:
                 if self.maps.get(map_name) is None and map_path:
                     print("    Loading %s..." % map_name)
-                    type(self)(self.maps).load_map(map_path, will_be_active=False)
+                    new_map = type(self)(self.maps)
+                    new_map.load_map(map_path, will_be_active=False)
+                    if new_map.engine != self.engine:
+                        print("        Incorrect engine for this map")
+                        self.maps.pop(map_name, None)
+                    else:
+                        print("        Finished")
                     print("        Finished")
             except Exception:
                 print(format_exc())
@@ -379,11 +385,11 @@ Tag index:
     tag count           == %s
     tag types count     == %s
     root tags count     == %s
-    index array pointer == %s""" %
-        (self.orig_tag_index.tag_count,
-         self.orig_tag_index.tag_types_count,
-         self.orig_tag_index.root_tags_count,
-         self.tag_index.tag_index_offset - self.map_magic)
+    index array pointer == %s""" % (
+        self.orig_tag_index.tag_count,
+        self.orig_tag_index.tag_types_count,
+        self.orig_tag_index.root_tags_count,
+        self.tag_index.tag_index_offset - self.map_magic)
 
         for arr_name, arr in (("Partitions", self.map_header.partitions),
                               ("Sections", self.map_header.sections),):
@@ -396,6 +402,6 @@ Tag index:
     %s:
         address == %s
         size    == %s
-        offset  == %s""" %
-                (name, section[0], section[1], section.file_offset)
+        offset  == %s""" % (
+            name, section[0], section[1], section.file_offset)
         return string

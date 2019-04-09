@@ -118,8 +118,13 @@ class Halo2Map(HaloMap):
             try:
                 if self.maps.get(map_name) is None and map_path:
                     print("    Loading %s.map..." % map_name)
-                    type(self)(self.maps).load_map(map_path, will_be_active=False)
-                    print("        Finished")
+                    new_map = type(self)(self.maps)
+                    new_map.load_map(map_path, will_be_active=False)
+                    if new_map.engine != self.engine:
+                        print("        Incorrect engine for this map")
+                        self.maps.pop(map_name, None)
+                    else:
+                        print("        Finished")
             except Exception:
                 print(format_exc())
 

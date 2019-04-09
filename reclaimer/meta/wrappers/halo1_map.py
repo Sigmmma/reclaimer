@@ -933,6 +933,7 @@ class Halo1Map(HaloMap):
                 map_path = join(maps_dir, "%s.map" % map_name)
 
             while map_path and not exists(map_path):
+                # TODO: Remove this filedialog from this method. BAD DESIGN
                 map_path = askopenfilename(
                     initialdir=maps_dir,
                     title="Select the %s.map" % map_name,
@@ -950,9 +951,13 @@ class Halo1Map(HaloMap):
             try:
                 if self.maps.get(map_name) is None and map_path:
                     print("    Loading %s.map..." % map_name)
-                    Halo1RsrcMap(self.maps).load_map(
-                        map_path, will_be_active=False)
-                    print("        Finished")
+                    new_map = Halo1RsrcMap(self.maps)
+                    new_map.load_map(map_path, will_be_active=False)
+                    if new_map.engine != self.engine:
+                        print("        Incorrect engine for this map")
+                        self.maps.pop(map_name, None)
+                    else:
+                        print("        Finished")
 
                 if map_name == "sounds":
                     self.ensure_sound_maps_valid()

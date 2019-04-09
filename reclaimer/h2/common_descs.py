@@ -38,15 +38,8 @@ def h2_tag_class(*args, **kwargs):
     A macro for creating a tag_class enum desc with the
     enumerations set to the provided tag_class fcc's.
     '''
-    classes = []
-    for four_cc in args:
-        classes.append((h2_tag_class_fcc_to_ext[four_cc], four_cc))
-
-    return UEnum32(
-        'tag_class',
-        *(tuple(sorted(classes)) + (("NONE", 0xffffffff),) ),
-        DEFAULT=0xffffffff, GUI_NAME='', WIDGET_WIDTH=20, **kwargs
-        )
+    kwargs["class_mapping"] = h2_tag_class_fcc_to_ext
+    return tag_class(*args, **kwargs)
 
 def h2_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     '''This function serves to macro the creation of a reflexive'''
