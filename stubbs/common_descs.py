@@ -122,19 +122,8 @@ def tag_class_stubbs(*args, **kwargs):
     A macro for creating a tag_class enum desc with the
     enumerations set to the provided tag_class fcc's.
     '''
-    classes = []
-    default = 0xffffffff
-    for four_cc in args:
-        classes.append((tag_class_fcc_to_ext_stubbs[four_cc], four_cc))
-
-    if len(classes) == 1:
-        default = classes[0][1]
-
-    return UEnum32(
-        'tag_class',
-        *(tuple(sorted(classes)) + (("NONE", 0xffffffff),) ),
-        DEFAULT=default, GUI_NAME='', WIDGET_WIDTH=20, **kwargs
-        )
+    kwargs["class_mapping"] = tag_class_fcc_to_ext_stubbs
+    return tag_class(*args, **kwargs)
 
 
 def dependency_stubbs(name='tag ref', valid_ids=None, **kwargs):
