@@ -1,7 +1,6 @@
 import zlib
 
 from os.path import exists, join
-from tkinter.filedialog import askopenfilename
 
 from .halo_map import *
 from reclaimer import data_extraction
@@ -74,7 +73,7 @@ class Halo2Map(HaloMap):
 
         return meta
 
-    def load_all_resource_maps(self, maps_dir=""):
+    def get_resource_map_paths(self, maps_dir=""):
         map_paths = {name: None for name in HALO2_MAP_TYPES[1:]}
         if self.engine == "halo2alpha":
             map_paths.pop("single_player_shared", None)
@@ -82,54 +81,25 @@ class Halo2Map(HaloMap):
         if not maps_dir:
             maps_dir = dirname(self.filepath)
 
-        # detect/ask for the map paths for the resource maps
-        for map_name in sorted(map_paths.keys()):
-            if self.maps.get(map_name) is not None:
-                # map already loaded
-                continue
-
+        # detect the map paths for the resource maps
+        for map_name in sorted(map_paths):
             map_path = join(maps_dir, map_name)
-
-            if exists(map_path + ".map"):
+            if self.maps.get(map_name) is not None:
+                map_path = self.maps[map_name].filepath
+            elif exists(map_path + ".map"):
                 map_path += ".map"
             elif exists(map_path + "_DECOMP.map"):
                 map_path += "_DECOMP.map"
-            else:
+            elif exists(map_path + ".map.dtz"):
                 map_path += ".map.dtz"
-
-            while map_path and not exists(map_path):
-                map_path = askopenfilename(
-                    initialdir=maps_dir,
-                    title="Select the %s.map" % map_name,
-                    filetypes=((map_name, "*.map"),
-                               (map_name, "*.map.dtz"),
-                               (map_name, "*.*")))
-
-                if map_path:
-                    maps_dir = dirname(map_path)
-                else:
-                    print("    You wont be able to extract from %s.map" % map_name)
-                    break
+            else:
+                map_path = None
 
             map_paths[map_name] = map_path
 
-        for map_name in sorted(map_paths.keys()):
-            map_path = map_paths[map_name]
-            try:
-                if self.maps.get(map_name) is None and map_path:
-                    print("    Loading %s.map..." % map_name)
-                    new_map = type(self)(self.maps)
-                    new_map.load_map(map_path, will_be_active=False)
-                    if new_map.engine != self.engine:
-                        print("        Incorrect engine for this map")
-                        self.maps.pop(map_name, None)
-                    else:
-                        print("        Finished")
-            except Exception:
-                print(format_exc())
+        return map_paths
 
     def load_map(self, map_path, **kwargs):
-        autoload_resources = kwargs.get("autoload_resources", True)
         will_be_active = kwargs.get("will_be_active", True)
         HaloMap.load_map(self, map_path, **kwargs)
         tag_index = self.tag_index
@@ -168,9 +138,6 @@ class Halo2Map(HaloMap):
         except Exception:
             print(format_exc())
             print("Could not read sound_cache_file_gestalt tag")
-
-        if autoload_resources and (will_be_active or not self.is_resource):
-            self.load_all_resource_maps(dirname(map_path))
 
         self.map_data.clear_cache()
 
@@ -260,8 +227,8 @@ class Halo2Map(HaloMap):
         string += """
 
 Calculated information:
-    index magic    == %s
-    map magic      == %s
+    index magic == %s
+    map magic   == %s
 """ % (self.index_magic, self.map_magic)
 
         if self.engine == "halo2alpha":

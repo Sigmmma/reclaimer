@@ -1,6 +1,5 @@
 from math import ceil, log
 from os.path import exists, join
-from tkinter.filedialog import askopenfilename
 
 
 from reclaimer import data_extraction
@@ -193,7 +192,6 @@ class Halo3Map(HaloMap):
                     self.root_tags[tag_cls] = meta
 
     def load_map(self, map_path, **kwargs):
-        autoload_resources = kwargs.get("autoload_resources", True)
         will_be_active = kwargs.get("will_be_active", True)
         HaloMap.load_map(self, map_path, **kwargs)
         self.tag_index = h3_to_h1_tag_index(self.map_header, self.tag_index)
@@ -235,63 +233,26 @@ class Halo3Map(HaloMap):
                     halo_map.rawdata_manager.add_shared_map_name(
                         ext_cache_name, self.map_header.map_name)
 
-        if autoload_resources and map_type <= 2:
-            self.load_all_resource_maps(dirname(map_path))
-
         self.map_data.clear_cache()
 
-    def load_all_resource_maps(self, maps_dir=""):
+    def get_resource_map_paths(self, maps_dir=""):
         play_meta = self.root_tags.get("cache_file_resource_layout_table")
         if not play_meta:
-            print("Could not get cache_file_resource_layout_table meta.\n"
-                  "Cannot determine resource maps.")
-            return
+            return {}
 
-        map_paths = {name: None for name in self.shared_map_names}
+        map_paths = {name.split(".")[0]: None for name in self.shared_map_names}
         if not maps_dir:
             maps_dir = dirname(self.filepath)
 
         # detect/ask for the map paths for the resource maps
-        for map_name in sorted(map_paths.keys()):
-            map_name = map_name.split(".")[0]
+        for map_name in sorted(map_paths):
+            map_path = join(maps_dir, "%s.map" % map_name)
             if self.maps.get(map_name) is not None:
-                # map already loaded
-                continue
+                map_paths[map_name] = self.maps[map_name].filepath
+            elif exists(map_path):
+                map_paths[map_name] = map_path
 
-            map_path = join(maps_dir, map_name)
-            if exists(map_path + ".map"):
-                map_path += ".map"
-
-            while map_path and not exists(map_path):
-                map_path = askopenfilename(
-                    initialdir=maps_dir,
-                    title="Select the %s.map" % map_name,
-                    filetypes=((map_name, "*.map"),
-                               (map_name, "*.*")))
-
-                if map_path:
-                    maps_dir = dirname(map_path)
-                else:
-                    print("    You wont be able to extract from %s.map" % map_name)
-                    break
-
-            map_paths[map_name] = map_path
-
-        for map_name in sorted(map_paths.keys()):
-            map_path = map_paths[map_name]
-            try:
-                if self.maps.get(map_name) is None and map_path:
-                    print("    Loading %s..." % map_name)
-                    new_map = type(self)(self.maps)
-                    new_map.load_map(map_path, will_be_active=False)
-                    if new_map.engine != self.engine:
-                        print("        Incorrect engine for this map")
-                        self.maps.pop(map_name, None)
-                    else:
-                        print("        Finished")
-                    print("        Finished")
-            except Exception:
-                print(format_exc())
+        return map_paths
 
     def extract_tag_data(self, meta, tag_index_ref, **kw):
         extractor = data_extraction.h3_data_extractors.get(

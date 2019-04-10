@@ -1,7 +1,6 @@
 from math import pi, sqrt, log
 from os.path import exists, join
 from struct import Struct as PyStruct
-from tkinter.filedialog import askopenfilename
 
 from .halo_map import *
 from reclaimer.hsc import SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES,\
@@ -49,6 +48,8 @@ class Halo1Map(HaloMap):
 
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
+
+        self.resource_map_class = Halo1RsrcMap
         self.ce_rsrc_sound_indexes_by_path = {}
         self.ce_tag_indexs_by_paths = {}
 
@@ -176,7 +177,6 @@ class Halo1Map(HaloMap):
             print(format_exc())
 
     def load_map(self, map_path, **kwargs):
-        autoload_resources = kwargs.get("autoload_resources", True)
         HaloMap.load_map(self, map_path, **kwargs)
 
         tag_index = self.tag_index
@@ -249,8 +249,11 @@ class Halo1Map(HaloMap):
             print(format_exc())
             print("Could not read globals tag")
 
-        if autoload_resources:
-            self.load_all_resource_maps(dirname(map_path))
+        if self.map_name == "sounds":
+            for halo_map in self.maps.values():
+                if hasattr(halo_map, "ensure_sound_maps_valid"):
+                    halo_map.ensure_sound_maps_valid()
+
         self.map_data.clear_cache()
 
     def extract_tag_data(self, meta, tag_index_ref, **kw):
@@ -902,69 +905,38 @@ class Halo1Map(HaloMap):
 
         return meta
 
-    def load_all_resource_maps(self, maps_dir=""):
-        if self.is_resource:
-            return
-        elif self.engine not in ("halo1pc", "halo1pcdemo",
-                                 "halo1ce", "halo1yelo"):
-            return
+    def get_resource_map_paths(self, maps_dir=""):
+        if self.is_resource or self.engine not in ("halo1pc", "halo1pcdemo",
+                                                   "halo1ce", "halo1yelo"):
+            return {}
 
-        if not maps_dir:
-            maps_dir = dirname(self.filepath)
-
-        map_paths = {name: None for name in ("bitmaps", "sounds")}
-        if self.engine in ("halo1ce", "halo1yelo"):
-            map_paths['loc'] = None
+        map_paths = {"bitmaps": None, "sounds": None, "loc": None}
+        if self.engine not in ("halo1ce", "halo1yelo"):
+            map_paths.pop('loc')
 
         data_files = False
         if hasattr(self.map_header, "yelo_header"):
             data_files = self.map_header.yelo_header.flags.uses_mod_data_files
 
-        # detect/ask for the map paths for the resource maps
-        for map_name in sorted(map_paths.keys()):
-            if self.maps.get(map_name) is not None:
-                # map already loaded
-                continue
-
+        if maps_dir:
+            maps_dir = join(maps_dir, "")
+        else:
+            maps_dir = dirname(self.filepath)
             if data_files:
-                map_name = "-" + map_name
-                map_path = join(maps_dir, "data_files", "%s.map" % map_name)
-            else:
-                map_path = join(maps_dir, "%s.map" % map_name)
+                maps_dir = join(maps_dir, "data_files")
 
-            while map_path and not exists(map_path):
-                # TODO: Remove this filedialog from this method. BAD DESIGN
-                map_path = askopenfilename(
-                    initialdir=maps_dir,
-                    title="Select the %s.map" % map_name,
-                    filetypes=(("%s.map" % map_name, "*.map"), ("All", "*.*")))
+        if data_files:
+            maps_dir = join(maps_dir, "~")
 
-                if map_path:
-                    maps_dir = dirname(map_path)
-                else:
-                    print("    You wont be able to extract from %s.map" % map_name)
-
-            map_paths[map_name] = map_path
-
+        # detect the map paths for the resource maps
         for map_name in sorted(map_paths.keys()):
-            map_path = map_paths[map_name]
-            try:
-                if self.maps.get(map_name) is None and map_path:
-                    print("    Loading %s.map..." % map_name)
-                    new_map = Halo1RsrcMap(self.maps)
-                    new_map.load_map(map_path, will_be_active=False)
-                    if new_map.engine != self.engine:
-                        print("        Incorrect engine for this map")
-                        self.maps.pop(map_name, None)
-                    else:
-                        print("        Finished")
+            map_path = join(maps_dir, "%s.map" % map_name)
+            if self.maps.get(map_name) is not None:
+                map_paths[map_name] = self.maps[map_name].filepath
+            elif exists(map_path):
+                map_paths[map_name] = map_path
 
-                if map_name == "sounds":
-                    self.ensure_sound_maps_valid()
-
-            except Exception:
-                self.maps.pop(map_name, None)
-                print(format_exc())
+        return map_paths
 
     def generate_map_info_string(self):
         string = HaloMap.generate_map_info_string(self)
@@ -973,8 +945,8 @@ class Halo1Map(HaloMap):
         string += """
 
 Calculated information:
-    index magic    == %s
-    map magic      == %s
+    index magic == %s
+    map magic   == %s
 
 Tag index:
     tag count           == %s
@@ -1010,10 +982,10 @@ Tag index:
 
             magic  = self.bsp_magics[tag_id]
             string += """%s.structure_scenario_bsp
-        bsp base pointer               == %s
-        bsp magic                      == %s
-        bsp size                       == %s
-        bsp metadata pointer           == %s   non-magic == %s\n""" % (
+        bsp base pointer     == %s
+        bsp magic            == %s
+        bsp size             == %s
+        bsp metadata pointer == %s   non-magic == %s\n""" % (
             index.tag_index[tag_id].path, self.bsp_header_offsets[tag_id],
             magic, self.bsp_sizes[tag_id], header.meta_pointer,
             header.meta_pointer - magic)
