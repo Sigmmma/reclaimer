@@ -1,9 +1,9 @@
 import re
+import tempfile
 
 from mmap import mmap
-from os.path import dirname, splitext, isfile
+from os.path import basename, dirname, splitext, isfile
 from struct import unpack
-from tkinter.filedialog import asksaveasfilename
 from traceback import format_exc
 from string import ascii_letters
 
@@ -77,7 +77,10 @@ class HaloMap:
     tag_defs_module = ""
     tag_classes_to_load = ()
 
+    resource_map_class = None
+
     def __init__(self, maps=None, map_data_cache_limit=None):
+        self.resource_map_class = type(self)
         self.orig_tag_paths = ()
         self.setup_defs()
 
@@ -86,6 +89,10 @@ class HaloMap:
             self.map_data_cache_limit = HaloMap.map_data_cache_limit
 
         self.maps = {} if maps is None else maps
+
+    @property
+    def map_name(self):
+        return getattr(getattr(self, "map_header", None), "map_name", None)
 
     def setup_tag_headers(self):
         if type(self).tag_headers is not None:
@@ -191,11 +198,51 @@ class HaloMap:
     def get_meta(self, tag_id, *a, **kw):
         raise NotImplementedError()
 
-    def load_all_resource_maps(self, maps_dir=""):
-        pass
+    def get_resource_map_paths(self, maps_dir=""):
+        return {}
+
+    def load_resource_maps(self, maps_dir="", map_paths=(), **kw):
+        do_printout = kw.get("do_printout", False)
+        detected_map_paths = self.get_resource_map_paths(maps_dir)
+        if isinstance(map_paths, dict):
+            for name in detected_map_paths:
+                if name in map_paths:
+                    detected_map_paths[name] = map_paths[name]
+
+        map_paths = detected_map_paths
+        for map_name in sorted(map_paths.keys()):
+            map_path = map_paths[map_name]
+            if not(self.maps.get(map_name) is None and map_path):
+                continue
+
+            new_map = None
+            try:
+                new_map = self.resource_map_class(self.maps)
+                if do_printout:
+                    # do the print AFTER making the new map so that
+                    # the "Loading definitions" message doesnt get
+                    # printed on the same line as this print statement
+                    print("Loading %s...   " % map_name)
+
+                new_map.load_map(map_path, will_be_active=False, **kw)
+                if new_map.engine != self.engine:
+                    if do_printout:
+                        print("Incorrect engine for this map. ")
+                    self.maps.pop(new_map.map_name, None)
+            except Exception:
+                if do_printout:
+                    print(format_exc())
+
+                # make sure to clear out any potentially bad maps
+                for name in sorted(self.maps):
+                    if self.maps[name] is new_map:
+                        self.maps.pop(name, None)
+
+        return set(name for name in map_paths if not self.maps.get(name))
 
     def load_map(self, map_path, **kwargs):
-        will_be_active = kwargs.get("will_be_active", True)
+        will_be_active       = kwargs.get("will_be_active", True)
+        decompress_overwrite = kwargs.get("decompress_overwrite")
 
         with open(map_path, 'rb+') as f:
             comp_data = PeekableMmap(f.fileno(), 0)
@@ -217,30 +264,22 @@ class HaloMap:
                 decomp_path = splitext(decomp_path[0])
             decomp_path = decomp_path[0] + "_DECOMP.map"
 
-            if isfile(decomp_path):
-                new_decomp_path = asksaveasfilename(
-                    initialdir=dirname(map_path),
-                    title="Decompress '%s' to..." % map_name,
-                    filetypes=(("mapfile", "*.map"),
-                               ("All", "*.*")))
-                if new_decomp_path:
-                    decomp_path = new_decomp_path
+            if not decompress_overwrite and isfile(decomp_path):
+                decomp_path = join(tempfile.gettempdir(), basename(decomp_path))
 
             if not(decomp_path.lower().endswith(".map") or
                    isfile(decomp_path + ".map")):
                 decomp_path += ".map"
 
             print("    Decompressing to: %s" % decomp_path)
+            self.map_data = decompress_map(comp_data, map_header, decomp_path)
+            if comp_data is not self.map_data:
+                comp_data.close()
+        else:
+            self.map_data = comp_data
 
-        map_data = decompress_map(comp_data, map_header, decomp_path)
-        if self.is_compressed:
-            print("    Decompressed")
-        self.map_data = map_data
-
-        if comp_data is not map_data: comp_data.close()
-
-        map_header = get_map_header(map_data)
-        tag_index  = self.orig_tag_index = get_tag_index(map_data, map_header)
+        map_header = get_map_header(self.map_data)
+        tag_index  = self.orig_tag_index = get_tag_index(self.map_data, map_header)
 
         if tag_index is None:
             print("    Could not read tag index.")
@@ -250,7 +289,7 @@ class HaloMap:
         if will_be_active:
             self.maps["<active>"] = self
 
-        self.filepath    = map_path
+        self.filepath    = sanitize_path(map_path)
         self.engine      = engine
         self.map_header  = map_header
         self.index_magic = get_index_magic(map_header)
@@ -260,15 +299,13 @@ class HaloMap:
 
     def unload_map(self, keep_resources_loaded=True):
         keep_resources_loaded &= self.is_resource
-        try: map_name = self.map_header.map_name
-        except Exception: map_name = None
 
         if self.maps.get('<active>') is self:
             self.maps.pop('<active>')
-        if self.maps.get(map_name) is self:
-            self.maps.pop(map_name, None)
+        if self.maps.get(self.map_name) is self:
+            self.maps.pop(self.map_name, None)
 
-        if keep_resources_loaded and map_name in self.maps:
+        if keep_resources_loaded and self.map_name in self.maps:
             return
 
         try: self.map_data.close()
@@ -307,7 +344,7 @@ Header:
     type                == %s
     decompressed size   == %s
     index header offset == %s""") %
-        (self.engine, self.map_header.map_name,
+        (self.engine, self.map_name,
          self.map_header.build_date, map_type, decomp_size,
          self.map_header.tag_index_header_offset))
 

@@ -1,7 +1,6 @@
 from math import pi, sqrt, log
 from os.path import exists, join
 from struct import Struct as PyStruct
-from tkinter.filedialog import askopenfilename
 
 from .halo_map import *
 from .halo1_rsrc_map import Halo1RsrcMap
