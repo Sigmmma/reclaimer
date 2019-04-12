@@ -1,7 +1,7 @@
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
-from .grhi import multitex_overlay, hud_background
+from .grhi import hud_background
 
 warning_sound = Struct("warning sound",
     dependency("sound", ('lsnd', 'snd!')),
