@@ -31,7 +31,7 @@ class TagIndexManager:
     @property
     def tag_index(self): return self._tag_index
     @property
-    def directory_nodes(self): return self._directory_nodes
+    def directory_nodes(self): return self._directory_nodes.root
 
     def translate_tag_id(self, tag_id):
         tag_id &= 0xFFff
@@ -91,8 +91,9 @@ class TagDirectoryNode:
         elif item_key in self._names_to_ids:
             return self._tag_index[self._names_to_ids[item_key]]
         else:
+            item_key = item_key.replace('/', '\\').strip("\\ ")
             return self._get_node(
-                item_key.replace('/', '\\').strip("\\ ").lower().split("\\"))
+                [name for name in item_key.lower().split("\\") if name])
 
     @property
     def total_file_count(self):
@@ -190,14 +191,18 @@ class TagDirectoryNode:
         else:
             files_kw = dict(kw)
 
+        dir_indent_str = indent_str
         if print_guides:
             indent_str += "|"
+            if print_files or depth > 0:
+                dir_indent_str += "|"
+            else:
+                dir_indent_str += "+"
 
         kw["indent_str"] = indent_str + (" " * indent) + " "
         kw["depth"] = depth - 1
 
-        curr_indent_str = indent_str + (
-            ("-" if print_guides else " ") * indent) + " "
+        dir_indent_str += (("-" if print_guides else " ") * indent) + " "
         # put together sub-directory strings
         item_count = self.dir_count
         for dir_name in sorted(self._sub_nodes):
@@ -207,7 +212,7 @@ class TagDirectoryNode:
                 kw.update(_extra_returns=False, indent_str=last_item_indent_str)
 
             string += "%s%s%s%s\n" % (tag_id_pad, indexed_pad_str,
-                                      curr_indent_str, dir_name)
+                                      dir_indent_str, dir_name)
             if depth > 0:
                 string += self._sub_nodes[dir_name].pprint(**kw)
 
@@ -294,7 +299,8 @@ class TagDirectoryNode:
 
     def rename_tag(self, curr_path, new_path):
         curr_path = curr_path.replace('/', '\\').strip("\\ ")
-        return self._rename_tag(curr_path.lower().split("\\"), new_path)
+        return self._rename_tag(
+            [name for name in curr_path.lower().split("\\") if name], new_path)
 
     def rename_tag_by_id(self, tag_id, new_path):
         tag_ref = self.tag_index[tag_id]
@@ -303,8 +309,9 @@ class TagDirectoryNode:
         return self._rename_tag(curr_path.lower().split("\\"), new_path)
 
     def rename_dir(self, curr_dir, new_dir):
+        curr_dir = curr_dir.replace('/', '\\').strip("\\ ")
         return self._rename_dir(
-            curr_dir.replace('/', '\\').strip("\\ ").split("\\"), new_dir)
+            [name for name in curr_dir.lower().split("\\") if name], new_dir)
 
     def recalculate_nodes(self):
         if self.root is not self:
@@ -315,8 +322,9 @@ class TagDirectoryNode:
         self._sub_nodes = {}
         tag_id = 0
         for b in self.tag_index:
-            tag_path = b.path.replace('/', '\\').strip("\\ ")
-            self._add_node(tag_id, tag_path.lower().split("\\"))
+            tag_path = b.path.replace('/', '\\').strip("\\ ").lower()
+            self._add_node(
+                tag_id, [name for name in tag_path.lower().split("\\") if name])
             tag_id += 1
 
     def walk(self, top_down=True):
@@ -351,30 +359,46 @@ class TagDirectoryNode:
                 name, "\\".join(node_path_pieces[: dir_index - 1])))
 
     def _add_dir(self, dir_pieces, dir_node=None, dir_index=0):
+        name = None
         if dir_pieces:
             name = dir_pieces[dir_index]
             dir_index += 1
-
-        if name not in self._sub_nodes:
-            # plop a new directory in if one doesnt already exist
-            self._sub_nodes[name] = TagDirectoryNode(
-                self.tag_index, (), self._shared_root)
+            if name not in self._sub_nodes:
+                # plop a new directory in if one doesnt already exist
+                self._sub_nodes[name] = TagDirectoryNode(
+                    self.tag_index, (), self._shared_root)
+            node = self._sub_nodes[name]
+        else:
+            node = self
 
         if dir_index < len(dir_pieces):
             # continue navigating directories downward
-            self._sub_nodes[name]._add_dir(dir_pieces, dir_node, dir_index)
+            node._add_dir(dir_pieces, dir_node, dir_index)
         elif dir_node is not None:
             # update the currently existing directories contents
-            self._sub_nodes[name]._update(dir_node)
+            node._update(dir_node)
         else:
             # just added an empty dir_node in the previous "if" statement.
             # nothing to do but return
             pass
 
     def _rename_dir(self, curr_dir_pieces, new_dir, dir_index=0):
-        if curr_dir_pieces:
-            name = curr_dir_pieces[dir_index]
-            dir_index += 1
+        if not curr_dir_pieces:
+            # oh boy, we're renaming the root. we'll need to make a
+            # new root and add this node to it at the new directory
+            new_root = TagDirectoryNode(self.tag_index, (), self._shared_root)
+            new_dir = new_dir.replace('/', '\\').strip("\\ ")
+            new_dir_pieces = [name for name in new_dir.lower().split("\\") if name]
+            try:
+                self._shared_root.set(new_root)
+                new_root._add_dir(new_dir_pieces, self)
+            except Exception:
+                self._shared_root.set(self)
+                raise
+            return
+
+        name = curr_dir_pieces[dir_index]
+        dir_index += 1
 
         if dir_index == len(curr_dir_pieces):
             # rename this directory
@@ -383,7 +407,7 @@ class TagDirectoryNode:
                     name, "\\".join(curr_dir_pieces[: dir_index - 1])))
 
             new_dir = new_dir.replace('/', '\\').strip("\\ ")
-            new_dir_pieces = new_dir.lower().split("\\")
+            new_dir_pieces = [name for name in new_dir.lower().split("\\") if name]
 
             # apply renames to the tags in this directory node
             dir_node = self._sub_nodes.pop(name)
@@ -453,7 +477,8 @@ class TagDirectoryNode:
 
             old_tag_path = tag_ref.path
             old_name = self._ids_to_names[tag_id]
-            new_tag_path_pieces = new_path.lower().split("\\")
+            new_tag_path_pieces = [
+                name for name in new_path.lower().split("\\") if name]
             new_tag_path_pieces[-1] = splitext(new_tag_path_pieces[-1])[0]
 
             new_tag_path = "\\".join(new_tag_path_pieces)
@@ -531,4 +556,6 @@ if __name__ == "__main__":
     dir_nodes.rename_dir("weapons\\assault rifle\\",
                          "weapons\\assault rifle\\asdf\\")
     dir_nodes.rename_dir("weapons\\assault rifle\\asdf\\",
-                         "weapons\\assault rifle\\", )'''
+                         "weapons\\assault rifle\\", )
+    dir_nodes.rename_dir("", "test\\")
+    dir_nodes.pprint(printout=True, depth=1, print_indexed=0)'''
