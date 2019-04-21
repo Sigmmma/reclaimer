@@ -12,7 +12,7 @@ class TagIndexManager:
     _tag_index = ()
     _tag_index_map = ()
 
-    _directory_nodes = None
+    _get_dir_nodes_root = None
 
     def __init__(self, tag_index, tag_index_map=None):
         self._tag_index = tag_index
@@ -26,12 +26,31 @@ class TagIndexManager:
         # 0xFFff is reserved to mean NULL, so don't map it
         self._tag_index_map.pop(0xFFff, None)
 
-        self._directory_nodes = TagDirectoryNode(self.tag_index)
+        self._get_dir_nodes_root = TagDirectoryNode(self.tag_index).root_getter
 
     @property
     def tag_index(self): return self._tag_index
     @property
-    def directory_nodes(self): return self._directory_nodes.root
+    def directory_nodes(self): return self._get_dir_nodes_root()
+
+    # wrappers around the directory nodes
+    def rename_tag(self, tag_path, new_path):
+        self._directory_nodes.rename_tag(tag_path, new_dir)
+
+    def rename_tag_by_id(self, tag_id, new_path):
+        self._directory_nodes.rename_tag_by_id(tag_id, new_dir)
+
+    def rename_dir(self, curr_dir, new_dir):
+        self._directory_nodes.rename_dir(curr_dir, new_dir)
+
+    def print_tag_index(self, **kw):
+        self._directory_nodes.pprint(**kw)
+
+    def print_tag_index_files(self, **kw):
+        self._directory_nodes.pprint_files(**kw)
+
+    def walk(self, top_down=True):
+        yield from self._directory_nodes.walk(top_down)
 
     def translate_tag_id(self, tag_id):
         tag_id &= 0xFFff
@@ -60,7 +79,6 @@ class TagDirectoryNode:
         "_shared_root",
         "remove_empty"
         )
-
     def __init__(self, tag_index, dir_items=(), shared_root=None):
         self._names_to_ids = {}
         self._ids_to_names = {}
@@ -84,8 +102,8 @@ class TagDirectoryNode:
         if isinstance(item_key, int):
             if item_key in range(len(self.tag_index)):
                 return self.tag_index[item_key]
-            raise IndexError('Tag_id "%s" is outside the bounds of the tag index.'
-                             % item_key)
+            raise IndexError(
+                'Tag_id "%s" is outside the bounds of the tag index.' % item_key)
         elif item_key in self._sub_nodes:
             return self._sub_nodes[item_key]
         elif item_key in self._names_to_ids:
@@ -94,6 +112,8 @@ class TagDirectoryNode:
             item_key = item_key.replace('/', '\\').strip("\\ ")
             return self._get_node(
                 [name for name in item_key.lower().split("\\") if name])
+
+    def __str__(self): return self.pprint()
 
     @property
     def total_file_count(self):
@@ -121,7 +141,9 @@ class TagDirectoryNode:
     @property
     def tag_index(self): return self._tag_index
     @property
-    def root(self): return self._shared_root.get()
+    def root(self): return self.root_getter()
+    @property
+    def root_getter(self): return self._shared_root.get
     @property
     def shallow_empty(self): return not(self._names_to_ids or self._sub_nodes)
     @property
@@ -133,8 +155,6 @@ class TagDirectoryNode:
             if not node.empty:
                 return False
         return True
-
-    def __str__(self): return self.pprint()
 
     def pprint(self, **kw):
         # these are user-supplied settings
@@ -313,6 +333,9 @@ class TagDirectoryNode:
         return self._rename_dir(
             [name for name in curr_dir.lower().split("\\") if name], new_dir)
 
+    def walk(self, top_down=True):
+        yield from self._walk(top_down, "")
+
     def recalculate_nodes(self):
         if self.root is not self:
             return self.root.recalculate_nodes()
@@ -326,9 +349,6 @@ class TagDirectoryNode:
             self._add_node(
                 tag_id, [name for name in tag_path.lower().split("\\") if name])
             tag_id += 1
-
-    def walk(self, top_down=True):
-        yield from self._walk(top_down, "")
 
     def _apply_names_to_tag_index(self, parent_dir=""):
         # rename tags
