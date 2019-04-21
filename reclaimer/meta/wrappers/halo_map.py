@@ -81,8 +81,9 @@ class HaloMap:
 
     def __init__(self, maps=None, map_data_cache_limit=None):
         self.resource_map_class = type(self)
-        self.orig_tag_paths = ()
         self.setup_defs()
+
+        self.cache_original_tag_paths()
 
         self._ids_of_tags_read = set()
         if map_data_cache_limit is not None:
@@ -90,9 +91,31 @@ class HaloMap:
 
         self.maps = {} if maps is None else maps
 
+    def __del__(self):
+        self.unload_map(False)
+
     @property
     def map_name(self):
         return getattr(getattr(self, "map_header", None), "map_name", None)
+
+    # wrappers around the tag index handler
+    def rename_tag(self, tag_path, new_path):
+        self.tag_index_manager.rename_tag(tag_path, new_dir)
+
+    def rename_tag_by_id(self, tag_id, new_path):
+        self.tag_index_manager.rename_tag_by_id(tag_id, new_dir)
+
+    def rename_dir(self, curr_dir, new_dir):
+        self.tag_index_manager.rename_dir(curr_dir, new_dir)
+
+    def print_tag_index(self, **kw):
+        self.tag_index_manager.pprint(**kw)
+
+    def print_tag_index_files(self, **kw):
+        self.tag_index_manager.pprint_files(**kw)
+
+    def walk(self, top_down=True):
+        yield from self.tag_index_manager.walk(top_down)
 
     def setup_tag_headers(self):
         if type(self).tag_headers is not None:
@@ -129,11 +152,14 @@ class HaloMap:
             except Exception:
                 print(format_exc())
 
-    def __del__(self):
-        self.unload_map(False)
-
     def is_indexed(self, tag_id):
         return bool(self.tag_index.tag_index[tag_id].indexed)
+
+    def cache_original_tag_paths(self):
+        tags = () if self.tag_index is None else self.tag_index.tag_index
+
+        # record the original tag_paths so we know if they change
+        self.orig_tag_paths = tuple(b.path for b in tags)
 
     def basic_deprotection(self):
         if self.tag_index is None or self.is_resource:

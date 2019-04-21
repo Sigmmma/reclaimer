@@ -183,8 +183,7 @@ class Halo1Map(HaloMap):
         tag_index_array = tag_index.tag_index
         self.tag_index_manager = TagIndexManager(tag_index_array)
 
-        # record the original halo 1 tag_paths so we know if they change
-        self.orig_tag_paths = tuple(b.path for b in tag_index_array)
+        self.cache_original_tag_paths()
 
         # make all contents of the map parseable
         self.basic_deprotection()
