@@ -16,7 +16,7 @@ from supyr_struct.defs.frozen_dict import FrozenDict
 
 from ..halo_map import get_map_version, get_map_header,\
      get_tag_index, get_index_magic, get_map_magic, get_is_compressed_map,\
-     decompress_map, map_header_demo_def, tag_index_pc_def
+     decompress_map, map_header_demo_def, map_header_def, tag_index_pc_def
 
 from .map_pointer_converter import MapPointerConverter
 from .string_id_manager import StringIdManager
@@ -79,6 +79,8 @@ class HaloMap:
 
     resource_map_class = None
 
+    _decomp_file_ext = ".map"
+
     def __init__(self, maps=None, map_data_cache_limit=None):
         self.resource_map_class = type(self)
         self.setup_defs()
@@ -97,6 +99,9 @@ class HaloMap:
     @property
     def map_name(self):
         return getattr(getattr(self, "map_header", None), "map_name", None)
+
+    @property
+    def decomp_file_ext(self): return self._decomp_file_ext
 
     # wrappers around the tag index handler
     def rename_tag(self, tag_path, new_path):
@@ -253,7 +258,7 @@ class HaloMap:
                 new_map.load_map(map_path, will_be_active=False, **kw)
                 if new_map.engine != self.engine:
                     if do_printout:
-                        print("Incorrect engine for this map. ")
+                        print("Incorrect engine for this map.")
                     self.maps.pop(new_map.map_name, None)
             except Exception:
                 if do_printout:
@@ -279,7 +284,8 @@ class HaloMap:
             comp_data.close()
             return
 
-        engine = get_map_version(map_header)
+        # set self.engine early so self.decomp_file_ext will be accurate
+        self.engine = engine = get_map_version(map_header)
 
         decomp_path = None
         map_name = map_header.map_name
@@ -288,14 +294,14 @@ class HaloMap:
             decomp_path = splitext(map_path)
             while decomp_path[1]:
                 decomp_path = splitext(decomp_path[0])
-            decomp_path = decomp_path[0] + "_DECOMP.map"
+            decomp_path = decomp_path[0] + "_DECOMP" + self.decomp_file_ext
 
             if not decompress_overwrite and isfile(decomp_path):
                 decomp_path = join(tempfile.gettempdir(), basename(decomp_path))
 
-            if not(decomp_path.lower().endswith(".map") or
-                   isfile(decomp_path + ".map")):
-                decomp_path += ".map"
+            if not(decomp_path.lower().endswith(self.decomp_file_ext) or
+                   isfile(decomp_path + self.decomp_file_ext)):
+                decomp_path += self.decomp_file_ext
 
             print("    Decompressing to: %s" % decomp_path)
             self.map_data = decompress_map(comp_data, map_header, decomp_path)
@@ -316,7 +322,6 @@ class HaloMap:
             self.maps["<active>"] = self
 
         self.filepath    = sanitize_path(map_path)
-        self.engine      = engine
         self.map_header  = map_header
         self.index_magic = get_index_magic(map_header)
         self.map_magic   = get_map_magic(map_header)
@@ -364,7 +369,7 @@ class HaloMap:
 
         string += ((""""
 Header:
-    engine version      == %s
+    engine              == %s
     name                == %s
     build date          == %s
     type                == %s
