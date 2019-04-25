@@ -192,7 +192,7 @@ weap_attrs = Struct("weap attrs",
         float_zero_to_one("overheated threshold"),
         float_zero_to_one("detonation threshold"),
         float_zero_to_one("detonation fraction"),
-        float_zero_to_one("loss per second", UNIT_SCALE=per_sec_unit_scale),
+        float_zero_to_inf("loss per second", UNIT_SCALE=per_sec_unit_scale),
         float_zero_to_one("illumination"),
 
         Pad(16),
