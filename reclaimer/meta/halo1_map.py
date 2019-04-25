@@ -1,4 +1,4 @@
-from ..common_descs import *
+from reclaimer.common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 '''
@@ -106,6 +106,62 @@ yelo_header = Struct("yelo header",
     SIZE=196
     )
 
+vap_block = Struct("vap_block",
+    # File offset of the compressed block 
+    UInt32("file_offset"),
+
+    # File size of the compressed block
+    UInt32("file_size"),
+
+    # Decompressed size of the compressed block
+    UInt32("decompressed_size"),
+
+    # Reserved for potential future usage
+    UInt32("reserved"),
+    )
+
+# validated archive pattern(uh huh, sure)
+vap_header = Struct("vap_header",
+    # File size of the map when decompressed, include header size
+    UInt32("decompressed_size"),
+    UEnum16("compression_type",
+        "uncompressed",
+        "lzma",
+    ),
+    UEnum16("vap_version",
+        "chimera_1",
+        "next",
+    ),
+
+    # Number of blocks. If 0, data is assumed to be one contiguous stream
+    UInt32("block_count"),
+    # File size of the map when compressed, include header size
+    UInt32("compressed_size"),
+
+    UEnum32("feature_level",
+        "chimera_1",
+        "next",
+    ),
+
+    # Player limit (campaign). Set to 0 for multiplayer and user interface maps
+    UInt16("max_players"),
+    # Reserved for future use. Leave it at 0
+    Pad(10),
+
+    # Build date of the map in ISO 8601 (yyyy-mm-ddThh:mm:ss.fffffffff) format
+    ascii_str32("build_date"),
+
+    # Human-readable of the map
+    ascii_str32("name"),
+
+    # Human-readable description of the map
+    StrLatin1("description", SIZE=128),
+    Pad(256),
+    STEPTREE=Array("blocks",
+        SIZE=".block_count", SUB_STRUCT=vap_block
+        )
+    )
+
 
 # Halo Demo maps have a different header
 # structure with garbage filling the padding
@@ -129,6 +185,7 @@ map_header_demo = Struct("map header",
         ("halo3beta", 9),
         ("halo3", 11),
         ("halo1ce", 609),
+        ("halo1vap", 134),
         ),
     ascii_str32("map name"),
     UInt32("unknown"),
@@ -142,7 +199,7 @@ map_header_demo = Struct("map header",
     )
 
 map_header = Struct("map header",
-    UEnum32('head', ('head', 'head'), EDITABLE=False, DEFAULT='head'),
+    UEnum32('head', ('head', 'head'), DEFAULT='head'),
     UEnum32("version",
         ("halo1xbox",   5),
         ("halo1pcdemo", 6),
@@ -151,6 +208,7 @@ map_header = Struct("map header",
         ("halo3beta", 9),
         ("halo3", 11),
         ("halo1ce", 609),
+        ("halo1vap", 134),
         ),
     UInt32("decomp len"),
     UInt32("unknown"),
@@ -168,9 +226,13 @@ map_header = Struct("map header",
     UInt32("crc32"),
     Pad(8),
     yelo_header,
-    Pad(1940 - 8 - yelo_header[SIZE]),
-    UEnum32('foot', ('foot', 'foot'), EDITABLE=False, DEFAULT='foot'),
+    UEnum32('foot', ('foot', 'foot'), DEFAULT='foot', OFFSET=2044),
     SIZE=2048
+    )
+
+map_header_vap = desc_variant(
+    map_header,
+    ("yelo_header", Struct("vap_header", INCLUDE=vap_header, OFFSET=128)),
     )
 
 tag_header = Struct("tag header",
@@ -238,7 +300,10 @@ tag_index_pc = Struct("tag index",
 map_header_def = BlockDef(map_header)
 map_header_anni_def = BlockDef(map_header, endian=">")
 map_header_demo_def = BlockDef(map_header_demo)
+map_header_vap_def = BlockDef(map_header_vap)
 
 tag_index_xbox_def = BlockDef(tag_index_xbox)
 tag_index_pc_def = BlockDef(tag_index_pc)
 tag_index_anni_def = BlockDef(tag_index_pc, endian=">")
+
+map_header_vap_def = BlockDef(map_header_vap)

@@ -38,6 +38,7 @@ map_build_dates = {
     "halo1anni":       "01.00.01.0563",
     "halo1ce":         "01.00.00.0609",
     "halo1yelo":       "01.00.00.0609",
+    "halo1vap":        "01.00.00.0609",
     "halo1pc":         "01.00.00.0564",
     "halo2alpha":      "02.01.07.4998",
     "halo2beta":       "02.06.28.07902",
@@ -65,6 +66,7 @@ map_versions = {
     "halo1anni":       7,
     "halo1ce":         609,
     "halo1yelo":       609,
+    "halo1vap":        134,
     "halo2alpha":      7,
     "halo2beta":       8,
     "halo2epsilon":    8,
@@ -81,7 +83,7 @@ map_versions = {
     }
 
 GEN_1_HALO_ENGINES = ("halo1xboxdemo", "halo1xbox",
-                      "halo1ce", "halo1yelo",
+                      "halo1ce", "halo1vap", "halo1yelo",
                       "halo1pcdemo", "halo1pc", "halo1anni", )
 
 GEN_1_ENGINES = GEN_1_HALO_ENGINES + (
@@ -108,6 +110,7 @@ map_magics = {
     "halo1anni":       ANNIVERSARY_INDEX_MAGIC,
     "halo1ce":         CE_INDEX_MAGIC,
     "halo1yelo":       CE_INDEX_MAGIC,
+    "halo1vap":        CE_INDEX_MAGIC,
     "halo2alpha":      H2_XBOX_INDEX_MAGIC,
     "halo2beta":       H2_XBOX_INDEX_MAGIC,
     "halo2epsilon":    H2_XBOX_INDEX_MAGIC,

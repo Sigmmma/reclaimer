@@ -61,6 +61,15 @@ class Halo1Map(HaloMap):
 
         self.setup_tag_headers()
 
+    @property
+    def decomp_file_ext(self):
+        if self.engine == "halo1yelo":
+            return ".yelo"
+        elif self.engine == "halo1vap":
+            return ".vap"
+        else:
+            return ".map"
+
     def setup_defs(self):
         this_class = type(self)
         if this_class.defs is None:
@@ -89,7 +98,7 @@ class Halo1Map(HaloMap):
             return
 
         self.sound_rsrc_id = id(sounds)
-        if self.engine in ("halo1ce", "halo1yelo"):
+        if self.engine in ("halo1ce", "halo1yelo", "halo1vap"):
             # ce resource sounds are recognized by tag_path
             # so we must cache their offsets by their paths
             rsrc_snd_map = self.ce_rsrc_sound_indexes_by_path = {}
@@ -529,7 +538,7 @@ class Halo1Map(HaloMap):
             meta.stencil_bitmap.filepath = meta.source_bitmap.filepath = ''
 
         elif tag_cls in ("mode", "mod2"):
-            if engine in ("halo1yelo", "halo1ce", "halo1pc",
+            if engine in ("halo1yelo", "halo1ce", "halo1pc", "halo1vap",
                           "halo1anni", "halo1pcdemo", "stubbspc"):
                 # model_magic seems to be the same for all pc maps
                 verts_start = tag_index.model_data_offset
@@ -906,11 +915,12 @@ class Halo1Map(HaloMap):
 
     def get_resource_map_paths(self, maps_dir=""):
         if self.is_resource or self.engine not in ("halo1pc", "halo1pcdemo",
-                                                   "halo1ce", "halo1yelo"):
+                                                   "halo1ce", "halo1yelo",
+                                                   "halo1vap"):
             return {}
 
         map_paths = {"bitmaps": None, "sounds": None, "loc": None}
-        if self.engine not in ("halo1ce", "halo1yelo"):
+        if self.engine not in ("halo1ce", "halo1yelo", "halo1vap"):
             map_paths.pop('loc')
 
         data_files = False
@@ -989,17 +999,23 @@ Tag index:
             magic, self.bsp_sizes[tag_id], header.meta_pointer,
             header.meta_pointer - magic)
 
-        if self.engine != "halo1yelo":
-            return string
+        if self.engine == "halo1yelo":
+            string += self.generate_yelo_info_string()
+        elif self.engine == "halo1vap":
+            string += self.generate_vap_info_string()
 
-        yelo    = header.yelo_header
+        return string
+
+    def generate_yelo_info_string(self):
+        yelo    = self.map_header.yelo_header
         flags   = yelo.flags
         info    = yelo.build_info
         version = yelo.tag_versioning
         cheape  = yelo.cheape_definitions
         rsrc    = yelo.resources
         min_os  = info.minimum_os_build
-        string += """
+
+        return """
 Yelo information:
     Mod name              == %s
     Memory upgrade amount == %sx
@@ -1051,4 +1067,19 @@ Yelo information:
             rsrc.string_id_storage_header_offset,
             rsrc.tag_string_to_id_storage_header_offset)
 
-        return string
+    def generate_vap_info_string(self):
+        vap = self.map_header.vap_header
+
+        return """
+VAP information:
+    name        == %s
+    build date  == %s
+    description == %s
+
+    vap version   == %s
+    feature level == %s
+    max players   == %s\n""" % (
+            vap.name, vap.build_date, vap.description,
+            vap.vap_version.enum_name, vap.feature_level.enum_name,
+            vap.max_players,
+            )
