@@ -58,6 +58,7 @@ class HaloMap:
 
     # determines how to work with this map
     filepath      = ""
+    map_name      = ""
     engine        = ""
     is_resource   = False
     is_compressed = False
@@ -95,10 +96,6 @@ class HaloMap:
 
     def __del__(self):
         self.unload_map(False)
-
-    @property
-    def map_name(self):
-        return getattr(getattr(self, "map_header", None), "map_name", None)
 
     @property
     def decomp_file_ext(self): return self._decomp_file_ext
@@ -173,20 +170,20 @@ class HaloMap:
         i = 0
         found_counts = {}
         for b in self.tag_index.tag_index:
-            tag_path = backslash_fix.sub(r'\\', b.path)
+            tag_path = backslash_fix.sub(r'\\', b.path).\
+                       replace("/", "\\").strip().lower()
 
-            tag_cls  = b.class_1.data
-            name_id  = (tag_path, tag_cls)
+            name_id = (tag_path, b.class_1.data)
             if is_protected_tag(tag_path):
                 tag_path = "protected_%s" % i
-                i += 1
             elif name_id in found_counts:
                 tag_path = "%s_%s" % (tag_path, found_counts[name_id])
                 found_counts[name_id] += 1
             else:
-                found_counts[name_id] = 0
+                found_counts[name_id] = 1
 
             b.path = tag_path
+            i += 1
 
     def get_meta_descriptor(self, tag_cls):
         tagdef = self.defs.get(tag_cls)
@@ -255,7 +252,7 @@ class HaloMap:
                     # printed on the same line as this print statement
                     print("Loading %s...   " % map_name)
 
-                new_map.load_map(map_path, will_be_active=False, **kw)
+                new_map.load_map(map_path, **kw)
                 if new_map.engine != self.engine:
                     if do_printout:
                         print("Incorrect engine for this map.")
@@ -272,7 +269,6 @@ class HaloMap:
         return set(name for name in map_paths if not self.maps.get(name))
 
     def load_map(self, map_path, **kwargs):
-        will_be_active       = kwargs.get("will_be_active", True)
         decompress_overwrite = kwargs.get("decompress_overwrite")
 
         with open(map_path, 'rb+') as f:
@@ -285,10 +281,10 @@ class HaloMap:
             return
 
         # set self.engine early so self.decomp_file_ext will be accurate
-        self.engine = engine = get_map_version(map_header)
+        self.engine = get_map_version(map_header)
+        self.map_name = map_header.map_name
 
         decomp_path = None
-        map_name = map_header.map_name
         self.is_compressed = get_is_compressed_map(comp_data, map_header)
         if self.is_compressed:
             decomp_path = splitext(map_path)
@@ -317,10 +313,7 @@ class HaloMap:
             print("    Could not read tag index.")
             return
 
-        self.maps[map_header.map_name] = self
-        if will_be_active:
-            self.maps["<active>"] = self
-
+        self.maps[self.map_name] = self
         self.filepath    = sanitize_path(map_path)
         self.map_header  = map_header
         self.index_magic = get_index_magic(map_header)
@@ -328,16 +321,10 @@ class HaloMap:
         self.tag_index   = tag_index
         self.map_pointer_converter = MapPointerConverter()
 
-    def unload_map(self, keep_resources_loaded=True):
-        keep_resources_loaded &= self.is_resource
-
-        if self.maps.get('<active>') is self:
-            self.maps.pop('<active>')
-        if self.maps.get(self.map_name) is self:
-            self.maps.pop(self.map_name, None)
-
-        if keep_resources_loaded and self.map_name in self.maps:
-            return
+    def unload_map(self):
+        keys_to_pop = list(k for k, v in self.maps.items() if v is self)
+        for k in keys_to_pop:
+            self.maps.pop(k, None)
 
         try: self.map_data.close()
         except Exception: pass
@@ -359,9 +346,9 @@ class HaloMap:
             decomp_size += "(is already uncompressed)"
 
         map_type = self.map_header.map_type.enum_name
-        if   map_type == "sp":     map_type = "singleplayer"
-        elif map_type == "mp":     map_type = "multiplayer"
-        elif map_type == "ui":     map_type = "mainmenu"
+        if   map_type == "sp": map_type = "singleplayer"
+        elif map_type == "mp": map_type = "multiplayer"
+        elif map_type == "ui": map_type = "mainmenu"
         elif map_type == "shared":   map_type = "shared"
         elif map_type == "sharedsp": map_type = "shared single player"
         elif self.is_resource: map_type = "resource cache"
