@@ -190,12 +190,14 @@ class Halo1Map(HaloMap):
 
         tag_index = self.tag_index
         tag_index_array = tag_index.tag_index
-        self.tag_index_manager = TagIndexManager(tag_index_array)
 
+        # cache the original paths BEFORE running basic deprotection
         self.cache_original_tag_paths()
 
         # make all contents of the map parseable
         self.basic_deprotection()
+
+        self.tag_index_manager = TagIndexManager(tag_index_array)
 
         # add the tag data section
         self.map_pointer_converter.add_page_info(

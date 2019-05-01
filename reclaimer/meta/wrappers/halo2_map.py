@@ -100,7 +100,6 @@ class Halo2Map(HaloMap):
         return map_paths
 
     def load_map(self, map_path, **kwargs):
-        will_be_active = kwargs.get("will_be_active", True)
         HaloMap.load_map(self, map_path, **kwargs)
         tag_index = self.tag_index
         if self.engine == "halo2alpha":

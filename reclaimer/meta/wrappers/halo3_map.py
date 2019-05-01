@@ -192,7 +192,6 @@ class Halo3Map(HaloMap):
                     self.root_tags[tag_cls] = meta
 
     def load_map(self, map_path, **kwargs):
-        will_be_active = kwargs.get("will_be_active", True)
         HaloMap.load_map(self, map_path, **kwargs)
         self.tag_index = h3_to_h1_tag_index(self.map_header, self.tag_index)
         self.basic_deprotection()
@@ -229,9 +228,8 @@ class Halo3Map(HaloMap):
             for map_name, halo_map in self.maps.items():
                 # update each map's rawdata_manager so each one
                 # knows what name the shared caches are named.
-                if map_name != "<active>":
-                    halo_map.rawdata_manager.add_shared_map_name(
-                        ext_cache_name, self.map_header.map_name)
+                halo_map.rawdata_manager.add_shared_map_name(
+                    ext_cache_name, self.map_header.map_name)
 
         self.map_data.clear_cache()
 

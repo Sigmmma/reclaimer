@@ -76,7 +76,6 @@ class Halo1RsrcMap(HaloMap):
         return extractor(meta, tag_index_ref.path, **kw)
 
     def load_map(self, map_path, **kwargs):
-        will_be_active = kwargs.get("will_be_active", True)
         with open(map_path, 'rb+') as f:
             map_data = PeekableMmap(f.fileno(), 0)
 
@@ -115,7 +114,6 @@ class Halo1RsrcMap(HaloMap):
         self.map_data   = map_data
         self.is_resource = True
 
-        head.version.set_to(self.engine)
         self.index_magic = 0
 
         index_mul = 2
@@ -133,9 +131,6 @@ class Halo1RsrcMap(HaloMap):
             self.tag_classes = tag_classes
 
         self.maps[head.map_name] = self
-        if will_be_active:
-            self.maps["<active>"] = self
-
         rsrc_tag_count = len(rsrc_map.data.tags)//index_mul
         self.tag_classes += (def_cls,)*(rsrc_tag_count - len(self.tag_classes))
         tags.tag_index.extend(rsrc_tag_count)
@@ -386,14 +381,27 @@ class Halo1RsrcMap(HaloMap):
                 raise
 
     def generate_map_info_string(self):
-        string = HaloMap.generate_map_info_string(self)
-        string += """
+        if hasattr(self.map_data, '__len__'):
+            map_size = str(len(self.map_data))
+        elif (hasattr(self.map_data, 'seek') and
+              hasattr(self.map_data, 'tell')):
+            curr_pos = self.map_data.tell()
+            self.map_data.seek(0, 2)
+            map_size = str(self.map_data.tell())
+            self.map_data.seek(curr_pos)
+        else:
+            map_size = "unknown"
 
-Tag index:
+        return """%s
+General:
+    engine         == %s
+    file size      == %s
+    resource type  == %s
+
+Header:
     tag count         == %s
     tag paths pointer == %s
     tag index pointer == %s""" % (
-        self.tag_index.tag_count,
-        self.rsrc_map.data.tag_paths_pointer,
+        self.filepath, self.engine, map_size, self.map_name,
+        self.tag_index.tag_count, self.rsrc_map.data.tag_paths_pointer,
         self.rsrc_map.data.tag_headers_pointer)
-        return string
