@@ -43,11 +43,11 @@ class TagIndexManager:
     def rename_dir(self, curr_dir, new_dir):
         self._directory_nodes.rename_dir(curr_dir, new_dir)
 
-    def print_tag_index(self, **kw):
-        self._directory_nodes.pprint(**kw)
+    def print_tag_index(self, dir="", **kw):
+        self._directory_nodes.pprint(dir, **kw)
 
-    def print_tag_index_files(self, **kw):
-        self._directory_nodes.pprint_files(**kw)
+    def print_tag_index_files(self, dir="", **kw):
+        self._directory_nodes.pprint_files(dir, **kw)
 
     def walk(self, top_down=True):
         yield from self._directory_nodes.walk(top_down)
@@ -156,7 +156,11 @@ class TagDirectoryNode:
                 return False
         return True
 
-    def pprint(self, **kw):
+    def pprint(self, dir="", **kw):
+        if dir:
+            dir_pieces = [n for n in dir.lower().split("\\") if n]
+            return self._get_node(dir_pieces).pprint(**kw)
+
         # these are user-supplied settings
         printout = kw.pop("printout", False)
         print_header = kw.get("print_header", True)
@@ -255,7 +259,11 @@ class TagDirectoryNode:
         else:
             return string
 
-    def pprint_files(self, **kw):
+    def pprint_files(self, dir="", **kw):
+        if dir:
+            dir_pieces = [n for n in dir.lower().split("\\") if n]
+            return self._get_node(dir_pieces).pprint_files(**kw)
+
         # these are user-supplied settings
         printout = kw.pop("printout", False)
         print_header = kw.get("print_header", True)
@@ -559,7 +567,8 @@ class TagDirectoryNode:
 
 
 if __name__ == "__main__":
-    '''from reclaimer.meta.halo_map import get_tag_index
+    '''
+    from reclaimer.meta.halo_map import get_tag_index
     from supyr_struct.buffer import get_rawdata
 
     tag_index = get_tag_index(
@@ -568,14 +577,14 @@ if __name__ == "__main__":
         )
 
     dir_nodes = TagDirectoryNode(tag_index.tag_index)
-    #dir_nodes.pprint(printout=True, depth=1, extra_dir_spacing=False)
-    #dir_nodes["weapons\\assault rifle"].pprint(
-    #    printout=True, depth=None, print_files=False, print_indexed=True)
-    #dir_nodes["weapons\\assault rifle"].pprint(
-    #    printout=True, depth=None, files_before_dirs=1, print_indexed=True)
-    dir_nodes.rename_dir("weapons\\assault rifle\\",
-                         "weapons\\assault rifle\\asdf\\")
-    dir_nodes.rename_dir("weapons\\assault rifle\\asdf\\",
-                         "weapons\\assault rifle\\", )
-    dir_nodes.rename_dir("", "test\\")
-    dir_nodes.pprint(printout=True, depth=1, print_indexed=0)'''
+    dir_nodes.pprint(printout=True, depth=1, extra_dir_spacing=False)
+    dir_nodes.pprint("weapons\\assault rifle", printout=True, depth=None,
+                     print_files=False, print_indexed=True)
+    dir_nodes.pprint("weapons\\assault rifle", printout=True, depth=None,
+                     files_before_dirs=1, print_indexed=True)
+    #dir_nodes.rename_dir("weapons\\assault rifle\\",
+    #                     "weapons\\assault rifle\\asdf\\")
+    #dir_nodes.rename_dir("weapons\\assault rifle\\asdf\\",
+    #                     "weapons\\assault rifle\\", )
+    #dir_nodes.rename_dir("", "test\\")
+    #dir_nodes.pprint(printout=True, depth=1, print_indexed=0)#'''
