@@ -110,11 +110,11 @@ class HaloMap:
     def rename_dir(self, curr_dir, new_dir):
         self.tag_index_manager.rename_dir(curr_dir, new_dir)
 
-    def print_tag_index(self, **kw):
-        self.tag_index_manager.pprint(**kw)
+    def print_tag_index(self, dir="", **kw):
+        self.tag_index_manager.pprint(dir, **kw)
 
-    def print_tag_index_files(self, **kw):
-        self.tag_index_manager.pprint_files(**kw)
+    def print_tag_index_files(self, dir="", **kw):
+        self.tag_index_manager.pprint_files(dir, **kw)
 
     def walk(self, top_down=True):
         yield from self.tag_index_manager.walk(top_down)
