@@ -95,7 +95,7 @@ class HaloMap:
         self.maps = {} if maps is None else maps
 
     def __del__(self):
-        self.unload_map(False)
+        self.unload_map()
 
     @property
     def decomp_file_ext(self): return self._decomp_file_ext
