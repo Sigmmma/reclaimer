@@ -10,7 +10,7 @@ from string import ascii_letters
 from reclaimer.util import is_protected_tag, fourcc
 from supyr_struct.defs.constants import *
 from supyr_struct.defs.util import *
-from supyr_struct.buffer import BytearrayBuffer, BytesBuffer, PeekableMmap
+from supyr_struct.buffer import BytearrayBuffer, BytesBuffer, get_rawdata
 from supyr_struct.field_types import FieldType
 from supyr_struct.defs.frozen_dict import FrozenDict
 
@@ -101,20 +101,27 @@ class HaloMap:
     def decomp_file_ext(self): return self._decomp_file_ext
 
     # wrappers around the tag index handler
+    def get_total_dir_count(self, dir=""):  return self.tag_index_manager.get_total_dir_count(dir)
+    def get_total_file_count(self, dir=""): return self.tag_index_manager.get_total_file_count(dir)
+    def get_dir_count(self, dir=""):  return self.tag_index_manager.get_dir_count(dir)
+    def get_file_count(self, dir=""): return self.tag_index_manager.get_file_count(dir)
+    def get_dir_names(self, dir=""):  return self.tag_index_manager.get_dir_names(dir)
+    def get_file_names(self, dir=""): return self.tag_index_manager.get_file_names(dir)
+
     def rename_tag(self, tag_path, new_path):
-        self.tag_index_manager.rename_tag(tag_path, new_dir)
+        return self.tag_index_manager.rename_tag(tag_path, new_dir)
 
     def rename_tag_by_id(self, tag_id, new_path):
-        self.tag_index_manager.rename_tag_by_id(tag_id, new_dir)
+        return self.tag_index_manager.rename_tag_by_id(tag_id, new_dir)
 
     def rename_dir(self, curr_dir, new_dir):
-        self.tag_index_manager.rename_dir(curr_dir, new_dir)
+        return self.tag_index_manager.rename_dir(curr_dir, new_dir)
 
     def print_tag_index(self, dir="", **kw):
-        self.tag_index_manager.pprint(dir, **kw)
+        return self.tag_index_manager.pprint(dir, **kw)
 
     def print_tag_index_files(self, dir="", **kw):
-        self.tag_index_manager.pprint_files(dir, **kw)
+        return self.tag_index_manager.pprint_files(dir, **kw)
 
     def walk(self, top_down=True):
         yield from self.tag_index_manager.walk(top_down)
@@ -247,10 +254,7 @@ class HaloMap:
             try:
                 new_map = self.resource_map_class(self.maps)
                 if do_printout:
-                    # do the print AFTER making the new map so that
-                    # the "Loading definitions" message doesnt get
-                    # printed on the same line as this print statement
-                    print("Loading %s...   " % map_name)
+                    print("Loading %s..." % map_name)
 
                 new_map.load_map(map_path, **kw)
                 if new_map.engine != self.engine:
@@ -270,9 +274,7 @@ class HaloMap:
 
     def load_map(self, map_path, **kwargs):
         decompress_overwrite = kwargs.get("decompress_overwrite")
-
-        with open(map_path, 'rb+') as f:
-            comp_data = PeekableMmap(f.fileno(), 0)
+        comp_data = get_rawdata(filepath=map_path)
 
         map_header = get_map_header(comp_data, True)
         if map_header is None:
@@ -360,10 +362,11 @@ Header:
     name                == %s
     build date          == %s
     type                == %s
+    checksum            == %s
     decompressed size   == %s
     index header offset == %s""") %
-        (self.engine, self.map_name,
-         self.map_header.build_date, map_type, decomp_size,
-         self.map_header.tag_index_header_offset))
+        (self.engine, self.map_header.map_name,
+         self.map_header.build_date, map_type, self.map_header.crc32,
+         decomp_size, self.map_header.tag_index_header_offset))
 
         return string

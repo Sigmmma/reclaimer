@@ -33,24 +33,37 @@ class TagIndexManager:
     @property
     def directory_nodes(self): return self._get_dir_nodes_root()
 
+    def get_total_dir_count(self, dir=""):
+        return self.directory_nodes.get_dir_node(dir).total_dir_count
+    def get_total_file_count(self, dir=""):
+        return self.directory_nodes.get_dir_node(dir).total_file_count
+    def get_dir_count(self, dir=""):
+        return self.directory_nodes.get_dir_node(dir).dir_count
+    def get_file_count(self, dir=""):
+        return self.directory_nodes.get_dir_node(dir).file_count
+    def get_dir_names(self, dir=""):
+        return self.directory_nodes.get_dir_node(dir).dir_names
+    def get_file_names(self, dir=""):
+        return self.directory_nodes.get_dir_node(dir).file_names
+
     # wrappers around the directory nodes
     def rename_tag(self, tag_path, new_path):
-        self._directory_nodes.rename_tag(tag_path, new_dir)
+        return self.directory_nodes.rename_tag(tag_path, new_dir)
 
     def rename_tag_by_id(self, tag_id, new_path):
-        self._directory_nodes.rename_tag_by_id(tag_id, new_dir)
+        return self.directory_nodes.rename_tag_by_id(tag_id, new_dir)
 
     def rename_dir(self, curr_dir, new_dir):
-        self._directory_nodes.rename_dir(curr_dir, new_dir)
+        return self.directory_nodes.rename_dir(curr_dir, new_dir)
 
-    def print_tag_index(self, dir="", **kw):
-        self._directory_nodes.pprint(dir, **kw)
+    def pprint(self, dir="", **kw):
+        return self.directory_nodes.pprint(dir, **kw)
 
-    def print_tag_index_files(self, dir="", **kw):
-        self._directory_nodes.pprint_files(dir, **kw)
+    def pprint_files(self, dir="", **kw):
+        return self.directory_nodes.pprint_files(dir, **kw)
 
     def walk(self, top_down=True):
-        yield from self._directory_nodes.walk(top_down)
+        yield from self.directory_nodes.walk(top_down)
 
     def translate_tag_id(self, tag_id):
         tag_id &= 0xFFff
@@ -156,19 +169,24 @@ class TagDirectoryNode:
                 return False
         return True
 
+    def get_dir_node(self, dir=""):
+        return self._get_node([n for n in dir.replace("/", "\\").
+                               lower().strip("\\ ").split("\\") if n])
+
     def pprint(self, dir="", **kw):
         if dir:
-            dir_pieces = [n for n in dir.lower().split("\\") if n]
+            dir_pieces = [n for n in dir.replace("/", "\\").
+                          lower().strip("\\ ").split("\\") if n]
             return self._get_node(dir_pieces).pprint(**kw)
 
         # these are user-supplied settings
-        printout = kw.pop("printout", False)
-        print_header = kw.get("print_header", True)
-        print_guides = kw.get("print_guides", True)
-        print_files = kw.get("print_files", True)
-        print_tag_ids = kw.get("print_tag_ids", True) and print_files
-        print_indexed = kw.get("print_indexed", False) and print_files
-        files_before_dirs = kw.get("files_before_dirs", True)
+        printout = kw.pop("do_printout", False)
+        print_header = kw.get("header", True)
+        print_guides = kw.get("guides", True)
+        print_files = kw.get("files", True)
+        print_tag_ids = kw.get("tag_ids", True) and print_files
+        print_indexed = kw.get("indexed", False) and print_files
+        dirs_first = kw.get("dirs_first", True)
         extra_dir_spacing = kw.get("extra_dir_spacing", 1)
         depth = kw.get("depth", 0)
         indent = kw.get("indent", 4)
@@ -192,7 +210,7 @@ class TagDirectoryNode:
         indent = max(indent - (2 if print_guides else 1), 0)
 
         # increase the indent str for next level
-        kw["print_header"] = False
+        kw["header"] = False
         kw["_extra_returns"] = int(extra_dir_spacing)
         last_item_indent_str = indent_str + (" " * (indent + 1)) + " "
 
@@ -210,7 +228,7 @@ class TagDirectoryNode:
             indexed_pad_str = " " * len(INDEXED_HEADER_STR)
 
         # put together tag path strings
-        if print_files and files_before_dirs:
+        if print_files and dirs_first:
             string += self.pprint_files(**kw)
         else:
             files_kw = dict(kw)
@@ -231,7 +249,7 @@ class TagDirectoryNode:
         item_count = self.dir_count
         for dir_name in sorted(self._sub_nodes):
             item_count -= 1
-            if item_count == 0 and not(print_files and not files_before_dirs):
+            if item_count == 0 and not(print_files and not dirs_first):
                 # helps with readability
                 kw.update(_extra_returns=False, indent_str=last_item_indent_str)
 
@@ -240,7 +258,7 @@ class TagDirectoryNode:
             if depth > 0:
                 string += self._sub_nodes[dir_name].pprint(**kw)
 
-        if print_files and not files_before_dirs:
+        if print_files and not dirs_first:
             string += self.pprint_files(**files_kw)
 
         # add extra spacing after last directory
@@ -261,15 +279,16 @@ class TagDirectoryNode:
 
     def pprint_files(self, dir="", **kw):
         if dir:
-            dir_pieces = [n for n in dir.lower().split("\\") if n]
+            dir_pieces = [n for n in dir.replace("/", "\\").
+                          lower().strip("\\ ").split("\\") if n]
             return self._get_node(dir_pieces).pprint_files(**kw)
 
         # these are user-supplied settings
-        printout = kw.pop("printout", False)
-        print_header = kw.get("print_header", True)
-        print_guides = kw.get("print_guides", True)
-        print_tag_ids = kw.get("print_tag_ids", True)
-        print_indexed = kw.get("print_indexed", False)
+        printout = kw.pop("do_printout", False)
+        print_header = kw.get("header", True)
+        print_guides = kw.get("guides", True)
+        print_tag_ids = kw.get("tag_ids", True)
+        print_indexed = kw.get("indexed", False)
         indent = kw.get("indent", 4)
 
         indent_str = kw.get("indent_str", "")
@@ -369,6 +388,9 @@ class TagDirectoryNode:
             sub_node._apply_names_to_tag_index("\\".join((parent_dir, name)))
 
     def _get_node(self, node_path_pieces, dir_index=0):
+        if dir_index == len(node_path_pieces):
+            return self
+
         name = node_path_pieces[dir_index]
         dir_index += 1
         if dir_index < len(node_path_pieces):
@@ -577,14 +599,14 @@ if __name__ == "__main__":
         )
 
     dir_nodes = TagDirectoryNode(tag_index.tag_index)
-    dir_nodes.pprint(printout=True, depth=1, extra_dir_spacing=False)
-    dir_nodes.pprint("weapons\\assault rifle", printout=True, depth=None,
-                     print_files=False, print_indexed=True)
-    dir_nodes.pprint("weapons\\assault rifle", printout=True, depth=None,
-                     files_before_dirs=1, print_indexed=True)
+    dir_nodes.pprint(do_printout=True, depth=1, extra_dir_spacing=False)
+    dir_nodes.pprint("weapons\\assault rifle", do_printout=True, depth=None,
+                     files=False, indexed=True)
+    dir_nodes.pprint("weapons\\assault rifle", do_printout=True, depth=None,
+                     dirs_first=1, indexed=True)
     #dir_nodes.rename_dir("weapons\\assault rifle\\",
     #                     "weapons\\assault rifle\\asdf\\")
     #dir_nodes.rename_dir("weapons\\assault rifle\\asdf\\",
     #                     "weapons\\assault rifle\\", )
     #dir_nodes.rename_dir("", "test\\")
-    #dir_nodes.pprint(printout=True, depth=1, print_indexed=0)#'''
+    #dir_nodes.pprint(do_printout=True, depth=1, indexed=0)#'''

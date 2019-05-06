@@ -76,8 +76,7 @@ class Halo1RsrcMap(HaloMap):
         return extractor(meta, tag_index_ref.path, **kw)
 
     def load_map(self, map_path, **kwargs):
-        with open(map_path, 'rb+') as f:
-            map_data = PeekableMmap(f.fileno(), 0)
+        map_data = get_rawdata(filepath=map_path)
 
         resource_type = unpack("<I", map_data.read(4))[0]; map_data.seek(0)
         rsrc_map = self.rsrc_map = halo1_rsrc_map_def.build(rawdata=map_data)

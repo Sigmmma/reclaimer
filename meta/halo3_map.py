@@ -223,7 +223,7 @@ h3_map_header = Struct("map header",
     UInt32("tag name table size"),
     UInt32("tag name index offset"),
 
-    UInt32("checksum"),
+    UInt32("crc32"),
     BytesRaw("unknown9", SIZE=32, VISIBLE=False),
     UInt32("virtual address"),
     UInt32("xkd version"),
