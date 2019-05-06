@@ -74,7 +74,7 @@ class Halo1Map(HaloMap):
         this_class = type(self)
         if this_class.defs is None:
             this_class.defs = defs = {}
-            print("    Loading definitions in %s" % self.tag_defs_module)
+            print("    Loading definitions in '%s'" % self.tag_defs_module)
             this_class.handler = self.handler_class(
                 build_reflexive_cache=False, build_raw_data_cache=False)
 
@@ -992,7 +992,7 @@ Tag index:
             if header is None: continue
 
             magic  = self.bsp_magics[tag_id]
-            string += """%s.structure_scenario_bsp
+            string += """    %s.structure_scenario_bsp
         bsp base pointer     == %s
         bsp magic            == %s
         bsp size             == %s

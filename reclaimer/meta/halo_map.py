@@ -4,7 +4,7 @@ import os
 from copy import deepcopy
 from ..common_descs import *
 from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.buffer import PeekableMmap
+from supyr_struct.buffer import get_rawdata
 from .halo1_map import *
 from .halo2_alpha_map import *
 from .halo2_map import *
@@ -262,8 +262,7 @@ def decompress_map_lzma(comp_data, header, decomp_path=""):
             f.write(lzma.decompress(comp_data.read(in_size)))
 
     # have to do this separate or seeking will be fucked
-    with open(decomp_path, "rb+") as f:
-        return PeekableMmap(f.fileno(), 0)
+    return get_rawdata(filepath=decomp_path)
 
 
 def decompress_map_deflate(comp_data, header, decomp_path=""):
@@ -302,5 +301,4 @@ def decompress_map_deflate(comp_data, header, decomp_path=""):
         f.write(b'\xca'*(decomp_len - f.tell()))
 
     # have to do this separate or seeking will be fucked
-    with open(decomp_path, "rb+") as f:
-        return PeekableMmap(f.fileno(), 0)
+    return get_rawdata(filepath=decomp_path)
