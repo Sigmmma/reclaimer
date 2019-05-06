@@ -396,7 +396,7 @@ class TagDirectoryNode:
         if dir_index < len(node_path_pieces):
             # continue navigating directories downward
             if name not in self._sub_nodes:
-                raise KeyError('Directory "%s" does not exist in "%s".' % (
+                raise KeyError('Directory "%s" does not exist in "%s"' % (
                     name, "\\".join(node_path_pieces[: dir_index - 1])))
 
             return self._sub_nodes[name]._get_node(node_path_pieces, dir_index)
@@ -405,7 +405,7 @@ class TagDirectoryNode:
         elif name in self._names_to_ids:
             return self._tag_index[self._names_to_ids[name]]
         else:
-            raise KeyError('Directory/tag name "%s" does not exist in "%s".' % (
+            raise KeyError('Directory/tag name "%s" does not exist in "%s"' % (
                 name, "\\".join(node_path_pieces[: dir_index - 1])))
 
     def _add_dir(self, dir_pieces, dir_node=None, dir_index=0):
@@ -453,7 +453,7 @@ class TagDirectoryNode:
         if dir_index == len(curr_dir_pieces):
             # rename this directory
             if name not in self._sub_nodes:
-                raise KeyError('Directory "%s" does not exist in "%s".' % (
+                raise KeyError('Directory "%s" does not exist in "%s"' % (
                     name, "\\".join(curr_dir_pieces[: dir_index - 1])))
 
             new_dir = new_dir.replace('/', '\\').strip("\\ ")
@@ -476,7 +476,7 @@ class TagDirectoryNode:
                 # remove empty directories
                 self._sub_nodes.pop(name)
         else:
-            raise KeyError('Directory "%s" does not exist in "%s".' % (
+            raise KeyError('Directory "%s" does not exist in "%s"' % (
                 name, "\\".join(curr_dir_pieces[: dir_index - 1])))
 
     def _add_node(self, tag_id_or_dir_node, tag_path_pieces, dir_index=0):
@@ -517,7 +517,7 @@ class TagDirectoryNode:
         if dir_index == len(tag_path_pieces):
             # rename this tag
             if name not in self._names_to_ids:
-                raise KeyError('Tag name "%s" does not exist in "%s".' % (
+                raise KeyError('Tag name "%s" does not exist in "%s"' % (
                     name, "\\".join(tag_path_pieces[: dir_index - 1])))
 
             # pop the name out of names_to_ids and the id out of ids_to_names
@@ -553,7 +553,7 @@ class TagDirectoryNode:
                 # remove empty directories
                 self._sub_nodes.pop(name)
         else:
-            raise KeyError('Directory "%s" does not exist in "%s".' % (
+            raise KeyError('Directory "%s" does not exist in "%s"' % (
                 name, "\\".join(tag_path_pieces[: dir_index - 1])))
 
     def _update(self, other_node):
