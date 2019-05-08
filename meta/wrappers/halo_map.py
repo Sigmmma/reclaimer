@@ -77,6 +77,7 @@ class HaloMap:
 
     tag_defs_module = ""
     tag_classes_to_load = ()
+    data_extractors = ()
 
     resource_map_class = None
 
@@ -161,6 +162,9 @@ class HaloMap:
             except Exception:
                 print(format_exc())
 
+    def get_dependencies(self, meta, tag_id, tag_cls):
+        return ()
+
     def is_indexed(self, tag_id):
         return bool(self.tag_index.tag_index[tag_id].indexed)
 
@@ -235,6 +239,18 @@ class HaloMap:
 
     def get_resource_map_paths(self, maps_dir=""):
         return {}
+
+    def is_data_extractable(self, tag_index_ref):
+        return fourcc(tag_index_ref.class_1.data) in self.data_extractors
+
+    def extract_tag_data(self, meta, tag_index_ref, **kw):
+        if not self.is_data_extractable(tag_index_ref):
+            return "No extractor for this type of tag."
+
+        extractor = self.data_extractors.get(
+            fourcc(tag_index_ref.class_1.data))
+        kw['halo_map'] = self
+        return extractor(meta, tag_index_ref.path, **kw)
 
     def load_resource_maps(self, maps_dir="", map_paths=(), **kw):
         do_printout = kw.get("do_printout", False)
@@ -332,7 +348,6 @@ class HaloMap:
         except Exception: pass
 
     def generate_map_info_string(self):
-        string = self.filepath
         if hasattr(self.map_data, '__len__'):
             decomp_size = str(len(self.map_data))
         elif (hasattr(self.map_data, 'seek') and
@@ -356,7 +371,7 @@ class HaloMap:
         elif self.is_resource: map_type = "resource cache"
         elif "INVALID" in map_type:  map_type = "unknown"
 
-        string += ((""""
+        return (("""%s
 Header:
     engine              == %s
     name                == %s
@@ -365,8 +380,6 @@ Header:
     checksum            == %s
     decompressed size   == %s
     index header offset == %s""") %
-        (self.engine, self.map_header.map_name,
+        (self.filepath, self.engine, self.map_header.map_name,
          self.map_header.build_date, map_type, self.map_header.crc32,
          decomp_size, self.map_header.tag_index_header_offset))
-
-        return string
