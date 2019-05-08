@@ -16,6 +16,7 @@ class Halo2Map(HaloMap):
     tag_classes_to_load = (
         "ant!", "bitm", "hsc*", "pphy", "snd!", "shad", "trak", "ugh!"
         )
+    data_extractors = data_extraction.h2_data_extractors
 
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
@@ -139,14 +140,6 @@ class Halo2Map(HaloMap):
             print("Could not read sound_cache_file_gestalt tag")
 
         self.map_data.clear_cache()
-
-    def extract_tag_data(self, meta, tag_index_ref, **kw):
-        extractor = data_extraction.h2_data_extractors.get(
-            fourcc(tag_index_ref.class_1.data))
-        if extractor is None:
-            return "No extractor for this type of tag."
-        kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.path, **kw)
 
     def get_meta(self, tag_id, reextract=False, **kw):
         if tag_id is None:

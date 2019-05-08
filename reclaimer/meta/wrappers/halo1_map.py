@@ -1,3 +1,4 @@
+from copy import deepcopy
 from math import pi, sqrt, log
 from os.path import exists, join
 from struct import Struct as PyStruct
@@ -45,6 +46,8 @@ class Halo1Map(HaloMap):
     bsp_headers = ()
     bsp_header_offsets = ()
     bsp_pointer_converters = ()
+
+    data_extractors = data_extraction.h1_data_extractors
 
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
@@ -116,15 +119,18 @@ class Halo1Map(HaloMap):
                 i += 1
 
     def get_dependencies(self, meta, tag_id, tag_cls):
-        if self.is_indexed(tag_id):
-            if tag_cls != "snd!":
-                return ()
-
+        if not self.is_indexed(tag_id):
+            # not indexed. get dependencies like normal
+            pass
+        elif tag_cls != "snd!":
+            # among the indexable tags, only sounds can have valid dependencies
+            return ()
+        elif not hasattr(meta, "pitch_ranges"):
+            # tag is indexed AND we were provided with the indexed version
             rsrc_id = meta.promotion_sound.id & 0xFFff
             if rsrc_id == 0xFFFF: return ()
 
             sounds = self.maps.get("sounds")
-            rsrc_id = rsrc_id // 2
             if   sounds is None: return ()
             elif rsrc_id >= len(sounds.tag_index.tag_index): return ()
 
@@ -133,7 +139,13 @@ class Halo1Map(HaloMap):
             tag_id = inv_snd_map.get(tag_path, 0xFFFF)
             if tag_id >= len(self.tag_index.tag_index): return ()
 
-            return [self.tag_index.tag_index[tag_id]]
+            ref = deepcopy(meta.promotion_sound)
+            tag_index_ref = self.tag_index.tag_index[tag_id]
+            ref.tag_class.data = tag_index_ref.class_1.data
+            ref.id             = tag_index_ref.id
+            ref.filepath       = tag_index_ref.path
+
+            return [ref]
 
         if self.handler is None: return ()
 
@@ -265,14 +277,6 @@ class Halo1Map(HaloMap):
                     halo_map.ensure_sound_maps_valid()
 
         self.map_data.clear_cache()
-
-    def extract_tag_data(self, meta, tag_index_ref, **kw):
-        extractor = data_extraction.h1_data_extractors.get(
-            fourcc(tag_index_ref.class_1.data))
-        if extractor is None:
-            return "No extractor for this type of tag."
-        kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.path, **kw)
 
     def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, **kw):
         '''

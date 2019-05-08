@@ -63,17 +63,11 @@ class Halo1RsrcMap(HaloMap):
     tag_defs_module = "reclaimer.hek.defs"
     tag_classes_to_load = ("bitm", "snd!", "font", "hmt ", "ustr")
 
+    data_extractors = data_extraction.h1_data_extractors
+
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
         self.setup_tag_headers()
-
-    def extract_tag_data(self, meta, tag_index_ref, **kw):
-        extractor = data_extraction.h1_data_extractors.get(
-            fourcc(tag_index_ref.class_1.data))
-        if extractor is None:
-            return "No extractor for this type of tag."
-        kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.path, **kw)
 
     def load_map(self, map_path, **kwargs):
         map_data = get_rawdata(filepath=map_path)

@@ -8,8 +8,12 @@ from .obje import *
 obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=3)
 
+eqip_attrs = dict(eqip_attrs)
+eqip_attrs[1] = SEnum16("grenade type", *grenade_types_os)
+
 eqip_body = dict(eqip_body)
 eqip_body[0] = obje_attrs
+eqip_body[2] = eqip_attrs
 
 def get():
     return eqip_def

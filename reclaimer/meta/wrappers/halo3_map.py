@@ -133,6 +133,8 @@ class Halo3Map(HaloMap):
         (0x4B7, 0xC11), (0x0, 0x4B7), (0x0, 0xA7D),
         (0x0, 0xB0F),   (0x0, 0xBAF), (0x0, 0xB63),
         (0x0, 0xBBF),   (0x0, 0xBF0), (0x0, 0xC04))
+    
+    data_extractors = data_extraction.h3_data_extractors
 
     def __init__(self, maps=None):
         self.root_tags = {}
@@ -251,14 +253,6 @@ class Halo3Map(HaloMap):
                 map_paths[map_name] = map_path
 
         return map_paths
-
-    def extract_tag_data(self, meta, tag_index_ref, **kw):
-        extractor = data_extraction.h3_data_extractors.get(
-            fourcc(tag_index_ref.class_1.data))
-        if extractor is None:
-            return "No extractor for this type of tag."
-        kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.path, **kw)
 
     def get_meta(self, tag_id, reextract=False, **kw):
         if tag_id is None or self.map_header.map_type.data > 2:
