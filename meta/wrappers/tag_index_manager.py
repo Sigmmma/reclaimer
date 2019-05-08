@@ -228,7 +228,7 @@ class TagDirectoryNode:
             indexed_pad_str = " " * len(INDEXED_HEADER_STR)
 
         # put together tag path strings
-        if print_files and dirs_first:
+        if print_files and not dirs_first:
             string += self.pprint_files(**kw)
         else:
             files_kw = dict(kw)
@@ -236,7 +236,7 @@ class TagDirectoryNode:
         dir_indent_str = indent_str
         if print_guides:
             indent_str += "|"
-            if print_files or depth > 0:
+            if not self.file_count or depth > 0:
                 dir_indent_str += "|"
             else:
                 dir_indent_str += "+"
@@ -249,7 +249,7 @@ class TagDirectoryNode:
         item_count = self.dir_count
         for dir_name in sorted(self._sub_nodes):
             item_count -= 1
-            if item_count == 0 and not(print_files and not dirs_first):
+            if item_count == 0 and not(print_files and dirs_first):
                 # helps with readability
                 kw.update(_extra_returns=False, indent_str=last_item_indent_str)
 
@@ -258,7 +258,7 @@ class TagDirectoryNode:
             if depth > 0:
                 string += self._sub_nodes[dir_name].pprint(**kw)
 
-        if print_files and not dirs_first:
+        if print_files and dirs_first:
             string += self.pprint_files(**files_kw)
 
         # add extra spacing after last directory
@@ -346,18 +346,21 @@ class TagDirectoryNode:
 
     def rename_tag(self, curr_path, new_path):
         curr_path = curr_path.replace('/', '\\').strip("\\ ")
-        return self._rename_tag(
+        self._rename_tag(
             [name for name in curr_path.lower().split("\\") if name], new_path)
 
     def rename_tag_by_id(self, tag_id, new_path):
         tag_ref = self.tag_index[tag_id]
+        if tag_ref.id == 0xFFffFFff:
+            return
+
         curr_path = tag_ref.path.replace('/', '\\').strip("\\ ")
         curr_path = "%s.%s" % (name, tag_ref.class_1.enum_name)
-        return self._rename_tag(curr_path.lower().split("\\"), new_path)
+        self._rename_tag(curr_path.lower().split("\\"), new_path)
 
     def rename_dir(self, curr_dir, new_dir):
         curr_dir = curr_dir.replace('/', '\\').strip("\\ ")
-        return self._rename_dir(
+        self._rename_dir(
             [name for name in curr_dir.lower().split("\\") if name], new_dir)
 
     def walk(self, top_down=True):
@@ -372,9 +375,10 @@ class TagDirectoryNode:
         self._sub_nodes = {}
         tag_id = 0
         for b in self.tag_index:
-            tag_path = b.path.replace('/', '\\').strip("\\ ").lower()
-            self._add_node(
-                tag_id, [name for name in tag_path.lower().split("\\") if name])
+            if b.id != 0xFFffFFff:
+                tag_path = b.path.replace('/', '\\').strip("\\ ").lower()
+                self._add_node(tag_id, [
+                    name for name in tag_path.lower().split("\\") if name])
             tag_id += 1
 
     def _apply_names_to_tag_index(self, parent_dir=""):
@@ -494,6 +498,9 @@ class TagDirectoryNode:
         elif not isinstance(tag_id_or_dir_node, TagDirectoryNode):
             # add this tag id to this directory
             tag_id = int(tag_id_or_dir_node)
+            if self.tag_index[tag_id].id == 0xFFffFFff:
+                return
+
             name_key = "%s.%s" % (name, self.tag_index[tag_id].class_1.enum_name)
 
             if name_key in self._names_to_ids:
