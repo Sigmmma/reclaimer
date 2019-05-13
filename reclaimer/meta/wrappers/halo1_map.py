@@ -170,6 +170,7 @@ class Halo1Map(HaloMap):
 
         try:
             metadata_range = range(self.map_header.tag_index_header_offset,
+                                   self.map_header.tag_index_header_offset +
                                    self.map_header.tag_data_size)
             invalid_bsp_tag_ids = [self.tag_index.scenario_tag_id & 0xFFff]
             i = 0
