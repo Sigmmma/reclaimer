@@ -19,7 +19,8 @@ from .byteswapping import raw_block_def, byteswap_animation,\
      byteswap_pcm16_samples
 from reclaimer import data_extraction
 from reclaimer.constants import tag_class_fcc_to_ext
-from reclaimer.util import compress_normal32, decompress_normal32
+from reclaimer.util import compress_normal32, decompress_normal32,\
+     is_overlapping_ranges
 
 
 __all__ = ("Halo1Map", "Halo1RsrcMap")
@@ -168,15 +169,33 @@ class Halo1Map(HaloMap):
             return
 
         try:
+            metadata_range = range(self.map_header.tag_index_header_offset,
+                                   self.map_header.tag_data_size)
+            invalid_bsp_tag_ids = [self.tag_index.scenario_tag_id & 0xFFff]
+            i = 0
             for b in self.scnr_meta.structure_bsps.STEPTREE:
                 bsp_id = b.structure_bsp.id & 0xFFff
-                self.bsp_header_offsets[bsp_id] = b.bsp_pointer
-                self.bsp_magics[bsp_id]         = b.bsp_magic
-                self.bsp_sizes[bsp_id]          = b.bsp_size
 
-                self.bsp_pointer_converters[bsp_id] = MapPointerConverter(
-                    (b.bsp_magic, b.bsp_pointer, b.bsp_size)
-                    )
+                # these checks are necessary because apparently these structs
+                # can be super fucked up, and might not affect anything
+                if (bsp_id not in range(len(self.tag_index.tag_index)) or
+                    bsp_id in invalid_bsp_tag_ids):
+                    print("Scenario structure_bsp %s contains invalid tag_id." % i)
+                elif is_overlapping_ranges(
+                        metadata_range, range(b.bsp_pointer, b.bsp_size)):
+                    print("Scenario structure_bsp %s contains invalid pointer." % i)
+                elif self.tag_index.tag_index[bsp_id].id != b.structure_bsp.id:
+                    print("Scenario structure_bsp %s contains invalid tag_id." % i)
+                else:
+                    self.bsp_header_offsets[bsp_id] = b.bsp_pointer
+                    self.bsp_magics[bsp_id]         = b.bsp_magic
+                    self.bsp_sizes[bsp_id]          = b.bsp_size
+
+                    self.bsp_pointer_converters[bsp_id] = MapPointerConverter(
+                        (b.bsp_magic, b.bsp_pointer, b.bsp_size)
+                        )
+
+                i += 1
 
             # read the sbsp headers
             for tag_id, offset in self.bsp_header_offsets.items():

@@ -26,6 +26,15 @@ def is_protected_tag(tagpath):
         not INVALID_PATH_CHARS.isdisjoint(set(tagpath)))
 
 
+def is_overlapping_ranges(range_0, range_1):
+    assert isinstance(range_0, range)
+    assert isinstance(range_1, range)
+    assert range_0.step == 1
+    assert range_1.step == 1
+    return ((range_0.start in range_1 or range_0.stop in range_1) or
+            (range_1.start in range_0 or range_1.stop in range_0))
+
+
 def get_is_xbox_map(engine):
     return "xbox" in engine or engine in ("stubbs", "shadowrun_proto")
 
