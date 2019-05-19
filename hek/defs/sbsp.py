@@ -298,7 +298,7 @@ weather_polyhedra = Struct("weather polyhedra",
     QStruct("bounding sphere center", INCLUDE=xyz_float),
     Float("bounding sphere radius"),
     Pad(4),
-    reflexive("planes", plane, 15),
+    reflexive("planes", plane, 16),
     SIZE=32
     )
 
