@@ -39,9 +39,9 @@ compressed_lightmap_vertex = QStruct("compressed lightmap vertex",
     )
 
 plane = QStruct("plane",
-    Float("i", MIN=0.0, MAX=1.0),
-    Float("j", MIN=0.0, MAX=1.0),
-    Float("k", MIN=0.0, MAX=1.0),
+    Float("i", MIN=-1.0, MAX=1.0),
+    Float("j", MIN=-1.0, MAX=1.0),
+    Float("k", MIN=-1.0, MAX=1.0),
     Float("d"),
     SIZE=16, ORIENT='h'
     )

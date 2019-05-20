@@ -120,7 +120,7 @@ def generate_shader(jms_material, tags_dir, data_dir=""):
     return
         
 
-def compile_gbxmodel(mod2_tag, merged_jms):
+def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
     tagdata = mod2_tag.data.tagdata
 
     tagdata.flags.parts_have_local_nodes = False
@@ -143,7 +143,7 @@ def compile_gbxmodel(mod2_tag, merged_jms):
     if len(merged_jms.regions) > 32:
         errors.append("Too many regions. Max count is 32.")
 
-    if errors:
+    if errors and not ignore_errors:
         return errors
 
     # make nodes
@@ -168,7 +168,7 @@ def compile_gbxmodel(mod2_tag, merged_jms):
                 node.pos_x**2 + node.pos_y**2 + node.pos_z**2) / 100
 
 
-    # make shader references
+    # record shader ordering and permutation indices
     mod2_shaders = tagdata.shaders.STEPTREE
     shdr_perm_indices_by_name = {}
     for mod2_shader in mod2_shaders:
@@ -177,6 +177,7 @@ def compile_gbxmodel(mod2_tag, merged_jms):
         shdr_perm_indices.append(mod2_shader.permutation_index)
 
     del mod2_shaders[:]
+    # make shader references
     for mat in merged_jms.materials:
         mod2_shaders.append()
         mod2_shader = mod2_shaders[-1]
@@ -276,7 +277,7 @@ def compile_gbxmodel(mod2_tag, merged_jms):
                 del mod2_perms[-1]
                 continue
 
-    if len(geom_meshes) > 256:
+    if len(geom_meshes) > 256 and not ignore_errors:
         return ("Cannot add more than 256 geometries to a model. "
                 "Each material in each region in each permutation "
                 "in each LOD is counted as a single geometry.\n"
