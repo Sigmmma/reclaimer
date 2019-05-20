@@ -68,9 +68,9 @@ class JmsMaterial:
     def __init__(self, name="__unnamed", tiff_path="<none>",
                  shader_path="", shader_type="", properties=""):
         for c in "!@#$%^&*-.":
-            name = name.replace(c, '')
             if c in name and c not in properties:
                 properties += c
+            name = name.replace(c, '')
 
         self.name = name
         self.tiff_path = tiff_path
@@ -349,7 +349,7 @@ class JmsModel:
         self.node_list_checksum = node_list_checksum
         self.nodes = nodes if nodes else []
         self.materials = materials if materials else []
-        self.regions = regions if regions else []
+        self.regions = regions if regions else ["__unnamed"]
         self.markers = markers if markers else []
         self.verts   = verts   if verts   else []
         self.tris    = tris    if tris    else []
@@ -914,6 +914,7 @@ class MergedJmsModel:
                 self.materials.extend((default_mats[mat_name], ) * mat_ct)
 
         for region in other_model.regions:
+            # TODO: Make this correct the region index for merged markers
             if region not in self.regions:
                 self.regions[region] = MergedJmsRegion(region)
 
