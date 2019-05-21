@@ -97,6 +97,7 @@ class JmsMaterial:
     def breakable(self, new_val):
         self.properties = self.properties.replace("-", "") + ("-" if new_val else "")
 
+    # collision_only means the player collides, but not projectiles
     @property
     def collision_only(self): return "@" in self.properties
     @collision_only.setter
@@ -127,6 +128,7 @@ class JmsMaterial:
     def ladder(self, new_val):
         self.properties = self.properties.replace("^", "") + ("^" if new_val else "")
 
+    # this is what sky and invisible collision get set to
     @property
     def large_collideable(self): return "*" in self.properties
     @large_collideable.setter
