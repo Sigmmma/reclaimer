@@ -2,6 +2,7 @@ import math
 import re
 import traceback
 
+from copy import deepcopy
 from os import makedirs
 from os.path import dirname, exists
 from reclaimer.util import float_to_str
@@ -725,7 +726,7 @@ class MergedJmsRegion:
     def merge_jms_model(self, jms_model, merged_jms_materials):
         assert isinstance(jms_model, JmsModel)
         try:
-            reg_idx = jms_model.regions.index(self.name)
+            src_region_index = jms_model.regions.index(self.name)
         except ValueError:
             # this region is not in the jms model provided
             return
@@ -733,17 +734,15 @@ class MergedJmsRegion:
         lod_level = jms_model.lod_level
         perm_name = jms_model.perm_name
 
-        if perm_name in self.perm_meshes:
-            perm_mesh = self.perm_meshes[perm_name]
-        else:
-            perm_mesh = self.perm_meshes[perm_name] = PermutationMesh()
-            perm_mesh.is_random_perm = jms_model.is_random_perm
+        if perm_name not in self.perm_meshes:
+            self.perm_meshes[perm_name] = PermutationMesh()
+            self.perm_meshes[perm_name].is_random_perm = jms_model.is_random_perm
 
-            # copy the markers from the first JmsModel
-            # we're given for this region
-            for marker in jms_model.markers:
-                if marker.region == reg_idx:
-                    perm_mesh.markers.append(marker)
+        perm_mesh = self.perm_meshes[perm_name]
+        # copy the markers from the JmsModel we're given for this region
+        for marker in jms_model.markers:
+            if marker.region == src_region_index:
+                perm_mesh.markers.append(marker)
 
         mesh_data = perm_mesh.lod_meshes.setdefault(lod_level, {})
 
@@ -768,9 +767,11 @@ class MergedJmsRegion:
         tri_ct = 0
         mat_nums = set()
         for tri in src_tris:
-            if tri.region == reg_idx:
+            if tri.region == src_region_index:
                 mat_num = mat_map[tri.shader]
-                tri = JmsTriangle(tri.region, mat_num, tri.v0, tri.v1, tri.v2)
+                # region number doesnt matter at this point for triangles
+                # since it isnt stored in compiled models, so set it to -1
+                tri = JmsTriangle(-1, mat_num, tri.v0, tri.v1, tri.v2)
                 tri.v0 = get_add_vert(tri.v0, v_base + len(vert_map))
                 tri.v1 = get_add_vert(tri.v1, v_base + len(vert_map))
                 tri.v2 = get_add_vert(tri.v2, v_base + len(vert_map))
@@ -913,12 +914,21 @@ class MergedJmsModel:
             if mat_ct > 0:
                 self.materials.extend((default_mats[mat_name], ) * mat_ct)
 
+        # merge each region from the other model into this ones regions
         for region in other_model.regions:
-            # TODO: Make this correct the region index for merged markers
             if region not in self.regions:
                 self.regions[region] = MergedJmsRegion(region)
 
             self.regions[region].merge_jms_model(other_model, self.materials)
+
+        # correct the region index numbers for each marker in the regions
+        i = 0
+        for region_name in sorted(self.regions):
+            perm_meshes = self.regions[region_name].perm_meshes
+            for perm_mesh in perm_meshes.values():
+                for marker in perm_mesh.markers:
+                    marker.region = i
+            i += 1
 
         return all_errors
 
