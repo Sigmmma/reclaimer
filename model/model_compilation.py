@@ -273,7 +273,7 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                                               marker.rot_k, marker.rot_w
 
 
-            if not perm_added:
+            if not(perm_added or ignore_errors):
                 del mod2_perms[-1]
                 continue
 
