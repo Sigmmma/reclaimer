@@ -6,7 +6,7 @@ from math import log, sqrt, cos, sin, atan2, asin, acos, pi
 
 def is_point_on_forward_side_of_plane(plane, point):
     # return True if point is on forward side of plane, otherwise False
-    return dot_product(plane, tuple(point) + (1, )) > 0
+    return dot_product(plane, tuple(point) + (1, )) > 0.000000001
 
 
 def is_point_on_forward_side_of_planes(planes, point):
@@ -19,15 +19,226 @@ def is_point_on_forward_side_of_planes(planes, point):
 def find_intersect_point_of_planes(plane_0, plane_1):
     # returns an arbitrary point where the provided planes intersect.
     # if they do not intersect, None will be returned instead.
-    point = [0, 0, 0]
+    intersect = [0, 0, 0]
     return None
 
 
-def find_intersect_point_of_lines(line_0, line_1):
+def find_intersect_point_of_lines(line_0, line_1, intersect_dif_max=0.0000001):
     # returns an arbitrary point where the provided lines intersect.
     # if they do not intersect, None will be returned instead.
-    point = [0, 0, 0]
+    v0, d0 = tuple(MatrixRow(v) for v in line_0)
+    v1, d1 = tuple(MatrixRow(v) for v in line_1)
+    assert len(v0) == len(v1)
+    assert len(d0) == len(d1)
+    if not((max(d0) or min(d0)) and (max(d1) or min(d1))):
+       # one or both vectors are the zero-vector
+        return None
+
+    d0.normalize()
+    d1.normalize()
+    print(v0)
+    print(v1)
+    print(d0)
+    print(d1)
+    if d0 == d1:
+        # if the directions are the same, normalize their verts
+        # and use those as the interesects. if they're on the
+        # same line, they'll normalize to the same point.
+        intersect_a = v0.normalize()
+        intersect_b = v1.normalize()
+    else:
+        # Goal: find the point where v0 + d0*x == v1 + d1*y
+
+        # first, subtract v1 from both sides:
+        #    y * d1 == v2 + d0*x
+        v2 = v0 - v1
+
+        # determine which component to use for calculating
+        # the equations for y by picking largest d1
+        # components for dividing the rest of the equation.
+        abs_comp_vals_by_idx = {abs(d1[i]): i for i in range(len(d1))}
+        sorted_comp_indices = [abs_comp_vals_by_idx[val] for val in
+                               sorted(abs_comp_vals_by_idx)]
+        d1_a_i = sorted_comp_indices[-1]
+        d1_b_i = sorted_comp_indices[-2]
+
+        v2_a = v2[d1_a_i]
+        v2_b = v2[d1_b_i]
+        d1_a = d1[d1_a_i]
+        d1_b = d1[d1_b_i]
+        d0_a = d0[d1_a_i]
+        d0_b = d0[d1_b_i]
+        # now we need to choose how to calculate the intercept
+        # based on the slope of the chosen axis for d0 and d1.
+        # depending on the slope on each axis, the method for
+        # calculating x is either impossible, or simplifies.
+        if d0_a == d0_b or d1_a == d1_b:
+            # slopes are the same, so they are parallel. cant intersect.
+            return None
+        #elif d1_b == 0 and d0_b != 0:
+        #    # d1 has no slope on secondary axis, but d0 does.
+        #    #    y*0 == v2_b + d0_b*x
+        #    #    -d0_b*x == v2_b
+        #    #    x == (-v2_b / d0_b)
+        #    x = -v2_b / d0_b
+        else:
+            # using the matrix equation:
+            #    y*d1   == v2   + d0*x
+            # we can make these from its components:
+            #    y*d1_a == v2_a + d0_a*x
+            #    y*d1_b == v2_b + d0_b*x
+            # which we will keep rearranging:
+            #    y == (v2_a + d0_a * x) / d1_a == (v2_b + d0_b * x) / d1_b
+            #    d0_a * x == (v2_b + d0_b * x) * (d1_a / d1_b) - v2_a
+            #    (d0_a * x) - (d0_b * x) * (d1_a / d1_b) == v2_b * (d1_a / d1_b) - v2_a
+            #    x * (d0_a - d0_b) * (d1_a / d1_b) == v2_b * (d1_a / d1_b) - v2_a
+            #    x == (v2_b * (d1_a / d1_b) - v2_a) / ((d0_a - d0_b) * (d1_a / d1_b))
+            #    x == (v2_b - v2_a / (d1_a / d1_b)) / (d0_a - d0_b)
+            # until we get this:
+            #    x == (v2_b - (v2_a * d1_b) / d1_a) / (d0_a - d0_b)
+            #
+            # NOTE: d1_a is guaranteed to be non-zero, as we check d1 for its largest
+            # component, and we already made sure d0 and d1 are not the zero vector.
+            print(d1_a_i)
+            print(d1_b_i)
+            print(d0_a)
+            print(d0_b)
+            print(d1_a)
+            print(d1_b)
+            print(v2_a)
+            print(v2_b)
+            x = (v2_b - (v2_a * d1_b) / d1_a) / (d0_a - d0_b)
+            #x = 16.728
+
+        # now that we have x, we can calculate y by rearranging our equation
+        # for y in terms of x and substituting in our axis variables
+        #    v2_u + d0_u * x == y * d1_u
+        #    y == (v2_u + d0_u * x) / d1_u
+        #    y == (v2_a + d0_a * x) / d1_a
+        y = (v2_a + d0_a*x) / d1_a
+        print()
+        print(y*d1_a)
+        print(v2_a + d0_a*x)
+        print(y*d1_b)
+        print(v2_b + d0_b*x)
+        print()
+
+        print("X: ", x)
+        print("Y: ", y)
+        intersect_a = v2 + d0 * x
+        intersect_b = d1 * y
+
+    print("A:", intersect_a)
+    print("B:", intersect_b)
+    intersect_dif = intersect_b - intersect_a
+    print("DIFF:", intersect_dif.magnitude)
+    if intersect_dif.magnitude_sq < intersect_dif_max:
+        return list(intersect_a + (intersect_dif / 2))
     return None
+
+
+def planes_to_verts_and_edge_loops(planes, max_plane_ct=32):
+    # make a set out of the planes to remove duplicates
+    planes = list(set(tuple(plane) for plane in planes))
+    lines_by_planes = {}
+
+    if len(planes) > max_plane_ct:
+        raise ValueError(
+            "Provided more planes(%s) than the max plane count(%s)" %
+            (len(planes), max_plane_ct))
+
+    # Get the edge lines for each plane by crossing the plane with
+    # each other plane. If they are parallel, their cross product
+    # will be the zero vector and should be ignored.
+    for i in range(len(planes)):
+        p0 = planes[i]
+        for j in range(len(planes)):
+            if i == j: continue
+
+            p1 = planes[j]
+            line_dir = cross_product(p0[:3], p1[:3])
+            if not (line_dir[0] or line_dir[1] or line_dir[2]):
+                # parallel planes. ignore
+                continue
+
+            lines = (find_plane_intersect_point(p0, p1), line_dir)
+            lines_by_planes.setdefault(p0, []).append(lines)
+
+
+    verts = []
+    vert_indices_by_raw_verts = {}
+    edges_by_planes = {plane: [] for plane in planes}
+    edges_by_verts_by_planes = {plane: [] for plane in planes}
+    # Calculate the points of intersection for each planes edges
+    # to determine their vertices, skipping any vertices that are
+    # on the forward-facing side of any of the planes.
+    for plane, lines in lines_by_planes.items():
+        # loop over each line in the plane and find
+        # two vertices where two lines intersect
+        for i in range(len(lines)):
+            v0_i = v1_i = None
+            line = lines[i]
+            for j in range(i + 1, len(lines)):
+                intersect = tuple(find_intersect_point_of_lines(
+                    line, lines[j]))
+
+                if intersect in vert_indices_by_raw_verts:
+                    vert_index = vert_indices_by_raw_verts[intersect]
+                elif intersect is not None:
+                    # make sure the point is not outside the polyhedra
+                    if is_point_on_forward_side_of_planes(planes, intersect):
+                        continue
+                    vert_index = len(verts)
+                    verts.append(intersect)
+                    vert_indices_by_raw_verts[intersect] = vert_index
+                else:
+                    continue
+
+                if   v0_i is None: v0_i = vert_index
+                elif v1_i is None: v1_i = vert_index
+                else: break
+
+            if v0_i is None or v1_i is None:
+                #print("FUCK! We couldn't find an intersection point.")
+                continue
+
+            # add the edge to this planes list of vert edges
+            edge = (v0_i, v1_i)
+            edges_by_planes[plane].append(edge)
+            edges_by_verts_by_planes[plane].setdefault(v0_i, []).append(edge)
+            edges_by_verts_by_planes[plane].setdefault(v1_i, []).append(edge)
+
+
+    edge_loops = []
+    # loop over each edge and put together an edge loop list
+    # by visiting the edges shared by each vert index
+    for plane, edges in edges_by_planes.items():
+        edge_loop = []
+        edge_loops.append(edge_loop)
+        edges_by_verts = edges_by_verts_by_planes[plane]
+
+        curr_edge = edges[0]
+        edge_loop.append(curr_edge[0])
+        edges_by_verts.pop(curr_edge[0])
+        v_i = curr_edge[1]
+        while edges_by_verts:
+            vert_edges = edges_by_verts.pop(v_i, None)
+            if vert_edges is None:
+                break
+
+            curr_edge = vert_edges[not vert_edges.index(curr_edge)]
+            edge_loop.append(v_i)
+            v_i = curr_edge[not curr_edge.index(v_i)]
+
+        # if the edge loop would construct triangles facing the
+        # wrong direction, we need to reverse the edge loop
+        v0 = verts[edge_loop[0]]
+        v1 = verts[edge_loop[1]]
+        v2 = verts[edge_loop[2]]
+        if dot_product(vertex_cross_product(v0, v1, v2), plane[: 3]) < 0:
+            edge_loop[:] = edge_loop[::-1]
+
+    return verts, edge_loops
 
 
 def line_from_verts(v0, v1):
@@ -189,6 +400,14 @@ class MatrixRow(list):
             return sum(self[i]/other[i] for i in range(len(self)))
         for i in range(len(self)): self[i] /= other
         return self
+    def normalize(self):
+        div = max(abs(min(self)), max(self))
+        if div:
+            for i in range(len(self)): self[i] /= div
+    @property
+    def magnitude_sq(self): return sum(v**2 for v in self)
+    @property
+    def magnitude(self): return sqrt(sum(v**2 for v in self))
 
     __radd__ = __add__
     __rsub__ = __sub__
