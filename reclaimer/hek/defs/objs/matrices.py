@@ -4,6 +4,52 @@ This module implements some basic matrix classes
 from math import log, sqrt, cos, sin, atan2, asin, acos, pi
 
 
+def is_point_on_forward_side_of_plane(plane, point):
+    # return True if point is on forward side of plane, otherwise False
+    return dot_product(plane, tuple(point) + (1, )) > 0
+
+
+def is_point_on_forward_side_of_planes(planes, point):
+    for plane in planes:
+        if is_point_on_forward_side_of_plane(plane, point):
+            return True
+    return False
+
+
+def find_intersect_point_of_planes(plane_0, plane_1):
+    # returns an arbitrary point where the provided planes intersect.
+    # if they do not intersect, None will be returned instead.
+    point = [0, 0, 0]
+    return None
+
+
+def find_intersect_point_of_lines(line_0, line_1):
+    # returns an arbitrary point where the provided lines intersect.
+    # if they do not intersect, None will be returned instead.
+    point = [0, 0, 0]
+    return None
+
+
+def line_from_verts(v0, v1):
+    return tuple(b - a for a, b in zip(v0, v1))
+
+
+def vertex_cross_product(v0, v1, v2):
+    return cross_product(line_from_verts(v0, v1),
+                         line_from_verts(v0, v2))
+
+
+def cross_product(ray_a, ray_b):
+    return [ray_a[1]*ray_b[2] - ray_a[2]*ray_b[1],
+            ray_a[2]*ray_b[0] - ray_a[0]*ray_b[2],
+            ray_a[0]*ray_b[1] - ray_a[1]*ray_b[0]]
+
+
+def dot_product(v0, v1):
+    assert len(v0) == len(v1)
+    return sum(a*b for a, b in zip(v0, v1))
+
+
 def euler_to_quaternion(y, p, r):
     '''Angles are expected to be in radians.'''
     c0, c1, c2 = cos(y / 2), cos(p / 2), cos(r / 2)
