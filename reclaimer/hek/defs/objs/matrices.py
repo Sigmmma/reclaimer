@@ -2,11 +2,21 @@
 This module implements some basic matrix classes
 '''
 from math import log, sqrt, cos, sin, atan2, asin, acos, pi
+from sys import float_info
 
 
-def is_point_on_forward_side_of_plane(plane, point):
+def is_point_on_forward_side_of_plane(plane, point, mantissa_len=22):
     # return True if point is on forward side of plane, otherwise False
-    return dot_product(plane, tuple(point) + (1, )) > 0.000000001
+    # take into account rounding errors for 32bit floats
+    delta_max = 2**(
+        int(log(abs(plane[3] + float_info.epsilon), 2)) -
+        mantissa_len)
+
+    delta = dot_product(plane[:3], point) - plane[3]
+    if abs(delta) < delta_max:
+        # point lies on plane
+        return False
+    return delta > 0
 
 
 def is_point_on_forward_side_of_planes(planes, point):
