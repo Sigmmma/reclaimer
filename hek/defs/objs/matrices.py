@@ -34,104 +34,35 @@ def find_intersect_point_of_lines(line_0, line_1, intersect_dif_max=0.0000001):
        # one or both vectors are the zero-vector
         return None
 
-    d0.normalize()
-    d1.normalize()
-    print(v0)
-    print(v1)
-    print(d0)
-    print(d1)
-    if d0 == d1:
+    if d0.normalized == d1.normalized:
         # if the directions are the same, normalize their verts
         # and use those as the interesects. if they're on the
         # same line, they'll normalize to the same point.
-        intersect_a = v0.normalize()
-        intersect_b = v1.normalize()
+        v0.normalize()
+        v1.normalize()
+        intersect_a, intersect_b = v0, v1
     else:
-        # Goal: find the point where v0 + d0*x == v1 + d1*y
+        # Goal: find the point where these equations hold true:
+        #    v0_a + d0_a*t0 == v1_a + d1_a*t1
+        #    v0_b + d0_b*t0 == v1_b + d1_b*t1
 
-        # first, subtract v1 from both sides:
-        #    y * d1 == v2 + d0*x
-        v2 = v0 - v1
+        lines_matrix = Matrix(list((v0, v1) for v0, v1 in zip(d0, d1)))
+        reduced, result = lines_matrix.row_reduce(Matrix(v1 - v0))
+        #print(lines_matrix)
+        #print(reduced)
+        #print(result)
+        t0 = result[0][0]
+        t1 = result[1][0]
 
-        # determine which component to use for calculating
-        # the equations for y by picking largest d1
-        # components for dividing the rest of the equation.
-        abs_comp_vals_by_idx = {abs(d1[i]): i for i in range(len(d1))}
-        sorted_comp_indices = [abs_comp_vals_by_idx[val] for val in
-                               sorted(abs_comp_vals_by_idx)]
-        d1_a_i = sorted_comp_indices[-1]
-        d1_b_i = sorted_comp_indices[-2]
+        #print("T0: ", t0)
+        #print("T1: ", t1)
+        intersect_a = v0 + d0 * t0
+        intersect_b = v1 - d1 * t1
 
-        v2_a = v2[d1_a_i]
-        v2_b = v2[d1_b_i]
-        d1_a = d1[d1_a_i]
-        d1_b = d1[d1_b_i]
-        d0_a = d0[d1_a_i]
-        d0_b = d0[d1_b_i]
-        # now we need to choose how to calculate the intercept
-        # based on the slope of the chosen axis for d0 and d1.
-        # depending on the slope on each axis, the method for
-        # calculating x is either impossible, or simplifies.
-        if d0_a == d0_b or d1_a == d1_b:
-            # slopes are the same, so they are parallel. cant intersect.
-            return None
-        #elif d1_b == 0 and d0_b != 0:
-        #    # d1 has no slope on secondary axis, but d0 does.
-        #    #    y*0 == v2_b + d0_b*x
-        #    #    -d0_b*x == v2_b
-        #    #    x == (-v2_b / d0_b)
-        #    x = -v2_b / d0_b
-        else:
-            # using the matrix equation:
-            #    y*d1   == v2   + d0*x
-            # we can make these from its components:
-            #    y*d1_a == v2_a + d0_a*x
-            #    y*d1_b == v2_b + d0_b*x
-            # which we will keep rearranging:
-            #    y == (v2_a + d0_a * x) / d1_a == (v2_b + d0_b * x) / d1_b
-            #    d0_a * x == (v2_b + d0_b * x) * (d1_a / d1_b) - v2_a
-            #    (d0_a * x) - (d0_b * x) * (d1_a / d1_b) == v2_b * (d1_a / d1_b) - v2_a
-            #    x * (d0_a - d0_b) * (d1_a / d1_b) == v2_b * (d1_a / d1_b) - v2_a
-            #    x == (v2_b * (d1_a / d1_b) - v2_a) / ((d0_a - d0_b) * (d1_a / d1_b))
-            #    x == (v2_b - v2_a / (d1_a / d1_b)) / (d0_a - d0_b)
-            # until we get this:
-            #    x == (v2_b - (v2_a * d1_b) / d1_a) / (d0_a - d0_b)
-            #
-            # NOTE: d1_a is guaranteed to be non-zero, as we check d1 for its largest
-            # component, and we already made sure d0 and d1 are not the zero vector.
-            print(d1_a_i)
-            print(d1_b_i)
-            print(d0_a)
-            print(d0_b)
-            print(d1_a)
-            print(d1_b)
-            print(v2_a)
-            print(v2_b)
-            x = (v2_b - (v2_a * d1_b) / d1_a) / (d0_a - d0_b)
-            #x = 16.728
-
-        # now that we have x, we can calculate y by rearranging our equation
-        # for y in terms of x and substituting in our axis variables
-        #    v2_u + d0_u * x == y * d1_u
-        #    y == (v2_u + d0_u * x) / d1_u
-        #    y == (v2_a + d0_a * x) / d1_a
-        y = (v2_a + d0_a*x) / d1_a
-        print()
-        print(y*d1_a)
-        print(v2_a + d0_a*x)
-        print(y*d1_b)
-        print(v2_b + d0_b*x)
-        print()
-
-        print("X: ", x)
-        print("Y: ", y)
-        intersect_a = v2 + d0 * x
-        intersect_b = d1 * y
-
-    print("A:", intersect_a)
-    print("B:", intersect_b)
+    #print("A:", intersect_a)
+    #print("B:", intersect_b)
     intersect_dif = intersect_b - intersect_a
-    print("DIFF:", intersect_dif.magnitude)
+    #print("DIFF:", intersect_dif.magnitude)
     if intersect_dif.magnitude_sq < intersect_dif_max:
         return list(intersect_a + (intersect_dif / 2))
     return None
@@ -401,9 +332,14 @@ class MatrixRow(list):
         for i in range(len(self)): self[i] /= other
         return self
     def normalize(self):
-        div = max(abs(min(self)), max(self))
+        div = self.magnitude
         if div:
             for i in range(len(self)): self[i] /= div
+    @property
+    def normalized(self):
+        vector = MatrixRow(self)
+        vector.normalize()
+        return vector
     @property
     def magnitude_sq(self): return sum(v**2 for v in self)
     @property
@@ -419,11 +355,16 @@ class Matrix(list):
     width = 1
     height = 1
 
-    def __init__(self, matrix=None, width=1, height=1):
+    def __init__(self, matrix=None, width=1, height=1, identity=False):
         if matrix is None:
             self.width = width
             self.height = height
             list.__init__(self, (MatrixRow((0,)*width) for i in range(height)))
+
+            if identity and width <= height:
+                # place the identity matrix into the inverse
+                for i in range(self.width):
+                    self[i][i] = 1.0
             return
 
         matrix_rows = []
@@ -580,65 +521,59 @@ class Matrix(list):
         return transpose
 
     @property
-    def inverse(self, determine_best_inverse=True):
+    def inverse(self, find_best_inverse=True):
         # cannot invert non-square matrices. check for that
         assert self.width == self.height, "Cannot invert non-square matrix."
         assert self.determinant != 0, "Matrix is non-invertible."
-        regular = Matrix(self)
-        inverse = Matrix(width=self.width, height=self.height)
 
-        # place the identity matrix into the inverse
-        for i in range(inverse.width):
-            inverse[i][i] = 1.0
+        regular, inverse = self.row_reduce(
+            Matrix(width=self.width, height=self.height, identity=True),
+            find_best_reduction=find_best_inverse
+            )
+
+        return inverse
+
+    def row_reduce(self, other, find_best_reduction=True):
+        # cant row-reduce if number of columns is greater than number of rows
+        assert self.width <= self.height
 
         # IN THE FUTURE I NEED TO REARRANGE THE MATRIX SO THE VALUES
         # ALONG THE DIAGONAL ARE GUARANTEED TO BE NON-ZERO. IF THAT
         # CANT BE ACCOMPLISHED FOR ANY COLUMN, ITS COMPONENT IS ZERO.
         # EDIT: It's the future now
-
         rearrange_rows = False
-        # determine if rows need to be rearranged to properly calculate inverse
-        for i in range(self.height):
-            largest = max(abs(regular[i][j]) for j in range(self.width))
-            if abs(regular[i][i]) < largest:
+
+        # WIDTH NOTE: We will loop over the width rather than height for
+        #     several things here as we do not care about any rows that
+        #     don't intersect the columns at a diagonal. Essentially we're
+        #     treating a potentially non-square matrix as square(we're
+        #     ignoring the higher numbered rows) by rearranging the rows.
+
+        # determine if rows need to be rearranged to calculate inverse
+        for i in range(self.width):  # read note about looping over width
+            largest = max(abs(self[i][j]) for j in range(self.width))
+            if abs(self[i][i]) < largest:
                 rearrange_rows = True
                 break
 
+        reduced = Matrix(self)
         if rearrange_rows:
-            nz_diag_row_indices = list(set() for i in range(self.height))
-            valid_row_orders = {}
-
-            # determine which rows have a nonzero value on each diagonal
-            for i in range(self.height):
-                for j in range(self.width):
-                    if regular[i][j]:
-                        nz_diag_row_indices[j].add(i)
-
-            self._get_valid_diagonal_row_orders(nz_diag_row_indices,
-                                                valid_row_orders, regular,
-                                                determine_best_inverse)
-
-            assert valid_row_orders, "No valid way to rearrange rows to enable inversion."
-
+            new_row_order = self.get_row_reduce_order(find_best_reduction)
             # rearrange rows so diagonals are all non-zero
-            orig_regular = list(regular)
-            orig_inverse = list(inverse)
-            # get the highest weighted row order
-            new_row_order = valid_row_orders[max(valid_row_orders)]
+            orig_other = list(other)
             for i in range(len(new_row_order)):
-                regular[i] = orig_regular[new_row_order[i]]
-                inverse[i] = orig_inverse[new_row_order[i]]
+                reduced[i] = self[new_row_order[i]]
+                other[i] = orig_other[new_row_order[i]]
 
-
-        for i in range(self.height):
+        for i in range(self.width):  # read note about looping over width
             # divide both matrices by their diagonal values
-            div = regular[i][i]
-            regular[i] /= div
-            inverse[i] /= div
+            div = reduced[i][i]
+            reduced[i] /= div
+            other[i] /= div
 
             # make copies of the rows that we can multiply for subtraction
-            reg_diff = MatrixRow(regular[i])
-            inv_diff = MatrixRow(inverse[i])
+            reduced_diff = MatrixRow(reduced[i])
+            other_diff = MatrixRow(other[i])
 
             # loop over the rows NOT intersecting the column at the diagonal
             for j in range(self.width):
@@ -646,43 +581,61 @@ class Matrix(list):
                     continue
                 # get the value that needs to be subtracted from
                 # where this row intersects the current column
-                mul = regular[j][i]
+                mul = reduced[j][i]
 
                 # subtract the difference row from each of the
                 # rows above it to set everything in the column
                 # above an below the diagonal intersection to 0
-                regular[j] -= reg_diff*mul
-                inverse[j] -= inv_diff*mul
+                reduced[j] -= reduced_diff*mul
+                other[j] -= other_diff*mul
 
-        return inverse
+        return reduced, other
+
+    def get_row_reduce_order(self, find_best_reduction=True):
+        nonzero_diag_row_indices = list(set() for i in range(self.width))
+        valid_row_orders = {}
+
+        # determine which rows have a nonzero value on each diagonal
+        for i in range(self.height):
+            for j in range(self.width):
+                if self[i][j]:
+                    nonzero_diag_row_indices[j].add(i)
+
+        self._get_valid_diagonal_row_orders(
+            nonzero_diag_row_indices, valid_row_orders, find_best_reduction)
+
+        if not valid_row_orders:
+            raise ValueError("Impossible to rearrange rows to row-reduce.")
+
+        # get the highest weighted row order
+        return valid_row_orders[max(valid_row_orders)]
 
     def _get_valid_diagonal_row_orders(self, row_indices, row_orders,
-                                       matrix, choose_best=True,
-                                       row_order=(), curr_row_idx=0):
+                                       choose_best=True, row_order=(),
+                                       curr_column=0):
         row_order = list(row_order)
-        row_count = len(row_indices)
+        column_count = len(row_indices)
         if not row_order:
-            row_order = [None] * row_count
+            row_order = [None] * column_count
 
         # loop over each row with a non-zero value on this diagonal
-        for i in row_indices[curr_row_idx]:
+        for i in row_indices[curr_column]:
             if row_orders and not choose_best:
                 # found a valid row arrangement, don't keep checking
                 break
             elif i in row_order:
                 continue
 
-            row_order[curr_row_idx] = i
-
-            if curr_row_idx + 1 < row_count:
-                # check the rest of the rows
-                self._get_valid_diagonal_row_orders(row_indices, row_orders,
-                                                    matrix, choose_best,
-                                                    row_order, curr_row_idx + 1)
-            else:
+            row_order[curr_column] = i
+            if curr_column + 1 == column_count:
                 weight = 1.0
                 for j in range(len(row_order)):
-                    weight *= matrix[j][row_order[j]]
+                    weight *= abs(self[row_order[j]][j])
 
                 # freeze this row order in place
                 row_orders[weight] = tuple(row_order)
+            else:
+                # check the rest of the rows
+                self._get_valid_diagonal_row_orders(
+                    row_indices, row_orders, choose_best,
+                    row_order, curr_column + 1)
