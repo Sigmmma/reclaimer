@@ -5,14 +5,15 @@ from math import log, sqrt, cos, sin, atan2, asin, acos, pi
 from sys import float_info
 
 
-def is_point_on_forward_side_of_plane(plane, point, mantissa_len=23):
+def is_point_on_forward_side_of_plane(plane, point, use_double_rounding=False):
+    mantissa_len = 53 if use_double_rounding else 23
     # return True if point is on forward side of plane, otherwise False
     # take into account rounding errors for 32bit floats
     delta_max = 2**(
         int(log(abs(plane[3] + float_info.epsilon), 2)) -
         mantissa_len)
-
     delta = dot_product(plane[:3], point) - plane[3]
+    print(delta_max, delta)
     if abs(delta) < delta_max:
         # point lies on plane
         return False
@@ -39,7 +40,8 @@ def find_intersect_line_of_planes(plane_0, plane_1):
     return line_point, line_dir
 
 
-def find_intersect_point_of_lines(line_0, line_1, mantissa_len=23):
+def find_intersect_point_of_lines(line_0, line_1, use_double_rounding=False):
+    mantissa_len = 53 if use_double_rounding else 23
     # returns an arbitrary point where the provided lines intersect.
     # if they do not intersect, None will be returned instead.
     v0, d0 = tuple(MatrixRow(v) for v in line_0)
