@@ -5,7 +5,7 @@ from math import log, sqrt, cos, sin, atan2, asin, acos, pi
 from sys import float_info
 
 
-def is_point_on_forward_side_of_plane(plane, point, mantissa_len=22):
+def is_point_on_forward_side_of_plane(plane, point, mantissa_len=23):
     # return True if point is on forward side of plane, otherwise False
     # take into account rounding errors for 32bit floats
     delta_max = 2**(
@@ -26,14 +26,20 @@ def is_point_on_forward_side_of_planes(planes, point):
     return False
 
 
-def find_intersect_point_of_planes(plane_0, plane_1):
+def find_intersect_line_of_planes(plane_0, plane_1):
     # returns an arbitrary point where the provided planes intersect.
     # if they do not intersect, None will be returned instead.
-    intersect = [0, 0, 0]
-    return None
+    line_point = [0, 0, 0]
+    line_dir = cross_product(plane_0[:3], plane_1[:3])
+
+    if not (line_dir[0] or line_dir[1] or line_dir[2]):
+        # parallel planes. ignore
+        return None
+
+    return line_point, line_dir
 
 
-def find_intersect_point_of_lines(line_0, line_1, intersect_dif_max=0.0000001):
+def find_intersect_point_of_lines(line_0, line_1, mantissa_len=23):
     # returns an arbitrary point where the provided lines intersect.
     # if they do not intersect, None will be returned instead.
     v0, d0 = tuple(MatrixRow(v) for v in line_0)
@@ -71,11 +77,17 @@ def find_intersect_point_of_lines(line_0, line_1, intersect_dif_max=0.0000001):
 
     #print("A:", intersect_a)
     #print("B:", intersect_b)
-    intersect_dif = intersect_b - intersect_a
-    #print("DIFF:", intersect_dif.magnitude)
-    if intersect_dif.magnitude_sq < intersect_dif_max:
-        return list(intersect_a + (intersect_dif / 2))
-    return None
+    intersect_diff = intersect_b - intersect_a
+
+    for val_0, val_1, diff in zip(intersect_b, intersect_a, intersect_diff):
+        # take into account rounding errors for 32bit floats
+        val = max(abs(val_0), abs(val_1))
+        delta_max = 2**(int(log(val + float_info.epsilon, 2)) - mantissa_len)
+        if abs(diff) > delta_max:
+            return None
+
+    # point lies on both lines
+    return list(intersect_a + intersect_diff / 2)
 
 
 def planes_to_verts_and_edge_loops(planes, max_plane_ct=32):
@@ -96,15 +108,10 @@ def planes_to_verts_and_edge_loops(planes, max_plane_ct=32):
         for j in range(len(planes)):
             if i == j: continue
 
-            p1 = planes[j]
-            line_dir = cross_product(p0[:3], p1[:3])
-            if not (line_dir[0] or line_dir[1] or line_dir[2]):
-                # parallel planes. ignore
-                continue
-
-            lines = (find_plane_intersect_point(p0, p1), line_dir)
-            lines_by_planes.setdefault(p0, []).append(lines)
-
+            line = find_intersect_line_of_planes(p0, planes[j])
+            if line is not None:
+                # planes intersect and are not parallel
+                lines_by_planes.setdefault(p0, []).append(line)
 
     verts = []
     vert_indices_by_raw_verts = {}
@@ -354,6 +361,8 @@ class MatrixRow(list):
     def magnitude_sq(self): return sum(v**2 for v in self)
     @property
     def magnitude(self): return sqrt(sum(v**2 for v in self))
+    mag_sq = magnitude_sq
+    mag = magnitude
 
     __radd__ = __add__
     __rsub__ = __sub__
@@ -554,7 +563,7 @@ class Matrix(list):
         rearrange_rows = False
 
         # WIDTH NOTE: We will loop over the width rather than height for
-        #     several things here as we do not care about any rows that
+        #     several things here, as we do not care about any rows that
         #     don't intersect the columns at a diagonal. Essentially we're
         #     treating a potentially non-square matrix as square(we're
         #     ignoring the higher numbered rows) by rearranging the rows.
