@@ -5,91 +5,116 @@ from math import log, sqrt, cos, sin, atan2, asin, acos, pi
 from sys import float_info
 
 
-def is_point_on_forward_side_of_plane(plane, point, use_double_rounding=False):
-    mantissa_len = 53 if use_double_rounding else 23
+def are_points_equal(point_0, point_1, use_double_rounding=False,
+                     rounding_adjust=0):
+    mantissa_len = (53 if use_double_rounding else 23) - rounding_adjust
+    for val_0, val_1 in zip(point_1, point_0):
+        # take into account rounding errors for 32bit floats
+        val = max(abs(val_0), abs(val_1))
+        delta_max = 2**(int(log(val + float_info.epsilon, 2)) - mantissa_len)
+        if abs(val_1 - val_0) > delta_max:
+            return False
+    return True
+
+
+def are_planes_equal(plane_0, plane_1, use_double_rounding=False,
+                     rounding_adjust=0):
+    p0 = Plane(plane_0)
+    p1 = Plane(plane_1)
+    p0.normalize()
+    p1.normalize()
+    return are_points_equal(p0, p1, use_double_rounding, rounding_adjust)
+
+
+def is_point_on_front_side_of_plane(point, plane,
+                                      use_double_rounding=False,
+                                      rounding_adjust=0):
+    mantissa_len = (53 if use_double_rounding else 23) - rounding_adjust
     # return True if point is on forward side of plane, otherwise False
     # take into account rounding errors for 32bit floats
     delta_max = 2**(
         int(log(abs(plane[3] + float_info.epsilon), 2)) -
         mantissa_len)
     delta = dot_product(plane[:3], point) - plane[3]
-    print(delta_max, delta)
     if abs(delta) < delta_max:
         # point lies on plane
         return False
     return delta > 0
 
 
-def is_point_on_forward_side_of_planes(planes, point):
+def is_point_on_front_side_of_planes(point, planes,
+                                       use_double_rounding=False,
+                                       rounding_adjust=0):
     for plane in planes:
-        if is_point_on_forward_side_of_plane(plane, point):
+        if is_point_on_front_side_of_plane(
+            point, plane, use_double_rounding, rounding_adjust):
             return True
     return False
 
 
-def find_intersect_line_of_planes(plane_0, plane_1):
+def find_intersect_line_of_planes(plane_0, plane_1, use_double_rounding=False,
+                                  rounding_adjust=0):
     # returns an arbitrary point where the provided planes intersect.
     # if they do not intersect, None will be returned instead.
-    line_point = [0, 0, 0]
-    line_dir = cross_product(plane_0[:3], plane_1[:3])
-
-    if not (line_dir[0] or line_dir[1] or line_dir[2]):
-        # parallel planes. ignore
+    line_dir = Ray.cross(plane_0[:3], plane_1[:3])
+    if line_dir.is_zero:
+        # planes are parallel. ignore
         return None
+
+    # zero-out one of the coordinates to normalize the point
+    # and turn it into a pair of equations in 2 unknowns,
+    # rather than a pair of equations in 3 unknowns.
+    index_to_zero = 2
+    for i in range(3):
+        pass
+
+    lines_matrix = Matrix(list((plane_0[i], plane_1[i]) for i in
+                               (0, 1, 2) if i != index_to_zero))
+    reduced, result = lines_matrix.row_reduce(
+        Matrix((plane_0[3], plane_1[3]))
+        )
+    line_point = [result[0][0], result[1][0]]
+    line_point.insert(index_to_zero, 0.0)
 
     return line_point, line_dir
 
 
-def find_intersect_point_of_lines(line_0, line_1, use_double_rounding=False):
-    mantissa_len = 53 if use_double_rounding else 23
+def find_intersect_point_of_lines(line_0, line_1, use_double_rounding=False,
+                                  rounding_adjust=0):
     # returns an arbitrary point where the provided lines intersect.
     # if they do not intersect, None will be returned instead.
-    v0, d0 = tuple(MatrixRow(v) for v in line_0)
-    v1, d1 = tuple(MatrixRow(v) for v in line_1)
+    v0, d0 = Point(line_0[0]), Ray(line_0[1])
+    v1, d1 = Point(line_1[0]), Ray(line_1[1])
     assert len(v0) == len(v1)
     assert len(d0) == len(d1)
     if not((max(d0) or min(d0)) and (max(d1) or min(d1))):
        # one or both vectors are the zero-vector
         return None
 
-    if d0.normalized == d1.normalized:
-        # if the directions are the same, normalize their verts
-        # and use those as the interesects. if they're on the
-        # same line, they'll normalize to the same point.
-        v0.normalize()
-        v1.normalize()
-        intersect_a, intersect_b = v0, v1
-    else:
-        # Goal: find the point where these equations hold true:
-        #    v0_a + d0_a*t0 == v1_a + d1_a*t1
-        #    v0_b + d0_b*t0 == v1_b + d1_b*t1
+    # Goal: find the point where these equations hold true:
+    #    v0_a + d0_a*t0 == v1_a + d1_a*t1
+    #    v0_b + d0_b*t0 == v1_b + d1_b*t1
+    lines_matrix = Matrix(list((v0, v1) for v0, v1 in zip(d0, d1)))
+    reduced, result = lines_matrix.row_reduce(Matrix(v1 - v0))
+    #print(lines_matrix)
+    #print(reduced)
+    #print(result)
+    t0 = result[0][0]
+    t1 = result[1][0]
 
-        lines_matrix = Matrix(list((v0, v1) for v0, v1 in zip(d0, d1)))
-        reduced, result = lines_matrix.row_reduce(Matrix(v1 - v0))
-        #print(lines_matrix)
-        #print(reduced)
-        #print(result)
-        t0 = result[0][0]
-        t1 = result[1][0]
-
-        #print("T0: ", t0)
-        #print("T1: ", t1)
-        intersect_a = v0 + d0 * t0
-        intersect_b = v1 - d1 * t1
+    #print("T0: ", t0)
+    #print("T1: ", t1)
+    intersect_a = v0 + d0 * t0
+    intersect_b = v1 - d1 * t1
 
     #print("A:", intersect_a)
     #print("B:", intersect_b)
-    intersect_diff = intersect_b - intersect_a
+    if are_points_equal(intersect_a, intersect_b,
+                        use_double_rounding, rounding_adjust):
+        # point lies on both lines
+        return intersect_a + (intersect_b - intersect_a) / 2
 
-    for val_0, val_1, diff in zip(intersect_b, intersect_a, intersect_diff):
-        # take into account rounding errors for 32bit floats
-        val = max(abs(val_0), abs(val_1))
-        delta_max = 2**(int(log(val + float_info.epsilon, 2)) - mantissa_len)
-        if abs(diff) > delta_max:
-            return None
-
-    # point lies on both lines
-    return list(intersect_a + intersect_diff / 2)
+    return None
 
 
 def planes_to_verts_and_edge_loops(planes, max_plane_ct=32):
@@ -136,7 +161,7 @@ def planes_to_verts_and_edge_loops(planes, max_plane_ct=32):
                     vert_index = vert_indices_by_raw_verts[intersect]
                 elif intersect is not None:
                     # make sure the point is not outside the polyhedra
-                    if is_point_on_forward_side_of_planes(planes, intersect):
+                    if is_point_on_front_side_of_planes(intersect, planes):
                         continue
                     vert_index = len(verts)
                     verts.append(intersect)
@@ -201,13 +226,12 @@ def vertex_cross_product(v0, v1, v2):
 
 
 def cross_product(ray_a, ray_b):
-    return [ray_a[1]*ray_b[2] - ray_a[2]*ray_b[1],
-            ray_a[2]*ray_b[0] - ray_a[0]*ray_b[2],
-            ray_a[0]*ray_b[1] - ray_a[1]*ray_b[0]]
+    return ((ray_a[1]*ray_b[2] - ray_a[2]*ray_b[1],
+             ray_a[2]*ray_b[0] - ray_a[0]*ray_b[2],
+             ray_a[0]*ray_b[1] - ray_a[1]*ray_b[0]))
 
 
 def dot_product(v0, v1):
-    assert len(v0) == len(v1)
     return sum(a*b for a, b in zip(v0, v1))
 
 
@@ -249,8 +273,6 @@ def quaternion_to_axis_angle(i, j, k, w):
 
 
 def multiply_quaternions(q0, q1):
-    assert len(q0) == 4
-    assert len(q1) == 4
     i =  q0[0] * q1[3] + q0[1] * q1[2] - q0[2] * q1[1] + q0[3] * q1[0]
     j = -q0[0] * q1[2] + q0[1] * q1[3] + q0[2] * q1[0] + q0[3] * q1[1]
     k =  q0[0] * q1[1] - q0[1] * q1[0] + q0[2] * q1[3] + q0[3] * q1[2]
@@ -310,28 +332,55 @@ quat_to_axis_angle = quaternion_to_axis_angle
 multiply_quats = multiply_quaternions
 
 
-class MatrixRow(list):
+class FixedLengthList(list):
+    __slots__ = ()
+    def append(self, val): raise NotImplementedError
+    def extend(self, vals): raise NotImplementedError
+    def insert(self, index, val): raise NotImplementedError
+    def pop(self): raise NotImplementedError
+    def __delitem__(self): raise NotImplementedError
+    def __setitem__(self, index, val):
+        if isinstance(index, slice):
+            start, stop, step = index.indices(len(self))
+            if start > stop:
+                start, stop = stop, start
+            if start == stop:
+                return
+            elif step < 0:
+                step = -step
+
+            slice_size = (stop - start) // step
+
+            if slice_size != len(val):
+                raise ValueError(("attempt to assign sequence of size %s to "
+                                  "slice of size %s") % (len(val), slice_size))
+
+        list.__setitem__(self, index, val)
+
+
+class Vector(list):
+    __slots__ = ()
     '''Implements the minimal methods required for messing with matrix rows'''
     def __neg__(self):
-        return MatrixRow(-x for x in self)
+        return type(self)(-x for x in self)
     def __add__(self, other):
-        new = MatrixRow(self)
+        new = type(self)(self)
         for i in range(len(other)): new[i] += other[i]
         return new
     def __sub__(self, other):
-        new = MatrixRow(self)
+        new = type(self)(self)
         for i in range(len(other)): new[i] -= other[i]
         return new
     def __mul__(self, other):
-        if isinstance(other, MatrixRow):
+        if isinstance(other, type(self)):
             return sum(self[i]*other[i] for i in range(len(self)))
-        new = MatrixRow(self)
+        new = type(self)(self)
         for i in range(len(self)): new[i] *= other
         return new
     def __truediv__(self, other):
-        if isinstance(other, MatrixRow):
-            return sum(self[i]/other[i] for i in range(len(self)))
-        new = MatrixRow(self)
+        if isinstance(other, type(self)):
+            return cross_product(self, other)
+        new = type(self)(self)
         for i in range(len(self)): new[i] /= other
         return new
     def __iadd__(self, other):
@@ -341,24 +390,37 @@ class MatrixRow(list):
         for i in range(len(other)): self[i] -= other[i]
         return self
     def __imul__(self, other):
-        if isinstance(other, MatrixRow):
-            return sum(self[i]*other[i] for i in range(len(self)))
+        if isinstance(other, type(self)):
+            raise NotImplementedError
         for i in range(len(self)): self[i] *= other
         return self
     def __itruediv__(self, other):
-        if isinstance(other, MatrixRow):
-            return sum(self[i]/other[i] for i in range(len(self)))
+        if isinstance(other, type(self)):
+            raise NotImplementedError
         for i in range(len(self)): self[i] /= other
         return self
-    def normalize(self):
-        div = self.magnitude
-        if div:
-            for i in range(len(self)): self[i] /= div
+
+    __radd__ = __add__
+    __rsub__ = __sub__
+    __rmul__ = __mul__
+    __rtruediv__ = __truediv__
+    
+
+class Point(Vector):
+    __slots__ = ()
+    def __eq__(self, other):
+        return are_points_equal(self, other)
+
+
+class Ray(Vector):
+    __slots__ = ()
+    @property
+    def is_zero(self): return not bool(sum(bool(val) for val in self))
     @property
     def normalized(self):
-        vector = MatrixRow(self)
-        vector.normalize()
-        return vector
+        ray = Ray(self)
+        ray.normalize()
+        return ray
     @property
     def magnitude_sq(self): return sum(v**2 for v in self)
     @property
@@ -366,10 +428,87 @@ class MatrixRow(list):
     mag_sq = magnitude_sq
     mag = magnitude
 
-    __radd__ = __add__
-    __rsub__ = __sub__
+    @classmethod
+    def cross(cls, v0, v1):
+        assert len(v0) >= 3
+        assert len(v1) >= 3
+        return Ray(cross_product(v0, v1))
+    @classmethod
+    def dot(cls, v0, v1):
+        assert len(v0) == len(v1)
+        return dot_product(v0, v1)
+
+    def normalize(self):
+        div = self.magnitude
+        if div:
+            for i in range(len(self)): self[i] /= div
+
+
+class Plane(FixedLengthList, Ray):
+    __slots__ = ()
+    def __init__(self, initializer=None):
+        if initializer is None:
+            initializer = (0, 0, 1, 0)
+        assert len(initializer) == 4
+        list.__init__(self, initializer)
+    def __eq__(self, other):
+        return are_planes_equal(self, other)
+    @property
+    def magnitude_sq(self): return self[3]**2
+    @property
+    def magnitude(self): return self[3]
+    mag_sq = magnitude_sq
+    mag = magnitude
+
+    def normalize(self):
+        div = self[3]
+        if div:
+            for i in range(len(self)): self[i] /= div
+
+    def is_point_on_front_side(self, point, use_double_rounding=False,
+                               rounding_adjust=0):
+        return is_point_on_front_side_of_plane(
+            point, plane, use_double_rounding, rounding_adjust)
+
+    def find_intersect_line_with_plane(self, other, use_double_rounding=False,
+                                       rounding_adjust=0):
+        return find_intersect_line_of_planes(
+            plane_0, plane_1, use_double_rounding, rounding_adjust)
+
+
+class Quaternion(FixedLengthList, Ray):
+    __slots__ = ()
+    def __init__(self, initializer=None):
+        if initializer is None:
+            initializer = (0, 0, 0, 1)
+        assert len(initializer) == 4
+        list.__init__(self, initializer)
+    def __mul__(self, other):
+        if isinstance(other, Quaternion):
+            return sum(self[i]*other[i] for i in range(len(self)))
+        new = Ray(self)
+        for i in range(len(self)): new[i] *= other
+        return new
+    def __imul__(self, other):
+        if isinstance(other, Quaternion):
+            return Quaternion(multiply_quaternions(self, other))
+        for i in range(len(self)): self[i] *= other
+        return self
     __rmul__ = __mul__
-    __rtruediv__ = __truediv__
+
+    @classmethod
+    def to_euler(cls, self):
+        return Vector(quaternion_to_euler(*self))
+    @classmethod
+    def to_axis_angle(cls, self):
+        return Vector(quaternion_to_axis_angle(*self))
+    @classmethod
+    def to_matrix(cls, self):
+        return quaternion_to_matrix(*self)
+
+
+class MatrixRow(FixedLengthList, Vector):
+    __slots__ = ()
 
 
 class Matrix(list):
@@ -516,6 +655,11 @@ class Matrix(list):
             return self
         self *= other.inverse
         return self
+
+    def to_quaternion(self):
+        assert self.width == 3
+        assert self.height == 3
+        return Quaternion(matrix_to_quaternion(self))
 
     @property
     def determinant(self):
