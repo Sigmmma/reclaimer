@@ -101,50 +101,11 @@ def find_intersect_line_of_planes(plane_0, plane_1, use_double_rounding=False,
         return None
 
     line_dir.normalize()
-
-    # zero-out one of the coordinates to normalize the point
-    # and turn it into a pair of equations in 2 unknowns,
-    # rather than a pair of equations in 3 unknowns.
-    valid_i_0_values = set((0, 1, 2))
-    c0 = c1 = 0
-    curr_val_0 = curr_val_1 = 0
-    for i in (0, 1, 2):
-        comp_val_0 = abs(plane_0[i])
-        comp_val_1 = abs(plane_1[i])
-        # check for any cases where only one component is non-zero 
-        if comp_val_0 and (not(plane_0[i + 1] or plane_0[(i + 2) % 3]) or
-                           comp_val_0 > curr_val_0):
-            c0 = i
-            curr_val_0 = comp_val_0
-
-        if comp_val_1 and (not(plane_1[i + 1] or plane_1[(i + 2) % 3]) or
-                           comp_val_1 > curr_val_1):
-            c1 = i
-            curr_val_1 = comp_val_1
-
-    if c0 == c1:
-        return None
-
-    # FIX THIS FUNCTION
-    lines_matrix = Matrix(
-        list((plane_0[i], plane_1[i]) for i in (c0, c1))
-        )
+    lines_matrix = Matrix((plane_0[: 3], plane_1[: 3], line_dir))
     reduced, result = lines_matrix.row_reduce(
-        Matrix((plane_0[3], plane_1[3]))
+        Matrix((plane_0[3], plane_1[3], 0))
         )
-    line_point = Point((0.0, 0.0, 0.0))
-    line_point[c0] = result[0][0]
-    line_point[c1] = result[1][0]
-    if line_point == [8.195967489701815, -499.61965532967923, 0.0]:
-        print(plane_0)
-        print(plane_1)
-        print(lines_matrix)
-        print(reduced)
-        print(result)
-        print(c0, c1)
-        print(line_point, line_dir)
-        print()
-
+    line_point = Point((result[0][0], result[1][0], result[2][0]))
     return line_point, line_dir
 
 
@@ -160,42 +121,15 @@ def find_intersect_point_of_lines(line_0, line_1, use_double_rounding=False,
        # one or both vectors are the zero-vector
         return None
 
-    # Goal: find the point where these equations hold true:
-    #    v0_a + d0_a*t0 == v1_a + d1_a*t1
-    #    v0_b + d0_b*t0 == v1_b + d1_b*t1
-    lines_matrix = Matrix([(a, -b) for a, b in zip(d0, d1)])
+    lines_matrix = 
     try:
-        reduced, result = lines_matrix.row_reduce(
-            #Matrix([(v0[c0], v0[c1]),
-            #        (v1[c0], v1[c1])])
-            Matrix([v0[i] - v1[i] for i in range(len(v0))])
-            )
+        reduced, result = Matrix([(a, -b) for a, b in zip(d0, d1)]).row_reduce(
+            Matrix([v0[i] - v1[i] for i in range(len(v0))]))
     except CannotRowReduce:
-        #print("LINES:", lines_matrix)
-        #print("V0:", v0)
-        #print("V1:", v1)
-        #print("V2:", v1 - v0)
-        #print("D0:", d0)
-        #print("D1:", d1)
-        #raise
         return None
-    #print(lines_matrix)
-    #print(list(reduced))
-    #print(list(result))
-    t0 = result[0][0]
-    t1 = result[1][0]
-    #print("T0: ", t0)
-    #print("T1: ", t1)
-    #print("V0:", v0)
-    #print("V1:", v1)
-    #print("D0:", d0)
-    #print("D1:", d1)
-    intersect_a = v0 - d0 * t0
-    intersect_b = v1 - d1 * t1
 
-    #print("A:", intersect_a)
-    #print("B:", intersect_b)
-    #print()
+    intersect_a = v0 - d0 * result[0][0]
+    intersect_b = v1 - d1 * result[1][0]
     if are_points_equal(intersect_a, intersect_b,
                         use_double_rounding, round_adjust):
         # point lies on both lines
