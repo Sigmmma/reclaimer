@@ -5,10 +5,14 @@ from math import log, sqrt, cos, sin, atan2, asin, acos, pi
 from sys import float_info
 
 
+class CannotRowReduce(ValueError): pass
+class MatrixNotInvertable(ValueError): pass
+
+
 def are_points_equal(point_0, point_1, use_double_rounding=False,
-                     rounding_adjust=0):
-    mantissa_len = (53 if use_double_rounding else 23) - rounding_adjust
-    for val_0, val_1 in zip(point_1, point_0):
+                     round_adjust=0):
+    mantissa_len = (53 if use_double_rounding else 23) - round_adjust
+    for val_0, val_1 in zip(point_0, point_1):
         # take into account rounding errors for 32bit floats
         val = max(abs(val_0), abs(val_1))
         delta_max = 2**(int(log(val + float_info.epsilon, 2)) - mantissa_len)
@@ -18,18 +22,17 @@ def are_points_equal(point_0, point_1, use_double_rounding=False,
 
 
 def are_planes_equal(plane_0, plane_1, use_double_rounding=False,
-                     rounding_adjust=0):
+                     round_adjust=0):
     p0 = Plane(plane_0)
     p1 = Plane(plane_1)
     p0.normalize()
     p1.normalize()
-    return are_points_equal(p0, p1, use_double_rounding, rounding_adjust)
+    return are_points_equal(p0, p1, use_double_rounding, round_adjust)
 
 
-def is_point_on_front_side_of_plane(point, plane,
-                                      use_double_rounding=False,
-                                      rounding_adjust=0):
-    mantissa_len = (53 if use_double_rounding else 23) - rounding_adjust
+def point_distance_to_plane(point, plane, use_double_rounding=False,
+                            round_adjust=0):
+    mantissa_len = (53 if use_double_rounding else 23) - round_adjust
     # return True if point is on forward side of plane, otherwise False
     # take into account rounding errors for 32bit floats
     delta_max = 2**(
@@ -38,22 +41,58 @@ def is_point_on_front_side_of_plane(point, plane,
     delta = dot_product(plane[:3], point) - plane[3]
     if abs(delta) < delta_max:
         # point lies on plane
-        return False
-    return delta > 0
+        return 0.0
+    return delta
 
 
-def is_point_on_front_side_of_planes(point, planes,
-                                       use_double_rounding=False,
-                                       rounding_adjust=0):
+def is_point_on_plane(point, plane, use_double_rounding=False,
+                      round_adjust=0):
+    return point_distance_to_plane(
+        point, plane, use_double_rounding, round_adjust) == 0
+
+
+def is_point_on_front_side_of_plane(point, plane, on_plane_ok=False,
+                                    use_double_rounding=False,
+                                    round_adjust=0):
+    rounded_dist = point_distance_to_plane(
+        point, plane, use_double_rounding, round_adjust)
+    if on_plane_ok:
+        return rounded_dist >= 0
+    return rounded_dist > 0
+
+
+def is_point_on_back_side_of_plane(point, plane, on_plane_ok=False,
+                                   use_double_rounding=False,
+                                   round_adjust=0):
+    rounded_dist = point_distance_to_plane(
+        point, plane, use_double_rounding, round_adjust) < 0
+    if on_plane_ok:
+        return rounded_dist <= 0
+    return rounded_dist < 0
+
+
+def is_point_on_front_side_of_planes(point, planes, on_plane_ok=False,
+                                     use_double_rounding=False,
+                                     round_adjust=0):
     for plane in planes:
-        if is_point_on_front_side_of_plane(
-            point, plane, use_double_rounding, rounding_adjust):
-            return True
-    return False
+        if not is_point_on_front_side_of_plane(
+            point, plane, on_plane_ok, use_double_rounding, round_adjust):
+            return False
+    return True
+
+
+def is_point_on_back_side_of_planes(point, planes, on_plane_ok=False,
+                                    use_double_rounding=False,
+                                    round_adjust=0):
+    for plane in planes:
+        if not is_point_on_back_side_of_plane(
+            point, plane, on_plane_ok, use_double_rounding, round_adjust):
+            return False
+    return True
 
 
 def find_intersect_line_of_planes(plane_0, plane_1, use_double_rounding=False,
-                                  rounding_adjust=0):
+                                  round_adjust=0):
     # returns an arbitrary point where the provided planes intersect.
     # if they do not intersect, None will be returned instead.
     line_dir = Ray.cross(plane_0[:3], plane_1[:3])
@@ -61,159 +100,247 @@ def find_intersect_line_of_planes(plane_0, plane_1, use_double_rounding=False,
         # planes are parallel. ignore
         return None
 
+    line_dir.normalize()
+
     # zero-out one of the coordinates to normalize the point
     # and turn it into a pair of equations in 2 unknowns,
     # rather than a pair of equations in 3 unknowns.
-    index_to_zero = 2
-    for i in range(3):
-        pass
+    valid_i_0_values = set((0, 1, 2))
+    c0 = c1 = 0
+    curr_val_0 = curr_val_1 = 0
+    for i in (0, 1, 2):
+        comp_val_0 = abs(plane_0[i])
+        comp_val_1 = abs(plane_1[i])
+        # check for any cases where only one component is non-zero 
+        if comp_val_0 and (not(plane_0[i + 1] or plane_0[(i + 2) % 3]) or
+                           comp_val_0 > curr_val_0):
+            c0 = i
+            curr_val_0 = comp_val_0
 
-    lines_matrix = Matrix(list((plane_0[i], plane_1[i]) for i in
-                               (0, 1, 2) if i != index_to_zero))
+        if comp_val_1 and (not(plane_1[i + 1] or plane_1[(i + 2) % 3]) or
+                           comp_val_1 > curr_val_1):
+            c1 = i
+            curr_val_1 = comp_val_1
+
+    if c0 == c1:
+        return None
+
+    # FIX THIS FUNCTION
+    lines_matrix = Matrix(
+        list((plane_0[i], plane_1[i]) for i in (c0, c1))
+        )
     reduced, result = lines_matrix.row_reduce(
         Matrix((plane_0[3], plane_1[3]))
         )
-    line_point = [result[0][0], result[1][0]]
-    line_point.insert(index_to_zero, 0.0)
+    line_point = Point((0.0, 0.0, 0.0))
+    line_point[c0] = result[0][0]
+    line_point[c1] = result[1][0]
+    if line_point == [8.195967489701815, -499.61965532967923, 0.0]:
+        print(plane_0)
+        print(plane_1)
+        print(lines_matrix)
+        print(reduced)
+        print(result)
+        print(c0, c1)
+        print(line_point, line_dir)
+        print()
 
     return line_point, line_dir
 
 
 def find_intersect_point_of_lines(line_0, line_1, use_double_rounding=False,
-                                  rounding_adjust=0):
+                                  round_adjust=0):
     # returns an arbitrary point where the provided lines intersect.
     # if they do not intersect, None will be returned instead.
     v0, d0 = Point(line_0[0]), Ray(line_0[1])
     v1, d1 = Point(line_1[0]), Ray(line_1[1])
     assert len(v0) == len(v1)
     assert len(d0) == len(d1)
-    if not((max(d0) or min(d0)) and (max(d1) or min(d1))):
+    if d0.is_zero or d1.is_zero:
        # one or both vectors are the zero-vector
         return None
 
     # Goal: find the point where these equations hold true:
     #    v0_a + d0_a*t0 == v1_a + d1_a*t1
     #    v0_b + d0_b*t0 == v1_b + d1_b*t1
-    lines_matrix = Matrix(list((v0, v1) for v0, v1 in zip(d0, d1)))
-    reduced, result = lines_matrix.row_reduce(Matrix(v1 - v0))
+    lines_matrix = Matrix([(a, -b) for a, b in zip(d0, d1)])
+    try:
+        reduced, result = lines_matrix.row_reduce(
+            #Matrix([(v0[c0], v0[c1]),
+            #        (v1[c0], v1[c1])])
+            Matrix([v0[i] - v1[i] for i in range(len(v0))])
+            )
+    except CannotRowReduce:
+        #print("LINES:", lines_matrix)
+        #print("V0:", v0)
+        #print("V1:", v1)
+        #print("V2:", v1 - v0)
+        #print("D0:", d0)
+        #print("D1:", d1)
+        #raise
+        return None
     #print(lines_matrix)
-    #print(reduced)
-    #print(result)
+    #print(list(reduced))
+    #print(list(result))
     t0 = result[0][0]
     t1 = result[1][0]
-
     #print("T0: ", t0)
     #print("T1: ", t1)
-    intersect_a = v0 + d0 * t0
+    #print("V0:", v0)
+    #print("V1:", v1)
+    #print("D0:", d0)
+    #print("D1:", d1)
+    intersect_a = v0 - d0 * t0
     intersect_b = v1 - d1 * t1
 
     #print("A:", intersect_a)
     #print("B:", intersect_b)
+    #print()
     if are_points_equal(intersect_a, intersect_b,
-                        use_double_rounding, rounding_adjust):
+                        use_double_rounding, round_adjust):
         # point lies on both lines
         return intersect_a + (intersect_b - intersect_a) / 2
 
     return None
 
 
-def planes_to_verts_and_edge_loops(planes, max_plane_ct=32):
+def planes_to_verts_and_edge_loops(planes, plane_dir=False, max_plane_ct=32,
+                                   use_double_rounding=False, round_adjust=0):
     # make a set out of the planes to remove duplicates
     planes = list(set(tuple(plane) for plane in planes))
-    lines_by_planes = {}
+    lines_by_planes = {plane: [] for plane in planes}
+    is_point_inside_form = (is_point_on_front_side_of_planes if plane_dir
+                            else is_point_on_back_side_of_planes)
 
     if len(planes) > max_plane_ct:
         raise ValueError(
             "Provided more planes(%s) than the max plane count(%s)" %
             (len(planes), max_plane_ct))
 
-    # Get the edge lines for each plane by crossing the plane with
-    # each other plane. If they are parallel, their cross product
-    # will be the zero vector and should be ignored.
+    # Get intersection lines by crossing each plane with each other plane.
     for i in range(len(planes)):
         p0 = planes[i]
-        for j in range(len(planes)):
-            if i == j: continue
-
-            line = find_intersect_line_of_planes(p0, planes[j])
+        for j in range(i + 1, len(planes)):
+            p1 = planes[j]
+            line = find_intersect_line_of_planes(p0, p1)
             if line is not None:
                 # planes intersect and are not parallel
-                lines_by_planes.setdefault(p0, []).append(line)
+                lines_by_planes[p0].append(line)
+                lines_by_planes[p1].append(line)
 
     verts = []
     vert_indices_by_raw_verts = {}
-    edges_by_planes = {plane: [] for plane in planes}
-    edges_by_verts_by_planes = {plane: [] for plane in planes}
+    edges_by_planes = {plane: set() for plane in planes}
     # Calculate the points of intersection for each planes edges
     # to determine their vertices, skipping any vertices that are
     # on the forward-facing side of any of the planes.
     for plane, lines in lines_by_planes.items():
         # loop over each line in the plane and find
         # two vertices where two lines intersect
+        edges = edges_by_planes[plane]
+        print(plane)
+        for line in lines:
+            print(line)
+        print()
         for i in range(len(lines)):
             v0_i = v1_i = None
             line = lines[i]
-            for j in range(i + 1, len(lines)):
-                intersect = tuple(find_intersect_point_of_lines(
-                    line, lines[j]))
 
-                if intersect in vert_indices_by_raw_verts:
-                    vert_index = vert_indices_by_raw_verts[intersect]
-                elif intersect is not None:
+            for j in range(len(lines)):
+                if i == j: continue
+                intersect = find_intersect_point_of_lines(
+                    line, lines[j])
+                if intersect is None:
+                    continue
+
+                intersect = tuple(intersect)
+                vert_index = vert_indices_by_raw_verts.get(intersect)
+                if vert_index is None:
+                    for point in vert_indices_by_raw_verts:
+                        if are_points_equal(point, intersect):
+                            #print("Found:\n%s\n%s" % (point, intersect))
+                            vert_index = vert_indices_by_raw_verts[point]
+
+                if vert_index is None:
                     # make sure the point is not outside the polyhedra
-                    if is_point_on_front_side_of_planes(intersect, planes):
+                    if not is_point_inside_form(intersect, planes, True):
+                        #print("OUTSIDE: ", intersect)
                         continue
+                    #print("INSIDE: ", intersect)
                     vert_index = len(verts)
                     verts.append(intersect)
                     vert_indices_by_raw_verts[intersect] = vert_index
-                else:
-                    continue
 
-                if   v0_i is None: v0_i = vert_index
-                elif v1_i is None: v1_i = vert_index
-                else: break
+                if v0_i is None:
+                    v0_i = vert_index
+                elif v1_i is None:
+                    v1_i = vert_index
+                    break
 
-            if v0_i is None or v1_i is None:
+            #print(i, (v0_i, v1_i))
+            if v0_i is None or v1_i is None or v0_i == v1_i:
                 #print("FUCK! We couldn't find an intersection point.")
                 continue
 
             # add the edge to this planes list of vert edges
-            edge = (v0_i, v1_i)
-            edges_by_planes[plane].append(edge)
-            edges_by_verts_by_planes[plane].setdefault(v0_i, []).append(edge)
-            edges_by_verts_by_planes[plane].setdefault(v1_i, []).append(edge)
+            if v0_i > v1_i:
+                v0_i, v1_i = v1_i, v0_i
 
+            edge = (v0_i, v1_i)
+            edges.add(edge)
+
+    #print(verts)
 
     edge_loops = []
     # loop over each edge and put together an edge loop list
     # by visiting the edges shared by each vert index
     for plane, edges in edges_by_planes.items():
-        edge_loop = []
-        edge_loops.append(edge_loop)
-        edges_by_verts = edges_by_verts_by_planes[plane]
+        #print()
+        #print(plane)
+        print(edges)
+        if not edges:
+            continue
 
-        curr_edge = edges[0]
-        edge_loop.append(curr_edge[0])
-        edges_by_verts.pop(curr_edge[0])
-        v_i = curr_edge[1]
-        while edges_by_verts:
-            vert_edges = edges_by_verts.pop(v_i, None)
-            if vert_edges is None:
-                break
+        continue
+        for edge_loop in edges_to_edge_loops(edges):
+            # if the edge loop would construct triangles facing the
+            # wrong direction, we need to reverse the edge loop
+            v0 = verts[edge_loop[0]]
+            v1 = verts[edge_loop[1]]
+            v2 = verts[edge_loop[2]]
+            if dot_product(vertex_cross_product(v0, v1, v2), plane[: 3]) < 0:
+                edge_loop[:] = edge_loop[::-1]
 
-            curr_edge = vert_edges[not vert_edges.index(curr_edge)]
-            edge_loop.append(v_i)
-            v_i = curr_edge[not curr_edge.index(v_i)]
-
-        # if the edge loop would construct triangles facing the
-        # wrong direction, we need to reverse the edge loop
-        v0 = verts[edge_loop[0]]
-        v1 = verts[edge_loop[1]]
-        v2 = verts[edge_loop[2]]
-        if dot_product(vertex_cross_product(v0, v1, v2), plane[: 3]) < 0:
-            edge_loop[:] = edge_loop[::-1]
+            edge_loops.append(edge_loop)
 
     return verts, edge_loops
+
+
+def edges_to_edge_loops(edges):
+    edge_loops = []
+    edges_by_verts = {edge[0]: edge for edge in edges}
+    for edge in edges_by_verts:
+        if edge[1] in edges_by_verts:
+            edges_by_verts[edge[1]].append(edge)
+
+    edge_loops.append(edge_loop)
+    curr_edge = edges_by_verts.pop()
+    edge_loop.append(curr_edge[0])
+    edges_by_verts.pop(curr_edge[0])
+    v_i = curr_edge[1]
+    while edges_by_verts:
+        vert_edges = edges_by_verts.pop(v_i, None)
+        if vert_edges is None:
+            break
+        curr_edge = vert_edges[not vert_edges.index(curr_edge)]
+        edge_loop.append(v_i)
+        v_i = curr_edge[not curr_edge.index(v_i)]
+
+    print(edge_loop)
+    if len(edge_loop) < 3:
+        return
+
+    return edge_loops
 
 
 def line_from_verts(v0, v1):
@@ -415,7 +542,7 @@ class Point(Vector):
 class Ray(Vector):
     __slots__ = ()
     @property
-    def is_zero(self): return not bool(sum(bool(val) for val in self))
+    def is_zero(self): return not sum(bool(val) for val in self)
     @property
     def normalized(self):
         ray = Ray(self)
@@ -465,15 +592,25 @@ class Plane(FixedLengthList, Ray):
         if div:
             for i in range(len(self)): self[i] /= div
 
-    def is_point_on_front_side(self, point, use_double_rounding=False,
-                               rounding_adjust=0):
+    def is_point_on_plane(self, point, use_double_rounding=False,
+                          round_adjust=0):
+        return is_point_on_plane(
+            point, self, use_double_rounding, round_adjust)
+
+    def is_point_on_plane_front(self, point, on_plane_ok=False,
+                                use_double_rounding=False, round_adjust=0):
         return is_point_on_front_side_of_plane(
-            point, plane, use_double_rounding, rounding_adjust)
+            point, self, on_plane_ok, use_double_rounding, round_adjust)
+
+    def is_point_on_plane_front(self, point, on_plane_ok=False,
+                                use_double_rounding=False, round_adjust=0):
+        return is_point_on_back_side_of_plane(
+            point, self, on_plane_ok, use_double_rounding, round_adjust)
 
     def find_intersect_line_with_plane(self, other, use_double_rounding=False,
-                                       rounding_adjust=0):
+                                       round_adjust=0):
         return find_intersect_line_of_planes(
-            plane_0, plane_1, use_double_rounding, rounding_adjust)
+            self, other, use_double_rounding, round_adjust)
 
 
 class Quaternion(FixedLengthList, Ray):
@@ -688,8 +825,10 @@ class Matrix(list):
     @property
     def inverse(self, find_best_inverse=True):
         # cannot invert non-square matrices. check for that
-        assert self.width == self.height, "Cannot invert non-square matrix."
-        assert self.determinant != 0, "Matrix is non-invertible."
+        if self.width != self.height:
+            raise MatrixNotInvertable("Cannot invert non-square matrix.")
+        elif not self.determinant:
+            raise MatrixNotInvertable("Matrix is non-invertible.")
 
         regular, inverse = self.row_reduce(
             Matrix(width=self.width, height=self.height, identity=True),
@@ -702,37 +841,31 @@ class Matrix(list):
         # cant row-reduce if number of columns is greater than number of rows
         assert self.width <= self.height
 
-        # IN THE FUTURE I NEED TO REARRANGE THE MATRIX SO THE VALUES
-        # ALONG THE DIAGONAL ARE GUARANTEED TO BE NON-ZERO. IF THAT
-        # CANT BE ACCOMPLISHED FOR ANY COLUMN, ITS COMPONENT IS ZERO.
-        # EDIT: It's the future now
-        rearrange_rows = False
-
         # WIDTH NOTE: We will loop over the width rather than height for
         #     several things here, as we do not care about any rows that
         #     don't intersect the columns at a diagonal. Essentially we're
         #     treating a potentially non-square matrix as square(we're
         #     ignoring the higher numbered rows) by rearranging the rows.
 
-        # determine if rows need to be rearranged to calculate inverse
-        for i in range(self.width):  # read note about looping over width
-            largest = max(abs(self[i][j]) for j in range(self.width))
-            if abs(self[i][i]) < largest:
-                rearrange_rows = True
-                break
+        new_row_order = self.get_row_reduce_order(find_best_reduction)
+        if new_row_order is None:
+            raise CannotRowReduce(
+                "Impossible to rearrange rows to row-reduce:\n%s" % self)
 
         reduced = Matrix(self)
-        if rearrange_rows:
-            new_row_order = self.get_row_reduce_order(find_best_reduction)
-            # rearrange rows so diagonals are all non-zero
-            orig_other = list(other)
-            for i in range(len(new_row_order)):
-                reduced[i] = self[new_row_order[i]]
-                other[i] = orig_other[new_row_order[i]]
+        orig_other = list(other)
+        # rearrange rows so diagonals are all non-zero
+        for i in range(len(new_row_order)):
+            reduced[i] = self[new_row_order[i]]
+            other[i] = orig_other[new_row_order[i]]
 
+        orig_reduced = Matrix(reduced)  # TEMP
         for i in range(self.width):  # read note about looping over width
             # divide both matrices by their diagonal values
             div = reduced[i][i]
+            if not div:
+                raise CannotRowReduce("Impossible to row-reduce.")
+
             reduced[i] /= div
             other[i] /= div
 
@@ -769,11 +902,19 @@ class Matrix(list):
         self._get_valid_diagonal_row_orders(
             nonzero_diag_row_indices, valid_row_orders, find_best_reduction)
 
-        if not valid_row_orders:
-            raise ValueError("Impossible to rearrange rows to row-reduce.")
-
         # get the highest weighted row order
-        return valid_row_orders[max(valid_row_orders)]
+        test_matrix = Matrix(width=self.width, height=self.width)
+        for weight in sorted(valid_row_orders):
+            for row_order in valid_row_orders[weight]:
+                for i in range(len(row_order)):
+                    test_matrix[i][:] = self[row_order[i]]
+
+                # make sure the determinant of the matrix made from the
+                # row order isn't zero. if it is, the matrix isnt solvable
+                if test_matrix.determinant:
+                    return row_order
+
+        return None
 
     def _get_valid_diagonal_row_orders(self, row_indices, row_orders,
                                        choose_best=True, row_order=(),
@@ -798,7 +939,7 @@ class Matrix(list):
                     weight *= abs(self[row_order[j]][j])
 
                 # freeze this row order in place
-                row_orders[weight] = tuple(row_order)
+                row_orders.setdefault(weight, []).append(tuple(row_order))
             else:
                 # check the rest of the rows
                 self._get_valid_diagonal_row_orders(
