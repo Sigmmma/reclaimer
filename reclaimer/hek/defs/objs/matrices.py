@@ -121,7 +121,6 @@ def find_intersect_point_of_lines(line_0, line_1, use_double_rounding=False,
        # one or both vectors are the zero-vector
         return None
 
-    lines_matrix = 
     try:
         reduced, result = Matrix([(a, -b) for a, b in zip(d0, d1)]).row_reduce(
             Matrix([v0[i] - v1[i] for i in range(len(v0))]))
