@@ -238,7 +238,7 @@ coll_body = Struct("tagdata",
     )
 
 
-fast_collision_bsp = Struct("permutation bsp",
+fast_permutation_bsp = Struct("permutation bsp",
     raw_reflexive("bsp3d nodes", bsp3d_node, 131072),
     raw_reflexive("planes", plane, 65535),
     raw_reflexive("leaves", leaf, 65535),
@@ -264,7 +264,7 @@ fast_node = Struct("node",
     Pad(8),
     FlSInt16("unknown0", VISIBLE=False),
     FlSInt16("unknown1", VISIBLE=False),
-    reflexive("bsps", fast_collision_bsp, 32),
+    reflexive("bsps", fast_permutation_bsp, 32),
     SIZE=64
     )
 

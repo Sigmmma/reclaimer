@@ -80,7 +80,8 @@ class Halo1Map(HaloMap):
             this_class.defs = defs = {}
             print("    Loading definitions in '%s'" % self.tag_defs_module)
             this_class.handler = self.handler_class(
-                build_reflexive_cache=False, build_raw_data_cache=False)
+                build_reflexive_cache=False, build_raw_data_cache=False,
+                debug=2)
 
             this_class.defs = dict(this_class.handler.defs)
             this_class.defs["coll"] = fast_coll_def
@@ -305,6 +306,7 @@ class Halo1Map(HaloMap):
         '''
         if tag_id is None:
             return
+
         magic     = self.map_magic
         engine    = self.engine
         map_data  = self.map_data
@@ -318,7 +320,7 @@ class Halo1Map(HaloMap):
             return
 
         tag_cls = None
-        if tag_id == tag_index.scenario_tag_id & 0xFFFF:
+        if tag_id == (tag_index.scenario_tag_id & 0xFFFF):
             tag_cls = "scnr"
         elif tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
             tag_cls = fourcc(tag_index_ref.class_1.data)
@@ -335,8 +337,8 @@ class Halo1Map(HaloMap):
         if tag_cls is None:
             # couldn't determine the tag class
             return
-        elif self.is_indexed(tag_id) and (tag_cls != "snd!" or
-                                          not ignore_rsrc_sounds):
+        elif self.is_indexed(tag_id) and (
+                tag_cls != "snd!" or not ignore_rsrc_sounds):
             # tag exists in a resource cache
             tag_id = offset
 
@@ -400,7 +402,8 @@ class Halo1Map(HaloMap):
                     desc, parent=block, attr_index=0, rawdata=map_data,
                     map_pointer_converter=pointer_converter,
                     offset=pointer_converter.v_ptr_to_f_ptr(offset),
-                    tag_index_manager=self.tag_index_manager)
+                    tag_index_manager=self.tag_index_manager,
+                    safe_mode=not kw.get("disable_safe_mode"))
         except Exception:
             print(format_exc())
             if kw.get("allow_corrupt"):
@@ -415,7 +418,7 @@ class Halo1Map(HaloMap):
                     # so they can be interpreted properly
                     bitmap.base_address = 1073751810
 
-            self.record_map_cache_read(tag_id, 0)  # cant get size quickly enough
+            self.record_map_cache_read(tag_id, 0)
             if self.map_cache_over_limit():
                 self.clear_map_cache()
 
@@ -426,7 +429,170 @@ class Halo1Map(HaloMap):
             if not kw.get("allow_corrupt"):
                 meta = None
 
+        if not kw.get("disable_tag_cleaning"):
+            try:
+                self.clean_tag_meta(meta, tag_id, tag_cls)
+            except Exception:
+                print(format_exc())
+
         return meta
+
+    def clean_tag_meta(self, meta, tag_id, tag_cls):
+        tag_index_array = self.tag_index.tag_index
+
+        if tag_cls in ("antr", "magy"):
+            highest_valid = 0
+            animations = meta.animations.STEPTREE
+            for i in range(len(animations)):
+                anim = animations[i]
+                valid = True
+                if (anim.type.enum_name == "<INVALID>" or
+                    anim.frame_info_type.enum_name == "<INVALID>"):
+                    valid = False
+                elif anim.node_count not in range(1, 65):
+                    valid = False
+
+                if valid:
+                    highest_valid = i
+                else:
+                    # delete the animation info
+                    animations.pop(i)
+                    animations.insert(i)
+
+            # remove the highest invalid animations
+            if highest_valid + 1 < len(animations):
+                del animations[highest_valid + 1: ]
+
+        elif tag_cls in ("sbsp", "coll"):
+            if tag_cls == "sbsp" :
+                bsps = meta.collision_bsp.STEPTREE
+            else:
+                bsps = meta.bsps.STEPTREE
+
+            for bsp in bsps:
+                highest_used_vert = 0
+                edge_data = bsp.edges.STEPTREE
+                vert_data = bsp.vertices.STEPTREE
+                for i in range(0, len(edge_data), 24):
+                    v0_i = (edge_data[i] +
+                            (edge_data[i + 1] << 8) +
+                            (edge_data[i + 2] << 16) +
+                            (edge_data[i + 3] << 24))
+                    v1_i = (edge_data[i + 4] +
+                            (edge_data[i + 5] << 8) +
+                            (edge_data[i + 6] << 16) +
+                            (edge_data[i + 7] << 24))
+                    highest_used_vert = max(highest_used_vert, v0_i, v1_i)
+
+                if highest_used_vert * 16 < len(vert_data):
+                    del vert_data[(highest_used_vert + 1) * 16: ]
+                    bsp.vertices.size = highest_used_vert
+
+        elif tag_cls in ("mode", "mod2"):
+            used_shaders = set()
+            shaders = meta.shaders.STEPTREE
+
+            for geom in meta.geometries.STEPTREE:
+                for part in geom.parts.STEPTREE:
+                    if part.shader_index in range(len(shaders)):
+                        used_shaders.add(part.shader_index)
+
+            new_i = 0
+            rebase_map = {}
+            new_shaders = [None] * len(used_shaders)
+            for i in sorted(used_shaders):
+                new_shaders[new_i] = shaders[i]
+                rebase_map[i] = new_i
+                new_i += 1
+
+            # rebase the shader indices
+            for geom in meta.geometries.STEPTREE:
+                for part in geom.parts.STEPTREE:
+                    if part.shader_index in range(len(shaders)):
+                        part.shader_index = rebase_map[part.shader_index]
+                    else:
+                        part.shader_index = -1
+
+            shaders[:] = new_shaders
+
+        elif tag_cls == "scnr":
+            for sky in meta.skies.STEPTREE:
+                sky_tag_index_id = sky.sky.id & 0xFFff
+                if (sky_tag_index_id not in range(len(tag_index_array)) or
+                    tag_index_array[sky_tag_index_id].id != sky.sky.id):
+                    # invalid sky
+                    sky.sky.id = 0xFFffFFff
+                    sky.sky.filepath = ""
+                    sky.sky.tag_class.set_to("sky")
+
+            # clear the child scenarios since they aren't used
+            del meta.child_scenarios.STEPTREE[:]
+
+            # determine if there are any fucked up comments
+            comments_to_keep = set()
+            comments = meta.comments.STEPTREE
+            for i in range(len(comments)):
+                comment = comments[i]
+                if max(comment.position, abs(min(comment.position))) > 5000:
+                    # check if the position is outside halos max world bounds
+                    continue
+
+                comment_data_bytes = set(comment.comment_data.encode("latin-1"))
+                valid = False
+                if comment_data_bytes and max(comment_data_bytes) > 127:
+                    # comment is not empty and has no invalid ascii characters
+                    valid = True
+                    for i in tuple(range(8)) + tuple(range(14, 32)):
+                        valid &= i not in comment_data_bytes
+
+                if valid:
+                    comments_to_keep.add(i)
+
+            if len(comments_to_keep) != len(comments):
+                # clean up any fucked up comments
+                comments[:] = [comments[i] for i in sorted(comments_to_keep)]
+
+            # clean up any fucked up palettes
+            for pal_block, inst_block in (
+                    (meta.sceneries_palette, meta.sceneries),
+                    (meta.bipeds_palette, meta.bipeds),
+                    (meta.vehicles_palette, meta.vehicles),
+                    (meta.equipments_palette, meta.equipments),
+                    (meta.weapons_palette, meta.weapons),
+                    (meta.machines_palette, meta.machines),
+                    (meta.controls_palette, meta.controls),
+                    (meta.light_fixtures_palette, meta.light_fixtures),
+                    (meta.sound_sceneries_palette, meta.sound_sceneries),
+                    ):
+                palette, instances = pal_block.STEPTREE, inst_block.STEPTREE
+
+                used_indices = set(inst.type for inst in instances
+                                   if inst.type in range(len(palette)))
+
+                # figure out what to rebase the palette swatch indices to
+                new_i = 0
+                rebase_map = {}
+                new_palette = [None] * len(used_indices)
+                for i in sorted(used_indices):
+                    new_palette[new_i] = palette[i]
+                    rebase_map[i] = new_i
+                    new_i += 1
+
+                # rebase the palette indices of the instances and
+                # move the palette swatches into their new indices
+                for inst in instances:
+                    if inst.type in range(len(instances)):
+                        inst.type = rebase_map[inst.type]
+                    else:
+                        inst.type = -1
+
+                palette[:] = new_palette
+                if inst_block.NAME != "bipeds":
+                    continue
+
+                # need to rebase the script nodes in the script syntax data
+                # so the ones that point to the bipeds array are still accurate
+
 
     def meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs):
         magic      = self.map_magic

@@ -20,6 +20,9 @@ FlStrUTF16 = FieldType(
     base=StrUtf16, name="StrUTF16",
     enc={">": StrUtf16.little.enc, "<": StrUtf16.little.enc},
     decoder=decode_string, sizecalc=delim_utf_sizecalc)
+CStrTagRef = FieldType(
+    base=CStrLatin1, name="CStrTagRef", parser=tag_cstring_parser
+    )
 
 #forces little endian integers and float
 FlUInt16 = FieldType(
