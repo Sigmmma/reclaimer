@@ -242,12 +242,13 @@ tag_header = Struct("tag header",
     UInt32("id"),
     UInt32("path offset"),
     UInt32("meta offset"),
-    UInt32("indexed"),
+    UInt8("indexed"),
+    Pad(3),
     # if indexed is non-zero, the meta_offset is the literal index in
     # the bitmaps, sounds, or loc cache that the meta data is located in.
     # NOTE: indexed is NOT a bitfield, if it is non-zero it is True
     UInt32("pad"),
-    STEPTREE=CStrLatin1("path", POINTER=tag_path_pointer),
+    STEPTREE=CStrTagRef("path", POINTER=tag_path_pointer, MAX=768),
     SIZE=32
     )
 
@@ -258,8 +259,8 @@ tag_index_array = TagIndex("tag index",
 tag_index_xbox = Struct("tag index",
     UInt32("tag index offset"),
     UInt32("scenario tag id"),
-    UInt32("map id"),  # normally unused, but the scenario tag's header
-    #                    can be used for spoofing the maps checksum
+    UInt32("map id"),  # normally unused, but can be used
+                       # for spoofing the maps checksum.
     UInt32("tag count"),
 
     UInt32("vertex parts count"),
@@ -276,8 +277,8 @@ tag_index_xbox = Struct("tag index",
 tag_index_pc = Struct("tag index",
     UInt32("tag index offset"),
     UInt32("scenario tag id"),
-    UInt32("map id"),  # normally unused, but the scenario tag's header
-    #                    can be used for spoofing the maps checksum
+    UInt32("map id"),  # normally unused, but can be used
+                       # for spoofing the maps checksum.
     UInt32("tag count"),
 
     UInt32("vertex parts count"),

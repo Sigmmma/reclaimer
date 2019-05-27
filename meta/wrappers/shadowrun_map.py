@@ -14,4 +14,5 @@ class ShadowrunMap(Halo1Map):
     def setup_defs(self):
         HaloMap.setup_defs(self)
         type(self).handler = self.handler_class(
-            build_reflexive_cache=False, build_raw_data_cache=False)
+            build_reflexive_cache=False, build_raw_data_cache=False,
+            debug=2)

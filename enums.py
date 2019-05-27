@@ -308,10 +308,10 @@ script_object_types = (
 # uses these strings to reconstruct scripts
 
     "string",
-    # lower 16bits of data points to entry in scripts
+    # lower 16bits of data points to an entry in scripts
     "script", # 10
 
-    # lower 16bits of data points to entry in their
+    # lower 16bits of data points to an entry in their
     # respectively named arrays in the scenario. also,
     # cutscene_recording refers to recorded_animations.
     "trigger_volume",
@@ -320,9 +320,9 @@ script_object_types = (
     "cutscene_title",
     "cutscene_recording", # 15
 
-    # lower 16bits of data points to entry in device groups
+    # lower 16bits of data points to an entry in device groups
     "device_group",
-    # lower 16bits of data points to entry in
+    # lower 16bits of data points to an entry in
     # encounters array, next 8bits points to entry
     # in squad array, and upper 8bits seem to be flags,
     # with the 8th bit signifying whether or not to
@@ -361,7 +361,7 @@ script_object_types = (
     "hud_corner", # 36
 
     # lower 16bits of data in all of these
-    # points to entry in object names array
+    # points to an entry in object names array
     "object",
     "unit",
     "vehicle",
@@ -370,7 +370,7 @@ script_object_types = (
     "scenery", # 42
 
     # lower 16bits of data in all of these
-    # points to entry in object names array
+    # points to an entry in object names array
     "object_name",
     "unit_name",
     "vehicle_name",

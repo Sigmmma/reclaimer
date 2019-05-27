@@ -50,6 +50,7 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
             ),
         SIZE=12
         )
+
     if DYN_NAME_PATH in desc:
         desc[STEPTREE][DYN_NAME_PATH] = desc.pop(DYN_NAME_PATH)
     if names:
@@ -95,6 +96,7 @@ def raw_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc
     This function serves to macro the creation
     of a reflexive treated as rawdata
     '''
+    # TODO: Make max_count be incorporated into desc and actually do something
     desc = reflexive(name, substruct, max_count, *names, **desc)
     info = desc[RAW_REFLEXIVE_INFO] = [0, [], []]
     sub_desc = desc[STEPTREE][SUB_STRUCT]

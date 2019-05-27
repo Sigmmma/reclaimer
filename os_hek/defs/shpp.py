@@ -25,7 +25,7 @@ technique = Struct("entry",
         ),
 
     Pad(18),
-    reflexive("shader pass", shader_pass,
+    reflexive("shader pass", shader_pass, 32,
         DYN_NAME_PATH='.name'),
     SIZE=64
     )
@@ -35,7 +35,7 @@ shpp_attrs = Struct("shpp",
     rawdata_ref("shader code binary", max_size=32768),
 
     Pad(64),
-    reflexive("techniques", technique,
+    reflexive("techniques", technique, 3,
         DYN_NAME_PATH='.name'),
     reflexive("predicted resources", predicted_resource, 1024, VISIBLE=False),
     SIZE=164

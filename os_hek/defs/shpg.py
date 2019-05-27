@@ -261,7 +261,7 @@ shpg_attrs = Struct("shpg attrs",
     dependency_os("base shader", "shpg"),
 
     # when compiled into a map, all values are merged into this array
-    reflexive("merged values", merged_value, 0,
+    reflexive("merged values", merged_value, 16*8,
               DYN_NAME_PATH='.value_name', VISIBLE=False),
     reflexive("bitmaps",   bitmap,   16, DYN_NAME_PATH='.value_name'),
     reflexive("booleans",  boolean,  16, DYN_NAME_PATH='.value_name'),
