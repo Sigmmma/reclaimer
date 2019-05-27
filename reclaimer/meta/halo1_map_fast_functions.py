@@ -82,19 +82,26 @@ def move_rawdata_ref(map_data, raw_ref_offset, magic, engine, diffs_by_offsets,
     map_data.write(packer(size, flags, raw_ptr))
 
 
-def read_reflexive(map_data, refl_offset, unpacker=_3_uint32_struct.unpack):
+def read_reflexive(map_data, refl_offset, max_count=0xFFffFFff,
+                   struct_size=1, tag_magic=None,
+                   unpacker=_3_uint32_struct.unpack):
     '''
     Reads a reflexive from the given map_data at the given offset.
     Returns the reflexive's offset and pointer.
     '''
     map_data.seek(refl_offset)
-    return unpacker(map_data.read(12))
+    count, start, id = unpacker(map_data.read(12))
+    if tag_magic is not None:
+        map_data.seek(0, 2)
+        max_count = min(max_count,
+                        (map_data.tell() - (start - tag_magic)) // struct_size)
+    return min(count, max_count), start, id
 
 
 def iter_reflexive_offs(map_data, refl_offset, struct_size,
-                        unpacker=_3_uint32_struct.unpack):
-    map_data.seek(refl_offset)
-    count, start, _ = unpacker(map_data.read(12))
+                        max_count=0xFFffFFff, tag_magic=None):
+    count, start, _ = read_reflexive(map_data, refl_offset, max_count,
+                                     struct_size, tag_magic)
     return range(start, start + count*struct_size, struct_size)
 
 
@@ -105,11 +112,21 @@ def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
 
     dep_offset -= tag_magic
 
-    map_data.seek(dep_offset + 12)
-    tag_id = int.from_bytes(map_data.read(4), "little") & 0xFFFF
+    try:
+        map_data.seek(dep_offset + 12)
+    except ValueError:
+        preturn
 
-    if tag_id == 0xFFFF:
+    tag_id = int.from_bytes(map_data.read(4), "little")
+
+    if tag_id not in range(len(index_array)):
         return
+
+    tag_index_ref = index_array[tag_id]
+    if tag_index_ref.id != tag_id:
+        return
+
+    tag_id &= 0xFFFF
 
     if cls is None:
         map_data.seek(dep_offset)
@@ -117,11 +134,11 @@ def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
 
     # if the class is obje or shdr, make sure to get the ACTUAL class
     if cls in (b'ejbo', b'meti', b'ived', b'tinu'):
-        map_data.seek(index_array[tag_id].meta_offset - map_magic)
+        map_data.seek(tag_index_ref.meta_offset - map_magic)
         cls = object_class_bytes[
             int.from_bytes(map_data.read(2), 'little')]
     elif cls == b'rdhs':
-        map_data.seek(index_array[tag_id].meta_offset - map_magic + 36)
+        map_data.seek(tag_index_ref.meta_offset - map_magic + 36)
         cls = shader_class_bytes[
             int.from_bytes(map_data.read(2), 'little')]
     elif cls in (b'2dom', b'edom'):

@@ -55,6 +55,7 @@ collision_material = Struct("collision material",
     )
 
 collision_bsp = Struct("collision bsp", INCLUDE=permutation_bsp)
+fast_collision_bsp = Struct("collision bsp", INCLUDE=fast_permutation_bsp)
 
 node = Struct("node",
     # these dont get byteswapped going from meta to tag

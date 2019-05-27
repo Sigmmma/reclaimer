@@ -18,7 +18,7 @@ def tag_path_pointer(parent=None, new_value=None, **kwargs):
 
 rsrc_tag = Container("tag",
     BytesRaw("data", SIZE="..size", POINTER="..offset"),
-    CStrLatin1("path", POINTER=tag_path_pointer),
+    CStrTagRef("path", POINTER=tag_path_pointer, MAX=768),
     )
 
 tag_header = Struct("tag header",

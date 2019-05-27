@@ -340,6 +340,9 @@ class HaloMap:
         self.map_pointer_converter = MapPointerConverter()
 
     def unload_map(self):
+        if not isinstance(getattr(self, "maps", None), dict):
+            return
+
         keys_to_pop = list(k for k, v in self.maps.items() if v is self)
         for k in keys_to_pop:
             self.maps.pop(k, None)

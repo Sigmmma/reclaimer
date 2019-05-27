@@ -19,12 +19,12 @@ from reclaimer.hek.defs.mod2 import mod2_def,\
 from reclaimer.common_descs import raw_reflexive, BlockDef
 
 mod2_verts_def = BlockDef(
-    raw_reflexive("vertices", mod2_vert_struct),
+    raw_reflexive("vertices", mod2_vert_struct, 65535),
     endian='>'
     )
 
 mod2_tri_strip_def = BlockDef(
-    raw_reflexive("triangle", mod2_tri_struct),
+    raw_reflexive("triangle", mod2_tri_struct, 65535),
     endian='>'
     )
 

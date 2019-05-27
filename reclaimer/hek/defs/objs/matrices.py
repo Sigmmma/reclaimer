@@ -110,7 +110,7 @@ def find_intersect_line_of_planes(plane_0, plane_1, use_double_rounding=False,
 
 
 def find_intersect_point_of_lines(line_0, line_1, use_double_rounding=False,
-                                  round_adjust=0):
+                                  round_adjust=0, ignore_check=False):
     # returns an arbitrary point where the provided lines intersect.
     # if they do not intersect, None will be returned instead.
     v0, d0 = Point(line_0[0]), Ray(line_0[1])
@@ -129,8 +129,8 @@ def find_intersect_point_of_lines(line_0, line_1, use_double_rounding=False,
 
     intersect_a = v0 - d0 * result[0][0]
     intersect_b = v1 - d1 * result[1][0]
-    if are_points_equal(intersect_a, intersect_b,
-                        use_double_rounding, round_adjust):
+    if ignore_check or are_points_equal(intersect_a, intersect_b,
+                                        use_double_rounding, round_adjust):
         # point lies on both lines
         return intersect_a + (intersect_b - intersect_a) / 2
 
@@ -171,10 +171,6 @@ def planes_to_verts_and_edge_loops(planes, plane_dir=False, max_plane_ct=32,
         # loop over each line in the plane and find
         # two vertices where two lines intersect
         edges = edges_by_planes[plane]
-        print(plane)
-        for line in lines:
-            print(line)
-        print()
         for i in range(len(lines)):
             v0_i = v1_i = None
             line = lines[i]
@@ -182,7 +178,7 @@ def planes_to_verts_and_edge_loops(planes, plane_dir=False, max_plane_ct=32,
             for j in range(len(lines)):
                 if i == j: continue
                 intersect = find_intersect_point_of_lines(
-                    line, lines[j])
+                    line, lines[j], ignore_check=True)
                 if intersect is None:
                     continue
 
@@ -228,52 +224,58 @@ def planes_to_verts_and_edge_loops(planes, plane_dir=False, max_plane_ct=32,
     # loop over each edge and put together an edge loop list
     # by visiting the edges shared by each vert index
     for plane, edges in edges_by_planes.items():
-        #print()
-        #print(plane)
-        print(edges)
         if not edges:
             continue
 
-        continue
-        for edge_loop in edges_to_edge_loops(edges):
-            # if the edge loop would construct triangles facing the
-            # wrong direction, we need to reverse the edge loop
-            v0 = verts[edge_loop[0]]
-            v1 = verts[edge_loop[1]]
-            v2 = verts[edge_loop[2]]
-            if dot_product(vertex_cross_product(v0, v1, v2), plane[: 3]) < 0:
-                edge_loop[:] = edge_loop[::-1]
+        try:
+            edge_loop = edges_to_edge_loop(edges)
+        except Exception:
+            continue
+        if not edge_loop:
+            continue
 
-            edge_loops.append(edge_loop)
+        # if the edge loop would construct triangles facing the
+        # wrong direction, we need to reverse the edge loop
+        v0 = verts[edge_loop[0]]
+        v1 = verts[edge_loop[1]]
+        v2 = verts[edge_loop[2]]
+        if dot_product(vertex_cross_product(v0, v1, v2), plane[: 3]) < 0:
+            edge_loop[:] = edge_loop[::-1]
+
+        edge_loops.append(edge_loop)
 
     return verts, edge_loops
 
 
-def edges_to_edge_loops(edges):
-    edge_loops = []
-    edges_by_verts = {edge[0]: edge for edge in edges}
-    for edge in edges_by_verts:
-        if edge[1] in edges_by_verts:
-            edges_by_verts[edge[1]].append(edge)
+def edges_to_edge_loop(edges):
+    edge_loop = []
 
-    edge_loops.append(edge_loop)
-    curr_edge = edges_by_verts.pop()
+    edges = set((min(edge), max(edge)) for edge in edges)
+    edges_by_verts = {}
+    for edge in edges:
+        edges_by_verts.setdefault(edge[0], []).append(edge)
+        edges_by_verts.setdefault(edge[1], []).append(edge)
+
+    if len(edges_by_verts) < 3:
+        return None
+
+    curr_edge = next(iter(edges))
+    v_i = curr_edge[1]
     edge_loop.append(curr_edge[0])
     edges_by_verts.pop(curr_edge[0])
-    v_i = curr_edge[1]
     while edges_by_verts:
         vert_edges = edges_by_verts.pop(v_i, None)
         if vert_edges is None:
             break
+
         curr_edge = vert_edges[not vert_edges.index(curr_edge)]
         edge_loop.append(v_i)
         v_i = curr_edge[not curr_edge.index(v_i)]
 
-    print(edge_loop)
     if len(edge_loop) < 3:
-        return
+        return None
 
-    return edge_loops
+    return edge_loop
 
 
 def line_from_verts(v0, v1):

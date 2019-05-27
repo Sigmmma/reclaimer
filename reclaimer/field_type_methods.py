@@ -2,6 +2,43 @@ from supyr_struct.field_type_methods import *
 from .constants import *
 
 
+def tag_cstring_parser(self, desc, node=None, parent=None, attr_index=None,
+                       rawdata=None, root_offset=0, offset=0, **kwargs):
+    """
+    """
+    assert parent is not None and attr_index is not None, (
+        "parent and attr_index must be provided " +
+        "and not None when reading a data field.")
+
+    if rawdata is not None:
+        max_len = desc.get('MAX', 0xFFffFFff)
+        offset = parent.get_meta('POINTER', attr_index, **kwargs)
+
+        start = root_offset + offset
+        charsize = self.size
+        delimiter = self.delimiter
+
+        # if the character size is greater than 1 we need to do special
+        # checks to ensure the position the null terminator was found at
+        # is not overlapping the boundary between individual characters.
+        size = rawdata.find(delimiter, start) - start
+        if size > max_len:
+            size = max_len
+
+        if size >= 0:
+            rawdata.seek(start)
+            # read and store the string
+            parent[attr_index] = self.decoder(
+                rawdata.read(size), desc=desc,
+                parent=parent, attr_index=attr_index)
+
+            return offset + size + charsize
+
+    parent[attr_index] = desc.get(DEFAULT, self.default())
+
+    return offset
+
+
 def tag_ref_str_sizecalc(self, node, **kwargs):
     '''
     Used to calculate the size of a tag reference string from a given string
@@ -11,6 +48,7 @@ def tag_ref_str_sizecalc(self, node, **kwargs):
         return len(node) + 1
     return 0
 
+
 def get_set_zone_asset_size(node=None, parent=None, attr_index=None,
                             rawdata=None, new_value=None, **kwargs):
     if new_value is not None:
@@ -18,6 +56,7 @@ def get_set_zone_asset_size(node=None, parent=None, attr_index=None,
     elif "map_pointer_converter" in kwargs:
         return 0
     return parent.size
+
 
 def tag_ref_str_size(node=None, parent=None, attr_index=None,
                      rawdata=None, new_value=None, **kwargs):
@@ -186,6 +225,11 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
             pointer_converter = kwargs.get('map_pointer_converter')
             if pointer_converter is not None:
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[1])
+                if kwargs.get("safe_mode"):
+                    # make sure the reflexive sizes are less than or equal to
+                    # the max number of entries allowed in the reflexive
+                    node[0] = min(node[0], s_desc.get("MAX", node[0]))
+
                 if (file_ptr < 0 or file_ptr +
                     node[0]*s_desc['SUB_STRUCT'].get('SIZE', 0) > len(rawdata)):
                     # the reflexive is corrupt for some reason
@@ -249,6 +293,7 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         s_desc = desc.get('STEPTREE')
         if s_desc:
             pointer_converter = kwargs.get("map_pointer_converter")
+
             if kwargs.get("parsing_resource"):
                 # parsing JUST metadata from a resource cache
                 node_size = node[0]
@@ -262,6 +307,11 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[3])
                 if not node[3] or file_ptr < 0:
                     file_ptr = node[2]
+
+                if kwargs.get("safe_mode"):
+                    # make sure the reflexive sizes are less than or equal to
+                    # the max number of entries allowed in the reflexive
+                    node[0] = min(node[0], s_desc.get("MAX", node[0]))
 
                 if not node[0] or (file_ptr + node[0] > len(rawdata) or
                                    file_ptr <= 0):

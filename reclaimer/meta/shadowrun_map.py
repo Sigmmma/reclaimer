@@ -13,7 +13,7 @@ sr_tag_header = Struct("tag header",
     # if indexed is 1, the meta_offset is the literal index in the
     # bitmaps, sounds, or loc cache that the meta data is located in.
     Pad(4),
-    STEPTREE=CStrLatin1("path", POINTER=tag_path_pointer),
+    STEPTREE=CStrTagRef("path", POINTER=tag_path_pointer, MAX=768),
     SIZE=32
     )
 

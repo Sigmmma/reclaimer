@@ -32,7 +32,7 @@ new_function = Struct("new function",
     ascii_str32("name2"),
     SInt16("override index"),
     SEnum16("return type", *script_object_types),
-    reflexive("parameters", parameter),
+    reflexive("parameters", parameter, 32),
     SIZE=80
     )
 
@@ -45,9 +45,9 @@ new_global = Struct("new global",
     )
 
 yelo_scripting = Struct("yelo scripting",
-    reflexive("new functions", new_function,
+    reflexive("new functions", new_function, 464,
         DYN_NAME_PATH='.name1'),
-    reflexive("new globals", new_global,
+    reflexive("new globals", new_global, 880,
         DYN_NAME_PATH='.name1'),
     SIZE=24
     )

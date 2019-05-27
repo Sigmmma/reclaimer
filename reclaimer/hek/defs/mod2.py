@@ -192,9 +192,9 @@ part = Struct('part',
     )
 
 fast_part = dict(part)
-fast_part[9]  = raw_reflexive("uncompressed vertices", fast_uncompressed_vertex)
-fast_part[10] = raw_reflexive("compressed vertices", fast_compressed_vertex)
-fast_part[11] = raw_reflexive("triangles", triangle)
+fast_part[9]  = raw_reflexive("uncompressed vertices", fast_uncompressed_vertex, 65535)
+fast_part[10] = raw_reflexive("compressed vertices", fast_compressed_vertex, 65535)
+fast_part[11] = raw_reflexive("triangles", triangle, 65535)
 
 marker = Struct('marker',
     ascii_str32("name"),
