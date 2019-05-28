@@ -126,8 +126,7 @@ def rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
     if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
-        ref_struct[0][MAX] = max_size
-        kwargs[MAX] = max_size
+        ref_struct[0][MAX] = kwargs[MAX] = max_size
 
     if widget is not None:
         kwargs[WIDGET] = widget
@@ -147,8 +146,7 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
     if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
     if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     if max_size is not None:
-        ref_struct[0][MAX] = max_size
-        kwargs[MAX] = max_size
+        ref_struct[0][MAX] = kwargs[MAX] = max_size
 
     return RawdataRef(name,
         INCLUDE=ref_struct, ORIENT="v",

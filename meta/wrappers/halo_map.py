@@ -184,7 +184,7 @@ class HaloMap:
             tag_path = backslash_fix.sub(r'\\', b.path).\
                        replace("/", "\\").strip().lower()
 
-            name_id = (tag_path, b.class_1.data)
+            name_id = (tag_path, b.class_1.enum_name)
             if is_protected_tag(tag_path):
                 tag_path = "protected_%s" % i
             elif name_id in found_counts:
