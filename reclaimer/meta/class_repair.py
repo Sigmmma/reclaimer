@@ -926,14 +926,13 @@ def repair_shader(tag_id, index_array, map_data, magic, repair, engine):
         ct, moff, _ = read_reflexive(map_data, tag_offset + 0x20 - magic, 4, 16, magic)
         repair_dependency_array(*(args + (b'rdhs', moff, ct)))
         # maps
-        if typ == b'rtos':
-            maps_size  = 0x64
-            maps_start = moff + 0x1C
-        else:
-            maps_size  = 0xDC
-            maps_start = moff + 0x6C
+        maps_size = 0x64 if typ == b'rtos' else 0xDC
+
         ct, moff, _ = read_reflexive(map_data, tag_offset + 0x2C - magic, 4, maps_size, magic)
-        repair_dependency_array(*(args + (b'mtib', maps_start, ct, maps_size)))
+
+        moff += 0x1C if typ == b'rtos' else 0x6C
+
+        repair_dependency_array(*(args + (b'mtib', moff, ct, maps_size)))
 
         if typ == b'xecs':
             # 2 stage maps

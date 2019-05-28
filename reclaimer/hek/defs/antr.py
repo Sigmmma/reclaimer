@@ -247,8 +247,17 @@ animation_desc = Struct("animation",
     SInt16("sound frame index"),
     SInt8("left foot frame index"),
     SInt8("right foot frame index"),
-    FlSInt16("unknown sint16", VISIBLE=False),
-    FlFloat("unknown float", VISIBLE=False),
+    FlSInt16("first permutation index", VISIBLE=False,
+        TOOLTIP="The index of the first animation in the permutation chain."),
+    FlFloat("chance to play", VISIBLE=False,
+        MIN=0.0, MAX=1.0, SIDETIP="[0,1]",
+        TOOLTIP=("Seems to be the chance range to select this permutation.\n"
+                 "Random number in the range [0,1] is rolled. The permutation\n"
+                 "chain is looped until the number is higher than or equal\n"
+                 "to that permutations chance to play. This chance to play\n"
+                 "is likely influenced by the animations 'weight' field.\n"
+                 "All permutation chains should have the last one end with\n"
+                 "a chance to play of 1.0")),
 
     rawdata_ref("frame info", max_size=32768),
 
