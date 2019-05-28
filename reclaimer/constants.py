@@ -11,10 +11,12 @@ STRINGID_IDX_BITS = "STRINGID_IDX_BITS"
 STRINGID_SET_BITS = "STRINGID_SET_BITS"
 STRINGID_LEN_BITS = "STRINGID_LEN_BITS"
 COLOR_CHANNELS = "COLOR_CHANNELS"
+IGNORE_SAFE_MODE = "IGNORE_SAFE_MODE"
 
 def inject_halo_constants():
     # add the new descriptor keywords to the sets
-    add_desc_keywords(RAW_REFLEXIVE_INFO, COLOR_CHANNELS, MAX, MIN,
+    add_desc_keywords(RAW_REFLEXIVE_INFO, COLOR_CHANNELS,
+                      MAX, MIN, IGNORE_SAFE_MODE,
                       STRINGID_IDX_BITS, STRINGID_SET_BITS, STRINGID_LEN_BITS)
 
 

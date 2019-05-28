@@ -115,18 +115,17 @@ def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
     try:
         map_data.seek(dep_offset + 12)
     except ValueError:
-        preturn
+        return
 
     tag_id = int.from_bytes(map_data.read(4), "little")
+    tag_index_id = tag_id & 0xFFff
 
-    if tag_id not in range(len(index_array)):
+    if tag_index_id not in range(len(index_array)):
         return
 
-    tag_index_ref = index_array[tag_id]
+    tag_index_ref = index_array[tag_index_id]
     if tag_index_ref.id != tag_id:
         return
-
-    tag_id &= 0xFFFF
 
     if cls is None:
         map_data.seek(dep_offset)
@@ -135,12 +134,18 @@ def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
     # if the class is obje or shdr, make sure to get the ACTUAL class
     if cls in (b'ejbo', b'meti', b'ived', b'tinu'):
         map_data.seek(tag_index_ref.meta_offset - map_magic)
-        cls = object_class_bytes[
-            int.from_bytes(map_data.read(2), 'little')]
+        object_type = int.from_bytes(map_data.read(2), 'little')
+        if object_type not in range(-1, len(object_class_bytes) - 1):
+            return
+
+        cls = object_class_bytes[object_type]
     elif cls == b'rdhs':
         map_data.seek(tag_index_ref.meta_offset - map_magic + 36)
-        cls = shader_class_bytes[
-            int.from_bytes(map_data.read(2), 'little')]
+        shader_type = int.from_bytes(map_data.read(2), 'little')
+        if shader_type not in range(3, len(shader_class_bytes) - 1):
+            return
+
+        cls = shader_class_bytes[shader_type]
     elif cls in (b'2dom', b'edom'):
         if "xbox" in engine:
             cls = b'edom'
@@ -150,8 +155,8 @@ def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
     map_data.seek(dep_offset)
     map_data.write(cls)
 
-    if tag_id not in repair:
-        repair[tag_id] = cls[::-1].decode('latin1')
+    if tag_index_id not in repair:
+        repair[tag_index_id] = cls[::-1].decode('latin1')
         #DEBUG
         # print("        %s %s %s" % (tag_id, cls, dep_offset))
 
