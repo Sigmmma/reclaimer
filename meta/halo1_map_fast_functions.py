@@ -60,26 +60,33 @@ object_class_bytes = (
     )
 
 _3_uint32_struct = PyStruct("<LLL")
+_4_uint32_struct = PyStruct("<LLLL")
 
 def move_rawdata_ref(map_data, raw_ref_offset, magic, engine, diffs_by_offsets,
-                     unpacker=_3_uint32_struct.unpack,
-                     packer=_3_uint32_struct.pack):
+                     unpacker=_4_uint32_struct.unpack,
+                     packer=_4_uint32_struct.pack):
     map_data.seek(raw_ref_offset - magic)
-    size, flags, raw_ptr = unpacker(map_data.read(12))
-    if not size: return
-    ptr_diff = 0
-    for off, diff in diffs_by_offsets.items():
-        if off <= raw_ptr:
-            ptr_diff = diff
-
-    if not ptr_diff or ((flags & 1) and "xbox" not in engine):
+    size, flags, raw_ptr, ptr = unpacker(map_data.read(16))
+    if not size or ((flags & 1) and "xbox" not in engine):
         return
+
+    ptr_diff = 0
+    # find the highest pointer that is still at or below this rawdatas pointer
+    for off in diffs_by_offsets:
+        if off <= raw_ptr:
+            ptr_diff = max(diffs_by_offsets[off], ptr_diff)
+
+    if not ptr_diff:
+        return
+
+    # TODO: Determine if we need to modify the regular pointer
+    # and also determine in what way to modify it
 
     map_data.seek(0, 2)
     raw_ptr += ptr_diff
     assert raw_ptr + size <= map_data.tell()
     map_data.seek(raw_ref_offset - magic)
-    map_data.write(packer(size, flags, raw_ptr))
+    map_data.write(packer(size, flags, raw_ptr, ptr))
 
 
 def read_reflexive(map_data, refl_offset, max_count=0xFFffFFff,

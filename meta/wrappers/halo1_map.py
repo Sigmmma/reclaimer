@@ -5,7 +5,7 @@ from struct import Struct as PyStruct
 
 from .halo_map import *
 from reclaimer.hsc import SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES,\
-     get_hsc_data_block
+     get_hsc_data_block, HSC_IS_SCRIPT_OR_GLOBAL
 from reclaimer.hek.defs.snd_ import snd__meta_stub_blockdef
 from reclaimer.hek.defs.sbsp import sbsp_meta_header_def
 from reclaimer.os_hek.defs.gelc    import gelc_def
@@ -641,7 +641,7 @@ class Halo1Map(HaloMap):
             comments_to_keep = set()
             for i in range(len(comments)):
                 comment = comments[i]
-                if max(comment.position, abs(min(comment.position))) > 5000:
+                if max(max(comment.position), abs(min(comment.position))) > 5000:
                     # check if the position is outside halos max world bounds
                     continue
 
@@ -652,6 +652,9 @@ class Halo1Map(HaloMap):
             if len(comments_to_keep) != len(comments):
                 # clean up any fucked up comments
                 comments[:] = [comments[i] for i in sorted(comments_to_keep)]
+
+            syntax_data = get_hsc_data_block(meta.script_syntax_data.data)
+            script_nodes_modified = False
 
             # clean up any fucked up palettes
             for pal_block, inst_block in (
@@ -667,14 +670,24 @@ class Halo1Map(HaloMap):
                     ):
                 palette, instances = pal_block.STEPTREE, inst_block.STEPTREE
 
-                used_indices = set(inst.type for inst in instances
-                                   if inst.type in range(len(palette)))
+                used_pal_indices = set(inst.type for inst in instances
+                                       if inst.type in range(len(palette)))
+                script_nodes_to_modify = set()
+
+                if inst_block.NAME == "bipeds":
+                    # determine which palette indices are used by script data
+                    for i in range(len(syntax_data.nodes)):
+                        node = syntax_data.nodes[i]
+                        # 35 == "actor_type"  script type
+                        if node.type == 35 and not(node.flags & HSC_IS_SCRIPT_OR_GLOBAL):
+                            script_nodes_to_modify.add(i)
+                            used_pal_indices.add(node.data & 0xFFff)
 
                 # figure out what to rebase the palette swatch indices to
                 new_i = 0
                 rebase_map = {}
-                new_palette = [None] * len(used_indices)
-                for i in sorted(used_indices):
+                new_palette = [None] * len(used_pal_indices)
+                for i in sorted(used_pal_indices):
                     new_palette[new_i] = palette[i]
                     rebase_map[i] = new_i
                     new_i += 1
@@ -688,25 +701,23 @@ class Halo1Map(HaloMap):
                         inst.type = -1
 
                 palette[:] = new_palette
-                if inst_block.NAME != "bipeds":
-                    continue
 
-                ################################################################
-                ################################################################
-                ################################################################
-                ################################################################
-                ################################################################
-                ################################################################
-                ################################################################
-                # need to rebase the script nodes in the script syntax data
-                # so the ones that point to the bipeds array are still accurate
-                ################################################################
-                ################################################################
-                ################################################################
-                ################################################################
-                ################################################################
-                ################################################################
-                ################################################################
+                # modify the script syntax nodes that need to be
+                for i in script_nodes_to_modify:
+                    node = syntax_data.nodes[i]
+                    salt = node.data & 0xFFff0000
+                    cur_index = node.data & 0xFFff
+                    new_index = rebase_map[cur_index]
+                    if cur_index != new_index:
+                        script_nodes_modified = True
+                        node.data = salt + new_index
+
+            # replace the script syntax data
+            if script_nodes_modified:
+                with FieldType.force_little:
+                    new_script_data = syntax_data.serialize()
+                    meta.script_syntax_data.data[: len(new_script_data)] = new_script_data
+                    meta.script_syntax_data.size = len(meta.script_syntax_data.data)
 
         elif tag_cls in ("tagc", "Soul"):
             tag_collection = meta[0].STEPTREE
