@@ -443,13 +443,46 @@ class Halo1Map(HaloMap):
         if tag_cls in ("antr", "magy"):
             highest_valid = 0
             animations = meta.animations.STEPTREE
+
+            # DONT FORGET TO REBASE THE SCRIPT SYNTAX DATA FOR BIPEDS
             for i in range(len(animations)):
                 anim = animations[i]
                 valid = True
+                frame_info_size = {0: 8, 1: 12, 2: 16}.get(
+                    anim.frame_info_type.data, 0) * anim.frame_count
+
+                trans_int = anim.trans_flags0 + (anim.trans_flags1 << 32)
+                rot_int   = anim.rot_flags0   + (anim.rot_flags1   << 32)
+                scale_int = anim.scale_flags0 + (anim.scale_flags1 << 32)
+
+                trans_flags = (bool(trans_int & (1 << i))
+                               for i in range(anim.node_count))
+                rot_flags   = (bool(rot_int   & (1 << i))
+                               for i in range(anim.node_count))
+                scale_flags = (bool(scale_int & (1 << i))
+                               for i in range(anim.node_count))
+
+                expected_frame_size = (12 * sum(trans_flags) +
+                                       8  * sum(rot_flags) +
+                                       4  * sum(scale_flags))
+                expected_default_data_size = (anim.node_count * (12 + 8 + 4) -
+                                              anim.frame_size)
+
                 if (anim.type.enum_name == "<INVALID>" or
                     anim.frame_info_type.enum_name == "<INVALID>"):
                     valid = False
-                elif anim.node_count not in range(1, 65):
+                elif not(anim.frame_count and anim.node_count in range(1, 65)):
+                    valid = False
+                elif anim.frame_size != expected_frame_size:
+                    valid = False
+                elif not anim.flags.compressed_data:
+                    if len(anim.default_data.data) < expected_default_data_size:
+                        valid = False
+                    elif len(anim.frame_info.data) < expected_frame_size:
+                        valid = False
+                    elif anim.frame_size != expected_frame_size:
+                        valid = False
+                elif anim.offset_to_compressed_data >= len(anim.frame_info.data):
                     valid = False
 
                 if valid:
@@ -467,7 +500,9 @@ class Halo1Map(HaloMap):
             if tag_cls == "sbsp" :
                 bsps = meta.collision_bsp.STEPTREE
             else:
-                bsps = meta.bsps.STEPTREE
+                bsps = []
+                for node in meta.nodes.STEPTREE:
+                    bsps.extend(node.bsps.STEPTREE)
 
             for bsp in bsps:
                 highest_used_vert = 0
@@ -516,21 +551,30 @@ class Halo1Map(HaloMap):
             shaders[:] = new_shaders
 
         elif tag_cls == "scnr":
-            for sky in meta.skies.STEPTREE:
-                sky_tag_index_id = sky.sky.id & 0xFFff
+            skies = meta.skies.STEPTREE
+            comments = meta.comments.STEPTREE
+
+            highest_valid_sky = 0
+            for i in range(len(skies)):
+                sky = skies[i].sky
+                sky_tag_index_id = sky.id & 0xFFff
                 if (sky_tag_index_id not in range(len(tag_index_array)) or
-                    tag_index_array[sky_tag_index_id].id != sky.sky.id):
+                    tag_index_array[sky_tag_index_id].id != sky.id):
                     # invalid sky
-                    sky.sky.id = 0xFFffFFff
-                    sky.sky.filepath = ""
-                    sky.sky.tag_class.set_to("sky")
+                    sky.id = 0xFFffFFff
+                    sky.filepath = ""
+                    sky.tag_class.set_to("sky")
+                else:
+                    highest_valid_sky = i
+
+            # clear the highest invalid skies
+            del skies[highest_valid_sky + 1: ]
 
             # clear the child scenarios since they aren't used
             del meta.child_scenarios.STEPTREE[:]
 
             # determine if there are any fucked up comments
             comments_to_keep = set()
-            comments = meta.comments.STEPTREE
             for i in range(len(comments)):
                 comment = comments[i]
                 if max(comment.position, abs(min(comment.position))) > 5000:
@@ -593,6 +637,22 @@ class Halo1Map(HaloMap):
                 # need to rebase the script nodes in the script syntax data
                 # so the ones that point to the bipeds array are still accurate
 
+        elif tag_cls in ("tagc", "Soul"):
+            tag_collection = meta[0].STEPTREE
+            highest_valid = 0
+            for i in range(len(tag_collection)):
+                tag_ref = tag_collection[i][0]
+                if tag_cls == "Soul" and tag_ref.tag_class.enum_name != "ui_widget_definition":
+                    continue
+                elif (tag_ref.id & 0xFFff) not in range(len(tag_index_array)):
+                    continue
+                elif tag_index_array[tag_ref.id & 0xFFff] != tag_ref.id:
+                    continue
+
+                highest_valid = i
+
+            # clear the highest invalid entries
+            del tag_collection[highest_valid + 1: ]
 
     def meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs):
         magic      = self.map_magic

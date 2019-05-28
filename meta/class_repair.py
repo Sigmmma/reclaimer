@@ -1,7 +1,9 @@
 from reclaimer.meta.halo1_map_fast_functions import *
 
+MAX_MATERIAL_COUNT = 33
 
-def get_tagc_refs(meta_offset, map_data, magic, tag_classes_by_id):
+
+def get_tagc_refs(meta_offset, map_data, magic, tag_classes_by_id, tag_index_array):
     try:
         ct, moff, _ = read_reflexive(map_data, meta_offset - magic, 200, 16, magic)
     except Exception:
@@ -14,14 +16,20 @@ def get_tagc_refs(meta_offset, map_data, magic, tag_classes_by_id):
     try:
         reffed_ids = []
         reffed_types = []
-        for moff2 in iter_reflexive_offs(map_data, meta_offset - magic, 16, 200, magic):
+        for moff2 in iter_reflexive_offs(
+                map_data, meta_offset - magic, 16, 200, magic):
             map_data.seek(moff2 - magic + 12)
-            tag_id = int.from_bytes(map_data.read(4), "little") & 0xFFFF
-            if tag_id == 0xFFFF:
+            tag_id = int.from_bytes(map_data.read(4), "little")
+            if tag_id == 0xFFffFFff:
                 continue
+            elif ((tag_id & 0xFFff) not in range(len(tag_index_array)) or
+                  tag_index_array[tag_id & 0xFFff].id != tag_id):
+                # break on the first invalid tag id.
+                # the reflexive size might be corrupt
+                break
 
-            reffed_ids.append(tag_id)
-            reffed_types.append(tag_classes_by_id.get(tag_id))
+            reffed_ids.append(tag_id & 0xFFff)
+            reffed_types.append(tag_classes_by_id.get(tag_id & 0xFFff))
 
         return reffed_ids, reffed_types
     except Exception:
@@ -273,7 +281,7 @@ def repair_foot(tag_id, index_array, map_data, magic, repair, engine):
     # effects
     for moff in iter_reflexive_offs(map_data, tag_offset - magic, 28, 13, magic):
         # materials
-        for moff2 in iter_reflexive_offs(map_data, moff - magic, 48, 33, magic):
+        for moff2 in iter_reflexive_offs(map_data, moff - magic, 48, MAX_MATERIAL_COUNT, magic):
             repair_dependency(*(args + (b'effe', moff2)))
             repair_dependency(*(args + (b'!dns', moff2 + 16)))
 
@@ -389,7 +397,6 @@ def repair_matg(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency(*(args + (b'piqe', moff + 36)))
         repair_dependency(*(args + (b'jorp', moff + 52)))
 
-
     # rasterizer data
     for moff in iter_reflexive_offs(map_data, tag_offset + 0x134 - magic, 428, 1, magic):
         # function textures
@@ -452,7 +459,7 @@ def repair_matg(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency_array(*(args + (b'!tpj', moff + 44, 5)))
 
     # materials
-    for moff in iter_reflexive_offs(map_data, tag_offset + 0x194 - magic, 884, 33, magic):
+    for moff in iter_reflexive_offs(map_data, tag_offset + 0x194 - magic, 884, MAX_MATERIAL_COUNT, magic):
         repair_dependency(*(args + (b'effe', moff + 740)))
         repair_dependency(*(args + (b'!dns', moff + 756)))
         repair_dependency(*(args + (b'!dns', moff + 868)))
@@ -467,11 +474,25 @@ def repair_mgs2(tag_id, index_array, map_data, magic, repair, engine):
 
 
 def repair_mode(tag_id, index_array, map_data, magic, repair, engine):
+    tag_offset = index_array[tag_id].meta_offset
     # shaders
-    ct, moff, _ = read_reflexive(
-        map_data, index_array[tag_id].meta_offset + 0xDC - magic, 256, 32, magic)
-    repair_dependency_array(index_array, map_data, magic, repair,
-                            engine, b'rdhs', moff, ct, 32)
+    shader_ct, shader_moff, _ = read_reflexive(
+        map_data, tag_offset + 220 - magic, 256, 32, magic)
+
+    used_shader_indices = set()
+    # loop over each geometries parts and determine which
+    # shader indices are actually used across all of them
+    for moff in iter_reflexive_offs(map_data, tag_offset + 208 - magic, 48):
+        for moff2 in iter_reflexive_offs(map_data, moff + 36 - magic, 132):
+            map_data.seek(moff2 + 4 - magic)
+            shader_type = int.from_bytes(
+                map_data.read(2), 'little', signed=True)
+            if shader_type in range(shader_ct):
+                used_shader_indices.add(shader_type)
+
+    for i in sorted(used_shader_indices):
+        repair_dependency(index_array, map_data, magic, repair, engine,
+                          b'rdhs', shader_moff + 32 * i)
 
 
 def repair_mply(tag_id, index_array, map_data, magic, repair, engine):
@@ -512,6 +533,9 @@ def repair_object(tag_id, index_array, map_data, magic, repair, engine):
     tag_offset = index_array[tag_id].meta_offset
     map_data.seek(tag_offset - magic)
     object_type = int.from_bytes(map_data.read(2), 'little')
+    if object_type != -1 and object_type not in range(len(object_class_bytes) - 1):
+        # not an object
+        return
 
     # obje_attrs struct size is 380
     args = (index_array, map_data, magic, repair, engine)
@@ -619,7 +643,7 @@ def repair_object(tag_id, index_array, map_data, magic, repair, engine):
 
         # material responses
         for moff in iter_reflexive_offs(
-                map_data, tag_offset + 196 - magic, 160, 33, magic):
+                map_data, tag_offset + 196 - magic, 160, MAX_MATERIAL_COUNT, magic):
             repair_dependency(*(args + (b'effe', moff + 4)))
             repair_dependency(*(args + (b'effe', moff + 60)))
             repair_dependency(*(args + (b'effe', moff + 104)))
@@ -799,13 +823,26 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency_array(*(args + (b'psbs', moff + 16, ct, 32)))
 
     # palettes
-    # NOTE: Can't trust that these palettes are valid. Need to do checking
-    for off in (540, 564, 588, 612, 636, 672, 696, 720, 744):
-        # NOTE: The default limit for these palettes is 100 items, but
-        # since open sauce bumps it, and newer versions of open sauc3
-        # bump that bump, i'm just gonna bump them all to 512
-        ct, moff, _ = read_reflexive(map_data, tag_offset + off - magic, 512, 48, magic)
-        repair_dependency_array(*(args + (b'ejbo', moff, ct, 48)))
+    # NOTE: Can't trust that these palettes are valid.
+    # Need to check what the highest one used by all instances
+    for off, inst_size in (
+            (540, 72), (564, 120), (588, 120), # scen  bipd  vehi
+            (612, 40), (636, 92), (672, 64),   # eqip  weap  mach
+            (696, 64), (720, 88), (744, 40)):  # ctrl  lifi  ssce
+        pal_ct, pal_moff, _ = read_reflexive(map_data, tag_offset + off - magic)
+
+        used_pal_indices = set()
+        # loop over each object instance and determine which
+        # palette indices are actually used across all of them
+        for moff in iter_reflexive_offs(
+                map_data, tag_offset + off - 12 - magic, inst_size, tag_magic=magic):
+            map_data.seek(moff - magic)
+            inst_type = int.from_bytes(map_data.read(2), 'little', signed=True)
+            if inst_type in range(pal_ct):
+                used_pal_indices.add(inst_type)
+
+        for i in sorted(used_pal_indices):
+            repair_dependency(*(args + (b'ejbo', pal_moff + 48 * i)))
 
     # decals
     ct, moff, _ = read_reflexive(map_data, tag_offset + 948 - magic, 128, 16, magic)
@@ -823,7 +860,13 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine):
 def repair_shader(tag_id, index_array, map_data, magic, repair, engine):
     tag_offset = index_array[tag_id].meta_offset
     map_data.seek(tag_offset + 36 - magic)
-    typ = shader_class_bytes[int.from_bytes(map_data.read(2), 'little')]
+    shader_type = int.from_bytes(map_data.read(2), 'little')
+
+    if shader_type != -1 and shader_type not in range(len(shader_class_bytes) - 1):
+        # not a shader
+        return
+
+    typ = shader_class_bytes[shader_type]
 
     tag_offset += 40
     args = (index_array, map_data, magic, repair, engine)
@@ -916,17 +959,27 @@ def repair_snd_(tag_id, index_array, map_data, magic, repair, engine):
 
 
 def repair_Soul(tag_id, index_array, map_data, magic, repair, engine):
-    ct, moff, _ = read_reflexive(
-        map_data, index_array[tag_id].meta_offset - magic, 32, 16, magic)
-    repair_dependency_array(
-        index_array, map_data, magic, repair, engine, b'aLeD', moff, ct)
+    repair_tagc(tag_id, index_array, map_data, magic, repair, engine, b'aLeD', 32)
 
 
-def repair_tagc(tag_id, index_array, map_data, magic, repair, engine):
+def repair_tagc(tag_id, index_array, map_data, magic, repair, engine,
+                tag_cls=None, max_count=200):
     ct, moff, _ = read_reflexive(
-        map_data, index_array[tag_id].meta_offset - magic, 200, 16, magic)
-    repair_dependency_array(
-        index_array, map_data, magic, repair, engine, None, moff, ct)
+        map_data, index_array[tag_id].meta_offset - magic, max_count, 16, magic)
+
+    for i in range(ct):
+        map_data.seek(moff + 12 - magic)
+        tag_id = int.from_bytes(map_data.read(4), "little")
+        if tag_id == 0xFFffFFff:
+            continue
+        elif ((tag_id & 0xFFff) not in range(len(index_array)) or
+              index_array[tag_id & 0xFFff].id != tag_id):
+            # break on the first invalid tag id.
+            # the reflexive size might be corrupt
+            break
+
+        repair_dependency(index_array, map_data, magic, repair, engine,
+                          tag_cls, moff)
 
 
 def repair_udlg(tag_id, index_array, map_data, magic, repair, engine):

@@ -99,13 +99,9 @@ def tag_ref_str_parser(self, desc, node=None, parent=None, attr_index=None,
         "and not None when reading a data field.")
     tag_index_manager = kwargs.get("tag_index_manager")
     if tag_index_manager:
-        tag_id = parent.id
-        if kwargs.get("indexed"):
-            # tag_index is a resource map tag_paths collection
-            parent.id = tag_index_manager.translate_tag_id(tag_id)
-
-        tag_index_ref = tag_index_manager.get_tag_index_ref(tag_id)
-        if tag_index_ref is None:
+        tag_index_ref = tag_index_manager.get_tag_index_ref(parent.id)
+        if tag_index_ref is None or (not kwargs.get("indexed") and
+                                     tag_index_ref.id != parent.id):
             parent[attr_index] = ""
         else:
             parent[attr_index] = tag_index_ref.path
@@ -225,10 +221,10 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
             pointer_converter = kwargs.get('map_pointer_converter')
             if pointer_converter is not None:
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[1])
-                if kwargs.get("safe_mode"):
+                if kwargs.get("safe_mode") and not s_desc.get("IGNORE_SAFE_MODE"):
                     # make sure the reflexive sizes are less than or equal to
                     # the max number of entries allowed in the reflexive
-                    node[0] = min(node[0], s_desc.get("MAX", node[0]))
+                    node[0] = max(0, min(node[0], s_desc.get("MAX", node[0])))
 
                 if (file_ptr < 0 or file_ptr +
                     node[0]*s_desc['SUB_STRUCT'].get('SIZE', 0) > len(rawdata)):
@@ -308,10 +304,10 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                 if not node[3] or file_ptr < 0:
                     file_ptr = node[2]
 
-                if kwargs.get("safe_mode"):
+                if kwargs.get("safe_mode") and not s_desc.get("IGNORE_SAFE_MODE"):
                     # make sure the reflexive sizes are less than or equal to
                     # the max number of entries allowed in the reflexive
-                    node[0] = min(node[0], s_desc.get("MAX", node[0]))
+                    node[0] = max(0, min(node[0], s_desc.get("MAX", node[0])))
 
                 if not node[0] or (file_ptr + node[0] > len(rawdata) or
                                    file_ptr <= 0):
