@@ -40,6 +40,7 @@ HSC_IS_PRIMITIVE   = 1 << 0
 HSC_IS_SCRIPT_CALL = 1 << 1
 HSC_IS_GLOBAL      = 1 << 2
 HSC_IS_GARBAGE_COLLECTABLE = 1 << 3
+HSC_IS_SCRIPT_OR_GLOBAL = HSC_IS_SCRIPT_CALL | HSC_IS_GLOBAL
 
 SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES = dict((
     (10, "scripts"), (11, "trigger_volumes"), (12, "cutscene_flags"),
@@ -137,7 +138,7 @@ def cast_uint32_to_sint32(uint32):
 def get_hsc_node_string(string_data, node, hsc_node_strings_by_type=()):
     # if this is not a script or global, try to get the
     # string from the provided hsc_node_strings_by_type
-    if (not(node.flags & (HSC_IS_SCRIPT_CALL | HSC_IS_GLOBAL)) and
+    if (not(node.flags & HSC_IS_SCRIPT_OR_GLOBAL) and
             node.type in hsc_node_strings_by_type):
         hsc_node_strings = hsc_node_strings_by_type[node.type]
 
