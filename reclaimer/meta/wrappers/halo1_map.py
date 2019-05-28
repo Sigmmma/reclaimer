@@ -411,6 +411,10 @@ class Halo1Map(HaloMap):
             elif tag_cls == "matg" and self.matg_meta:
                 return self.matg_meta
 
+        force_parsing_rsrc = False
+        if tag_cls in ("antr", "magy") and not kw.get("disable_tag_cleaning"):
+            force_parsing_rsrc = True
+
         desc = self.get_meta_descriptor(tag_cls)
         block = [None]
         try:
@@ -421,12 +425,12 @@ class Halo1Map(HaloMap):
                     map_pointer_converter=pointer_converter,
                     offset=pointer_converter.v_ptr_to_f_ptr(offset),
                     tag_index_manager=self.tag_index_manager,
-                    safe_mode=not kw.get("disable_safe_mode"))
+                    safe_mode=not kw.get("disable_safe_mode"),
+                    parsing_resource=force_parsing_rsrc)
         except Exception:
             print(format_exc())
-            if kw.get("allow_corrupt"):
-                return block[0]
-            return
+            if not kw.get("allow_corrupt"):
+                return
 
         meta = block[0]
         try:
@@ -513,15 +517,15 @@ class Halo1Map(HaloMap):
                 elif not(anim.frame_count and anim.node_count in range(1, 65)):
                     valid = False
                 elif not anim.flags.compressed_data:
-                    if len(anim.default_data.data) < expected_default_data_size:
+                    if anim.default_data.size < expected_default_data_size:
                         valid = False
-                    elif len(anim.frame_info.data) < expected_frame_info_size:
+                    elif anim.frame_info.size < expected_frame_info_size:
                         valid = False
-                    elif len(anim.frame_data.data) < expected_frame_data_size:
+                    elif anim.frame_data.size < expected_frame_data_size:
                         valid = False
                     elif anim.frame_size != expected_frame_size:
                         valid = False
-                elif anim.offset_to_compressed_data >= len(anim.frame_data.data):
+                elif anim.offset_to_compressed_data >= anim.frame_data.size:
                     valid = False
 
                 if valid:
@@ -534,6 +538,27 @@ class Halo1Map(HaloMap):
             # remove the highest invalid animations
             if highest_valid + 1 < len(animations):
                 del animations[highest_valid + 1: ]
+
+            # inject the animation data for all remaining animations since
+            # it's not safe to try and read it all at parse time
+            for anim in animations:
+                for block in (anim.default_data, anim.frame_info, anim.frame_data):
+                    if not block.size:
+                        continue
+
+                    file_ptr = self.map_pointer_converter.v_ptr_to_f_ptr(
+                        block.pointer)
+                    if not block.pointer or file_ptr < 0:
+                        file_ptr = block.raw_pointer
+
+                    if file_ptr + block.size > len(self.map_data) or file_ptr <= 0:
+                        continue
+
+                    try:
+                        self.map_data.seek(file_ptr)
+                        block.data = bytearray(self.map_data.read(block.size))
+                    except Exception:
+                        print("Couldn't read animation data.")
 
         elif tag_cls in ("sbsp", "coll"):
             if tag_cls == "sbsp" :

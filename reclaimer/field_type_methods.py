@@ -290,6 +290,11 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         if s_desc:
             pointer_converter = kwargs.get("map_pointer_converter")
 
+            if kwargs.get("safe_mode") and not s_desc.get("IGNORE_SAFE_MODE"):
+                # make sure the reflexive sizes are less than or equal to
+                # the max number of entries allowed in the reflexive
+                node[0] = max(0, min(node[0], s_desc.get("MAX", node[0])))
+
             if kwargs.get("parsing_resource"):
                 # parsing JUST metadata from a resource cache
                 node_size = node[0]
@@ -297,17 +302,13 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                     # need to skip over the rawdata
                     offset += node_size + node[2]
 
+                node[0] = 0
                 s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
                 node[0] = node_size
             elif pointer_converter is not None:
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[3])
                 if not node[3] or file_ptr < 0:
                     file_ptr = node[2]
-
-                if kwargs.get("safe_mode") and not s_desc.get("IGNORE_SAFE_MODE"):
-                    # make sure the reflexive sizes are less than or equal to
-                    # the max number of entries allowed in the reflexive
-                    node[0] = max(0, min(node[0], s_desc.get("MAX", node[0])))
 
                 if not node[0] or (file_ptr + node[0] > len(rawdata) or
                                    file_ptr <= 0):
