@@ -728,7 +728,7 @@ class Halo1Map(HaloMap):
                     continue
                 elif (tag_ref.id & 0xFFff) not in range(len(tag_index_array)):
                     continue
-                elif tag_index_array[tag_ref.id & 0xFFff] != tag_ref.id:
+                elif tag_index_array[tag_ref.id & 0xFFff].id != tag_ref.id:
                     continue
 
                 highest_valid = i
