@@ -821,3 +821,24 @@ os_shader_extension = Struct("os shader extension",
         ),
     SIZE=48
     )
+
+
+def make_dependency_block(class_name="NONE", tag_id=0xFFffFFff,
+                          tag_path="", tag_path_pointer=0xFFffFFff,
+                          block_def=BlockDef(dependency())):
+    block = block_def.build()
+    try:
+        block.tag_class.set_to(class_name)
+    except Exception:
+        pass
+    block.id = tag_id & 0xFFffFFff
+    block.path_pointer = tag_path_pointer & 0xFFffFFff
+    block.filepath = str(tag_path)
+    return block
+
+
+def make_dependency_os_block(class_name="NONE", tag_id=0xFFffFFff,
+                             tag_path="", tag_path_pointer=0xFFffFFff,
+                             block_def=BlockDef(dependency_os())):
+    return make_dependency_block(class_name, tag_id, tag_path,
+                                 tag_path_pointer, block_def)

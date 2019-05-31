@@ -6,6 +6,7 @@ from struct import Struct as PyStruct
 from .halo_map import *
 from reclaimer.hsc import SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES,\
      get_hsc_data_block, HSC_IS_SCRIPT_OR_GLOBAL
+from reclaimer.common_descs import make_dependency_os_block
 from reclaimer.hek.defs.snd_ import snd__meta_stub_blockdef
 from reclaimer.hek.defs.sbsp import sbsp_meta_header_def
 from reclaimer.os_hek.defs.gelc    import gelc_def
@@ -139,6 +140,7 @@ class Halo1Map(HaloMap):
                 i += 1
 
     def get_dependencies(self, meta, tag_id, tag_cls):
+        tag_index_array = self.tag_index.tag_index
         if not self.is_indexed(tag_id):
             # not indexed. get dependencies like normal
             pass
@@ -157,10 +159,10 @@ class Halo1Map(HaloMap):
             tag_path = sounds.tag_index.tag_index[rsrc_id].path
             inv_snd_map = getattr(self, 'ce_tag_indexs_by_paths', {})
             tag_id = inv_snd_map.get(tag_path, 0xFFFF)
-            if tag_id >= len(self.tag_index.tag_index): return ()
+            if tag_id >= len(tag_index_array): return ()
 
             ref = deepcopy(meta.promotion_sound)
-            tag_index_ref = self.tag_index.tag_index[tag_id]
+            tag_index_ref = tag_index_array[tag_id]
             ref.tag_class.data = tag_index_ref.class_1.data
             ref.id             = tag_index_ref.id
             ref.filepath       = tag_index_ref.path
@@ -179,6 +181,29 @@ class Halo1Map(HaloMap):
             if node.id & 0xFFff == 0xFFFF:
                 continue
             dependencies.append(node)
+
+        if tag_cls == "scnr":
+            # collect the tag references from the scenarios syntax data
+            try:
+                seen_tag_ids = set()
+                syntax_data = get_hsc_data_block(meta.script_syntax_data.data)
+                for node in syntax_data.nodes:
+                    if (node.flags & HSC_IS_SCRIPT_OR_GLOBAL or
+                        node.type not in range(24, 32)):
+                        # not a tag index ref
+                        continue
+
+                    tag_index_id = node.data & 0xFFff
+                    if (tag_index_id in range(len(tag_index_array)) and
+                        tag_index_id not in seen_tag_ids):
+                        seen_tag_ids.add(tag_index_id)
+                        tag_index_ref = tag_index_array[tag_index_id]
+                        dependencies.append(make_dependency_os_block(
+                            tag_index_ref.class_1.enum_name, tag_index_ref.id,
+                            tag_index_ref.path, tag_index_ref.path_offset))
+            except Exception:
+                pass
+
         return dependencies
 
     def setup_sbsp_pointer_converters(self):
