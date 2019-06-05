@@ -11,11 +11,13 @@ class MatrixNotInvertable(ValueError): pass
 
 def are_points_equal(point_0, point_1, use_double_rounding=False,
                      round_adjust=0):
-    mantissa_len = (53 if use_double_rounding else 23) - round_adjust
+    mantissa_len = (53 if use_double_rounding else 23)
     for val_0, val_1 in zip(point_0, point_1):
         # take into account rounding errors for 32bit floats
         val = max(abs(val_0), abs(val_1))
-        delta_max = 2**(int(log(val + float_info.epsilon, 2)) - mantissa_len)
+        delta_max = 2**(
+            int(log(val + float_info.epsilon, 2)) -
+            mantissa_len) + abs(round_adjust)
         if abs(val_1 - val_0) > delta_max:
             return False
     return True
@@ -32,12 +34,12 @@ def are_planes_equal(plane_0, plane_1, use_double_rounding=False,
 
 def point_distance_to_plane(point, plane, use_double_rounding=False,
                             round_adjust=0):
-    mantissa_len = (53 if use_double_rounding else 23) - round_adjust
+    mantissa_len = (53 if use_double_rounding else 23)
     # return True if point is on forward side of plane, otherwise False
     # take into account rounding errors for 32bit floats
     delta_max = 2**(
         int(log(abs(plane[3] + float_info.epsilon), 2)) -
-        mantissa_len)
+        mantissa_len) + abs(round_adjust)
     delta = dot_product(plane[:3], point) - plane[3]
     if abs(delta) < delta_max:
         # point lies on plane
@@ -92,20 +94,46 @@ def is_point_on_back_side_of_planes(point, planes, on_plane_ok=False,
 
 
 def find_intersect_line_of_planes(plane_0, plane_1, use_double_rounding=False,
-                                  round_adjust=0):
+                                  round_adjust=0, normalize=False):
     # returns an arbitrary point where the provided planes intersect.
     # if they do not intersect, None will be returned instead.
-    line_dir = Ray.cross(plane_0[:3], plane_1[:3])
-    if line_dir.is_zero:
+    plane_0 = Plane(plane_0)
+    plane_1 = Plane(plane_1)
+    plane_0.normalize()
+    plane_1.normalize()
+    plane_0_dir = Ray(plane_0[:3])
+    plane_1_dir = Ray(plane_1[:3])
+    line_dir = Ray.cross(plane_0_dir, plane_1_dir)
+    determinant = line_dir.mag_sq
+    if determinant <= float_info.epsilon:
         # planes are parallel. ignore
-        return None
+        return
 
-    line_dir.normalize()
-    lines_matrix = Matrix((plane_0[: 3], plane_1[: 3], line_dir))
-    reduced, result = lines_matrix.row_reduce(
-        Matrix((plane_0[3], plane_1[3], 0))
-        )
-    line_point = Point((result[0][0], result[1][0], result[2][0]))
+    line_point = (
+        (Ray.cross(line_dir, plane_0_dir) * plane_1[3]) +
+        (Ray.cross(plane_1_dir, line_dir) * plane_0[3])) / determinant
+
+    max_comp = 2
+    if abs(line_dir[0]) >= abs(line_dir[1]):
+        if abs(line_dir[0]) >= abs(line_dir[2]):
+            max_comp = 0
+    elif abs(line_dir[1]) >= abs(line_dir[2]):
+        max_comp = 1
+
+    line_point -= line_dir * (line_point[max_comp] / line_dir[max_comp])
+
+    #print(plane_0, point_distance_to_plane(line_point, plane_0))
+    #print(plane_1, point_distance_to_plane(line_point, plane_1))
+
+    #lines_matrix = Matrix((plane_0[: 3], plane_1[: 3], line_dir))
+    #reduced, result = lines_matrix.row_reduce(
+    #    Matrix((plane_0[3], plane_1[3], 0))
+    #    )
+    #print(reduced)
+    #print(result)
+    #line_point = Point((result[0][0], result[1][0], result[2][0]))
+    if normalize:
+        line_dir.normalize()
     return line_point, line_dir
 
 
@@ -137,10 +165,11 @@ def find_intersect_point_of_lines(line_0, line_1, use_double_rounding=False,
     return None
 
 
-def planes_to_verts_and_edge_loops(planes, plane_dir=False, max_plane_ct=32,
+def planes_to_verts_and_edge_loops(planes, center, plane_dir=True, max_plane_ct=32,
                                    use_double_rounding=False, round_adjust=0):
+    assert len(center) == 3
     # make a set out of the planes to remove duplicates
-    planes = list(set(tuple(plane) for plane in planes))
+    planes = list(set(tuple(Plane(p).normalized) for p in planes))
     lines_by_planes = {plane: [] for plane in planes}
     is_point_inside_form = (is_point_on_front_side_of_planes if plane_dir
                             else is_point_on_back_side_of_planes)
@@ -151,15 +180,15 @@ def planes_to_verts_and_edge_loops(planes, plane_dir=False, max_plane_ct=32,
             (len(planes), max_plane_ct))
 
     # Get intersection lines by crossing each plane with each other plane.
-    for i in range(len(planes)):
+    for i in range(len(planes) - 1):
         p0 = planes[i]
         for j in range(i + 1, len(planes)):
             p1 = planes[j]
-            line = find_intersect_line_of_planes(p0, p1)
+            line = find_intersect_line_of_planes(p0, p1, normalize=True)
             if line is not None:
                 # planes intersect and are not parallel
                 lines_by_planes[p0].append(line)
-                lines_by_planes[p1].append(line)
+                lines_by_planes[p1].append((line[0], -line[1]))
 
     verts = []
     vert_indices_by_raw_verts = {}
@@ -167,44 +196,72 @@ def planes_to_verts_and_edge_loops(planes, plane_dir=False, max_plane_ct=32,
     # Calculate the points of intersection for each planes edges
     # to determine their vertices, skipping any vertices that are
     # on the forward-facing side of any of the planes.
+    intersects_by_lines = {}
+    intersect_weights = {}
     for plane, lines in lines_by_planes.items():
         # loop over each line in the plane and find
         # two vertices where two lines intersect
         edges = edges_by_planes[plane]
         for i in range(len(lines)):
+            intersects = intersects_by_lines.setdefault(
+                (tuple(lines[i][0]), tuple(lines[i][1])), [])
+
             v0_i = v1_i = None
-            line = lines[i]
+            # see if we can already find 2 intersects for this line
+            if intersects:
+                v0_i = intersects[0]
+
+            if len(intersects) > 1:
+                v1_i = intersects[1]
 
             for j in range(len(lines)):
-                if i == j: continue
+                if v0_i is not None and v1_i is not None:
+                    break
+                elif j == i:
+                    continue
+
                 intersect = find_intersect_point_of_lines(
-                    line, lines[j], ignore_check=True)
+                    lines[i], lines[j], ignore_check=True)
                 if intersect is None:
                     continue
+
+                intersect_weight = Ray(intersect - center).mag
 
                 intersect = tuple(intersect)
                 vert_index = vert_indices_by_raw_verts.get(intersect)
                 if vert_index is None:
                     for point in vert_indices_by_raw_verts:
-                        if are_points_equal(point, intersect):
+                        if are_points_equal(point, intersect,
+                                            round_adjust=round_adjust):
                             #print("Found:\n%s\n%s" % (point, intersect))
                             vert_index = vert_indices_by_raw_verts[point]
+                            if intersect_weight > intersect_weights[point]:
+                                # replace the vert with the more accurate one
+                                #print("REPLACE: %s   %s" % (intersect_weight, intersect_weights[point]))
+                                intersect_weights[intersect] = intersect_weight
+                                vert_indices_by_raw_verts[intersect] = vert_index
+                                verts[vert_index] = intersect
+                            break
 
-                if vert_index is None:
-                    # make sure the point is not outside the polyhedra
-                    if not is_point_inside_form(intersect, planes, True):
-                        #print("OUTSIDE: ", intersect)
-                        continue
-                    #print("INSIDE: ", intersect)
-                    vert_index = len(verts)
-                    verts.append(intersect)
-                    vert_indices_by_raw_verts[intersect] = vert_index
+                    if vert_index is None:
+                        # make sure the point is not outside the polyhedra
+                        if not is_point_inside_form(intersect, planes, True,
+                                                    round_adjust=round_adjust):
+                            #print("OUTSIDE: ", intersect)
+                            continue
+                        #print("INSIDE: ", intersect)
+                        vert_index = len(verts)
+                        verts.append(intersect)
+                        vert_indices_by_raw_verts[intersect] = vert_index
+                        intersect_weights[intersect] = intersect_weight
+
+                if vert_index not in intersects:
+                    intersects.append(vert_index)
 
                 if v0_i is None:
                     v0_i = vert_index
-                elif v1_i is None:
+                elif vert_index != v0_i:
                     v1_i = vert_index
-                    break
 
             #print(i, (v0_i, v1_i))
             if v0_i is None or v1_i is None or v0_i == v1_i:
@@ -212,25 +269,31 @@ def planes_to_verts_and_edge_loops(planes, plane_dir=False, max_plane_ct=32,
                 continue
 
             # add the edge to this planes list of vert edges
-            if v0_i > v1_i:
+            if (lines[i][1] * (Ray(verts[v1_i]) - verts[v0_i])) > 0:
                 v0_i, v1_i = v1_i, v0_i
 
             edge = (v0_i, v1_i)
             edges.add(edge)
 
-    #print(verts)
-
     edge_loops = []
     # loop over each edge and put together an edge loop list
     # by visiting the edges shared by each vert index
     for plane, edges in edges_by_planes.items():
+        #print(plane)
+        #for edge in edges:
+        #    print("   ", edge)
+        #print()
+
         if not edges:
             continue
 
         try:
             edge_loop = edges_to_edge_loop(edges)
         except Exception:
+            from traceback import format_exc
+            print(format_exc())
             continue
+
         if not edge_loop:
             continue
 
@@ -241,45 +304,51 @@ def planes_to_verts_and_edge_loops(planes, plane_dir=False, max_plane_ct=32,
         v2 = verts[edge_loop[2]]
         if dot_product(vertex_cross_product(v0, v1, v2), plane[: 3]) < 0:
             edge_loop[:] = edge_loop[::-1]
+            continue
 
         edge_loops.append(edge_loop)
+
+    #print("VERT CT: ", len(verts))
+    #print("LOOP CT: ", len(edge_loops))
 
     return verts, edge_loops
 
 
 def edges_to_edge_loop(edges):
-    edge_loop = []
+    edge_loop_nodes = EdgeLoopNode(-1, edges=edges)
+    #print("DEPTH: ", edge_loop_nodes.depth)
+    #print(edges)
+    #input(edge_loop_nodes)
+    edge_loop = ()
+    for loop in edge_loop_nodes.walk_edge_loops():
+        if len(loop) > 2 and (len(loop) - 1 > len(edge_loop) and loop[0] == loop[-1]):
+            edge_loop = loop[:-1]
 
-    edges = set((min(edge), max(edge)) for edge in edges)
-    edges_by_verts = {}
-    for edge in edges:
-        edges_by_verts.setdefault(edge[0], []).append(edge)
-        edges_by_verts.setdefault(edge[1], []).append(edge)
+    for loop in edge_loop_nodes.walk_edge_loops(horizontal=True):
+        if len(loop) > 2 and (len(loop) - 1 > len(edge_loop) and loop[0] == loop[-1]):
+            edge_loop = loop[:-1]
 
-    if len(edges_by_verts) < 3:
-        return None
-
-    curr_edge = next(iter(edges))
-    v_i = curr_edge[1]
-    edge_loop.append(curr_edge[0])
-    edges_by_verts.pop(curr_edge[0])
-    while edges_by_verts:
-        vert_edges = edges_by_verts.pop(v_i, None)
-        if vert_edges is None:
-            break
-
-        curr_edge = vert_edges[not vert_edges.index(curr_edge)]
-        edge_loop.append(v_i)
-        v_i = curr_edge[not curr_edge.index(v_i)]
-
+    #print("CHOSEN: ", edge_loop)
+    #print()
     if len(edge_loop) < 3:
         return None
 
-    return edge_loop
+    return list(edge_loop)
 
 
 def line_from_verts(v0, v1):
     return tuple(b - a for a, b in zip(v0, v1))
+
+
+def plane_from_verts(v0, v1, v2):
+    p_dir = Ray.cross(line_from_verts(v1, v0),
+                      line_from_verts(v1, v2))
+    p_dir.normalize()
+    if p_dir.is_zero:
+        return None
+
+    return (p_dir[0], p_dir[1], p_dir[2],
+            v1[0]*p_dir[0] + v1[1]*p_dir[1] + v1[2]*p_dir[2])
 
 
 def vertex_cross_product(v0, v1, v2):
@@ -480,7 +549,7 @@ class Ray(Vector):
     def is_zero(self): return not sum(bool(val) for val in self)
     @property
     def normalized(self):
-        ray = Ray(self)
+        ray = type(self)(self)
         ray.normalize()
         return ray
     @property
@@ -508,24 +577,27 @@ class Ray(Vector):
 
 class Plane(FixedLengthList, Ray):
     __slots__ = ()
-    def __init__(self, initializer=None):
-        if initializer is None:
-            initializer = (0, 0, 1, 0)
+    def __init__(self, initializer=(0, 0, 1, 0)):
         assert len(initializer) == 4
         list.__init__(self, initializer)
     def __eq__(self, other):
         return are_planes_equal(self, other)
     @property
-    def magnitude_sq(self): return self[3]**2
+    def is_zero(self): return not(self[0] or self[1] or self[2])
     @property
-    def magnitude(self): return self[3]
+    def magnitude_sq(self): return self[0]**2 + self[1]**2 + self[2]**2
+    @property
+    def magnitude(self): return sqrt(self[0]**2 + self[1]**2 + self[2]**2)
     mag_sq = magnitude_sq
     mag = magnitude
 
     def normalize(self):
-        div = self[3]
+        div = self.mag
         if div:
-            for i in range(len(self)): self[i] /= div
+            self[0] /= div
+            self[1] /= div
+            self[2] /= div
+            self[3] *= div
 
     def is_point_on_plane(self, point, use_double_rounding=False,
                           round_adjust=0):
@@ -550,9 +622,7 @@ class Plane(FixedLengthList, Ray):
 
 class Quaternion(FixedLengthList, Ray):
     __slots__ = ()
-    def __init__(self, initializer=None):
-        if initializer is None:
-            initializer = (0, 0, 0, 1)
+    def __init__(self, initializer=(0, 0, 0, 1)):
         assert len(initializer) == 4
         list.__init__(self, initializer)
     def __mul__(self, other):
@@ -839,7 +909,7 @@ class Matrix(list):
 
         # get the highest weighted row order
         test_matrix = Matrix(width=self.width, height=self.width)
-        for weight in sorted(valid_row_orders):
+        for weight in reversed(sorted(valid_row_orders)):
             for row_order in valid_row_orders[weight]:
                 for i in range(len(row_order)):
                     test_matrix[i][:] = self[row_order[i]]
@@ -880,3 +950,89 @@ class Matrix(list):
                 self._get_valid_diagonal_row_orders(
                     row_indices, row_orders, choose_best,
                     row_order, curr_column + 1)
+
+
+class EdgeLoopNode(list):
+    __slots__ = ("vert_index", )
+
+    def __init__(self, vert_index=-1, *children, edges=(), seen=None):
+        self.vert_index = int(vert_index)
+        if seen is None:
+            seen = set()
+
+        if self.vert_index in seen:
+            return
+
+        seen.add(self.vert_index)
+
+        if not isinstance(edges, dict):
+            edges_by_verts = {}
+            for edge in set(edges):
+                edges_by_verts.setdefault(edge[0], []).append(edge)
+                edges_by_verts.setdefault(edge[1], []).append(edge)
+
+            for vert_index in edges_by_verts:
+                self.append(EdgeLoopNode(
+                    vert_index, edges=edges_by_verts))
+        else:
+            for edge in edges.get(self.vert_index, ()):
+                if edge[0] == self.vert_index:
+                    self.append(EdgeLoopNode(edge[1], edges=edges, seen=set(seen)))
+
+    def __str__(self, **kw):
+        depth = kw.pop("depth", 0)
+        kw["depth"] = depth + 1
+        indent_str = " " * (2 * depth)
+
+        string = "%sEdgeLoopNode(%s" % (indent_str, self.vert_index)
+        if not self.is_leaf:
+            string += ",\n"
+            for node in self:
+                string += node.__str__(**kw) + ",\n"
+            string += indent_str
+        return string + ")"
+
+    __repr__ = __str__
+
+    def walk_edge_loops(self, curr_loop=(), seen=None, horizontal=False):
+        if seen is None:
+            seen = set()
+
+        if (not horizontal or self.is_leaf) and self.vert_index != -1:
+            curr_loop += (self.vert_index, )
+
+        if self.vert_index in seen:
+            yield curr_loop
+            return
+
+        seen.add(self.vert_index)
+        if self.is_leaf:
+            yield curr_loop
+            return
+
+        # walk down the length of the loop
+        for node in self:
+            yield from node.walk_edge_loops(curr_loop, seen, horizontal)
+
+        if self.vert_index == -1 or not horizontal:
+            return
+
+        # walk horizontally across the loops
+        for i in range(len(self)):
+            for j in range(len(self)):
+                if i == j: continue
+                seen_h = {self.vert_index}
+                for loop in self[i].walk_edge_loops((self.vert_index, ), seen_h):
+                    yield from self[j].walk_edge_loops(loop[::-1], set(seen_h))
+
+    @property
+    def is_leaf(self): return not len(self)
+
+    @property
+    def depth(self):
+        if self.is_leaf:
+            return 0
+        depth = max(n.depth for n in self)
+        if self.vert_index != -1:
+            depth += 1
+        return depth
