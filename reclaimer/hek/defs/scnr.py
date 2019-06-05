@@ -483,6 +483,7 @@ bsp_switch_trigger_volume = Struct("bsp switch trigger volume",
         DYN_NAME_PATH=".....structure_bsps.STEPTREE[DYN_I].structure_bsp.filepath"),
     dyn_senum16("destination",
         DYN_NAME_PATH=".....structure_bsps.STEPTREE[DYN_I].structure_bsp.filepath"),
+    FlUInt16("unknown", EDITABLE=False),
     SIZE=8
     )
 
@@ -746,7 +747,8 @@ encounter = Struct("encounter",
         DYN_NAME_PATH=".....structure_bsps.STEPTREE[DYN_I].structure_bsp.filepath"),
     from_to_sec("respawn delay"),
 
-    Pad(76),
+    Pad(74),
+    FlSInt16('bsp_index', VISIBLE=False),  # calculated on map compile
     reflexive("squads", squad, 64),
     reflexive("platoons", platoon, 32, DYN_NAME_PATH='.name'),
     reflexive("firing positions", firing_position, 512),
