@@ -195,7 +195,6 @@ def planes_to_verts_and_edge_loops(planes, center, plane_dir=True, max_plane_ct=
     # make a set out of the planes to remove duplicates
     planes = list(set(tuple(Plane(p).normalized) for p in planes))
     indices_by_planes = {p: set() for p in planes}
-    edges_by_planes = {plane: set() for plane in planes}
 
     if len(planes) > max_plane_ct:
         raise ValueError(
@@ -207,6 +206,7 @@ def planes_to_verts_and_edge_loops(planes, center, plane_dir=True, max_plane_ct=
 
     # find the intersect points of all planes within the polyhedron
     intersects = []
+    intersect_weights = []
     for i in range(len(planes)):
         p0 = planes[i]
         p0_indices = indices_by_planes[p0]
@@ -220,71 +220,140 @@ def planes_to_verts_and_edge_loops(planes, center, plane_dir=True, max_plane_ct=
                 p2_indices = indices_by_planes[p2]
 
                 intersect = find_intersect_point_of_planes(p0, p1, p2)
-                if intersect is None or not is_point_inside_form(intersect, planes, True,
-                                                                 round_adjust=round_adjust):
+                if intersect is None or not is_point_inside_form(
+                        intersect, planes, True, round_adjust=round_adjust):
                     continue
 
-                vert_index = len(intersects)
+                weight = abs(Ray.cross(p0[: -1], p1[: -1]) * Ray(p2[: -1]))
+                better_vert_index = None
+                similar_verts = set()
                 for w in range(len(intersects)):
                     if are_points_equal(intersects[w], intersect,
-                                        round_adjust=round_adjust):
-                        vert_index = w
-                        break
+                                        round_adjust=round_adjust / weight):
+                        if intersect_weights[w] > weight:
+                            better_vert_index = w
+                        else:
+                            similar_verts.add(w)
 
-                if vert_index == len(intersects):
+                if better_vert_index is None:
+                    # adding a new vert
+                    vert_index = len(intersects)
                     intersects.append(intersect)
+                    intersect_weights.append(weight)
+                else:
+                    # using a better intersect than this one
+                    vert_index = better_vert_index
+                    intersect = intersects[better_vert_index]
+                    weight = intersect_weights[better_vert_index]
+
+                # overwrite existing verts with a more accurate one
+                for v_i in similar_verts:
+                    intersects[v_i] = intersect
+                    intersect_weights[v_i] = weight
 
                 p0_indices.add(vert_index)
                 p1_indices.add(vert_index)
                 p2_indices.add(vert_index)
 
+    vert_map = {}
+    vert_rebase_map = [None] * len(intersects)
+    pruned_intersects = []
+    pruned_intersect_weights = []
+    for i in range(len(intersects)):
+        vert = tuple(intersects[i])
+        if vert not in vert_map:
+            vert_map[vert] = len(vert_map)
+            pruned_intersects.append(intersects[i])
+            pruned_intersect_weights.append(intersect_weights[i])
+        vert_rebase_map[i] = vert_map[vert]
+
+    for indices in indices_by_planes.values():
+        new_indices = set()
+        for i in indices:
+            new_indices.add(vert_rebase_map[i])
+        indices.clear()
+        indices.update(new_indices)
+
+    intersects = pruned_intersects
+    intersect_weights = pruned_intersect_weights
+    #for i in range(len(intersects)):
+    #    print(intersect_weights[i], intersects[i])
+
     # Get intersection lines by crossing each plane with each other plane.
-    used_vert_indices = set()
+    lines_by_planes = {plane: set() for plane in planes}
     for p0_i in range(len(planes) - 1):
         for p1_i in range(p0_i + 1, len(planes)):
             p0 = planes[p0_i]
             p1 = planes[p1_i]
-            verts_to_check = set(indices_by_planes[p0])
-            verts_to_check.update(indices_by_planes[p1])
 
             line = find_intersect_line_of_planes(p0, p1)
             if line is None:
                 continue
 
-            points_on_line = []
-            # figure out which points are on this line
-            for v_i in verts_to_check:
-                if is_point_on_line(intersects[v_i], line, round_adjust=round_adjust):
-                    points_on_line.append(v_i)
+            lines_by_planes[p0].add((tuple(line[0]), tuple(line[1])))
+            lines_by_planes[p1].add((tuple(line[0]), tuple(-line[1])))
 
-            # find the 2 furthest apart points among those
-            v0_i = v1_i = None
-            chosen_dist = 0
-            for i in range(len(points_on_line) - 1):
-                for j in range(i + 1, len(points_on_line)):
-                    dist = Ray(intersects[points_on_line[i]] -
-                               intersects[points_on_line[j]]).mag
-                    if dist > chosen_dist:
-                        v0_i = points_on_line[i]
-                        v1_i = points_on_line[j]
-                        chosen_dist = dist
 
-            if v0_i is None or v1_i is None:
+    edges_by_planes = {plane: set() for plane in planes}
+    used_vert_indices = set()
+    for plane, lines in lines_by_planes.items():
+        used_vert_counts = {i: [] for i in indices_by_planes[plane]}
+
+        # count how many lines each vert lies on
+        for line in lines:
+            line_weight = Ray(line[1]).mag
+            vert_indices_on_line = set()
+            for v_i in used_vert_counts:
+                if is_point_on_line(intersects[v_i], line,
+                                    round_adjust=(round_adjust/(
+                                        intersect_weights[v_i] * line_weight))):
+                    vert_indices_on_line.add(v_i)
+
+            # filter out verts only intersecting one line
+            if len(vert_indices_on_line) >= 2:
+                for v_i in vert_indices_on_line:
+                    used_vert_counts[v_i].append(line)
+
+        verts_on_lines = {line: [] for line in lines}
+        for v_i, used_lines in used_vert_counts.items():
+            if len(used_lines) < 2: continue
+            for line in used_lines:
+                verts_on_lines[line].append(v_i)
+
+        for line in lines:
+            if len(verts_on_lines[line]) < 2:
                 continue
 
-            if Ray(intersects[v1_i] - intersects[v0_i]) * line[1] > 0:
-                v0_i, v1_i = v1_i, v0_i
+            line_point, line_dir = line
+            sorted_verts_on_line = {}
+            axis = 0
+            # figure out which axis has the most precision
+            for i in range(1, len(line_dir)):
+                if abs(line_dir[i]) > abs(line_dir[axis]):
+                    axis = i
 
-            # planes intersect and are not parallel
-            edges_by_planes[p0].add((v0_i, v1_i))
-            edges_by_planes[p1].add((v1_i, v0_i))
-            used_vert_indices.update((v0_i, v1_i))
+            # sort the vertices by how far along the line they are
+            for v_i in verts_on_lines[line]:
+                axis_val = intersects[v_i][axis]
+                dist = (axis_val - line_point[axis]) / line_dir[axis]
+                sorted_verts_on_line[dist] = v_i
 
-    for plane in edges_by_planes:
-        print(plane)
-        for e in edges_by_planes[plane]:
-            print(e)
-        print()
+            verts_on_line = [sorted_verts_on_line[dist]
+                             for dist in sorted(sorted_verts_on_line)]
+
+            # if the edge chain will go opposite the line, reverse it
+            if Ray(intersects[verts_on_line[0]] -
+                   intersects[verts_on_line[-1]]) * Ray(line[1]) < 0:
+                verts_on_line = verts_on_line[::-1]
+
+            # generate edges that ascendingly follow this line
+            for i in range(len(verts_on_line) - 1):
+                v0_i = verts_on_line[i]
+                v1_i = verts_on_line[i + 1]
+                # planes intersect and are not parallel
+                edges_by_planes[plane].add((v0_i, v1_i))
+                used_vert_indices.update((v0_i, v1_i))
+
 
     # prune the unused verts
     verts = [None] * len(used_vert_indices)
@@ -302,7 +371,6 @@ def planes_to_verts_and_edge_loops(planes, center, plane_dir=True, max_plane_ct=
         edges.clear()
         edges.update(new_edges)
 
-
     edge_loops = []
     # loop over each edge and put together an edge loop list
     # by visiting the edges shared by each vert index
@@ -311,7 +379,7 @@ def planes_to_verts_and_edge_loops(planes, center, plane_dir=True, max_plane_ct=
             continue
 
         try:
-            edge_loop = edges_to_edge_loop(edges)
+            edge_loop = edges_to_edge_loop(edges, plane, verts)
         except Exception:
             from traceback import format_exc
             print(format_exc())
@@ -320,37 +388,75 @@ def planes_to_verts_and_edge_loops(planes, center, plane_dir=True, max_plane_ct=
         if not edge_loop:
             continue
 
-        # if the edge loop would construct triangles facing the
-        # wrong direction, we need to reverse the edge loop
-        v0 = verts[edge_loop[0]]
-        v1 = verts[edge_loop[1]]
-        v2 = verts[edge_loop[2]]
-        if dot_product(vertex_cross_product(v0, v1, v2), plane[: 3]) < 0:
-            edge_loop[:] = edge_loop[::-1]
-
         edge_loops.append(edge_loop)
 
-    print("VERTS:", len(verts))
-    print("TRIS:", sum(len(edge_loop) - 2 for edge_loop in edge_loops))
-    for edge_loop in edge_loops:
-        print(edge_loop)
+    #print("PLANES:", )
+    #i = 0
+    #for plane in edges_by_planes:
+    #    print(i, plane)
+    #    for e in edges_by_planes[plane]:
+    #        print(e)
+    #    print()
+    #    i += 1
+
+    #i = 0
+    #print("VERTS:", len(verts))
+    #for vert in verts:
+    #    print(i, vert)
+    #    i += 1
+
+    #print("TRIS:", sum(len(edge_loop) - 2 for edge_loop in edge_loops))
+    #for edge_loop in edge_loops:
+    #    print(edge_loop)
 
     return verts, edge_loops
 
 
-def edges_to_edge_loop(edges):
+def get_is_valid_edge_loop(edge_loop, plane, verts):
+    vert_ct = len(edge_loop)
+    if vert_ct < 3:
+        return False
+
+    # if the edge loop would construct triangles facing the
+    # wrong direction, we need to reverse the edge loop
+    for i in range(vert_ct):
+        tri_plane = Ray(vertex_cross_product(
+            verts[edge_loop[i]],
+            verts[edge_loop[(i + 1) % vert_ct]],
+            verts[edge_loop[(i + 2) % vert_ct]]))
+
+        if dot_product(tri_plane, plane[: 3]) < 0:
+            # facing opposite directions
+            return False
+
+    return True
+
+
+def edges_to_edge_loop(edges, plane, verts):
     edge_loop_nodes = EdgeLoopNode(-1, edges=edges)
     #print("DEPTH: ", edge_loop_nodes.depth)
     #print(edges)
     #input(edge_loop_nodes)
     edge_loop = ()
-    for loop in edge_loop_nodes.walk_edge_loops():
-        if len(loop) > 2 and (len(loop) - 1 > len(edge_loop) and loop[0] == loop[-1]):
-            edge_loop = loop[:-1]
+    for curr_loop in edge_loop_nodes.walk_edge_loops():
+        if len(curr_loop) < 3 or curr_loop[0] != curr_loop[-1]:
+            continue
 
-    for loop in edge_loop_nodes.walk_edge_loops(horizontal=True):
-        if len(loop) > 2 and (len(loop) - 1 > len(edge_loop) and loop[0] == loop[-1]):
-            edge_loop = loop[:-1]
+        curr_loop = curr_loop[: -1]
+        if len(curr_loop) < len(edge_loop):
+            continue
+        elif get_is_valid_edge_loop(curr_loop, plane, verts):
+            edge_loop = curr_loop
+
+    for curr_loop in edge_loop_nodes.walk_edge_loops(horizontal=True):
+        if len(curr_loop) < 3 or curr_loop[0] != curr_loop[-1]:
+            continue
+
+        curr_loop = curr_loop[: -1]
+        if len(curr_loop) < len(edge_loop):
+            continue
+        elif get_is_valid_edge_loop(curr_loop, plane, verts):
+            edge_loop = curr_loop
 
     #print("CHOSEN: ", edge_loop)
     #print()
