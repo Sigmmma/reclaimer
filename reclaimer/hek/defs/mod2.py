@@ -115,7 +115,16 @@ permutation = Struct('permutation',
     Bool32('flags',
         'cannot be chosen randomly'
         ),
-    Pad(28),
+    # permutations ending with -XXX where XXX is a number will belong to
+    # the permutation set XXX. Trailing non-numeric characters are ignored.
+    # Example:
+    #     head_marcus_cap-101asdf
+    #     Will have its permutation_set be set to 101
+    # For all parts of a permutation to be properly chosen across
+    # all regions, they must share a permutation set number.
+    # Anything not ending in -XXX will have this set to 0.
+    FlUInt16("permutation set", VISIBLE=False),  # meta only field
+    Pad(26),
 
     dyn_senum16('superlow geometry block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
