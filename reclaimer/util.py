@@ -6,8 +6,10 @@ from math import log, sqrt
 POS_INF = float("inf")
 NEG_INF = float("-inf")
 RESERVED_WINDOWS_FILENAME_MAP = {}
-INVALID_PATH_CHARS = set([str(i.to_bytes(1, 'little'), 'ascii')
-                          for i in range(32)])
+INVALID_PATH_CHARS = set([str(i.to_bytes(1, 'little'), 'latin-1')
+                          for i in (tuple(range(32)) +
+                                    tuple(range(128, 256)))]
+                         )
 for name in ('CON', 'PRN', 'AUX', 'NUL'):
     RESERVED_WINDOWS_FILENAME_MAP[name] = '_' + name
 for i in range(1, 9):
