@@ -966,8 +966,8 @@ def repair_tagc(tag_id, index_array, map_data, magic, repair, engine,
     ct, moff, _ = read_reflexive(
         map_data, index_array[tag_id].meta_offset - magic, max_count, 16, magic)
 
-    for i in range(ct):
-        map_data.seek(moff + 12 - magic)
+    for moff2 in range(moff, moff + (ct * 16), 16):
+        map_data.seek(moff2 + 12 - magic)
         tag_id = int.from_bytes(map_data.read(4), "little")
         if tag_id == 0xFFffFFff:
             continue
@@ -978,7 +978,7 @@ def repair_tagc(tag_id, index_array, map_data, magic, repair, engine,
             break
 
         repair_dependency(index_array, map_data, magic, repair, engine,
-                          tag_cls, moff)
+                          tag_cls, moff2)
 
 
 def repair_udlg(tag_id, index_array, map_data, magic, repair, engine):
