@@ -7,7 +7,7 @@ magy_body = Struct("tagdata",
     reflexive("weapons",  weapons_desc, 1),
     reflexive("vehicles", vehicle_desc, 1),
     reflexive("devices",  device_desc, 1),
-    reflexive("unit damage", anim_enum_desc, 176),
+    reflexive("unit damages", anim_enum_desc, 176),
     reflexive("fp animations", fp_animation_desc, 1),
     #i have no idea why they decided to cap it at 257 instead of 256....
     reflexive("sound references", sound_reference_desc, 257,
