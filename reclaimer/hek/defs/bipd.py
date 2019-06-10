@@ -129,7 +129,8 @@ bipd_attrs = Struct("bipd attrs",
         FlFloat("sine uphill falloff angle", DEFAULT=0.3420201241970062),#DEFAULT=0.0),
         FlFloat("sine uphill cutoff angle", DEFAULT=sqrt(2)/2, #DEFAULT=0.0,
                 TOOLTIP="does the same thing as the fp accel modifier?"),
-        FlSInt32("camera mass", DEFAULT=-1, TOOLTIP="unused?"),
+        FlSInt16("root node index", DEFAULT=-1),
+        FlSInt16("head node index", DEFAULT=-1),
         VISIBLE=False, SIZE=32
         ),
 

@@ -16,5 +16,5 @@ sotr_def = TagDef("sotr",
     blam_header_stubbs("sotr"),
     sotr_body,
 
-    ext=".shader_transparent_generic", endian=">",
+    ext=".shader_transparent_generic", endian=">", tag_cls=ShdrTag,
     )

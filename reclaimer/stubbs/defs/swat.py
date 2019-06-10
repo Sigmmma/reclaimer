@@ -15,5 +15,5 @@ swat_def = TagDef("swat",
     blam_header_stubbs('swat', 2),
     swat_body,
 
-    ext=".shader_transparent_water", endian=">"
+    ext=".shader_transparent_water", endian=">", tag_cls=ShdrTag
     )

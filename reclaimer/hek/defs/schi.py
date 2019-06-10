@@ -1,6 +1,6 @@
 from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
-from .objs.schi import SchiTag
+from .objs.shdr import ShdrTag
 
 chicago_4_stage_maps = Struct("four stage map",
     Bool16("flags" ,
@@ -77,5 +77,5 @@ schi_def = TagDef("schi",
     schi_body,
 
     ext=".shader_transparent_chicago",
-    endian=">", tag_cls=SchiTag
+    endian=">", tag_cls=ShdrTag
     )

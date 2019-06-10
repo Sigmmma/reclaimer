@@ -1,5 +1,5 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.shdr import ShdrTag
 from supyr_struct.defs.tag_def import TagDef
 
 radiosity_comment = """RADIOSITY/LIGHTMAPPING
@@ -69,5 +69,5 @@ shdr_def = TagDef("shdr",
     blam_header('shdr'),
     shader_body,
 
-    ext=".shader", endian=">", tag_cls=HekTag
+    ext=".shader", endian=">", tag_cls=ShdrTag
     )
