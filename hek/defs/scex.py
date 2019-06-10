@@ -1,6 +1,6 @@
 from .schi import *
 from supyr_struct.defs.tag_def import TagDef
-from .objs.scex import ScexTag
+from .objs.shdr import ShdrTag
 
 chicago_2_stage_maps = Struct("two stage map", INCLUDE=chicago_4_stage_maps)
 
@@ -49,5 +49,5 @@ scex_def = TagDef("scex",
     scex_body,
 
     ext=".shader_transparent_chicago_extended", 
-    endian=">", tag_cls=ScexTag
+    endian=">", tag_cls=ShdrTag
     )

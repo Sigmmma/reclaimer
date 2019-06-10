@@ -1,5 +1,5 @@
 from .shdr import *
-from .objs.tag import HekTag
+from .objs.shdr import ShdrTag
 from supyr_struct.defs.tag_def import TagDef
 
 smet_attrs = Struct("smet attrs",
@@ -55,5 +55,5 @@ smet_def = TagDef("smet",
     blam_header('smet'),
     smet_body,
 
-    ext=".shader_transparent_meter", endian=">", tag_cls=HekTag
+    ext=".shader_transparent_meter", endian=">", tag_cls=ShdrTag
     )

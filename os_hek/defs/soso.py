@@ -136,5 +136,5 @@ soso_def = TagDef("soso",
     blam_header('soso', 2),
     soso_body,
 
-    ext=".shader_model", endian=">", tag_cls=HekTag
+    ext=".shader_model", endian=">", tag_cls=ShdrTag
     )

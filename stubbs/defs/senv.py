@@ -15,5 +15,5 @@ senv_def = TagDef("senv",
     blam_header_stubbs('senv', 2),
     senv_body,
 
-    ext=".shader_environment", endian=">"
+    ext=".shader_environment", endian=">", tag_cls=ShdrTag
     )

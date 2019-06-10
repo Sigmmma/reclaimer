@@ -50,5 +50,6 @@ soso_def = TagDef("soso",
     blam_header_stubbs('soso', 3),
     soso_body,
 
-    ext=".shader_model", endian=">"  # increment to differentiate it from halo antr
+    ext=".shader_model", endian=">",  # increment to differentiate it from halo soso
+    tag_cls=ShdrTag
     )

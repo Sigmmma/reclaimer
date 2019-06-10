@@ -3,13 +3,17 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 shader = Struct("shader",
-    Pad(40),
+    Pad(36),
+    FlUInt32("unknown0"),
     Bool16("shader flags", *shader_flags),
     SEnum16("framebuffer blend function", *framebuffer_blend_functions),
     SEnum16("framebuffer fade mode", *render_fade_mode),
     Bool16("map flags",
         "unfiltered"
         ),
+    Pad(40),
+    FlUInt32("unknown1"),
+    Pad(88),
     SIZE=180
     )
 
