@@ -17,5 +17,5 @@ shdr_def = TagDef("shdr",
     blam_header_stubbs('shdr'),
     shader_body,
 
-    ext=".shader", endian=">"
+    ext=".shader", endian=">", tag_cls=ShdrTag
     )

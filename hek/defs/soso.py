@@ -1,5 +1,5 @@
 from .shdr import *
-from .objs.tag import HekTag
+from .objs.shdr import ShdrTag
 from supyr_struct.defs.tag_def import TagDef
 
 soso_comment = """MODEL SHADER
@@ -155,5 +155,5 @@ soso_def = TagDef("soso",
     blam_header('soso', 2),
     soso_body,
 
-    ext=".shader_model", endian=">", tag_cls=HekTag
+    ext=".shader_model", endian=">", tag_cls=ShdrTag
     )

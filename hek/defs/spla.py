@@ -1,5 +1,5 @@
 from .shdr import *
-from .objs.tag import HekTag
+from .objs.shdr import ShdrTag
 from supyr_struct.defs.tag_def import TagDef
 
 noise_map = Struct("noise_map",
@@ -63,5 +63,5 @@ spla_def = TagDef("spla",
     blam_header('spla'),
     spla_body,
 
-    ext=".shader_transparent_plasma", endian=">", tag_cls=HekTag
+    ext=".shader_transparent_plasma", endian=">", tag_cls=ShdrTag
     )

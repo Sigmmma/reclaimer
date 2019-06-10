@@ -1,5 +1,5 @@
 from .shdr import *
-from .objs.tag import HekTag
+from .objs.shdr import ShdrTag
 from supyr_struct.defs.tag_def import TagDef
 
 environment_shader_comment = """ENVIRONMENT SHADER
@@ -234,5 +234,5 @@ senv_def = TagDef("senv",
     blam_header('senv', 2),
     senv_body,
 
-    ext=".shader_environment", endian=">", tag_cls=HekTag
+    ext=".shader_environment", endian=">", tag_cls=ShdrTag
     )
