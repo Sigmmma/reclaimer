@@ -39,19 +39,10 @@ shdr_attrs = Struct("shdr attrs",
     Pad(2),
     SEnum16("material type", *materials_list, COMMENT=material_type_comment),
     # THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS.
-    # This seems to be a Guerilla-only optimization value
     FlSEnum16("shader type",
-        ("shdr", -1),  # Shader
-        ("senv", 3),   # Environment
-        ("soso", 4),   # Model
-        ("sotr", 5),   # Transparent Generic
-        ("schi", 6),   # Transparent Chicago
-        ("scex", 7),   # Transparent Chicago Extended
-        ("swat", 8),   # Water
-        ("sgla", 9),   # Glass
-        ("smet", 10),  # Meter
-        ("spla", 11),  # Plasma
-        DEFAULT=-1, EDITABLE=False, VISIBLE=False,
+        *((shader_types[i], i - 1) for i in
+          range(len(shader_types))),
+        VISIBLE=False, DEFAULT=-1
         ),
     Pad(2),
     SIZE=40

@@ -18,5 +18,5 @@ plac_def = TagDef("plac",
     blam_header_stubbs('plac', 2),
     plac_body,
 
-    ext=".placeholder", endian=">"
+    ext=".placeholder", endian=">", tag_cls=ObjeTag
     )

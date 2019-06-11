@@ -1,6 +1,6 @@
 from .obje import *
 from .unit import *
-from .objs.tag import HekTag
+from .objs.obje import ObjeTag
 
 # replace the object_type enum one that uses
 # the correct default value for this object
@@ -98,5 +98,5 @@ vehi_def = TagDef("vehi",
     blam_header('vehi'),
     vehi_body,
 
-    ext=".vehicle", endian=">", tag_cls=HekTag
+    ext=".vehicle", endian=">", tag_cls=ObjeTag
     )

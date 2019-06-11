@@ -18,5 +18,5 @@ garb_def = TagDef("garb",
     blam_header('garb'),
     garb_body,
 
-    ext=".garbage", endian=">", tag_cls=HekTag
+    ext=".garbage", endian=">", tag_cls=ObjeTag
     )

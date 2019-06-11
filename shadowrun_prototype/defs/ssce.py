@@ -16,5 +16,5 @@ ssce_def = TagDef("ssce",
     blam_header('ssce'),
     ssce_body,
 
-    ext=".sound_scenery", endian=">", tag_cls=HekTag
+    ext=".sound_scenery", endian=">", tag_cls=ObjeTag
     )

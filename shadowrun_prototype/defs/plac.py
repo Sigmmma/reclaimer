@@ -16,5 +16,5 @@ plac_def = TagDef("plac",
     blam_header('plac', 2),
     plac_body,
 
-    ext=".placeholder", endian=">", tag_cls=HekTag
+    ext=".placeholder", endian=">", tag_cls=ObjeTag
     )

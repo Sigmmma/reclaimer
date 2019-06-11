@@ -5,7 +5,7 @@ The source files where the information was taken from are here:
 https://github.com/LiquidLightning/infernal/blob/master/infernal/inf_bipd.h
 '''
 from math import sqrt
-from .objs.tag import HekTag
+from .objs.obje import ObjeTag
 from .obje import *
 from .unit import *
 
@@ -155,5 +155,5 @@ bipd_def = TagDef("bipd",
     blam_header('bipd', 3),
     bipd_body,
 
-    ext=".biped", endian=">", tag_cls=HekTag
+    ext=".biped", endian=">", tag_cls=ObjeTag
     )

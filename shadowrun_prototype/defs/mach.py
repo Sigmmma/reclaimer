@@ -16,5 +16,5 @@ mach_def = TagDef("mach",
     blam_header('mach'),
     mach_body,
 
-    ext=".device_machine", endian=">", tag_cls=HekTag
+    ext=".device_machine", endian=">", tag_cls=ObjeTag
     )

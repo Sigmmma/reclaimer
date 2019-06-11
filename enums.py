@@ -55,20 +55,35 @@ material_effect_types = (
     "vehicle_unused1",
     "vehicle_unused2"
     )
+shader_types = (
+    "shdr",  # Shader
+    "unused0",
+    "unused1",
+    "unused2",
+    "senv",  # shader_environment
+    "soso",  # shader_model
+    "sotr",  # shader_transparent_generic
+    "schi",  # shader_transparent_chicago
+    "scex",  # shader_transparent_chicago_extended
+    "swat",  # shader_water
+    "sgla",  # shader_glass
+    "smet",  # shader_meter
+    "spla",  # shader_plasma
+    )
 object_types = (
-    "obje",
-    "bipd",
-    "vehi",
-    "weap",
-    "eqip",
-    "garb",
-    "proj",
-    "scen",
-    "mach",
-    "ctrl",
-    "lifi",
-    "plac",
-    "ssce",
+    "obje",  # object
+    "bipd",  # biped
+    "vehi",  # vehicle
+    "weap",  # weapon
+    "eqip",  # equipment
+    "garb",  # garbage
+    "proj",  # projectile
+    "scen",  # scenery
+    "mach",  # device_machine
+    "ctrl",  # device_control
+    "lifi",  # device_light_fixture
+    "plac",  # placeholder
+    "ssce",  # sound_scenery
     )
 actor_types = (
     "elite",
