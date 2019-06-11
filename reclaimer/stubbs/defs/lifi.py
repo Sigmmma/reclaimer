@@ -20,5 +20,5 @@ lifi_def = TagDef("lifi",
     blam_header_stubbs('lifi'),
     lifi_body,
 
-    ext=".device_light_fixture", endian=">"
+    ext=".device_light_fixture", endian=">", tag_cls=ObjeTag
     )

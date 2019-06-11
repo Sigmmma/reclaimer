@@ -23,5 +23,5 @@ mach_def = TagDef("mach",
     blam_header_stubbs('mach'),
     mach_body,
 
-    ext=".device_machine", endian=">"
+    ext=".device_machine", endian=">", tag_cls=ObjeTag
     )

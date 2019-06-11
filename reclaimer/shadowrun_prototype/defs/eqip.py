@@ -16,5 +16,5 @@ eqip_def = TagDef("eqip",
     blam_header('eqip', 2),
     eqip_body,
 
-    ext=".equipment", endian=">", tag_cls=HekTag
+    ext=".equipment", endian=">", tag_cls=ObjeTag
     )

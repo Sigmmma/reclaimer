@@ -23,5 +23,5 @@ bipd_def = TagDef("bipd",
     blam_header('bipd', 3),
     bipd_body,
 
-    ext=".biped", endian=">", tag_cls=HekTag
+    ext=".biped", endian=">", tag_cls=ObjeTag
     )

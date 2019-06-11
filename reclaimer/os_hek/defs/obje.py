@@ -15,5 +15,5 @@ obje_def = TagDef("obje",
     blam_header('obje'),
     obje_body,
 
-    ext=".object", endian=">", tag_cls=HekTag
+    ext=".object", endian=">", tag_cls=ObjeTag
     )

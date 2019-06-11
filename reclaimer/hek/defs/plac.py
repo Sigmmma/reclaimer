@@ -1,5 +1,5 @@
 from .obje import *
-from .objs.tag import HekTag
+from .objs.obje import ObjeTag
 from supyr_struct.defs.tag_def import TagDef
 
 # replace the object_type enum one that uses
@@ -20,5 +20,5 @@ plac_def = TagDef("plac",
     blam_header('plac', 2),
     plac_body,
 
-    ext=".placeholder", endian=">", tag_cls=HekTag
+    ext=".placeholder", endian=">", tag_cls=ObjeTag
     )

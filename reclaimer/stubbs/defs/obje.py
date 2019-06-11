@@ -16,7 +16,7 @@ obje_def = TagDef("obje",
     blam_header_stubbs('obje'),
     obje_body,
 
-    ext=".object", endian=">"
+    ext=".object", endian=">", tag_cls=ObjeTag
     )
 
 def get():
