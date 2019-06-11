@@ -1,6 +1,6 @@
 from .obje import *
 from .item import *
-from .objs.tag import HekTag
+from .objs.obje import ObjeTag
 from supyr_struct.defs.tag_def import TagDef
 
 # replace the object_type enum one that uses
@@ -41,5 +41,5 @@ eqip_def = TagDef("eqip",
     blam_header('eqip', 2),
     eqip_body,
 
-    ext=".equipment", endian=">", tag_cls=HekTag
+    ext=".equipment", endian=">", tag_cls=ObjeTag
     )

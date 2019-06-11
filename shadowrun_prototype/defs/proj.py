@@ -16,5 +16,5 @@ proj_def = TagDef("proj",
     blam_header('proj', 5),
     proj_body,
 
-    ext=".projectile", endian=">", tag_cls=HekTag
+    ext=".projectile", endian=">", tag_cls=ObjeTag
     )

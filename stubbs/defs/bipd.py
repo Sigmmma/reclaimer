@@ -25,5 +25,5 @@ bipd_def = TagDef("bipd",
     blam_header_stubbs('bipd', 3),
     bipd_body,
 
-    ext=".biped", endian=">"
+    ext=".biped", endian=">", tag_cls=ObjeTag
     )
