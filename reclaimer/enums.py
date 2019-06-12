@@ -1173,23 +1173,23 @@ anim_frame_info_types = (
 
 #Shared Enumerator options
 grenade_types_os = (
-    'human frag',
-    'covenant plasma',
-    'custom 2',
-    'custom 3',
+    'human_frag',
+    'covenant_plasma',
+    'custom_2',
+    'custom_3',
     )
 
 actor_states = (
     'none',
     'sleeping',
     'alert',
-    'moving repeat same position',
-    'moving loop',
-    'moving loop back and forth',
-    'moving loop randomly',
-    'moving randomly',
+    'moving_repeat_same_position',
+    'moving_loop',
+    'moving_loop_back_and_forth',
+    'moving_loop_randomly',
+    'moving_randomly',
     'guarding',
-    'guarding at guard position',
+    'guarding_at_guard_position',
     'searching',
     'fleeing'
     )

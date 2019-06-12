@@ -1,6 +1,10 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.coll import CollTag
 from supyr_struct.defs.tag_def import TagDef
+
+modifier = Struct("modifier",
+    Pad(52),
+    )
 
 body = Struct("body",
     Float("maximum body vitality"),
@@ -45,6 +49,8 @@ shield = Struct("shield",
     dependency("shield damaged effect", "effe"),
     dependency("shield depleted effect", "effe"),
     dependency("shield recharging effect", "effe"),
+    Pad(8),
+    Float("shield recharge rate", VISIBLE=False),
     )
 
 bsp3d_node = QStruct("bsp3d node",
@@ -216,13 +222,10 @@ coll_body = Struct("tagdata",
     body,
     shield,
 
-    Pad(124),
+    Pad(112),
     reflexive("materials", material, 32, DYN_NAME_PATH='.name'),
     reflexive("regions", region, 8, DYN_NAME_PATH='.name'),
-    # this reflexive is literally not allowed to have even a single
-    # entry in guerilla, so im just gonna replace it with padding.
-    Pad(12),
-    #reflexive("modifiers", modifier, 0),
+    reflexive("modifiers", modifier, 0, VISIBLE=False),
 
     Pad(16),
     Struct("pathfinding box",
@@ -279,12 +282,12 @@ coll_def = TagDef("coll",
     blam_header("coll", 10),
     coll_body,
 
-    ext=".model_collision_geometry", endian=">", tag_cls=HekTag,
+    ext=".model_collision_geometry", endian=">", tag_cls=CollTag,
     )
 
 fast_coll_def = TagDef("coll",
     blam_header("coll", 10),
     fast_coll_body,
 
-    ext=".model_collision_geometry", endian=">", tag_cls=HekTag,
+    ext=".model_collision_geometry", endian=">", tag_cls=CollTag,
     )

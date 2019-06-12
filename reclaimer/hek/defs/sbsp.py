@@ -212,10 +212,13 @@ cluster = Struct("cluster",
     dyn_senum16('weather',
         DYN_NAME_PATH="tagdata.weather_palettes.STEPTREE[DYN_I].name"),
 
+    UInt16("transition_structure_bsp", VISIBLE=False),
+    UInt16("first_decal_index", VISIBLE=False),
+    UInt16("decal_count", VISIBLE=False),
+
     # almost certain this is padding, though a value in the third
     # and fourth bytes is non-zero in meta, but not in a tag, so idk.
-    #BytesRaw("unknown", SIZE=30, VISIBLE=False),
-    Pad(30),
+    Pad(24),
 
     reflexive("predicted resources", predicted_resource, 1024, VISIBLE=False),
     reflexive("subclusters", subcluster, 4096),

@@ -1,6 +1,6 @@
 from .obje import *
 from .devi import *
-from .objs.obje import ObjeTag
+from .objs.mach import MachTag
 from supyr_struct.defs.tag_def import TagDef
 
 # replace the object_type enum one that uses
@@ -26,7 +26,9 @@ mach_attrs = Struct("mach attrs",
         'pause until crushed',
         'reverse directions'
         ),
-    SInt16('elevator node')
+    SInt16('elevator node'),
+    Pad(52),
+    UInt32("door_open_time_ticks")
     )
 
 mach_body = Struct("tagdata",
@@ -45,5 +47,5 @@ mach_def = TagDef("mach",
     blam_header('mach'),
     mach_body,
 
-    ext=".device_machine", endian=">", tag_cls=ObjeTag
+    ext=".device_machine", endian=">", tag_cls=MachTag
     )

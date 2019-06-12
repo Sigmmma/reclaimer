@@ -1,5 +1,5 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.ligh import LighTag
 from supyr_struct.defs.tag_def import TagDef
 
 gel_comment = """The map tints the light per-pixel of cubemap."""
@@ -28,7 +28,11 @@ ligh_body = Struct("tagdata",
         float_rad("falloff angle"),  # radians
         float_rad("cutoff angle"),  # radians
         Float("lens flare only radius"),
-        Pad(24),
+        Float("cosine falloff angle", VISIBLE=False),
+        Float("cosine cutoff angle", VISIBLE=False),
+        Float("unknown", VISIBLE=False),
+        Float("sine cutoff angle", VISIBLE=False),
+        Pad(8),
         ),
 
     #Color
@@ -91,5 +95,5 @@ ligh_def = TagDef("ligh",
     blam_header("ligh", 3),
     ligh_body,
 
-    ext=".light", endian=">", tag_cls=HekTag,
+    ext=".light", endian=">", tag_cls=LighTag,
     )

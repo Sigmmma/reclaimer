@@ -5,7 +5,7 @@ The source files where the information was taken from are here:
 https://github.com/LiquidLightning/infernal/blob/master/infernal/inf_bipd.h
 '''
 from math import sqrt
-from .objs.obje import ObjeTag
+from .objs.bipd import BipdTag
 from .obje import *
 from .unit import *
 
@@ -14,127 +14,121 @@ from .unit import *
 obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=0)
 
-contact_point = Struct("contact point",
+contact_point = Struct("contact_point",
     Pad(32),
-    ascii_str32('marker name'),
+    ascii_str32('marker_name'),
     SIZE=64
     )
 
-bipd_attrs = Struct("bipd attrs",
-    Float("moving turning speed",
+bipd_attrs = Struct("bipd_attrs",
+    Float("moving_turning_speed",
         SIDETIP="degrees/sec", UNIT_SCALE=180/pi),  # radians
     Bool32("flags",
-        "turns without aiming",
-        "uses player physics",
-        "physics pill centered at origin",
+        "turns_without_aiming",
+        "uses_player_physics",
+        "physics_pill_centered_at_origin",
         "spherical",
-        "passes through other bipeds",
-        "can climb any surface",
-        "immune to falling damage",
-        "rotate while airborne",
-        "uses limp body physics",
-        "has no dying airborne",
-        "random speed increase",
-        "uses old player physics",
+        "passes_through_other_bipeds",
+        "can_climb_any_surface",
+        "immune_to_falling_damage",
+        "rotate_while_airborne",
+        "uses_limp_body_physics",
+        "has_no_dying_airborne",
+        "random_speed_increase",
+        "uses_old_player_physics",
         ),
-    float_rad("stationary turning threshold"),  # radians
+    float_rad("stationary_turning_threshold"),  # radians
 
     Pad(16),
-    SEnum16('A in', *biped_inputs),
-    SEnum16('B in', *biped_inputs),
-    SEnum16('C in', *biped_inputs),
-    SEnum16('D in', *biped_inputs),
-    dependency('DONT USE', "jpt!"),
+    SEnum16('A_in', *biped_inputs),
+    SEnum16('B_in', *biped_inputs),
+    SEnum16('C_in', *biped_inputs),
+    SEnum16('D_in', *biped_inputs),
+    dependency('DONT_USE', "jpt!"),
 
-    ####################################################
-    #####                   IMPORTANT              #####
-    ##### Because of how halo handles some things, #####
-    ##### the below accelerations unit scales for  #####
-    ##### 60fps must be cut by 2 rather than 4     #####
-    ####################################################
     QStruct("flying",
-        float_rad("bank angle"),  # radians
-        float_sec("bank apply time", UNIT_SCALE=sec_unit_scale),  # seconds
-        float_sec("bank decay time", UNIT_SCALE=sec_unit_scale),  # seconds
-        Float("pitch ratio"),
-        float_wu_sec("max velocity",
+        float_rad("bank_angle"),  # radians
+        float_sec("bank_apply_time", UNIT_SCALE=sec_unit_scale),  # seconds
+        float_sec("bank_decay_time", UNIT_SCALE=sec_unit_scale),  # seconds
+        Float("pitch_ratio"),
+        float_wu_sec("max_velocity",
                      UNIT_SCALE=per_sec_unit_scale),  # world units/second
-        float_wu_sec("max sidestep velocity",
+        float_wu_sec("max_sidestep_velocity",
                      UNIT_SCALE=per_sec_unit_scale),  # world units/second
         float_wu_sec_sq("acceleration",
                         UNIT_SCALE=per_sec_unit_scale),  # world units/second^2
         float_wu_sec_sq("deceleration",
                         UNIT_SCALE=per_sec_unit_scale),  # world units/second^2
-        float_rad_sec("angular velocity maximum"),  # radians/second
-        float_rad_sec_sq("angular acceleration maximum"),  # radians/second^2
-        float_zero_to_one("crouch velocity modifier"),
+        float_rad_sec("angular_velocity_maximum"),  # radians/second
+        float_rad_sec_sq("angular_acceleration_maximum"),  # radians/second^2
+        float_zero_to_one("crouch_velocity_modifier"),
         ),
 
     Pad(8),
     Struct("movement",
-        float_rad("maximum slope angle"),  # radians
-        float_rad("downhill falloff angle"),  # radians
-        float_rad("downhill cutoff angle"),  # radians
-        Float("downhill velocity scale"),
-        float_rad("uphill falloff angle"),  # radians
-        float_rad("uphill cutoff angle"),  # radians
-        Float("uphill velocity scale"),
+        float_rad("maximum_slope_angle"),  # radians
+        float_rad("downhill_falloff_angle"),  # radians
+        float_rad("downhill_cutoff_angle"),  # radians
+        Float("downhill_velocity_scale"),
+        float_rad("uphill_falloff_angle"),  # radians
+        float_rad("uphill_cutoff_angle"),  # radians
+        Float("uphill_velocity_scale"),
 
         Pad(24),
         dependency('footsteps', "foot"),
         ),
 
     Pad(24),
-    QStruct("jumping and landing",
-        float_wu_sec("jump velocity", UNIT_SCALE=per_sec_unit_scale),
+    QStruct("jumping_and_landing",
+        float_wu_sec("jump_velocity", UNIT_SCALE=per_sec_unit_scale),
         Pad(28),
-        float_sec("maximum soft landing time", UNIT_SCALE=sec_unit_scale),
-        float_sec("maximum hard landing time", UNIT_SCALE=sec_unit_scale),
-        float_wu_sec("minimum soft landing velocity",
+        float_sec("maximum_soft_landing_time", UNIT_SCALE=sec_unit_scale),
+        float_sec("maximum_hard_landing_time", UNIT_SCALE=sec_unit_scale),
+        float_wu_sec("minimum_soft_landing_velocity",
                      UNIT_SCALE=per_sec_unit_scale),  # world units/second
-        float_wu_sec("minimum hard landing velocity",
+        float_wu_sec("minimum_hard_landing_velocity",
                      UNIT_SCALE=per_sec_unit_scale),  # world units/second
-        float_wu_sec("maximum hard landing velocity",
+        float_wu_sec("maximum_hard_landing_velocity",
                      UNIT_SCALE=per_sec_unit_scale),  # world units/second
-        float_wu_sec("death hard landing velocity",
+        float_wu_sec("death_hard_landing_velocity",
                      UNIT_SCALE=per_sec_unit_scale),  # world units/second
         ),
 
     Pad(20),
-    QStruct("camera, collision, and autoaim",
-        float_wu("standing camera height"),
-        float_wu("crouching camera height"),
-        float_sec("crouch transition time", UNIT_SCALE=sec_unit_scale),
+    QStruct("camera_collision_and_autoaim",
+        float_wu("standing_camera_height"),
+        float_wu("crouching_camera_height"),
+        float_sec("crouch_transition_time", UNIT_SCALE=sec_unit_scale),
 
         Pad(24),
-        float_wu("standing collision height"),
-        float_wu("crouching collision height"),
-        float_wu("collision radius"),
+        float_wu("standing_collision_height"),
+        float_wu("crouching_collision_height"),
+        float_wu("collision_radius"),
 
         Pad(40),
-        float_wu("autoaim width"),
+        float_wu("autoaim_width"),
         ),
 
     Pad(108),
     QStruct("physics",
         # the default values below that aren't commented out are taken
         # from the cyborg.biped tag after saving it with guerilla.
-        FlFloat("cosine stationary turning threshold",  DEFAULT=0.17364822328090668),#DEFAULT=1.0),
-        FlFloat("crouch camera velocity", DEFAULT=1/6),#DEFAULT=1.0),
-        FlFloat("cosine maximum slope angle", DEFAULT=sqrt(2)/2,#DEFAULT=1.0,
-                TOOLTIP=("negative is walking on walls.\n > 0.707107 is " +
-                         "floating with contact points off the ground")),
-        FlFloat("neg sine downhill falloff angle", DEFAULT=-0.3420201241970062),#DEFAULT=-0.0),
-        FlFloat("neg sine downhill cutoff angle", TOOLTIP="autoaim related?", DEFAULT=-sqrt(2)/2),#DEFAULT=-0.0),
-        FlFloat("sine uphill falloff angle", DEFAULT=0.3420201241970062),#DEFAULT=0.0),
-        FlFloat("sine uphill cutoff angle", DEFAULT=sqrt(2)/2, #DEFAULT=0.0,
-                TOOLTIP="does the same thing as the fp accel modifier?"),
-        FlSInt16("root node index", DEFAULT=-1),
-        FlSInt16("head node index", DEFAULT=-1),
+        FlFloat("cosine_stationary_turning_threshold"),
+        FlFloat("crouch_camera_velocity"),
+        FlFloat("cosine_maximum_slope_angle",
+            TOOLTIP=("negative is walking on walls.\n > 0.707107 is " +
+                     "floating with contact points off the ground")),
+        FlFloat("neg_sine_downhill_falloff_angle"),
+        FlFloat("neg_sine_downhill_cutoff_angle"),
+        FlFloat("sine_uphill_falloff_angle"),
+        FlFloat("sine_uphill_cutoff_angle",
+            TOOLTIP="does the same thing as the fp accel modifier?"),
+        FlSInt16("root_node_index", DEFAULT=-1),
+        FlSInt16("head_node_index", DEFAULT=-1),
         VISIBLE=False, SIZE=32
         ),
 
-    reflexive("contact points", contact_point, 2,
+    reflexive("contact_points", contact_point, 2,
         DYN_NAME_PATH='.marker_name'),
     
     SIZE=516
@@ -155,5 +149,5 @@ bipd_def = TagDef("bipd",
     blam_header('bipd', 3),
     bipd_body,
 
-    ext=".biped", endian=">", tag_cls=ObjeTag
+    ext=".biped", endian=">", tag_cls=BipdTag
     )

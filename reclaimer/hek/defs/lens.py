@@ -1,5 +1,5 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.lens import LensTag
 from supyr_struct.defs.tag_def import TagDef
 
 occlusion_comment = """Occlusion factor affects overall lens flare brightness and can also affect scale.
@@ -57,8 +57,8 @@ reflection = Struct("reflection",
 lens_body = Struct("tagdata",
     float_rad("falloff angle"),  # radians
     float_rad("cutoff angle"),  # radians
-    FlFloat("unknown0", DEFAULT=1.0, VISIBLE=False),
-    FlFloat("unknown1", DEFAULT=1.0, VISIBLE=False),
+    FlFloat("cosine_falloff_angle", VISIBLE=False),
+    FlFloat("cosine_cutoff_angle", VISIBLE=False),
     Struct("occlusion",
         float_wu("radius"),
         SEnum16("offset direction",
@@ -69,7 +69,7 @@ lens_body = Struct("tagdata",
         Pad(2),
         float_wu("near fade distance"),
         float_wu("far fade distance"),
-		COMMENT=occlusion_comment
+	    COMMENT=occlusion_comment
         ),
 
     Struct("bitmaps",
@@ -114,5 +114,5 @@ lens_def = TagDef("lens",
     blam_header("lens", 2),
     lens_body,
 
-    ext=".lens_flare", endian=">", tag_cls=HekTag,
+    ext=".lens_flare", endian=">", tag_cls=LensTag,
     )
