@@ -1,5 +1,5 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.obje import ObjeTag
 from supyr_struct.defs.tag_def import TagDef
 
 def get():
@@ -90,8 +90,8 @@ obje_attrs = Struct('obje attrs',
         'transparent self-occlusion',
         'brighter than it should be',
         'not a pathfinding obstacle',
-        ('xbox_unknown_bit_8', 1<<8),
-        ('xbox_unknown_bit_11', 1<<11),
+        {NAME: 'xbox_unknown_bit_8', VALUE: 1<<8, VISIBLE: False},
+        {NAME: 'xbox_unknown_bit_11', VALUE: 1<<11, VISIBLE: False},
         ),
     float_wu('bounding radius'),
     QStruct('bounding offset', INCLUDE=xyz_float),

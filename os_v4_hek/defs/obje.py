@@ -7,8 +7,8 @@ obje_attrs[1] = Bool16('flags',
     'brighter than it should be',
     'not a pathfinding obstacle',
     'cast shadow by default',
-    ('xbox_unknown_bit_8', 1<<8),
-    ('xbox_unknown_bit_11', 1<<11),
+    {NAME: 'xbox_unknown_bit_8', VALUE: 1<<8, VISIBLE: False},
+    {NAME: 'xbox_unknown_bit_11', VALUE: 1<<11, VISIBLE: False},
     )
 
 obje_body = Struct('tagdata',
