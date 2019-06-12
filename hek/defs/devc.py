@@ -3,15 +3,15 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 devc_body = Struct("tagdata",
-    SEnum16("device type",
-        "mouse and keyboard",
-        "joysticks/joypads/etc",
-        "full profile definition",
+    SEnum16("device_type",
+        "mouse_and_keyboard",
+        "joysticks_joypads_etc",
+        "full_profile_definition",
         ),
     Bool16("flags",
         "unused",
         ),
-    rawdata_ref("device id", max_size=16),
+    rawdata_ref("device_id", max_size=16),
     rawdata_ref("profile", max_size=41984),
     SIZE=44,
     )

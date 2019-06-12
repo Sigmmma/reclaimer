@@ -3,6 +3,8 @@ Names for the "physics" struct in the biped tag are courtesy of Sparky.
 The source files where the information was taken from are here:
 
 https://github.com/LiquidLightning/infernal/blob/master/infernal/inf_bipd.h
+
+EDIT: updates physics struct with more accurate names determined by Kavawuvi
 '''
 from math import sqrt
 from .objs.bipd import BipdTag

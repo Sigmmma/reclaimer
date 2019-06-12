@@ -11,64 +11,64 @@ the fog plane - so it should only be used when the fog plane is close to the gro
 fog__body = Struct("tagdata",
     #fog flags
     Bool32("flags",
-        "is water",
-        "atmospheric dominant",
-        "fog screen only",
+        "is_water",
+        "atmospheric_dominant",
+        "fog_screen_only",
         COMMENT=fog_comment
         ),
 
     Pad(84),
     #Density
-    float_zero_to_one("maximum density"),
+    float_zero_to_one("maximum_density"),
     Pad(4),
-    float_wu("opaque distance"),
+    float_wu("opaque_distance"),
     Pad(4),
-    float_wu("opaque depth"),
+    float_wu("opaque_depth"),
     Pad(8),
-    float_wu("distance to water plane"),
+    float_wu("distance_to_water_plane"),
 
     #Color
-    QStruct("fog color", INCLUDE=rgb_float),
+    QStruct("fog_color", INCLUDE=rgb_float),
 
     #Screen Layers
-    Struct("screen layers",
+    Struct("screen_layers",
         Bool16("flags",
-            "no environment multipass",
-            "no model multipass",
-            "no texture-based falloff",
+            "no_environment_multipass",
+            "no_model_multipass",
+            "no_texture_based_falloff",
             ),
-        UInt16("layer count", SIDETIP="[0,4]", MIN=0, MAX=4),
+        UInt16("layer_count", SIDETIP="[0,4]", MIN=0, MAX=4),
 
-        from_to_wu("distance gradient"),
-        from_to_zero_to_one("density gradient"),
+        from_to_wu("distance_gradient"),
+        from_to_zero_to_one("density_gradient"),
 
-        float_wu("start distance from fog plane"),
+        float_wu("start_distance_from_fog_plane"),
         Pad(4),
 
         #QStruct("color", INCLUDE=xrgb_byte),
         UInt32("color", INCLUDE=xrgb_uint32),
-        float_zero_to_one("rotation multiplier"),
-        float_zero_to_one("strafing multiplier"),
-        float_zero_to_one("zoom multiplier"),
+        float_zero_to_one("rotation_multiplier"),
+        float_zero_to_one("strafing_multiplier"),
+        float_zero_to_one("zoom_multiplier"),
         Pad(8),
-        Float("map scale"),
-        dependency("fog map", "bitm")
+        Float("map_scale"),
+        dependency("fog_map", "bitm")
         ),
 
     #Screen Layer Animation
-    Struct("screen layer animation",
-        float_sec("animation period"),
+    Struct("screen_layer_animation",
+        float_sec("animation_period"),
         Pad(4),
-        from_to_wu_sec("wind velocity"),
-        from_to_sec("wind period"),
-        float_zero_to_one("wind acceleration weight"),
-        float_zero_to_one("wind perpendicular weight")
+        from_to_wu_sec("wind_velocity"),
+        from_to_sec("wind_period"),
+        float_zero_to_one("wind_acceleration_weight"),
+        float_zero_to_one("wind_perpendicular_weight")
         ),
 
     Pad(8),
     #Sound
-    dependency("background sound", "lsnd"),
-    dependency("sound environment", "snde"),
+    dependency("background_sound", "lsnd"),
+    dependency("sound_environment", "snde"),
     SIZE=396,
     )
 

@@ -66,130 +66,130 @@ BUMPED CUBE MAP: Makes it so that the reflection and fresnel is affected by the 
 
 FLAT CUBE MAP: The reflection is not affected by the cubemap, the fresnel still is though."""
 
-environment_shader = Struct("environment shader",
+environment_shader = Struct("environment_shader",
     Bool16("flags",
-        "alpha tested",
-        "bump-map is specular mask",
-        "true atmospheric fog",
+        "alpha_tested",
+        "bump_map_is_specular_mask",
+        "true_atmospheric_fog",
         COMMENT=environment_shader_comment
         ),
     SEnum16("type",
         "normal",
         "blended",
-        "blended base specular",
+        "blended_base_specular",
         COMMENT=environment_shader_type_comment
         ),
     )
 
 diffuse = Struct("diffuse",
-    Bool16("diffuse flags",
-        "rescale detail maps",
-        "rescale bump maps",
+    Bool16("diffuse_flags",
+        "rescale_detail_maps",
+        "rescale_bump_maps",
         ),
     Pad(26),
-    dependency("base map", "bitm"),
+    dependency("base_map", "bitm"),
 
     Pad(24),
-    SEnum16("detail map function", *detail_map_functions),
+    SEnum16("detail_map_function", *detail_map_functions),
     Pad(2),
 
-    Float("primary detail map scale"),
-    dependency("primary detail map", "bitm"),
-    Float("secondary detail map scale"),
-    dependency("secondary detail map", "bitm"),
+    Float("primary_detail_map_scale"),
+    dependency("primary_detail_map", "bitm"),
+    Float("secondary_detail_map_scale"),
+    dependency("secondary_detail_map", "bitm"),
 
     Pad(24),
-    SEnum16("micro detail map function", *detail_map_functions),
+    SEnum16("micro_detail_map_function", *detail_map_functions),
 
     Pad(2),
-    Float("micro detail map scale"),
-    dependency("micro detail map", "bitm"),
-    QStruct("material color", INCLUDE=rgb_float),
+    Float("micro_detail_map_scale"),
+    dependency("micro_detail_map", "bitm"),
+    QStruct("material_color", INCLUDE=rgb_float),
     )
 
-bump_properties = Struct("bump properties",
-    Float("map scale"),
+bump_properties = Struct("bump_properties",
+    Float("map_scale"),
     dependency("map", "bitm"),
-    FlFloat("map scale x"),
-    FlFloat("map scale y"),
+    FlFloat("map_scale_x", VISIBLE=False),
+    FlFloat("map_scale_y", VISIBLE=False),
     COMMENT=bump_properties_comment
     )
 
-texture_scrolling = Struct("texture scrolling",
-    anim_func_per_sca_macro("u-animation"),
-    anim_func_per_sca_macro("v-animation"),
+texture_scrolling = Struct("texture_scrolling",
+    anim_func_per_sca_macro("u_animation"),
+    anim_func_per_sca_macro("v_animation"),
     COMMENT=tex_scroll_anim_comment
     )
 
-self_illumination = Struct("self illumination",
+self_illumination = Struct("self_illumination",
     Bool16("flags",
         "unfiltered",
         ),
     Pad(2),
     Pad(24),
 
-    QStruct("primary on-color",  INCLUDE=rgb_float),
-    QStruct("primary off-color", INCLUDE=rgb_float),
-    anim_func_per_pha_macro("primary animation"),
+    QStruct("primary_on_color",  INCLUDE=rgb_float),
+    QStruct("primary_off_color", INCLUDE=rgb_float),
+    anim_func_per_pha_macro("primary_animation"),
 
     Pad(24),
-    QStruct("secondary on-color",  INCLUDE=rgb_float),
-    QStruct("secondary off-color", INCLUDE=rgb_float),
-    anim_func_per_pha_macro("secondary animation"),
+    QStruct("secondary_on_color",  INCLUDE=rgb_float),
+    QStruct("secondary_off_color", INCLUDE=rgb_float),
+    anim_func_per_pha_macro("secondary_animation"),
 
     Pad(24),
-    QStruct("plasma on-color",  INCLUDE=rgb_float),
-    QStruct("plasma off-color", INCLUDE=rgb_float),
-    anim_func_per_pha_macro("plasma animation"),
+    QStruct("plasma_on_color",  INCLUDE=rgb_float),
+    QStruct("plasma_off_color", INCLUDE=rgb_float),
+    anim_func_per_pha_macro("plasma_animation"),
 
     Pad(24),
-    Float("map scale"),
+    Float("map_scale"),
     dependency("map", "bitm"),
     COMMENT=self_illum_comment
     )
 
 specular = Struct("specular",
-    Bool16("specular flags",
+    Bool16("specular_flags",
         "overbright",
-        "extra-shiny",
-        "lightmap is specular"
+        "extra_shiny",
+        "lightmap_is_specular"
         ),
     Pad(18),
     float_zero_to_one("brightness"),  # [0,1]
 
     Pad(20),
-    QStruct("perpendicular tint color", INCLUDE=rgb_float),
-    QStruct("parallel tint color",      INCLUDE=rgb_float),
+    QStruct("perpendicular_tint_color", INCLUDE=rgb_float),
+    QStruct("parallel_tint_color",      INCLUDE=rgb_float),
     COMMENT=specular_properties_comment
     )
 
 reflection = Struct("reflection",
-    Bool16("reflection flags",
-        "dynamic mirror",
+    Bool16("reflection_flags",
+        "dynamic_mirror",
          ),
-    SEnum16("reflection type",
-        "bumped cubemap",
-        "flat cubemap",
-        "bumped radiosity",
+    SEnum16("reflection_type",
+        "bumped_cubemap",
+        "flat_cubemap",
+        "bumped_radiosity",
         ),
 
-    float_zero_to_one("lightmap brightness scale"),  # [0,1]
+    float_zero_to_one("lightmap_brightness_scale"),  # [0,1]
     Pad(28),
-    float_zero_to_one("perpendicular brightness"),  # [0,1]
-    float_zero_to_one("parallel brightness"),  # [0,1]
+    float_zero_to_one("perpendicular_brightness"),  # [0,1]
+    float_zero_to_one("parallel_brightness"),  # [0,1]
 
     Pad(40),
-    dependency("cube map", "bitm"),
+    dependency("cube_map", "bitm"),
     COMMENT=reflection_properties_comment
     )
 
-senv_attrs = Struct("senv attrs",
+senv_attrs = Struct("senv_attrs",
     #Environment Shader Properties
     environment_shader,
 
     #Lens Flare
-    float_wu("lens flare spacing"),  # world units
-    dependency("lens flare", "lens"),
+    float_wu("lens_flare_spacing"),  # world units
+    dependency("lens_flare", "lens"),
 
     # this padding is the reflexive for the OS shader environment extension
     Pad(12),

@@ -18,5 +18,5 @@ weap_def = TagDef("weap",
     blam_header('weap', 2),
     weap_body,
 
-    ext=".weapon", endian=">", tag_cls=ObjeTag
+    ext=".weapon", endian=">", tag_cls=WeapTag
     )

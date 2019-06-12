@@ -3,7 +3,7 @@ from ..common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 shdr_attrs = dict(shdr_attrs)
-shdr_attrs[6] = SEnum16("material type", *materials_list)
+shdr_attrs[6] = SEnum16("material_type", *materials_list)
 
 shader_body = Struct("tagdata",
     shdr_attrs,
