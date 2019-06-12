@@ -2,23 +2,23 @@ from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
-devi_attrs = Struct("devi attrs",
+devi_attrs = Struct("devi_attrs",
     Bool32("flags",
-        "position loops",
-        "position not interpolated",
+        "position_loops",
+        "position_not_interpolated",
         ),
 
-    float_sec("power transition time"),
-    float_sec("power acceleration time"),
-    float_sec("position transition time"),
-    float_sec("position acceleration time"),
-    float_sec("depowered position transition time"),
-    float_sec("depowered position acceleration time"),
+    float_sec("power_transition_time"),
+    float_sec("power_acceleration_time"),
+    float_sec("position_transition_time"),
+    float_sec("position_acceleration_time"),
+    float_sec("depowered_position_transition_time"),
+    float_sec("depowered_position_acceleration_time"),
 
-    SEnum16("A in", *device_functions),
-    SEnum16("B in", *device_functions),
-    SEnum16("C in", *device_functions),
-    SEnum16("D in", *device_functions),
+    SEnum16("A_in", *device_functions),
+    SEnum16("B_in", *device_functions),
+    SEnum16("C_in", *device_functions),
+    SEnum16("D_in", *device_functions),
 
     dependency("open", valid_event_effects),
     dependency("close", valid_event_effects),
@@ -27,10 +27,10 @@ devi_attrs = Struct("devi attrs",
     dependency("depowered", valid_event_effects),
     dependency("repowered", valid_event_effects),
 
-    float_sec("delay time"),
+    float_sec("delay_time"),
     Pad(8),
-    dependency("delay effect", valid_event_effects),
-    float_wu("automatic activation radius"),
+    dependency("delay_effect", valid_event_effects),
+    float_wu("automatic_activation_radius"),
 
     SIZE=276,
     )

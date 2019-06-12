@@ -2,13 +2,13 @@ from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
-ui_widget_def = Struct("ui widget definition",
-    dependency("ui widget definition", 'DeLa'),
+ui_widget_def = Struct("ui_widget_definition",
+    dependency("ui_widget_definition", 'DeLa'),
     SIZE=16
     )
 
 soul_body = Struct("tagdata",
-    reflexive("ui widget definitions", ui_widget_def, 32,
+    reflexive("ui_widget_definitions", ui_widget_def, 32,
         DYN_NAME_PATH='.ui_widget_definition.filepath'),
     SIZE=12,
     )

@@ -21,45 +21,45 @@ to stretch out and grow thinner as it is fired from a weapon."""
 
 frame = Struct("frame",
     Pad(16),
-    float_wu("offset from marker"),
-    Float("offset exponent"),
+    float_wu("offset_from_marker"),
+    Float("offset_exponent"),
     float_wu("length"),
 
     Pad(32),
-    float_wu("radius hither"),
-    float_wu("radius yon"),
-    Float("radius exponent"),
+    float_wu("radius_hither"),
+    float_wu("radius_yon"),
+    Float("radius_exponent"),
 
     Pad(32),
-    QStruct("tint color hither", INCLUDE=argb_float),
-    QStruct("tint color yon", INCLUDE=argb_float),
-    Float("tint color exponent"),
-    Float("brightness exponent"),
+    QStruct("tint_color_hither", INCLUDE=argb_float),
+    QStruct("tint_color_yon", INCLUDE=argb_float),
+    Float("tint_color_exponent"),
+    Float("brightness_exponent"),
     SIZE=176
     )
 
 mgs2_body = Struct("tagdata",
     #Light volume
-    ascii_str32("attachment marker", COMMENT=light_volume_comment),
+    ascii_str32("attachment_marker", COMMENT=light_volume_comment),
     Bool32("flags", *blend_flags),
     Pad(16),
 
     #Brightness scale
-    float_wu("near fade distance", COMMENT=brightness_scale_comment),
-    float_wu("far fade distance"),
-    float_zero_to_one("perpendicular brightness scale"),
-    float_zero_to_one("parallel brightness scale"),
-    SEnum16("brightness scale source", *function_outputs),
+    float_wu("near_fade_distance", COMMENT=brightness_scale_comment),
+    float_wu("far_fade_distance"),
+    float_zero_to_one("perpendicular_brightness_scale"),
+    float_zero_to_one("parallel_brightness_scale"),
+    SEnum16("brightness_scale_source", *function_outputs),
     Pad(22),
 
     #Bitmaps
     dependency("map", "bitm", COMMENT=bitmaps_comment),
-    SInt16("map sequence index"),
-    SInt16("map count"),
+    SInt16("map_sequence_index"),
+    SInt16("map_count"),
     Pad(72),
 
     #Frame animation
-    SEnum16("frame animation source", *function_outputs, COMMENT=frame_animation_comment),
+    SEnum16("frame_animation_source", *function_outputs, COMMENT=frame_animation_comment),
     Pad(102),
 
     reflexive("frames", frame, 2),

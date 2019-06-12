@@ -19,27 +19,27 @@ material_type_comment = """MATERIAL TYPE
 The material type is used to determine what material effects should be used for impacts on 
 BSP geometry that uses this shader."""
 
-shdr_attrs = Struct("shdr attrs",
-    Bool16("radiosity flags",
+shdr_attrs = Struct("shdr_attrs",
+    Bool16("radiosity_flags",
         { NAME: "simple_parameterization", GUI_NAME: "simple parameterization(lightmap fix)" },
-        "ignore normals",
-        "transparent lit",
+        "ignore_normals",
+        "transparent_lit",
         COMMENT=radiosity_comment
         ),
-    SEnum16("radiosity detail level" ,
+    SEnum16("radiosity_detail_level" ,
         "high",
         "medium",
         "low",
         "turd",
         ),
-    Float("radiosity light power", COMMENT=lighting_comment),
-    QStruct("radiosity light color", INCLUDE=rgb_float),
-    QStruct("radiosity tint color",  INCLUDE=rgb_float),
+    Float("radiosity_light_power", COMMENT=lighting_comment),
+    QStruct("radiosity_light_color", INCLUDE=rgb_float),
+    QStruct("radiosity_tint_color",  INCLUDE=rgb_float),
 
     Pad(2),
-    SEnum16("material type", *materials_list, COMMENT=material_type_comment),
+    SEnum16("material_type", *materials_list, COMMENT=material_type_comment),
     # THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS.
-    FlSEnum16("shader type",
+    FlSEnum16("shader_type",
         *((shader_types[i], i - 1) for i in
           range(len(shader_types))),
         VISIBLE=False, DEFAULT=-1

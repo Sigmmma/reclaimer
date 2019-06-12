@@ -4,9 +4,9 @@ from supyr_struct.defs.tag_def import TagDef
 
 wind_body = Struct("tagdata",
     from_to_wu("velocity"),
-    yp_float_rad("variation area"),
-    Float("local variation weight"),
-    Float("local variation rate"),
+    yp_float_rad("variation_area"),
+    Float("local_variation_weight"),
+    Float("local_variation_rate"),
     Float("damping"),
     SIZE=64,
     )

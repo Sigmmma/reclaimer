@@ -496,6 +496,13 @@ def dot_product(v0, v1):
     return sum(a*b for a, b in zip(v0, v1))
 
 
+def euler_2d_to_vector_3d(y, p):
+    '''Angles are expected to be in radians.'''
+    return (cos(y) * cos(p),
+            sin(y) * cos(p),
+            sin(p))
+
+
 def euler_to_quaternion(y, p, r):
     '''Angles are expected to be in radians.'''
     c0, c1, c2 = cos(y / 2), cos(p / 2), cos(r / 2)

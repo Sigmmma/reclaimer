@@ -15,18 +15,18 @@ mach_attrs = Struct("mach attrs",
         'gear',
         ),
     Bool16('flags',
-        'pathfinding obstable',
-        'except when open',
+        'pathfinding_obstable',
+        'except_when_open',
         'elevator',
         ),
-    float_sec('door open time'),  # seconds
+    float_sec('door_open_time'),  # seconds
 
     Pad(80),
-    SEnum16('triggers when',
-        'pause until crushed',
-        'reverse directions'
+    SEnum16('triggers_when',
+        'pause_until_crushed',
+        'reverse_directions'
         ),
-    SInt16('elevator node'),
+    SInt16('elevator_node'),
     Pad(52),
     UInt32("door_open_time_ticks")
     )

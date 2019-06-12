@@ -7,111 +7,111 @@ modifier = Struct("modifier",
     )
 
 body = Struct("body",
-    Float("maximum body vitality"),
-    Float("body system shock"),
+    Float("maximum_body_vitality"),
+    Float("body_system_shock"),
 
     Pad(52),
-    float_zero_to_one("friendly damage resistance"),
+    float_zero_to_one("friendly_damage_resistance"),
 
     Pad(40),
-    dependency("localized damage effect", "effe"),
+    dependency("localized_damage_effect", "effe"),
 
-    float_zero_to_one("area damage effect threshold"),
-    dependency("area damage effect", "effe"),
+    float_zero_to_one("area_damage_effect_threshold"),
+    dependency("area_damage_effect", "effe"),
 
-    Float("body damaged threshold"),
-    dependency("body damaged effect", "effe"),
-    dependency("body depleted effect", "effe"),
-    Float("body destroyed threshold"),
-    dependency("body destroyed effect", "effe"),
+    Float("body_damaged_threshold"),
+    dependency("body_damaged_effect", "effe"),
+    dependency("body_depleted_effect", "effe"),
+    Float("body_destroyed_threshold"),
+    dependency("body_destroyed_effect", "effe"),
     )
 
 shield = Struct("shield",
-    Float("maximum shield vitality"),
+    Float("maximum_shield_vitality"),
 
     Pad(2),
-    SEnum16("shield material type", *materials_list),
+    SEnum16("shield_material_type", *materials_list),
 
     Pad(24),
-    SEnum16("shield failure function", *fade_functions),
+    SEnum16("shield_failure_function", *fade_functions),
 
     Pad(2),
-    Float("shield failure threshold"),
-    Float("shield failing leak fraction"),
+    Float("shield_failure_threshold"),
+    Float("shield_failing_leak_fraction"),
 
     Pad(16),
-    Float("minimum stun damage"),
-    float_sec("stun time"),
-    float_sec("recharge time"),
+    Float("minimum_stun_damage"),
+    float_sec("stun_time"),
+    float_sec("recharge_time"),
 
     Pad(112),
-    Float("shield damaged threshold"),
-    dependency("shield damaged effect", "effe"),
-    dependency("shield depleted effect", "effe"),
-    dependency("shield recharging effect", "effe"),
+    Float("shield_damaged_threshold"),
+    dependency("shield_damaged_effect", "effe"),
+    dependency("shield_depleted_effect", "effe"),
+    dependency("shield_recharging_effect", "effe"),
     Pad(8),
-    Float("shield recharge rate", VISIBLE=False),
+    Float("shield_recharge_rate", VISIBLE=False),
     )
 
-bsp3d_node = QStruct("bsp3d node",
+bsp3d_node = QStruct("bsp3d_node",
     SInt32("plane"),
-    SInt32("back child"),
-    SInt32("front child"),
+    SInt32("back_child"),
+    SInt32("front_child"),
     SIZE=12
     )
 
 plane = QStruct("plane",
-    # i, j, and k form a unit vector where d(presumably)
-    # specifies the location of a point a "distance" along it
+    # i, j, and k form a unit vector where d specifies
+    # the location of a point a "distance" along it
     Float("i"), Float("j"), Float("k"), Float("d"),
     SIZE=16, ORIENT='h'
     )
 
 leaf = Struct("leaf",
     Bool16("flags",
-        "contains double sided surfaces"
+        "contains_double_sided_surfaces"
         ),
-    SInt16("bsp2d reference count"),
-    SInt32("first bsp2d reference"),
+    SInt16("bsp2d_reference_count"),
+    SInt32("first_bsp2d_reference"),
     SIZE=8
     )
 
-bsp2d_reference = QStruct("bsp2d reference",
+bsp2d_reference = QStruct("bsp2d_reference",
     SInt32("plane"),
-    SInt32("bsp2d node"),
+    SInt32("bsp2d_node"),
     SIZE=8
     )
 
-bsp2d_node = QStruct("bsp2d node",
-    Float("plane i"),
-    Float("plane j"),
-    Float("plane d"),
-    SInt32("left child"),
-    SInt32("right child"),
+bsp2d_node = QStruct("bsp2d_node",
+    Float("plane_i"),
+    Float("plane_j"),
+    Float("plane_d"),
+    SInt32("left_child"),
+    SInt32("right_child"),
     SIZE=20
     )
 
 surface = Struct("surface",
     SInt32("plane"),
-    SInt32("first edge"),
+    SInt32("first_edge"),
     Bool8("flags",
-        "two sided",
+        "two_sided",
         "invisible",
         "climbable",
         "breakable",
         ),
-    SInt8("breakable surface"),
+    SInt8("breakable_surface"),
     SInt16("material"),
     SIZE=12
     )
 
 edge = QStruct("edge",
-    SInt32("start vertex"),
-    SInt32("end vertex"),
-    SInt32("forward edge"),
-    SInt32("reverse edge"),
-    SInt32("left surface"),
-    SInt32("right surface"),
+    SInt32("start_vertex"),
+    SInt32("end_vertex"),
+    SInt32("forward_edge"),
+    SInt32("reverse_edge"),
+    SInt32("left_surface"),
+    SInt32("right_surface"),
     SIZE=24
     )
 
@@ -119,16 +119,16 @@ vertex = QStruct("vertex",
     Float("x"),
     Float("y"),
     Float("z"),
-    SInt32("first edge"),
+    SInt32("first_edge"),
     SIZE=16
     )
 
-permutation_bsp = Struct("permutation bsp",
-    reflexive("bsp3d nodes", bsp3d_node, 131072),
+permutation_bsp = Struct("permutation_bsp",
+    reflexive("bsp3d_nodes", bsp3d_node, 131072),
     reflexive("planes", plane, 65535),
     reflexive("leaves", leaf, 65535),
-    reflexive("bsp2d references", bsp2d_reference, 131072),
-    reflexive("bsp2d nodes", bsp2d_node, 65535),
+    reflexive("bsp2d_references", bsp2d_reference, 131072),
+    reflexive("bsp2d_nodes", bsp2d_node, 65535),
     reflexive("surfaces", surface, 131072),
     reflexive("edges", edge, 262144),
     reflexive("vertices", vertex, 131072),
@@ -139,11 +139,11 @@ node = Struct("node",
     ascii_str32("name"),
     dyn_senum16("region",
         DYN_NAME_PATH=".....regions.regions_array[DYN_I].name"),
-    dyn_senum16("parent node",
+    dyn_senum16("parent_node",
         DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16("next sibling node",
+    dyn_senum16("next_sibling_node",
         DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16("first child node",
+    dyn_senum16("first_child_node",
         DYN_NAME_PATH="..[DYN_I].name"),
 
     Pad(8),
@@ -153,7 +153,7 @@ node = Struct("node",
     SIZE=64
     )
 
-pathfinding_sphere = Struct("pathfinding sphere",
+pathfinding_sphere = Struct("pathfinding_sphere",
     dyn_senum16("node",
         DYN_NAME_PATH=".....nodes.nodes_array[DYN_I].name"),
 
@@ -171,21 +171,21 @@ permutation = Struct("permutation",
 region = Struct("region",
     ascii_str32("name"),
     Bool32("flags",
-        "lives until object dies",
-        "forces object to die",
-        "dies when object dies",
-        "dies when object is damaged",
-        "disappears when shield is off",
-        "inhibits melee attack",
-        "inhibits walking",
-        "forces drop weapon",
-        "causes head-maimed scream",
+        "lives_until_object_dies",
+        "forces_object_to_die",
+        "dies_when_object_dies",
+        "dies_when_object_is_damaged",
+        "disappears_when_shield_is_off",
+        "inhibits_melee_attack",
+        "inhibits_walking",
+        "forces_drop_weapon",
+        "causes_head_maimed_scream",
         ),
     Pad(4),
-    Float("damage threshold"),
+    Float("damage_threshold"),
 
     Pad(12),
-    dependency("destroyed effect", "effe"),
+    dependency("destroyed_effect", "effe"),
     reflexive("permutations", permutation, 32, DYN_NAME_PATH='.name'),
     SIZE=84
     )
@@ -195,27 +195,27 @@ material = Struct("material",
     Bool32("flags",
         "head"
         ),
-    SEnum16("material type", *materials_list),
+    SEnum16("material_type", *materials_list),
     Pad(2),
-    Float("shield leak percentage"),
-    Float("shield damage multiplier"),
+    Float("shield_leak_percentage"),
+    Float("shield_damage_multiplier"),
 
     Pad(12),
-    Float("body damage multiplier"),
+    Float("body_damage_multiplier"),
     SIZE=72
     )
 
 coll_body = Struct("tagdata",
     Bool32("flags",
-        "takes shield damage for children",
-        "takes body damage for children",
-        "always shields friendly damage",
-        "passes area damage to children",
-        "parent never takes body damage for us",
-        "only damaged by explosives",
-        "only damaged while occupied",
+        "takes_shield_damage_for_children",
+        "takes_body_damage_for_children",
+        "always_shields_friendly_damage",
+        "passes_area_damage_to_children",
+        "parent_never_takes_body_damage_for_us",
+        "only_damaged_by_explosives",
+        "only_damaged_while_occupied",
         ),
-    dyn_senum16("indirect damage material",
+    dyn_senum16("indirect_damage_material",
         DYN_NAME_PATH=".materials.materials_array[DYN_I].name"),
     Pad(2),
 
@@ -228,25 +228,25 @@ coll_body = Struct("tagdata",
     reflexive("modifiers", modifier, 0, VISIBLE=False),
 
     Pad(16),
-    Struct("pathfinding box",
+    Struct("pathfinding_box",
         QStruct("x", INCLUDE=from_to),
         QStruct("y", INCLUDE=from_to),
         QStruct("z", INCLUDE=from_to),
         ),
 
-    reflexive("pathfinding spheres", pathfinding_sphere, 32),
+    reflexive("pathfinding_spheres", pathfinding_sphere, 32),
     reflexive("nodes", node, 64, DYN_NAME_PATH='.name'),
 
     SIZE=664,
     )
 
 
-fast_permutation_bsp = Struct("permutation bsp",
-    raw_reflexive("bsp3d nodes", bsp3d_node, 131072),
+fast_permutation_bsp = Struct("permutation_bsp",
+    raw_reflexive("bsp3d_nodes", bsp3d_node, 131072),
     raw_reflexive("planes", plane, 65535),
     raw_reflexive("leaves", leaf, 65535),
-    raw_reflexive("bsp2d references", bsp2d_reference, 131072),
-    raw_reflexive("bsp2d nodes", bsp2d_node, 65535),
+    raw_reflexive("bsp2d_references", bsp2d_reference, 131072),
+    raw_reflexive("bsp2d_nodes", bsp2d_node, 65535),
     raw_reflexive("surfaces", surface, 131072),
     raw_reflexive("edges", edge, 262144),
     raw_reflexive("vertices", vertex, 131072),
@@ -257,11 +257,11 @@ fast_node = Struct("node",
     ascii_str32("name"),
     dyn_senum16("region",
         DYN_NAME_PATH=".....regions.regions_array[DYN_I].name"),
-    dyn_senum16("parent node",
+    dyn_senum16("parent_node",
         DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16("next sibling node",
+    dyn_senum16("next_sibling_node",
         DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16("first child node",
+    dyn_senum16("first_child_node",
         DYN_NAME_PATH="..[DYN_I].name"),
 
     Pad(8),

@@ -2,18 +2,18 @@ from ...hek.defs.soso import *
 from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 
-bump_properties = Struct("bump properties",
-    Float("bump scale"),
-    dependency_stubbs("bump map", "bitm"),
+bump_properties = Struct("bump_properties",
+    Float("bump_scale"),
+    dependency_stubbs("bump_map", "bitm"),
     )
 
-soso_attrs = Struct("soso attrs",
+soso_attrs = Struct("soso_attrs",
     #Model Shader Properties
     model_shader,
         
     Pad(16),
     #Color-Change
-    SEnum16("color change source", *function_names),
+    SEnum16("color_change_source", *function_names),
         
     Pad(30),
     #Self-Illumination

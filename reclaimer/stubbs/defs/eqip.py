@@ -8,7 +8,7 @@ obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=3)
 
 eqip_attrs = dict(eqip_attrs)
-eqip_attrs[1] = SEnum16('grenade type', *grenade_types)
+eqip_attrs[1] = SEnum16('grenade_type', *grenade_types)
 
 eqip_body = Struct("tagdata",
     obje_attrs,

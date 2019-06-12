@@ -5,7 +5,7 @@ def get():
 
 # replace the model animations dependency with an open sauce one
 obje_attrs = dict(obje_attrs)
-obje_attrs[8] = dependency('animation graph', valid_model_animations_yelo)
+obje_attrs[8] = dependency('animation_graph', valid_model_animations_yelo)
 
 obje_body = Struct('tagdata',
     obje_attrs

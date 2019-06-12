@@ -19,9 +19,8 @@ class BipdTag(ObjeTag):
         physics.sine_uphill_falloff_angle = sin(movement.uphill_falloff_angle)
         physics.sine_uphill_cutoff_angle  = sin(movement.uphill_cutoff_angle)
 
+        physics.crouch_camera_velocity = 0
         if physics.crouch_camera_velocity:
             physics.crouch_camera_velocity /= bipd_attrs.camera_collision_and_autoaim.crouch_transition_time
-        else:
-            physics.crouch_camera_velocity = 0
 
         physics.crouch_camera_velocity /= 30

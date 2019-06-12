@@ -2,14 +2,14 @@ from .shdr import *
 from .objs.shdr import ShdrTag
 from supyr_struct.defs.tag_def import TagDef
 
-smet_attrs = Struct("smet attrs",
+smet_attrs = Struct("smet_attrs",
     #Meter Shader Properties
-    Struct("meter shader",
-        Bool16("meter shader flags",
+    Struct("meter_shader",
+        Bool16("meter_shader_flags",
             "decal",
-            "two-sided",
-            "flash color is negative",
-            "tint mode-2",
+            "two_sided",
+            "flash_color_is_negative",
+            "tint_mode_2",
             "unfiltered"
             ),
         Pad(34),
@@ -19,20 +19,20 @@ smet_attrs = Struct("smet attrs",
 
     #Colors
     Struct("colors",
-        Struct("gadient min", INCLUDE=rgb_float),
-        Struct("gadient max", INCLUDE=rgb_float),
+        Struct("gadient_min", INCLUDE=rgb_float),
+        Struct("gadient_max", INCLUDE=rgb_float),
         Struct("background", INCLUDE=rgb_float),
         Struct("flash", INCLUDE=rgb_float),
         Struct("tint", INCLUDE=rgb_float),
-        float_zero_to_one("meter transparency"),
-        float_zero_to_one("background transparency"),
+        float_zero_to_one("meter_transparency"),
+        float_zero_to_one("background_transparency"),
         ),
 
     Pad(24),
     #External Function Sources
-    Struct("external function sources",
-        SEnum16("meter brightness", *function_outputs),
-        SEnum16("flash brightness", *function_outputs),
+    Struct("external_function_sources",
+        SEnum16("meter_brightness", *function_outputs),
+        SEnum16("flash_brightness", *function_outputs),
         SEnum16("value",            *function_outputs),
         SEnum16("gradient",         *function_outputs),
         SEnum16("flash-extension",  *function_outputs),

@@ -42,8 +42,8 @@ scnr_body = desc_variant(
      reflexive("ai_animation_references",
         ai_anim_reference, 128, DYN_NAME_PATH='.animation_name')
      ),
-    ("script_syntax_data", rawdata_ref("script syntax data", max_size=570076, IGNORE_SAFE_MODE=True)),
-    ("script_string_data", rawdata_ref("script string data", max_size=393216, IGNORE_SAFE_MODE=True)),
+    ("script_syntax_data", rawdata_ref("script_syntax_data", max_size=570076, IGNORE_SAFE_MODE=True)),
+    ("script_string_data", rawdata_ref("script_string_data", max_size=393216, IGNORE_SAFE_MODE=True)),
     ("references",
      reflexive("references",
         reference, 256, DYN_NAME_PATH='.reference.filepath')
