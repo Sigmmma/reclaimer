@@ -8,19 +8,19 @@ from supyr_struct.defs.tag_def import TagDef
 obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=3)
 
-eqip_attrs = Struct("eqip attrs",
-    SEnum16('powerup type',
+eqip_attrs = Struct("eqip_attrs",
+    SEnum16('powerup_type',
         'none',
-        'double speed',
+        'double_speed',
         'overshield',
-        'active camo',
-        'full-spectrum vision',
+        'active_camo',
+        'full_spectrum_vision',
         'health',
         'grenade',
         ),
-    SEnum16('grenade type', *grenade_types),
-    float_sec('powerup time'),
-    dependency('pickup sound', "snd!"),
+    SEnum16('grenade_type', *grenade_types),
+    float_sec('powerup_time'),
+    dependency('pickup_sound', "snd!"),
 
     SIZE=168
     )

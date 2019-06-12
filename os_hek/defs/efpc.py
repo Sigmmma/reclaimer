@@ -2,26 +2,26 @@ from ...common_descs import *
 from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
-script_variable = Struct("script variable",
-    ascii_str32("script variable name"),
-    ascii_str32("exposed parameter name"),
+script_variable = Struct("script_variable",
+    ascii_str32("script_variable_name"),
+    ascii_str32("exposed_parameter_name"),
     SIZE=80
     )
 
 effect = Struct("effect",
     dependency_os("effect", "efpg"),
     ascii_str32("name"),
-    reflexive("script variables", script_variable, 32,
+    reflexive("script_variables", script_variable, 32,
         DYN_NAME_PATH='.script_variable_name'),
     SIZE=72
     )
 
-activation_control = Struct("activation control",
+activation_control = Struct("activation_control",
     SEnum16("state",
-        "initially active",
-        "is in cutscene",
-        "player is zoomed",
-        "player is using a vehicle"
+        "initially_active",
+        "is_in_cutscene",
+        "player_is_zoomed",
+        "player_is_using_a_vehicle"
         ),
     Bool16("flags",
         "invert"
@@ -29,31 +29,31 @@ activation_control = Struct("activation control",
     SIZE=4
     )
 
-effect_instance = Struct("effect instance",
+effect_instance = Struct("effect_instance",
     ascii_str32("name"),
     dyn_senum16("effect",
         DYN_NAME_PATH="tagdata.effects.STEPTREE[DYN_I].effect.filepath"),
-    SEnum16("render stage",
-        "after bsp - before blur",
-        "after blur - before alphad faces",
-        "after alphad faces - before hud",
-        "after hud - before menu",
-        "after menu",
+    SEnum16("render_stage",
+        "after_bsp_and_before_blur",
+        "after_blur_and_before_alphad_faces",
+        "after_alphad_faces_and_before_hud",
+        "after_hud_and_before_menu",
+        "after_menu",
         ),
-    QStruct("quad tesselation",
+    QStruct("quad_tesselation",
         SInt16("x"), SInt16("y"), ORIENT="h"
         ),
-    from_to_zero_to_one("x screen bounds"),
-    from_to_zero_to_one("y screen bounds"),
+    from_to_zero_to_one("x_screen_bounds"),
+    from_to_zero_to_one("y_screen_bounds"),
 
     Pad(12),
-    SEnum16("activation operation",
+    SEnum16("activation_operation",
         "all",
         "any"
         ),
 
     Pad(6),
-    reflexive("activation controls", activation_control, 8),
+    reflexive("activation_controls", activation_control, 8),
 
     SIZE=116
     )
@@ -67,7 +67,7 @@ efpc_body = Struct("tagdata",
     Pad(12),
     reflexive("effects", effect, 32,
         DYN_NAME_PATH='.name'),
-    reflexive("effect instances", effect_instance, 32,
+    reflexive("effect_instances", effect_instance, 32,
         DYN_NAME_PATH='.name'),
     SIZE=48
     )

@@ -7,7 +7,7 @@ def get():
 permutation = Struct('permutation',
     ascii_str32("name"),
     Bool32('flags',
-        'cannot be chosen randomly'
+        'cannot_be_chosen_randomly'
         ),
     # permutations ending with -XXX where XXX is a number will belong to
     # the permutation set XXX. Trailing non-numeric characters are ignored.
@@ -17,22 +17,22 @@ permutation = Struct('permutation',
     # For all parts of a permutation to be properly chosen across
     # all regions, they must share a permutation set number.
     # Anything not ending in -XXX will have this set to 0.
-    FlUInt16("permutation set", VISIBLE=False),  # meta only field
+    FlUInt16("permutation_set", VISIBLE=False),  # meta only field
     Pad(26),
 
-    dyn_senum16('superlow geometry block',
+    dyn_senum16('superlow_geometry_block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
-    dyn_senum16('low geometry block',
+    dyn_senum16('low_geometry_block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
-    dyn_senum16('medium geometry block',
+    dyn_senum16('medium_geometry_block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
-    dyn_senum16('high geometry block',
+    dyn_senum16('high_geometry_block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
-    dyn_senum16('superhigh geometry block',
+    dyn_senum16('superhigh_geometry_block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
     Pad(2),
 
-    #reflexive("local markers", local_marker, 32, DYN_NAME_PATH=".name"),
+    #reflexive("local_markers", local_marker, 32, DYN_NAME_PATH=".name"),
     SIZE=88
     )
 
@@ -40,44 +40,44 @@ part = Struct('part',
     Bool32('flags',
         'stripped',
         ),
-    dyn_senum16('shader index',
+    dyn_senum16('shader_index',
         DYN_NAME_PATH="tagdata.shaders.shaders_array[DYN_I].shader.filepath"),
-    SInt8('previous part index'),
-    SInt8('next part index'),
+    SInt8('previous_part_index'),
+    SInt8('next_part_index'),
 
-    SInt16('centroid primary node'),
-    SInt16('centroid secondary node'),
-    Float('centroid primary weight'),
-    Float('centroid secondary weight'),
+    SInt16('centroid_primary_node'),
+    SInt16('centroid_secondary_node'),
+    Float('centroid_primary_weight'),
+    Float('centroid_secondary_weight'),
 
-    QStruct('centroid translation', INCLUDE=xyz_float),
+    QStruct('centroid_translation', INCLUDE=xyz_float),
 
-    #reflexive("uncompressed vertices", uncompressed_vertex_union, 65535),
-    #reflexive("compressed vertices", compressed_vertex_union, 65535),
+    #reflexive("uncompressed_vertices", uncompressed_vertex_union, 65535),
+    #reflexive("compressed_vertices", compressed_vertex_union, 65535),
     #reflexive("triangles", triangle_union, 65535),
-    reflexive("uncompressed vertices", fast_uncompressed_vertex, 65535),
-    reflexive("compressed vertices", fast_compressed_vertex, 65535),
+    reflexive("uncompressed_vertices", fast_uncompressed_vertex, 65535),
+    reflexive("compressed_vertices", fast_compressed_vertex, 65535),
     reflexive("triangles", triangle, 65535),
 
     #Pad(36),
-    Struct("model meta info",
-        UEnum16("index type",  # name is a guess.  always 1?
+    Struct("model_meta_info",
+        UEnum16("index_type",  # name is a guess.  always 1?
             ("uncompressed", 1),
             ),
         Pad(2),
-        UInt32("index count"),
-        UInt32("indices offset"),
-        UInt32("indices reflexive offset"),
+        UInt32("index_count"),
+        UInt32("indices_offset"),
+        UInt32("indices_reflexive_offset"),
 
-        UEnum16("vertex type",  # name is a guess
+        UEnum16("vertex_type",  # name is a guess
             ("uncompressed", 4),
             ("compressed",   5),
             ),
         Pad(2),
-        UInt32("vertex count"),
+        UInt32("vertex_count"),
         Pad(4),  # always 0?
-        UInt32("vertices offset"),
-        UInt32("vertices reflexive offset"),
+        UInt32("vertices_offset"),
+        UInt32("vertices_reflexive_offset"),
         VISIBLE=False, SIZE=36
         ),
 
@@ -85,8 +85,8 @@ part = Struct('part',
     )
 
 fast_part = dict(part)
-fast_part[9]  = raw_reflexive("uncompressed vertices", fast_uncompressed_vertex, 65535)
-fast_part[10] = raw_reflexive("compressed vertices", fast_compressed_vertex, 65535)
+fast_part[9]  = raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex, 65535)
+fast_part[10] = raw_reflexive("compressed_vertices", fast_compressed_vertex, 65535)
 fast_part[11] = raw_reflexive("triangles", triangle, 65535)
 
 region = Struct('region',
@@ -110,27 +110,27 @@ fast_geometry = Struct('geometry',
 
 mode_body = Struct('tagdata',
     Bool32('flags',
-        'blend shared normals',
+        'blend_shared_normals',
         ),
-    SInt32('node list checksum'),
+    SInt32('node_list_checksum'),
 
     # xbox has these values swapped around in order
-    Float('superlow lod cutoff', SIDETIP="pixels"),
-    Float('low lod cutoff', SIDETIP="pixels"),
-    Float('medium lod cutoff', SIDETIP="pixels"),
-    Float('high lod cutoff', SIDETIP="pixels"),
-    Float('superhigh lod cutoff', SIDETIP="pixels"),
+    Float('superlow_lod_cutoff', SIDETIP="pixels"),
+    Float('low_lod_cutoff', SIDETIP="pixels"),
+    Float('medium_lod_cutoff', SIDETIP="pixels"),
+    Float('high_lod_cutoff', SIDETIP="pixels"),
+    Float('superhigh_lod_cutoff', SIDETIP="pixels"),
 
-    SInt16('superlow lod nodes', SIDETIP="nodes"),
-    SInt16('low lod nodes', SIDETIP="nodes"),
-    SInt16('medium lod nodes', SIDETIP="nodes"),
-    SInt16('high lod nodes', SIDETIP="nodes"),
-    SInt16('superhigh lod nodes', SIDETIP="nodes"),
+    SInt16('superlow_lod_nodes', SIDETIP="nodes"),
+    SInt16('low_lod_nodes', SIDETIP="nodes"),
+    SInt16('medium_lod_nodes', SIDETIP="nodes"),
+    SInt16('high_lod_nodes', SIDETIP="nodes"),
+    SInt16('superhigh_lod_nodes', SIDETIP="nodes"),
 
     Pad(10),
 
-    Float('base map u scale'),
-    Float('base map v scale'),
+    Float('base_map_u_scale'),
+    Float('base_map_v_scale'),
 
     Pad(116),
 

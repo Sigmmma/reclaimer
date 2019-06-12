@@ -3,79 +3,79 @@ from .objs.snd_ import Snd_Tag
 from supyr_struct.defs.tag_def import TagDef
 
 sound_classes = (
-    ("projectile impact", 0),
-    ("projectile detonation", 1),
+    ("projectile_impact", 0),
+    ("projectile_detonation", 1),
 
-    ("weapon fire", 4),
-    ("weapon ready", 5),
-    ("weapon reload", 6),
-    ("weapon empty", 7),
-    ("weapon charge", 8),
-    ("weapon overheat", 9),
-    ("weapon idle", 10),
+    ("weapon_fire", 4),
+    ("weapon_ready", 5),
+    ("weapon_reload", 6),
+    ("weapon_empty", 7),
+    ("weapon_charge", 8),
+    ("weapon_overheat", 9),
+    ("weapon_idle", 10),
 
-    ("object impacts", 13),
-    ("particle impacts", 14),
-    ("slow particle impacts", 15),
+    ("object_impacts", 13),
+    ("particle_impacts", 14),
+    ("slow_particle_impacts", 15),
 
-    ("unit footsteps", 18),
-    ("unit dialog", 19),
+    ("unit_footsteps", 18),
+    ("unit_dialog", 19),
 
-    ("vehicle collision", 22),
-    ("vehicle engine", 23),
+    ("vehicle_collision", 22),
+    ("vehicle_engine", 23),
 
-    ("device door", 26),
-    ("device force field", 27),
-    ("device machinery", 28),
-    ("device nature", 29),
-    ("device computers", 30),
+    ("device_door", 26),
+    ("device_force_field", 27),
+    ("device_machinery", 28),
+    ("device_nature", 29),
+    ("device_computers", 30),
 
     ("music", 32),
-    ("ambient nature", 33),
-    ("ambient machinery", 34),
-    ("ambient computers", 35),
+    ("ambient_nature", 33),
+    ("ambient_machinery", 34),
+    ("ambient_computers", 35),
 
-    ("first person damage", 39),
+    ("first_person_damage", 39),
 
-    ("scripted dialog player", 44),
-    ("scripted effect", 45),
-    ("scripted dialog other", 46),
-    ("scripted dialog force unspatialized", 47),
+    ("scripted_dialog_player", 44),
+    ("scripted_effect", 45),
+    ("scripted_dialog_other", 46),
+    ("scripted_dialog_force_unspatialized", 47),
 
-    ("game event", 50),
+    ("game_event", 50),
     )
 
 compression = SEnum16("compression",
     'none',
-    'xbox adpcm',
-    'ima adpcm',
+    'xbox_adpcm',
+    'ima_adpcm',
     'ogg'
     )
 
 
 permutation = Struct('permutation',
     ascii_str32("name"),
-    Float("skip fraction"),
+    Float("skip_fraction"),
     Float("gain"),
     compression,
-    SInt16("next permutation index"),
+    SInt16("next_permutation_index"),
     FlSInt32("unknown0", VISIBLE=False),
     FlUInt32("unknown1", VISIBLE=False),  # always zero?
     FlUInt32("unknown2", VISIBLE=False),
     FlUInt32("ogg_sample_count", EDITABLE=False),
     FlUInt32("unknown3", VISIBLE=False),  # seems to always be == unknown2
     rawdata_ref("samples", max_size=4194304, widget=SoundSampleFrame),
-    rawdata_ref("mouth data", max_size=8192),
-    rawdata_ref("subtitle data", max_size=512),
+    rawdata_ref("mouth_data", max_size=8192),
+    rawdata_ref("subtitle_data", max_size=512),
     SIZE=124
     )
 
-pitch_range = Struct('pitch range',
+pitch_range = Struct('pitch_range',
     ascii_str32("name"),
 
-    Float("natural pitch"),
-    QStruct("bend bounds", INCLUDE=from_to),
-    SInt16("actual permutation count"),
+    Float("natural_pitch"),
+    QStruct("bend_bounds", INCLUDE=from_to),
+    SInt16("actual_permutation_count"),
     Pad(2),
     Float("playback_rate", VISIBLE=False),
     SInt32("unknown1", VISIBLE=False, DEFAULT=-1),
@@ -89,36 +89,36 @@ pitch_range = Struct('pitch range',
 
 snd__body = Struct("tagdata",
     Bool32("flags",
-        "fit to adpcm blocksize",
-        "split long sound into permutations"
+        "fit_to_adpcm_blocksize",
+        "split_long_sound_into_permutations"
         ),
-    SEnum16("sound class", *sound_classes),
-    SEnum16("sample rate",
+    SEnum16("sound_class", *sound_classes),
+    SEnum16("sample_rate",
         {NAME: "khz_22", GUI_NAME: "22kHz"},
         {NAME: "khz_44", GUI_NAME: "44kHz"},
         ),
-    float_wu("minimum distance"),
-    float_wu("maximum distance"),
-    float_zero_to_one("skip fraction"),
+    float_wu("minimum_distance"),
+    float_wu("maximum_distance"),
+    float_zero_to_one("skip_fraction"),
 
     #Randomization
-    QStruct("random pitch bounds", INCLUDE=from_to),
-    float_rad("inner cone angle"),  # radians
-    float_rad("outer cone angle"),  # radians
-    float_zero_to_one("outer cone gain"),
-    Float("gain modifier"),
-    Float("maximum bend per second"),
+    QStruct("random_pitch_bounds", INCLUDE=from_to),
+    float_rad("inner_cone_angle"),  # radians
+    float_rad("outer_cone_angle"),  # radians
+    float_zero_to_one("outer_cone_gain"),
+    Float("gain_modifier"),
+    Float("maximum_bend_per_second"),
     Pad(12),
 
-    QStruct("modifiers when scale is zero",
-        Float("skip fraction"),
+    QStruct("modifiers_when_scale_is_zero",
+        Float("skip_fraction"),
         Float("gain"),
         Float("pitch"),
         ),
     Pad(12),
 
-    QStruct("modifiers when scale is one",
-        Float("skip fraction"),
+    QStruct("modifiers_when_scale_is_one",
+        Float("skip_fraction"),
         Float("gain"),
         Float("pitch"),
         ),
@@ -129,11 +129,11 @@ snd__body = Struct("tagdata",
         'stereo'
         ),
     compression,
-    dependency("promotion sound", "snd!"),
-    SInt16("promotion count"),
+    dependency("promotion_sound", "snd!"),
+    SInt16("promotion_count"),
     SInt16("unknown1", VISIBLE=False),
     Struct("unknown2", INCLUDE=rawdata_ref_struct, VISIBLE=False),
-    reflexive("pitch ranges", pitch_range, 8,
+    reflexive("pitch_ranges", pitch_range, 8,
         DYN_NAME_PATH='.name'),
 
     SIZE=164,

@@ -5,13 +5,13 @@ particle_type  = dict(particle_type)
 pctl_body      = dict(pctl_body)
 
 particle_state[19] = reflexive(
-    "shader extensions",
-    Struct("shader extension", INCLUDE=os_shader_extension),
+    "shader_extensions",
+    Struct("shader_extension", INCLUDE=os_shader_extension),
     1)
 particle_type[12] = reflexive(
-    "particle states", particle_state, 8, DYN_NAME_PATH='.name')
+    "particle_states", particle_state, 8, DYN_NAME_PATH='.name')
 pctl_body[5] = reflexive(
-    "particle types", particle_type, 4, DYN_NAME_PATH='.name')
+    "particle_types", particle_type, 4, DYN_NAME_PATH='.name')
 
     
 def get():

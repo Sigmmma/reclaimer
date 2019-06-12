@@ -2,13 +2,13 @@ from ...common_descs import *
 from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
-efpp_attrs = Struct("efpp attrs",
+efpp_attrs = Struct("efpp_attrs",
     Pad(12),
-    QStruct("quad tesselation",
+    QStruct("quad_tesselation",
         SInt16("x"), SInt16("y"), ORIENT='h'
         ),
-    from_to_zero_to_one("x screen bounds"),
-    from_to_zero_to_one("y screen bounds"),
+    from_to_zero_to_one("x_screen_bounds"),
+    from_to_zero_to_one("y_screen_bounds"),
     SIZE=60
     )
 

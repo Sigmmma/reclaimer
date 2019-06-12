@@ -2,21 +2,21 @@ from ...common_descs import *
 from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
-child_ids = Struct("child id",
-    dyn_senum32("entry reference",
+child_ids = Struct("child_id",
+    dyn_senum32("entry_reference",
         DYN_NAME_PATH="tagdata.entries.STEPTREE[DYN_I].name.data"),
     SIZE=4
     )
 
-referenced_by = Struct("referenced by", INCLUDE=child_ids)
+referenced_by = Struct("referenced_by", INCLUDE=child_ids)
 
 entry = Struct("entry",
     rawtext_ref("name", StrUtf8, max_size=256, widget=EntryFrame),
-    UEnum32("group tag", INCLUDE=valid_tags_os, GUI_NAME="group tag"),
-    SInt32("handle data"),
+    UEnum32("group_tag", INCLUDE=valid_tags_os),
+    SInt32("handle_data"),
     SInt32("flags"),
-    reflexive("child ids", child_ids, 65536),
-    reflexive("referenced by", referenced_by, 65536),
+    reflexive("child_ids", child_ids, 65536),
+    reflexive("referenced_by", referenced_by, 65536),
     SIZE=68
     )
 

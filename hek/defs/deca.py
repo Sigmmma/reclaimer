@@ -26,63 +26,63 @@ only indirectly affect the lit texture."""
 deca_body = Struct("tagdata",
     #Decal Properties
     Bool16("flags",
-        "geometry inherited by next decal in chain",
-        "interpolate color in hsv",
-        "more colors",
-        "no random rotation",
-        "water effect",
-        "SAPIEN-snap to axis",
-        "SAPIEN-incremental counter",
-        "animation loop",
-        "preserve aspect",
+        "geometry_inherited_by_next_decal_in_chain",
+        "interpolate_color_in_hsv",
+        "more_colors",
+        "no_random_rotation",
+        "water_effect",
+        "SAPIEN_snap_to_axis",
+        "SAPIEN_incremental_counter",
+        "animation_loop",
+        "preserve_aspect",
         COMMENT=decal_comment
         ),
     SEnum16("type",
         "scratch",
         "splatter",
         "burn",
-        "painted sign",
+        "painted_sign",
         ),
     SEnum16("layer",
         "primary",
         "secondary",
         "light",
-        "alpha-tested",
+        "alpha_tested",
         "water"
         ),
     Pad(2),
-    dependency("next decal in chain", "deca"),
+    dependency("next_decal_in_chain", "deca"),
     from_to_wu("radius"),  # world units
     Pad(12),
 
     Struct("color",
         from_to_zero_to_one("intensity"),  # [0,1]
-        Struct("lower bounds", INCLUDE=rgb_float),
-        Struct("upper bounds", INCLUDE=rgb_float),
+        Struct("lower_bounds", INCLUDE=rgb_float),
+        Struct("upper_bounds", INCLUDE=rgb_float),
         Pad(12),
         ),
 
     #Animation
     Struct("animation",
-        SInt16("loop frame"),
+        SInt16("loop_frame"),
         SInt16("speed", MIN=1, MAX=120,
                 SIDETIP="[1,120] ticks/frame", UNIT_SCALE=per_sec_unit_scale),
         Pad(28),
         from_to_sec("lifetime"),  # seconds
-        from_to_sec("decay time"),  # seconds
+        from_to_sec("decay_time"),  # seconds
         Pad(56),
         ),
 
     #Shader
     Struct("shader",
-        SEnum16("framebuffer blend function", *framebuffer_blend_functions),
+        SEnum16("framebuffer_blend_function", *framebuffer_blend_functions),
         Pad(22),
-        dependency("shader map", "bitm"),
+        dependency("shader_map", "bitm"),
         ),
 
     #Sprite info
     Pad(20),
-    Float("maximum sprite extent", SIDETIP="pixels"),
+    Float("maximum_sprite_extent", SIDETIP="pixels"),
 	
     SIZE=268,
     )

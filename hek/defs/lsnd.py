@@ -13,32 +13,32 @@ to the following contraints. If both lower and upper bounds are zero for any of
 the following fields, the sound's position will be randomly selected from 
 all the possible directions or distances."""
 
-detail_sound = Struct("detail sound",
+detail_sound = Struct("detail_sound",
     dependency("sound", "snd!"),
-    from_to_sec('random period bounds'),
+    from_to_sec('random_period_bounds'),
     Float("gain"),
     Bool32("flags",
-        "dont play with alternate",
-        "dont play without alternate",
+        "dont_play_with_alternate",
+        "dont_play_without_alternate",
         ),
 
     Pad(48),
-    from_to_rad('yaw bounds', COMMENT=random_spatialisation_comment),  # radians
-    from_to_rad('pitch bounds'),  # radians
-    from_to_wu('distance bounds'),  # world units
+    from_to_rad('yaw_bounds', COMMENT=random_spatialisation_comment),  # radians
+    from_to_rad('pitch_bounds'),  # radians
+    from_to_wu('distance_bounds'),  # world units
 
     SIZE=104
     )
 
 track = Struct("track",
     Bool32("flags",
-        "fade in at start",
-        "fade out at stop",
-        "fade in alternate",
+        "fade_in_at_start",
+        "fade_out_at_stop",
+        "fade_in_alternate",
         ),
     Float("gain"),
-    float_sec("fade in duration"),
-    float_sec("fade out duration"),
+    float_sec("fade_in_duration"),
+    float_sec("fade_out_duration"),
 
     Pad(32),
     dependency("start", "snd!"),
@@ -46,32 +46,32 @@ track = Struct("track",
     dependency("end", "snd!"),
 
     Pad(32),
-    dependency("alternate loop", "snd!"),
-    dependency("alternate end", "snd!"),
+    dependency("alternate_loop", "snd!"),
+    dependency("alternate_end", "snd!"),
     SIZE=160
     )
 
 
 lsnd_body = Struct("tagdata",
     Bool32("flags",
-        "deafening to ai",
-        "not a loop",
-        "stops music",
+        "deafening_to_ai",
+        "not_a_loop",
+        "stops_music",
         ),
-    Float("detail sound period at zero", COMMENT=scale_comment),
+    Float("detail_sound_period_at_zero", COMMENT=scale_comment),
     FlFloat("unknown0", DEFAULT=1.0, VISIBLE=False),
     FlFloat("unknown1", DEFAULT=1.0, VISIBLE=False),
-    Float("detail sound period at one"),
+    Float("detail_sound_period_at_one"),
     FlFloat("unknown2", DEFAULT=1.0, VISIBLE=False),
     FlFloat("unknown3", DEFAULT=1.0, VISIBLE=False),
     FlSInt16("unknown4", DEFAULT=-1, VISIBLE=False),
     FlSInt16("unknown5", DEFAULT=-1, VISIBLE=False),
     FlFloat("unknown6", DEFAULT=1.0, VISIBLE=False),
     Pad(8),
-    dependency("continuous damage effect", "cdmg"),
+    dependency("continuous_damage_effect", "cdmg"),
 
     reflexive("tracks", track, 4),
-    reflexive("detail sounds", detail_sound, 32,
+    reflexive("detail_sounds", detail_sound, 32,
         DYN_NAME_PATH='.sound.filepath'),
 
     SIZE=84,
