@@ -1,5 +1,5 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.snd_ import Snd_Tag
 from supyr_struct.defs.tag_def import TagDef
 
 sound_classes = (
@@ -77,7 +77,7 @@ pitch_range = Struct('pitch range',
     QStruct("bend bounds", INCLUDE=from_to),
     SInt16("actual permutation count"),
     Pad(2),
-    Float("unknown0", VISIBLE=False),
+    Float("playback_rate", VISIBLE=False),
     SInt32("unknown1", VISIBLE=False, DEFAULT=-1),
     SInt32("unknown2", VISIBLE=False, DEFAULT=-1),
 
@@ -147,7 +147,7 @@ snd__def = TagDef("snd!",
     blam_header('snd!', 4),
     snd__body,
 
-    ext=".sound", endian=">", tag_cls=HekTag,
+    ext=".sound", endian=">", tag_cls=Snd_Tag,
     )
 
 

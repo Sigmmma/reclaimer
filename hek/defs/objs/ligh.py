@@ -1,0 +1,14 @@
+from os.path import splitext
+from math import sin, cos
+
+from .tag import *
+
+class LighTag(HekTag):
+
+    def calc_internal_data(self):
+        HekTag.calc_internal_data(self)
+        
+        shape = self.data.tagdata.shape
+        shape.cosine_falloff_angle = cos(shape.falloff_angle)
+        shape.cosine_cutoff_angle  = cos(shape.cutoff_angle)
+        shape.sine_cutoff_angle    = sin(shape.cutoff_angle)

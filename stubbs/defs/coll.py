@@ -68,13 +68,10 @@ coll_body = Struct("tagdata",
     body,
     shield,
 
-    Pad(124),
+    Pad(112),
     reflexive("materials", material, 32, DYN_NAME_PATH='.name'),
     reflexive("regions", region, 8, DYN_NAME_PATH='.name'),
-    # this reflexive is literally not allowed to have even a single
-    # entry in guerilla, so im just gonna replace it with padding.
-    Pad(12),
-    #reflexive("modifiers", modifier, 0),
+    reflexive("modifiers", modifier, 0, VISIBLE=False),
 
     Pad(16),
     Struct("pathfinding box",
@@ -100,12 +97,12 @@ coll_def = TagDef("coll",
     blam_header_stubbs("coll", 11),
     coll_body,
 
-    ext=".model_collision_geometry", endian=">", tag_cls=HekTag
+    ext=".model_collision_geometry", endian=">", tag_cls=CollTag
     )
 
 fast_coll_def = TagDef("coll",
     blam_header_stubbs("coll", 11),  # bump this up 1 so we can tell it's stubbs
     fast_coll_body,
 
-    ext=".model_collision_geometry", endian=">", tag_cls=HekTag,
+    ext=".model_collision_geometry", endian=">", tag_cls=CollTag
     )
