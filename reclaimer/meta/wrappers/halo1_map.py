@@ -21,25 +21,7 @@ from .byteswapping import raw_block_def, byteswap_animation,\
 from reclaimer import data_extraction
 from reclaimer.constants import tag_class_fcc_to_ext
 from reclaimer.util import compress_normal32, decompress_normal32,\
-     is_overlapping_ranges
-
-
-def is_valid_ascii_name_str(string):
-    if not string:
-        return True
-
-    try:
-        string_bytes = set(string.encode("latin-1"))
-    except Exception:
-        return False
-
-    if max(string_bytes) > 127:
-        return False
-
-    for i in tuple(range(8)) + tuple(range(14, 32)):
-        if i in string_bytes:
-            return False
-    return True
+     is_overlapping_ranges, is_valid_ascii_name_str
 
 
 __all__ = ("Halo1Map", "Halo1RsrcMap")

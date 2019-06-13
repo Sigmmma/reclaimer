@@ -89,6 +89,24 @@ def compress_normal32_normalize(ni, nj, nk):
             (((int(nk*nmag) // 2) % 1023) << 22))
 
 
+def is_valid_ascii_name_str(string):
+    if not string:
+        return True
+
+    try:
+        string_bytes = set(string.encode("latin-1"))
+    except Exception:
+        return False
+
+    if max(string_bytes) > 127:
+        return False
+
+    for i in tuple(range(8)) + tuple(range(14, 32)):
+        if i in string_bytes:
+            return False
+    return True
+
+
 #uncomp_norm = [.333, -.75, 1]
 #nmag = sqrt(sum(uncomp_norm[i]**2 for i in range(3)))
 #uncomp_norm = [val / nmag for val in uncomp_norm]

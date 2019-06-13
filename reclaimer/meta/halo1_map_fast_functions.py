@@ -61,6 +61,34 @@ object_class_bytes = (
 
 _3_uint32_struct = PyStruct("<LLL")
 _4_uint32_struct = PyStruct("<LLLL")
+_5_uint32_struct = PyStruct("<LLLLL")
+
+
+def read_reflexive(map_data, refl_offset, max_count=0xFFffFFff,
+                   struct_size=1, tag_magic=None,
+                   unpacker=_3_uint32_struct.unpack):
+    '''
+    Reads a reflexive from the given map_data at the given offset.
+    Returns the reflexive's offset and pointer.
+    '''
+    map_data.seek(refl_offset)
+    count, start, id = unpacker(map_data.read(12))
+    if tag_magic is not None:
+        map_data.seek(0, 2)
+        max_count = min(max_count,
+                        (map_data.tell() - (start - tag_magic)) // struct_size)
+    return min(count, max_count), start, id
+
+
+def read_rawdata_ref(map_data, ref_offset, tag_magic=None,
+                     unpacker=_5_uint32_struct.unpack):
+    map_data.seek(ref_offset)
+    size, flags, raw_pointer, pointer, id = unpacker(map_data.read(20))
+    if tag_magic is not None:
+        map_data.seek(0, 2)
+        size = min(size, map_data.tell() - (pointer - tag_magic))
+    return size, flags, raw_pointer, pointer, id
+
 
 def move_rawdata_ref(map_data, raw_ref_offset, magic, engine, diffs_by_offsets,
                      unpacker=_4_uint32_struct.unpack,
@@ -87,22 +115,6 @@ def move_rawdata_ref(map_data, raw_ref_offset, magic, engine, diffs_by_offsets,
     assert raw_ptr + size <= map_data.tell()
     map_data.seek(raw_ref_offset - magic)
     map_data.write(packer(size, flags, raw_ptr, ptr))
-
-
-def read_reflexive(map_data, refl_offset, max_count=0xFFffFFff,
-                   struct_size=1, tag_magic=None,
-                   unpacker=_3_uint32_struct.unpack):
-    '''
-    Reads a reflexive from the given map_data at the given offset.
-    Returns the reflexive's offset and pointer.
-    '''
-    map_data.seek(refl_offset)
-    count, start, id = unpacker(map_data.read(12))
-    if tag_magic is not None:
-        map_data.seek(0, 2)
-        max_count = min(max_count,
-                        (map_data.tell() - (start - tag_magic)) // struct_size)
-    return min(count, max_count), start, id
 
 
 def iter_reflexive_offs(map_data, refl_offset, struct_size,
