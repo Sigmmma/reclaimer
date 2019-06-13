@@ -858,7 +858,6 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine):
             continue
 
         sub_tag_id = node.data & 0xFFff
-        print(sub_tag_id, node.type)
         if sub_tag_id in repair or sub_tag_id not in range(len(index_array)):
             continue
 
@@ -869,8 +868,6 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine):
                 continue
 
             tag_cls = object_class_bytes[object_type]
-            print(tag_cls)
-            print(index_array[sub_tag_id])
         
         repair[sub_tag_id] = tag_cls
 
