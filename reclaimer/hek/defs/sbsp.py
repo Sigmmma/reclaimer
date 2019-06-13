@@ -332,7 +332,7 @@ marker = Struct("marker",
     )
 
 
-detail_object_cell = QStruct("detail_object cell",
+detail_object_cell = QStruct("detail_object_cell",
     SInt16("unknown1"), SInt16("unknown2"),
     SInt16("unknown3"), SInt16("unknown4"),
     SInt32("unknown5"), SInt32("unknown6"), SInt32("unknown7"),

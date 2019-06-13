@@ -35,7 +35,7 @@ smet_attrs = Struct("smet_attrs",
         SEnum16("flash_brightness", *function_outputs),
         SEnum16("value",            *function_outputs),
         SEnum16("gradient",         *function_outputs),
-        SEnum16("flash-extension",  *function_outputs),
+        SEnum16("flash_extension",  *function_outputs),
         ),
     SIZE=220,
     )
