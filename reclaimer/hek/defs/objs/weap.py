@@ -4,7 +4,7 @@ class WeapTag(ObjeTag):
 
     def calc_internal_data(self):
         ObjeTag.calc_internal_data(self)
-        for trigger in self.data.tagdata.weap_attrs.triggers:
+        for trigger in self.data.tagdata.weap_attrs.triggers.STEPTREE:
             firing = trigger.firing
             misc = trigger.misc
             rates = trigger.misc_rates
