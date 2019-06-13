@@ -1,4 +1,5 @@
 from reclaimer.meta.halo1_map_fast_functions import *
+from reclaimer.hsc import get_hsc_data_block, HSC_IS_SCRIPT_OR_GLOBAL
 
 MAX_MATERIAL_COUNT = 33
 
@@ -843,6 +844,36 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine):
 
         for i in sorted(used_pal_indices):
             repair_dependency(*(args + (b'ejbo', pal_moff + 48 * i)))
+
+    # script syntax data references
+    size, _, __, moff, ___ = read_rawdata_ref(map_data, tag_offset + 1140 - magic, magic)
+    map_data.seek(moff - magic)
+    script_syntax_data_nodes = get_hsc_data_block(map_data.read(size)).nodes
+    for node in script_syntax_data_nodes:
+        tag_cls = {
+            24: 'snd!', 25: 'effe', 26: 'jpt!', 27: 'lsnd',
+            28: 'antr', 29: 'actv', 30: 'jpt!', 31: 'obje'
+            }.get(node.type)
+        if tag_cls is None or (node.flags & HSC_IS_SCRIPT_OR_GLOBAL):
+            continue
+
+        sub_tag_id = node.data & 0xFFff
+        print(sub_tag_id, node.type)
+        if sub_tag_id in repair or sub_tag_id not in range(len(index_array)):
+            continue
+
+        if tag_cls == "obje":
+            map_data.seek(index_array[sub_tag_id].meta_offset - magic)
+            object_type = int.from_bytes(map_data.read(2), 'little')
+            if object_type not in range(-1, len(object_class_bytes) - 1):
+                continue
+
+            tag_cls = object_class_bytes[object_type]
+            print(tag_cls)
+            print(index_array[sub_tag_id])
+        
+        repair[sub_tag_id] = tag_cls
+
 
     # decals
     ct, moff, _ = read_reflexive(map_data, tag_offset + 948 - magic, 128, 16, magic)
