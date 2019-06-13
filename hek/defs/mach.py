@@ -8,7 +8,7 @@ from supyr_struct.defs.tag_def import TagDef
 obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=7)
 
-mach_attrs = Struct("mach attrs",
+mach_attrs = Struct("mach_attrs",
     SEnum16('type',
         'door',
         'platform',

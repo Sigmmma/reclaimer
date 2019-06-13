@@ -28,7 +28,7 @@ chicago_4_stage_maps = Struct("four_stage_map",
     Pad(40),
     Struct("u_animation", INCLUDE=anim_src_func_per_pha_sca),
     Struct("v_animation", INCLUDE=anim_src_func_per_pha_sca),
-    Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca_rot),
+    Struct("rotation_animation", INCLUDE=anim_src_func_per_pha_sca_rot),
 
     QStruct("rotation_center", INCLUDE=xy_float),
     SIZE=220,

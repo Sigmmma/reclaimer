@@ -112,8 +112,8 @@ def pixel_block_size(node, *a, **kwa):
         return node.itemsize*len(node)
     return len(node)
 
-pixel_root = WhileArray('pixel root',
-    SUB_STRUCT=WhileArray('bitmap pixels',
+pixel_root = WhileArray('pixel_root',
+    SUB_STRUCT=WhileArray('bitmap_pixels',
         SUB_STRUCT=UInt8Array('pixels', SIZE=pixel_block_size)
         )
     )
