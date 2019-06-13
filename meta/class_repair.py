@@ -862,9 +862,12 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine):
             continue
 
         if tag_cls == "obje":
-            map_data.seek(index_array[sub_tag_id].meta_offset - magic)
-            object_type = int.from_bytes(map_data.read(2), 'little')
-            if object_type not in range(-1, len(object_class_bytes) - 1):
+            try:
+                map_data.seek(index_array[sub_tag_id].meta_offset - magic)
+                object_type = int.from_bytes(map_data.read(2), 'little')
+                if object_type not in range(-1, len(object_class_bytes) - 1):
+                    continue
+            except Exception:
                 continue
 
             tag_cls = object_class_bytes[object_type]
