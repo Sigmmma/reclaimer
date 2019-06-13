@@ -44,7 +44,7 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     '''This function serves to macro the creation of a reflexive'''
     desc.update(
         INCLUDE=reflexive_struct,
-        STEPTREE=Array(name + " array",
+        STEPTREE=Array(name + "_array",
             SIZE=".size", MAX=max_count,
             SUB_STRUCT=substruct, WIDGET=ReflexiveFrame
             ),
@@ -164,7 +164,7 @@ def get_meta_dependency_filepath(parent=None, tag_index_manager=None, **kwargs):
     parent.filepath = ""
 
 
-def dependency_uint32(name='tag ref', **kwargs):
+def dependency_uint32(name='tag_ref', **kwargs):
     kwargs.setdefault(VISIBLE, False)
     kwargs.setdefault(ORIENT, "h")
     return QStruct(name,
@@ -176,7 +176,7 @@ def dependency_uint32(name='tag ref', **kwargs):
         )
 
 
-def dependency(name='tag ref', valid_ids=None, **kwargs):
+def dependency(name='tag_ref', valid_ids=None, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
         valid_ids = tag_class(*valid_ids)
@@ -207,7 +207,7 @@ def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
     kwargs.setdefault(STRINGID_LEN_BITS, len_bit_ct)
     kwargs.setdefault(ORIENT, "h")
     return StringID(name,
-        UInt32('string id', VISIBLE=False),
+        UInt32('string_id', VISIBLE=False),
         STEPTREE=WritableComputed("string",
             COMPUTE_READ=read_string_id_string,
             COMPUTE_WRITE=write_string_id_string,
@@ -544,22 +544,22 @@ valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
 
 
 # Descriptors
-tag_header = Struct("blam header",
+tag_header = Struct("blam_header",
     Pad(36),
-    UEnum32("tag class",
-        GUI_NAME="tag class", INCLUDE=valid_tags, EDITABLE=False
+    UEnum32("tag_class",
+        GUI_NAME="tag_class", INCLUDE=valid_tags, EDITABLE=False
         ),
     UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
-    UInt32("header size",  DEFAULT=64, EDITABLE=False),
+    UInt32("header_size",  DEFAULT=64, EDITABLE=False),
     BBool64("flags",
-        "edited with mozz",
+        "edited_with_mozz",
         EDITABLE=False
         ),
     UInt16("version", DEFAULT=1, EDITABLE=False),
     UInt8("integrity0", DEFAULT=0, EDITABLE=False),
     UInt8("integrity1", DEFAULT=255, EDITABLE=False),
-    UEnum32("engine id",
-        ("halo 1", 'blam'),
+    UEnum32("engine_id",
+        ("halo_1", 'blam'),
         DEFAULT='blam', EDITABLE=False
         ),
     VISIBLE=False, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
@@ -598,13 +598,13 @@ anim_src_func_per_pha_sca_rot = Struct('',
 
 
 # This is the descriptor used wherever a tag references a rawdata chunk
-rawdata_ref_struct = RawdataRef('rawdata ref', 
+rawdata_ref_struct = RawdataRef('rawdata_ref', 
     SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
     Bool32("flags",
-        "data in resource map",
+        "data_in_resource_map",
         VISIBLE=False,
         ),
-    UInt32("raw pointer", VISIBLE=False),  # doesnt use magic
+    UInt32("raw_pointer", VISIBLE=False),  # doesnt use magic
     UInt32("pointer", VISIBLE=False),
     UInt32("id", VISIBLE=False),
     ORIENT='h'
@@ -620,30 +620,30 @@ reflexive_struct = Reflexive('reflexive',
 # This is the descriptor used wherever a tag references another tag
 tag_ref_struct = TagRef('dependency',
     valid_tags,
-    SInt32("path pointer", VISIBLE=False, EDITABLE=False),
-    SInt32("path length", MAX=MAX_TAG_PATH_LEN, VISIBLE=False, EDITABLE=False),
+    SInt32("path_pointer", VISIBLE=False, EDITABLE=False),
+    SInt32("path_length", MAX=MAX_TAG_PATH_LEN, VISIBLE=False, EDITABLE=False),
     UInt32("id", VISIBLE=False),
     ORIENT='h'
     )
 
-predicted_resource = Struct('predicted resource',
+predicted_resource = Struct('predicted_resource',
     SInt16('type',
         'bitmap',
         'sound',
         ),
-    SInt16('resource index'),
-    UInt32('tag index'),
+    SInt16('resource_index'),
+    UInt32('tag_index'),
     )
 
-zone_asset_struct = ZoneAsset("zone asset",
+zone_asset_struct = ZoneAsset("zone_asset",
     UInt16("salt"),
     UInt16("idx"),
     UInt32("unused", VISIBLE=False),
     )
 
-extra_layers_block = dependency("extra layer", valid_shaders)
+extra_layers_block = dependency("extra_layer", valid_shaders)
 
-damage_modifiers = QStruct("damage modifiers",
+damage_modifiers = QStruct("damage_modifiers",
     *(float_zero_to_inf(material_name) for material_name in materials_list)
     )
 
@@ -747,7 +747,7 @@ def tag_class_os(*args, **kwargs):
     return tag_class(*args, **kwargs)
 
 
-def dependency_os(name='tag ref', valid_ids=None, **kwargs):
+def dependency_os(name='tag_ref', valid_ids=None, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
         valid_ids = tag_class_os(*valid_ids)
@@ -778,7 +778,7 @@ def blam_header_os(tagid, version=1):
 valid_tags_os = tag_class_os(*sorted(tag_class_fcc_to_ext_os.keys()))
 
 # i'm so cheeky, look at me abusing Courier New
-blam_engine_id = UEnum32("engine id",
+blam_engine_id = UEnum32("engine_id",
     ("halo_1", 'blam'),
     ("halo_2", 'b2am'),
     ("halo_3", 'b3am'),
@@ -792,15 +792,15 @@ blam_engine_id = UEnum32("engine id",
     )
 
 # Descriptors
-tag_header_os = Struct("blam header",
+tag_header_os = Struct("blam_header",
     Pad(36),
     UEnum32("tag_class",
-        GUI_NAME="tag class", INCLUDE=valid_tags_os, EDITABLE=False
+        GUI_NAME="tag_class", INCLUDE=valid_tags_os, EDITABLE=False
         ),
     UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False), 
-    UInt32("header size", DEFAULT=64, EDITABLE=False),
+    UInt32("header_size", DEFAULT=64, EDITABLE=False),
     Bool64("flags",
-        "edited with mozz",
+        "edited_with_mozz",
         EDITABLE=False
         ),
     UInt16("version", DEFAULT=1, EDITABLE=False),
@@ -812,11 +812,11 @@ tag_header_os = Struct("blam header",
 
 valid_model_animations_yelo = tag_class_os('antr', 'magy')
 
-os_shader_extension = Struct("os shader extension",
+os_shader_extension = Struct("os_shader_extension",
     Pad(4),
-    QStruct("fade controls",
-        Float("depth fade distance"),
-        Float("camera fade distance"),
+    QStruct("fade_controls",
+        Float("depth_fade_distance"),
+        Float("camera_fade_distance"),
         COMMENT="Controls the softness of an effect"
         ),
     SIZE=48
