@@ -70,9 +70,10 @@ class Halo1RsrcMap(HaloMap):
         self.setup_tag_headers()
 
     def load_map(self, map_path, **kwargs):
-        map_data = get_rawdata(filepath=map_path)
+        map_data = get_rawdata(filepath=map_path, writable=False)
 
-        resource_type = unpack("<I", map_data.read(4))[0]; map_data.seek(0)
+        resource_type = unpack("<I", map_data.read(4))[0]
+        map_data.seek(0)
         rsrc_map = self.rsrc_map = halo1_rsrc_map_def.build(rawdata=map_data)
 
         self.orig_tag_index = rsrc_map.data.tags
@@ -148,7 +149,7 @@ class Halo1RsrcMap(HaloMap):
         self.tag_index_manager = TagIndexManager(tags.tag_index)
         self.snd_rsrc_tag_index_manager = TagIndexManager(tags.tag_index,
                                                           sound_rsrc_id_map)
-        self.map_data.clear_cache()
+        self.clear_map_cache()
 
     def get_dependencies(self, meta, tag_id, tag_cls):
         if tag_cls != "snd!":

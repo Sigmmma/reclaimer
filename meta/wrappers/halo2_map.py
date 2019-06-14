@@ -139,7 +139,7 @@ class Halo2Map(HaloMap):
             print(format_exc())
             print("Could not read sound_cache_file_gestalt tag")
 
-        self.map_data.clear_cache()
+        self.clear_map_cache()
 
     def get_meta(self, tag_id, reextract=False, **kw):
         if tag_id is None:
