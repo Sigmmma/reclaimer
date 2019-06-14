@@ -322,7 +322,7 @@ class Halo1Map(HaloMap):
                 if hasattr(halo_map, "ensure_sound_maps_valid"):
                     halo_map.ensure_sound_maps_valid()
 
-        self.map_data.clear_cache()
+        self.clear_map_cache()
 
     def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, **kw):
         '''

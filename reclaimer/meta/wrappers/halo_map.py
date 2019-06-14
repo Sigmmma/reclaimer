@@ -57,11 +57,14 @@ class HaloMap:
     matg_meta = None
 
     # determines how to work with this map
-    filepath      = ""
-    map_name      = ""
-    engine        = ""
-    is_resource   = False
-    is_compressed = False
+    filepath        = ""  # the filepath of the map being opened
+    decomp_filepath = ""  # the filepath of the map that map_data is actually
+    #                       mapping. Typically only different from filepath if
+    #                       the map had to be decompressed to a different file.
+    map_name        = ""
+    engine          = ""
+    is_resource     = False
+    is_compressed   = False
 
     handler = None
 
@@ -100,6 +103,28 @@ class HaloMap:
 
     @property
     def decomp_file_ext(self): return self._decomp_file_ext
+
+    def get_writable_map_data(self):
+        if not self.map_data:
+            return None
+        elif getattr(self.map_data, "writable", False):
+            return self.map_data
+
+        try:
+            writable_map_data = get_rawdata(
+                filepath=self.decomp_filepath, writable=True)
+        except Exception:
+            writable_map_data = None
+
+        if not getattr(writable_map_data, "writable"):
+            raise OSError("Cannot open map in write mode: %s" % map_path)
+
+        self.map_data.close()
+        self.map_data = writable_map_data
+
+        # need to reopen the map as a writable stream
+        # and replace self.map_data with it
+        return self.map_data
 
     # wrappers around the tag index handler
     def get_total_dir_count(self, dir=""):  return self.tag_index_manager.get_total_dir_count(dir)
@@ -217,7 +242,7 @@ class HaloMap:
         try:
             self.map_data.clear_cache()
         except Exception:
-            print(format_exc())
+            pass
 
         self._ids_of_tags_read.clear()
         self._map_cache_byte_count = 0
@@ -290,7 +315,7 @@ class HaloMap:
 
     def load_map(self, map_path, **kwargs):
         decompress_overwrite = kwargs.get("decompress_overwrite")
-        comp_data = get_rawdata(filepath=map_path)
+        comp_data = get_rawdata(filepath=map_path, writable=False)
 
         map_header = get_map_header(comp_data, True)
         if map_header is None:
@@ -302,20 +327,15 @@ class HaloMap:
         self.engine = get_map_version(map_header)
         self.map_name = map_header.map_name
 
-        decomp_path = None
         self.is_compressed = get_is_compressed_map(comp_data, map_header)
         if self.is_compressed:
             decomp_path = splitext(map_path)
             while decomp_path[1]:
                 decomp_path = splitext(decomp_path[0])
-            decomp_path = decomp_path[0] + "_DECOMP" + self.decomp_file_ext
 
+            decomp_path = decomp_path[0] + "_DECOMP" + self.decomp_file_ext
             if not decompress_overwrite and isfile(decomp_path):
                 decomp_path = join(tempfile.gettempdir(), basename(decomp_path))
-
-            if not(decomp_path.lower().endswith(self.decomp_file_ext) or
-                   isfile(decomp_path + self.decomp_file_ext)):
-                decomp_path += self.decomp_file_ext
 
             print("    Decompressing to: %s" % decomp_path)
             self.map_data = decompress_map(comp_data, map_header, decomp_path)
@@ -323,16 +343,19 @@ class HaloMap:
                 comp_data.close()
         else:
             self.map_data = comp_data
+            decomp_path = map_path
 
         map_header = get_map_header(self.map_data)
-        tag_index  = self.orig_tag_index = get_tag_index(self.map_data, map_header)
+        tag_index  = self.orig_tag_index = get_tag_index(
+            self.map_data, map_header)
 
         if tag_index is None:
             print("    Could not read tag index.")
             return
 
         self.maps[self.map_name] = self
-        self.filepath    = sanitize_path(map_path)
+        self.filepath        = sanitize_path(map_path)
+        self.decomp_filepath = sanitize_path(decomp_path)
         self.map_header  = map_header
         self.index_magic = get_index_magic(map_header)
         self.map_magic   = get_map_magic(map_header)

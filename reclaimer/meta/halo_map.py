@@ -210,7 +210,7 @@ def get_is_compressed_map(comp_data, header):
     return False
 
 
-def decompress_map(comp_data, header=None, decomp_path=None):
+def decompress_map(comp_data, header=None, decomp_path=None, writable=False):
     if header is None:
         header = get_map_header(comp_data)
 
@@ -219,14 +219,14 @@ def decompress_map(comp_data, header=None, decomp_path=None):
         return comp_data
     elif header.version.data == 134:
         if header.vap_header.compression_type.enum_name == "lzma":
-            return decompress_map_lzma(comp_data, header, decomp_path)
+            return decompress_map_lzma(comp_data, header, decomp_path, writable)
         else:
             return comp_data
     else:
-        return decompress_map_deflate(comp_data, header, decomp_path)
+        return decompress_map_deflate(comp_data, header, decomp_path, writable)
 
 
-def decompress_map_lzma(comp_data, header, decomp_path=""):
+def decompress_map_lzma(comp_data, header, decomp_path="", writable=False):
     vap_header = header.vap_header
 
     os.makedirs(os.path.dirname(decomp_path), exist_ok=True)
@@ -262,10 +262,10 @@ def decompress_map_lzma(comp_data, header, decomp_path=""):
             f.write(lzma.decompress(comp_data.read(in_size)))
 
     # have to do this separate or seeking will be fucked
-    return get_rawdata(filepath=decomp_path)
+    return get_rawdata(filepath=decomp_path, writable=writable)
 
 
-def decompress_map_deflate(comp_data, header, decomp_path=""):
+def decompress_map_deflate(comp_data, header, decomp_path="", writable=False):
     comp_data.seek(0)
     decomp_start = 2048
     decomp_len   = header.decomp_len
@@ -281,8 +281,10 @@ def decompress_map_deflate(comp_data, header, decomp_path=""):
 
     with open(decomp_path, "wb+") as f:
         if decomp_start:
-            f.write(comp_data[:decomp_start])
-            comp_data = comp_data[decomp_start:]
+            comp_data.seek(0)
+            f.write(comp_data.read(decomp_start))
+            comp_data.seek(decomp_start)
+            comp_data = comp_data.read()
 
         decomp_obj = zlib.decompressobj()
         last_comp_len = len(comp_data)
@@ -301,4 +303,4 @@ def decompress_map_deflate(comp_data, header, decomp_path=""):
         f.write(b'\xca'*(decomp_len - f.tell()))
 
     # have to do this separate or seeking will be fucked
-    return get_rawdata(filepath=decomp_path)
+    return get_rawdata(filepath=decomp_path, writable=writable)

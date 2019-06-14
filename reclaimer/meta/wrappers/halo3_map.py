@@ -233,7 +233,7 @@ class Halo3Map(HaloMap):
                 halo_map.rawdata_manager.add_shared_map_name(
                     ext_cache_name, self.map_header.map_name)
 
-        self.map_data.clear_cache()
+        self.clear_map_cache()
 
     def get_resource_map_paths(self, maps_dir=""):
         play_meta = self.root_tags.get("cache_file_resource_layout_table")
