@@ -1,5 +1,6 @@
 from reclaimer.meta.halo1_map_fast_functions import *
-from reclaimer.hsc import get_hsc_data_block, HSC_IS_SCRIPT_OR_GLOBAL
+from reclaimer.halo_script.hsc import get_hsc_data_block,\
+     HSC_IS_SCRIPT_OR_GLOBAL
 
 MAX_MATERIAL_COUNT = 33
 
