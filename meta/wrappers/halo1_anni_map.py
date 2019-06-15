@@ -7,7 +7,7 @@ from .halo1_rsrc_map import Halo1RsrcMap
 from .halo1_map import Halo1Map
 from reclaimer import data_extraction
 
-from reclaimer.hsc import h1_script_syntax_data_def
+from reclaimer.halo_script.hsc import h1_script_syntax_data_def
 from reclaimer.hek.defs.coll import fast_coll_def
 from reclaimer.hek.defs.sbsp import fast_sbsp_def
 from reclaimer.hek.handler import HaloHandler

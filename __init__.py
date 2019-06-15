@@ -8,5 +8,6 @@ __version__ = (2, 3, 1)
 __all__ = (
     "h2", "h3", "hek", "os_hek", "os_v3_hek", "os_v4_hek", "stubbs",
     "meta", "misc", "adpcm", "common_descs", "constants", "data_extraction",
-    "field_type_methods", "field_types", "hsc", "util"
+    "field_type_methods", "field_types", "math_util", "util",
+    "animations", "bitmaps", "model", "physics", "strings"
     )
