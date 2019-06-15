@@ -1,4 +1,4 @@
-import struct
+from struct import Struct as PyStruct
 
 from reclaimer.field_types import *
 from reclaimer.constants import *
@@ -122,8 +122,8 @@ h1_script_syntax_data_def    = BlockDef(h1_script_syntax_data)
 h1_script_syntax_data_os_def = BlockDef(h1_script_syntax_data_os)
 
 
-def cast_uint32_to_float(uint32, packer=struct.Struct("<I"),
-                         unpacker=struct.Struct("<f")):
+def cast_uint32_to_float(uint32, packer=PyStruct("<I"),
+                         unpacker=PyStruct("<f")):
     return unpacker.unpack(packer.pack(uint32))[0]
 
 

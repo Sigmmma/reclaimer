@@ -97,18 +97,31 @@ class JmaNodeState:
         self.pos_x, self.pos_y, self.pos_z, self.scale)
 
     def __eq__(self, other):
-        if (abs(self.rot_i - other.rot_i) > 0.00001 or
-              abs(self.rot_j - other.rot_j) > 0.00001 or
-              abs(self.rot_k - other.rot_k) > 0.00001 or
-              abs(self.rot_w - other.rot_w) > 0.00001):
+        if not isinstance(other, JmaNodeState):
             return False
-        elif (abs(self.pos_x - other.pos_x) > 0.00001 or
-              abs(self.pos_y - other.pos_y) > 0.00001 or
-              abs(self.pos_z - other.pos_z) > 0.00001):
+        elif (abs(self.rot_i - other.rot_i) > 0.000001 or
+              abs(self.rot_j - other.rot_j) > 0.000001 or
+              abs(self.rot_k - other.rot_k) > 0.000001 or
+              abs(self.rot_w - other.rot_w) > 0.000001):
             return False
-        elif abs(self.scale - other.scale) > 0.00001:
+        elif (abs(self.pos_x - other.pos_x) > 0.000001 or
+              abs(self.pos_y - other.pos_y) > 0.000001 or
+              abs(self.pos_z - other.pos_z) > 0.000001):
+            return False
+        elif abs(self.scale - other.scale) > 0.000001:
             return False
         return True
+
+    def __sub__(self, other):
+        if not isinstance(other, JmaNodeState):
+            raise TypeError("Cannot subtract %s from %s" %
+                            (type(other), type(self)))
+        return JmaNodeState(
+            self.rot_i - other.rot_i, self.rot_j - other.rot_j,
+            self.rot_k - other.rot_k, self.rot_w - other.rot_w,
+            self.pos_x - other.pos_x, self.pos_y - other.pos_y,
+            self.pos_z - other.pos_z, self.scale - other.scale,
+            )
 
 
 class JmaAnimation:
@@ -117,6 +130,10 @@ class JmaAnimation:
     nodes = ()
     frames = ()
     world_relative = False
+
+    rot_flags   = ()
+    trans_flags = ()
+    scale_flags = ()
 
     anim_type = anim_types[0]
     frame_info_type = anim_frame_info_types[0]
@@ -135,9 +152,11 @@ class JmaAnimation:
         self.node_list_checksum = node_list_checksum
         self.nodes  = nodes  if nodes  else []
         self.frames = frames if frames else []
-        self.world_relative = world_relative
+        self.world_relative = bool(world_relative)
         self.anim_type = anim_type
         self.frame_info_type = frame_info_type
+
+        self.calculate_animation_flags()
 
     def add_frame(self, new_frame):
         assert len(new_frame) == len(self.nodes)
@@ -145,6 +164,43 @@ class JmaAnimation:
             assert isinstance(node_frame, JmaNodeState)
 
         self.frames.append(new_frame)
+
+    @property
+    def rot_flags_int(self):
+        return sum((1 << i) * bool(self.rot_flags[i])
+                   for i in range(len(self.rot_flags)))
+
+    @property
+    def trans_flags_int(self):
+        return sum((1 << i) * bool(self.trans_flags[i])
+                   for i in range(len(self.trans_flags)))
+
+    @property
+    def scale_flags_int(self):
+        return sum((1 << i) * bool(self.scale_flags[i])
+                   for i in range(len(self.scale_flags)))
+
+    def calculate_animation_flags(self):
+        self.rot_flags   = [False] * len(self.nodes)
+        self.trans_flags = [False] * len(self.nodes)
+        self.scale_flags = [False] * len(self.nodes)
+        if len(self.frames) < 2:
+            return
+
+        f0 = self.frames[0]
+
+        for node_states in self.frames[1: ]:
+            for n in range(len(node_states)):
+                diff = node_states[n] - f0[n]
+                if (diff.rot_i != 0 or diff.rot_j != 0 or
+                    diff.rot_k != 0 or diff.rot_w != 0):
+                    self.rot_flags[n] = True
+
+                if diff.pos_x != 0 or diff.pos_y != 0 or diff.pos_z != 0:
+                    self.trans_flags[n] = True
+
+                if diff.scale != 0 != 0:
+                    self.scale_flags[n] = True
 
 
 def write_jma(filepath, jma_data):

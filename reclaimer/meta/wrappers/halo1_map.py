@@ -4,8 +4,8 @@ from os.path import exists, join
 from struct import Struct as PyStruct
 
 from .halo_map import *
-from reclaimer.hsc import SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES,\
-     get_hsc_data_block, HSC_IS_SCRIPT_OR_GLOBAL
+from reclaimer.halo_script.hsc import get_hsc_data_block,\
+     HSC_IS_SCRIPT_OR_GLOBAL, SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES
 from reclaimer.common_descs import make_dependency_os_block
 from reclaimer.hek.defs.snd_ import snd__meta_stub_blockdef
 from reclaimer.hek.defs.sbsp import sbsp_meta_header_def
