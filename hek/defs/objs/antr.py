@@ -42,7 +42,6 @@ class AntrTag(HekTag):
             print(format_exc())
             return False
 
-        # make a nested list to store all transforms
         jma_animation = jma.JmaAnimation(
             anim.name, anim.node_list_checksum, anim.type.enum_name,
             anim.frame_info_type.enum_name, anim.flags.world_relative,
