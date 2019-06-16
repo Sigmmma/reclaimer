@@ -59,6 +59,25 @@ class JmsNode:
             return False
         return True
 
+    @classmethod
+    def setup_node_hierarchy(cls, nodes):
+        parented_nodes = set()
+        # setup the parent node hierarchy
+        for parent_idx in range(len(nodes)):
+            node = nodes[parent_idx]
+            if node.first_child > 0:
+                sib_idx = node.first_child
+                seen_nodes = set()
+                while sib_idx >= 0:
+                    if (sib_idx in seen_nodes or sib_idx == parent_idx or
+                        sib_idx >= len(nodes)):
+                        break
+                    seen_nodes.add(sib_idx)
+                    parented_nodes.add(sib_idx)
+                    sib_node = nodes[sib_idx]
+                    sib_node.parent_index = parent_idx
+                    sib_idx = sib_node.sibling_index
+
 
 class JmsMaterial:
     __slots__ = (
@@ -972,7 +991,7 @@ def read_jms(jms_string, stop_at="", perm_name=None):
 
     # read the nodes
     try:
-        i = 0
+        i = 0 # make sure i is defined in case of exception
         nodes.extend((None, ) * int(data[dat_i]))
         dat_i += 1
         for i in range(len(nodes)):
@@ -983,24 +1002,7 @@ def read_jms(jms_string, stop_at="", perm_name=None):
                 float(data[dat_i+7]), float(data[dat_i+8]), float(data[dat_i+9]),
                 )
             dat_i += 10
-            i += 1
-
-        parented_nodes = set()
-        # setup the parent node hierarchy
-        for parent_idx in range(len(nodes)):
-            node = nodes[parent_idx]
-            if node.first_child > 0:
-                sib_idx = node.first_child
-                seen_nodes = set()
-                while sib_idx >= 0:
-                    if (sib_idx in seen_nodes or sib_idx == parent_idx or
-                        sib_idx >= len(nodes)):
-                        break
-                    seen_nodes.add(sib_idx)
-                    parented_nodes.add(sib_idx)
-                    sib_node = nodes[sib_idx]
-                    sib_node.parent_index = parent_idx
-                    sib_idx = sib_node.sibling_index
+        JmsNode.setup_node_hierarchy(nodes)
     except Exception:
         print(traceback.format_exc())
         print("Failed to read nodes.")
@@ -1011,13 +1013,12 @@ def read_jms(jms_string, stop_at="", perm_name=None):
 
     # read the materials
     try:
-        i = 0
+        i = 0 # make sure i is defined in case of exception
         materials.extend((None, ) * int(data[dat_i]))
         dat_i += 1
         for i in range(len(materials)):
             materials[i] = JmsMaterial(data[dat_i], data[dat_i+1])
             dat_i += 2
-            i += 1
     except Exception:
         print(traceback.format_exc())
         print("Failed to read materials.")
@@ -1028,7 +1029,7 @@ def read_jms(jms_string, stop_at="", perm_name=None):
 
     # read the markers
     try:
-        i = 0
+        i = 0 # make sure i is defined in case of exception
         markers.extend((None, ) * int(data[dat_i]))
         dat_i += 1
         for i in range(len(markers)):
@@ -1040,7 +1041,6 @@ def read_jms(jms_string, stop_at="", perm_name=None):
                 float(data[dat_i+10])
                 )
             dat_i += 11
-            i += 1
     except Exception:
         print(traceback.format_exc())
         print("Failed to read markers.")
@@ -1051,13 +1051,12 @@ def read_jms(jms_string, stop_at="", perm_name=None):
 
     # read the regions
     try:
-        i = 0
+        i = 0 # make sure i is defined in case of exception
         regions.extend((None, ) * int(data[dat_i]))
         dat_i += 1
         for i in range(len(regions)):
             regions[i] = data[dat_i]
             dat_i += 1
-            i += 1
     except Exception:
         print(traceback.format_exc())
         print("Failed to read regions.")
@@ -1068,7 +1067,7 @@ def read_jms(jms_string, stop_at="", perm_name=None):
 
     # read the vertices
     try:
-        i = 0
+        i = 0 # make sure i is defined in case of exception
         verts.extend((None, ) * int(data[dat_i]))
         dat_i += 1
         for i in range(len(verts)):
@@ -1086,7 +1085,6 @@ def read_jms(jms_string, stop_at="", perm_name=None):
                 int(data[dat_i+7]), float(data[dat_i+8]), u, v, w
                 )
             dat_i += 12
-            i += 1
     except Exception:
         print(traceback.format_exc())
         print("Failed to read vertices.")
@@ -1097,7 +1095,7 @@ def read_jms(jms_string, stop_at="", perm_name=None):
 
     # read the triangles
     try:
-        i = 0
+        i = 0 # make sure i is defined in case of exception
         tris.extend((None, ) * int(data[dat_i]))
         dat_i += 1
         for i in range(len(tris)):
@@ -1106,7 +1104,6 @@ def read_jms(jms_string, stop_at="", perm_name=None):
                 int(data[dat_i+2]), int(data[dat_i+3]), int(data[dat_i+4]),
                 )
             dat_i += 5
-            i += 1
     except Exception:
         print(traceback.format_exc())
         print("Failed to read triangles.")
