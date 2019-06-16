@@ -1,14 +1,14 @@
 import os
 
-from copy import deepcopy
+from math import sqrt
 from struct import Struct as PyStruct
 
 from reclaimer.hek.defs.objs.matrices import \
      axis_angle_to_quat, multiply_quaternions
-from reclaimer.animation.jma import JmaAnimation, JmaNode, JmaNodeState,\
-     write_jma, get_anim_ext
+from reclaimer.animation.jma import JmsNode, JmaAnimation, JmaRootNodeState,\
+     JmaNodeState, write_jma, get_anim_ext
 
-__all__ = ("extract_animation", )
+__all__ = ("extract_animation", "apply_frame_info_to_state", )
 
 
 def apply_frame_info_to_state(state, dx=0, dy=0, dz=0, dyaw=0):
@@ -17,7 +17,7 @@ def apply_frame_info_to_state(state, dx=0, dy=0, dz=0, dyaw=0):
         axis_angle_to_quat(1, 0, 0, -dyaw),
         (state.rot_i, state.rot_j, state.rot_k, state.rot_w),
         )
-    return JmaNodeState(i, j, k, w, x, y, z, state.scale)
+    return JmaNodeState(x, y, z, i, j, k, w, state.scale)
 
 
 def extract_animation(tagdata, tag_path, **kw):
@@ -37,7 +37,7 @@ def extract_animation(tagdata, tag_path, **kw):
 
     anim_nodes = []
     for node in tagdata.nodes.STEPTREE:
-        anim_nodes.append(JmaNode(node.name, node.first_child_node_index,
+        anim_nodes.append(JmsNode(node.name, node.first_child_node_index,
                                   node.next_sibling_node_index))
 
     if not anim_nodes:
@@ -46,7 +46,7 @@ def extract_animation(tagdata, tag_path, **kw):
               "\tAnimation tags compiled from these files won't import onto\n"
               "\ttheir gbxmodel in 3DS Max, as their node names won't match.")
         for i in range(tagdata.animations.STEPTREE[0].node_count):
-            anim_nodes.append(JmaNode("fake_node%s" % i, -1, i + 1))
+            anim_nodes.append(JmsNode("fake_node%s" % i, -1, i + 1))
 
         anim_nodes[0].first_child = 1
         anim_nodes[-1].first_child = -1
@@ -114,11 +114,11 @@ def extract_animation(tagdata, tag_path, **kw):
                       "animation data: '%s'" % anim.name)
                 continue
 
-            # sum the frame info changes for each frame
+            # sum the frame info changes for each frame from the frame_info
             off = 0
-            root_node_infos = [[0.0, 0.0, 0.0, 0.0] for i in
-                               range(anim.frame_count + 1)]
             dx = dy = dz = dyaw = 0.0
+            x = y = z = yaw = 0.0
+            root_node_infos = []
             for f in range(anim.frame_count):
                 if has_dxdy:
                     dx, dy = unpack_dxdy(frame_info[off: off + 8])
@@ -132,15 +132,20 @@ def extract_animation(tagdata, tag_path, **kw):
                     dyaw = unpack_float(frame_info[off: off + 4])[0]
                     off += 4
 
-                x, y, z, yaw = root_node_infos[f]
-                root_node_infos[f + 1][:] = [x + dx, y + dy, z + dz, yaw + dyaw]
+                root_node_info = JmaRootNodeState(dx, dy, dz, dyaw,
+                                                  x, y, z, yaw)
+                root_node_infos.append(root_node_info)
+                x, y, z, yaw = x + dx, y + dy, z + dz, yaw + dyaw
 
 
             off = 0
             def_node_states = []
+            # overlay animations start with frame 0 being
+            # in the same state as the default node states
             if anim_type == "overlay":
                 anim_frames.append(def_node_states)
 
+            # create the default node states from the default_data
             for n in range(anim.node_count):
                 i = j = k = x = y = z = 0.0
                 w = scale = 1.0
@@ -167,9 +172,10 @@ def extract_animation(tagdata, tag_path, **kw):
                     scale = unpack_float(default_data[off: off + 4])[0]
                     off += 4
 
-                def_node_states.append(JmaNodeState(i, j, k, w, x, y, z, scale))
+                def_node_states.append(JmaNodeState(x, y, z, i, j, k, w, scale))
 
 
+            # create the node states from the frame_data
             off = 0
             for f in range(anim.frame_count):
                 node_states = []
@@ -205,35 +211,26 @@ def extract_animation(tagdata, tag_path, **kw):
                     else:
                         scale = def_state.scale
 
-                    node_states.append(JmaNodeState(i, j, k, w, x, y, z, scale))
-
-                    if n == 0:
-                        node_states[-1] = apply_frame_info_to_state(
-                            node_states[-1], *root_node_infos[f])
+                    node_states.append(JmaNodeState(x, y, z, i, j, k, w, scale))
 
 
             if anim_type != "overlay":
-                # copy the first frame to the last frame
-                node_states = deepcopy(anim_frames[0])
-                anim_frames.append(node_states)
-
+                # duplicate the first frame to the last frame for non-overlays
+                anim_frames.append(deepcopy(anim_frames[0]))
                 if root_node_infos:
-                    # add the last root info to the last frame, but make
-                    # sure to remove the frame_info from the first frame
-                    dx0, dy0, dz0, dyaw0 = root_node_infos[0]
-                    dx1, dy1, dz1, dyaw1 = root_node_infos[-1]
+                    # make sure to remove the frame_info from the first frame
+                    root_node_infos.append(
+                        root_node_infos[-1] - root_node_infos[0])
 
-                    node_states[0] = apply_frame_info_to_state(
-                        node_states[0], dx1 - dx0, dy1 - dy0,
-                        dz1 - dz0, dyaw1 - dyaw0)
 
-            write_jma(
-                filepath,
-                JmaAnimation(
-                    anim.name, anim.node_list_checksum,
-                    anim_type, frame_info_type, anim.flags.world_relative,
-                    anim_nodes, anim_frames)
+            jma_animation = JmaAnimation(
+                anim.name, anim.node_list_checksum,
+                anim_type, frame_info_type, anim.flags.world_relative,
+                anim_nodes, anim_frames
                 )
+            jma_animation.apply_frame_info_to_states()
+
+            write_jma(filepath, jma_animation)
         except Exception:
             print(format_exc())
             print("Could not extract animation.")

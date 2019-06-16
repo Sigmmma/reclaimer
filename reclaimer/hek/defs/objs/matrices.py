@@ -548,6 +548,16 @@ def multiply_quaternions(q0, q1):
     return type(q0)((i, j, k, w))
 
 
+def clip_angle_to_bounds(angle, step=pi):
+    angle -= step * 2 * int(angle / (2 * step))
+
+    if angle < -step:
+        return angle + step * 2
+    elif angle > step:
+        return angle - step * 2
+    return angle
+
+
 def quaternion_to_matrix(i, j, k, w):
     return Matrix([
         (2*(0.5 - j*j - k*k),   2*(i*j + k*w),         2*(i*k - j*w)),
