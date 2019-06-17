@@ -1,3 +1,5 @@
+import traceback
+
 from reclaimer.vector_util import decompress_quaternion48
 from supyr_struct.field_types import *
 from supyr_struct.defs.block_def import BlockDef
@@ -184,5 +186,39 @@ def get_keyframe_index_of_frame(frame, keyframes):
     return keyframe_index
 
 
-def decompress_animation(anim):
-    pass
+def decompress_animation(anim, jma_nodes=None):
+    if jma_nodes is None:
+        jma_nodes = [jma.JmaNode() for n in range(anim.node_count)]
+
+    jma_anim = jma.JmaAnimation(
+        anim.name, anim.node_list_checksum, anim.type.enum_name,
+        anim.frame_info_type.enum_name, anim.flags.world_relative, jma_nodes
+        )
+
+    jma_anim.trans_flags_int = anim.trans_flags0 | (anim.trans_flags1 << 32)
+    jma_anim.rot_flags_int   = anim.rot_flags0   | (anim.rot_flags1   << 32)
+    jma_anim.scale_flags_int = anim.scale_flags0 | (anim.scale_flags1 << 32)
+
+    comp_data = anim.frame_data.STEPTREE
+    if anim.offset_to_compressed_data > 0:
+        comp_data = comp_data[anim.offset_to_compressed_data: ]
+
+    try:
+        comp_anim = compressed_frames_def.build(rawdata=comp_data)
+    except Exception:
+        print(traceback.format_exc())
+        return None
+
+    # decompress the headers for each of the keyframes
+    rot   = comp_data.rotation
+    trans = comp_data.translation
+    scale = comp_data.scale
+
+    # get the keyframe counts and keyframe offsets
+    # Right shift by 13 rather than 12 because we're also dividing by 2
+    # to account for the fact that the offsets are in bytes, not entries.
+    rot_head   = [(v & 4095, v >> 13) for v in rot.keyframe_head]
+    trans_head = [(v & 4095, v >> 13) for v in trans.keyframe_head]
+    scale_head = [(v & 4095, v >> 13) for v in scale.keyframe_head]
+
+    return jma_anim

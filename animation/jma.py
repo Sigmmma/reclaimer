@@ -8,7 +8,7 @@ from reclaimer.hek.defs.objs.matrices import quat_to_axis_angle,\
      clip_angle_to_bounds
 from reclaimer.util import float_to_str
 from reclaimer.common_descs import anim_types, anim_frame_info_types
-from reclaimer.model.jms import JmsNode
+from reclaimer.model.jms import JmsNode, JmsModel
 
 
 def get_anim_ext(anim_type, frame_info_type, world_relative=False):
@@ -79,7 +79,8 @@ class JmaRootNodeState:
         return JmaRootNodeState(
             self.dx - other.dx, self.dy - other.dy,
             self.dz - other.dz, self.dyaw - other.dyaw,
-            other.x, other.y, other.z, other.yaw
+            self.x - other.x, self.y - other.y,
+            self.z - other.z, self.yaw - other.yaw
             )
 
 
@@ -150,9 +151,9 @@ class JmaAnimation:
 
     world_relative = False
 
-    rot_flags   = ()
-    trans_flags = ()
-    scale_flags = ()
+    rot_flags_int   = 0
+    trans_flags_int = 0
+    scale_flags_int = 0
 
     anim_type = anim_types[0]
     frame_info_type = anim_frame_info_types[0]
@@ -175,9 +176,10 @@ class JmaAnimation:
         self.anim_type = anim_type
         self.frame_info_type = frame_info_type
         self.frame_rate = frame_rate
-        self.actors = actors if actors else []
+        self.actors = actors if actors else ["unnamedActor"]
 
         self.calculate_animation_flags()
+        self.calculate_root_node_info()
 
     def add_frame(self, new_frame):
         assert len(new_frame) == len(self.nodes)
@@ -187,80 +189,50 @@ class JmaAnimation:
         self.frames.append(new_frame)
 
     @property
+    def actor_count(self): return len(self.actors)
+    @property
+    def frame_count(self): return len(self.frames)
+    @property
+    def node_count(self): return len(self.nodes)
+
+    @property
     def last_frame_loops_to_first(self):
         return self.anim_type != "overlay"
 
     @property
-    def rot_flags_int(self):
-        return sum((1 << i) * bool(self.rot_flags[i])
-                   for i in range(len(self.rot_flags)))
+    def trans_flags(self):
+        return [bool(self.trans_flags_int & (1 << i))
+                for i in range(self.node_count)]
 
     @property
-    def trans_flags_int(self):
-        return sum((1 << i) * bool(self.trans_flags[i])
-                   for i in range(len(self.trans_flags)))
+    def rot_flags(self):
+        return [bool(self.rot_flags_int & (1 << i))
+                for i in range(self.node_count)]
 
     @property
-    def scale_flags_int(self):
-        return sum((1 << i) * bool(self.scale_flags[i])
-                   for i in range(len(self.scale_flags)))
+    def scale_flags(self):
+        return [bool(self.scale_flags_int & (1 << i))
+                for i in range(self.node_count)]
 
-    def calculate_animation_flags(self):
-        self.rot_flags   = [False] * len(self.nodes)
-        self.trans_flags = [False] * len(self.nodes)
-        self.scale_flags = [False] * len(self.nodes)
-        if len(self.frames) < 2:
-            return
+    @property
+    def root_node_info_frame_size(self):
+        if "dz" in self.frame_info_type:
+            return 16
+        elif "dyaw" in self.frame_info_type:
+            return 12
+        elif "dx" in self.frame_info_type:
+            return 8
+        return 0
 
-        f0 = self.frames[0]
+    @property
+    def frame_data_frame_size(self):
+        return (12 * sum(self.trans_flags) +
+                8  * sum(self.rot_flags) +
+                4  * sum(self.scale_flags))
 
-        for node_states in self.frames[1: ]:
-            for n in range(len(node_states)):
-                diff = node_states[n] - f0[n]
-                if (diff.rot_i != 0 or diff.rot_j != 0 or
-                    diff.rot_k != 0 or diff.rot_w != 0):
-                    self.rot_flags[n] = True
-
-                if diff.pos_x != 0 or diff.pos_y != 0 or diff.pos_z != 0:
-                    self.trans_flags[n] = True
-
-                if diff.scale != 0:
-                    self.scale_flags[n] = True
-
-    def calculate_root_node_info(self):
-        self.root_node_info = [JmaRootNodeState()]
-
-        has_dxdy = "dx" in self.frame_info_type
-        has_dz   = "dz" in self.frame_info_type
-        has_dyaw = "dyaw" in self.frame_info_type
-
-        dx = dy = dz = dyaw = 0.0
-        x = y = z = yaw = 0
-        for f in range(anim.frame_count):
-            node_state = self.frames[f][0]
-            if has_dxdy:
-                dx, dy = node_state.pos_x - x,  node_state.pos_y - y
-                x, y = node_state.pos_x, node_state.pos_y
-
-            if has_dz:
-                dz = node_state.pos_z - z
-                z = node_state.pos_z
-
-            if has_dyaw:
-                ex, ey, ez, ea = quat_to_axis_angle(
-                    node_state.i, node_state.j, node_state.k, node_state.w)
-                next_yaw = ex * (-ea)
-                dyaw = clip_angle_to_bounds(next_yaw - yaw)
-                yaw = next_yaw
-
-            node_info = self.root_node_info[f]
-            self.root_node_info.append(
-                JmaRootNodeState(
-                    dx, dy, dz, dyaw,
-                    node_info.dx + dx, node_info.dy + dy,
-                    node_info.dz + dz, node_info.dyaw + dyaw
-                    )
-                )
+    @property
+    def default_data_size(self):
+        return self.node_count * 24 - self.frame_size
 
     def apply_frame_info_to_states(self, undo=False):
         delta = -1 if undo else 1
@@ -284,25 +256,136 @@ class JmaAnimation:
             node_state.rot_k = k
             node_state.rot_w = w
 
+    def calculate_root_node_info(self):
+        self.root_node_info = []
+
+        has_dxdy = "dx"   in self.frame_info_type
+        has_dz   = "dz"   in self.frame_info_type
+        has_dyaw = "dyaw" in self.frame_info_type
+
+        dx = dy = dz = dyaw = x = y = z = yaw = 0.0
+        frame_count = self.frame_count
+        for f in range(frame_count):
+            node_state0 = self.frames[f][0]
+            node_state1 = self.frames[(f + 1) % frame_count][0]
+            if has_dxdy:
+                dx = node_state1.pos_x - node_state0.pos_x
+                dy = node_state1.pos_y - node_state0.pos_y
+
+            if has_dz:
+                dz = node_state1.pos_z - node_state0.pos_z
+
+            if has_dyaw:
+                ex0, ey0, ez0, ea0 = quat_to_axis_angle(
+                    node_state0.i, node_state0.j,
+                    node_state0.k, node_state0.w)
+                ex1, ey1, ez1, ea1 = quat_to_axis_angle(
+                    node_state1.i, node_state1.j,
+                    node_state1.k, node_state1.w)
+
+                dyaw = clip_angle_to_bounds(ex1 * (-ea1) - ex0 * (-ea0))
+
+            self.root_node_info.append(
+                JmaRootNodeState(dx, dy, dz, dyaw, x, y, z, yaw)
+                )
+            x += dx
+            y += dy
+            z += dz
+            yaw += dyaw
+
+    verify_nodes_valid = JmsModel.verify_nodes_valid
+
+    def calculate_animation_flags(self):
+        self.rot_flags_int = self.trans_flags = self.scale_flags = 0
+        if len(self.frames) < 2:
+            return
+
+        f0 = self.frames[0]
+
+        for node_states in self.frames[1: ]:
+            for n in range(len(node_states)):
+                diff = node_states[n] - f0[n]
+                if (diff.rot_i != 0 or diff.rot_j != 0 or
+                    diff.rot_k != 0 or diff.rot_w != 0):
+                    self.rot_flags_int |= (1 << n)
+
+                if diff.pos_x != 0 or diff.pos_y != 0 or diff.pos_z != 0:
+                    self.trans_flags_int |= (1 << n)
+
+                if diff.scale != 0:
+                    self.scale_flags_int |= (1 << n)
+
+    def verify_animations_match(self, other_jma):
+        errors = list(other_jma.verify_jma())
+        if len(other_jma.nodes) != len(self.nodes):
+            errors.append("Node counts do not match.")
+            return errors
+
+        for i in range(len(self.nodes)):
+            if not self.nodes[i].is_node_hierarchy_equal(other_jma.nodes[i]):
+                errors.append("Nodes '%s' do not match." % i)
+
+        return errors
+
+    def verify_jma(self):
+        crc = self.node_list_checksum
+        node_error = False
+        node_ct = len(self.nodes)
+
+        errors = self.verify_nodes_valid()
+        if errors:
+            return errors
+
+        for frame in self.frames:
+            if len(frame) != node_ct:
+                errors.append("Invalid node state count for frame(s).")
+                break
+
+        return errors
+
 
 class JmaAnimationSet:
-    name = ""
     node_list_checksum = 0
     nodes = ()
     animations = ()
 
-    def __init__(self, name="", node_list_checksum=0,
-                 nodes=None, animations=None):
-        name = name.strip(" ")
-
+    def __init__(self, jma_animations=None):
         node_list_checksum = node_list_checksum & 0xFFffFFff
         if node_list_checksum >= (1<<31):
             node_list_checksum = node_list_checksum - 0x100000000
 
-        self.name = name
-        self.node_list_checksum = node_list_checksum
-        self.nodes      = nodes      if nodes      else []
-        self.animations = animations if animations else []
+        self.nodes = []
+        self.animations = {}
+
+        for jma_animation in jma_animations:
+            self.merge_jma_animation(jma_animation)
+
+    verify_models_match = JmaAnimation.verify_animations_match
+
+    def merge_jma_animation(self, other_jma):
+        assert isinstance(other_jma, JmaAnimation)
+
+        if not other_jma:
+            return
+
+        if not self.nodes:
+            self.node_list_checksum = other_jma.node_list_checksum
+            self.nodes = []
+            for node in other_jma.nodes:
+                self.nodes.append(
+                    JmsNode(
+                        node.name, node.first_child, node.sibling_index,
+                        node.rot_i, node.rot_j, node.rot_k, node.rot_w,
+                        node.pos_x, node.pos_y, node.pos_z, node.parent_index)
+                    )
+
+        errors = self.verify_animations_match(other_jma)
+        if errors:
+            return errors
+
+        self.animations[other_jma.name] = other_jma
+
+        return all_errors
 
 
 def read_jma(jma_string, stop_at="", anim_name=""):
@@ -312,7 +395,7 @@ def read_jma(jma_string, stop_at="", anim_name=""):
     anim_name, ext = os.path.splitext(anim_name)
     anim_type, frame_info_type, world_relative = get_anim_types(ext)
 
-    jma_data = JmaAnimation(anim_name, 0, anim_type,
+    jma_anim = JmaAnimation(anim_name, 0, anim_type,
                             frame_info_type, world_relative)
     jma_string = jma_string.replace("\n", "\t")
 
@@ -321,7 +404,7 @@ def read_jma(jma_string, stop_at="", anim_name=""):
 
     if data[dat_i] != "16392":
         print("JMA identifier '16392' not found.")
-        return jma_data
+        return jma_anim
 
     dat_i += 1
 
@@ -331,7 +414,7 @@ def read_jma(jma_string, stop_at="", anim_name=""):
     except Exception:
         print(traceback.format_exc())
         print("Could not read frame count.")
-        return jma_data
+        return jma_anim
 
     try:
         frame_rate = int(data[dat_i]) & 0xFFffFFff
@@ -339,23 +422,23 @@ def read_jma(jma_string, stop_at="", anim_name=""):
     except Exception:
         print(traceback.format_exc())
         print("Could not frame rate.")
-        return jma_data
+        return jma_anim
 
-    if stop_at == "actors": return jma_data
+    if stop_at == "actors": return jma_anim
 
     # read the actors
     try:
         i = 0 # make sure i is defined in case of exception
-        jma_data.actors = [None] * (int(data[dat_i]) & 0xFFffFFff)
+        jma_anim.actors = [None] * (int(data[dat_i]) & 0xFFffFFff)
         dat_i += 1
-        for i in range(len(jma_data.actors)):
-            jma_data.actors[i] = data[dat_i]
+        for i in range(len(jma_anim.actors)):
+            jma_anim.actors[i] = data[dat_i]
             dat_i += 1
     except Exception:
         print(traceback.format_exc())
         print("Failed to read actors.")
-        del jma_data.actors[i: ]
-        return jma_data
+        del jma_anim.actors[i: ]
+        return jma_anim
 
     try:
         node_count = int(data[dat_i]) & 0xFFffFFff
@@ -363,39 +446,41 @@ def read_jma(jma_string, stop_at="", anim_name=""):
     except Exception:
         print(traceback.format_exc())
         print("Could not node count.")
-        return jma_data
+        return jma_anim
 
-    if stop_at == "checksum": return jma_data
+    if stop_at == "checksum": return jma_anim
 
     try:
         node_list_checksum = int(data[dat_i]) & 0xFFffFFff
         if node_list_checksum >= (1<<31):
             node_list_checksum = node_list_checksum - 0x100000000
-        jma_data.node_list_checksum = node_list_checksum
+        jma_anim.node_list_checksum = node_list_checksum
         dat_i += 1
     except Exception:
         print(traceback.format_exc())
         print("Could not read node list checksum.")
-        return jma_data
+        return jma_anim
 
-    if stop_at == "nodes": return jma_data
+    if stop_at == "nodes": return jma_anim
 
     # read the nodes
     try:
         i = 0 # make sure i is defined in case of exception
-        jma_data.nodes = [None] * node_count
+        jma_anim.nodes = [None] * node_count
         for i in range(node_count):
-            jma_data.nodes[i] = JmsNode(
+            jma_anim.nodes[i] = JmsNode(
                 data[dat_i], int(data[dat_i+1]), int(data[dat_i+2])
                 )
             dat_i += 3
-        JmsNode.setup_node_hierarchy(jma_data.nodes)
+        JmsNode.setup_node_hierarchy(jma_anim.nodes)
     except Exception:
         print(traceback.format_exc())
         print("Failed to read nodes.")
-        del jma_data.nodes[i: ]
-        return jma_data
+        del jma_anim.nodes[i: ]
+        return jma_anim
 
+
+    if stop_at == "frame_data": return jma_anim
 
     # read the frame data
     try:
@@ -410,36 +495,39 @@ def read_jma(jma_string, stop_at="", anim_name=""):
                     float(data[dat_i+6]), float(data[dat_i+7])
                     )
                 dat_i += 8
-            jma_data.frames.append(frame)
+            jma_anim.frames.append(frame)
     except Exception:
         print(traceback.format_exc())
         print("Failed to read frames.")
-        del jma_data.frames[i: ]
-        return jma_data
+        del jma_anim.frames[i: ]
+        return jma_anim
 
-    return jma_data
+    return jma_anim
 
 
-def write_jma(filepath, jma_data):
+def write_jma(filepath, jma_anim):
     # If the path doesnt exist, create it
     if not os.path.exists(os.path.dirname(filepath)):
         os.makedirs(os.path.dirname(filepath))
 
     with open(filepath, "w", encoding='latin1') as f:
         f.write("16392\n")  # unknown constant
-        f.write("%s\n" % len(jma_data.frames))
-        f.write("30\n")  # I'm guessing this is the frame-rate?
-        f.write("1\n")   # And maybe this is the number of "actors"?
-        f.write("unnamedActor\n")
-        f.write("%s\n" % len(jma_data.nodes))
-        f.write("%s\n" % (int(jma_data.node_list_checksum) & 0xFFffFFff))
+        f.write("%s\n" % jma_anim.frame_count)
+        f.write("%s\n" % jma_anim.frame_rate)
 
-        for node in jma_data.nodes:
+        f.write("%s\n" % jma_anim.actor_count)
+        for actor_name in jma_anim.actors:
+            f.write("%s\n" % actor_name)
+
+        f.write("%s\n" % jma_anim.node_count)
+        f.write("%s\n" % (int(jma_anim.node_list_checksum) & 0xFFffFFff))
+
+        for node in jma_anim.nodes:
             f.write("%s\n%s\t%s\n" %
                 (node.name[: 31], node.first_child, node.sibling_index)
             )
 
-        for frame in jma_data.frames:
+        for frame in jma_anim.frames:
             for nf in frame:
                 f.write("%s\t%s\t%s\n%s\t%s\t%s\t%s\n%s\n" % (
                     float_to_str(nf.pos_x * 100),
