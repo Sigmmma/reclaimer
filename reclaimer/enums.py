@@ -1154,6 +1154,11 @@ detail_mask = (
     "auxiliary_mask_inverse",
     "auxiliary_mask"
     )
+
+# DO NOT RENAME THESE OPTIONS.
+# animation extraction/compilation depends on
+# the anim_types and anim_frame_info_types
+# options being named exactly like this
 anim_types = (
     "base",
     "overlay",

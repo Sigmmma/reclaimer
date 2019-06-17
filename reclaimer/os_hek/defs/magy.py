@@ -4,7 +4,7 @@ from ...hek.defs.antr import *
 magy_body = Struct("tagdata",
     reflexive("objects",  object_desc, 4),
     reflexive("units",    unit_desc, 32, DYN_NAME_PATH=".label"),
-    reflexive("weapons",  weapons_desc, 1),
+    reflexive("weapons",  weapon_desc, 1),
     reflexive("vehicles", vehicle_desc, 1),
     reflexive("devices",  device_desc, 1),
     reflexive("unit_damages", anim_enum_desc, 176),

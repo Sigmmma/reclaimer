@@ -59,6 +59,17 @@ class JmsNode:
             return False
         return True
 
+    def is_node_hierarchy_equal(self, other):
+        if not isinstance(other, JmsNode):
+            return False
+        elif self.name != other.name:
+            return False
+        elif self.first_child != other.first_child:
+            return False
+        elif self.sibling_index != other.sibling_index:
+            return False
+        return True
+
     @classmethod
     def setup_node_hierarchy(cls, nodes):
         parented_nodes = set()
@@ -560,7 +571,7 @@ class JmsModel:
     def verify_nodes_valid(self):
         errors = []
         if len(self.nodes) == 0:
-            errors.append("No nodes. Jms models must contain at least one node.")
+            errors.append("No nodes. Must contain at least one node.")
         elif len(self.nodes) >= 64:
             errors.append("Too many nodes. Max count is 64.")
 
@@ -903,18 +914,22 @@ class MergedJmsModel:
 
         if not self.nodes:
             self.node_list_checksum = other_model.node_list_checksum
-            self.nodes = nodes = []
-            self.materials = materials = []
+            self.nodes = []
+            self.materials = []
             for node in other_model.nodes:
-                nodes.append(
-                    JmsNode(node.name, node.first_child, node.sibling_index,
-                     node.rot_i, node.rot_j, node.rot_k, node.rot_w,
-                     node.pos_x, node.pos_y, node.pos_z, node.parent_index))
+                self.nodes.append(
+                    JmsNode(
+                        node.name, node.first_child, node.sibling_index,
+                        node.rot_i, node.rot_j, node.rot_k, node.rot_w,
+                        node.pos_x, node.pos_y, node.pos_z, node.parent_index)
+                    )
 
             for mat in other_model.materials:
-                materials.append(JmsMaterial(
-                    mat.name, mat.tiff_path, mat.shader_path, mat.shader_type,
-                    mat.properties))
+                self.materials.append(
+                    JmsMaterial(
+                        mat.name, mat.tiff_path, mat.shader_path,
+                        mat.shader_type, mat.properties)
+                    )
 
             self.regions = {}
 
@@ -1198,6 +1213,20 @@ def write_jms(filepath, jms_data):
                 tri.v0, tri.v1, tri.v2
                 )
             )
+
+
+def generate_fake_nodes(node_count):
+    nodes = []
+    if node_count <= 0:
+        return nodes
+
+    for i in range(node_count):
+        nodes.append(JmsNode("fake_node%s" % i, -1, i + 1))
+
+    nodes[0].first_child = 1
+    nodes[-1].first_child = -1
+    nodes[0].sibling_index = nodes[-1].sibling_index = -1
+    return nodes
 
 
 def edge_loop_to_strippable_tris(edge_loop, region=0, mat_id=0):
