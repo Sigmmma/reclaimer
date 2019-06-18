@@ -1,6 +1,3 @@
-
-
-
 class MapPointerConverter:
     '''Handles converting virtual pointers to/from file pointers in maps.'''
     class PageInfo:

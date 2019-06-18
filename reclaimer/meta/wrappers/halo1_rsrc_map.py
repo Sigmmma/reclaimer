@@ -1,6 +1,6 @@
 from reclaimer import data_extraction
+from reclaimer.util import get_is_xbox_map
 
-from ...util import get_is_xbox_map
 from ..halo1_rsrc_map import lite_halo1_rsrc_map_def as halo1_rsrc_map_def
 from .byteswapping import raw_block_def, byteswap_pcm16_samples
 from .halo_map import *

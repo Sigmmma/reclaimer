@@ -1166,9 +1166,9 @@ anim_types = (
     )
 anim_frame_info_types = (
     "none",
-    "dx,dy",
-    "dx,dy,dyaw",
-    "dx,dy,dz,dyaw",
+    "dx_dy",
+    "dx_dy_dyaw",
+    "dx_dy_dz_dyaw",
     )
 
 

@@ -2,8 +2,8 @@ from struct import unpack
 
 from supyr_struct.field_types import *
 from supyr_struct.blocks import *
-from .field_type_methods import *
-from .constants import *
+from reclaimer.field_type_methods import *
+from reclaimer.constants import *
 
 
 '''These are varients of the standard FieldTypes that have been

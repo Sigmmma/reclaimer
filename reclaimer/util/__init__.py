@@ -1,6 +1,9 @@
+from math import log
+
 from os.path import sep as PATHDIV
 from supyr_struct.defs.util import *
-from reclaimer.vector_util import *
+from reclaimer.util import compression
+from reclaimer.util import matrices
 
 
 POS_INF = float("inf")

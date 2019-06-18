@@ -2,20 +2,61 @@ import traceback
 
 from struct import Struct as PyStruct
 
-__all__ = ("compile_animation", "compile_animation_tag", )
+__all__ = ("compile_animation", "compile_model_animations", )
 
 
-def compile_animation(anim, jma_anim):
+def compile_animation(anim, jma_anim, ignore_size_limits=False):
     '''
     Compiles the provided JmaAnimation into the provided antr animation block.
     '''
+    errors = []
+
+    # determine the sizes of the frame_info, default_data, and frame_data
+    frame_info_node_size = jma_anim.root_node_info_frame_size
+
+    frame_info_size   = frame_info_node_size * jma_anim.frame_count
+    default_data_size = jma_anim.default_data_size
+    frame_data_size   = jma_anim.frame_data_frame_size * jma_anim.frame_count
+
+    max_frame_info_size   = anim.frame_info.get_desc('MAX', 'size')
+    max_default_data_size = anim.default_data.get_desc('MAX', 'size')
+    max_frame_data_size   = anim.frame_data.get_desc('MAX', 'size')
+
+    if not ignore_size_limits:
+        if frame_info_size > max_frame_info_size:
+            errors.append("Too much frame_info data. Max is %s bytes, got %s" %
+                          (max_frame_info_size, frame_info_size))
+
+        if default_data_size > max_default_data_size:
+            errors.append("Too much default data. Max is %s bytes, got %s" %
+                          (max_default_data_size, default_data_size))
+
+        if frame_data_size > max_frame_data_size:
+            errors.append("Too much frame data. Max is %s bytes, got %s" %
+                          (max_frame_data_size, frame_data_size))
+
+    if errors:
+        return errors
+
+    has_dxdy = "dx"   in jma_anim.frame_info_type
+    has_dz   = "dz"   in jma_anim.frame_info_type
+    has_dyaw = "dyaw" in jma_anim.frame_info_type
+
     anim.name = jma_anim.name
     anim.type.set_to(jma_anim.anim_type)
     anim.frame_count = jma_anim.frame_count
     anim.frame_size = jma_anim.frame_data_frame_size
-    anim.frame_info_type.set_to(jma_anim.frame_info_type)
     anim.node_list_checksum = jma_anim.node_list_checksum
     anim.node_count = jma_anim.node_count
+
+    if has_dz:
+        anim.frame_info_type.data = 3
+    elif has_dyaw:
+        anim.frame_info_type.data = 2
+    elif has_dxdy:
+        anim.frame_info_type.data = 1
+    else:
+        anim.frame_info_type.data = 0
 
     # cant compress animations yet
     anim.flags.data = 0
@@ -29,27 +70,6 @@ def compile_animation(anim, jma_anim):
     anim.scale_flags0 =  jma_anim.scale_flags_int & 0xFFffFFff
     anim.scale_flags1 = (jma_anim.scale_flags_int >> 32) & 0xFFffFFff
 
-    # determine the sizes of the frame_info, default_data, and frame_data
-    frame_info_node_size = jma_anim.root_node_info_frame_size
-
-    frame_info_size   = frame_info_node_size * jma_anim.frame_count
-    default_data_size = jma_anim.default_data_size
-    frame_data_size   = jma_anim.frame_data_frame_size * anim.frame_count
-
-    max_frame_info_size   = anim.frame_info.get_desc('MAX', 'size')
-    max_default_data_size = anim.default_data.get_desc('MAX', 'size')
-    max_frame_data_size   = anim.frame_data.get_desc('MAX', 'size')
-
-    if frame_info_size > max_frame_info_size:
-        raise ValueError("Too much frame_info data. Max is %s bytes, got %s" %
-                         (max_frame_info_size, frame_info_size))
-    elif default_data_size > max_default_data_size:
-        raise ValueError("Too much default data. Max is %s bytes, got %s" %
-                         (max_default_data_size, default_data_size))
-    elif frame_data_size > max_frame_data_size:
-        raise ValueError("Too much frame data. Max is %s bytes, got %s" %
-                         (max_frame_data_size, frame_data_size))
-
 
     anim.frame_info.STEPTREE   = bytearray(b'\x00' * frame_info_size)
     anim.default_data.STEPTREE = bytearray(b'\x00' * default_data_size)
@@ -62,9 +82,6 @@ def compile_animation(anim, jma_anim):
     rot_flags   = jma_anim.rot_flags
     trans_flags = jma_anim.trans_flags
     scale_flags = jma_anim.scale_flags
-    has_dxdy = "dx"   in jma_anim.frame_info_type
-    has_dz   = "dz"   in jma_anim.frame_info_type
-    has_dyaw = "dyaw" in jma_anim.frame_info_type
 
     pack_1_float_into = PyStruct(">f").pack_into
     pack_2_float_into = PyStruct(">2f").pack_into
@@ -76,11 +93,14 @@ def compile_animation(anim, jma_anim):
     for f in range(anim.frame_count):
         info = jma_anim.root_node_info[f]
         if has_dz:
-            pack_4_float_into(frame_info, i, info.dx, info.dy, info.dz, info.dyaw)
+            pack_4_float_into(
+                frame_info, i, info.dx / 100, info.dy / 100, info.dz / 100, info.dyaw)
         elif has_dyaw:
-            pack_3_float_into(frame_info, i, info.dx, info.dy, info.dyaw)
+            pack_3_float_into(
+                frame_info, i, info.dx / 100, info.dy / 100, info.dyaw)
         elif has_dxdy:
-            pack_2_float_into(frame_info, i, info.dx, info.dy)
+            pack_2_float_into(
+                frame_info, i, info.dx / 100, info.dy / 100)
         else:
             break
 
@@ -107,11 +127,15 @@ def compile_animation(anim, jma_anim):
 
             if trans_flags[n]:
                 pack_3_float_into(frame_data, i,
-                    node_state.pos_x, node_state.pos_y, node_state.pos_z)
+                    node_state.pos_x / 100,
+                    node_state.pos_y / 100,
+                    node_state.pos_z / 100)
                 i += 12
             elif f == 0:
                 pack_3_float_into(default_data, j,
-                    node_state.pos_x, node_state.pos_y, node_state.pos_z)
+                    node_state.pos_x / 100,
+                    node_state.pos_y / 100,
+                    node_state.pos_z / 100)
                 j += 12
 
             if scale_flags[n]:
@@ -122,7 +146,9 @@ def compile_animation(anim, jma_anim):
                 j += 4
 
 
-def compile_animation_tag(antr_tag, jma_anim_set):
+def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False):
+    errors = []
+
     antr_units = antr_tag.data.tagdata.units.STEPTREE
     antr_weapons = antr_tag.data.tagdata.weapons.STEPTREE
     antr_vehicles = antr_tag.data.tagdata.vehicles.STEPTREE
@@ -151,12 +177,15 @@ def compile_animation_tag(antr_tag, jma_anim_set):
     unit_labels = set()
 
     for jma_anim_name in sorted(jma_anim_set.animations):
+        antr_anims.append()
         try:
-            antr_anims.append()
-            compile_animation(antr_anims[-1], jma_anim_set[jma_anim_name])
+            jma_anim = jma_anim_set.animations[jma_anim_name]
+            compile_animation(antr_anims[-1], jma_anim,
+                              ignore_size_limits)
         except Exception:
-            print(traceback.format_exc())
+            errors.append(traceback.format_exc())
             antr_anims.pop(-1)
+            continue
 
         # determine where this animation is to be used
         name_pieces = jma_anim_name.split(" ")
@@ -164,6 +193,8 @@ def compile_animation_tag(antr_tag, jma_anim_set):
             continue
 
     # remove any unused unit blocks
-    for i in range(len(antr_units) - 1, -1, -1)
+    for i in range(len(antr_units) - 1, -1, -1):
         if antr_units[i].label not in unit_names:
             antr_units.pop(i)
+
+    return errors

@@ -14,9 +14,10 @@ except Exception:
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
 from supyr_struct.defs.util import *
-from .field_types import *
-from .constants import *
-from .enums import *
+
+from reclaimer.field_types import *
+from reclaimer.constants import *
+from reclaimer.enums import *
 
 # before we do anything, we need to inject these constants so any definitions
 # that are built that use them will have them in their descriptor entries.

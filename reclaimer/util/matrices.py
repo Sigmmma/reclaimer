@@ -9,10 +9,10 @@ class CannotRowReduce(ValueError): pass
 class MatrixNotInvertable(ValueError): pass
 
 
-def are_points_equal(point_0, point_1, use_double_rounding=False,
-                     round_adjust=0):
+def are_vectors_equal(vector_0, vector_1, use_double_rounding=False,
+                      round_adjust=0):
     mantissa_len = (53 if use_double_rounding else 23)
-    for val_0, val_1 in zip(point_0, point_1):
+    for val_0, val_1 in zip(vector_0, vector_1):
         # take into account rounding errors for 32bit floats
         val = max(abs(val_0), abs(val_1))
         delta_max = 2**(
@@ -29,7 +29,7 @@ def are_planes_equal(plane_0, plane_1, use_double_rounding=False,
     p1 = Plane(plane_1)
     p0.normalize()
     p1.normalize()
-    return are_points_equal(p0, p1, use_double_rounding, round_adjust)
+    return are_vectors_equal(p0, p1, use_double_rounding, round_adjust)
 
 
 def point_distance_to_plane(point, plane, use_double_rounding=False,
@@ -170,8 +170,8 @@ def find_intersect_point_of_lines(line_0, line_1, use_double_rounding=False,
 
     intersect_a = v0 - d0 * result[0][0]
     intersect_b = v1 - d1 * result[1][0]
-    if ignore_check or are_points_equal(intersect_a, intersect_b,
-                                        use_double_rounding, round_adjust):
+    if ignore_check or are_vectors_equal(intersect_a, intersect_b,
+                                         use_double_rounding, round_adjust):
         # point lies on both lines
         return intersect_a + (intersect_b - intersect_a) / 2
 
@@ -228,8 +228,8 @@ def planes_to_verts_and_edge_loops(planes, center, plane_dir=True, max_plane_ct=
                 better_vert_index = None
                 similar_verts = set()
                 for w in range(len(intersects)):
-                    if are_points_equal(intersects[w], intersect,
-                                        round_adjust=round_adjust / weight):
+                    if are_vectors_equal(intersects[w], intersect,
+                                         round_adjust=round_adjust / weight):
                         if intersect_weights[w] > weight:
                             better_vert_index = w
                         else:
@@ -535,8 +535,12 @@ def axis_angle_to_quaternion(x, y, z, a):
 
 
 def quaternion_to_axis_angle(i, j, k, w):
-    assert w <= 1.0 and w >= -1.0
+    if w > 1.0 or w < -1.0:
+        i, j, k, w = Quaternion((i, j, k, w)).normalized
+
     length = sqrt(1 - w**2)
+    if length == 0.0:
+        return i, j, k, 0
     return i / length, j / length, k / length, 2 * acos(w)
 
 
@@ -661,6 +665,8 @@ class Vector(list):
         new = type(self)(self)
         for i in range(len(self)): new[i] /= other
         return new
+    def __eq__(self, other):
+        return are_vectors_equal(self, other)
     def __iadd__(self, other):
         for i in range(len(other)): self[i] += other[i]
         return self
@@ -686,8 +692,6 @@ class Vector(list):
 
 class Point(Vector):
     __slots__ = ()
-    def __eq__(self, other):
-        return are_points_equal(self, other)
 
 
 class Ray(Vector):
@@ -785,14 +789,14 @@ class Quaternion(FixedLengthList, Ray):
         return self
     __rmul__ = __mul__
 
-    @classmethod
-    def to_euler(cls, self):
+    @property
+    def to_euler(self):
         return Vector(quaternion_to_euler(*self))
-    @classmethod
-    def to_axis_angle(cls, self):
+    @property
+    def to_axis_angle(self):
         return Vector(quaternion_to_axis_angle(*self))
-    @classmethod
-    def to_matrix(cls, self):
+    @property
+    def to_matrix(self):
         return quaternion_to_matrix(*self)
 
 
