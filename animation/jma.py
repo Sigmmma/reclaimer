@@ -4,11 +4,16 @@ import re
 import traceback
 
 from copy import deepcopy
-from reclaimer.hek.defs.objs.matrices import quat_to_axis_angle,\
-     clip_angle_to_bounds
-from reclaimer.util import float_to_str
 from reclaimer.common_descs import anim_types, anim_frame_info_types
 from reclaimer.model.jms import JmsNode, JmsModel
+from reclaimer.util import float_to_str
+from reclaimer.util.matrices import clip_angle_to_bounds,\
+     Quaternion, multiply_quaternions, axis_angle_to_quat, are_vectors_equal
+
+
+JMA_ANIMATION_EXTENSIONS = (
+    ".jma", ".jmm", ".jmo", ".jmr", ".jmt", ".jmw", ".jmz", 
+    )
 
 
 def get_anim_ext(anim_type, frame_info_type, world_relative=False):
@@ -189,6 +194,11 @@ class JmaAnimation:
         self.frames.append(new_frame)
 
     @property
+    def ext(self):
+        return get_anim_ext(self.anim_type, self.frame_info_type,
+                            self.world_relative)
+
+    @property
     def actor_count(self): return len(self.actors)
     @property
     def frame_count(self): return len(self.frames)
@@ -232,7 +242,7 @@ class JmaAnimation:
 
     @property
     def default_data_size(self):
-        return self.node_count * 24 - self.frame_size
+        return self.node_count * 24 - self.frame_data_frame_size
 
     def apply_frame_info_to_states(self, undo=False):
         delta = -1 if undo else 1
@@ -276,12 +286,15 @@ class JmaAnimation:
                 dz = node_state1.pos_z - node_state0.pos_z
 
             if has_dyaw:
-                ex0, ey0, ez0, ea0 = quat_to_axis_angle(
-                    node_state0.i, node_state0.j,
-                    node_state0.k, node_state0.w)
-                ex1, ey1, ez1, ea1 = quat_to_axis_angle(
-                    node_state1.i, node_state1.j,
-                    node_state1.k, node_state1.w)
+                quat0 = Quaternion(
+                    (node_state0.rot_i, node_state0.rot_j,
+                     node_state0.rot_k, node_state0.rot_w))
+                quat1 = Quaternion(
+                    (node_state1.rot_i, node_state1.rot_j,
+                     node_state1.rot_k, node_state1.rot_w))
+
+                ex0, ey0, ez0, ea0 = quat0.normalized.to_axis_angle
+                ex1, ey1, ez1, ea1 = quat1.normalized.to_axis_angle
 
                 dyaw = clip_angle_to_bounds(ex1 * (-ea1) - ex0 * (-ea0))
 
@@ -295,24 +308,32 @@ class JmaAnimation:
 
     verify_nodes_valid = JmsModel.verify_nodes_valid
 
-    def calculate_animation_flags(self):
-        self.rot_flags_int = self.trans_flags = self.scale_flags = 0
+    def calculate_animation_flags(self, tolerance=0.0000000001):
+        self.rot_flags_int = 0
+        self.trans_flags_int = 0
+        self.scale_flags_int = 0
         if len(self.frames) < 2:
             return
 
         f0 = self.frames[0]
 
+        zero = (0, 0, 0, 0)
         for node_states in self.frames[1: ]:
             for n in range(len(node_states)):
                 diff = node_states[n] - f0[n]
-                if (diff.rot_i != 0 or diff.rot_j != 0 or
-                    diff.rot_k != 0 or diff.rot_w != 0):
+                if are_vectors_equal(
+                        (diff.rot_i, diff.rot_j, diff.rot_k, diff.rot_w),
+                        zero, False, tolerance):
                     self.rot_flags_int |= (1 << n)
 
-                if diff.pos_x != 0 or diff.pos_y != 0 or diff.pos_z != 0:
+                if are_vectors_equal(
+                        (diff.pos_x, diff.pos_y, diff.pos_z),
+                        zero, False, tolerance):
                     self.trans_flags_int |= (1 << n)
 
-                if diff.scale != 0:
+                if are_vectors_equal(
+                        (diff.scale, ),
+                        zero, False, tolerance):
                     self.scale_flags_int |= (1 << n)
 
     def verify_animations_match(self, other_jma):
@@ -349,18 +370,14 @@ class JmaAnimationSet:
     nodes = ()
     animations = ()
 
-    def __init__(self, jma_animations=None):
-        node_list_checksum = node_list_checksum & 0xFFffFFff
-        if node_list_checksum >= (1<<31):
-            node_list_checksum = node_list_checksum - 0x100000000
-
+    def __init__(self, *jma_animations):
         self.nodes = []
         self.animations = {}
 
         for jma_animation in jma_animations:
             self.merge_jma_animation(jma_animation)
 
-    verify_models_match = JmaAnimation.verify_animations_match
+    verify_animations_match = JmaAnimation.verify_animations_match
 
     def merge_jma_animation(self, other_jma):
         assert isinstance(other_jma, JmaAnimation)
@@ -385,7 +402,7 @@ class JmaAnimationSet:
 
         self.animations[other_jma.name] = other_jma
 
-        return all_errors
+        return errors
 
 
 def read_jma(jma_string, stop_at="", anim_name=""):
@@ -501,6 +518,9 @@ def read_jma(jma_string, stop_at="", anim_name=""):
         print("Failed to read frames.")
         del jma_anim.frames[i: ]
         return jma_anim
+
+    jma_anim.calculate_animation_flags()
+    jma_anim.calculate_root_node_info()
 
     return jma_anim
 

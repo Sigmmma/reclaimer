@@ -1,6 +1,6 @@
 from math import log
 from .tag import *
-from .matrices import Matrix
+from reclaimer.util.matrices import Matrix
 
 
 class PhysTag(HekTag):

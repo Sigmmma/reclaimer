@@ -1,6 +1,6 @@
 import os
 
-from reclaimer.hek.defs.objs.matrices import Matrix, quaternion_to_matrix
+from reclaimer.util.matrices import Matrix, quaternion_to_matrix
 
 
 __all__ = ("compile_physics", )

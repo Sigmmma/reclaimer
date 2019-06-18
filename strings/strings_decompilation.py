@@ -83,7 +83,7 @@ def extract_string_list(tagdata, tag_path, encoding="latin-1", **kw):
         out_data += string.encode(encoding)
 
     try:
-        folderpath = dirname(filepath)
+        folderpath = os.path.dirname(filepath)
         # If the path doesnt exist, create it
         if not os.path.exists(folderpath):
             os.makedirs(folderpath)
