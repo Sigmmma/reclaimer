@@ -20,8 +20,8 @@ from .byteswapping import raw_block_def, byteswap_animation,\
      byteswap_pcm16_samples
 from reclaimer import data_extraction
 from reclaimer.constants import tag_class_fcc_to_ext
-from reclaimer.util import compress_normal32, decompress_normal32,\
-     is_overlapping_ranges, is_valid_ascii_name_str
+from reclaimer.util.compression import compress_normal32, decompress_normal32
+from reclaimer.util import is_overlapping_ranges, is_valid_ascii_name_str
 
 
 __all__ = ("Halo1Map", "Halo1RsrcMap")

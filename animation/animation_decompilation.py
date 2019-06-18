@@ -1,10 +1,11 @@
 import os
+import traceback
 
+from copy import deepcopy
 from math import sqrt
 from struct import Struct as PyStruct
 
-from reclaimer.hek.defs.objs.matrices import \
-     axis_angle_to_quat, multiply_quaternions
+from reclaimer.util.matrices import axis_angle_to_quat, multiply_quaternions
 from reclaimer.animation.jma import JmsNode, JmaAnimation, JmaRootNodeState,\
      JmaNodeState, write_jma, get_anim_ext
 from reclaimer.model.jms import generate_fake_nodes
@@ -171,8 +172,8 @@ def extract_animation(tagdata, tag_path, **kw):
                     off += 4
 
                 state = def_node_states[n]
-                state.x, state.y, state.z = x, y, z
-                state.i, state.j, state.k, state.w = i, j, k, w
+                state.pos_x, state.pos_y, state.pos_z = x, y, z
+                state.rot_i, state.rot_j, state.rot_k, state.rot_w = i, j, k, w
                 state.scale = scale
 
 
@@ -213,8 +214,8 @@ def extract_animation(tagdata, tag_path, **kw):
                     else:
                         scale = def_state.scale
 
-                    state.x, state.y, state.z = x, y, z
-                    state.i, state.j, state.k, state.w = i, j, k, w
+                    state.pos_x, state.pos_y, state.pos_z = x, y, z
+                    state.rot_i, state.rot_j, state.rot_k, state.rot_w = i, j, k, w
                     state.scale = scale
 
 
@@ -231,5 +232,5 @@ def extract_animation(tagdata, tag_path, **kw):
 
             write_jma(filepath, jma_anim)
         except Exception:
-            print(format_exc())
+            print(traceback.format_exc())
             print("Could not extract animation.")

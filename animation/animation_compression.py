@@ -1,6 +1,6 @@
 import traceback
 
-from reclaimer.vector_util import decompress_quaternion48
+from reclaimer.util.compression import decompress_quaternion48
 from supyr_struct.field_types import *
 from supyr_struct.defs.block_def import BlockDef
 

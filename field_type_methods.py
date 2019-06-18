@@ -1,5 +1,5 @@
 from supyr_struct.field_type_methods import *
-from .constants import *
+from reclaimer.constants import *
 
 
 def tag_cstring_parser(self, desc, node=None, parent=None, attr_index=None,
