@@ -135,6 +135,10 @@ def extract_animation(tagdata, tag_path, **kw):
                     elif has_dxdy:
                         dx, dy = unpack_dxdy(frame_info, off)
 
+                    dx *= 100
+                    dy *= 100
+                    dz *= 100
+
                     off += frame_info_node_size
 
                     info = jma_anim.root_node_info[f]
@@ -165,6 +169,9 @@ def extract_animation(tagdata, tag_path, **kw):
 
                 if not trans_flags[n]:
                     x, y, z = unpack_trans(default_data, off)
+                    x *= 100
+                    y *= 100
+                    z *= 100
                     off += 12
 
                 if not scale_flags[n]:
@@ -204,6 +211,9 @@ def extract_animation(tagdata, tag_path, **kw):
 
                     if trans_flags[n]:
                         x, y, z = unpack_trans(frame_data, off)
+                        x *= 100
+                        y *= 100
+                        z *= 100
                         off += 12
                     else:
                         x, y, z = def_state.pos_x, def_state.pos_y, def_state.pos_z
@@ -223,12 +233,23 @@ def extract_animation(tagdata, tag_path, **kw):
                 # duplicate the first frame to the last frame for non-overlays
                 jma_anim.frames.append(deepcopy(jma_anim.frames[0]))
                 if jma_anim.root_node_info:
-                    # make sure to remove the frame_info from the first frame
-                    jma_anim.root_node_info.append(jma_anim.root_node_info[-1] -
-                                                   jma_anim.root_node_info[0])
+                    # duplicate the last frame and apply the change
+                    # that frame to the total change at that frame.
+                    last_root_node_info = deepcopy(jma_anim.root_node_info[-1])
+                    last_root_node_info.x += last_root_node_info.dx
+                    last_root_node_info.y += last_root_node_info.dy
+                    last_root_node_info.z += last_root_node_info.dz
+                    last_root_node_info.yaw += last_root_node_info.dyaw
 
+                    # no delta on last frame. zero it out
+                    last_root_node_info.dx = 0.0
+                    last_root_node_info.dy = 0.0
+                    last_root_node_info.dz = 0.0
+                    last_root_node_info.dyaw = 0.0
 
-            jma_anim.apply_frame_info_to_states()
+                    jma_anim.root_node_info.append(last_root_node_info)
+
+            jma_anim.apply_root_node_info_to_states()
 
             write_jma(filepath, jma_anim)
         except Exception:

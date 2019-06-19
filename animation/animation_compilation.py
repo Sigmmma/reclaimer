@@ -1,5 +1,6 @@
 import traceback
 
+from copy import deepcopy
 from struct import Struct as PyStruct
 
 __all__ = ("compile_animation", "compile_model_animations", )
@@ -14,9 +15,11 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False):
     # determine the sizes of the frame_info, default_data, and frame_data
     frame_info_node_size = jma_anim.root_node_info_frame_size
 
-    frame_info_size   = frame_info_node_size * jma_anim.frame_count
+    stored_frame_count = jma_anim.frame_count - 1  # subtract the base frame
+
+    frame_info_size   = frame_info_node_size * stored_frame_count
     default_data_size = jma_anim.default_data_size
-    frame_data_size   = jma_anim.frame_data_frame_size * jma_anim.frame_count
+    frame_data_size   = jma_anim.frame_data_frame_size * stored_frame_count
 
     max_frame_info_size   = anim.frame_info.get_desc('MAX', 'size')
     max_default_data_size = anim.default_data.get_desc('MAX', 'size')
@@ -38,13 +41,17 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False):
     if errors:
         return errors
 
+    if jma_anim.root_node_info_applied:
+        jma_anim = deepcopy(jma_anim)
+        jma_anim.apply_root_node_info_to_states(True)
+
     has_dxdy = "dx"   in jma_anim.frame_info_type
     has_dz   = "dz"   in jma_anim.frame_info_type
     has_dyaw = "dyaw" in jma_anim.frame_info_type
 
     anim.name = jma_anim.name
     anim.type.set_to(jma_anim.anim_type)
-    anim.frame_count = jma_anim.frame_count
+    anim.frame_count = stored_frame_count
     anim.frame_size = jma_anim.frame_data_frame_size
     anim.node_list_checksum = jma_anim.node_list_checksum
     anim.node_count = jma_anim.node_count
@@ -89,8 +96,16 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False):
     pack_4_float_into = PyStruct(">4f").pack_into
     pack_4_int16_into = PyStruct(">4h").pack_into
 
-    i = 0
-    for f in range(anim.frame_count):
+    is_overlay = jma_anim.anim_type == "overlay"
+    def_state = None
+    i = j = k = 0
+
+    for f in range(jma_anim.frame_count):
+        if not is_overlay and f == stored_frame_count:
+            # skip the last frame for non-overlays
+            break
+
+        # write to the frame_info
         info = jma_anim.root_node_info[f]
         if has_dz:
             pack_4_float_into(
@@ -101,52 +116,68 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False):
         elif has_dxdy:
             pack_2_float_into(
                 frame_info, i, info.dx / 100, info.dy / 100)
-        else:
-            break
 
         i += frame_info_node_size
 
-    # write the rotations, translations, and scales
-    # to the frame_data and def_data
-    i = j = 0
-    def_state = None
-    for f in range(anim.frame_count):
+
+        # write to the default_data
+        if f == 0:
+            for n in range(anim.node_count):
+                node_state = jma_anim.frames[f][n]
+                if not rot_flags[n]:
+                    pack_4_int16_into(default_data, j,
+                        int(node_state.rot_i*32767),
+                        int(node_state.rot_j*32767),
+                        int(node_state.rot_k*32767),
+                        int(node_state.rot_w*32767))
+                    j += 8
+
+                if not trans_flags[n]:
+                    pack_3_float_into(default_data, j,
+                        node_state.pos_x / 100,
+                        node_state.pos_y / 100,
+                        node_state.pos_z / 100)
+                    j += 12
+
+                if not scale_flags[n]:
+                    pack_1_float_into(default_data, j, node_state.scale)
+                    j += 4
+
+            if is_overlay:
+                # skip the first frame for overlays
+                continue
+
+
+        # write to the frame_data
         for n in range(anim.node_count):
             node_state = jma_anim.frames[f][n]
 
             if rot_flags[n]:
-                pack_4_int16_into(frame_data, i,
-                    int(node_state.rot_i*32767), int(node_state.rot_j*32767),
-                    int(node_state.rot_k*32767), int(node_state.rot_w*32767))
-                i += 8
-            elif f == 0:
-                pack_4_int16_into(default_data, j,
-                    int(node_state.rot_i*32767), int(node_state.rot_j*32767),
-                    int(node_state.rot_k*32767), int(node_state.rot_w*32767))
-                j += 8
+                pack_4_int16_into(frame_data, k,
+                    int(node_state.rot_i*32767),
+                    int(node_state.rot_j*32767),
+                    int(node_state.rot_k*32767),
+                    int(node_state.rot_w*32767))
+                k += 8
 
             if trans_flags[n]:
-                pack_3_float_into(frame_data, i,
+                pack_3_float_into(frame_data, k,
                     node_state.pos_x / 100,
                     node_state.pos_y / 100,
                     node_state.pos_z / 100)
-                i += 12
-            elif f == 0:
-                pack_3_float_into(default_data, j,
-                    node_state.pos_x / 100,
-                    node_state.pos_y / 100,
-                    node_state.pos_z / 100)
-                j += 12
+                k += 12
 
             if scale_flags[n]:
-                pack_1_float_into(frame_data, i, node_state.scale)
-                i += 4
-            elif f == 0:
-                pack_1_float_into(default_data, j, node_state.scale)
-                j += 4
+                pack_1_float_into(frame_data, k, node_state.scale)
+                k += 4
 
 
-def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False):
+def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
+                             animation_delta_tolerance=None):
+    # TODO: Make this function able to be additive to where
+    #       it doesn't remove anything, only adds. If an
+    #       animation already exists with the name of one in
+    #       the jma_anim_set, it'll update it
     errors = []
 
     antr_units = antr_tag.data.tagdata.units.STEPTREE
@@ -180,10 +211,12 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False):
         antr_anims.append()
         try:
             jma_anim = jma_anim_set.animations[jma_anim_name]
+            jma_anim.calculate_animation_flags(animation_delta_tolerance)
             compile_animation(antr_anims[-1], jma_anim,
                               ignore_size_limits)
         except Exception:
             errors.append(traceback.format_exc())
+            print("Couldnt compile '%s'" % jma_anim_name)
             antr_anims.pop(-1)
             continue
 

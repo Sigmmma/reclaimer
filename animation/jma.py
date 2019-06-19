@@ -8,7 +8,8 @@ from reclaimer.common_descs import anim_types, anim_frame_info_types
 from reclaimer.model.jms import JmsNode, JmsModel
 from reclaimer.util import float_to_str
 from reclaimer.util.matrices import clip_angle_to_bounds,\
-     Quaternion, multiply_quaternions, axis_angle_to_quat, are_vectors_equal
+     quat_to_matrix, matrix_to_quat, axis_angle_to_quat, quat_to_axis_angle,\
+     Quaternion, multiply_quaternions, are_vectors_equal
 
 
 JMA_ANIMATION_EXTENSIONS = (
@@ -65,7 +66,8 @@ class JmaRootNodeState:
         return """JmaRootNodeState(
     dx=%s, dy=%s, dz=%s, dyaw=%s,
     x=%s, y=%s, z=%s, yaw=%s,
-)""" % (self.x, self.y, self.z, self.yaw)
+)""" % (self.dx, self.dy, self.dz, self.dyaw,
+        self.x, self.y, self.z, self.yaw)
 
     def __eq__(self, other):
         if not isinstance(other, JmaRootNodeState):
@@ -76,17 +78,6 @@ class JmaRootNodeState:
               abs(self.dyaw - other.dyaw) > 0.0000000001):
             return False
         return True
-
-    def __sub__(self, other):
-        if not isinstance(other, JmaRootNodeState):
-            raise TypeError("Cannot subtract %s from %s" %
-                            (type(other), type(self)))
-        return JmaRootNodeState(
-            self.dx - other.dx, self.dy - other.dy,
-            self.dz - other.dz, self.dyaw - other.dyaw,
-            self.x - other.x, self.y - other.y,
-            self.z - other.z, self.yaw - other.yaw
-            )
 
 
 class JmaNodeState:
@@ -160,6 +151,8 @@ class JmaAnimation:
     trans_flags_int = 0
     scale_flags_int = 0
 
+    root_node_info_applied = True
+
     anim_type = anim_types[0]
     frame_info_type = anim_frame_info_types[0]
 
@@ -182,9 +175,6 @@ class JmaAnimation:
         self.frame_info_type = frame_info_type
         self.frame_rate = frame_rate
         self.actors = actors if actors else ["unnamedActor"]
-
-        self.calculate_animation_flags()
-        self.calculate_root_node_info()
 
     def add_frame(self, new_frame):
         assert len(new_frame) == len(self.nodes)
@@ -244,7 +234,13 @@ class JmaAnimation:
     def default_data_size(self):
         return self.node_count * 24 - self.frame_data_frame_size
 
-    def apply_frame_info_to_states(self, undo=False):
+    def apply_root_node_info_to_states(self, undo=False):
+        if self.root_node_info_applied == (not undo):
+            # do nothing if the root node info is already applied
+            # and we are being told to apply it, or its not applied
+            # and we are being told to undo its application.
+            return
+
         delta = -1 if undo else 1
         for f in range(self.frame_count):
             # apply the total change in the root nodes
@@ -252,11 +248,15 @@ class JmaAnimation:
             node_info = self.root_node_info[f]
             node_state = self.frames[f][0]
 
-            i, j, k, w = multiply_quaternions(
-                axis_angle_to_quat(1, 0, 0, delta * (-node_info.yaw)),
-                (node_state.rot_i, node_state.rot_j,
-                 node_state.rot_k, node_state.rot_w),
-                )
+            q0 = Quaternion((node_state.rot_i, node_state.rot_j,
+                             node_state.rot_k, node_state.rot_w)).normalized
+            m0 = quat_to_matrix(*q0)
+
+            q1 = Quaternion(axis_angle_to_quat(
+                0, 0, delta, -node_info.yaw)).normalized
+            m1 = quat_to_matrix(*q1)
+
+            i, j, k, w = matrix_to_quat(m1 * m0)
 
             node_state.pos_x += node_info.x * delta
             node_state.pos_y += node_info.y * delta
@@ -265,6 +265,8 @@ class JmaAnimation:
             node_state.rot_j = j
             node_state.rot_k = k
             node_state.rot_w = w
+
+        self.root_node_info_applied = not undo
 
     def calculate_root_node_info(self):
         self.root_node_info = []
@@ -276,27 +278,26 @@ class JmaAnimation:
         dx = dy = dz = dyaw = x = y = z = yaw = 0.0
         frame_count = self.frame_count
         for f in range(frame_count):
-            node_state0 = self.frames[f][0]
-            node_state1 = self.frames[(f + 1) % frame_count][0]
-            if has_dxdy:
-                dx = node_state1.pos_x - node_state0.pos_x
-                dy = node_state1.pos_y - node_state0.pos_y
+            if f < frame_count - 1:
+                node_state0 = self.frames[f][0]
+                node_state1 = self.frames[f + 1][0]
+                if has_dxdy:
+                    dx = node_state1.pos_x - node_state0.pos_x
+                    dy = node_state1.pos_y - node_state0.pos_y
 
-            if has_dz:
-                dz = node_state1.pos_z - node_state0.pos_z
+                if has_dz:
+                    dz = node_state1.pos_z - node_state0.pos_z
 
-            if has_dyaw:
-                quat0 = Quaternion(
-                    (node_state0.rot_i, node_state0.rot_j,
-                     node_state0.rot_k, node_state0.rot_w))
-                quat1 = Quaternion(
-                    (node_state1.rot_i, node_state1.rot_j,
-                     node_state1.rot_k, node_state1.rot_w))
+                if has_dyaw:
+                    m0 = quat_to_matrix(node_state0.rot_i, node_state0.rot_j,
+                                        node_state0.rot_k, node_state0.rot_w)
+                    m1 = quat_to_matrix(node_state1.rot_i, node_state1.rot_j,
+                                        node_state1.rot_k, node_state1.rot_w)
 
-                ex0, ey0, ez0, ea0 = quat0.normalized.to_axis_angle
-                ex1, ey1, ez1, ea1 = quat1.normalized.to_axis_angle
-
-                dyaw = clip_angle_to_bounds(ex1 * (-ea1) - ex0 * (-ea0))
+                    ex, ey, ez, ea = quat_to_axis_angle(*matrix_to_quat(m0 / m1))
+                    dyaw = clip_angle_to_bounds(ez * ea)
+            else:
+                dx = dy = dz = dyaw = 0
 
             self.root_node_info.append(
                 JmaRootNodeState(dx, dy, dz, dyaw, x, y, z, yaw)
@@ -308,7 +309,10 @@ class JmaAnimation:
 
     verify_nodes_valid = JmsModel.verify_nodes_valid
 
-    def calculate_animation_flags(self, tolerance=0.0000000001):
+    def calculate_animation_flags(self, tolerance=None):
+        if tolerance is None:
+            tolerance = 0
+
         self.rot_flags_int = 0
         self.trans_flags_int = 0
         self.scale_flags_int = 0
@@ -318,20 +322,22 @@ class JmaAnimation:
         f0 = self.frames[0]
 
         zero = (0, 0, 0, 0)
+        # determine which transforms types of each node are animated
+        # by seeing how much they change from the starting frame
         for node_states in self.frames[1: ]:
             for n in range(len(node_states)):
                 diff = node_states[n] - f0[n]
-                if are_vectors_equal(
+                if not are_vectors_equal(
                         (diff.rot_i, diff.rot_j, diff.rot_k, diff.rot_w),
                         zero, False, tolerance):
                     self.rot_flags_int |= (1 << n)
 
-                if are_vectors_equal(
+                if not are_vectors_equal(
                         (diff.pos_x, diff.pos_y, diff.pos_z),
                         zero, False, tolerance):
                     self.trans_flags_int |= (1 << n)
 
-                if are_vectors_equal(
+                if not are_vectors_equal(
                         (diff.scale, ),
                         zero, False, tolerance):
                     self.scale_flags_int |= (1 << n)
@@ -497,7 +503,7 @@ def read_jma(jma_string, stop_at="", anim_name=""):
         return jma_anim
 
 
-    if stop_at == "frame_data": return jma_anim
+    if stop_at == "frames": return jma_anim
 
     # read the frame data
     try:
@@ -521,7 +527,6 @@ def read_jma(jma_string, stop_at="", anim_name=""):
 
     jma_anim.calculate_animation_flags()
     jma_anim.calculate_root_node_info()
-
     return jma_anim
 
 
@@ -530,8 +535,12 @@ def write_jma(filepath, jma_anim):
     if not os.path.exists(os.path.dirname(filepath)):
         os.makedirs(os.path.dirname(filepath))
 
+    if not jma_anim.root_node_info_applied:
+        jma_anim = deepcopy(jma_anim)
+        jma_anim.apply_root_node_info_to_states()
+
     with open(filepath, "w", encoding='latin1') as f:
-        f.write("16392\n")  # unknown constant
+        f.write("16392\n")  # version number
         f.write("%s\n" % jma_anim.frame_count)
         f.write("%s\n" % jma_anim.frame_rate)
 
@@ -550,9 +559,9 @@ def write_jma(filepath, jma_anim):
         for frame in jma_anim.frames:
             for nf in frame:
                 f.write("%s\t%s\t%s\n%s\t%s\t%s\t%s\n%s\n" % (
-                    float_to_str(nf.pos_x * 100),
-                    float_to_str(nf.pos_y * 100),
-                    float_to_str(nf.pos_z * 100),
+                    float_to_str(nf.pos_x),
+                    float_to_str(nf.pos_y),
+                    float_to_str(nf.pos_z),
                     float_to_str(nf.rot_i),
                     float_to_str(nf.rot_j),
                     float_to_str(nf.rot_k),

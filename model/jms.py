@@ -1336,7 +1336,7 @@ def write_jms(filepath, jms_model):
         materials = (JmsMaterial("__unnamed", "<none>"), )
 
     with open(filepath, "w", encoding='latin1') as f:
-        f.write("8200\n")
+        f.write("%s\n" % jms_model.version)
         f.write("%s\n" % (int(checksum) & 0xFFffFFff))
 
         f.write("%s\n" % len(nodes))

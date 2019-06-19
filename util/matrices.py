@@ -506,37 +506,39 @@ def euler_2d_to_vector_3d(y, p):
 def euler_to_quaternion(y, p, r):
     '''Angles are expected to be in radians.'''
     c0, c1, c2 = cos(y / 2), cos(p / 2), cos(r / 2)
-    s1, s2, s3 = sin(y / 2), sin(p / 2), sin(r / 2)
-    return (s1*s2*c2*+ c0*c1*s3,
-            s1*c1*c2 + c0*s2*s3,
-            c0*s2*c2 - s1*c1*s3,
-            c0*c1*c2 - s1*s2*s3)
+    s0, s1, s2 = sin(y / 2), sin(p / 2), sin(r / 2)
+    return (s0*s1*c2 + c0*c1*s2, s0*c1*c2 + c0*s1*s2,
+            c0*s1*c2 - s0*c1*s2, c0*c1*c2 - s0*s1*s2)
 
 
 def quaternion_to_euler(i, j, k, w):
     '''Angles returned are in radians.'''
-    p_sin = 2*(i * j + k * w);
+    p_sin = 2*(i * j + k * w)
     # check for singularities at north and south poles
-    if p_sin > 0.99999999999999:
+    if p_sin > 0.999999999999:
         return 2 * atan2(i, w),   pi / 2, 0
-    elif p_sin < -0.99999999999999:
+    elif p_sin < -0.999999999999:
         return -2 * atan2(i, w), -pi / 2, 0
     else:
-        y = atan2(2*(j*w - i*k), 1 - 2*(j**2 - k**2));
-        p = asin(p_sin);
-        r = atan2(2*(i*w - j*k), 1 - 2*(i**2 - k**2))
+        y = atan2(2*(j*w - i*k), 1 - 2*(j**2 + k**2))
+        p = asin(p_sin)
+        r = atan2(2*(i*w - j*k), 1 - 2*(i**2 + k**2))
         return y, p, r
 
 
 def axis_angle_to_quaternion(x, y, z, a):
     '''Angle is expected to be in radians.'''
-    a = a / 2
-    return x * sin(a), y * sin(a), z * sin(a), cos(a)
+    a /= 2
+    sa = sin(a)
+    return x * sa, y * sa, z * sa, cos(a)
 
 
 def quaternion_to_axis_angle(i, j, k, w):
-    if w > 1.0 or w < -1.0:
-        i, j, k, w = Quaternion((i, j, k, w)).normalized
+    ray_len = sqrt(i**2 + j**2 + k**2 + w**2)
+    i /= ray_len
+    j /= ray_len
+    k /= ray_len
+    w /= ray_len
 
     length = sqrt(1 - w**2)
     if length == 0.0:
@@ -778,9 +780,10 @@ class Quaternion(FixedLengthList, Ray):
         list.__init__(self, initializer)
     def __mul__(self, other):
         if isinstance(other, Quaternion):
-            return sum(self[i]*other[i] for i in range(len(self)))
-        new = Ray(self)
-        for i in range(len(self)): new[i] *= other
+            new = Quaternion(multiply_quaternions(self, other))
+        else:
+            new = Ray(self)
+            for i in range(len(self)): new[i] *= other
         return new
     def __imul__(self, other):
         if isinstance(other, Quaternion):
