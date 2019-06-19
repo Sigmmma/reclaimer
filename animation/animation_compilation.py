@@ -225,6 +225,64 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
         if len(name_pieces) < 2:
             continue
 
+    # units
+    # animations are prefixed with the unit label
+    #   NOTE: Default right/left yaw/pitch to 1 frame count
+    #
+    #   for the first 12 unit animations, any that are undefined
+    #   for that specific unit will default to the first one found.
+    #       Ex: "P-riderLB02 emotions" defaulting to "stand emotions"
+    #
+    #   second prefix can be weapon label("stand unarmed idle")
+    #     third prefix can be weapon type label("stand pistol pp fire-1")
+
+    # weapons
+    #   animations have no prefix
+
+    # vehicles
+    #   NOTE: Default right/left yaw/pitch to 1 frame count
+    #   animations are prefixed with "vehicle"
+    #
+    #   suspension animations are prefixed with "suspension"
+    #       max of 8 suspension animations
+
+    # devices
+    #   animations are prefixed with "device"
+
+    # fp animations
+    #   animations are prefixed with "first-person"
+
+    # unit damages
+    #   divided into 16 chunks of 11 sets of animations
+    #   NOTE: Defaults to "gut" if no matches can be found
+    #         Otherwise, defaults to the first matching
+    #         region. Ex:  l-hand will default to chest if
+    #                      l-hand and l-arm are missing
+    #  0  ==  gut
+    #  1  ==  chest
+    #  2  ==  head / chest
+    #  3  ==  l-arm / chest
+    #  4  ==  l-hand / l-arm / chest
+    #  5  ==  l-leg
+    #  6  ==  l-foot / l-leg
+    #  7  ==  r-arm / chest
+    #  8  ==  r-hand / l-arm / chest
+    #  9  ==  r-leg
+    # 10  ==  r-foot / r-leg
+    #
+    # each of these sections of 44 is divided into 4
+    # sections of 11 animations, each in this order:
+    #     front, left, right, back
+    #
+    #   0 -  43  ==  s-ping
+    #  44 -  87  ==  h-ping
+    #  88 - 131  ==  s-kill
+    # 132 - 175  ==  h-kill
+    #
+    # so for example, "s-kill right l-foot" would be
+    # 88 + 11*2 + 6   which is index 116
+    
+
     # remove any unused unit blocks
     for i in range(len(antr_units) - 1, -1, -1):
         if antr_units[i].label not in unit_names:

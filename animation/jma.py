@@ -525,8 +525,9 @@ def read_jma(jma_string, stop_at="", anim_name=""):
         del jma_anim.frames[i: ]
         return jma_anim
 
-    jma_anim.calculate_animation_flags()
     jma_anim.calculate_root_node_info()
+    jma_anim.apply_root_node_info_to_states(True)
+    jma_anim.calculate_animation_flags()
     return jma_anim
 
 
