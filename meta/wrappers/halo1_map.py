@@ -487,7 +487,7 @@ class Halo1Map(HaloMap):
                     next_anim = animations[next_anim].next_animation
 
             for i in range(len(animations)):
-                if self.engine == "halo1yelo" and i >= 256:
+                if self.engine != "halo1yelo" and i >= 256:
                     # cap it to the non-OS limit of 256 animations
                     break
 
