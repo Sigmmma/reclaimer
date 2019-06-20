@@ -67,9 +67,8 @@ weapon_types_desc = Struct("weapon_types",
     ascii_str32("label"),
     Pad(16),
     reflexive("animations", anim_enum_desc, 10,
-        'reload-1','reload-2','chamber-1','chamber-2',
-        'fire-1','fire-2','charged-1','charged-2',
-        'melee','overheat'),
+        *unit_weapon_type_animation_names
+        ),
     SIZE=60,
     )
 
@@ -92,19 +91,8 @@ unit_weapon_desc = Struct("weapon",
 
     Pad(32),
     reflexive("animations", anim_enum_desc, 55,
-        'idle','gesture','turn-left','turn-right',
-        'dive-front','dive-back','dive-left','dive-right',
-        'move-front','move-back','move-left','move-right',
-        'slide-front','slide-back','slide-left','slide-right',
-        'airborne','land-soft','land-hard','unused0','throw-grenade',
-        'disarm','drop','ready','put-away','aim-still','aim-move',
-        'surprise-front','surprise-back','berserk',
-        'evade-left','evade-right','signal-move','signal-attack','warn',
-        'stunned-front','stunned-back','stunned-left','stunned-right',
-        'melee','celebrate','panic','melee-airborne','flaming',
-        'resurrect-front','resurrect-back','melee-continuous',
-        'feeding','leap-start','leap-airborne','leap-melee',
-        'zapping','unused1','unused2','unused3'),
+        *unit_weapon_animation_names
+        ),
     reflexive("ik_points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
     reflexive("weapon_types", weapon_types_desc, 10, DYN_NAME_PATH=".label"),
     SIZE=188,
@@ -127,13 +115,8 @@ unit_desc = Struct("unit",
 
     Pad(8),
     reflexive("animations", anim_enum_desc, 30,
-        'airborne-dead','landing-dead',
-        'acc-front-back','acc-left-right','acc-up-down',
-        'push','twist','enter','exit','look','talk','emotions','unused0',
-        'user0','user1','user2','user3','user4',
-        'user5','user6','user7','user8','user9',
-        'flying-front','flying-back','flying-left','flying-right',
-        'opening','closing','hovering'),
+        *unit_animation_names
+        ),
     reflexive("ik_points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
     reflexive("weapons", unit_weapon_desc, 16, DYN_NAME_PATH=".name"),
     SIZE=100,
@@ -142,9 +125,8 @@ unit_desc = Struct("unit",
 weapon_desc = Struct("weapon", 
     Pad(16),
     reflexive("animations", anim_enum_desc, 11,
-        'idle','ready','put-away',
-        'reload-1','reload-2','chamber-1','chamber-2',
-        'charged-1','charged-2','fire-1','fire-2'),
+        *weapon_animation_names
+        ),
     SIZE=28,
     )
 
@@ -172,8 +154,8 @@ vehicle_desc = Struct("vehicle",
 
     Pad(68),
     reflexive("animations", anim_enum_desc, 8,
-        'steering','roll','throttle','velocity',
-        'braking','ground-speed','occupied','unoccupied'),
+        *vehicle_animation_names
+        ),
     reflexive("suspension_animations", suspension_desc, 8),
     SIZE=116,
     )
@@ -181,20 +163,16 @@ vehicle_desc = Struct("vehicle",
 device_desc = Struct("device", 
     Pad(84),
     reflexive("animations", anim_enum_desc, 2,
-              'position','power'),
+        *device_animation_names
+        ),
     SIZE=96,
     )
 
 fp_animation_desc = Struct("fp_animation", 
     Pad(16),
     reflexive("animations", anim_enum_desc, 28,
-        'idle','posing','fire-1',
-        'moving','overlays', 'light-off','light-on',
-        'reload-empty','reload-full', 'overheated','ready','put-away',
-        'overcharged','melee','fire-2','overcharged-jitter',
-        'throw-grenade','ammunition', 'misfire-1','misfire-2',
-        'throw-overheated','overheating', 'overheating-again',
-        'enter','exit-empty','exit-full','o-h-exit','o-h-s-enter'),
+        *fp_animation_names
+        ),
     SIZE=28,
     )
 
@@ -287,7 +265,9 @@ antr_body = Struct("tagdata",
     reflexive("weapons",  weapon_desc, 1),
     reflexive("vehicles", vehicle_desc, 1),
     reflexive("devices",  device_desc, 1),
-    reflexive("unit_damages", anim_enum_desc, 176),
+    reflexive("unit_damages", anim_enum_desc, 176,
+        *unit_damage_animation_names
+        ),
     reflexive("fp_animations", fp_animation_desc, 1),
     #i have no idea why they decided to cap it at 257 instead of 256....
     reflexive("sound_references", sound_reference_desc, 257,
