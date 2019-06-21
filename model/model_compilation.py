@@ -3,121 +3,9 @@ import os
 from math import sqrt
 from struct import Struct as PyStruct
 
-from reclaimer.model.jms import GeometryMesh, JmsVertex
+from reclaimer.model.jms import GeometryMesh
 from reclaimer.model.stripify import Stripifier
-from reclaimer.hek.defs.scex import scex_def
-from reclaimer.hek.defs.schi import schi_def
-from reclaimer.hek.defs.senv import senv_def
-from reclaimer.hek.defs.sgla import sgla_def
-from reclaimer.hek.defs.smet import smet_def
-from reclaimer.hek.defs.soso import soso_def
-from reclaimer.hek.defs.sotr import sotr_def
-from reclaimer.hek.defs.spla import spla_def
-from reclaimer.hek.defs.swat import swat_def
-from reclaimer.hek.defs.mod2 import mod2_def,\
-     triangle as mod2_tri_struct, fast_uncompressed_vertex as mod2_vert_struct
-from reclaimer.common_descs import raw_reflexive, BlockDef
-
-mod2_verts_def = BlockDef(
-    raw_reflexive("vertices", mod2_vert_struct, 65535),
-    endian='>'
-    )
-
-mod2_tri_strip_def = BlockDef(
-    raw_reflexive("triangle", mod2_tri_struct, 65535),
-    endian='>'
-    )
-
-LOD_NAMES = ("superhigh", "high", "medium", "low", "superlow")
-MAX_STRIP_LEN = 32763 * 3
-
-EMPTY_GEOM_VERTS = (
-    JmsVertex(0, 0.000000001, 0.0, 0.0,
-              0.0, 0.0, 1.0,
-              -1, 0.0, 0.0, 0.0),
-    JmsVertex(0, 0.0, 0.000000001, 0.0,
-              0.0, 0.0, 1.0,
-              -1, 0.0, 0.0, 1.0),
-    JmsVertex(0, 0.0, 0.0, 0.000000001,
-              0.0, 0.0, 1.0,
-              -1, 0.0, 1.0, 0.0),
-    )
-
-def generate_shader(jms_material, tags_dir, data_dir=""):
-    shdr_type = jms_material.shader_type
-    shdr_path = jms_material.shader_path
-
-    if not shdr_path:
-        return
-
-    tag_path = "%s.%s" % (os.path.join(tags_dir, shdr_path), shdr_type)
-    if os.path.isfile(tag_path):
-        # dont make shaders that already exist
-        return
-
-    shdr_blockdef = None
-    if shdr_type == "shader_transparent_chicago_extended":
-        shdr_blockdef = scex_def
-    elif shdr_type == "shader_transparent_chicago":
-        shdr_blockdef = schi_def
-    elif shdr_type == "shader_environment":
-        shdr_blockdef = senv_def
-    elif shdr_type == "shader_glass":
-        shdr_blockdef = sgla_def
-    elif shdr_type == "shader_meter":
-        shdr_blockdef = smet_def
-    elif shdr_type == "shader_model":
-        shdr_blockdef = soso_def
-    elif shdr_type == "shader_transparent_generic":
-        shdr_blockdef = sotr_def
-    elif shdr_type == "shader_plasma":
-        shdr_blockdef = spla_def
-    elif shdr_type == "shader_water":
-        shdr_blockdef = swat_def
-    else:
-        return
-
-    bitmap_path = ""
-    if jms_material.tiff_path not in ('', '<none>') and data_dir:
-        try:
-            bitmap_path = os.path.relpath(
-                jms_material.tiff_path.replace("/", "\\"),
-                data_dir.replace("/", "\\")).strip(" ")
-        except Exception:
-            pass
-
-        if bitmap_path.startswith("."):
-            bitmap_path = ""
-
-    shdr_tag = shdr_blockdef.build()
-    shdr_tag.filepath = tag_path
-    tag_data = shdr_tag.data.tagdata
-
-    if not bitmap_path or bitmap_path.lower() == "<none>":
-        pass
-    elif "chicago" in shdr_type:
-        if shdr_type == "shader_transparent_chicago":
-            maps = tag_data.schi_attrs.maps
-        else:
-            maps = tag_data.scex_attrs.four_stage_maps
-        maps.STEPTREE.append()
-        map = maps.STEPTREE[-1]
-        map.bitmap.map_u_scale = map.bitmap.map_v_scale = 1.0
-        map.bitmap.filepath = bitmap_path
-    elif "environment" in shdr_type:
-        tag_data.senv_attrs.diffuse.base_map.filepath = bitmap_path
-    elif "glass" in shdr_type:
-        tag_data.sgla_attrs.diffuse_properties.map.filepath = bitmap_path
-    elif "meter" in shdr_type:
-        tag_data.smet_attrs.meter_shader.map.filepath = bitmap_path
-    elif "model" in shdr_type:
-        tag_data.soso_attrs.maps.diffuse_map.filepath = bitmap_path
-    elif "water" in shdr_type:
-        tag_data.swat_attrs.water_shader.base_map.filepath = bitmap_path
-
-    shdr_tag.serialize(temp=False, calc_pointers=False, int_test=False)
-
-    return
+from reclaimer.model import util
         
 
 def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
@@ -199,7 +87,7 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
 
     global_markers = {}
     geom_meshes = []
-    all_lod_nodes = {lod: set([0]) for lod in LOD_NAMES}
+    all_lod_nodes = {lod: set([0]) for lod in util.LOD_NAMES}
     for region_name in sorted(merged_jms.regions):
         region = merged_jms.regions[region_name]
 
@@ -219,8 +107,8 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
 
             perm_added = False
             skipped_lods = []
-            for i in range(len(LOD_NAMES)):
-                lod_name = LOD_NAMES[i]
+            for i in range(len(util.LOD_NAMES)):
+                lod_name = util.LOD_NAMES[i]
                 if not perm.lod_meshes.get(lod_name):
                     if skipped_lods is not None:
                         skipped_lods.append(i)
@@ -248,7 +136,7 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
 
                 for i in lods_to_set:
                     setattr(mod2_perm,
-                            "%s_geometry_block" % LOD_NAMES[i],
+                            "%s_geometry_block" % util.LOD_NAMES[i],
                             geom_index)
 
                 perm_added = True
@@ -317,7 +205,7 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                                       marker.rot_k, marker.rot_w
 
     # set the node counts per lod
-    for lod in LOD_NAMES:
+    for lod in util.LOD_NAMES:
         lod_nodes = all_lod_nodes[lod]
         adding = True
         node_ct = len(mod2_nodes)
@@ -348,14 +236,14 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
             if stripifier.get_strip_count() == 1:
                 tri_strip = stripifier.translate_strip(stripifier.get_strip())
             else:
-                all_verts = EMPTY_GEOM_VERTS
+                all_verts = util.EMPTY_GEOM_VERTS
                 tri_strip = (0, 1, 2)
 
-            if len(tri_strip) > MAX_STRIP_LEN:
+            if len(tri_strip) > util.MAX_STRIP_LEN:
                 return (
                     ("Too many triangles ya fuck. Max triangles per "
                      "geometry is %s.\nThis geometry is %s after linking "
-                     "all strips.") % (MAX_STRIP_LEN, len(tri_strip)), )
+                     "all strips.") % (util.MAX_STRIP_LEN, len(tri_strip)), )
 
             mesh_list.append(GeometryMesh(all_verts, tri_strip))
 
@@ -387,7 +275,7 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                 # honestly though, who the fuck is going to care? fuck it.
 
                 # make a raw vert reflexive and replace the one in the part
-                mod2_part.uncompressed_vertices = mod2_verts_def.build()
+                mod2_part.uncompressed_vertices = util.mod2_verts_def.build()
                 mod2_verts = mod2_part.uncompressed_vertices.STEPTREE = \
                              bytearray(68 * len(verts))
                 i = 0
@@ -409,7 +297,7 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                 mod2_part.centroid_translation[:] = [cent_x, cent_y, cent_z]
 
                 # make a raw tri reflexive and replace the one in the part
-                mod2_part.triangles = mod2_tri_strip_def.build()
+                mod2_part.triangles = util.mod2_tri_strip_def.build()
                 mod2_tris = mod2_part.triangles.STEPTREE = bytearray(
                     [255, 255]) * (3 * ((len(tris) + 2) // 3))
                 i = 0
