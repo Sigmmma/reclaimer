@@ -7,9 +7,9 @@ from copy import deepcopy
 from reclaimer.common_descs import anim_types, anim_frame_info_types
 from reclaimer.model.jms import JmsNode, JmsModel
 from reclaimer.util import float_to_str
-from reclaimer.util.matrices import clip_angle_to_bounds,\
+from reclaimer.util.matrices import clip_angle_to_bounds, are_vectors_equal,\
      quat_to_matrix, matrix_to_quat, axis_angle_to_quat, quat_to_axis_angle,\
-     Quaternion, multiply_quaternions, are_vectors_equal
+     quaternion_to_euler, euler_to_quaternion, Quaternion, multiply_quaternions
 
 
 JMA_ANIMATION_EXTENSIONS = (
@@ -189,6 +189,13 @@ class JmaAnimation:
                             self.world_relative)
 
     @property
+    def has_dxdy(self): return "dx"   in self.frame_info_type
+    @property
+    def has_dz(self):   return "dz"   in self.frame_info_type
+    @property
+    def has_dyaw(self): return "dyaw" in self.frame_info_type
+
+    @property
     def actor_count(self): return len(self.actors)
     @property
     def frame_count(self): return len(self.frames)
@@ -216,11 +223,11 @@ class JmaAnimation:
 
     @property
     def root_node_info_frame_size(self):
-        if "dz" in self.frame_info_type:
+        if self.has_dz:
             return 16
-        elif "dyaw" in self.frame_info_type:
+        elif self.has_dyaw:
             return 12
-        elif "dx" in self.frame_info_type:
+        elif self.has_dxdy:
             return 8
         return 0
 
@@ -241,63 +248,75 @@ class JmaAnimation:
             # and we are being told to undo its application.
             return
 
-        delta = -1 if undo else 1
-        for f in range(self.frame_count):
-            # apply the total change in the root nodes
-            # frame_info for this frame to the frame_data
-            node_info = self.root_node_info[f]
-            node_state = self.frames[f][0]
+        if self.has_dxdy or self.has_dz or self.has_dyaw:
+            delta = -1 if undo else 1
+            for f in range(self.frame_count):
+                # apply the total change in the root nodes
+                # frame_info for this frame to the frame_data
+                node_info = self.root_node_info[f]
+                node_state = self.frames[f][0]
 
-            q0 = Quaternion((node_state.rot_i, node_state.rot_j,
-                             node_state.rot_k, node_state.rot_w)).normalized
-            m0 = quat_to_matrix(*q0)
+                q0 = Quaternion(euler_to_quaternion(
+                    0, 0, -node_info.yaw * delta)).normalized
+                q1 = Quaternion((node_state.rot_i, node_state.rot_j,
+                                 node_state.rot_k, node_state.rot_w)).normalized
 
-            q1 = Quaternion(axis_angle_to_quat(
-                0, 0, delta, -node_info.yaw)).normalized
-            m1 = quat_to_matrix(*q1)
+                i, j, k, w = Quaternion(multiply_quaternions(q0, q1)).normalized
 
-            i, j, k, w = matrix_to_quat(m1 * m0)
+                #print([v * 180 / pi for v in quaternion_to_euler(*q0)])
+                #print([v * 180 / pi for v in quaternion_to_euler(*q1)])
+                #print([v * 180 / pi for v in quaternion_to_euler(i, j, k, w)])
+                #print(node_info.yaw)
 
-            node_state.pos_x += node_info.x * delta
-            node_state.pos_y += node_info.y * delta
-            node_state.pos_z += node_info.z * delta
-            node_state.rot_i = i
-            node_state.rot_j = j
-            node_state.rot_k = k
-            node_state.rot_w = w
+                node_state.pos_x += node_info.x * delta
+                node_state.pos_y += node_info.y * delta
+                node_state.pos_z += node_info.z * delta
+                node_state.rot_i = i
+                node_state.rot_j = j
+                node_state.rot_k = k
+                node_state.rot_w = w
 
         self.root_node_info_applied = not undo
 
     def calculate_root_node_info(self):
         self.root_node_info = []
 
-        has_dxdy = "dx"   in self.frame_info_type
-        has_dz   = "dz"   in self.frame_info_type
-        has_dyaw = "dyaw" in self.frame_info_type
+        has_dxdy, has_dz, has_dyaw = self.has_dxdy, self.has_dz, self.has_dyaw
 
         dx = dy = dz = dyaw = x = y = z = yaw = 0.0
         frame_count = self.frame_count
         for f in range(frame_count):
-            if f < frame_count - 1:
-                node_state0 = self.frames[f][0]
-                node_state1 = self.frames[f + 1][0]
-                if has_dxdy:
-                    dx = node_state1.pos_x - node_state0.pos_x
-                    dy = node_state1.pos_y - node_state0.pos_y
+            node_state0 = self.frames[f][0]
+            node_state1 = self.frames[(f + 1) % frame_count][0]
+            if has_dxdy:
+                dx = node_state1.pos_x - node_state0.pos_x
+                dy = node_state1.pos_y - node_state0.pos_y
 
-                if has_dz:
-                    dz = node_state1.pos_z - node_state0.pos_z
+            if has_dz:
+                dz = node_state1.pos_z - node_state0.pos_z
 
-                if has_dyaw:
-                    m0 = quat_to_matrix(node_state0.rot_i, node_state0.rot_j,
-                                        node_state0.rot_k, node_state0.rot_w)
-                    m1 = quat_to_matrix(node_state1.rot_i, node_state1.rot_j,
-                                        node_state1.rot_k, node_state1.rot_w)
+            if has_dyaw:
+                q0 = (node_state0.rot_i, node_state0.rot_j,
+                      node_state0.rot_k, node_state0.rot_w)
+                q1 = (node_state1.rot_i, node_state1.rot_j,
+                      node_state1.rot_k, node_state1.rot_w)
+                m0 = quat_to_matrix(*q0)
+                m1 = quat_to_matrix(*q1)
 
-                    ex, ey, ez, ea = quat_to_axis_angle(*matrix_to_quat(m0 / m1))
-                    dyaw = clip_angle_to_bounds(ez * ea)
-            else:
-                dx = dy = dz = dyaw = 0
+                ex, ey, ez = quaternion_to_euler(*matrix_to_quat(m0 / m1))
+                #print(round(ex*ea, 5), round(ey*ea, 5), round(ez*ea, 5))
+                dyaw = clip_angle_to_bounds(ez)
+
+                # STRIP YAW FROM ROTATION AND FIGURE OUT IF IT NEEDS
+                # TO BE APPLIED BEFORE OR AFTER FRAME DATA ROTATION.
+                # LOOK AT ANIMATION IMPORTER TO CONFIRM ORDER
+                #print(quaternion_to_euler(*matrix_to_quat(m0 / m1)))
+                #print(quaternion_to_euler(*matrix_to_quat(m1 / m0)))
+                #print(quaternion_to_euler(*matrix_to_quat(m0 * m1)))
+                #print(quaternion_to_euler(*matrix_to_quat(m1 * m0)))
+
+            if f + 1 == frame_count:
+                dx = dy = dz = dyaw = 0.0
 
             self.root_node_info.append(
                 JmaRootNodeState(dx, dy, dz, dyaw, x, y, z, yaw)
