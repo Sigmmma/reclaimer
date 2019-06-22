@@ -213,7 +213,9 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
 
             if (antr_node.next_sibling_node_index != jma_node.sibling_index or
                 antr_node.first_child_node_index  != jma_node.first_child or
-                antr_node.parent_node_index       != jma_node.parent_index or
+                # dont check the parent node. root node references itself in
+                # animation nodes. it's weird. Sibling and child are enough.
+                #antr_node.parent_node_index       != jma_node.parent_index or
                 antr_node.name != jma_node.name):
     
                 errors.append("Node(s) in these animations differ from the "
@@ -262,6 +264,8 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
         antr_node.next_sibling_node_index = jma_node.sibling_index
         antr_node.first_child_node_index  = jma_node.first_child
         antr_node.parent_node_index       = jma_node.parent_index
+        if antr_node.parent_node_index == -1:
+            antr_node.parent_node_index = 0
 
         if i not in range(len(prev_antr_nodes)):
             continue
@@ -435,6 +439,8 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
         last_perm_name_pieces = name_pieces
 
     # TODO: Calculate node base vectors and vector ranges
+    # NOTE: This will REQUIRE gbxmodel nodes to do. Tool looks for
+    #       a gbxmodel in the same directory.
 
     return errors
 

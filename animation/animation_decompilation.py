@@ -86,11 +86,6 @@ def extract_animation(tagdata, tag_path, **kw):
             # make blank JmaNodeStates to fill in below with default_data
             def_node_states = [JmaNodeState() for n in range(anim.node_count)]
 
-            # overlay animations start with frame 0 being
-            # in the same state as the default node states
-            if jma_anim.anim_type == "overlay":
-                jma_anim.frames.insert(0, def_node_states)
-
             # make blank JmaRootNodeStates to fill in below with frame_info
             jma_anim.calculate_root_node_info()
 
@@ -228,8 +223,11 @@ def extract_animation(tagdata, tag_path, **kw):
                     state.rot_i, state.rot_j, state.rot_k, state.rot_w = i, j, k, w
                     state.scale = scale
 
-
-            if jma_anim.anim_type != "overlay":
+            # overlay animations start with frame 0 being
+            # in the same state as the default node states
+            if jma_anim.anim_type == "overlay":
+                jma_anim.frames.insert(0, def_node_states)
+            else:
                 # duplicate the first frame to the last frame for non-overlays
                 jma_anim.frames.append(deepcopy(jma_anim.frames[0]))
                 if jma_anim.root_node_info:
@@ -249,7 +247,10 @@ def extract_animation(tagdata, tag_path, **kw):
 
                     jma_anim.root_node_info.append(last_root_node_info)
 
-            jma_anim.apply_root_node_info_to_states()
+                # this is set to True on instantiation.
+                # Set it to False since we had to provide root node info
+                jma_anim.root_node_info_applied = False
+                jma_anim.apply_root_node_info_to_states()
 
             write_jma(filepath, jma_anim)
         except Exception:
