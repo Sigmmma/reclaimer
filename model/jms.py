@@ -385,9 +385,7 @@ class JmsModel:
                 self.lod_level = lod_level
                 break
 
-        node_list_checksum = node_list_checksum & 0xFFffFFff
-        if node_list_checksum >= (1<<31):
-            node_list_checksum = node_list_checksum - 0x100000000
+        node_list_checksum = node_list_checksum
 
         self.name = name
         self.version = version
@@ -1007,10 +1005,7 @@ def read_jms(jms_string, stop_at="", perm_name=None):
 def _read_jms_8200(jms_model, jms_data, stop_at=""):
     # Halo 1
     try:
-        node_list_checksum = int(jms_data[1]) & 0xFFffFFff
-        if node_list_checksum >= (1<<31):
-            node_list_checksum = node_list_checksum - 0x100000000
-        jms_model.node_list_checksum = node_list_checksum
+        jms_model.node_list_checksum = int(jms_data[1])
     except Exception:
         print(traceback.format_exc())
         print("Could not read node list checksum.")
@@ -1317,13 +1312,8 @@ def _read_jms_8210(jms_model, jms_data, stop_at=""):
 
 
 def write_jms(filepath, jms_model):
-    checksum = jms_model.node_list_checksum
     materials = jms_model.materials
     regions = jms_model.regions
-    nodes = jms_model.nodes
-    markers = jms_model.markers
-    verts = jms_model.verts
-    tris = jms_model.tris
 
     # If the path doesnt exist, create it
     if not exists(dirname(filepath)):
@@ -1337,10 +1327,10 @@ def write_jms(filepath, jms_model):
 
     with open(filepath, "w", encoding='latin1') as f:
         f.write("%s\n" % jms_model.version)
-        f.write("%s\n" % (int(checksum) & 0xFFffFFff))
+        f.write("%s\n" % int(jms_model.node_list_checksum))
 
-        f.write("%s\n" % len(nodes))
-        for node in nodes:
+        f.write("%s\n" % len(jms_model.nodes))
+        for node in jms_model.nodes:
             f.write("%s\n%s\n%s\n%s\t%s\t%s\t%s\n%s\t%s\t%s\n" % (
                 node.name[: 31], node.first_child, node.sibling_index,
                 float_to_str(node.rot_i),
@@ -1357,8 +1347,8 @@ def write_jms(filepath, jms_model):
         for mat in materials:
             f.write("%s\n%s\n" % (mat.name + mat.properties, mat.tiff_path))
 
-        f.write("%s\n" % len(markers))
-        for marker in markers:
+        f.write("%s\n" % len(jms_model.markers))
+        for marker in jms_model.markers:
             f.write("%s\n%s\n%s\n%s\t%s\t%s\t%s\n%s\t%s\t%s\n%s\n" % (
                 marker.name[: 31], marker.region, marker.parent,
                 float_to_str(marker.rot_i),
@@ -1376,8 +1366,8 @@ def write_jms(filepath, jms_model):
         for region in regions:
             f.write("%s\n" % region[: 31])
 
-        f.write("%s\n" % len(verts))
-        for vert in verts:
+        f.write("%s\n" % len(jms_model.verts))
+        for vert in jms_model.verts:
             f.write("%s\n%s\t%s\t%s\n%s\t%s\t%s\n%s\n%s\n%s\t%s\t%s\n" % (
                 vert.node_0,
                 float_to_str(vert.pos_x),
@@ -1394,8 +1384,8 @@ def write_jms(filepath, jms_model):
                 )
             )
 
-        f.write("%s\n" % len(tris))
-        for tri in tris:
+        f.write("%s\n" % len(jms_model.tris))
+        for tri in jms_model.tris:
             f.write("%s\t%s\n%s\t%s\t%s\n" % (
                 tri.region, tri.shader,
                 tri.v0, tri.v1, tri.v2

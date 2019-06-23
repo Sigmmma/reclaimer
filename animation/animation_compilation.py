@@ -186,7 +186,8 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False):
 
 def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
                              animation_count_limit=256, delta_tolerance=None,
-                             update_mode=ANIMATION_COMPILE_MODE_PRESERVE):
+                             update_mode=ANIMATION_COMPILE_MODE_PRESERVE,
+                             mod2_nodes=None):
     errors = []
 
     tagdata = antr_tag.data.tagdata
@@ -253,22 +254,21 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
         del antr_unit_damages[:]
         del antr_fp_animations[:]
         del antr_anims[:]
+        del antr_nodes[:]
 
-    del antr_nodes[:]
+        for i in range(len(jma_anim_set.nodes)):
+            jma_node = jma_anim_set.nodes[i]
+            antr_nodes.append()
+            antr_node = antr_nodes[-1]
+            antr_node.name = jma_node.name
+            antr_node.next_sibling_node_index = jma_node.sibling_index
+            antr_node.first_child_node_index  = jma_node.first_child
+            antr_node.parent_node_index       = jma_node.parent_index
+            if antr_node.parent_node_index == -1:
+                antr_node.parent_node_index = 0
 
-    for i in range(len(jma_anim_set.nodes)):
-        jma_node = jma_anim_set.nodes[i]
-        antr_nodes.append()
-        antr_node = antr_nodes[-1]
-        antr_node.name = jma_node.name
-        antr_node.next_sibling_node_index = jma_node.sibling_index
-        antr_node.first_child_node_index  = jma_node.first_child
-        antr_node.parent_node_index       = jma_node.parent_index
-        if antr_node.parent_node_index == -1:
-            antr_node.parent_node_index = 0
-
-        if i not in range(len(prev_antr_nodes)):
-            continue
+            if i not in range(len(prev_antr_nodes)):
+                continue
 
         prev_antr_node = prev_antr_nodes[i]
         if prev_antr_node.name.lower() == antr_node.name.lower():
@@ -439,8 +439,10 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
         last_perm_name_pieces = name_pieces
 
     # TODO: Calculate node base vectors and vector ranges
-    # NOTE: This will REQUIRE gbxmodel nodes to do. Tool looks for
-    #       a gbxmodel in the same directory.
+    # NOTE: This will REQUIRE gbxmodel nodes to do.
+    #       Tool looks for a gbxmodel in the same directory.
+    if update_mode != ANIMATION_COMPILE_MODE_ADDITIVE and mod2_nodes:
+        pass
 
     return errors
 
