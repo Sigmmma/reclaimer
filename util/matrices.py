@@ -7,6 +7,7 @@ from sys import float_info
 
 class CannotRowReduce(ValueError): pass
 class MatrixNotInvertable(ValueError): pass
+class QuaternionNotInvertable(ValueError): pass
 
 
 def are_vectors_equal(vector_0, vector_1, use_double_rounding=False,
@@ -551,6 +552,19 @@ def multiply_quaternions(q0, q1):
     j = -q0[0] * q1[2] + q0[1] * q1[3] + q0[2] * q1[0] + q0[3] * q1[1]
     k =  q0[0] * q1[1] - q0[1] * q1[0] + q0[2] * q1[3] + q0[3] * q1[2]
     w = -q0[0] * q1[0] - q0[1] * q1[1] - q0[2] * q1[2] + q0[3] * q1[3]
+    div = i**2 + j**2 + k**2 + w**2
+    if not div:
+        # not sure if we should raise an error.
+        # this multiplication makes no sense.
+        i = j = k = 0.0
+        w = 1.0
+    else:
+        div = sqrt(div)
+        i /= div
+        j /= div
+        k /= div
+        w /= div
+
     return type(q0)((i, j, k, w))
 
 
@@ -744,6 +758,23 @@ class Plane(FixedLengthList, Ray):
     mag_sq = magnitude_sq
     mag = magnitude
 
+    @property
+    def i(self): return self[0]
+    @i.setter
+    def i(self, new_val): self[0] = float(new_val)
+    @property
+    def j(self): return self[1]
+    @j.setter
+    def j(self, new_val): self[1] = float(new_val)
+    @property
+    def k(self): return self[2]
+    @k.setter
+    def k(self, new_val): self[2] = float(new_val)
+    @property
+    def d(self): return self[3]
+    @d.setter
+    def d(self, new_val): self[3] = float(new_val)
+
     def normalize(self):
         div = self.mag
         if div:
@@ -793,6 +824,23 @@ class Quaternion(FixedLengthList, Ray):
     __rmul__ = __mul__
 
     @property
+    def i(self): return self[0]
+    @i.setter
+    def i(self, new_val): self[0] = float(new_val)
+    @property
+    def j(self): return self[1]
+    @j.setter
+    def j(self, new_val): self[1] = float(new_val)
+    @property
+    def k(self): return self[2]
+    @k.setter
+    def k(self, new_val): self[2] = float(new_val)
+    @property
+    def w(self): return self[3]
+    @w.setter
+    def w(self, new_val): self[3] = float(new_val)
+
+    @property
     def to_euler(self):
         return Vector(quaternion_to_euler(*self))
     @property
@@ -801,6 +849,22 @@ class Quaternion(FixedLengthList, Ray):
     @property
     def to_matrix(self):
         return quaternion_to_matrix(*self)
+    @property
+    def inverse(self):
+        copy = Quaternion(self)
+        copy.invert()
+        return copy
+
+    def invert(self):
+        div = self.i**2 + self.j**2 + self.k**2 + self.w**2
+        if not div:
+            raise QuaternionNotInvertable("%s is not invertable." % self)
+
+        div = sqrt(div)
+        self.i = -self.i / div
+        self.j = -self.j / div
+        self.k = -self.k / div
+        self.w =  self.w / div
 
 
 class MatrixRow(FixedLengthList, Vector):
