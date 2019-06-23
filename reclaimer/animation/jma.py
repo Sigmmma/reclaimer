@@ -160,13 +160,7 @@ class JmaAnimation:
                  anim_type="", frame_info_type="", world_relative=False,
                  nodes=None, frames=None, actors=None, frame_rate=30):
 
-        name = name.strip(" ")
-
-        node_list_checksum = node_list_checksum & 0xFFffFFff
-        if node_list_checksum >= (1<<31):
-            node_list_checksum = node_list_checksum - 0x100000000
-
-        self.name = name
+        self.name = name.strip(" ")
         self.node_list_checksum = node_list_checksum
         self.nodes  = nodes  if nodes  else []
         self.frames = frames if frames else []
@@ -261,7 +255,7 @@ class JmaAnimation:
                 q1 = Quaternion((node_state.rot_i, node_state.rot_j,
                                  node_state.rot_k, node_state.rot_w)).normalized
 
-                i, j, k, w = Quaternion(multiply_quaternions(q0, q1)).normalized
+                i, j, k, w = multiply_quaternions(q0, q1)
 
                 #print([v * 180 / pi for v in quaternion_to_euler(*q0)])
                 #print([v * 180 / pi for v in quaternion_to_euler(*q1)])
@@ -299,21 +293,14 @@ class JmaAnimation:
                 q0 = (node_state0.rot_i, node_state0.rot_j,
                       node_state0.rot_k, node_state0.rot_w)
                 q1 = (node_state1.rot_i, node_state1.rot_j,
-                      node_state1.rot_k, node_state1.rot_w)
-                m0 = quat_to_matrix(*q0)
-                m1 = quat_to_matrix(*q1)
+                                node_state1.rot_k, node_state1.rot_w)
 
-                ex, ey, ez = quaternion_to_euler(*matrix_to_quat(m0 / m1))
-                #print(round(ex*ea, 5), round(ey*ea, 5), round(ez*ea, 5))
+                # remove the rotation of the next node from this one to
+                # find the yaw difference between the 2 quaternions
+                ex, ey, ez = quaternion_to_euler(
+                    *multiply_quaternions(q0, Quaternion(q1).inverse)
+                    )
                 dyaw = clip_angle_to_bounds(ez)
-
-                # STRIP YAW FROM ROTATION AND FIGURE OUT IF IT NEEDS
-                # TO BE APPLIED BEFORE OR AFTER FRAME DATA ROTATION.
-                # LOOK AT ANIMATION IMPORTER TO CONFIRM ORDER
-                #print(quaternion_to_euler(*matrix_to_quat(m0 / m1)))
-                #print(quaternion_to_euler(*matrix_to_quat(m1 / m0)))
-                #print(quaternion_to_euler(*matrix_to_quat(m0 * m1)))
-                #print(quaternion_to_euler(*matrix_to_quat(m1 * m0)))
 
             if f + 1 == frame_count:
                 dx = dy = dz = dyaw = 0.0
@@ -493,10 +480,7 @@ def read_jma(jma_string, stop_at="", anim_name=""):
     if stop_at == "checksum": return jma_anim
 
     try:
-        node_list_checksum = int(data[dat_i]) & 0xFFffFFff
-        if node_list_checksum >= (1<<31):
-            node_list_checksum = node_list_checksum - 0x100000000
-        jma_anim.node_list_checksum = node_list_checksum
+        jma_anim.node_list_checksum = int(data[dat_i])
         dat_i += 1
     except Exception:
         print(traceback.format_exc())
@@ -569,7 +553,7 @@ def write_jma(filepath, jma_anim):
             f.write("%s\n" % actor_name)
 
         f.write("%s\n" % jma_anim.node_count)
-        f.write("%s\n" % (int(jma_anim.node_list_checksum) & 0xFFffFFff))
+        f.write("%s\n" % int(jma_anim.node_list_checksum))
 
         for node in jma_anim.nodes:
             f.write("%s\n%s\t%s\n" %
