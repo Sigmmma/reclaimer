@@ -25,11 +25,17 @@ def antr_nodes_to_jms_nodes(anim_nodes):
     return nodes
 
 
-def extract_animation(tagdata, tag_path, **kw):
+def extract_animation(tagdata, tag_path="", **kw):
+    write_jma = kw.get('write_jma', True)
+    jma_anims = None
+    if write_jma:
+        jma_anims = []
+
     animations = tagdata.animations.STEPTREE
     if not animations:
-        return
+        return jma_anims
 
+    filepath = ""
     filepath_base = os.path.join(
         kw['out_dir'], os.path.dirname(tag_path), "animations")
     endian = ">"
@@ -66,9 +72,10 @@ def extract_animation(tagdata, tag_path, **kw):
                                     anim.frame_info_type.enum_name,
                                     anim.flags.world_relative)
 
-            filepath = os.path.join(filepath_base, anim.name + anim_ext)
-            if not kw.get('overwrite', True) and os.path.isfile(filepath):
-                continue
+            if write_jma:
+                filepath = os.path.join(filepath_base, anim.name + anim_ext)
+                if not kw.get('overwrite', True) and os.path.isfile(filepath):
+                    continue
 
             # make blank JmaNodeStates to fill in below with frame_data
             frames = [[JmaNodeState() for n in range(anim.node_count)]
@@ -223,11 +230,7 @@ def extract_animation(tagdata, tag_path, **kw):
                     state.rot_i, state.rot_j, state.rot_k, state.rot_w = i, j, k, w
                     state.scale = scale
 
-            # overlay animations start with frame 0 being
-            # in the same state as the default node states
-            if jma_anim.anim_type == "overlay":
-                jma_anim.frames.insert(0, def_node_states)
-            else:
+            if jma_anim.last_frame_loops_to_first:
                 # duplicate the first frame to the last frame for non-overlays
                 jma_anim.frames.append(deepcopy(jma_anim.frames[0]))
                 if jma_anim.root_node_info:
@@ -251,8 +254,17 @@ def extract_animation(tagdata, tag_path, **kw):
                 # Set it to False since we had to provide root node info
                 jma_anim.root_node_info_applied = False
                 jma_anim.apply_root_node_info_to_states()
+            else:
+                # overlay animations start with frame 0 being
+                # in the same state as the default node states
+                jma_anim.frames.insert(0, def_node_states)
 
-            write_jma(filepath, jma_anim)
+            if write_jma:
+                write_jma(filepath, jma_anim)
+            else:
+                jma_anims.append(jma_anim)
         except Exception:
             print(traceback.format_exc())
             print("Could not extract animation.")
+
+    return jma_anims

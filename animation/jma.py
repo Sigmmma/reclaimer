@@ -39,7 +39,7 @@ def get_anim_ext(anim_type, frame_info_type, world_relative=False):
 def get_anim_types(anim_ext):
     anim_ext = anim_ext.lower()
     if "jmr" in anim_ext:
-        return anim_types[2], anim_frame_info_types[1], False
+        return anim_types[2], anim_frame_info_types[0], False
     elif "jmo" in anim_ext:
         return anim_types[1], anim_frame_info_types[0], False
     elif "jmz" in anim_ext:
@@ -170,18 +170,10 @@ class JmaAnimation:
         self.frame_rate = frame_rate
         self.actors = actors if actors else ["unnamedActor"]
 
-    def add_frame(self, new_frame):
-        assert len(new_frame) == len(self.nodes)
-        for node_frame in new_frame:
-            assert isinstance(node_frame, JmaNodeState)
-
-        self.frames.append(new_frame)
-
     @property
     def ext(self):
         return get_anim_ext(self.anim_type, self.frame_info_type,
                             self.world_relative)
-
     @property
     def has_dxdy(self): return "dx"   in self.frame_info_type
     @property
@@ -235,6 +227,98 @@ class JmaAnimation:
     def default_data_size(self):
         return self.node_count * 24 - self.frame_data_frame_size
 
+    def get_node_index(self, node_name):
+        node_name = node_name.lower()
+        i = 0
+        for node in self.nodes:
+            if node.name.lower() == node_name:
+                return i
+            i += 1
+        return -1
+
+    def get_root_node_info(self):
+        return list(self.root_node_info)
+
+    def get_node(self, node_name_or_index):
+        if isinstance(node_name_or_index):
+            node_name_or_index = self.get_node_index(node_name_or_index)
+
+        if node_name_or_index in range(self.node_count):
+            return self.nodes[node_name_or_index]
+    def get_node_frames(self, node_name_or_index):
+        if isinstance(node_name_or_index):
+            node_name_or_index = self.get_node_index(node_name_or_index)
+
+        if node_name_or_index in range(self.node_count):
+            return [frame[node_name_or_index] for frame in self.frames]
+
+    def set_frame(self, frame_index, frame_data=None, frame_info=None):
+        assert frame_index in range(-(self.frame_count + 1), self.frame_count + 1)
+
+        if frame_data is not None:
+            self.frames[frame_index] = frame_data
+        if frame_info is not None:
+            self.root_node_info[frame_index] = frame_info
+    def set_node_frames(self, node_index, frame_data):
+        assert node_index in range(-(self.node_count + 1), self.node_count + 1)
+        for f in range(self.frame_count):
+            self.frames[f][node_index] = frame_data[f]
+
+    def append_frame(self, frame_data=None, frame_info=None):
+        self.insert_frame(self.frame_count, frame_data, frame_info)
+    def append_frames(self, frames):
+        for frame in frames:
+            self.insert_frame(self.frame_count, *frame)
+
+    def append_node(self, node, frame_data=None):
+        self.insert_node(self.node_count, node, frame_data)
+    def append_nodes(self, nodes_and_frames):
+        for node_and_frames in nodes_and_frames:
+            assert len(node_and_frame) > 0
+            self.insert_node(self.node_count, *node_and_frames)
+
+    def insert_frame(self, frame_index, frame_data=None, frame_info=None):
+        assert frame_index in range(-(self.frame_count + 1), self.frame_count + 1)
+        self.frames.insert(frame_index, frame_data)
+        self.root_node_info.insert(frame_index, frame_info)
+    def insert_frames(self, frames_by_indices):
+        for frame_index in reversed(sorted(frames_by_indices)):
+            self.insert_frame(frame_index, *frames_by_indices[frame_index])
+
+    def insert_node(self, node_index, node, frame_data=None):
+        assert isinstance(node, JmsNode)
+        if frame_data is None:
+            assert len(frame_data) == self.frame_count
+            frame_data = [JmaNodeState() for i in range(self.frame_count)]
+        else:
+            for node_frame in frame_data:
+                assert isinstance(node_frame, JmaNodeState)
+
+        for f in range(self.frame_count):
+            self.frames[f].insert(node_index, frame_data[f])
+        self.nodes.insert(node_index, node)
+    def insert_nodes(self, nodes_and_frames_by_indices):
+        for node_index in reversed(sorted(nodes_and_frames_by_indices)):
+            self.insert_node(node_index, *nodes_and_frames_by_indices[node_index])
+
+    def remove_frame(self, frame_index):
+        assert frame_index in range(-self.frame_count, self.frame_count)
+        if frame_index in range(len(self.root_node_info)):
+            return (self.frames.pop(frame_index),
+                    self.root_node_info.pop(frame_index))
+        return self.frames.pop(frame_index), None
+    def remove_frames(self, frame_indices):
+        return {int(i): self.remove_frame(i) for i in
+                reversed(sorted(frame_indices))}
+
+    def remove_node(self, node_index):
+        assert node_index in range(-self.node_count, self.node_count)
+        return (self.nodes.pop(node_index),
+                [frame.pop(node_index) for frame in self.frames])
+    def remove_nodes(self, node_indices):
+        return {int(i): self.remove_node(i) for i in
+                reversed(sorted(node_indices))}
+
     def apply_root_node_info_to_states(self, undo=False):
         if self.root_node_info_applied == (not undo):
             # do nothing if the root node info is already applied
@@ -256,11 +340,6 @@ class JmaAnimation:
                                  node_state.rot_k, node_state.rot_w)).normalized
 
                 i, j, k, w = multiply_quaternions(q0, q1)
-
-                #print([v * 180 / pi for v in quaternion_to_euler(*q0)])
-                #print([v * 180 / pi for v in quaternion_to_euler(*q1)])
-                #print([v * 180 / pi for v in quaternion_to_euler(i, j, k, w)])
-                #print(node_info.yaw)
 
                 node_state.pos_x += node_info.x * delta
                 node_state.pos_y += node_info.y * delta
