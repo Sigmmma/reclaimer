@@ -276,6 +276,14 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
             antr_node.base_vector[:] = prev_antr_node.base_vector
             antr_node.vector_range   = prev_antr_node.vector_range
 
+        if mod2_nodes:
+            if len(antr_nodes) != len(mod2_nodes):
+                errors.append("Gbxmodel node count does not match node "
+                              "count in the model_animations tag.")
+                return errors
+            util.calculate_node_vectors(antr_nodes, mod2_nodes,
+                                        jma_anim_set.animations.values())
+
     # cache the old animations by their names
     for i in range(len(prev_antr_anims)):
         anim = prev_antr_anims[i]
@@ -290,6 +298,7 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
 
 
     indices_to_not_overwrite = set()
+    indices_modified = set()
     # loop over the animations to add and add/replace them
     for jma_anim_name in sorted(jma_anim_set.animations):
         name = jma_anim_name.strip()
@@ -350,6 +359,7 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
                                         indices_to_not_overwrite):
                 # successfully found an animation index to use this animation
                 indices_to_not_overwrite.add(anim_index)
+            indices_modified.add(anim_index)
         except Exception:
             errors.append(traceback.format_exc())
             
@@ -408,12 +418,23 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
     # do this in reverse since thats what tool seems to do.
     for unit in antr_units[::-1]:
         anim_enums = unit.animations.STEPTREE
-        anim_enums.extend(max(unit_anim_defaults) - len(anim_enums))
         util.get_default_animation_enums(anim_enums, unit_anim_defaults)
         for unit_weap in unit.weapons.STEPTREE:
             anim_enums = unit_weap.animations.STEPTREE
-            anim_enums.extend(max(unit_weap_anim_defaults) - len(anim_enums))
             util.get_default_animation_enums(anim_enums, unit_weap_anim_defaults)
+
+    # strip any unused animation indices
+    unit_anim_defaults = {
+        k: v for k, v in unit_anim_defaults.items() if v != -1}
+    unit_weap_anim_defaults = {
+        k: v for k, v in unit_weap_anim_defaults.items() if v != -1}
+
+    for unit in antr_units:
+        anim_enums = unit.animations.STEPTREE
+        anim_enums.extend(max(unit_anim_defaults) + 1 - len(anim_enums))
+        for unit_weap in unit.weapons.STEPTREE:
+            anim_enums = unit_weap.animations.STEPTREE
+            anim_enums.extend(max(unit_weap_anim_defaults) + 1 - len(anim_enums))
 
     # default any unset unit animations with the found defaults.
     for unit in antr_units:
@@ -430,19 +451,14 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
     # permutations come first and are followed by the rest of them
     for name_pieces in sorted(antr_indices_by_type_strings):
         anim_index = antr_indices_by_type_strings[name_pieces]
-
         name_pieces, perm_num = name_pieces[: -1], name_pieces[-1]
-        if name_pieces == last_perm_name_pieces and last_perm_anim_index != -1:
+        if (anim_index in indices_modified and
+            name_pieces == last_perm_name_pieces and
+            last_perm_anim_index != -1):
             antr_anims[last_perm_anim_index].next_animation = anim_index
 
         last_perm_anim_index = anim_index
         last_perm_name_pieces = name_pieces
-
-    # TODO: Calculate node base vectors and vector ranges
-    # NOTE: This will REQUIRE gbxmodel nodes to do.
-    #       Tool looks for a gbxmodel in the same directory.
-    if update_mode != ANIMATION_COMPILE_MODE_ADDITIVE and mod2_nodes:
-        pass
 
     return errors
 
