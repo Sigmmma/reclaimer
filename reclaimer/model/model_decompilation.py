@@ -9,7 +9,13 @@ from reclaimer.model.jms import write_jms, JmsModel, JmsNode,\
 __all__ = ("extract_model", )
 
 
-def extract_model(tagdata, tag_path, **kw):
+def extract_model(tagdata, tag_path="", **kw):
+    write_jms = kw.get('write_jms', True)
+    jms_models = None
+    if write_jms:
+        jms_models = []
+
+    filepath = ""
     filepath_base = os.path.join(
         kw['out_dir'], os.path.dirname(tag_path), "models")
 
@@ -93,18 +99,18 @@ def extract_model(tagdata, tag_path, **kw):
                         ))
 
             last_geom_index = -1
-            for lod_num in range(5):
-                geoms_by_region = geoms_by_lod_region.get(lod_num, {})
+            for lod in range(5):
+                geoms_by_region = geoms_by_lod_region.get(lod, {})
                 region_geoms = geoms_by_region.get(region.name, [])
 
                 geom_index = perm[
-                    perm.NAME_MAP["superlow_geometry_block"] + (4 - lod_num)]
+                    perm.NAME_MAP["superlow_geometry_block"] + (4 - lod)]
 
                 if (geom_index in region_geoms or
                     geom_index == last_geom_index):
                     continue
 
-                geoms_by_lod_region[lod_num] = geoms_by_region
+                geoms_by_lod_region[lod] = geoms_by_region
                 geoms_by_region[region.name] = region_geoms
                 region_geoms.append(geom_index)
                 last_geom_index = geom_index
@@ -124,28 +130,21 @@ def extract_model(tagdata, tag_path, **kw):
         geoms_by_lod_region = geoms_by_perm_lod_region[perm_name]
         perm_markers = markers_by_perm.get(perm_name)
         
-        for lod_num in sorted(geoms_by_lod_region):
-            if lod_num == -1:
+        for lod in sorted(geoms_by_lod_region):
+            if lod == -1:
                 continue
 
-            filepath = os.path.join(filepath_base, perm_name)
-            if   lod_num == 4:
-                filepath += " superlow.jms"
-            elif lod_num == 3:
-                filepath += " low.jms"
-            elif lod_num == 2:
-                filepath += " medium.jms"
-            elif lod_num == 1:
-                filepath += " high.jms"
-            else:
-                filepath += " superhigh.jms"
+            jms_name = perm_name + {4: " superlow", 3: " low", 2: " medium",
+                                    1: " high", 0: " superhigh"}.get(lod, "")
+
+            filepath = os.path.join(filepath_base, jms_name + ".jms")
 
             markers = list(perm_markers)
             markers.extend(global_markers.get(perm_name, ()))
             verts = []
             tris = []
 
-            geoms_by_region = geoms_by_lod_region[lod_num]
+            geoms_by_region = geoms_by_lod_region[lod]
             for region_name in sorted(geoms_by_region):
                 region_index = regions.index(region_name)
                 geoms = geoms_by_region[region_name]
@@ -271,6 +270,12 @@ def extract_model(tagdata, tag_path, **kw):
                             print(format_exc())
                             print("Could not parse triangle blocks.")
 
-            write_jms(filepath, JmsModel(
-                "", tagdata.node_list_checksum, nodes, materials,
-                markers, regions, verts, tris))
+            jms_model = JmsModel(
+                jms_name, tagdata.node_list_checksum, nodes,
+                materials, markers, regions, verts, tris)
+            if write_jms:
+                write_jms(filepath, jms_model)
+            else:
+                jms_models.append(jms_model)
+
+    return jms_models

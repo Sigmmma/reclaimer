@@ -6,12 +6,15 @@ from reclaimer.enums import unit_animation_names, unit_weapon_animation_names,\
      unit_weapon_type_animation_names, vehicle_animation_names,\
      weapon_animation_names, device_animation_names, fp_animation_names,\
      unit_damage_animation_names
+from reclaimer.hek.defs.mod2 import TagDef, Pad, marker as mod2_marker_desc,\
+     node as mod2_node_desc, reflexive, Struct
 
 __all__ = (
     'SHARED_UNIT_ANIMATION_NAMES', 'SHARED_UNIT_WEAPON_ANIMATION_NAMES', 
     'split_anim_name_into_type_strings', 'split_permutation_number', 
     'set_animation_enum_index', 'set_animation_index',
     'get_default_animation_enums', 'set_default_animation_enums',
+    'partial_mod2_def', 'calculate_node_vectors'
     )
 
 
@@ -27,6 +30,18 @@ SHARED_UNIT_WEAPON_ANIMATION_NAMES = frozenset((
     'melee-airborne', 'flaming', 'resurrect-front', 'resurrect-back',
     'melee-continuous', 'feeding', 'leap-start', 'leap-airborne', 'leap-melee'
     ))
+
+
+partial_mod2_def = TagDef("mod2",
+    Pad(64),
+    Struct('tagdata',
+        Pad(172),
+        reflexive("markers", mod2_marker_desc, 256, DYN_NAME_PATH=".name"),
+        reflexive("nodes", mod2_node_desc, 64, DYN_NAME_PATH=".name"),
+        SIZE=232
+        ),
+    ext=".gbxmodel", endian=">"
+    )
 
 
 def split_anim_name_into_type_strings(anim_name):
@@ -329,7 +344,7 @@ def set_animation_index(antr_tag, anim_name, anim_index,
         unit.down_pitch_per_frame = unit.up_pitch_per_frame = pi / 3
 
         # tool likes to have the first 12 always exist, even if unset
-        unit.animations.STEPTREE.extend(12)
+        unit.animations.STEPTREE.extend(12 - len(unit.animations.STEPTREE))
 
     if typ == 1:
         # unit animation
@@ -368,7 +383,7 @@ def set_animation_index(antr_tag, anim_name, anim_index,
     unit_weap_types = unit_weap.weapon_types.STEPTREE
     unit_weap_type = None
     for block in unit_weap_types:
-        if block.label == part2:
+        if block.label == part3:
             unit_weap_type = block
             break
 
@@ -384,3 +399,7 @@ def set_animation_index(antr_tag, anim_name, anim_index,
     return set_animation_enum_index(unit_weap_type.animations.STEPTREE,
                                     enum_index, anim_index,
                                     indices_to_not_overwrite)
+
+
+def calculate_node_vectors(antr_nodes, mod2_nodes, jma_anims):
+    pass
