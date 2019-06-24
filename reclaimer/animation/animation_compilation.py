@@ -1,10 +1,10 @@
 import traceback
 
 from copy import deepcopy
-from struct import Struct as PyStruct
 
-from reclaimer.enums import unit_animation_names, unit_weapon_animation_names
+from reclaimer import enums
 from reclaimer.animation import util
+from reclaimer.animation import serialization
 
 __all__ = ("compile_animation", "compile_model_animations",
            "ANIMATION_COMPILE_MODE_NEW", "ANIMATION_COMPILE_MODE_PRESERVE",
@@ -92,95 +92,8 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False):
     anim.default_data.STEPTREE = bytearray(b'\x00' * default_data_size)
     anim.frame_data.STEPTREE   = bytearray(b'\x00' * frame_data_size)
 
-    frame_info   = anim.frame_info.STEPTREE
-    default_data = anim.default_data.STEPTREE
-    frame_data   = anim.frame_data.STEPTREE
-
-    rot_flags   = jma_anim.rot_flags
-    trans_flags = jma_anim.trans_flags
-    scale_flags = jma_anim.scale_flags
-
-    pack_1_float_into = PyStruct(">f").pack_into
-    pack_2_float_into = PyStruct(">2f").pack_into
-    pack_3_float_into = PyStruct(">3f").pack_into
-    pack_4_float_into = PyStruct(">4f").pack_into
-    pack_4_int16_into = PyStruct(">4h").pack_into
-
-    is_overlay = jma_anim.anim_type == "overlay"
-    def_state = None
-    i = j = k = 0
-
-    for f in range(jma_anim.frame_count):
-        if not is_overlay and f == stored_frame_count:
-            # skip the last frame for non-overlays
-            break
-
-        # write to the frame_info
-        info = jma_anim.root_node_info[f]
-        if has_dz:
-            pack_4_float_into(
-                frame_info, i, info.dx / 100, info.dy / 100, info.dz / 100, info.dyaw)
-        elif has_dyaw:
-            pack_3_float_into(
-                frame_info, i, info.dx / 100, info.dy / 100, info.dyaw)
-        elif has_dxdy:
-            pack_2_float_into(
-                frame_info, i, info.dx / 100, info.dy / 100)
-
-        i += frame_info_node_size
-
-
-        # write to the default_data
-        if f == 0:
-            for n in range(anim.node_count):
-                node_state = jma_anim.frames[f][n]
-                if not rot_flags[n]:
-                    pack_4_int16_into(default_data, j,
-                        int(node_state.rot_i*32767),
-                        int(node_state.rot_j*32767),
-                        int(node_state.rot_k*32767),
-                        int(node_state.rot_w*32767))
-                    j += 8
-
-                if not trans_flags[n]:
-                    pack_3_float_into(default_data, j,
-                        node_state.pos_x / 100,
-                        node_state.pos_y / 100,
-                        node_state.pos_z / 100)
-                    j += 12
-
-                if not scale_flags[n]:
-                    pack_1_float_into(default_data, j, node_state.scale)
-                    j += 4
-
-            if is_overlay:
-                # skip the first frame for overlays
-                continue
-
-
-        # write to the frame_data
-        for n in range(anim.node_count):
-            node_state = jma_anim.frames[f][n]
-
-            if rot_flags[n]:
-                pack_4_int16_into(frame_data, k,
-                    int(node_state.rot_i*32767),
-                    int(node_state.rot_j*32767),
-                    int(node_state.rot_k*32767),
-                    int(node_state.rot_w*32767))
-                k += 8
-
-            if trans_flags[n]:
-                pack_3_float_into(frame_data, k,
-                    node_state.pos_x / 100,
-                    node_state.pos_y / 100,
-                    node_state.pos_z / 100)
-                k += 12
-
-            if scale_flags[n]:
-                pack_1_float_into(frame_data, k, node_state.scale)
-                k += 4
-
+    serialization.serialize_frame_info(anim, jma_anim)
+    serialization.serialize_uncompressed_frame_data(anim, jma_anim)
     return errors
 
 
@@ -218,7 +131,7 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
                 # animation nodes. it's weird. Sibling and child are enough.
                 #antr_node.parent_node_index       != jma_node.parent_index or
                 antr_node.name != jma_node.name):
-    
+
                 errors.append("Node(s) in these animations differ from the "
                               "node(s) of the model_animations tag.")
                 return errors
@@ -362,7 +275,7 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
             indices_modified.add(anim_index)
         except Exception:
             errors.append(traceback.format_exc())
-            
+
 
     if update_mode == ANIMATION_COMPILE_MODE_PRESERVE:
         for i in range(len(prev_antr_objects)):
@@ -409,9 +322,9 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
                 util.set_default_animation_enums(antr_unit_damages, defaults)
 
 
-    unit_anim_defaults = {unit_animation_names.index(name): -1
+    unit_anim_defaults = {enums.unit_animation_names.index(name): -1
                           for name in util.SHARED_UNIT_ANIMATION_NAMES}
-    unit_weap_anim_defaults = {unit_weapon_animation_names.index(name): -1
+    unit_weap_anim_defaults = {enums.unit_weapon_animation_names.index(name): -1
                                for name in util.SHARED_UNIT_WEAPON_ANIMATION_NAMES}
 
     # get the unit animations with applicable ones from all units.

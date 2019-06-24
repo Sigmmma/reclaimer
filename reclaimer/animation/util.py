@@ -402,4 +402,15 @@ def set_animation_index(antr_tag, anim_name, anim_index,
 
 
 def calculate_node_vectors(antr_nodes, mod2_nodes, jma_anims):
+    # NOTE: The base vector is a ray starting at the node that points
+    # relative to the parent node. It points toward the center of the
+    # bounds of all the rotations of that node across all animations.
+    # The vector range is twice the max rotation in any direction that
+    # node will vary across all animations.
+    # ball-socket type means the joint can pitch, yaw, and roll freely.
+    # hinge type means the joint can pitch and roll freely.
+
+    # The cyborgs head has a base vector of 80 degrees, points up, and
+    # the joint is set as a ball socket. This means the head can pitch,
+    # yaw, and roll 40 degrees in any direction from the base vector.
     pass

@@ -1,8 +1,13 @@
 import traceback
 
-from reclaimer.util.compression import decompress_quaternion48
 from supyr_struct.field_types import *
 from supyr_struct.defs.block_def import BlockDef
+
+from reclaimer.animation.jma import JmaAnimation
+from reclaimer.util import compression
+from reclaimer.animation import serialization
+
+__all__ = ("compress_animation", "decompress_animation", )
 
 # for uncompressed animations, the data is stored as:
 #     rotation first, then translation, and finally scale
@@ -186,18 +191,22 @@ def get_keyframe_index_of_frame(frame, keyframes):
     return keyframe_index
 
 
-def decompress_animation(anim, jma_nodes=None):
-    if jma_nodes is None:
-        jma_nodes = [jma.JmaNode() for n in range(anim.node_count)]
+def decompress_animation(anim):
+    temp_jma = JmaAnimation()
+    temp_jma.trans_flags_int = anim.trans_flags0 | (anim.trans_flags1 << 32)
+    temp_jma.rot_flags_int   = anim.rot_flags0   | (anim.rot_flags1   << 32)
+    temp_jma.scale_flags_int = anim.scale_flags0 | (anim.scale_flags1 << 32)
 
-    jma_anim = jma.JmaAnimation(
-        anim.name, anim.node_list_checksum, anim.type.enum_name,
-        anim.frame_info_type.enum_name, anim.flags.world_relative, jma_nodes
-        )
+    # make some fake nodes
+    temp_jma.nodes  = [None] * anim.node_count
+    # make a bunch of frames we can fill in below
+    temp_jma.append_frames([[], ] * anim.frame_count)
 
-    jma_anim.trans_flags_int = anim.trans_flags0 | (anim.trans_flags1 << 32)
-    jma_anim.rot_flags_int   = anim.rot_flags0   | (anim.rot_flags1   << 32)
-    jma_anim.scale_flags_int = anim.scale_flags0 | (anim.scale_flags1 << 32)
+    anim.frame_size = temp_jma.frame_data_frame_size
+
+    trans_flags = temp_jma.trans_flags
+    rot_flags   = temp_jma.rot_flags
+    scale_flags = temp_jma.scale_flags
 
     comp_data = anim.frame_data.STEPTREE
     if anim.offset_to_compressed_data > 0:
@@ -207,7 +216,7 @@ def decompress_animation(anim, jma_nodes=None):
         comp_anim = compressed_frames_def.build(rawdata=comp_data)
     except Exception:
         print(traceback.format_exc())
-        return None
+        return False
 
     # decompress the headers for each of the keyframes
     rot   = comp_data.rotation
@@ -221,4 +230,21 @@ def decompress_animation(anim, jma_nodes=None):
     trans_head = [(v & 4095, v >> 13) for v in trans.keyframe_head]
     scale_head = [(v & 4095, v >> 13) for v in scale.keyframe_head]
 
-    return jma_anim
+    # make the uncompressed default and decomp data
+    default_data = bytearray(temp_jma.default_data_size)
+    decomp_data  = bytearray(anim.frame_size * anim.frame_count)
+
+    anim.offset_to_compressed_data = len(decomp_data)
+    anim.default_data.STEPTREE = default_data
+    anim.frame_data.STEPTREE = decomp_data + comp_data
+
+    
+
+    # compile the animation data into the tag
+    serialization.serialize_uncompressed_animation_data(anim, jma_anim)
+
+    return True
+
+
+def compress_animation(anim):
+    pass

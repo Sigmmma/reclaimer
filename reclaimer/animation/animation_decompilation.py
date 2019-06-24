@@ -8,7 +8,7 @@ from struct import Struct as PyStruct
 from reclaimer.util.matrices import axis_angle_to_quat, multiply_quaternions
 from reclaimer.animation.jma import JmsNode, JmaAnimation, JmaRootNodeState,\
      JmaNodeState, write_jma, get_anim_ext
-from reclaimer.model.jms import generate_fake_nodes
+from reclaimer.model import jms
 
 __all__ = ("extract_animation", )
 
@@ -55,7 +55,7 @@ def extract_animation(tagdata, tag_path="", **kw):
               "\tFake nodes will be created to allow compiling the animations.\n"
               "\tAnimation tags compiled from these files won't import onto\n"
               "\ttheir gbxmodel in 3DS Max, as their node names won't match.")
-        anim_nodes = generate_fake_nodes(animations[0].node_count)
+        anim_nodes = jms.generate_fake_nodes(animations[0].node_count)
 
     for anim in animations:
         try:
