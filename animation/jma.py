@@ -164,6 +164,7 @@ class JmaAnimation:
         self.node_list_checksum = node_list_checksum
         self.nodes  = nodes  if nodes  else []
         self.frames = frames if frames else []
+        self.root_node_info = []
         self.world_relative = bool(world_relative)
         self.anim_type = anim_type
         self.frame_info_type = frame_info_type
@@ -279,6 +280,19 @@ class JmaAnimation:
 
     def insert_frame(self, frame_index, frame_data=None, frame_info=None):
         assert frame_index in range(-(self.frame_count + 1), self.frame_count + 1)
+
+        if frame_data is None:
+            frame_data = [JmaNodeState() for i in range(self.node_count)]
+        else:
+            assert len(frame_data) == self.frame_count
+            for node_frame in frame_data:
+                assert isinstance(node_frame, JmaNodeState)
+
+        if frame_info is None:
+            frame_info = JmaRootNodeState()
+        else:
+            assert isinstance(frame_info, JmaRootNodeState)
+
         self.frames.insert(frame_index, frame_data)
         self.root_node_info.insert(frame_index, frame_info)
     def insert_frames(self, frames_by_indices):
@@ -288,9 +302,9 @@ class JmaAnimation:
     def insert_node(self, node_index, node, frame_data=None):
         assert isinstance(node, JmsNode)
         if frame_data is None:
-            assert len(frame_data) == self.frame_count
             frame_data = [JmaNodeState() for i in range(self.frame_count)]
         else:
+            assert len(frame_data) == self.frame_count
             for node_frame in frame_data:
                 assert isinstance(node_frame, JmaNodeState)
 
