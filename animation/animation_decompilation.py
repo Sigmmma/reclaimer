@@ -8,6 +8,7 @@ from struct import Struct as PyStruct
 from reclaimer.util.matrices import axis_angle_to_quat, multiply_quaternions
 from reclaimer.animation.jma import JmsNode, JmaAnimation, JmaRootNodeState,\
      JmaNodeState, write_jma, get_anim_ext
+from reclaimer.animation import animation_compression
 from reclaimer.model import jms
 
 __all__ = ("extract_animation", )
@@ -63,10 +64,9 @@ def extract_animation(tagdata, tag_path="", **kw):
                 print("Skipping animation with different number of nodes "
                       "than the tag contains: '%s'" % anim.name)
                 continue
-            elif anim.flags.compressed_data and sum(anim.default_data.STEPTREE) == 0:
-                print("Skipping compressed animation without uncompressed "
-                      "animation data: '%s'" % anim.name)
-                continue
+            elif anim.flags.compressed_data:
+                # decompress compressed animations
+                animation_compression.decompress_animation(anim, False)
 
             anim_ext = get_anim_ext(anim.type.enum_name,
                                     anim.frame_info_type.enum_name,
