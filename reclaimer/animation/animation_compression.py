@@ -4,9 +4,10 @@ import traceback
 from supyr_struct.field_types import *
 from supyr_struct.defs.block_def import BlockDef
 
-from reclaimer.animation.jma import JmaAnimation
-from reclaimer.util import compression
 from reclaimer.animation import serialization
+from reclaimer.animation import jma
+from reclaimer.util import compression
+from reclaimer.util import matrices
 
 __all__ = ("compress_animation", "decompress_animation", )
 
@@ -107,23 +108,23 @@ compressed_frames_def = BlockDef("compressed frames",
         # keyframe_head offset for rotation is directly
         # after the header, so it is ALWAYS 44
         Void("keyframe_head"),
-        SInt32("keyframes"),
-        SInt32("default_data"),
-        SInt32("keyframe_data"),
+        UInt32("keyframes"),
+        UInt32("default_data"),
+        UInt32("keyframe_data"),
         SIZE=12
         ),
     QStruct("translation_offsets",
-        SInt32("keyframe_head"),
-        SInt32("keyframes"),
-        SInt32("default_data"),
-        SInt32("keyframe_data"),
+        UInt32("keyframe_head"),
+        UInt32("keyframes"),
+        UInt32("default_data"),
+        UInt32("keyframe_data"),
         SIZE=16
         ),
     QStruct("scale_offsets",
-        SInt32("keyframe_head"),
-        SInt32("keyframes"),
-        SInt32("default_data"),
-        SInt32("keyframe_data"),
+        UInt32("keyframe_head"),
+        UInt32("keyframes"),
+        UInt32("default_data"),
+        UInt32("keyframe_data"),
         SIZE=16
         ),
 
@@ -131,7 +132,7 @@ compressed_frames_def = BlockDef("compressed frames",
         UInt32Array("keyframe_head", SIZE=compressed_stream_size),
         UInt16Array("keyframes", SIZE=compressed_stream_size),
         UInt16Array("default_data", SIZE=compressed_stream_size),
-        SInt16Array("keyframe_data", SIZE=compressed_stream_size),
+        UInt16Array("keyframe_data", SIZE=compressed_stream_size),
         ),
     Container("translation",
         UInt32Array("keyframe_head", SIZE=compressed_stream_size),
@@ -150,51 +151,25 @@ compressed_frames_def = BlockDef("compressed frames",
 
 
 def get_keyframe_index_of_frame(frame, keyframes,
-                                offset=0, keyframe_count=None):
+                                keyframe_count=None, offset=0):
     if keyframe_count is None:
-        keyframe_count = len(keyframes)
+        keyframe_count = len(keyframes) - offset
 
-    lower_keyframe_bound = offset
-    upper_keyframe_bound = offset + keyframe_count - 1
-    keyframe_index = offset
+    # TODO: make this more efficent using a binary search
+    for i in range(offset, offset + keyframe_count - 1):
+        if keyframes[i] <= frame and keyframes[i + 1] > frame:
+            return i
 
-    if min(keyframes) > frame:
-        raise ValueError("No keyframes at or below frame %s" % frame)
+    raise ValueError(
+        "No keyframes pairs containing frame %s" % frame)
 
-    # binary search through the keyframe indices to
-    # find the keyframe_index of the frame we want.
-    while True:
-        # find the proper lower bound for the keyframe bounds window
-        while True:
-            # set the keyframe_index to the middle of the bounds of our sliding window
-            keyframe_index = (lower_keyframe_bound + upper_keyframe_bound) // 2
-
-            # if the keyframe_index is the very last keyframe, or the
-            # frame number of the NEXT keyframe is past the frame we're
-            # looking for, we break here. if we dont we'll go too far and
-            # the lower bound will be past the frame we're requesting.
-            if (keyframe_index + 1 >= keyframe_count or
-                keyframes[keyframe_index + 1] > frame):
-                break
-
-            # otherwise shrink the windows lower bound
-            lower_keyframe_bound = keyframe_index
-
-        # if the frame number of this keyframe is below or equal to the frame
-        # we're requesting, we'll have found the keyframe to use. break here.
-        if keyframes[keyframe_index] <= frame:
-            break
-
-        # otherwise shrink the windows upper bound
-        upper_keyframe_bound = keyframe_index
-
-    # so at this point, we've found a keyframe_index where this is true:
-    #   keyframes[keyframe_index]  <=  frame  <  keyframes[keyframe_index + 1]
-    return keyframe_index - offset
 
 
 def decompress_animation(anim, keep_compressed=True):
-    temp_jma = JmaAnimation()
+    if not anim.flags.compressed_data:
+        return True
+
+    temp_jma = jma.JmaAnimation()
     temp_jma.trans_flags_int = anim.trans_flags0 | (anim.trans_flags1 << 32)
     temp_jma.rot_flags_int   = anim.rot_flags0   | (anim.rot_flags1   << 32)
     temp_jma.scale_flags_int = anim.scale_flags0 | (anim.scale_flags1 << 32)
@@ -202,7 +177,7 @@ def decompress_animation(anim, keep_compressed=True):
     # make some fake nodes
     temp_jma.nodes  = [None] * anim.node_count
     # make a bunch of frames we can fill in below
-    temp_jma.append_frames([()] * anim.frame_count)
+    temp_jma.append_frames([()] * (anim.frame_count + 1))
 
     anim.frame_size = temp_jma.frame_data_frame_size
 
@@ -245,21 +220,6 @@ def decompress_animation(anim, keep_compressed=True):
     rot_keyframe_data   = rot.keyframe_data
     trans_keyframe_data = trans.keyframe_data
     scale_keyframe_data = scale.keyframe_data
-    '''
-    print("HEADERS")
-    for v in rot.keyframe_head:
-        print("    %s" % v)
-    print("COUNTS")
-    for v in rot_keyframe_counts:
-        print("    %s" % v)
-    print("OFFSETS")
-    for v in rot_keyframe_offsets:
-        print("    %s" % v)
-    print("KEYFRAMES:", len(rot_keyframes))
-    for v in rot_keyframes:
-        print("    %s" % v)
-    print("DEFAULT_DATA:", len(rot_default_data))
-    print("KEYFRAME_DATA:", len(rot_keyframe_data))'''
 
     # make the uncompressed default and decomp data
     default_data = bytearray(temp_jma.default_data_size)
@@ -273,8 +233,8 @@ def decompress_animation(anim, keep_compressed=True):
     anim.frame_data.STEPTREE = decomp_data
 
     decomp_quat = compression.decompress_quaternion48
-    blend_quats = compression.nlerp_blend_quaternions
-    blend_trans = compression.lerp_blend_vectors
+    blend_quats = matrices.nlerp_blend_quaternions
+    blend_trans = matrices.lerp_blend_vectors
 
     sqrt = math.sqrt
     rot_i = trans_i = scale_i = 0
@@ -292,7 +252,7 @@ def decompress_animation(anim, keep_compressed=True):
             trans_i += 1
 
         if scale_flags[ni]:
-            scale_kf_ct = scale_keyframe_counts[scale_i]
+            scale_kf_ct  = scale_keyframe_counts[scale_i]
             scale_kf_off = scale_keyframe_offsets[scale_i]
             scale_i += 1
 
@@ -303,9 +263,8 @@ def decompress_animation(anim, keep_compressed=True):
         scale_def = 1.0
 
         if rot_kf_ct:
-            rot_first_keyframe = rot_keyframes[rot_kf_off]
-            rot_last_keyframe  = rot_keyframes[
-                rot_kf_off + rot_kf_ct - 1]
+            rot_first_kf = rot_keyframes[rot_kf_off]
+            rot_last_kf  = rot_keyframes[rot_kf_off + rot_kf_ct - 1]
             rot_first = decomp_quat(*rot_keyframe_data[
                 3 * rot_kf_off:
                 3 * (rot_kf_off + 1)])
@@ -314,9 +273,8 @@ def decompress_animation(anim, keep_compressed=True):
                 3 * (rot_kf_off + rot_kf_ct)])
 
         if trans_kf_ct:
-            trans_first_keyframe = trans_keyframes[trans_kf_off]
-            trans_last_keyframe  = trans_keyframes[
-                trans_kf_off + trans_kf_ct - 1]
+            trans_first_kf = trans_keyframes[trans_kf_off]
+            trans_last_kf  = trans_keyframes[trans_kf_off + trans_kf_ct - 1]
             trans_first = trans_keyframe_data[
                 3 * trans_kf_off:
                 3 * (trans_kf_off + 1)]
@@ -325,118 +283,123 @@ def decompress_animation(anim, keep_compressed=True):
                 3 * (trans_kf_off + trans_kf_ct)]
 
         if scale_kf_ct:
-            scale_first_keyframe = scale_keyframes[scale_kf_off]
-            scale_last_keyframe  = scale_keyframes[
-                scale_kf_off + scale_kf_ct - 1]
+            scale_first_kf = scale_keyframes[scale_kf_off]
+            scale_last_kf  = scale_keyframes[scale_kf_off + scale_kf_ct - 1]
             scale_first = trans_keyframe_data[
                 scale_kf_off]
             scale_last = trans_keyframe_data[
                 scale_kf_off + scale_kf_ct - 1]
 
-        for fi in range(temp_jma.frame_count):
+        for fi in range(anim.frame_count):
             node_frame = temp_jma.frames[fi][ni]
 
-            if not rot_kf_ct:
-                # only stores default data for this node
+            if not rot_kf_ct or fi == 0:
+                # first frame OR only default data stored for this node
                 i, j, k, w = rot_def
-            elif fi == rot_last_keyframe:
+            elif fi == rot_last_kf:
                 # frame is the last keyframe. repeat it to the end
                 i, j, k, w = rot_last
+            elif fi < rot_first_kf:
+                # frame is before the first stored keyframe.
+                # blend from default data to first keyframe.
+                i, j, k, w = blend_quats(
+                    rot_def, rot_first, fi / rot_first_kf)
             else:
-                if fi < rot_first_keyframe:
-                    # frame is before the first stored keyframe.
-                    # blend from default data to first keyframe.
-                    ratio = fi / rot_first_keyframe
-                    q0 = rot_def
-                    q1 = rot_first
-                else:
-                    # frame is at/past the first stored keyframe.
-                    # don't need to use default data at all.
-                    kfi = get_keyframe_index_of_frame(
-                        fi, rot_keyframes, rot_kf_off, rot_kf_ct)
-                    ratio = ((fi - rot_keyframes[kfi]) /
-                             (rot_keyframes[kfi + 1] -
-                              rot_keyframes[kfi]))
-
-                    kfi *= 3
-                    q0 = decomp_quat(*rot_keyframe_data[kfi    : kfi + 3])
-                    q1 = decomp_quat(*rot_keyframe_data[kfi + 3: kfi + 6])
-
-                if ratio == 0:
+                # frame is at/past the first stored keyframe.
+                # don't need to use default data at all.
+                kf_i = get_keyframe_index_of_frame(
+                    fi, rot_keyframes, rot_kf_ct, rot_kf_off)
+                kf0 = rot_keyframes[kf_i]
+                q0 = decomp_quat(
+                    *rot_keyframe_data[kf_i * 3: (kf_i + 1) * 3])
+                
+                if fi == kf0:
+                    # this keyframe is the frame we want.
+                    # no blending required
                     i, j, k, w = q0
                 else:
+                    kf1 = rot_keyframes[kf_i + 1]
+                    ratio = (fi - kf0) / (kf1 - kf0)
+                    kf_i += 1
+                    q1 = decomp_quat(
+                        *rot_keyframe_data[kf_i * 3: (kf_i + 1) * 3])
                     i, j, k, w = blend_quats(q0, q1, ratio)
 
 
-            if not trans_kf_ct:
-                # only stores default data for this node
+            if not trans_kf_ct or fi == 0:
+                # first frame OR only default data stored for this node
                 x, y, z = trans_def
-            elif fi == trans_last_keyframe:
+            elif fi == trans_last_kf:
                 # frame is the last keyframe. repeat it to the end
                 x, y, z = trans_last
+            elif fi < trans_first_kf:
+                # frame is before the first stored keyframe.
+                # blend from default data to first keyframe.
+                x, y, z = blend_trans(
+                    trans_def, trans_first, fi / trans_first_kf)
             else:
-                if fi < trans_first_keyframe:
-                    # frame is before the first stored keyframe.
-                    # blend from default data to first keyframe.
-                    ratio = fi / trans_first_keyframe
-                    p0 = trans_def
-                    p1 = trans_first
-                else:
-                    # frame is at/past the first stored keyframe.
-                    # don't need to use default data at all.
-                    kfi = get_keyframe_index_of_frame(
-                        fi, trans_keyframes, trans_kf_off, trans_kf_ct)
-                    ratio = ((fi - trans_keyframes[kfi]) /
-                             (trans_keyframes[kfi + 1] -
-                              trans_keyframes[kfi]))
-
-                    kfi *= 3
-                    p0 = trans_keyframe_data[kfi    : kfi + 3]
-                    p1 = trans_keyframe_data[kfi + 3: kfi + 6]
-
-                if ratio == 0:
+                # frame is at/past the first stored keyframe.
+                # don't need to use default data at all.
+                kf_i = get_keyframe_index_of_frame(
+                    fi, trans_keyframes, trans_kf_ct, trans_kf_off)
+                kf0 = trans_keyframes[kf_i]
+                p0 = trans_keyframe_data[kf_i * 3: (kf_i + 1) * 3]
+                
+                if fi == kf0:
+                    # this keyframe is the frame we want.
+                    # no blending required
                     x, y, z = p0
                 else:
+                    kf1 = trans_keyframes[kf_i + 1]
+                    ratio = (fi - kf0) / (kf1 - kf0)
+
+                    kf_i += 1
+                    p1 = trans_keyframe_data[kf_i * 3: (kf_i + 1) * 3]
                     x, y, z = blend_trans(p0, p1, ratio)
 
 
-            if not scale_kf_ct:
-                # only stores default data for this node
+            if not scale_kf_ct or fi == 0:
+                # first frame OR only default data stored for this node
                 scale = scale_def
-            elif fi == scale_last_keyframe:
+            elif fi == scale_last_kf:
                 # frame is the last keyframe. repeat it to the end
                 scale = scale_last
+            elif fi < scale_first_kf:
+                # frame is before the first stored keyframe.
+                # blend from default data to first keyframe.
+                ratio = fi / scale_first_kf
+                scale = scale_def * (1 - ratio) + scale_first * ratio
             else:
-                if fi < scale_first_keyframe:
-                    # frame is before the first stored keyframe.
-                    # blend from default data to first keyframe.
-                    ratio = fi / scale_first_keyframe
-                    s0 = scale_def
-                    s1 = scale_first
-                else:
-                    # frame is at/past the first stored keyframe.
-                    # don't need to use default data at all.
-                    kfi = get_keyframe_index_of_frame(
-                        fi, scale_keyframes, scale_kf_off, scale_kf_ct)
-                    ratio = ((fi - scale_keyframes[kfi]) /
-                             (scale_keyframes[kfi + 1] -
-                              scale_keyframes[kfi]))
-                    s0 = scale_keyframe_data[kfi]
-                    s1 = scale_keyframe_data[kfi + 1]
+                # frame is at/past the first stored keyframe.
+                # don't need to use default data at all.
+                kf_i = get_keyframe_index_of_frame(
+                    fi, scale_keyframes, scale_kf_ct, scale_kf_off)
 
-                if ratio == 0:
+                if fi == kf0:
+                    # this keyframe is the frame we want.
+                    # no blending required
                     scale = s0
                 else:
-                    scale = s0 * (1 - ratio) + s1 * ratio
+                    ratio = ((fi - scale_keyframes[kf_i]) /
+                             (scale_keyframes[kf_i + 1] -
+                              scale_keyframes[kf_i]))
+                    scale = (
+                        scale_keyframe_data[kf_i] * (1 - ratio) +
+                        scale_keyframe_data[kf_i + 1] * ratio)
 
 
             nmag = i**2 + j**2 + k**2 + w**2
             if nmag:
-                nmag = sqrt(nmag)
-                node_frame.rot_i = i / nmag
-                node_frame.rot_j = j / nmag
-                node_frame.rot_k = k / nmag
-                node_frame.rot_w = w / nmag
+                nmag = 1 / sqrt(nmag)
+                if w < 0:
+                    i = -i
+                    j = -j
+                    k = -k
+                    w = -w
+                node_frame.rot_i = i * nmag
+                node_frame.rot_j = j * nmag
+                node_frame.rot_k = k * nmag
+                node_frame.rot_w = w * nmag
 
             node_frame.pos_x = x * 100
             node_frame.pos_y = y * 100
