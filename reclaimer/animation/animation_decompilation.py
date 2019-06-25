@@ -43,7 +43,7 @@ def extract_animation(tagdata, tag_path="", **kw):
         endian = "<"
 
     unpack_trans = PyStruct(endian + "3f").unpack_from
-    unpack_ijkw  = PyStruct(endian + "4h").unpack_from
+    unpack_ijkw  = PyStruct(endian + "4H").unpack_from
     unpack_float = PyStruct(endian + "f").unpack_from
     unpack_dxdy       = PyStruct(endian + "2f").unpack_from
     unpack_dxdydyaw   = PyStruct(endian + "3f").unpack_from
@@ -155,7 +155,12 @@ def extract_animation(tagdata, tag_path="", **kw):
                 i = j = k = x = y = z = 0.0
                 w = scale = 1.0
                 if not rot_flags[n]:
+                    # components are ones-signed
                     i, j, k, w = unpack_ijkw(default_data, off)
+                    if i & 0x8000: w -= 65535
+                    if j & 0x8000: k -= 65535
+                    if k & 0x8000: j -= 65535
+                    if w & 0x8000: i -= 65535
                     off += 8
 
                     rot_len = i**2 + j**2 + k**2 + w**2
@@ -194,7 +199,12 @@ def extract_animation(tagdata, tag_path="", **kw):
                     def_state = def_node_states[n]
                     state     = node_states[n]
                     if rot_flags[n]:
+                        # components are ones-signed
                         i, j, k, w = unpack_ijkw(frame_data, off)
+                        if i & 0x8000: w -= 65535
+                        if j & 0x8000: k -= 65535
+                        if k & 0x8000: j -= 65535
+                        if w & 0x8000: i -= 65535
                         off += 8
 
                         rot_len = i**2 + j**2 + k**2 + w**2
