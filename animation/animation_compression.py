@@ -9,7 +9,8 @@ from reclaimer.animation import jma
 from reclaimer.util import compression
 from reclaimer.util import matrices
 
-__all__ = ("compress_animation", "decompress_animation", )
+__all__ = ("compress_animation", "decompress_animation",
+           "decompress_frame_data_to_jma")
 
 # these structure definitions aren't really used in the code below, but
 # are a good way to illustrate the structure of the compressed data.
@@ -44,7 +45,7 @@ trans_def = BlockDef("translation",
 
 
 def compressed_stream_size(node=None, parent=None, attr_index=None,
-                rawdata=None, new_value=None, *args, **kwargs):
+                           rawdata=None, new_value=None, *args, **kwargs):
     if attr_index is None:
         raise IndexError
     elif new_value is not None:
@@ -164,36 +165,32 @@ def get_keyframe_index_of_frame(frame, keyframes,
         "No keyframes pairs containing frame %s" % frame)
 
 
-
-def decompress_animation(anim, keep_compressed=True):
+def decompress_frame_data_to_jma(anim):
     if not anim.flags.compressed_data:
-        return True
+        return None
 
-    temp_jma = jma.JmaAnimation()
-    temp_jma.trans_flags_int = anim.trans_flags0 | (anim.trans_flags1 << 32)
-    temp_jma.rot_flags_int   = anim.rot_flags0   | (anim.rot_flags1   << 32)
-    temp_jma.scale_flags_int = anim.scale_flags0 | (anim.scale_flags1 << 32)
+    jma_anim = jma.JmaAnimation(
+        anim.name, anim.node_list_checksum, anim.type.enum_name,
+        anim.frame_info_type.enum_name, anim.flags.world_relative
+        )
+    jma_anim.trans_flags_int = anim.trans_flags0 | (anim.trans_flags1 << 32)
+    jma_anim.rot_flags_int   = anim.rot_flags0   | (anim.rot_flags1   << 32)
+    jma_anim.scale_flags_int = anim.scale_flags0 | (anim.scale_flags1 << 32)
 
     # make some fake nodes
-    temp_jma.nodes  = [None] * anim.node_count
+    jma_anim.nodes = [None] * anim.node_count
     # make a bunch of frames we can fill in below
-    temp_jma.append_frames([()] * (anim.frame_count + 1))
+    jma_anim.append_frames([()] * (anim.frame_count + 1))
 
-    anim.frame_size = temp_jma.frame_data_frame_size
-
-    trans_flags = temp_jma.trans_flags
-    rot_flags   = temp_jma.rot_flags
-    scale_flags = temp_jma.scale_flags
+    trans_flags = jma_anim.trans_flags
+    rot_flags   = jma_anim.rot_flags
+    scale_flags = jma_anim.scale_flags
 
     comp_data = anim.frame_data.STEPTREE
     if anim.offset_to_compressed_data > 0:
         comp_data = comp_data[anim.offset_to_compressed_data: ]
 
-    try:
-        comp_anim = compressed_frames_def.build(rawdata=comp_data)
-    except Exception:
-        print(traceback.format_exc())
-        return False
+    comp_anim = compressed_frames_def.build(rawdata=comp_data)
 
     # decompress the headers for each of the keyframes
     rot   = comp_anim.rotation
@@ -221,24 +218,13 @@ def decompress_animation(anim, keep_compressed=True):
     trans_keyframe_data = trans.keyframe_data
     scale_keyframe_data = scale.keyframe_data
 
-    # make the uncompressed default and decomp data
-    default_data = bytearray(temp_jma.default_data_size)
-    decomp_data  = bytearray(anim.frame_size * anim.frame_count)
-    anim.offset_to_compressed_data = len(decomp_data)
-
-    if keep_compressed:
-        decomp_data += comp_data
-
-    anim.default_data.STEPTREE = default_data
-    anim.frame_data.STEPTREE = decomp_data
-
     decomp_quat = compression.decompress_quaternion48
-    blend_quats = matrices.nlerp_blend_quaternions
     blend_trans = matrices.lerp_blend_vectors
+    blend_quats = matrices.nlerp_blend_quaternions
 
     sqrt = math.sqrt
     rot_i = trans_i = scale_i = 0
-    for ni in range(temp_jma.node_count):
+    for ni in range(jma_anim.node_count):
         rot_kf_ct = trans_kf_ct = scale_kf_ct = 0
 
         if rot_flags[ni]:
@@ -291,7 +277,7 @@ def decompress_animation(anim, keep_compressed=True):
                 scale_kf_off + scale_kf_ct - 1]
 
         for fi in range(anim.frame_count):
-            node_frame = temp_jma.frames[fi][ni]
+            node_frame = jma_anim.frames[fi][ni]
 
             if not rot_kf_ct or fi == 0:
                 # first frame OR only default data stored for this node
@@ -391,11 +377,6 @@ def decompress_animation(anim, keep_compressed=True):
             nmag = i**2 + j**2 + k**2 + w**2
             if nmag:
                 nmag = 1 / sqrt(nmag)
-                if w < 0:
-                    i = -i
-                    j = -j
-                    k = -k
-                    w = -w
                 node_frame.rot_i = i * nmag
                 node_frame.rot_j = j * nmag
                 node_frame.rot_k = k * nmag
@@ -407,11 +388,31 @@ def decompress_animation(anim, keep_compressed=True):
 
             node_frame.scale = scale
 
-    # compile the animation data into the tag
-    serialization.serialize_uncompressed_frame_data(anim, temp_jma)
+    return jma_anim
 
+
+def decompress_animation(anim, keep_compressed=True, endian=">"):
+    if not anim.flags.compressed_data:
+        return False
+
+    jma_anim = decompress_frame_data_to_jma(anim)
+    anim.frame_size = jma_anim.frame_data_frame_size
+
+    # serialize the animation data
+    def_data   = serialization.serialize_default_data(jma_anim, endian)
+    frame_data = serialization.serialize_frame_data(jma_anim, endian)
+
+    if keep_compressed:
+        anim.offset_to_compressed_data = len(frame_data)
+        frame_data += anim.frame_data.STEPTREE[anim.offset_to_compressed_data: ]
+    else:
+        anim.offset_to_compressed_data = 0
+        anim.flags.compressed_data = False
+
+    anim.default_data.STEPTREE = def_data
+    anim.frame_data.STEPTREE = frame_data
     return True
 
 
 def compress_animation(anim, keep_uncompressed=True):
-    pass
+    return False

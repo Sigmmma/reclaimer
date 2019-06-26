@@ -15,7 +15,7 @@ ANIMATION_COMPILE_MODE_PRESERVE = 1
 ANIMATION_COMPILE_MODE_ADDITIVE = 2
 
 
-def compile_animation(anim, jma_anim, ignore_size_limits=False):
+def compile_animation(anim, jma_anim, ignore_size_limits=False, endian=">"):
     '''
     Compiles the provided JmaAnimation into the provided antr animation block.
     '''
@@ -54,10 +54,6 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False):
         jma_anim = deepcopy(jma_anim)
         jma_anim.apply_root_node_info_to_states(True)
 
-    has_dxdy = "dx"   in jma_anim.frame_info_type
-    has_dz   = "dz"   in jma_anim.frame_info_type
-    has_dyaw = "dyaw" in jma_anim.frame_info_type
-
     anim.name = jma_anim.name
     anim.type.set_to(jma_anim.anim_type)
     anim.frame_count = stored_frame_count
@@ -66,11 +62,11 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False):
     anim.node_count = jma_anim.node_count
     anim.next_animation = -1
 
-    if has_dz:
+    if jma_anim.has_dz:
         anim.frame_info_type.data = 3
-    elif has_dyaw:
+    elif jma_anim.has_dyaw:
         anim.frame_info_type.data = 2
-    elif has_dxdy:
+    elif jma_anim.has_dxdy:
         anim.frame_info_type.data = 1
     else:
         anim.frame_info_type.data = 0
@@ -87,13 +83,14 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False):
     anim.scale_flags0 =  jma_anim.scale_flags_int & 0xFFffFFff
     anim.scale_flags1 = (jma_anim.scale_flags_int >> 32) & 0xFFffFFff
 
+    frame_info = serialization.serialize_frame_info(jma_anim, endian)
+    def_data   = serialization.serialize_default_data(jma_anim, endian)
+    frame_data = serialization.serialize_frame_data(jma_anim, endian)
 
-    anim.frame_info.STEPTREE   = bytearray(b'\x00' * frame_info_size)
-    anim.default_data.STEPTREE = bytearray(b'\x00' * default_data_size)
-    anim.frame_data.STEPTREE   = bytearray(b'\x00' * frame_data_size)
+    anim.frame_info.STEPTREE = frame_info
+    anim.default_data.STEPTREE = def_data
+    anim.frame_data.STEPTREE = frame_data
 
-    serialization.serialize_frame_info(anim, jma_anim)
-    serialization.serialize_uncompressed_frame_data(anim, jma_anim)
     return errors
 
 
@@ -183,11 +180,12 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
             if i not in range(len(prev_antr_nodes)):
                 continue
 
-        prev_antr_node = prev_antr_nodes[i]
-        if prev_antr_node.name.lower() == antr_node.name.lower():
-            antr_node.node_joint_flags.data = prev_antr_node.node_joint_flags.data
-            antr_node.base_vector[:] = prev_antr_node.base_vector
-            antr_node.vector_range   = prev_antr_node.vector_range
+        if prev_antr_nodes:
+            prev_antr_node = prev_antr_nodes[i]
+            if prev_antr_node.name.lower() == antr_node.name.lower():
+                antr_node.node_joint_flags.data = prev_antr_node.node_joint_flags.data
+                antr_node.base_vector[:] = prev_antr_node.base_vector
+                antr_node.vector_range   = prev_antr_node.vector_range
 
         if mod2_nodes:
             if len(antr_nodes) != len(mod2_nodes):
@@ -343,11 +341,14 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
         k: v for k, v in unit_weap_anim_defaults.items() if v != -1}
 
     for unit in antr_units:
-        anim_enums = unit.animations.STEPTREE
-        anim_enums.extend(max(unit_anim_defaults) + 1 - len(anim_enums))
-        for unit_weap in unit.weapons.STEPTREE:
-            anim_enums = unit_weap.animations.STEPTREE
-            anim_enums.extend(max(unit_weap_anim_defaults) + 1 - len(anim_enums))
+        if unit_anim_defaults:
+            anim_enums = unit.animations.STEPTREE
+            anim_enums.extend(max(unit_anim_defaults) + 1 - len(anim_enums))
+
+        if unit_weap_anim_defaults:
+            for unit_weap in unit.weapons.STEPTREE:
+                anim_enums = unit_weap.animations.STEPTREE
+                anim_enums.extend(max(unit_weap_anim_defaults) + 1 - len(anim_enums))
 
     # default any unset unit animations with the found defaults.
     for unit in antr_units:
@@ -396,7 +397,7 @@ def copy_unit_animation_block_data(antr_units, prev_antr_units):
         unit.down_frame_count     = prev_unit.down_frame_count
         unit.up_frame_count       = prev_unit.up_frame_count
 
-        unit.ik_points.STEPTREE = deepcopy(prev_unit.ik_points.STEPTREE)
+        unit.ik_points = deepcopy(prev_unit.ik_points)
 
         for unit_weap in unit.weapons.STEPTREE:
             prev_unit_weap = None
@@ -420,7 +421,7 @@ def copy_unit_animation_block_data(antr_units, prev_antr_units):
             unit_weap.down_frame_count     = prev_unit_weap.down_frame_count
             unit_weap.up_frame_count       = prev_unit_weap.up_frame_count
 
-            unit_weap.ik_points.STEPTREE = deepcopy(prev_unit_weap.ik_points.STEPTREE)
+            unit_weap.ik_points = deepcopy(prev_unit_weap.ik_points)
 
 
 def copy_vehicle_animation_block_data(antr_vehicles, prev_antr_vehicles):
