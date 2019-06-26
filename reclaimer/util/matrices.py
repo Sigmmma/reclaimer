@@ -197,22 +197,22 @@ def nlerp_blend_quaternions(q0, q1, ratio):
     return [i0*r0 + i1*r1, j0*r0 + j1*r1, k0*r0 + k1*r1, w0*r0 + w1*r1]
 
 
-def slerp_blend_vectors(vector_0, vector_1, ratio):
+def slerp_blend_quaternions(q0, q1, ratio):
     ratio = max(0.0, min(1.0, ratio))
-    assert len(vector_0) == len(vector_1)
 
-    v0_len = sqrt(sum(v**2 for v in vector_0))
-    v1_len = sqrt(sum(v**2 for v in vector_1))
-    
-    cos_half_theta = sqrt(sum(v0 * v1 for v0, v1 in zip(vector_0, vector_1)))
+    i0, j0, k0, w0 = q0
+    i1, j1, k1, w1 = q1
+
+    cos_half_theta = i0*i1 + j0*j1 + k0*k1 + w0*w1
+    half_theta = acos(cos_half_theta) if abs(cos_half_theta) < 1.0 else 0.0
+
     if cos_half_theta < 0:
         # need to change the vector rotations to be 2pi - rot
-        vector_1 = [-v for v in vector_1]
-        cos_half_theta *= -1
-
-    half_theta = 0.0
-    if abs(cos_half_theta) < 1.0:
-        half_theta = acos(cos_half_theta)
+        cos_half_theta = -cos_half_theta
+        i1 = -i1
+        j1 = -j1
+        k1 = -k1
+        w1 = -w1
 
     # angle is not well defined in floating point at this point
     if cos_half_theta > 0.9999999:
@@ -223,10 +223,7 @@ def slerp_blend_vectors(vector_0, vector_1, ratio):
         r0 = sin((1.0 - ratio) * half_theta) / sin_half_theta
         r1 = sin(ratio * half_theta) / sin_half_theta
 
-    r0 /= v0_len
-    r1 /= v1_len
-
-    return [v0 * r0 + v1 * r1 for v0, v1 in zip(vector_0, vector_1)]
+    return [i0*r0 + i1*r1, j0*r0 + j1*r1, k0*r0 + k1*r1, w0*r0 + w1*r1]
 
 
 class FixedLengthList(list):

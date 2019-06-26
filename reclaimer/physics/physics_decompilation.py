@@ -8,8 +8,9 @@ __all__ = ("extract_physics", )
 
 
 def extract_physics(tagdata, tag_path="", **kw):
-    write_jms = kw.get('write_jms', True)
-    if write_jms:
+    do_write_jms = kw.get('write_jms', True)
+    filepath = ""
+    if do_write_jms:
         filepath = os.path.join(
             kw['out_dir'], os.path.dirname(tag_path), "physics", "physics.jms")
         if not kw.get('overwrite', True) and os.path.isfile(filepath):
@@ -42,7 +43,7 @@ def extract_physics(tagdata, tag_path="", **kw):
 
     jms_model.nodes = generate_fake_nodes(child_node_ct)
 
-    if write_jms:
+    if do_write_jms:
         write_jms(filepath, jms_model)
     else:
         return jms_model

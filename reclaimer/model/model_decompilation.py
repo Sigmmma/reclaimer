@@ -10,14 +10,14 @@ __all__ = ("extract_model", )
 
 
 def extract_model(tagdata, tag_path="", **kw):
-    write_jms = kw.get('write_jms', True)
-    jms_models = None
-    if write_jms:
+    do_write_jms = kw.get('write_jms', True)
+    if do_write_jms:
+        jms_models = None
+        filepath_base = os.path.join(
+            kw['out_dir'], os.path.dirname(tag_path), "models")
+    else:
         jms_models = []
-
-    filepath = ""
-    filepath_base = os.path.join(
-        kw['out_dir'], os.path.dirname(tag_path), "models")
+        filepath_base = ""
 
     global_markers = {}
     materials = []
@@ -273,7 +273,7 @@ def extract_model(tagdata, tag_path="", **kw):
             jms_model = JmsModel(
                 jms_name, tagdata.node_list_checksum, nodes,
                 materials, markers, regions, verts, tris)
-            if write_jms:
+            if do_write_jms:
                 write_jms(filepath, jms_model)
             else:
                 jms_models.append(jms_model)

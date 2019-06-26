@@ -10,12 +10,12 @@ def decompress_quaternion48(word_0, word_1, word_2):
     i = (comp_rot >> 36) & 4095
     # avoid division by zero
     if i | j | k | w:
-        if i & 0x800: i -= 4095
-        if j & 0x800: j -= 4095
-        if k & 0x800: k -= 4095
-        if w & 0x800: w -= 4095
-        length = sqrt(i**2 + j**2 + k**2 + w**2)
-        return i / length, j / length, k / length, w / length
+        if i & 0x800: i -= 4096
+        if j & 0x800: j -= 4096
+        if k & 0x800: k -= 4096
+        if w & 0x800: w -= 4096
+        length = 1.0 / sqrt(i**2 + j**2 + k**2 + w**2)
+        return i * length, j * length, k * length, w * length
     return 0.0, 0.0, 0.0, 1.0
 
 
@@ -26,10 +26,10 @@ def compress_quaternion48(i, j, k, w):
     # avoid division by zero
     if nmag:
         nmag = 2047.5 / sqrt(nmag)
-        i = int(i*nmag) % 4095
-        j = int(j*nmag) % 4095
-        k = int(k*nmag) % 4095
-        w = int(w*nmag) % 4095
+        i = int(i*nmag) % 4096
+        j = int(j*nmag) % 4096
+        k = int(k*nmag) % 4096
+        w = int(w*nmag) % 4096
         comp_rot = w | (k << 12) | (j << 24) | (i << 36)
     else:
         comp_rot = 2047
