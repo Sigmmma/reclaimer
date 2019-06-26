@@ -178,9 +178,9 @@ class JmaAnimation:
     @property
     def has_dxdy(self): return "dx"   in self.frame_info_type
     @property
-    def has_dz(self):   return "dz"   in self.frame_info_type
-    @property
     def has_dyaw(self): return "dyaw" in self.frame_info_type
+    @property
+    def has_dz(self):   return "dz"   in self.frame_info_type
 
     @property
     def actor_count(self): return len(self.actors)
