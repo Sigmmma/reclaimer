@@ -1,6 +1,8 @@
 import math
 import traceback
 
+from copy import deepcopy
+
 from supyr_struct.field_types import *
 from supyr_struct.defs.block_def import BlockDef
 
@@ -387,6 +389,10 @@ def decompress_frame_data_to_jma(anim):
             node_frame.pos_z = z * 100
 
             node_frame.scale = scale
+
+    if jma_anim.last_frame_loops_to_first:
+        # duplicate the first frame to the last frame for non-overlays
+        jma_anim.frames[-1] = deepcopy(jma_anim.frames[0])
 
     return jma_anim
 
