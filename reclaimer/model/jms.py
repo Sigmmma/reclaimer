@@ -5,7 +5,7 @@ import traceback
 from copy import deepcopy
 from os import makedirs
 from os.path import dirname, exists
-from reclaimer.util import float_to_str
+from reclaimer.util import float_to_str, float_to_str_truncate
 
 
 class JmsNode:
@@ -1311,7 +1311,12 @@ def _read_jms_8210(jms_model, jms_data, stop_at=""):
     return jms_model
 
 
-def write_jms(filepath, jms_model):
+def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
+    if use_blitzkrieg_rounding:
+        to_str = lambda f: float_to_str_truncate(f, 6)
+    else:
+        to_str = float_to_str
+
     materials = jms_model.materials
     regions = jms_model.regions
 
@@ -1333,13 +1338,9 @@ def write_jms(filepath, jms_model):
         for node in jms_model.nodes:
             f.write("%s\n%s\n%s\n%s\t%s\t%s\t%s\n%s\t%s\t%s\n" % (
                 node.name[: 31], node.first_child, node.sibling_index,
-                float_to_str(node.rot_i),
-                float_to_str(node.rot_j),
-                float_to_str(node.rot_k),
-                float_to_str(node.rot_w),
-                float_to_str(node.pos_x),
-                float_to_str(node.pos_y),
-                float_to_str(node.pos_z),
+                to_str(node.rot_i), to_str(node.rot_j),
+                to_str(node.rot_k), to_str(node.rot_w),
+                to_str(node.pos_x), to_str(node.pos_y), to_str(node.pos_z),
                 )
             )
 
@@ -1351,14 +1352,10 @@ def write_jms(filepath, jms_model):
         for marker in jms_model.markers:
             f.write("%s\n%s\n%s\n%s\t%s\t%s\t%s\n%s\t%s\t%s\n%s\n" % (
                 marker.name[: 31], marker.region, marker.parent,
-                float_to_str(marker.rot_i),
-                float_to_str(marker.rot_j),
-                float_to_str(marker.rot_k),
-                float_to_str(marker.rot_w),
-                float_to_str(marker.pos_x),
-                float_to_str(marker.pos_y),
-                float_to_str(marker.pos_z),
-                float_to_str(marker.radius)
+                to_str(marker.rot_i), to_str(marker.rot_j),
+                to_str(marker.rot_k), to_str(marker.rot_w),
+                to_str(marker.pos_x), to_str(marker.pos_y), to_str(marker.pos_z),
+                to_str(marker.radius)
                 )
             )
 
@@ -1368,25 +1365,19 @@ def write_jms(filepath, jms_model):
 
         f.write("%s\n" % len(jms_model.verts))
         for vert in jms_model.verts:
-            f.write("%s\n%s\t%s\t%s\n%s\t%s\t%s\n%s\n%s\n%s\t%s\t%s\n" % (
+            f.write("%s\n%s\t%s\t%s\n%s\t%s\t%s\n%s\n%s\n%s\n%s\n%s\n" % (
                 vert.node_0,
-                float_to_str(vert.pos_x),
-                float_to_str(vert.pos_y),
-                float_to_str(vert.pos_z),
-                float_to_str(vert.norm_i),
-                float_to_str(vert.norm_j),
-                float_to_str(vert.norm_k),
+                to_str(vert.pos_x),  to_str(vert.pos_y),  to_str(vert.pos_z),
+                to_str(vert.norm_i), to_str(vert.norm_j), to_str(vert.norm_k),
                 vert.node_1,
-                float_to_str(vert.node_1_weight),
-                float_to_str(vert.tex_u),
-                float_to_str(vert.tex_v),
-                float_to_str(vert.tex_w),
+                to_str(vert.node_1_weight),
+                to_str(vert.tex_u), to_str(vert.tex_v), to_str(vert.tex_w),
                 )
             )
 
         f.write("%s\n" % len(jms_model.tris))
         for tri in jms_model.tris:
-            f.write("%s\t%s\n%s\t%s\t%s\n" % (
+            f.write("%s\n%s\n%s\t%s\t%s\n" % (
                 tri.region, tri.shader,
                 tri.v0, tri.v1, tri.v2
                 )
