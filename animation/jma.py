@@ -6,7 +6,7 @@ import traceback
 from copy import deepcopy
 from reclaimer.common_descs import anim_types, anim_frame_info_types
 from reclaimer.model.jms import JmsNode, JmsModel
-from reclaimer.util import float_to_str
+from reclaimer.util import float_to_str, float_to_str_truncate
 from reclaimer.util.matrices import clip_angle_to_bounds, are_vectors_equal,\
      quat_to_matrix, matrix_to_quat, axis_angle_to_quat, quat_to_axis_angle,\
      quaternion_to_euler, euler_to_quaternion, Quaternion, multiply_quaternions
@@ -627,7 +627,12 @@ def read_jma(jma_string, stop_at="", anim_name=""):
     return jma_anim
 
 
-def write_jma(filepath, jma_anim):
+def write_jma(filepath, jma_anim, use_blitzkrieg_rounding=False):
+    if use_blitzkrieg_rounding:
+        to_str = lambda f: float_to_str_truncate(f, 6)
+    else:
+        to_str = float_to_str
+
     # If the path doesnt exist, create it
     if not os.path.exists(os.path.dirname(filepath)):
         os.makedirs(os.path.dirname(filepath))
@@ -649,21 +654,17 @@ def write_jma(filepath, jma_anim):
         f.write("%s\n" % int(jma_anim.node_list_checksum))
 
         for node in jma_anim.nodes:
-            f.write("%s\n%s\t%s\n" %
+            f.write("%s\n%s\n%s\n" %
                 (node.name[: 31], node.first_child, node.sibling_index)
             )
 
         for frame in jma_anim.frames:
             for nf in frame:
                 f.write("%s\t%s\t%s\n%s\t%s\t%s\t%s\n%s\n" % (
-                    float_to_str(nf.pos_x),
-                    float_to_str(nf.pos_y),
-                    float_to_str(nf.pos_z),
-                    float_to_str(nf.rot_i),
-                    float_to_str(nf.rot_j),
-                    float_to_str(nf.rot_k),
-                    float_to_str(nf.rot_w),
-                    float_to_str(nf.scale))
+                    to_str(nf.pos_x), to_str(nf.pos_y), to_str(nf.pos_z),
+                    to_str(nf.rot_i), to_str(nf.rot_j),
+                    to_str(nf.rot_k), to_str(nf.rot_w),
+                    to_str(nf.scale))
                 )
 
 #jma_file = open(r'C:\Users\Moses\Desktop\halo\data\characters\cyborg\animations\alert unarmed turn-right.jmt', 'r')

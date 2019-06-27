@@ -52,11 +52,32 @@ def float_to_str(f, max_sig_figs=7):
 
     sig_figs = -1
     if abs(f) > 0:
-        sig_figs = int(round(max_sig_figs - log(abs(f), 10)))
+        sig_figs = int(round(max_sig_figs - log(abs(f), 10) - 1))
 
     if sig_figs < 0:
         return str(f).split(".")[0]
-    return (("%" + (".%sf" % sig_figs)) % f).rstrip("0").rstrip(".")
+
+    str_float = ("%" + (".%sf" % sig_figs)) % f
+    if "." in str_float:
+        return str_float.rstrip("0").rstrip(".")
+    return str_float
+
+
+def float_to_str_truncate(f, sig_figs=7):
+    if f == POS_INF:
+        str_float = "1000000000000000000000000000000000000000"
+    elif f == NEG_INF:
+        str_float = "-1000000000000000000000000000000000000000"
+    else:
+        str_float = ("%" + (".%sf" % sig_figs)) % f
+
+    float_pieces = str_float.split(".", 1)
+    if len(float_pieces) == 1:
+        remainder = "0" * sig_figs
+    else:
+        remainder = float_pieces[1] + "0" * (sig_figs - len(float_pieces[1]))
+
+    return "%s.%s" % (float_pieces[0], remainder[: sig_figs])
 
 
 def is_valid_ascii_name_str(string):
