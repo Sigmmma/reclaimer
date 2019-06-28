@@ -8,7 +8,7 @@ from struct import Struct as PyStruct
 from reclaimer.util.matrices import axis_angle_to_quat, multiply_quaternions
 from reclaimer.animation.jma import JmsNode, JmaAnimation, JmaRootNodeState,\
      JmaNodeState, write_jma, get_anim_ext
-from reclaimer.animation import animation_compression, serialization
+from reclaimer.animation import serialization
 from reclaimer.model import jms
 
 __all__ = ("extract_model_animations", "extract_animation", )
@@ -76,69 +76,44 @@ def extract_animation(anim_index, tagdata, tag_path="", **kw):
         return
 
 
+    jma_anim = JmaAnimation(
+        anim.name, anim.node_list_checksum, anim.type.enum_name,
+        anim.frame_info_type.enum_name, anim.flags.world_relative,
+        anim_nodes
+        )
+    jma_anim.trans_flags_int = anim.trans_flags0 | (anim.trans_flags1 << 32)
+    jma_anim.rot_flags_int   = anim.rot_flags0   | (anim.rot_flags1   << 32)
+    jma_anim.scale_flags_int = anim.scale_flags0 | (anim.scale_flags1 << 32)
+
+    if len(anim.frame_info.STEPTREE) < jma_anim.root_node_info_frame_size * anim.frame_count:
+        print("Skipping animation with less frame_info data "
+              "than it is expected to contain: '%s'" % anim.name)
+        return
+    elif len(anim.default_data.STEPTREE) < jma_anim.default_data_size:
+        print("Skipping animation with less default_data "
+              "than it is expected to contain: '%s'" % anim.name)
+        return
+    elif len(anim.frame_data.STEPTREE) < jma_anim.frame_data_frame_size * anim.frame_count:
+        print("Skipping animation with less frame_data "
+              "than it is expected to contain: '%s'" % anim.name)
+        return
+
     if anim.flags.compressed_data:
         # decompress compressed animations
-        jma_anim = animation_compression.decompress_frame_data_to_jma(anim)
-        jma_anim.nodes = anim_nodes
+        keyframes, jma_anim.frames = serialization.deserialize_compressed_frame_data(anim)
+        jma_anim.rot_keyframes   = keyframes[0]
+        jma_anim.trans_keyframes = keyframes[1]
+        jma_anim.scale_keyframes = keyframes[2]
     else:
-        jma_anim = JmaAnimation(
-            anim.name, anim.node_list_checksum, anim.type.enum_name,
-            anim.frame_info_type.enum_name, anim.flags.world_relative,
-            anim_nodes
-            )
-        jma_anim.trans_flags_int = anim.trans_flags0 | (anim.trans_flags1 << 32)
-        jma_anim.rot_flags_int   = anim.rot_flags0   | (anim.rot_flags1   << 32)
-        jma_anim.scale_flags_int = anim.scale_flags0 | (anim.scale_flags1 << 32)
-
-        if len(anim.frame_info.STEPTREE) < jma_anim.root_node_info_frame_size * anim.frame_count:
-            print("Skipping animation with less frame_info data "
-                  "than it is expected to contain: '%s'" % anim.name)
-            return
-        elif len(anim.default_data.STEPTREE) < jma_anim.default_data_size:
-            print("Skipping animation with less default_data "
-                  "than it is expected to contain: '%s'" % anim.name)
-            return
-        elif len(anim.frame_data.STEPTREE) < jma_anim.frame_data_frame_size * anim.frame_count:
-            print("Skipping animation with less frame_data "
-                  "than it is expected to contain: '%s'" % anim.name)
-            return
-
-        # create the default node states from the default_data
-        def_node_states = serialization.deserialize_default_data(anim, endian)
-
         # create the node states from the frame_data and default_data
         jma_anim.frames = serialization.deserialize_frame_data(
-            anim, def_node_states, endian)
-
-        if jma_anim.last_frame_loops_to_first:
-            # duplicate the first frame to the last frame for non-overlays
-            jma_anim.frames.append(deepcopy(jma_anim.frames[0]))
-        else:
-            # overlay animations start with frame 0 being
-            # in the same state as the default node states
-            jma_anim.frames.insert(0, def_node_states)
+            anim, None, True, endian)
 
     # sum the frame info changes for each frame from the frame_info
-    jma_anim.root_node_info = serialization.deserialize_frame_info(anim, endian)
+    jma_anim.root_node_info = serialization.deserialize_frame_info(
+        anim, True, endian)
 
-    if jma_anim.last_frame_loops_to_first:
-        if jma_anim.root_node_info:
-            # duplicate the last frame and apply the change
-            # that frame to the total change at that frame.
-            last_root_node_info = deepcopy(jma_anim.root_node_info[-1])
-            last_root_node_info.x += last_root_node_info.dx
-            last_root_node_info.y += last_root_node_info.dy
-            last_root_node_info.z += last_root_node_info.dz
-            last_root_node_info.yaw += last_root_node_info.dyaw
-
-            # no delta on last frame. zero it out
-            last_root_node_info.dx = 0.0
-            last_root_node_info.dy = 0.0
-            last_root_node_info.dz = 0.0
-            last_root_node_info.dyaw = 0.0
-
-            jma_anim.root_node_info.append(last_root_node_info)
-
+    if jma_anim.has_dx or jma_anim.has_dyaw or jma_anim.has_dz:
         # this is set to True on instantiation.
         # Set it to False since we had to provide root node info
         jma_anim.root_node_info_applied = False
