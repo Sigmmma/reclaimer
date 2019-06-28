@@ -140,6 +140,10 @@ class JmaAnimation:
     nodes = ()
     frames = ()
 
+    rot_keyframes = ()
+    trans_keyframes = ()
+    scale_keyframes = ()
+
     root_node_info = ()
 
     frame_rate = 30
@@ -164,12 +168,29 @@ class JmaAnimation:
         self.node_list_checksum = node_list_checksum
         self.nodes  = nodes  if nodes  else []
         self.frames = frames if frames else []
-        self.root_node_info = []
         self.world_relative = bool(world_relative)
         self.anim_type = anim_type
         self.frame_info_type = frame_info_type
         self.frame_rate = frame_rate
         self.actors = actors if actors else ["unnamedActor"]
+
+        self.root_node_info = []
+        self.setup_keyframes()
+
+    def setup_keyframes(self):
+        self.rot_keyframes   = [[] for i in range(self.node_count)]
+        self.trans_keyframes = [[] for i in range(self.node_count)]
+        self.scale_keyframes = [[] for i in range(self.node_count)]
+
+    @property
+    def has_keyframe_data(self):
+        if not self.rot_keyframes or len(self.rot_keyframes) != self.node_count:
+            return False
+        elif not self.trans_keyframes or len(self.trans_keyframes) != self.node_count:
+            return False
+        elif not self.scale_keyframes or len(self.scale_keyframes) != self.node_count:
+            return False
+        return True
 
     @property
     def ext(self):
@@ -436,9 +457,15 @@ class JmaAnimation:
                         zero, False, tolerance):
                     self.trans_flags_int |= (1 << n)
 
+        # scale is calculated a bit differently. we ALWAYS store scale
+        # frame data for a node if its scale is ever not 1.0, even if
+        # it is static for the entire animation length. This seems to
+        # be due to how compressed animations handle default scales.
+        for node_states in self.frames:
+            for n in range(len(node_states)):
                 if not are_vectors_equal(
-                        (diff.scale, ),
-                        zero, False, tolerance):
+                        (node_states[n].scale, ),
+                        (1.0, ), False, tolerance):
                     self.scale_flags_int |= (1 << n)
 
     def verify_animations_match(self, other_jma):
@@ -468,6 +495,9 @@ class JmaAnimation:
                 break
 
         return errors
+
+    def compress_animation(self, **kw):
+        raise NotImplementedError("Compression isn't implemented yet.")
 
 
 class JmaAnimationSet:
