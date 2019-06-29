@@ -113,7 +113,7 @@ def extract_animation(anim_index, tagdata, tag_path="", **kw):
     jma_anim.root_node_info = serialization.deserialize_frame_info(
         anim, True, endian)
 
-    if jma_anim.has_dx or jma_anim.has_dyaw or jma_anim.has_dz:
+    if jma_anim.has_dxdy or jma_anim.has_dyaw or jma_anim.has_dz:
         # this is set to True on instantiation.
         # Set it to False since we had to provide root node info
         jma_anim.root_node_info_applied = False

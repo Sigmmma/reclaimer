@@ -1,5 +1,6 @@
 import math
 
+from array import array
 from copy import deepcopy
 from struct import Struct as PyStruct
 
@@ -245,11 +246,11 @@ def deserialize_frame_data(anim, def_node_states=None,
         pass
     if anim.type.enum_name != "overlay":
         # duplicate the first frame to the last frame for non-overlays
-        frames.append(deepcopy(jma_anim.frames[0]))
+        frame_data.append(deepcopy(frame_data[0]))
     else:
         # overlay animations start with frame 0 being
         # in the same state as the default node states
-        frames.insert(0, def_node_states)
+        frame_data.insert(0, def_node_states)
 
     return frame_data
 
@@ -344,46 +345,44 @@ def serialize_compressed_frame_data(jma_anim):
     trans_flags = jma_anim.trans_flags
     scale_flags = jma_anim.scale_flags
 
-    rot_keyframes   = rot_data.keyframes
-    trans_keyframes = trans_data.keyframes
-    scale_keyframes = scale_data.keyframes
+    rot_keyframes   = comp_anim_block.rotation.keyframes
+    trans_keyframes = comp_anim_block.translation.keyframes
+    scale_keyframes = comp_anim_block.scale.keyframes
 
-    rot_def_data   = rot_data.default_data
-    trans_def_data = trans_data.default_data
-    scale_def_data = scale_data.default_data
+    rot_def_data   = comp_anim_block.rotation.default_data
+    trans_def_data = comp_anim_block.translation.default_data
+    scale_def_data = comp_anim_block.scale.default_data
 
-    rot_keyframe_data   = rot_data.keyframe_data
-    trans_keyframe_data = trans_data.keyframe_data
-    scale_keyframe_data = scale_data.keyframe_data
+    rot_keyframe_data   = comp_anim_block.rotation.keyframe_data
+    trans_keyframe_data = comp_anim_block.translation.keyframe_data
+    scale_keyframe_data = comp_anim_block.scale.keyframe_data
 
     rot_keyframes_by_nodes   = [[] for i in range(jma_anim.node_count)]
     trans_keyframes_by_nodes = [[] for i in range(jma_anim.node_count)]
     scale_keyframes_by_nodes = [[] for i in range(jma_anim.node_count)]
 
     # skip the first frame for overlays, otherwise the last frame
-    frame_to_skip = 0
-    if jma_anim.anim_type != "overlay":
-        frame_to_skip = jma_anim.frame_count - 1
+    last_keyframe = jma_anim.frame_count - 2
+    skip_last_frame = (jma_anim.anim_type != "overlay")
 
     # calculate the keyframes and their counts based on the keyframes
     # in the jma_anim as well as the node transform flags
     for ni in range(jma_anim.node_count):
         # make sure to remove keyframe 0 since its stored in the default data
         if rot_flags[ni]:
-            rot_keyframes_by_nodes[ni] = [
-                kf for kf in jma_anim.rot_keyframes[ni]
-                if kf != frame_to_skip]
+            rot_keyframes_by_nodes[ni] = make_clean_keyframes_copy(
+                jma_anim.rot_keyframes[ni],
+                skip_last_frame, last_keyframe)
 
         if trans_flags[ni]:
-            trans_keyframes_by_nodes[ni] = [
-                kf for kf in jma_anim.trans_keyframes[ni]
-                if kf != frame_to_skip]
+            trans_keyframes_by_nodes[ni] = make_clean_keyframes_copy(
+                jma_anim.trans_keyframes[ni],
+                skip_last_frame, last_keyframe)
 
         if scale_flags[ni]:
-            scale_keyframes_by_nodes[ni] = [
-                kf for kf in jma_anim.scale_keyframes[ni]
-                if kf != frame_to_skip]
-
+            scale_keyframes_by_nodes[ni] = make_clean_keyframes_copy(
+                jma_anim.scale_keyframes[ni],
+                skip_last_frame, last_keyframe)
 
     # make the keyframe arrays big enough to fill in the keyframe numbers
     rot_keyframes.append(0)
@@ -405,73 +404,107 @@ def serialize_compressed_frame_data(jma_anim):
     rot_keyframe_data.append(0)
     trans_keyframe_data.append(0)
     scale_keyframe_data.append(0)
-    rot_keyframe_data   *= 3 * jma_anim.node_count
-    trans_keyframe_data *= 3 * jma_anim.node_count
-    scale_keyframe_data *= sum(bool(f) for f in scale_flags)
+    rot_keyframe_data   *= 3 * len(rot_keyframes)
+    trans_keyframe_data *= 3 * len(trans_keyframes)
+    scale_keyframe_data *= len(scale_keyframes)
 
 
     comp_quat = compression.compress_quaternion48
     sqrt = math.sqrt
 
-    rot_i = trans_i = scale_i = 0
-    def_rot_i = def_trans_i = def_scale_i = 0
+    ri = ti = si = 0
+    def_ri = def_ti = def_si = 0
 
     def_frame = jma_anim.frames[0]
 
     for ni in range(jma_anim.node_count):
-        curr_rot_kfs   = rot_keyframes_by_nodes[ni]
-        curr_trans_kfs = trans_keyframes_by_nodes[ni]
-        curr_scale_kfs = scale_keyframes_by_nodes[ni]
+        curr_rot_kfs   = array(rot_keyframes.typecode,
+                               rot_keyframes_by_nodes[ni])
+        curr_trans_kfs = array(trans_keyframes.typecode,
+                               trans_keyframes_by_nodes[ni])
+        curr_scale_kfs = array(scale_keyframes.typecode,
+                               scale_keyframes_by_nodes[ni])
+
+        keyframes_sane = True
+        if curr_rot_kfs:
+            keyframes_sane &= last_keyframe in curr_rot_kfs
+
+        if curr_trans_kfs:
+            keyframes_sane &= last_keyframe in curr_trans_kfs
+
+        if curr_scale_kfs:
+            keyframes_sane &= last_keyframe in curr_scale_kfs
+
+        assert keyframes_sane, (
+            "Compressed animations must contain either no "
+            "keyframes, or at least the last stored keyframe."
+            )
 
         # copy the keyframe indices for this node into the block
-        rot_keyframes[rot_i: rot_i + len(curr_rot_kfs)] = curr_rot_kfs
-        trans_keyframes[trans_i: trans_i + len(curr_trans_kfs)] = curr_trans_kfs
-        scale_keyframes[scale_i: scale_i + len(curr_scale_kfs)] = curr_scale_kfs
+        rot_keyframes[ri: ri + len(curr_rot_kfs)] = curr_rot_kfs
+        trans_keyframes[ti: ti + len(curr_trans_kfs)] = curr_trans_kfs
+        scale_keyframes[si: si + len(curr_scale_kfs)] = curr_scale_kfs
 
         # fill in the default data for this node
         def_node_state = def_frame[ni]
 
-        rot_def_data[def_rot_i: def_rot_i + 4] = comp_quat(
+        w0, w1, w2 = comp_quat(
             def_node_state.rot_i, def_node_state.rot_j,
             def_node_state.rot_k, def_node_state.rot_w)
-        def_rot_i += 4
+        rot_def_data[def_ri] = w0
+        rot_def_data[def_ri + 1] = w1
+        rot_def_data[def_ri + 2] = w2
+        def_ri += 3
 
-        trans_def_data[def_trans_i: def_trans_i + 3] = comp_quat(
-            def_node_state.pos_x / 100,
-            def_node_state.pos_y / 100,
-            def_node_state.pos_z / 100)
-        def_trans_i += 3
+        trans_def_data[def_ti] = def_node_state.pos_x / 100
+        trans_def_data[def_ti + 1] = def_node_state.pos_y / 100
+        trans_def_data[def_ti + 2] = def_node_state.pos_z / 100
+        def_ti += 3
 
         if scale_flags[ni]:
             # only write a default scale if scale is animated
-            scale_def_data[def_scale_i] = def_node_state.scale
-            def_scale_i += 1
+            scale_def_data[def_si] = def_node_state.scale
+            def_si += 1
 
         # fill in the keyframe data for this node
         for kfi in curr_rot_kfs:
-            node_state = frames[kfi][ni]
-            rot_keyframe_data[3*rot_i: 3*(rot_i + 1)] = comp_quat(
+            node_state = jma_anim.frames[kfi][ni]
+            w0, w1, w2 = comp_quat(
                 node_state.rot_i, node_state.rot_j,
                 node_state.rot_k, node_state.rot_w)
+            rot_keyframe_data[3*ri] = w0
+            rot_keyframe_data[3*ri + 1] = w1
+            rot_keyframe_data[3*ri + 2] = w2
             
-            rot_i += 1
+            ri += 1
             
         for kfi in curr_trans_kfs:
-            node_state = frames[kfi][ni]
-            trans_keyframe_data[3*trans_i: 3*(trans_i + 1)] = (
-                node_state.pos_x, node_state.pos_y, node_state.pos_z
-                )
-            trans_i += 1
+            node_state = jma_anim.frames[kfi][ni]
+            trans_keyframe_data[3*ti] = node_state.pos_x / 100
+            trans_keyframe_data[3*ti + 1] = node_state.pos_y / 100
+            trans_keyframe_data[3*ti + 2] = node_state.pos_z / 100
+            ti += 1
 
         for kfi in curr_scale_kfs:
-            scale_keyframe_data[scale_i] = frames[kfi][ni].scale
-            scale_i += 1
+            scale_keyframe_data[si] = jma_anim.frames[kfi][ni].scale
+            si += 1
 
 
     # setup the keyframe counts, offsets, data stream offsets
-    calc_keyframe_header_data(comp_anim_block, rot_keyframe_counts,
-                              trans_keyframe_counts, scale_keyframe_counts)
+    calc_keyframe_header_data(
+        comp_anim_block,
+        [len(rot_keyframes_by_nodes[i]) for i in
+         range(len(rot_keyframes_by_nodes)) if rot_flags[i]],
 
+        [len(trans_keyframes_by_nodes[i]) for i in
+         range(len(trans_keyframes_by_nodes)) if trans_flags[i]],
+
+        [len(scale_keyframes_by_nodes[i]) for i in
+         range(len(scale_keyframes_by_nodes)) if scale_flags[i]],
+        )
+
+    #print("RECOMP")
+    #print(comp_anim_block)
     return comp_anim_block.serialize(calc_pointers=False)
 
 
@@ -495,6 +528,8 @@ def deserialize_compressed_frame_data(anim):
     comp_anim_block = compressed_frames_def.build(
         rawdata=anim.frame_data.STEPTREE,
         root_offset=anim.offset_to_compressed_data)
+    #print("ORIG")
+    #print(comp_anim_block)
 
     # get the keyframe counts and keyframe offsets
     rot_keyframe_headers   = [(v & 4095, v >> 12) for v in
@@ -521,7 +556,7 @@ def deserialize_compressed_frame_data(anim):
     blend_quats = matrices.nlerp_blend_quaternions
     sqrt = math.sqrt
 
-    rot_i = trans_i = scale_i = 0
+    ri = ti = si = 0
     for ni in range(anim.node_count):
         rot_kf_ct  = trans_kf_ct  = scale_kf_ct  = 0
         rot_kf_off = trans_kf_off = scale_kf_off = 0
@@ -531,16 +566,16 @@ def deserialize_compressed_frame_data(anim):
         scale_def = 1.0
 
         if rot_flags[ni]:
-            rot_kf_ct, rot_kf_off = rot_keyframe_headers[rot_i]
-            rot_i += 1
+            rot_kf_ct, rot_kf_off = rot_keyframe_headers[ri]
+            ri += 1
 
         if trans_flags[ni]:
-            trans_kf_ct, trans_kf_off = trans_keyframe_headers[trans_i]
-            trans_i += 1
+            trans_kf_ct, trans_kf_off = trans_keyframe_headers[ti]
+            ti += 1
 
         if scale_flags[ni]:
-            scale_kf_ct, scale_kf_off = scale_keyframe_headers[scale_i]
-            scale_i += 1
+            scale_kf_ct, scale_kf_off = scale_keyframe_headers[si]
+            si += 1
             scale_def = scale_def_data[ni]
 
         # add this nodes keyframes to the keyframe lists in the jma_anim
@@ -551,8 +586,7 @@ def deserialize_compressed_frame_data(anim):
                  trans_keyframes_by_nodes),
                 (scale_kf_ct, scale_kf_off, scale_keyframes,
                  scale_keyframes_by_nodes)):
-            node_kfs = list(all_kfs[kf_off: kf_off + kf_ct])
-            kfs_by_nodes.append(node_kfs)
+            kfs_by_nodes.append(list(all_kfs[kf_off: kf_off + kf_ct]))
 
 
         if rot_kf_ct:
@@ -707,7 +741,7 @@ def get_keyframe_index_of_frame(frame, keyframes,
 
     # TODO: make this more efficent using a binary search
     for i in range(offset, offset + keyframe_count - 1):
-        if keyframes[i] <= frame and keyframes[i + 1] > frame:
+        if keyframes[i] <= frame and frame < keyframes[i + 1]:
             return i
 
     raise ValueError(
@@ -723,6 +757,20 @@ def get_anim_flags(anim):
     trans_flags = [bool(trans_flags & (1 << i)) for i in range(anim.node_count)]
     scale_flags = [bool(scale_flags & (1 << i)) for i in range(anim.node_count)]
     return rot_flags, trans_flags, scale_flags
+
+
+def make_clean_keyframes_copy(keyframes, skip_last_frame, last_keyframe):
+    kfs = list(keyframes)
+    if not kfs:
+        return kfs
+
+    if kfs[0] == 0:
+        kfs.pop(0)
+
+    if kfs and skip_last_frame and kfs[-1] == last_keyframe + 1:
+        kfs.pop(-1)
+
+    return kfs
 
 
 def calc_keyframe_header_data(comp_anim_block, rot_keyframe_counts,
@@ -744,11 +792,11 @@ def calc_keyframe_header_data(comp_anim_block, rot_keyframe_counts,
                 "but got %s" % sum(keyframe_counts))
 
         keyframe_header.append(0)
-        keyframe_header *= sum(keyframe_counts)
+        keyframe_header *= len(keyframe_counts)
 
         off = i = 0
         for ct in keyframe_counts:
-            keyframe_header[i] = ct + (off << 12)
+            keyframe_header[i] = ct | (off << 12)
             off += ct
             i += 1
 
