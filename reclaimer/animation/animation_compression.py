@@ -67,9 +67,12 @@ def compress_animation(anim, endian=">", **kw):
             jma_anim.trans_keyframes = keyframes[1]
             jma_anim.scale_keyframes = keyframes[2]
 
+    if jma_anim.root_node_info_applied:
+        jma_anim = deepcopy(jma_anim)
+        jma_anim.apply_root_node_info_to_states(True)
+
     # serialize the animation data
-    comp_frame_data = serialization.serialize_compressed_frame_data(
-        jma_anim, endian)
+    comp_frame_data = serialization.serialize_compressed_frame_data(jma_anim)
 
     uncomp_frame_data = anim.frame_data.STEPTREE
     if anim.flags.compressed_data:

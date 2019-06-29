@@ -10,10 +10,10 @@ def decompress_quaternion48(word_0, word_1, word_2):
     i = (comp_rot >> 36) & 4095
     # avoid division by zero
     if i | j | k | w:
-        if i & 0x800: i -= 4096
-        if j & 0x800: j -= 4096
-        if k & 0x800: k -= 4096
-        if w & 0x800: w -= 4096
+        if i & 0x800: i -= 4095
+        if j & 0x800: j -= 4095
+        if k & 0x800: k -= 4095
+        if w & 0x800: w -= 4095
         length = 1.0 / sqrt(i**2 + j**2 + k**2 + w**2)
         return i * length, j * length, k * length, w * length
     return 0.0, 0.0, 0.0, 1.0
@@ -25,11 +25,11 @@ def compress_quaternion48(i, j, k, w):
     nmag = i**2 + j**2 + k**2 + w**2
     # avoid division by zero
     if nmag:
-        nmag = 2047.5 / sqrt(nmag)
-        i = int(i*nmag) % 4096
-        j = int(j*nmag) % 4096
-        k = int(k*nmag) % 4096
-        w = int(w*nmag) % 4096
+        nmag = 2047 / sqrt(nmag)
+        i = int(round(i*nmag)) % 4095
+        j = int(round(j*nmag)) % 4095
+        k = int(round(k*nmag)) % 4095
+        w = int(round(w*nmag)) % 4095
         comp_rot = w | (k << 12) | (j << 24) | (i << 36)
     else:
         comp_rot = 2047
@@ -58,16 +58,16 @@ def compress_normal32(i, j, k):
     #if j < 0: j += 2047
     #if k < 0: k += 1023
     #return i | (j << 11) | (k << 22)
-    return ((int(i*1023.5) % 2047) |
-            ((int(j*1023.5) % 2047) << 11) |
-            ((int(k*511.5) % 1023) << 22))
+    return ((int(round(i*1023)) % 2047) |
+            ((int(round(j*1023)) % 2047) << 11) |
+            ((int(round(k*511)) % 1023) << 22))
 
 
 def compress_normal32_normalize(i, j, k):
-    nmag = 1023.5 / max(sqrt(i**2 + j**2 + k**2), 0.00000000001)
-    return ((int(i*nmag) % 2047) |
-            ((int(j*nmag) % 2047) << 11) |
-            (((int(k*nmag) // 2) % 1023) << 22))
+    nmag = 1023 / max(sqrt(i**2 + j**2 + k**2), 0.00000000001)
+    return ((int(round(i*nmag)) % 2047) |
+            ((int(round(j*nmag)) % 2047) << 11) |
+            (((int(round(k*nmag / 2))) % 1023) << 22))
 
 
 #uncomp_norm = [.333, -.75, 1]
@@ -77,3 +77,10 @@ def compress_normal32_normalize(i, j, k):
 #print(uncomp_norm)
 #print(comp_norm)
 #print(decompress_normal32(comp_norm))
+
+#orig = (0xdab8, 0x67f1, 0x2fff)
+#recomp = compress_quaternion48(*decompress_quaternion48(*orig))
+#print(orig)
+#print(recomp)
+#print(decompress_quaternion48(*orig))
+#print(decompress_quaternion48(*recomp))

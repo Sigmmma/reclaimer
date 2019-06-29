@@ -45,7 +45,7 @@ def compressed_stream_size(node=None, parent=None, attr_index=None,
         node = parent[attr_index]
 
     if node is not None:
-        return len(node)
+        return len(node) * node.itemsize
     elif rawdata is None:
         return 0
 
