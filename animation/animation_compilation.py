@@ -187,14 +187,6 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
                 antr_node.base_vector[:] = prev_antr_node.base_vector
                 antr_node.vector_range   = prev_antr_node.vector_range
 
-        if mod2_nodes:
-            if len(antr_nodes) != len(mod2_nodes):
-                errors.append("Gbxmodel node count does not match node "
-                              "count in the model_animations tag.")
-                return errors
-            util.calculate_node_vectors(antr_nodes, mod2_nodes,
-                                        jma_anim_set.animations.values())
-
     # cache the old animations by their names
     for i in range(len(prev_antr_anims)):
         anim = prev_antr_anims[i]
@@ -274,7 +266,6 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
         except Exception:
             errors.append(traceback.format_exc())
 
-
     if update_mode == ANIMATION_COMPILE_MODE_PRESERVE:
         for i in range(len(prev_antr_objects)):
             prev_obje = prev_antr_objects[i]
@@ -302,6 +293,17 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
         if antr_vehicles and prev_antr_vehicles:
             # preserve any old vehicle pitch/yaw/suspension values
             copy_vehicle_animation_block_data(antr_vehicles, prev_antr_vehicles)
+
+
+    if (update_mode != ANIMATION_COMPILE_MODE_ADDITIVE and
+        mod2_nodes and antr_units and not antr_vehicles):
+        # only calculate node vectors for units that are not vehicles
+        if len(antr_nodes) != len(mod2_nodes):
+            errors.append("Gbxmodel node count does not match node "
+                          "count in the model_animations tag.")
+            return errors
+        util.calculate_node_vectors(antr_nodes, mod2_nodes,
+                                    jma_anim_set.animations.values())
 
     # fill in the remaining unit damages
     if antr_unit_damages:
