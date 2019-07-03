@@ -1,7 +1,7 @@
 from copy import copy, deepcopy
 from math import pi
 try:
-    from mozzarilla.field_widgets import *
+    from mozzarilla.widgets.field_widgets import *
 except Exception:
     ReflexiveFrame = HaloRawdataFrame = HaloUInt32ColorPickerFrame =\
                      TextFrame = ColorPickerFrame = EntryFrame =\

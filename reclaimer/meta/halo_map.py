@@ -10,6 +10,7 @@ from .halo2_alpha_map import *
 from .halo2_map import *
 from .halo3_map import *
 from .shadowrun_map import *
+from .stubbs_map import *
 
 
 def get_map_version(header):
@@ -148,7 +149,9 @@ def get_tag_index(map_data, header=None):
     version = get_map_version(header)
     if "shadowrun" in version:
         tag_index_def = sr_tag_index_def
-    elif header.version.data < 6 and version != "stubbspc":
+    elif "stubbs" in version:
+        tag_index_def = stubbs_tag_index_def
+    elif header.version.data < 6:
         tag_index_def = tag_index_xbox_def
     elif version == "halo2alpha":
         tag_index_def = h2_alpha_tag_index_def

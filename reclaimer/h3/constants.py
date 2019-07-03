@@ -1,4 +1,4 @@
-from ..constants import *
+from reclaimer.constants import *
 
 
 # maps tag class four character codes(fccs) in

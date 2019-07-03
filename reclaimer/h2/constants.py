@@ -1,4 +1,4 @@
-from ..constants import *
+from reclaimer.constants import *
 
 
 # These are the 4 fourCC that I've found in tag headers

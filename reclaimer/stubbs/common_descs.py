@@ -133,7 +133,7 @@ def dependency_stubbs(name='tag_ref', valid_ids=None, **kwargs):
     elif isinstance(valid_ids, str):
         valid_ids = tag_class_stubbs(valid_ids)
     elif valid_ids is None:
-        valid_ids = valid_tags
+        valid_ids = stubbs_valid_tags
 
     return TagRef(name,
         valid_ids,
@@ -154,14 +154,14 @@ def blam_header_stubbs(tagid, version=1):
     return header_desc
 
 
-valid_tags = tag_class_stubbs(*tag_class_fcc_to_ext_stubbs.keys())
+stubbs_valid_tags = tag_class_stubbs(*tag_class_fcc_to_ext_stubbs.keys())
 
 
 # Descriptors
 tag_header_stubbs = Struct("blam_header",
     Pad(36),
     UEnum32("tag_class",
-        GUI_NAME="tag_class", INCLUDE=valid_tags, EDITABLE=False
+        GUI_NAME="tag_class", INCLUDE=stubbs_valid_tags, EDITABLE=False
         ),
     UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
     UInt32("header_size",  DEFAULT=64, EDITABLE=False),
