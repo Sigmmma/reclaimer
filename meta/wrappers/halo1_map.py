@@ -1,6 +1,7 @@
+import os
+
 from copy import deepcopy
 from math import pi, sqrt, log
-from os.path import exists, join
 from struct import Struct as PyStruct
 
 from .halo_map import *
@@ -236,7 +237,7 @@ class Halo1Map(HaloMap):
 
                 if header.sig != header.get_desc("DEFAULT", "sig"):
                     print("Sbsp header is invalid for '%s'" %
-                          tag_index_array[tag_id].path)
+                          self.tag_index.tag_index[tag_id].path)
                 self.bsp_headers[tag_id] = header
                 self.tag_index.tag_index[tag_id].meta_offset = header.meta_pointer
 
@@ -1269,21 +1270,21 @@ class Halo1Map(HaloMap):
             data_files = self.map_header.yelo_header.flags.uses_mod_data_files
 
         if maps_dir:
-            maps_dir = join(maps_dir, "")
+            maps_dir = os.path.join(maps_dir, "")
         else:
-            maps_dir = dirname(self.filepath)
+            maps_dir = os.path.dirname(self.filepath)
             if data_files:
-                maps_dir = join(maps_dir, "data_files")
+                maps_dir = os.path.join(maps_dir, "data_files")
 
         if data_files:
-            maps_dir = join(maps_dir, "~")
+            maps_dir = os.path.join(maps_dir, "~")
 
         # detect the map paths for the resource maps
         for map_name in sorted(map_paths.keys()):
-            map_path = join(maps_dir, "%s.map" % map_name)
+            map_path = os.path.join(maps_dir, "%s.map" % map_name)
             if self.maps.get(map_name) is not None:
                 map_paths[map_name] = self.maps[map_name].filepath
-            elif exists(map_path):
+            elif os.path.exists(map_path):
                 map_paths[map_name] = map_path
 
         return map_paths

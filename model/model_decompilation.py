@@ -1,3 +1,4 @@
+from traceback import format_exc
 import os
 
 from struct import Struct as PyStruct

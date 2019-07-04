@@ -180,7 +180,7 @@ def are_planes_equal(plane_0, plane_1, use_double_rounding=False,
     p1 = Plane(plane_1)
     p0.normalize()
     p1.normalize()
-    return are_vectors_equal(p0, p1, use_double_rounding, round_adjust)
+    return matrices.are_vectors_equal(p0, p1, use_double_rounding, round_adjust)
 
 
 class Plane(matrices.FixedLengthList, matrices.Ray):

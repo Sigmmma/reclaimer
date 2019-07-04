@@ -1,8 +1,8 @@
+import os
 import re
 import tempfile
 
 from mmap import mmap
-from os.path import basename, dirname, splitext, isfile
 from struct import unpack
 from traceback import format_exc
 from string import ascii_letters
@@ -117,7 +117,8 @@ class HaloMap:
             writable_map_data = None
 
         if not getattr(writable_map_data, "writable"):
-            raise OSError("Cannot open map in write mode: %s" % map_path)
+            raise OSError("Cannot open map in write mode: %s" %
+                          self.decomp_filepath)
 
         self.map_data.close()
         self.map_data = writable_map_data
@@ -135,10 +136,10 @@ class HaloMap:
     def get_file_names(self, dir=""): return self.tag_index_manager.get_file_names(dir)
 
     def rename_tag(self, tag_path, new_path):
-        return self.tag_index_manager.rename_tag(tag_path, new_dir)
+        return self.tag_index_manager.rename_tag(tag_path, new_path)
 
     def rename_tag_by_id(self, tag_id, new_path):
-        return self.tag_index_manager.rename_tag_by_id(tag_id, new_dir)
+        return self.tag_index_manager.rename_tag_by_id(tag_id, new_path)
 
     def rename_dir(self, curr_dir, new_dir):
         return self.tag_index_manager.rename_dir(curr_dir, new_dir)
@@ -329,13 +330,14 @@ class HaloMap:
 
         self.is_compressed = get_is_compressed_map(comp_data, map_header)
         if self.is_compressed:
-            decomp_path = splitext(map_path)
+            decomp_path = os.path.splitext(map_path)
             while decomp_path[1]:
-                decomp_path = splitext(decomp_path[0])
+                decomp_path = os.path.splitext(decomp_path[0])
 
             decomp_path = decomp_path[0] + "_DECOMP" + self.decomp_file_ext
-            if not decompress_overwrite and isfile(decomp_path):
-                decomp_path = join(tempfile.gettempdir(), basename(decomp_path))
+            if not decompress_overwrite and os.path.isfile(decomp_path):
+                decomp_path = os.path.join(
+                    tempfile.gettempdir(), os.path.basename(decomp_path))
 
             print("    Decompressing to: %s" % decomp_path)
             self.map_data = decompress_map(comp_data, map_header, decomp_path)
