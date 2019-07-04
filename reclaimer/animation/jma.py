@@ -296,7 +296,7 @@ class JmaAnimation:
         self.insert_node(self.node_count, node, frame_data)
     def append_nodes(self, nodes_and_frames):
         for node_and_frames in nodes_and_frames:
-            assert len(node_and_frame) > 0
+            assert len(nodes_and_frames) > 0
             self.insert_node(self.node_count, *node_and_frames)
 
     def insert_frame(self, frame_index, frame_data=None, frame_info=None):

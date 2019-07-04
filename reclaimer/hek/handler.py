@@ -340,6 +340,8 @@ class HaloHandler(Handler):
         # contents, aren't detected as the same tag.
         hsh = md5(hashbuffer + def_id.encode("latin-1"))
 
+        partial = False
+
         if partial:
             ###########################################
             #              INCOMPLETE

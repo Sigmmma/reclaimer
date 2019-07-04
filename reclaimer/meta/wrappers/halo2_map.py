@@ -1,6 +1,5 @@
+import os
 import zlib
-
-from os.path import exists, join
 
 from .halo_map import *
 from reclaimer import data_extraction
@@ -80,18 +79,18 @@ class Halo2Map(HaloMap):
             map_paths.pop("single_player_shared", None)
 
         if not maps_dir:
-            maps_dir = dirname(self.filepath)
+            maps_dir = os.path.dirname(self.filepath)
 
         # detect the map paths for the resource maps
         for map_name in sorted(map_paths):
-            map_path = join(maps_dir, map_name)
+            map_path = os.path.join(maps_dir, map_name)
             if self.maps.get(map_name) is not None:
                 map_path = self.maps[map_name].filepath
-            elif exists(map_path + ".map"):
+            elif os.path.exists(map_path + ".map"):
                 map_path += ".map"
-            elif exists(map_path + "_DECOMP.map"):
+            elif os.path.exists(map_path + "_DECOMP.map"):
                 map_path += "_DECOMP.map"
-            elif exists(map_path + ".map.dtz"):
+            elif os.path.exists(map_path + ".map.dtz"):
                 map_path += ".map.dtz"
             else:
                 map_path = None

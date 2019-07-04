@@ -1,5 +1,5 @@
+import os
 from math import ceil, log
-from os.path import exists, join
 
 
 from reclaimer import data_extraction
@@ -242,14 +242,14 @@ class Halo3Map(HaloMap):
 
         map_paths = {name.split(".")[0]: None for name in self.shared_map_names}
         if not maps_dir:
-            maps_dir = dirname(self.filepath)
+            maps_dir = os.path.dirname(self.filepath)
 
         # detect/ask for the map paths for the resource maps
         for map_name in sorted(map_paths):
-            map_path = join(maps_dir, "%s.map" % map_name)
+            map_path = os.path.join(maps_dir, "%s.map" % map_name)
             if self.maps.get(map_name) is not None:
                 map_paths[map_name] = self.maps[map_name].filepath
-            elif exists(map_path):
+            elif os.path.exists(map_path):
                 map_paths[map_name] = map_path
 
         return map_paths

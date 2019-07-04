@@ -30,6 +30,7 @@ except ImportError:
 import os
 import zlib
 
+from struct import unpack
 from array import array
 
 from reclaimer.util import get_is_xbox_map

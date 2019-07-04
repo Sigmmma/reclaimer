@@ -1,3 +1,4 @@
+from copy import deepcopy
 from reclaimer.animation import serialization
 from reclaimer.animation import jma
 from reclaimer.model import jms
