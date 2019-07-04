@@ -36,7 +36,7 @@ def extract_model_animations(tagdata, tag_path="", **kw):
         try:
             result = extract_animation(i, tagdata, tag_path, **kw)
             if result and return_jma:
-                jma_anims.append(jma_anim)
+                jma_anims.append(result)
         except Exception:
             print(traceback.format_exc())
             print("Could not extract animation.")

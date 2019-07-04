@@ -48,10 +48,10 @@ class TagIndexManager:
 
     # wrappers around the directory nodes
     def rename_tag(self, tag_path, new_path):
-        return self.directory_nodes.rename_tag(tag_path, new_dir)
+        return self.directory_nodes.rename_tag(tag_path, new_path)
 
     def rename_tag_by_id(self, tag_id, new_path):
-        return self.directory_nodes.rename_tag_by_id(tag_id, new_dir)
+        return self.directory_nodes.rename_tag_by_id(tag_id, new_path)
 
     def rename_dir(self, curr_dir, new_dir):
         return self.directory_nodes.rename_dir(curr_dir, new_dir)
@@ -355,7 +355,7 @@ class TagDirectoryNode:
             return
 
         curr_path = tag_ref.path.replace('/', '\\').strip("\\ ")
-        curr_path = "%s.%s" % (name, tag_ref.class_1.enum_name)
+        curr_path = "%s.%s" % (new_path, tag_ref.class_1.enum_name)
         self._rename_tag(curr_path.lower().split("\\"), new_path)
 
     def rename_dir(self, curr_dir, new_dir):

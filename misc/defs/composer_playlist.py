@@ -1,4 +1,5 @@
 from supyr_struct.defs.common_descs import *
+from supyr_struct.field_types import *
 from supyr_struct.defs.tag_def import TagDef
 
 def get(): return composer_playlist_def

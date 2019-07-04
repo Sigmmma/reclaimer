@@ -703,7 +703,7 @@ def deserialize_compressed_frame_data(anim):
                 if fi == kf0:
                     # this keyframe is the frame we want.
                     # no blending required
-                    scale = s0
+                    scale = scale_keyframes[kf_i]
                 else:
                     ratio = ((fi - scale_keyframes[kf_i]) /
                              (scale_keyframes[kf_i + 1] -
