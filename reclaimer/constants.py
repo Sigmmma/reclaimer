@@ -1,7 +1,7 @@
 from struct import unpack
 
 from supyr_struct.defs.constants import *
-from supyr_struct.defs.util import fcc
+from supyr_struct.util import fourcc_to_int
 from binilla.constants import *
 
 # some reflexives are so massive that it's significantly faster to treat them
@@ -292,10 +292,10 @@ tag_class_ext_to_fcc = {}
 
 for tag_cls in tag_class_fcc_to_ext:
     tag_class_ext_to_fcc[tag_class_fcc_to_ext[tag_cls]] = tag_cls
-    tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls, 'big')
-    tag_class_be_int_to_fcc[fcc(tag_cls, 'big')] = tag_cls
-    tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
-    tag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls
+    tag_class_fcc_to_be_int[tag_cls] = fourcc_to_int(tag_cls, 'big')
+    tag_class_be_int_to_fcc[fourcc_to_int(tag_cls, 'big')] = tag_cls
+    tag_class_fcc_to_le_int[tag_cls] = fourcc_to_int(tag_cls)
+    tag_class_le_int_to_fcc[fourcc_to_int(tag_cls)] = tag_cls
 
 
 ################################
@@ -338,10 +338,10 @@ tag_class_be_int_to_fcc_os = {}
 tag_class_le_int_to_fcc_os = {}
 
 for tag_cls in tag_class_fcc_to_ext_os:
-    tag_class_fcc_to_be_int_os[tag_cls] = fcc(tag_cls, 'big')
-    tag_class_be_int_to_fcc_os[fcc(tag_cls, 'big')] = tag_cls
-    tag_class_fcc_to_le_int_os[tag_cls] = fcc(tag_cls)
-    tag_class_le_int_to_fcc_os[fcc(tag_cls)] = tag_cls
+    tag_class_fcc_to_be_int_os[tag_cls] = fourcc_to_int(tag_cls, 'big')
+    tag_class_be_int_to_fcc_os[fourcc_to_int(tag_cls, 'big')] = tag_cls
+    tag_class_fcc_to_le_int_os[tag_cls] = fourcc_to_int(tag_cls)
+    tag_class_le_int_to_fcc_os[fourcc_to_int(tag_cls)] = tag_cls
 
 
 
@@ -370,8 +370,8 @@ tag_class_be_int_to_fcc_stubbs = {}
 tag_class_le_int_to_fcc_stubbs = {}
 
 for tag_cls in tag_class_fcc_to_ext_stubbs:
-    tag_class_fcc_to_be_int_stubbs[tag_cls] = fcc(tag_cls, 'big')
-    tag_class_be_int_to_fcc_stubbs[fcc(tag_cls, 'big')] = tag_cls
-    tag_class_fcc_to_le_int_stubbs[tag_cls] = fcc(tag_cls)
-    tag_class_le_int_to_fcc_stubbs[fcc(tag_cls)] = tag_cls
+    tag_class_fcc_to_be_int_stubbs[tag_cls] = fourcc_to_int(tag_cls, 'big')
+    tag_class_be_int_to_fcc_stubbs[fourcc_to_int(tag_cls, 'big')] = tag_cls
+    tag_class_fcc_to_le_int_stubbs[tag_cls] = fourcc_to_int(tag_cls)
+    tag_class_le_int_to_fcc_stubbs[fourcc_to_int(tag_cls)] = tag_cls
 

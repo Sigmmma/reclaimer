@@ -8,6 +8,7 @@ from reclaimer.common_descs import ascii_str32,\
 from reclaimer.util import float_to_str
 from reclaimer.h2.common_descs import script_types as h2_script_types,\
      script_object_types as h2_script_object_types
+
 from supyr_struct.defs.block_def import BlockDef
 from supyr_struct.field_types import FieldType
 

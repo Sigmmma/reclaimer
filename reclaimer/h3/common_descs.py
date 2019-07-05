@@ -1,14 +1,14 @@
 from copy import copy, deepcopy
 
 try:
-    from mozzarilla.field_widgets import *
+    from mozzarilla.widgets.field_widgets import *
 except Exception:
     ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
                      EntryFrame = SoundSampleFrame = DynamicArrayFrame = None
-from ..common_descs import *
-from .field_types import *
-from .constants import *
-from .enums import *
+from reclaimer.common_descs import *
+from reclaimer.h3.field_types import *
+from reclaimer.h3.constants import *
+from reclaimer.h3.enums import *
 
 
 def h3_tag_class(*args, **kwargs):

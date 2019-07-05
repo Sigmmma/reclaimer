@@ -1,4 +1,4 @@
-from os.path import splitext
+import os
 from math import log, ceil
 
 __all__ = ("TagIndexManager", "TagDirectoryNode")
@@ -384,7 +384,7 @@ class TagDirectoryNode:
     def _apply_names_to_tag_index(self, parent_dir=""):
         # rename tags
         for name in self._names_to_ids:
-            tag_path = "\\".join((parent_dir, splitext(name)[0]))
+            tag_path = "\\".join((parent_dir, os.path.splitext(name)[0]))
             self.tag_index[self._names_to_ids[name]].path = tag_path
 
         # rename directories
@@ -536,7 +536,7 @@ class TagDirectoryNode:
             old_name = self._ids_to_names[tag_id]
             new_tag_path_pieces = [
                 name for name in new_path.lower().split("\\") if name]
-            new_tag_path_pieces[-1] = splitext(new_tag_path_pieces[-1])[0]
+            new_tag_path_pieces[-1] = os.path.splitext(new_tag_path_pieces[-1])[0]
 
             new_tag_path = "\\".join(new_tag_path_pieces)
             try:
@@ -568,7 +568,7 @@ class TagDirectoryNode:
             return
 
         for tag_id, tag_name in other_node._ids_to_names.items():
-            self._add_node(tag_id, (splitext(tag_name)[0], ))
+            self._add_node(tag_id, (os.path.splitext(tag_name)[0], ))
 
         for dir_name, sub_node in other_node._sub_nodes.items():
             if dir_name in self._sub_nodes:

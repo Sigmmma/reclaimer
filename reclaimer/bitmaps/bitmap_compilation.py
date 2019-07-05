@@ -2,7 +2,7 @@ import os
 
 from traceback import format_exc
 
-from supyr_struct.defs.util import sanitize_path
+from supyr_struct.util import sanitize_path
 from supyr_struct.defs.bitmaps.dds import dds_def
 
 __all__ = ("compile_bitmap_from_dds_files", "add_bitmap_to_bitmap_tag",

@@ -6,10 +6,10 @@ except Exception:
     ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
                      EntryFrame = SoundSampleFrame = DynamicArrayFrame =\
                      H2BitmapTagFrame = None
-from ..common_descs import *
-from .field_types import *
-from .constants import *
-from .enums import *
+from reclaimer.common_descs import *
+from reclaimer.h2.field_types import *
+from reclaimer.h2.constants import *
+from reclaimer.h2.enums import *
 
 
 resource = Struct("resource",

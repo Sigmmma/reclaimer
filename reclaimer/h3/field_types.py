@@ -1,4 +1,4 @@
-from ..field_types import *
+from reclaimer.field_types import *
 
 H3TagRef      = FieldType(base=TagRef, name="H3TagRef")
 H3Reflexive   = FieldType(base=Reflexive,   name="H3Reflexive")

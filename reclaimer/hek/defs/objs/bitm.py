@@ -1,4 +1,3 @@
-from os.path import splitext
 from array import array
 from reclaimer.constants import *
 from reclaimer.bitmaps.p8_palette import HALO_P8_PALETTE, STUBBS_P8_PALETTE

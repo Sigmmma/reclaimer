@@ -1,6 +1,9 @@
-from reclaimer.meta.halo1_map_fast_functions import *
+from reclaimer.meta.halo1_map_fast_functions import shader_class_bytes,\
+     object_class_bytes, read_reflexive, read_rawdata_ref, iter_reflexive_offs,\
+     repair_dependency, repair_dependency_array
 from reclaimer.halo_script.hsc import get_hsc_data_block,\
      HSC_IS_SCRIPT_OR_GLOBAL
+from supyr_struct.util import *
 
 MAX_MATERIAL_COUNT = 33
 

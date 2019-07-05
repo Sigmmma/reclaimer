@@ -1,4 +1,4 @@
-from .constants import HALO2_MAP_TYPES
+from reclaimer.h2.constants import HALO2_MAP_TYPES
 
 
 def split_raw_pointer(ptr):

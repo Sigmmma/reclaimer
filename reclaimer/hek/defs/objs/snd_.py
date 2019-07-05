@@ -1,5 +1,3 @@
-from os.path import splitext
-
 from .tag import *
 
 class Snd_Tag(HekTag):

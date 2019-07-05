@@ -1,4 +1,3 @@
-from os.path import splitext
 from math import cos
 
 from .tag import *

@@ -9,7 +9,7 @@ from string import ascii_letters
 
 from reclaimer.util import is_protected_tag, fourcc
 from supyr_struct.defs.constants import *
-from supyr_struct.defs.util import *
+from supyr_struct.util import int_to_fourcc, sanitize_path
 from supyr_struct.buffer import BytearrayBuffer, BytesBuffer, get_rawdata
 from supyr_struct.field_types import FieldType
 from supyr_struct.defs.frozen_dict import FrozenDict
@@ -267,7 +267,7 @@ class HaloMap:
         return {}
 
     def is_data_extractable(self, tag_index_ref):
-        return fourcc(tag_index_ref.class_1.data) in self.data_extractors
+        return int_to_fourcc(tag_index_ref.class_1.data) in self.data_extractors
 
     def extract_tag_data(self, meta, tag_index_ref, **kw):
         if not self.is_data_extractable(tag_index_ref):

@@ -1,4 +1,4 @@
-from ..common_descs import *
+from reclaimer.common_descs import *
 
 # ###########################################################################
 # The order of element in all the enumerators is important(DONT SHUFFLE THEM)

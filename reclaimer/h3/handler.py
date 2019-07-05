@@ -1,7 +1,5 @@
-import os
-
-from .defs import __all__ as all_def_names
-from ..hek.handler import HaloHandler
+from reclaimer.h3.defs import __all__ as all_def_names
+from reclaimer.hek.handler import HaloHandler
 from reclaimer.data_extraction import h3_data_extractors
 
 class Halo3Handler(HaloHandler):

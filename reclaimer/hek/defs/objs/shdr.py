@@ -1,4 +1,5 @@
-from os.path import splitext
+import os
+
 from .tag import *
 
 class ShdrTag(HekTag):
@@ -9,7 +10,7 @@ class ShdrTag(HekTag):
         full_class_name = self.data.blam_header.tag_class.enum_name
 
         self.ext = '.' + full_class_name
-        self.filepath = splitext(self.filepath)[0] + self.ext
+        self.filepath = os.path.splitext(self.filepath)[0] + self.ext
         
         shader_type = self.data.tagdata.shdr_attrs.shader_type
         if full_class_name == "shader":

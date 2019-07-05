@@ -1,4 +1,4 @@
-from ....field_types import *
+from supyr_struct.defs.constants import DEFAULT
 from supyr_struct.tag import *
 
 class HekTag(Tag):

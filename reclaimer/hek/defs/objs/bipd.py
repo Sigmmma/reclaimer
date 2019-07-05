@@ -1,4 +1,3 @@
-from os.path import splitext
 from math import sin, cos
 
 from .obje import *

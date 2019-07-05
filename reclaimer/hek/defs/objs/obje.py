@@ -1,4 +1,5 @@
-from os.path import splitext
+import os
+
 from .tag import *
 
 class ObjeTag(HekTag):
@@ -9,7 +10,7 @@ class ObjeTag(HekTag):
         full_class_name = self.data.blam_header.tag_class.enum_name
 
         self.ext = '.' + full_class_name
-        self.filepath = splitext(self.filepath)[0] + self.ext
+        self.filepath = os.path.splitext(self.filepath)[0] + self.ext
         
         object_type = self.data.tagdata.obje_attrs.object_type
         if full_class_name == "object":

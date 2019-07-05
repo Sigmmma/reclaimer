@@ -11,8 +11,8 @@ import binascii
 
 from struct import unpack
 
-from .xboxsave import *
-from ....field_types import *
+from reclaimer.misc.defs.objs.xboxsave import *
+from reclaimer.field_types import *
 from supyr_struct.buffer import *
 from supyr_struct.tag import *
 

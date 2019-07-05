@@ -6,8 +6,8 @@ try:
 except ImportError:
     collada = None
 
-from .jms import JmsNode, JmsMaterial, JmsMarker, JmsVertex, JmsTriangle,\
-     JmsModel
+from reclaimer.model.jms import JmsNode, JmsMaterial, JmsMarker,\
+     JmsVertex, JmsTriangle, JmsModel
 from traceback import format_exc
 
 

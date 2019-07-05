@@ -13,7 +13,7 @@ except Exception:
 
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
-from supyr_struct.defs.util import *
+from supyr_struct.util import *
 
 from reclaimer.field_types import *
 from reclaimer.constants import *

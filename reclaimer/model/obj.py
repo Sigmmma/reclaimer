@@ -1,6 +1,7 @@
 import math
 
-from .jms import JmsNode, JmsMaterial, JmsVertex, JmsTriangle, JmsModel
+from reclaimer.model.jms import JmsNode, JmsMaterial, JmsVertex,\
+     JmsTriangle, JmsModel
 from traceback import format_exc
 
 

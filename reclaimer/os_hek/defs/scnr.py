@@ -1,4 +1,5 @@
 from ...hek.defs.scnr import *
+from supyr_struct.util import desc_variant
 
 player_starting_profile = Struct("player_starting_profile",
     ascii_str32("name"),

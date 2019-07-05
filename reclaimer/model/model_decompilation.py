@@ -1,7 +1,7 @@
-from traceback import format_exc
 import os
 
 from struct import Struct as PyStruct
+from traceback import format_exc
 
 from reclaimer.model.jms import write_jms, JmsModel, JmsNode,\
      JmsMaterial, JmsMarker, JmsVertex, JmsTriangle
