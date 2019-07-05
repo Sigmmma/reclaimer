@@ -307,7 +307,7 @@ class Halo1Map(HaloMap):
         try:
             matg_id = None
             for b in tag_index_array:
-                if fourcc(b.class_1.data) == "matg":
+                if int_to_fourcc(b.class_1.data) == "matg":
                     matg_id = b.id & 0xFFff
                     break
 

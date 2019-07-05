@@ -3,8 +3,8 @@
     gametype from within Mozzarilla by just selecting the xbox_gametype def
 '''
 
-from .pc_gametype import *
-from .objs.xbox_gametype import *
+from reclaimer.misc.defs.pc_gametype import *
+from reclaimer.misc.defs.objs.xbox_gametype import *
 
 def get():
     return xbox_gametype_def

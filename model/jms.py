@@ -1,10 +1,9 @@
 import math
+import os
 import re
 import traceback
 
 from copy import deepcopy
-from os import makedirs
-from os.path import dirname, exists
 from reclaimer.util import float_to_str, float_to_str_truncate
 
 
@@ -1321,8 +1320,8 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
     regions = jms_model.regions
 
     # If the path doesnt exist, create it
-    if not exists(dirname(filepath)):
-        makedirs(dirname(filepath))
+    if not os.path.exists(os.path.dirname(filepath)):
+        os.makedirs(os.path.dirname(filepath))
 
     if not regions:
         regions = ("__unnamed", )

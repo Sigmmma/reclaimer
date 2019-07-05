@@ -3,16 +3,19 @@ import os
 from time import time
 from hashlib import md5
 from datetime import datetime
-from os.path import abspath, basename, exists, isfile, join, normpath, splitext
+from traceback import format_exc
 
 from binilla.handler import Handler
-from supyr_struct.buffer import BytearrayBuffer
-from supyr_struct.defs.util import sanitize_path
+
 from reclaimer.data_extraction import h1_data_extractors
-from reclaimer.field_types import *
+from reclaimer.field_types import TagRef, Reflexive, RawdataRef
 from reclaimer.hek.defs.objs.tag import HekTag
-from traceback import format_exc
 from reclaimer.hek.defs import __all__ as all_def_names
+
+from supyr_struct.buffer import BytearrayBuffer
+from supyr_struct.util import sanitize_path
+from supyr_struct.defs.constants import PATHDIV
+from supyr_struct.field_types import FieldType
 
 
 def bytes_to_hex(taghash):
@@ -48,7 +51,7 @@ class HaloHandler(Handler):
     tag_fcc_match_set = frozenset()
     tag_filepath_match_set = frozenset()
 
-    tagsdir = "%s%stags%s" % (abspath(os.curdir), PATHDIV, PATHDIV)
+    tagsdir = "%s%stags%s" % (os.path.abspath(os.curdir), PATHDIV, PATHDIV)
 
     case_sensitive = False
     tagsdir_relative = True
@@ -87,10 +90,10 @@ class HaloHandler(Handler):
         if "datadir" in kwargs:
             self.datadir = kwargs["datadir"]
         else:
-            self.datadir = basename(normpath(self.tagsdir))
-            self.datadir = join(self.tagsdir.split(self.datadir)[0], "data")
+            self.datadir = os.path.basename(os.path.normpath(self.tagsdir))
+            self.datadir = os.path.join(self.tagsdir.split(self.datadir)[0], "data")
 
-        self.datadir = join(self.datadir, '')
+        self.datadir = os.path.join(self.datadir, '')
 
         if self.tag_ref_cache is None:
             self.tag_ref_cache   = self.build_loc_caches(TagRef)
@@ -167,7 +170,7 @@ class HaloHandler(Handler):
 
     def get_def_id(self, filepath):
         if not filepath.startswith('.') and '.' in filepath:
-            ext = splitext(filepath)[-1].lower()
+            ext = os.path.splitext(filepath)[-1].lower()
         else:
             ext = filepath.lower()
 
@@ -360,35 +363,35 @@ class HaloHandler(Handler):
         #if the string is empty, then it doesnt NOT exist, so return False
         if not node.filepath:
             return False
-        filepath = sanitize_path(join(self.tagsdir, node.filepath))
+        filepath = sanitize_path(os.path.join(self.tagsdir, node.filepath))
         
         try:
             ext = '.' + node.tag_class.enum_name
             if (self.treat_mode_as_mod2 and (
-                ext == '.model' and not exists(filepath + ext))):
-                return not exists(filepath + '.gbxmodel')
+                ext == '.model' and not os.path.exists(filepath + ext))):
+                return not os.path.exists(filepath + '.gbxmodel')
             filepath += ext
         except Exception:
             pass
         
-        return not exists(filepath)
+        return not os.path.exists(filepath)
 
     def get_tagref_exists(self, parent, attr_index):
         node = parent[attr_index]
         if not node.filepath:
             return False
-        filepath = sanitize_path(join(self.tagsdir, node.filepath))
+        filepath = sanitize_path(os.path.join(self.tagsdir, node.filepath))
         
         try:
             ext = '.' + node.tag_class.enum_name
             if (self.treat_mode_as_mod2 and (
-                ext == '.model' and not exists(filepath + ext))):
-                return exists(filepath + '.gbxmodel')
+                ext == '.model' and not os.path.exists(filepath + ext))):
+                return os.path.exists(filepath + '.gbxmodel')
             filepath += ext
         except Exception:
             pass
         
-        return exists(filepath)
+        return os.path.exists(filepath)
 
     def get_tagref_matches(self, parent, attr_index):
         '''
@@ -429,7 +432,7 @@ class HaloHandler(Handler):
             logpath = self.tagsdir + timestamp.replace(':', '.') + ".log"
 
         mode = 'w'
-        if isfile(logpath):
+        if os.path.isfile(logpath):
             mode = 'a'
 
         # open a debug file and write the debug string to it
@@ -510,7 +513,7 @@ class HaloHandler(Handler):
                 if not rename:
                     continue
 
-                if not backup or isfile(filepath + ".backup"):
+                if not backup or os.path.isfile(filepath + ".backup"):
                     # try to delete the tag if told to not backup tags
                     # OR if there's already a backup with its name
                     try:

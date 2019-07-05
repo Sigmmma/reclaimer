@@ -1,4 +1,4 @@
-from .pc_gametype import *
+from reclaimer.misc.defs.objs.pc_gametype import *
 
 class XboxGametypeTag(PcGametypeTag):
     def __init__(self, *args, **kwargs):

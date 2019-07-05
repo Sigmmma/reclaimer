@@ -127,7 +127,7 @@ class Halo2Map(HaloMap):
             if self.engine == "halo2vista":
                 ugh__id = None
                 for b in self.tag_index.tag_index:
-                    if fourcc(b.class_1.data) == "ugh!":
+                    if int_to_fourcc(b.class_1.data) == "ugh!":
                         ugh__id = b.id & 0xFFff
                         break
 

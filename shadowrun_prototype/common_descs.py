@@ -1,5 +1,5 @@
-from ..common_descs import *
-from .constants import *
+from reclaimer.common_descs import *
+from reclaimer.shadowrun_prototype.constants import *
 
 
 def sr_tag_class(*args, **kwargs):

@@ -1,5 +1,3 @@
-from os.path import splitext
-
 from .obje import *
 
 class MachTag(ObjeTag):

@@ -1,7 +1,5 @@
-import os
-from .defs import __all__ as all_def_names
-from ..hek.handler import HaloHandler
-from os.path import abspath, basename, exists, isfile, normpath, splitext
+from reclaimer.h2.defs import __all__ as all_def_names
+from reclaimer.hek.handler import HaloHandler
 from reclaimer.data_extraction import h2_data_extractors
 
 class Halo2Handler(HaloHandler):
