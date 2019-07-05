@@ -1,4 +1,5 @@
 from reclaimer.constants import *
+from reclaimer.util import fourcc_to_int
 
 
 # maps tag class four character codes(fccs) in
@@ -197,7 +198,7 @@ h3_tag_class_fcc_to_ext = {
     }
 
 for tag_cls in h3_tag_class_fcc_to_ext:
-    h3_tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls)
-    h3_tag_class_be_int_to_fcc[fcc(tag_cls)] = tag_cls
-    h3_tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
-    h3_tag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls
+    h3_tag_class_fcc_to_be_int[tag_cls] = fourcc_to_int(tag_cls)
+    h3_tag_class_be_int_to_fcc[fourcc_to_int(tag_cls)] = tag_cls
+    h3_tag_class_fcc_to_le_int[tag_cls] = fourcc_to_int(tag_cls)
+    h3_tag_class_le_int_to_fcc[fourcc_to_int(tag_cls)] = tag_cls

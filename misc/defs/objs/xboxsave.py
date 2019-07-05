@@ -1,7 +1,7 @@
 import hashlib, hmac
 
 from supyr_struct.buffer import BytearrayBuffer
-from supyr_struct.tag import *
+from supyr_struct.tag import Tag
 
 DEFAULT_XBOX_KEY = (b'\x5C\x07\x33\xAE\x04\x01\xF7\xE8'+
                     b'\xBA\x79\x93\xFD\xCD\x2F\x1F\xE0')

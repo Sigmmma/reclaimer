@@ -1,5 +1,3 @@
-from os.path import splitext
-
 from .tag import *
 
 class CollTag(HekTag):

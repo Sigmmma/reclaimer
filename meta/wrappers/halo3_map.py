@@ -268,7 +268,7 @@ class Halo3Map(HaloMap):
         tag_cls = None
         full_tag_cls_name = tag_index_ref.class_1.enum_name
         if full_tag_cls_name not in ("<INVALID>", "NONE"):
-            tag_cls = fourcc(tag_index_ref.class_1.data)
+            tag_cls = int_to_fourcc(tag_index_ref.class_1.data)
 
         desc = self.get_meta_descriptor(tag_cls)
         if desc is None or tag_cls is None:
