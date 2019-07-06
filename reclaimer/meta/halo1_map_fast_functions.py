@@ -5,7 +5,7 @@ raw offsets and map magic must be provided explicitely.
 '''
 
 from struct import Struct as PyStruct
-from supyr_struct.defs.constants import *
+
 from reclaimer.constants import \
      tag_class_be_int_to_fcc_os,     tag_class_fcc_to_ext_os,\
      tag_class_be_int_to_fcc_stubbs, tag_class_fcc_to_ext_stubbs

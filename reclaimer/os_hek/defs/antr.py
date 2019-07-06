@@ -1,4 +1,5 @@
 from ...hek.defs.antr import *
+from supyr_struct.util import desc_variant
 
 antr_body = desc_variant(
     antr_body,

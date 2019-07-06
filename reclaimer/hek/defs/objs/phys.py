@@ -1,5 +1,6 @@
 from math import log
-from .tag import *
+
+from reclaimer.hek.defs.objs.tag import HekTag
 from reclaimer.util.matrices import Matrix
 
 

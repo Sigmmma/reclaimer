@@ -302,9 +302,6 @@ for tag_cls in tag_class_fcc_to_ext:
 # Open Sauce related constants #
 ################################
 tag_class_fcc_to_ext_os = {
-    'avti': "actor_variant_transform_in",
-    'avto': "actor_variant_transform_out",
-    'avtc': "actor_variant_transform_collection",
     'efpp': "effect_postprocess",
     'efpc': "effect_postprocess_collection",
     'efpg': "effect_postprocess_generic",
@@ -313,13 +310,18 @@ tag_class_fcc_to_ext_os = {
     'unic': "multilingual_unicode_string_list",
     'yelo': "project_yellow",
     'gelo': "project_yellow_globals",
-    'gelc': "project_yellow_globals_cv",
+    'gelc': "project_yellow_globals_cv",  # removed in OS v4
     'shpp': "shader_postprocess",
     'shpg': "shader_postprocess_generic",
     'sppg': "shader_postprocess_globals",
     'sidy': "string_id_yelo",
     'tag+': "tag_database",
     'sily': "text_value_pair_definition",
+
+    # added in OS v4
+    'avti': "actor_variant_transform_in",
+    'avto': "actor_variant_transform_out",
+    'avtc': "actor_variant_transform_collection",
     }
 
 tag_class_fcc_to_ext_os.update(tag_class_fcc_to_ext)

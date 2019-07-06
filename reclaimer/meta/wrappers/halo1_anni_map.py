@@ -1,16 +1,18 @@
 from math import pi, sqrt, log
-from os.path import exists, join
 from struct import Struct as PyStruct
+from traceback import format_exc
 
-from .halo_map import *
-from .halo1_rsrc_map import Halo1RsrcMap
-from .halo1_map import Halo1Map
+from reclaimer.meta.wrappers.halo_map import HaloMap
+from reclaimer.meta.wrappers.halo1_rsrc_map import Halo1RsrcMap
+from reclaimer.meta.wrappers.halo1_map import Halo1Map
 from reclaimer import data_extraction
-
 from reclaimer.halo_script.hsc import h1_script_syntax_data_def
 from reclaimer.hek.defs.coll import fast_coll_def
 from reclaimer.hek.defs.sbsp import fast_sbsp_def
 from reclaimer.hek.handler import HaloHandler
+from reclaimer.util import int_to_fourcc
+
+from supyr_struct.field_types import FieldType
 
 __all__ = ("Halo1AnniMap",)
 

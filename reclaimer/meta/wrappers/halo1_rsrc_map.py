@@ -1,9 +1,17 @@
+from struct import unpack
+from traceback import format_exc
+
 from reclaimer import data_extraction
 from reclaimer.util import get_is_xbox_map
+from reclaimer.meta.halo_map import map_header_def, tag_index_pc_def
+from reclaimer.meta.halo1_rsrc_map import lite_halo1_rsrc_map_def as halo1_rsrc_map_def
+from reclaimer.meta.wrappers.byteswapping import raw_block_def, byteswap_pcm16_samples
+from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
+from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
+from reclaimer.meta.wrappers.halo_map import HaloMap
 
-from ..halo1_rsrc_map import lite_halo1_rsrc_map_def as halo1_rsrc_map_def
-from .byteswapping import raw_block_def, byteswap_pcm16_samples
-from .halo_map import *
+from supyr_struct.buffer import BytearrayBuffer, get_rawdata
+from supyr_struct.field_types import FieldType
 
 # this is ultra hacky, but it seems to be the only
 # way to fix the tagid for the sounds resource map

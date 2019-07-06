@@ -4,9 +4,8 @@ import re
 from traceback import format_exc
 
 from supyr_struct.defs.audio.wav import wav_def
-from supyr_struct.util import *
 
-from reclaimer.h2.util import *
+from reclaimer.h2.util import split_raw_pointer
 from reclaimer.sounds.adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
 
 from supyr_struct.buffer import BytearrayBuffer

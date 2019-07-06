@@ -1,8 +1,7 @@
-from .halo1_map import *
+from reclaimer.meta.wrappers.halo1_map import Halo1Map
 from reclaimer.stubbs.constants import stubbs_tag_class_fcc_to_ext
 from reclaimer.stubbs.handler   import StubbsHandler
 from supyr_struct.defs.frozen_dict import FrozenDict
-from supyr_struct.buffer import BytearrayBuffer
 
 
 class StubbsMap(Halo1Map):

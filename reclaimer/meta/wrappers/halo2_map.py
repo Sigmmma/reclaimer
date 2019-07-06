@@ -1,10 +1,18 @@
 import os
 import zlib
 
-from .halo_map import *
+from traceback import format_exc
+
+from reclaimer.meta.wrappers.halo_map import HaloMap
 from reclaimer import data_extraction
 from reclaimer.h2.util import HALO2_MAP_TYPES, split_raw_pointer
-from reclaimer.util import is_reserved_tag
+from reclaimer.util import is_reserved_tag, int_to_fourcc
+from reclaimer.meta.wrappers.string_id_manager import StringIdManager
+from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
+from reclaimer.meta.wrappers.tag_index_converters import h2_alpha_to_h1_tag_index,\
+     h2_to_h1_tag_index, h3_to_h1_tag_index
+
+from supyr_struct.buffer import BytearrayBuffer
 
 
 class Halo2Map(HaloMap):
@@ -171,7 +179,7 @@ class Halo2Map(HaloMap):
         if   tag_id == scnr_id: tag_cls = "scnr"
         elif tag_id == matg_id: tag_cls = "matg"
         elif tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
-            tag_cls = fourcc(tag_index_ref.class_1.data)
+            tag_cls = int_to_fourcc(tag_index_ref.class_1.data)
 
         desc = self.get_meta_descriptor(tag_cls)
         if desc is None or tag_cls is None:        return

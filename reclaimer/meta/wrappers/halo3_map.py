@@ -1,15 +1,21 @@
 import os
-from math import ceil, log
 
+from math import ceil, log
+from traceback import format_exc
 
 from reclaimer import data_extraction
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext, FORMAT_NAME_MAP
-from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES, get_h3_pixel_bytes_size
+from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES, get_h3_pixel_bytes_size,\
+     int_to_fourcc
 from reclaimer.h3.handler import Halo3Handler
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
-from reclaimer.meta.wrappers.halo_map import *
 from reclaimer.meta.gen3_resources.bitmap import s_tag_d3d_texture_def,\
      s_tag_d3d_texture_interleaved_def
+from reclaimer.meta.wrappers.halo_map import HaloMap
+from reclaimer.meta.wrappers.string_id_manager import StringIdManager
+from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
+from reclaimer.meta.wrappers.rawdata_manager import RawdataManager
+from reclaimer.meta.wrappers.tag_index_converters import h3_to_h1_tag_index
 
 from arbytmap.format_defs import VALID_FORMATS
 

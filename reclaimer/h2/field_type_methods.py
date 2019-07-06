@@ -1,5 +1,5 @@
-from ..field_type_methods import *
-from .constants import *
+from reclaimer.field_type_methods import *
+from reclaimer.h2.constants import *
 
 
 def h2_rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
@@ -12,17 +12,17 @@ def h2_rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
 
         # If there is rawdata to build the structure from
         if rawdata is not None:
-            offsets = desc['ATTR_OFFS']
+            offsets = desc[ATTR_OFFS]
             # loop once for each field in the node
             for i in range(len(node)):
-                desc[i]['TYPE'].parser(desc[i], None, node, i, rawdata,
+                desc[i][TYPE].parser(desc[i], None, node, i, rawdata,
                                        root_offset, offset + offsets[i],
                                        **kwargs)
 
             # increment offset by the size of the struct
-            offset += desc['SIZE']
+            offset += desc[SIZE]
 
-        s_desc = desc.get('STEPTREE')
+        s_desc = desc.get(STEPTREE)
         if s_desc:
             pointer_converter = kwargs.get("map_pointer_converter")
             if pointer_converter is not None:
@@ -30,10 +30,10 @@ def h2_rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                 if not node[0] or (file_ptr + node[0] > len(rawdata) or
                                    file_ptr <= 0):
                     # data is stored in a resource map, or the size is invalid
-                    s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
+                    s_desc[TYPE].parser(s_desc, None, node, STEPTREE, None)
                 else:
-                    s_desc['TYPE'].parser(
-                        s_desc, None, node, 'STEPTREE', rawdata,
+                    s_desc[TYPE].parser(
+                        s_desc, None, node, STEPTREE, rawdata,
                         root_offset, file_ptr, **kwargs)
             elif 'steptree_parents' not in kwargs:
                 offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
@@ -73,7 +73,7 @@ def h2_tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
 
         # If there is rawdata to build the structure from
         if rawdata is not None:
-            offsets = desc['ATTR_OFFS']
+            offsets = desc[ATTR_OFFS]
             if "map_pointer_converter" in kwargs:
                 attr_indices = (0, 1)
                 node[2] = 0
@@ -83,20 +83,20 @@ def h2_tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
 
             # loop once for each field in the node
             for i in attr_indices:
-                desc[i]['TYPE'].parser(desc[i], None, node, i, rawdata,
-                                       root_offset, offset + offsets[i],
-                                       **kwargs)
+                desc[i][TYPE].parser(desc[i], None, node, i, rawdata,
+                                     root_offset, offset + offsets[i],
+                                     **kwargs)
 
             # increment offset by the size of the struct
-            offset += desc['SIZE']
+            offset += desc[SIZE]
 
         if 'steptree_parents' in kwargs:
             kwargs['steptree_parents'].append(node)
         else:
-            s_desc = desc.get('STEPTREE')
-            offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
-                                           rawdata, root_offset, offset,
-                                           **kwargs)
+            s_desc = desc.get(STEPTREE)
+            offset = s_desc[TYPE].parser(s_desc, None, node, STEPTREE,
+                                         rawdata, root_offset, offset,
+                                         **kwargs)
 
         # pass the incremented offset to the caller
         return offset

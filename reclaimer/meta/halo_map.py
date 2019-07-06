@@ -1,16 +1,24 @@
 import lzma
 import zlib
 import os
+
 from copy import deepcopy
-from ..common_descs import *
+
+from reclaimer.constants import map_build_dates, map_magics, GEN_3_ENGINES
+from reclaimer.meta.halo1_map import map_header_def, map_header_vap_def,\
+     map_header_anni_def, map_header_demo_def, tag_index_pc_def,\
+     tag_index_xbox_def, tag_index_anni_def
+from reclaimer.meta.halo2_alpha_map import h2_alpha_map_header_def,\
+     h2_alpha_tag_index_def
+from reclaimer.meta.halo2_map import h2v_map_header_full_def,\
+     h2v_map_header_def, h2x_map_header_full_def, h2x_map_header_def,\
+     h2_tag_index_def
+from reclaimer.meta.halo3_map import h3_map_header_def, h3_tag_index_def
+from reclaimer.meta.shadowrun_map import sr_tag_index_def
+from reclaimer.meta.stubbs_map import stubbs_tag_index_def
+
 from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.buffer import get_rawdata
-from .halo1_map import *
-from .halo2_alpha_map import *
-from .halo2_map import *
-from .halo3_map import *
-from .shadowrun_map import *
-from .stubbs_map import *
 
 
 def get_map_version(header):

@@ -1,7 +1,12 @@
 from copy import copy, deepcopy
 from math import pi
 try:
-    from mozzarilla.widgets.field_widgets import *
+    from mozzarilla.widgets.field_widgets import ReflexiveFrame,\
+         HaloRawdataFrame, HaloUInt32ColorPickerFrame, TextFrame,\
+         ColorPickerFrame, EntryFrame, HaloScriptSourceFrame,\
+         SoundSampleFrame, DynamicArrayFrame, DynamicEnumFrame,\
+         HaloScriptTextFrame, HaloBitmapTagFrame, FontCharacterFrame,\
+         MeterImageFrame, HaloHudMessageTextFrame
 except Exception:
     ReflexiveFrame = HaloRawdataFrame = HaloUInt32ColorPickerFrame =\
                      TextFrame = ColorPickerFrame = EntryFrame =\
@@ -13,9 +18,10 @@ except Exception:
 
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
-from supyr_struct.util import *
 
 from reclaimer.field_types import *
+from reclaimer.field_type_methods import tag_ref_str_size,\
+     read_string_id_string, write_string_id_string, get_set_string_id_size
 from reclaimer.constants import *
 from reclaimer.enums import *
 

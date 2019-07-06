@@ -3,7 +3,7 @@ from reclaimer.meta.halo1_map_fast_functions import shader_class_bytes,\
      repair_dependency, repair_dependency_array
 from reclaimer.halo_script.hsc import get_hsc_data_block,\
      HSC_IS_SCRIPT_OR_GLOBAL
-from supyr_struct.util import *
+#from supyr_struct.util import *
 
 MAX_MATERIAL_COUNT = 33
 

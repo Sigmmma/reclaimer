@@ -1,5 +1,7 @@
 from reclaimer.common_descs import *
-from supyr_struct.defs.tag_def import TagDef
+
+from supyr_struct.defs.block_def import BlockDef
+from supyr_struct.util import desc_variant
 
 '''
 The formula for calculating the magic for ANY map is as follows:

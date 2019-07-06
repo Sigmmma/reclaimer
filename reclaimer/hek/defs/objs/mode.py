@@ -1,7 +1,7 @@
 from math import sqrt
 from struct import Struct as PyStruct
 
-from .tag import *
+from reclaimer.hek.defs.objs.tag import HekTag
 from reclaimer.util.compression import compress_normal32_normalize,\
      decompress_normal32
 from reclaimer.util.matrices import quaternion_to_matrix, Matrix

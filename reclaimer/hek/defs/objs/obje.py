@@ -1,6 +1,6 @@
 import os
 
-from .tag import *
+from reclaimer.hek.defs.objs.tag import HekTag
 
 class ObjeTag(HekTag):
 

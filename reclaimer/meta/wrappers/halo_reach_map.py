@@ -1,4 +1,4 @@
-from .halo3_map import Halo3Map
+from reclaimer.meta.wrappers.halo3_map import Halo3Map
 
 class HaloReachMap(Halo3Map):
     tag_defs_module = ""

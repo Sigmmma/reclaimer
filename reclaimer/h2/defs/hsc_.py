@@ -1,5 +1,4 @@
-from array import array
-from ..common_descs import *
+from reclaimer.h2.common_descs import *
 from supyr_struct.defs.tag_def import TagDef
 
 hsc__body = Struct("tagdata",

@@ -2,9 +2,13 @@ import os
 
 from copy import deepcopy
 from math import pi, sqrt, log
-from struct import Struct as PyStruct
+from struct import unpack, Struct as PyStruct
+from traceback import format_exc
 
-from .halo_map import *
+from supyr_struct.buffer import BytearrayBuffer
+from supyr_struct.field_types import FieldType
+from supyr_struct.defs.frozen_dict import FrozenDict
+
 from reclaimer.halo_script.hsc import get_hsc_data_block,\
      HSC_IS_SCRIPT_OR_GLOBAL, SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES
 from reclaimer.common_descs import make_dependency_os_block
@@ -14,15 +18,19 @@ from reclaimer.os_hek.defs.gelc    import gelc_def
 from reclaimer.os_v4_hek.defs.coll import fast_coll_def
 from reclaimer.os_v4_hek.defs.sbsp import fast_sbsp_def
 from reclaimer.os_v4_hek.handler   import OsV4HaloHandler
-from .halo1_rsrc_map import Halo1RsrcMap, inject_sound_data, get_is_xbox_map
-from .byteswapping import raw_block_def, byteswap_animation,\
+from reclaimer.meta.wrappers.byteswapping import raw_block_def, byteswap_animation,\
      byteswap_uncomp_verts, byteswap_comp_verts, byteswap_tris,\
      byteswap_coll_bsp, byteswap_sbsp_meta, byteswap_scnr_script_syntax_data,\
      byteswap_pcm16_samples
+from reclaimer.meta.wrappers.halo_map import HaloMap
+from reclaimer.meta.wrappers.halo1_rsrc_map import Halo1RsrcMap, inject_sound_data, get_is_xbox_map
+from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
+from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
 from reclaimer import data_extraction
 from reclaimer.constants import tag_class_fcc_to_ext
 from reclaimer.util.compression import compress_normal32, decompress_normal32
-from reclaimer.util import is_overlapping_ranges, is_valid_ascii_name_str
+from reclaimer.util import is_overlapping_ranges, is_valid_ascii_name_str,\
+     int_to_fourcc
 
 
 __all__ = ("Halo1Map", "Halo1RsrcMap")
@@ -349,7 +357,7 @@ class Halo1Map(HaloMap):
         if tag_id == (tag_index.scenario_tag_id & 0xFFFF):
             tag_cls = "scnr"
         elif tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
-            tag_cls = fourcc(tag_index_ref.class_1.data)
+            tag_cls = int_to_fourcc(tag_index_ref.class_1.data)
 
         # if we dont have a defintion for this tag_cls, then return nothing
         if self.get_meta_descriptor(tag_cls) is None:

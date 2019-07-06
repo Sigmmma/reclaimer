@@ -1,5 +1,5 @@
-from reclaimer.field_types import *
 from supyr_struct.defs.tag_def import BlockDef
+from reclaimer.field_types import Container, FlUInt16, BytesRaw, WhileArray
 
 
 def linesize(parent=None, new_value=None, *args, **kwargs):
