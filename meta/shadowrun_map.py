@@ -1,5 +1,5 @@
-from .halo1_map import *
-from ..shadowrun_prototype.common_descs import *
+from reclaimer.meta.halo1_map import tag_path_pointer, tag_index_array_pointer
+from reclaimer.shadowrun_prototype.common_descs import *
 
 
 sr_tag_header = Struct("tag header",

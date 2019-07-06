@@ -8,8 +8,9 @@
 '''
 
 from reclaimer.common_descs import *
-from supyr_struct.defs.tag_def import TagDef
 from reclaimer.misc.defs.objs.pc_gametype import PcGametypeTag
+
+from supyr_struct.defs.tag_def import TagDef
 
 def get(): return pc_gametype_def
 

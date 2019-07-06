@@ -1,5 +1,4 @@
-from .tag import *
-
+from reclaimer.hek.defs.objs.tag import HekTag
 from reclaimer.util.matrices import euler_2d_to_vector_3d
 
 class EffeTag(HekTag):

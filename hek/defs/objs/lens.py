@@ -1,6 +1,6 @@
 from math import cos
 
-from .tag import *
+from reclaimer.hek.defs.objs.tag import HekTag
 
 class LensTag(HekTag):
 

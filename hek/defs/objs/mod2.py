@@ -1,4 +1,4 @@
-from .mode import ModeTag
+from reclaimer.hek.defs.objs.mode import ModeTag
 
 class Mod2Tag(ModeTag):
 

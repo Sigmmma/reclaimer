@@ -1,15 +1,21 @@
 from copy import copy, deepcopy
 
 try:
-    from mozzarilla.field_widgets import *
+    from mozzarilla.field_widgets import ReflexiveFrame, HaloRawdataFrame,\
+         TextFrame, ColorPickerFrame, EntryFrame, SoundSampleFrame,\
+         DynamicArrayFrame, Halo2BitmapTagFrame
 except Exception:
     ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
                      EntryFrame = SoundSampleFrame = DynamicArrayFrame =\
-                     H2BitmapTagFrame = None
+                     Halo2BitmapTagFrame = None
 from reclaimer.common_descs import *
+from reclaimer.h2.constants import STEPTREE, DYN_NAME_PATH, NAME_MAP,\
+     COMMENT, TOOLTIP, WIDGET, MAX, MAX_REFLEXIVE_COUNT, VISIBLE, ORIENT,\
+     MAX_TAG_PATH_LEN, DEFAULT, h2_tag_class_fcc_to_ext
 from reclaimer.h2.field_types import *
-from reclaimer.h2.constants import *
 from reclaimer.h2.enums import *
+
+from supyr_struct.defs.block_def import BlockDef
 
 
 resource = Struct("resource",

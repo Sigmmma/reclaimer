@@ -1,6 +1,6 @@
-from ..common_descs import *
-from .objs.halo1_rsrc_map import Halo1RsrcMapTag
-from supyr_struct.defs.tag_def import TagDef, BlockDef
+from reclaimer.common_descs import *
+from reclaimer.meta.objs.halo1_rsrc_map import Halo1RsrcMapTag
+from supyr_struct.defs.tag_def import TagDef
 
 
 def get():

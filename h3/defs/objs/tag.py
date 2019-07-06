@@ -1,4 +1,4 @@
-from reclaimer.hek.defs.objs.tag import *
+from reclaimer.hek.defs.objs.tag import HekTag
 
-class H3Tag(Tag):
+class H3Tag(HekTag):
     pass

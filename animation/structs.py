@@ -1,6 +1,7 @@
 from supyr_struct.defs.block_def import BlockDef
-from supyr_struct.field_types import *
-
+from supyr_struct.field_types import QStruct, Struct, Container, Void,\
+     UBitInt, BitStruct, Float, UInt16, UInt32,\
+     UInt32Array, UInt16Array, FloatArray
 # these structure definitions aren't really used in any code, but
 # are a good way to illustrate the structure of the compressed data.
 # for uncompressed animations, the data is stored as:
