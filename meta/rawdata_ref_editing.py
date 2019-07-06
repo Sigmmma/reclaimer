@@ -1,4 +1,7 @@
-from reclaimer.meta.halo1_map_fast_functions import *
+from struct import Struct as PyStruct
+
+from reclaimer.meta.halo1_map_fast_functions import iter_reflexive_offs,\
+     move_rawdata_ref
 
 
 def rawdata_ref_move_antr(tag_id, index_array, map_data, magic, engine,

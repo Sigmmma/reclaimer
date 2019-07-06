@@ -1,6 +1,6 @@
 from math import sin, cos
 
-from .obje import *
+from reclaimer.hek.defs.objs.obje import ObjeTag
 
 class BipdTag(ObjeTag):
 

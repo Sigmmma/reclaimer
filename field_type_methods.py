@@ -1,3 +1,5 @@
+from struct import unpack
+
 from supyr_struct.field_type_methods import *
 from reclaimer.constants import *
 
@@ -11,8 +13,8 @@ def tag_cstring_parser(self, desc, node=None, parent=None, attr_index=None,
         "and not None when reading a data field.")
 
     if rawdata is not None:
-        max_len = desc.get('MAX', 0xFFffFFff)
-        offset = parent.get_meta('POINTER', attr_index, **kwargs)
+        max_len = desc.get(MAX, 0xFFffFFff)
+        offset = parent.get_meta(POINTER, attr_index, **kwargs)
 
         start = root_offset + offset
         charsize = self.size
@@ -187,60 +189,60 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
 
         # If there is rawdata to build the structure from
         if rawdata is not None:
-            offsets = desc['ATTR_OFFS']
+            offsets = desc[ATTR_OFFS]
             struct_off = root_offset + offset
 
             if self.f_endian == '=':
                 for i in range(len(node)):
                     off = struct_off + offsets[i]
-                    typ = desc[i]['TYPE']
+                    typ = desc[i][TYPE]
                     __lsi__(node, i,
                             unpack(typ.enc, rawdata[off:off + typ.size])[0])
             elif self.f_endian == '<':
                 for i in range(len(node)):
                     off = struct_off + offsets[i]
-                    typ = desc[i]['TYPE']
+                    typ = desc[i][TYPE]
                     __lsi__(node, i, unpack(typ.little.enc,
                                             rawdata[off:off + typ.size])[0])
             else:
                 for i in range(len(node)):
                     off = struct_off + offsets[i]
-                    typ = desc[i]['TYPE']
+                    typ = desc[i][TYPE]
                     __lsi__(node, i, unpack(typ.big.enc,
                                             rawdata[off:off + typ.size])[0])
 
             # increment offset by the size of the struct
-            offset += desc['SIZE']
+            offset += desc[SIZE]
         else:
             for i in range(len(node)):
                 __lsi__(node, i,
-                        desc[i].get(DEFAULT, desc[i]['TYPE'].default()))
+                        desc[i].get(DEFAULT, desc[i][TYPE].default()))
 
-        s_desc = desc.get('STEPTREE')
+        s_desc = desc.get(STEPTREE)
         if s_desc:
             pointer_converter = kwargs.get('map_pointer_converter')
             if pointer_converter is not None:
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[1])
-                if kwargs.get("safe_mode") and not s_desc.get("IGNORE_SAFE_MODE"):
+                if kwargs.get("safe_mode") and not s_desc.get(IGNORE_SAFE_MODE):
                     # make sure the reflexive sizes are less than or equal to
                     # the max number of entries allowed in the reflexive
-                    node[0] = max(0, min(node[0], s_desc.get("MAX", node[0])))
+                    node[0] = max(0, min(node[0], s_desc.get(MAX, node[0])))
 
                 if (file_ptr < 0 or file_ptr +
-                    node[0]*s_desc['SUB_STRUCT'].get('SIZE', 0) > len(rawdata)):
+                    node[0]*s_desc[SUB_STRUCT].get(SIZE, 0) > len(rawdata)):
                     # the reflexive is corrupt for some reason
                     #    (ex: bad hek+ extraction)
                     node[0] = node[1] = 0
 
             if not node[0]:
                 # reflexive is empty. no need to provide rawdata
-                s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
+                s_desc[TYPE].parser(s_desc, None, node, STEPTREE, None)
             elif pointer_converter is not None:
                 # parsing tag from a map
-                s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', rawdata,
+                s_desc[TYPE].parser(s_desc, None, node, STEPTREE, rawdata,
                                       root_offset, file_ptr, **kwargs)
             elif 'steptree_parents' not in kwargs:
-                offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
+                offset = s_desc[TYPE].parser(s_desc, None, node, STEPTREE,
                                                rawdata, root_offset, offset,
                                                **kwargs)
             else:
@@ -276,23 +278,23 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
 
         # If there is rawdata to build the structure from
         if rawdata is not None:
-            offsets = desc['ATTR_OFFS']
+            offsets = desc[ATTR_OFFS]
             # loop once for each field in the node
             for i in range(len(node)):
-                desc[i]['TYPE'].parser(desc[i], None, node, i, rawdata,
+                desc[i][TYPE].parser(desc[i], None, node, i, rawdata,
                                        root_offset, offset + offsets[i],
                                        **kwargs)
 
             # increment offset by the size of the struct
-            offset += desc['SIZE']
+            offset += desc[SIZE]
 
-        s_desc = desc.get('STEPTREE')
+        s_desc = desc.get(STEPTREE)
         if s_desc:
             pointer_converter = kwargs.get("map_pointer_converter")
 
             if pointer_converter is not None:
-                if kwargs.get("safe_mode") and not s_desc.get("IGNORE_SAFE_MODE"):
-                    node[0] = max(0, min(node[0], s_desc.get("MAX", node[0])))
+                if kwargs.get("safe_mode") and not s_desc.get(IGNORE_SAFE_MODE):
+                    node[0] = max(0, min(node[0], s_desc.get(MAX, node[0])))
 
             if kwargs.get("parsing_resource"):
                 # parsing JUST metadata from a resource cache
@@ -302,7 +304,7 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                     offset += node_size + node[2]
 
                 node[0] = 0
-                s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
+                s_desc[TYPE].parser(s_desc, None, node, STEPTREE, None)
                 node[0] = node_size
             elif pointer_converter is not None:
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[3])
@@ -312,13 +314,13 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                 if not node[0] or (file_ptr + node[0] > len(rawdata) or
                                    file_ptr <= 0):
                     # data is stored in a resource map, or the size is invalid
-                    s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE', None)
+                    s_desc[TYPE].parser(s_desc, None, node, STEPTREE, None)
                 else:
-                    s_desc['TYPE'].parser(
-                        s_desc, None, node, 'STEPTREE', rawdata,
+                    s_desc[TYPE].parser(
+                        s_desc, None, node, STEPTREE, rawdata,
                         root_offset, file_ptr, **kwargs)
             elif 'steptree_parents' not in kwargs:
-                offset = s_desc['TYPE'].parser(s_desc, None, node, 'STEPTREE',
+                offset = s_desc[TYPE].parser(s_desc, None, node, STEPTREE,
                                                rawdata, root_offset, offset,
                                                **kwargs)
             else:

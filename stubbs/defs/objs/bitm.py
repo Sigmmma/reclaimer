@@ -1,5 +1,5 @@
-from ....field_types import *
-from ....hek.defs.objs.bitm import *
+from reclaimer.hek.defs.objs.bitm import BitmTag
+from reclaimer.bitmaps.p8_palette import STUBBS_P8_PALETTE
 
 class StubbsBitmTag(BitmTag):
     def __init__(self, *args, **kwargs):

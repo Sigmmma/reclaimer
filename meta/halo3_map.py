@@ -1,5 +1,5 @@
-from ..h3.common_descs import *
-from supyr_struct.defs.tag_def import TagDef, BlockDef
+from reclaimer.h3.common_descs import *
+from supyr_struct.defs.tag_def import BlockDef
 
 
 def compute_partition_offset(parent, **kwargs):

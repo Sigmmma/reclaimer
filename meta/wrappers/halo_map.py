@@ -3,27 +3,16 @@ import re
 import tempfile
 
 from mmap import mmap
-from struct import unpack
 from traceback import format_exc
 from string import ascii_letters
 
-from reclaimer.util import is_protected_tag, fourcc
-from supyr_struct.defs.constants import *
-from supyr_struct.util import int_to_fourcc, sanitize_path
-from supyr_struct.buffer import BytearrayBuffer, BytesBuffer, get_rawdata
-from supyr_struct.field_types import FieldType
-from supyr_struct.defs.frozen_dict import FrozenDict
-
-from ..halo_map import get_map_version, get_map_header,\
+from reclaimer.meta.halo_map import get_map_version, get_map_header,\
      get_tag_index, get_index_magic, get_map_magic, get_is_compressed_map,\
-     decompress_map, map_header_demo_def, map_header_def, tag_index_pc_def
+     decompress_map
+from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
+from reclaimer.util import is_protected_tag, int_to_fourcc, sanitize_path
 
-from .map_pointer_converter import MapPointerConverter
-from .string_id_manager import StringIdManager
-from .tag_index_manager import TagIndexManager
-from .tag_index_converters import h2_alpha_to_h1_tag_index,\
-     h2_to_h1_tag_index, h3_to_h1_tag_index
-from .rawdata_manager import RawdataManager
+from supyr_struct.buffer import BytearrayBuffer, get_rawdata
 
 
 VALID_MODULE_NAME_CHARS = ascii_letters + '_' + '0123456789'
@@ -274,7 +263,7 @@ class HaloMap:
             return "No extractor for this type of tag."
 
         extractor = self.data_extractors.get(
-            fourcc(tag_index_ref.class_1.data))
+            int_to_fourcc(tag_index_ref.class_1.data))
         kw['halo_map'] = self
         return extractor(meta, tag_index_ref.path, **kw)
 

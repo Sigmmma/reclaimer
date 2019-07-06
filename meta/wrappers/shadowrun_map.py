@@ -1,5 +1,4 @@
-from .halo_map import HaloMap
-from .halo1_map import Halo1Map
+from reclaimer.meta.wrappers.halo1_map import Halo1Map
 from reclaimer.shadowrun_prototype.handler import ShadowrunPrototypeHandler
 from reclaimer.shadowrun_prototype.constants import sr_tag_class_fcc_to_ext
 from supyr_struct.defs.frozen_dict import FrozenDict
