@@ -379,6 +379,7 @@ class JmsModel:
             self.is_random_perm = False
             perm_name = perm_name.lstrip("~")
 
+        self.lod_level = "superhigh"
         for lod_level in ("superhigh", "high", "medium", "superlow", "low"):
             if perm_name.lower().endswith(lod_level):
                 perm_name = perm_name[: -len(lod_level)].strip(" ")
@@ -782,10 +783,13 @@ class MergedJmsRegion:
             self.perm_meshes[perm_name].is_random_perm = jms_model.is_random_perm
 
         perm_mesh = self.perm_meshes[perm_name]
-        # copy the markers from the JmsModel we're given for this region
-        for marker in jms_model.markers:
-            if marker.region == src_region_index:
-                perm_mesh.markers.append(marker)
+        # copy the markers from the JmsModel we're given for this region,
+        # BUT only do so if the lod_level is superhigh(this is what tool
+        # does, and it makes sense to do it this way to prevent duplicates).
+        if jms_model.lod_level == "superhigh":
+            for marker in jms_model.markers:
+                if marker.region == src_region_index:
+                    perm_mesh.markers.append(marker)
 
         mesh_data = perm_mesh.lod_meshes.setdefault(lod_level, {})
 
