@@ -4,7 +4,8 @@ import re
 import traceback
 
 from copy import deepcopy
-from reclaimer.util import float_to_str, float_to_str_truncate
+from reclaimer.util import float_to_str, float_to_str_truncate,\
+     parse_jm_float, parse_jm_int
 
 
 class JmsNode:
@@ -988,7 +989,7 @@ def read_jms(jms_string, stop_at="", perm_name=None):
     jms_data = tuple(d for d in jms_string.\
                      replace("\n", "\t").split("\t") if d)
 
-    jms_model.version = jms_data[0]
+    jms_model.version = str(parse_jm_int(jms_data[0]))
 
     if jms_model.version == "8200":
         # Halo 1
@@ -1004,7 +1005,7 @@ def read_jms(jms_string, stop_at="", perm_name=None):
 def _read_jms_8200(jms_model, jms_data, stop_at=""):
     # Halo 1
     try:
-        jms_model.node_list_checksum = int(jms_data[1])
+        jms_model.node_list_checksum = parse_jm_int(jms_data[1])
     except Exception:
         print(traceback.format_exc())
         print("Could not read node list checksum.")
@@ -1017,14 +1018,14 @@ def _read_jms_8200(jms_model, jms_data, stop_at=""):
     # read the nodes
     try:
         i = 0 # make sure i is defined in case of exception
-        jms_model.nodes[:] = ((None, ) * int(jms_data[dat_i]))
+        jms_model.nodes[:] = ((None, ) * parse_jm_int(jms_data[dat_i]))
         dat_i += 1
         for i in range(len(jms_model.nodes)):
             jms_model.nodes[i] = JmsNode(
-                jms_data[dat_i], int(jms_data[dat_i+1]), int(jms_data[dat_i+2]),
-                float(jms_data[dat_i+3]), float(jms_data[dat_i+4]),
-                float(jms_data[dat_i+5]), float(jms_data[dat_i+6]),
-                float(jms_data[dat_i+7]), float(jms_data[dat_i+8]), float(jms_data[dat_i+9]),
+                jms_data[dat_i], parse_jm_int(jms_data[dat_i+1]), parse_jm_int(jms_data[dat_i+2]),
+                parse_jm_float(jms_data[dat_i+3]), parse_jm_float(jms_data[dat_i+4]),
+                parse_jm_float(jms_data[dat_i+5]), parse_jm_float(jms_data[dat_i+6]),
+                parse_jm_float(jms_data[dat_i+7]), parse_jm_float(jms_data[dat_i+8]), parse_jm_float(jms_data[dat_i+9]),
                 )
             dat_i += 10
         JmsNode.setup_node_hierarchy(jms_model.nodes)
@@ -1039,7 +1040,7 @@ def _read_jms_8200(jms_model, jms_data, stop_at=""):
     # read the materials
     try:
         i = 0 # make sure i is defined in case of exception
-        jms_model.materials[:] = ((None, ) * int(jms_data[dat_i]))
+        jms_model.materials[:] = ((None, ) * parse_jm_int(jms_data[dat_i]))
         dat_i += 1
         for i in range(len(jms_model.materials)):
             jms_model.materials[i] = JmsMaterial(jms_data[dat_i], jms_data[dat_i+1])
@@ -1055,15 +1056,16 @@ def _read_jms_8200(jms_model, jms_data, stop_at=""):
     # read the markers
     try:
         i = 0 # make sure i is defined in case of exception
-        jms_model.markers[:] = ((None, ) * int(jms_data[dat_i]))
+        jms_model.markers[:] = ((None, ) * parse_jm_int(jms_data[dat_i]))
         dat_i += 1
         for i in range(len(jms_model.markers)):
             jms_model.markers[i] = JmsMarker(
-                jms_data[dat_i], jms_model.name, int(jms_data[dat_i+1]), int(jms_data[dat_i+2]),
-                float(jms_data[dat_i+3]), float(jms_data[dat_i+4]),
-                float(jms_data[dat_i+5]), float(jms_data[dat_i+6]),
-                float(jms_data[dat_i+7]), float(jms_data[dat_i+8]), float(jms_data[dat_i+9]),
-                float(jms_data[dat_i+10])
+                jms_data[dat_i], jms_model.name,
+                parse_jm_int(jms_data[dat_i+1]), parse_jm_int(jms_data[dat_i+2]),
+                parse_jm_float(jms_data[dat_i+3]), parse_jm_float(jms_data[dat_i+4]),
+                parse_jm_float(jms_data[dat_i+5]), parse_jm_float(jms_data[dat_i+6]),
+                parse_jm_float(jms_data[dat_i+7]), parse_jm_float(jms_data[dat_i+8]), parse_jm_float(jms_data[dat_i+9]),
+                parse_jm_float(jms_data[dat_i+10])
                 )
             dat_i += 11
     except Exception:
@@ -1077,7 +1079,7 @@ def _read_jms_8200(jms_model, jms_data, stop_at=""):
     # read the regions
     try:
         i = 0 # make sure i is defined in case of exception
-        jms_model.regions[:] = ((None, ) * int(jms_data[dat_i]))
+        jms_model.regions[:] = ((None, ) * parse_jm_int(jms_data[dat_i]))
         dat_i += 1
         for i in range(len(jms_model.regions)):
             jms_model.regions[i] = jms_data[dat_i]
@@ -1093,21 +1095,15 @@ def _read_jms_8200(jms_model, jms_data, stop_at=""):
     # read the vertices
     try:
         i = 0 # make sure i is defined in case of exception
-        jms_model.verts[:] = ((None, ) * int(jms_data[dat_i]))
+        jms_model.verts[:] = ((None, ) * parse_jm_int(jms_data[dat_i]))
         dat_i += 1
         for i in range(len(jms_model.verts)):
-            try:
-                u = float(jms_data[dat_i+9])
-                v = float(jms_data[dat_i+10])
-                w = float(jms_data[dat_i+11])
-            except Exception:
-                u = v = w = 0
-
             jms_model.verts[i] = JmsVertex(
-                int(jms_data[dat_i]),
-                float(jms_data[dat_i+1]), float(jms_data[dat_i+2]), float(jms_data[dat_i+3]),
-                float(jms_data[dat_i+4]), float(jms_data[dat_i+5]), float(jms_data[dat_i+6]),
-                int(jms_data[dat_i+7]), float(jms_data[dat_i+8]), u, v, w
+                parse_jm_int(jms_data[dat_i]),
+                parse_jm_float(jms_data[dat_i+1]), parse_jm_float(jms_data[dat_i+2]), parse_jm_float(jms_data[dat_i+3]),
+                parse_jm_float(jms_data[dat_i+4]), parse_jm_float(jms_data[dat_i+5]), parse_jm_float(jms_data[dat_i+6]),
+                parse_jm_int(jms_data[dat_i+7]), parse_jm_float(jms_data[dat_i+8]),
+                parse_jm_float(jms_data[dat_i+9]), parse_jm_float(jms_data[dat_i+10]), parse_jm_float(jms_data[dat_i+11])
                 )
             dat_i += 12
     except Exception:
@@ -1121,12 +1117,12 @@ def _read_jms_8200(jms_model, jms_data, stop_at=""):
     # read the triangles
     try:
         i = 0 # make sure i is defined in case of exception
-        jms_model.tris[:] = ((None, ) * int(jms_data[dat_i]))
+        jms_model.tris[:] = ((None, ) * parse_jm_int(jms_data[dat_i]))
         dat_i += 1
         for i in range(len(jms_model.tris)):
             jms_model.tris[i] = JmsTriangle(
-                int(jms_data[dat_i]), int(jms_data[dat_i+1]),
-                int(jms_data[dat_i+2]), int(jms_data[dat_i+3]), int(jms_data[dat_i+4]),
+                parse_jm_int(jms_data[dat_i]), parse_jm_int(jms_data[dat_i+1]),
+                parse_jm_int(jms_data[dat_i+2]), parse_jm_int(jms_data[dat_i+3]), parse_jm_int(jms_data[dat_i+4]),
                 )
             dat_i += 5
     except Exception:
@@ -1149,15 +1145,15 @@ def _read_jms_8210(jms_model, jms_data, stop_at=""):
     # read the nodes
     try:
         i = 0 # make sure i is defined in case of exception
-        jms_model.nodes[:] = ((None, ) * int(jms_data[dat_i]))
+        jms_model.nodes[:] = ((None, ) * parse_jm_int(jms_data[dat_i]))
         dat_i += 1
         for i in range(len(jms_model.nodes)):
             jms_model.nodes[i] = JmsNode(
                 jms_data[dat_i], -1, -1,  # these will need to be calculated
-                float(jms_data[dat_i+1]), float(jms_data[dat_i+2]),
-                float(jms_data[dat_i+3]), float(jms_data[dat_i+4]),
-                float(jms_data[dat_i+5]), float(jms_data[dat_i+6]),
-                float(jms_data[dat_i+7]), int(jms_data[dat_i+8]),
+                parse_jm_float(jms_data[dat_i+1]), parse_jm_float(jms_data[dat_i+2]),
+                parse_jm_float(jms_data[dat_i+3]), parse_jm_float(jms_data[dat_i+4]),
+                parse_jm_float(jms_data[dat_i+5]), parse_jm_float(jms_data[dat_i+6]),
+                parse_jm_float(jms_data[dat_i+7]), parse_jm_int(jms_data[dat_i+8]),
                 )
             dat_i += 9
         JmsNode.setup_node_hierarchy(jms_model.nodes, jms_model.version)
@@ -1172,7 +1168,7 @@ def _read_jms_8210(jms_model, jms_data, stop_at=""):
     # read the materials
     try:
         i = 0 # make sure i is defined in case of exception
-        jms_model.materials[:] = ((None, ) * int(jms_data[dat_i]))
+        jms_model.materials[:] = ((None, ) * parse_jm_int(jms_data[dat_i]))
         dat_i += 1
         for i in range(len(jms_model.materials)):
             jms_model.materials[i] = JmsMaterial(jms_data[dat_i])
@@ -1189,15 +1185,15 @@ def _read_jms_8210(jms_model, jms_data, stop_at=""):
     # read the markers
     try:
         i = 0 # make sure i is defined in case of exception
-        jms_model.markers[:] = ((None, ) * int(jms_data[dat_i]))
+        jms_model.markers[:] = ((None, ) * parse_jm_int(jms_data[dat_i]))
         dat_i += 1
         for i in range(len(jms_model.markers)):
             jms_model.markers[i] = JmsMarker(
-                jms_data[dat_i], jms_model.name, -1, int(jms_data[dat_i+1]),
-                float(jms_data[dat_i+2]), float(jms_data[dat_i+3]),
-                float(jms_data[dat_i+4]), float(jms_data[dat_i+5]),
-                float(jms_data[dat_i+6]), float(jms_data[dat_i+7]), float(jms_data[dat_i+8]),
-                float(jms_data[dat_i+9])
+                jms_data[dat_i], jms_model.name, -1, parse_jm_int(jms_data[dat_i+1]),
+                parse_jm_float(jms_data[dat_i+2]), parse_jm_float(jms_data[dat_i+3]),
+                parse_jm_float(jms_data[dat_i+4]), parse_jm_float(jms_data[dat_i+5]),
+                parse_jm_float(jms_data[dat_i+6]), parse_jm_float(jms_data[dat_i+7]), parse_jm_float(jms_data[dat_i+8]),
+                parse_jm_float(jms_data[dat_i+9])
                 )
             dat_i += 10
     except Exception:
@@ -1211,7 +1207,7 @@ def _read_jms_8210(jms_model, jms_data, stop_at=""):
     # read the instance xrefs
     try:
         i = 0 # make sure i is defined in case of exception
-        instance_xrefs = [(None, ) * int(jms_data[dat_i])]
+        instance_xrefs = [(None, ) * parse_jm_int(jms_data[dat_i])]
         dat_i += 1
         for i in range(len(instance_xrefs)):
             instance_xrefs[i] = (jms_data[dat_i], jms_data[dat_i+1])
@@ -1226,14 +1222,14 @@ def _read_jms_8210(jms_model, jms_data, stop_at=""):
     # read the instance markers
     try:
         i = 0 # make sure i is defined in case of exception
-        instance_markers = [(None, ) * int(jms_data[dat_i])]
+        instance_markers = [(None, ) * parse_jm_int(jms_data[dat_i])]
         dat_i += 1
         for i in range(len(instance_markers)):
             instance_markers[i] = JmsMarker(
                 jms_data[dat_i], jms_model.name, -1,
-                float(jms_data[dat_i+3]), float(jms_data[dat_i+4]),
-                float(jms_data[dat_i+5]), float(jms_data[dat_i+6]),
-                float(jms_data[dat_i+7]), float(jms_data[dat_i+8]), float(jms_data[dat_i+9]),
+                parse_jm_float(jms_data[dat_i+3]), parse_jm_float(jms_data[dat_i+4]),
+                parse_jm_float(jms_data[dat_i+5]), parse_jm_float(jms_data[dat_i+6]),
+                parse_jm_float(jms_data[dat_i+7]), parse_jm_float(jms_data[dat_i+8]), parse_jm_float(jms_data[dat_i+9]),
                 )
             dat_i += 10
     except Exception:
@@ -1248,31 +1244,24 @@ def _read_jms_8210(jms_model, jms_data, stop_at=""):
     # read the vertices
     try:
         i = 0 # make sure i is defined in case of exception
-        jms_model.verts[:] = ((None, ) * int(jms_data[dat_i]))
+        jms_model.verts[:] = ((None, ) * parse_jm_int(jms_data[dat_i]))
         dat_i += 1
         for i in range(len(jms_model.verts)):
-            try:
-                u = float(jms_data[dat_i+9])
-                v = float(jms_data[dat_i+10])
-                w = float(jms_data[dat_i+11])
-            except Exception:
-                u = v = w = 0
-
-            x, y, z = float(jms_data[dat_i]), float(jms_data[dat_i+1]), float(jms_data[dat_i+2])
-            a, b, c = float(jms_data[dat_i+3]), float(jms_data[dat_i+4]), float(jms_data[dat_i+5])
-
+            x, y, z = parse_jm_float(jms_data[dat_i]),   parse_jm_float(jms_data[dat_i+1]),  parse_jm_float(jms_data[dat_i+2])
+            a, b, c = parse_jm_float(jms_data[dat_i+3]), parse_jm_float(jms_data[dat_i+4]),  parse_jm_float(jms_data[dat_i+5])
+            u, v, w = parse_jm_float(jms_data[dat_i+9]), parse_jm_float(jms_data[dat_i+10]), parse_jm_float(jms_data[dat_i+11])
             dat_i += 6
             node_influences = [(-1, 0)] * 4
-            node_influences_count = int(jms_data[dat_i])
+            node_influences_count = parse_jm_int(jms_data[dat_i])
             dat_i += 1
             for j in range(node_influences_count):
-                node_influences[j] = (int(jms_data[dat_i]), int(jms_data[dat_i+1]))
+                node_influences[j] = (parse_jm_int(jms_data[dat_i]), parse_jm_int(jms_data[dat_i+1]))
                 dat_i += 2
 
-            tex_coords = [(0, 0)] * int(jms_data[dat_i])
+            tex_coords = [(0, 0)] * parse_jm_int(jms_data[dat_i])
             dat_i += 1
             for j in range(len(tex_coords)):
-                tex_coords[j] = (int(jms_data[dat_i]), int(jms_data[dat_i+1]))
+                tex_coords[j] = (parse_jm_int(jms_data[dat_i]), parse_jm_int(jms_data[dat_i+1]))
                 dat_i += 2
 
             jms_model.verts[i] = JmsVertex(
@@ -1293,12 +1282,12 @@ def _read_jms_8210(jms_model, jms_data, stop_at=""):
     # read the triangles
     try:
         i = 0 # make sure i is defined in case of exception
-        jms_model.tris[:] = ((None, ) * int(jms_data[dat_i]))
+        jms_model.tris[:] = ((None, ) * parse_jm_int(jms_data[dat_i]))
         dat_i += 1
         for i in range(len(jms_model.tris)):
             jms_model.tris[i] = JmsTriangle(
-                -1, int(jms_data[dat_i]),
-                int(jms_data[dat_i+1]), int(jms_data[dat_i+2]), int(jms_data[dat_i+3]),
+                -1, parse_jm_int(jms_data[dat_i]),
+                parse_jm_int(jms_data[dat_i+1]), parse_jm_int(jms_data[dat_i+2]), parse_jm_int(jms_data[dat_i+3]),
                 )
             dat_i += 4
     except Exception:

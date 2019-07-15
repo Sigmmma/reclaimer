@@ -6,7 +6,8 @@ import traceback
 from copy import deepcopy
 from reclaimer.common_descs import anim_types, anim_frame_info_types
 from reclaimer.model.jms import JmsNode, JmsModel
-from reclaimer.util import float_to_str, float_to_str_truncate
+from reclaimer.util import float_to_str, float_to_str_truncate,\
+     parse_jm_float, parse_jm_int
 from reclaimer.util.matrices import clip_angle_to_bounds, are_vectors_equal,\
      quat_to_matrix, matrix_to_quat, axis_angle_to_quat, quat_to_axis_angle,\
      quaternion_to_euler, euler_to_quaternion, Quaternion, multiply_quaternions
@@ -554,14 +555,14 @@ def read_jma(jma_string, stop_at="", anim_name=""):
     data = tuple(d for d in jma_string.split("\t") if d)
     dat_i = 0
 
-    if data[dat_i] != "16392":
+    if parse_jm_int(data[dat_i]) != 16392:
         print("JMA identifier '16392' not found.")
         return jma_anim
 
     dat_i += 1
 
     try:
-        frame_count = int(data[dat_i]) & 0xFFffFFff
+        frame_count = parse_jm_int(data[dat_i]) & 0xFFffFFff
         dat_i += 1
     except Exception:
         print(traceback.format_exc())
@@ -569,7 +570,7 @@ def read_jma(jma_string, stop_at="", anim_name=""):
         return jma_anim
 
     try:
-        frame_rate = int(data[dat_i]) & 0xFFffFFff
+        frame_rate = parse_jm_int(data[dat_i]) & 0xFFffFFff
         dat_i += 1
     except Exception:
         print(traceback.format_exc())
@@ -581,7 +582,7 @@ def read_jma(jma_string, stop_at="", anim_name=""):
     # read the actors
     try:
         i = 0 # make sure i is defined in case of exception
-        jma_anim.actors = [None] * (int(data[dat_i]) & 0xFFffFFff)
+        jma_anim.actors = [None] * (parse_jm_int(data[dat_i]) & 0xFFffFFff)
         dat_i += 1
         for i in range(len(jma_anim.actors)):
             jma_anim.actors[i] = data[dat_i]
@@ -593,7 +594,7 @@ def read_jma(jma_string, stop_at="", anim_name=""):
         return jma_anim
 
     try:
-        node_count = int(data[dat_i]) & 0xFFffFFff
+        node_count = parse_jm_int(data[dat_i]) & 0xFFffFFff
         dat_i += 1
     except Exception:
         print(traceback.format_exc())
@@ -603,7 +604,7 @@ def read_jma(jma_string, stop_at="", anim_name=""):
     if stop_at == "checksum": return jma_anim
 
     try:
-        jma_anim.node_list_checksum = int(data[dat_i])
+        jma_anim.node_list_checksum = parse_jm_int(data[dat_i])
         dat_i += 1
     except Exception:
         print(traceback.format_exc())
@@ -618,7 +619,7 @@ def read_jma(jma_string, stop_at="", anim_name=""):
         jma_anim.nodes = [None] * node_count
         for i in range(node_count):
             jma_anim.nodes[i] = JmsNode(
-                data[dat_i], int(data[dat_i+1]), int(data[dat_i+2])
+                data[dat_i], parse_jm_int(data[dat_i+1]), parse_jm_int(data[dat_i+2])
                 )
             dat_i += 3
         JmsNode.setup_node_hierarchy(jma_anim.nodes)
@@ -638,10 +639,10 @@ def read_jma(jma_string, stop_at="", anim_name=""):
             frame = [None] * node_count
             for j in range(node_count):
                 frame[j] = JmaNodeState(
-                    float(data[dat_i]),   float(data[dat_i+1]),
-                    float(data[dat_i+2]), float(data[dat_i+3]),
-                    float(data[dat_i+4]), float(data[dat_i+5]),
-                    float(data[dat_i+6]), float(data[dat_i+7])
+                    parse_jm_float(data[dat_i]),   parse_jm_float(data[dat_i+1]),
+                    parse_jm_float(data[dat_i+2]), parse_jm_float(data[dat_i+3]),
+                    parse_jm_float(data[dat_i+4]), parse_jm_float(data[dat_i+5]),
+                    parse_jm_float(data[dat_i+6]), parse_jm_float(data[dat_i+7])
                     )
                 dat_i += 8
             jma_anim.frames.append(frame)
