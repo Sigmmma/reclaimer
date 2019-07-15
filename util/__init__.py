@@ -13,6 +13,7 @@ INVALID_PATH_CHARS = set([str(i.to_bytes(1, 'little'), 'latin-1')
                           for i in (tuple(range(32)) +
                                     tuple(range(128, 256)))]
                          )
+VALID_NUMERIC_CHARS = frozenset("0123456789")
 for name in ('CON', 'PRN', 'AUX', 'NUL'):
     RESERVED_WINDOWS_FILENAME_MAP[name] = '_' + name
 for i in range(1, 9):
@@ -78,6 +79,36 @@ def float_to_str_truncate(f, sig_figs=7):
         remainder = float_pieces[1] + "0" * (sig_figs - len(float_pieces[1]))
 
     return "%s.%s" % (float_pieces[0], remainder[: sig_figs])
+
+
+def parse_jm_int(string):
+    try:
+        i = 1 if string[0] == "-" else 0
+        check = VALID_NUMERIC_CHARS
+        while i < len(string):
+            if string[i] not in check:
+                break
+            i += 1
+        return int(string[: i])
+    except Exception:
+        return 0
+
+
+def parse_jm_float(string):
+    try:
+        i = 1 if string[0] == "-" else 0
+        check = VALID_NUMERIC_CHARS
+        found_period = False
+        while i < len(string):
+            c = string[i]
+            if c == "." and not found_period:
+                found_period = True
+            elif c not in check:
+                break
+            i += 1
+        return float(string[: i])
+    except Exception:
+        return 0.0
 
 
 def is_valid_ascii_name_str(string):
