@@ -3,6 +3,7 @@ Most byteswapping is handeled by supyr_struct by changing the endianness,
 but certain chunks of raw data are significantly faster to just write
 byteswapping routines for, like raw vertex, triangle, and animation data.
 '''
+import array
 
 from supyr_struct.field_types import BytearrayRaw
 from supyr_struct.defs.block_def import BlockDef
@@ -43,13 +44,11 @@ def byteswap_coll_bsp(bsp):
 
 
 def byteswap_pcm16_samples(pcm_block):
-    data = pcm_block.STEPTREE
-
+    data_array = array.array(
+        "h", pcm_block.STEPTREE[: (len(pcm_block.STEPTREE) >> 1) << 1])
+    data_array.byteswap()
     # replace the verts with the byteswapped ones
-    pcm_block.STEPTREE = new_data = bytearray(len(data))
-    for i in range(0, len(data), 2):
-        new_data[i]     = data[i + 1]
-        new_data[i + 1] = data[i]
+    pcm_block.STEPTREE = bytearray(data_array.tobytes())
 
 
 def byteswap_sbsp_meta(meta):
