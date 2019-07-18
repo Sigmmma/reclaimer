@@ -66,6 +66,7 @@ games built with the Blam engine',
         'reclaimer.stubbs',
         'reclaimer.stubbs.defs',
         'reclaimer.stubbs.defs.objs',
+        'reclaimer.util',
         ],
     package_data={
         '': ['*.txt', '*.md', '*.rst',
