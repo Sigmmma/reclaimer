@@ -3,13 +3,13 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 hud__body = Struct("tagdata",
-    dependency("digits bitmap", "bitm"),
-    SInt8("bitmap digit width"),
-    SInt8("screen digit width"),
-    SInt8("x offset"),
-    SInt8("y offset"),
-    SInt8("decimal point width"),
-    SInt8("colon width"),
+    dependency("digits_bitmap", "bitm"),
+    SInt8("bitmap_digit_width"),
+    SInt8("screen_digit_width"),
+    SInt8("x_offset"),
+    SInt8("y_offset"),
+    SInt8("decimal_point_width"),
+    SInt8("colon_width"),
     SIZE=100,
     )
 

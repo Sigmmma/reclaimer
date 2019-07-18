@@ -2,13 +2,13 @@ from ...os_v3_hek.defs.obje import *
 
 obje_attrs = dict(obje_attrs)
 obje_attrs[1] = Bool16('flags',
-    'does not cast shadow',
-    'transparent self-occlusion',
-    'brighter than it should be',
-    'not a pathfinding obstacle',
-    'cast shadow by default',
-    ('xbox_unknown_bit_8', 1<<8),
-    ('xbox_unknown_bit_11', 1<<11),
+    'does_not_cast_shadow',
+    'transparent_self_occlusion',
+    'brighter_than_it_should_be',
+    'not_a_pathfinding_obstacle',
+    'cast_shadow_by_default',
+    {NAME: 'xbox_unknown_bit_8', VALUE: 1<<8, VISIBLE: False},
+    {NAME: 'xbox_unknown_bit_11', VALUE: 1<<11, VISIBLE: False},
     )
 
 obje_body = Struct('tagdata',
@@ -22,5 +22,5 @@ obje_def = TagDef("obje",
     blam_header('obje'),
     obje_body,
 
-    ext=".object", endian=">", tag_cls=HekTag
+    ext=".object", endian=">", tag_cls=ObjeTag
     )

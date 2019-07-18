@@ -1,5 +1,5 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.shdr import ShdrTag
 from supyr_struct.defs.tag_def import TagDef
 
 radiosity_comment = """RADIOSITY/LIGHTMAPPING
@@ -19,39 +19,30 @@ material_type_comment = """MATERIAL TYPE
 The material type is used to determine what material effects should be used for impacts on 
 BSP geometry that uses this shader."""
 
-shdr_attrs = Struct("shdr attrs",
-    Bool16("radiosity flags",
+shdr_attrs = Struct("shdr_attrs",
+    Bool16("radiosity_flags",
         { NAME: "simple_parameterization", GUI_NAME: "simple parameterization(lightmap fix)" },
-        "ignore normals",
-        "transparent lit",
+        "ignore_normals",
+        "transparent_lit",
         COMMENT=radiosity_comment
         ),
-    SEnum16("radiosity detail level" ,
+    SEnum16("radiosity_detail_level" ,
         "high",
         "medium",
         "low",
         "turd",
         ),
-    Float("radiosity light power", COMMENT=lighting_comment),
-    QStruct("radiosity light color", INCLUDE=rgb_float),
-    QStruct("radiosity tint color",  INCLUDE=rgb_float),
+    Float("radiosity_light_power", COMMENT=lighting_comment),
+    QStruct("radiosity_light_color", INCLUDE=rgb_float),
+    QStruct("radiosity_tint_color",  INCLUDE=rgb_float),
 
     Pad(2),
-    SEnum16("material type", *materials_list, COMMENT=material_type_comment),
+    SEnum16("material_type", *materials_list, COMMENT=material_type_comment),
     # THIS FIELD IS OFTEN INCORRECT ON STOCK TAGS.
-    # This seems to be a Guerilla-only optimization value
-    FlSEnum16("shader type",
-        ("shdr", -1),  # Shader
-        ("senv", 3),   # Environment
-        ("soso", 4),   # Model
-        ("sotr", 5),   # Transparent Generic
-        ("schi", 6),   # Transparent Chicago
-        ("scex", 7),   # Transparent Chicago Extended
-        ("swat", 8),   # Water
-        ("sgla", 9),   # Glass
-        ("smet", 10),  # Meter
-        ("spla", 11),  # Plasma
-        DEFAULT=-1, EDITABLE=False, VISIBLE=False,
+    FlSEnum16("shader_type",
+        *((shader_types[i], i - 1) for i in
+          range(len(shader_types))),
+        VISIBLE=False, DEFAULT=-1
         ),
     Pad(2),
     SIZE=40
@@ -69,5 +60,5 @@ shdr_def = TagDef("shdr",
     blam_header('shdr'),
     shader_body,
 
-    ext=".shader", endian=">", tag_cls=HekTag
+    ext=".shader", endian=">", tag_cls=ShdrTag
     )

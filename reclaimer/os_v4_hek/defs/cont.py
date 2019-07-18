@@ -2,8 +2,8 @@ from ...os_v3_hek.defs.cont import *
 
 cont_body = dict(cont_body)
 cont_body[4] = reflexive(
-    "shader extensions",
-    Struct("shader extension", INCLUDE=os_shader_extension),
+    "shader_extensions",
+    Struct("shader_extension", INCLUDE=os_shader_extension),
     1)
 
     

@@ -1,9 +1,17 @@
-from reclaimer import data_extraction
+from struct import unpack
+from traceback import format_exc
 
-from ...util import get_is_xbox_map
-from ..halo1_rsrc_map import lite_halo1_rsrc_map_def as halo1_rsrc_map_def
-from .byteswapping import raw_block_def, byteswap_pcm16_samples
-from .halo_map import *
+from reclaimer import data_extraction
+from reclaimer.util import get_is_xbox_map
+from reclaimer.meta.halo_map import map_header_def, tag_index_pc_def
+from reclaimer.meta.halo1_rsrc_map import lite_halo1_rsrc_map_def as halo1_rsrc_map_def
+from reclaimer.meta.wrappers.byteswapping import raw_block_def, byteswap_pcm16_samples
+from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
+from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
+from reclaimer.meta.wrappers.halo_map import HaloMap
+
+from supyr_struct.buffer import BytearrayBuffer, get_rawdata
+from supyr_struct.field_types import FieldType
 
 # this is ultra hacky, but it seems to be the only
 # way to fix the tagid for the sounds resource map
@@ -63,50 +71,51 @@ class Halo1RsrcMap(HaloMap):
     tag_defs_module = "reclaimer.hek.defs"
     tag_classes_to_load = ("bitm", "snd!", "font", "hmt ", "ustr")
 
+    data_extractors = data_extraction.h1_data_extractors
+
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
         self.setup_tag_headers()
 
-    def extract_tag_data(self, meta, tag_index_ref, **kw):
-        extractor = data_extraction.h1_data_extractors.get(
-            fourcc(tag_index_ref.class_1.data))
-        if extractor is None:
-            return "No extractor for this type of tag."
-        kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.path, **kw)
-
     def load_map(self, map_path, **kwargs):
-        will_be_active = kwargs.get("will_be_active", True)
-        with open(map_path, 'rb+') as f:
-            map_data = PeekableMmap(f.fileno(), 0)
+        map_data = get_rawdata(filepath=map_path, writable=False)
 
-        resource_type = unpack("<I", map_data.read(4))[0]; map_data.seek(0)
+        resource_type = unpack("<I", map_data.read(4))[0]
+        map_data.seek(0)
         rsrc_map = self.rsrc_map = halo1_rsrc_map_def.build(rawdata=map_data)
 
         self.orig_tag_index = rsrc_map.data.tags
 
         # check if this is a pc or ce cache. cant rip pc ones
-        pth = self.orig_tag_index[0].tag.path
+        pth = self.orig_tag_index[0].tag.path if self.orig_tag_index else ""
         self.filepath = map_path
-        self.engine   = "halo1ce"
-        if resource_type < 3 and not (pth.endswith('__pixels') or
-                                      pth.endswith('__permutations')):
-            tag_count = len(rsrc_map.data.tags)
-            if ((resource_type == 1 and tag_count == 1107) or
-                (resource_type == 2 and tag_count == 7192)):
-                self.engine = "halo1pcdemo"
+
+        ce_engine = ""
+        for halo_map in self.maps.values():
+            ce_engine = getattr(halo_map, "engine")
+            if ce_engine:
+                break
+
+        if resource_type == 3 or (pth.endswith('__pixels') or
+                                  pth.endswith('__permutations')):
+            if ce_engine:
+                self.engine = ce_engine
             else:
-                self.engine = "halo1pc"
+                self.engine = "halo1ce"
+        elif ((resource_type == 1 and len(rsrc_map.data.tags) == 1107) or
+              (resource_type == 2 and len(rsrc_map.data.tags) == 7192)):
+            self.engine = "halo1pcdemo"
+        else:
+            self.engine = "halo1pc"
 
         # so we don't have to redo a lot of code, we'll make a
         # fake tag_index and map_header and just fill in info
-        self.map_header = head = map_header_demo_def.build()
+        self.map_header = head = map_header_def.build()
         self.tag_index  = tags = tag_index_pc_def.build()
         self.map_magic  = 0
         self.map_data   = map_data
         self.is_resource = True
 
-        head.version.set_to(self.engine)
         self.index_magic = 0
 
         index_mul = 2
@@ -124,9 +133,6 @@ class Halo1RsrcMap(HaloMap):
             self.tag_classes = tag_classes
 
         self.maps[head.map_name] = self
-        if will_be_active:
-            self.maps["<active>"] = self
-
         rsrc_tag_count = len(rsrc_map.data.tags)//index_mul
         self.tag_classes += (def_cls,)*(rsrc_tag_count - len(self.tag_classes))
         tags.tag_index.extend(rsrc_tag_count)
@@ -151,7 +157,7 @@ class Halo1RsrcMap(HaloMap):
         self.tag_index_manager = TagIndexManager(tags.tag_index)
         self.snd_rsrc_tag_index_manager = TagIndexManager(tags.tag_index,
                                                           sound_rsrc_id_map)
-        self.map_data.clear_cache()
+        self.clear_map_cache()
 
     def get_dependencies(self, meta, tag_id, tag_cls):
         if tag_cls != "snd!":
@@ -180,7 +186,8 @@ class Halo1RsrcMap(HaloMap):
 
         kwargs = dict(parsing_resource=True)
         desc = self.get_meta_descriptor(tag_cls)
-        if desc is None or self.engine not in ("halo1ce", "halo1yelo"):
+        if desc is None or self.engine not in ("halo1ce", "halo1yelo",
+                                               "halo1vap"):
             return
         elif tag_cls != 'snd!':
             # the pitch ranges pointer in resource sound tags is invalid, so
@@ -266,7 +273,7 @@ class Halo1RsrcMap(HaloMap):
 
         is_not_indexed = not self.is_indexed(tag_index_ref.id & 0xFFff)
         might_be_in_rsrc = engine in ("halo1pc", "halo1pcdemo",
-                                      "halo1ce", "halo1yelo")
+                                      "halo1ce", "halo1yelo", "halo1vap")
         might_be_in_rsrc &= not self.is_resource
 
         # get some rawdata that would be pretty annoying to do in the parser
@@ -321,7 +328,7 @@ class Halo1RsrcMap(HaloMap):
         elif tag_cls == "snd!":
             # might need to get samples and permutations from the resource map
             is_pc = engine in ("halo1pc", "halo1pcdemo")
-            is_ce = engine in ("halo1ce", "halo1yelo")
+            is_ce = engine in ("halo1ce", "halo1yelo", "halo1vap")
             if not(is_pc or is_ce):
                 return meta
             elif sound_data is None:
@@ -374,3 +381,29 @@ class Halo1RsrcMap(HaloMap):
                 print(format_exc())
                 FieldType.force_normal()
                 raise
+
+    def generate_map_info_string(self):
+        if hasattr(self.map_data, '__len__'):
+            map_size = str(len(self.map_data))
+        elif (hasattr(self.map_data, 'seek') and
+              hasattr(self.map_data, 'tell')):
+            curr_pos = self.map_data.tell()
+            self.map_data.seek(0, 2)
+            map_size = str(self.map_data.tell())
+            self.map_data.seek(curr_pos)
+        else:
+            map_size = "unknown"
+
+        return """%s
+General:
+    engine         == %s
+    file size      == %s
+    resource type  == %s
+
+Header:
+    tag count         == %s
+    tag paths pointer == %s
+    tag index pointer == %s""" % (
+        self.filepath, self.engine, map_size, self.map_name,
+        self.tag_index.tag_count, self.rsrc_map.data.tag_paths_pointer,
+        self.rsrc_map.data.tag_headers_pointer)

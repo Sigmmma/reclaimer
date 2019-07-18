@@ -7,9 +7,10 @@
     I extended it to include xbox gametypes as well
 '''
 
-from ...common_descs import *
+from reclaimer.common_descs import *
+from reclaimer.misc.defs.objs.pc_gametype import PcGametypeTag
+
 from supyr_struct.defs.tag_def import TagDef
-from .objs.pc_gametype import PcGametypeTag
 
 def get(): return pc_gametype_def
 

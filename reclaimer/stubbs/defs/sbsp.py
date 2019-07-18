@@ -5,31 +5,31 @@ from ..common_descs import *
 cluster = Struct("cluster",
     SInt16('sky'),
     SInt16('fog'),
-    dyn_senum16('background sound',
+    dyn_senum16('background_sound',
         DYN_NAME_PATH="tagdata.background_sounds_palette.STEPTREE[DYN_I].name"),
-    dyn_senum16('sound environment',
+    dyn_senum16('sound_environment',
         DYN_NAME_PATH="tagdata.sound_environments_palette." +
         "STEPTREE[DYN_I].name"),
     dyn_senum16('weather',
         DYN_NAME_PATH="tagdata.weather_palettes.STEPTREE[DYN_I].name"),
 
+    UInt16("transition_structure_bsp", VISIBLE=False),
+    UInt16("first_decal_index", VISIBLE=False),
+    UInt16("decal_count", VISIBLE=False),
     QStruct("unknown0",
-        UInt16('uint16_1'),
-        UInt16('uint16_2'),
-        UInt16('uint16_3'),
         Float('float_0'),
         Float('float_1'),
         Float('float_2'),
         Float('float_3'),
         Float('float_4'),
         Float('float_5'),
-        SIZE=30
+        SIZE=24
         ),
 
-    reflexive("predicted resources", predicted_resource, 1024),
+    reflexive("predicted_resources", predicted_resource, 1024),
     reflexive("subclusters", subcluster, 4096),
-    SInt16("first lens flare marker index"),
-    SInt16("lens flare marker count"),
+    SInt16("first_lens_flare_marker_index"),
+    SInt16("lens_flare_marker_count"),
 
     # stubbs seems to have different data here than surface indices
     Pad(12),

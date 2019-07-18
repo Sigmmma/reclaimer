@@ -1,8 +1,8 @@
-from os.path import splitext
 from array import array
-from reclaimer.constants import *
-from reclaimer.bitmaps.p8_palette import HALO_P8_PALETTE, STUBBS_P8_PALETTE
-from .tag import *
+from reclaimer.constants import TYPE_CUBEMAP, CUBEMAP_PADDING, BITMAP_PADDING,\
+     FORMAT_NAME_MAP, TYPE_NAME_MAP, FORMAT_P8_BUMP
+from reclaimer.bitmaps.p8_palette import HALO_P8_PALETTE
+from reclaimer.hek.defs.objs.tag import HekTag
 
 try:
     import arbytmap as ab
@@ -17,7 +17,6 @@ except (ImportError, AttributeError):
 
 
 class BitmTag(HekTag):
-
     tex_infos = ()
     p8_palette = None
 

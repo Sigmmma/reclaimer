@@ -15,5 +15,5 @@ scex_def = TagDef("scex",
     blam_header_stubbs('scex'),
     scex_body,
 
-    ext=".shader_transparent_chicago_extended", endian=">"
+    ext=".shader_transparent_chicago_extended", endian=">", tag_cls=ShdrTag
     )

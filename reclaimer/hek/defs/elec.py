@@ -3,28 +3,32 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 shader = Struct("shader",
-    Pad(40),
-    Bool16("shader flags", *shader_flags),
-    SEnum16("framebuffer blend function", *framebuffer_blend_functions),
-    SEnum16("framebuffer fade mode", *render_fade_mode),
-    Bool16("map flags",
+    Pad(36),
+    FlUInt32("unknown0"),
+    Bool16("shader_flags", *shader_flags),
+    SEnum16("framebuffer_blend_function", *framebuffer_blend_functions),
+    SEnum16("framebuffer_fade_mode", *render_fade_mode),
+    Bool16("map_flags",
         "unfiltered"
         ),
+    Pad(40),
+    FlUInt32("unknown1"),
+    Pad(88),
     SIZE=180
     )
 
 marker = Struct("marker",
-    ascii_str32("attachment marker"),
+    ascii_str32("attachment_marker"),
     Bool16("flags",
-        "not connected to next marker"
+        "not_connected_to_next_marker"
         ),
 
     Pad(2),
-    SInt16("octaves to next marker"),
+    SInt16("octaves_to_next_marker"),
 
     Pad(78),
-    QStruct("random position bounds", INCLUDE=ijk_float, SIDETIP="world units"),
-    float_wu("random jitter"),
+    QStruct("random_position_bounds", INCLUDE=ijk_float, SIDETIP="world units"),
+    float_wu("random_jitter"),
     float_wu("thickness"),
     QStruct("tint", INCLUDE=argb_float),
     SIZE=228
@@ -32,17 +36,17 @@ marker = Struct("marker",
 
 elec_body = Struct("tagdata",
     Pad(2),
-    SInt16("effects count"),
+    SInt16("effects_count"),
 
     Pad(16),
-    float_wu("near fade distance"),
-    float_wu("far fade distance"),
+    float_wu("near_fade_distance"),
+    float_wu("far_fade_distance"),
 
     Pad(16),
-    SEnum16("jitter scale source", *function_outputs),
-    SEnum16("thickness scale source", *function_outputs),
-    SEnum16("tint modulation source", *function_names),
-    SEnum16("brightness scale source", *function_outputs),
+    SEnum16("jitter_scale_source", *function_outputs),
+    SEnum16("thickness_scale_source", *function_outputs),
+    SEnum16("tint_modulation_source", *function_names),
+    SEnum16("brightness_scale_source", *function_outputs),
     dependency("bitmap", "bitm"),
 
     Pad(84),

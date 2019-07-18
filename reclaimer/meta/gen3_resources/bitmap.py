@@ -1,5 +1,7 @@
-from supyr_struct.defs.bitmaps.dds import pixelformat_typecodes
 from reclaimer.common_descs import *
+
+from supyr_struct.defs.bitmaps.dds import pixelformat_typecodes
+from supyr_struct.defs.block_def import BlockDef
 
 
 d3d_texture = Struct("d3d_texture",

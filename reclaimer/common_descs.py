@@ -1,7 +1,12 @@
 from copy import copy, deepcopy
 from math import pi
 try:
-    from mozzarilla.field_widgets import *
+    from mozzarilla.widgets.field_widgets import ReflexiveFrame,\
+         HaloRawdataFrame, HaloUInt32ColorPickerFrame, TextFrame,\
+         ColorPickerFrame, EntryFrame, HaloScriptSourceFrame,\
+         SoundSampleFrame, DynamicArrayFrame, DynamicEnumFrame,\
+         HaloScriptTextFrame, HaloBitmapTagFrame, FontCharacterFrame,\
+         MeterImageFrame, HaloHudMessageTextFrame
 except Exception:
     ReflexiveFrame = HaloRawdataFrame = HaloUInt32ColorPickerFrame =\
                      TextFrame = ColorPickerFrame = EntryFrame =\
@@ -13,10 +18,12 @@ except Exception:
 
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
-from supyr_struct.defs.util import *
-from .field_types import *
-from .constants import *
-from .enums import *
+
+from reclaimer.field_types import *
+from reclaimer.field_type_methods import tag_ref_str_size,\
+     read_string_id_string, write_string_id_string, get_set_string_id_size
+from reclaimer.constants import *
+from reclaimer.enums import *
 
 # before we do anything, we need to inject these constants so any definitions
 # that are built that use them will have them in their descriptor entries.
@@ -27,16 +34,14 @@ def tag_class(*args, **kwargs):
     A macro for creating a tag_class enum desc with the
     enumerations set to the provided tag_class fcc's.
     '''
-    classes = []
-    default = 0xffffffff
-    for four_cc in args:
-        classes.append((tag_class_fcc_to_ext[four_cc], four_cc))
-
-    if len(classes) == 1:
-        default = classes[0][1]
+    class_mapping = kwargs.pop("class_mapping", tag_class_fcc_to_ext)
+    classes = tuple((class_mapping[fcc], fcc) for fcc in args)
+    default = classes[0][1] if len(classes) == 1 else 0xffffffff
 
     return UEnum32(
         'tag_class',
+        # NOTE: NONE is the expected enum_name in several places when checking
+        # the value of an enumerator. DO NOT EVER change it or its letter case
         *(tuple(sorted(classes)) + (("NONE", 0xffffffff),) ),
         DEFAULT=default, GUI_NAME='', WIDGET_WIDTH=20, **kwargs
         )
@@ -46,12 +51,13 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     '''This function serves to macro the creation of a reflexive'''
     desc.update(
         INCLUDE=reflexive_struct,
-        STEPTREE=Array(name + " array",
+        STEPTREE=Array(name + "_array",
             SIZE=".size", MAX=max_count,
             SUB_STRUCT=substruct, WIDGET=ReflexiveFrame
             ),
         SIZE=12
         )
+
     if DYN_NAME_PATH in desc:
         desc[STEPTREE][DYN_NAME_PATH] = desc.pop(DYN_NAME_PATH)
     if names:
@@ -97,6 +103,7 @@ def raw_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc
     This function serves to macro the creation
     of a reflexive treated as rawdata
     '''
+    # TODO: Make max_count be incorporated into desc and actually do something
     desc = reflexive(name, substruct, max_count, *names, **desc)
     info = desc[RAW_REFLEXIVE_INFO] = [0, [], []]
     sub_desc = desc[STEPTREE][SUB_STRUCT]
@@ -126,8 +133,7 @@ def rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
     if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
-        ref_struct[0][MAX] = max_size
-        kwargs[MAX] = max_size
+        ref_struct[0][MAX] = kwargs[MAX] = max_size
 
     if widget is not None:
         kwargs[WIDGET] = widget
@@ -147,8 +153,7 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
     if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
     if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     if max_size is not None:
-        ref_struct[0][MAX] = max_size
-        kwargs[MAX] = max_size
+        ref_struct[0][MAX] = kwargs[MAX] = max_size
 
     return RawdataRef(name,
         INCLUDE=ref_struct, ORIENT="v",
@@ -166,7 +171,7 @@ def get_meta_dependency_filepath(parent=None, tag_index_manager=None, **kwargs):
     parent.filepath = ""
 
 
-def dependency_uint32(name='tag ref', **kwargs):
+def dependency_uint32(name='tag_ref', **kwargs):
     kwargs.setdefault(VISIBLE, False)
     kwargs.setdefault(ORIENT, "h")
     return QStruct(name,
@@ -178,7 +183,7 @@ def dependency_uint32(name='tag ref', **kwargs):
         )
 
 
-def dependency(name='tag ref', valid_ids=None, **kwargs):
+def dependency(name='tag_ref', valid_ids=None, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
         valid_ids = tag_class(*valid_ids)
@@ -209,7 +214,7 @@ def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
     kwargs.setdefault(STRINGID_LEN_BITS, len_bit_ct)
     kwargs.setdefault(ORIENT, "h")
     return StringID(name,
-        UInt32('string id', VISIBLE=False),
+        UInt32('string_id', VISIBLE=False),
         STEPTREE=WritableComputed("string",
             COMPUTE_READ=read_string_id_string,
             COMPUTE_WRITE=write_string_id_string,
@@ -546,22 +551,22 @@ valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
 
 
 # Descriptors
-tag_header = Struct("blam header",
+tag_header = Struct("blam_header",
     Pad(36),
-    UEnum32("tag class",
-        GUI_NAME="tag class", INCLUDE=valid_tags, EDITABLE=False
+    UEnum32("tag_class",
+        GUI_NAME="tag_class", INCLUDE=valid_tags, EDITABLE=False
         ),
     UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
-    UInt32("header size",  DEFAULT=64, EDITABLE=False),
+    UInt32("header_size",  DEFAULT=64, EDITABLE=False),
     BBool64("flags",
-        "edited with mozz",
+        "edited_with_mozz",
         EDITABLE=False
         ),
     UInt16("version", DEFAULT=1, EDITABLE=False),
     UInt8("integrity0", DEFAULT=0, EDITABLE=False),
     UInt8("integrity1", DEFAULT=255, EDITABLE=False),
-    UEnum32("engine id",
-        ("halo 1", 'blam'),
+    UEnum32("engine_id",
+        ("halo_1", 'blam'),
         DEFAULT='blam', EDITABLE=False
         ),
     VISIBLE=False, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
@@ -600,13 +605,13 @@ anim_src_func_per_pha_sca_rot = Struct('',
 
 
 # This is the descriptor used wherever a tag references a rawdata chunk
-rawdata_ref_struct = RawdataRef('rawdata ref', 
+rawdata_ref_struct = RawdataRef('rawdata_ref', 
     SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
     Bool32("flags",
-        "data in resource map",
+        "data_in_resource_map",
         VISIBLE=False,
         ),
-    UInt32("raw pointer", VISIBLE=False),  # doesnt use magic
+    UInt32("raw_pointer", VISIBLE=False),  # doesnt use magic
     UInt32("pointer", VISIBLE=False),
     UInt32("id", VISIBLE=False),
     ORIENT='h'
@@ -622,30 +627,30 @@ reflexive_struct = Reflexive('reflexive',
 # This is the descriptor used wherever a tag references another tag
 tag_ref_struct = TagRef('dependency',
     valid_tags,
-    SInt32("path pointer", VISIBLE=False, EDITABLE=False),
-    SInt32("path length", MAX=MAX_TAG_PATH_LEN, VISIBLE=False, EDITABLE=False),
+    SInt32("path_pointer", VISIBLE=False, EDITABLE=False),
+    SInt32("path_length", MAX=MAX_TAG_PATH_LEN, VISIBLE=False, EDITABLE=False),
     UInt32("id", VISIBLE=False),
     ORIENT='h'
     )
 
-predicted_resource = Struct('predicted resource',
+predicted_resource = Struct('predicted_resource',
     SInt16('type',
         'bitmap',
         'sound',
         ),
-    SInt16('resource index'),
-    UInt32('tag index'),
+    SInt16('resource_index'),
+    UInt32('tag_index'),
     )
 
-zone_asset_struct = ZoneAsset("zone asset",
+zone_asset_struct = ZoneAsset("zone_asset",
     UInt16("salt"),
     UInt16("idx"),
     UInt32("unused", VISIBLE=False),
     )
 
-extra_layers_block = dependency("extra layer", valid_shaders)
+extra_layers_block = dependency("extra_layer", valid_shaders)
 
-damage_modifiers = QStruct("damage modifiers",
+damage_modifiers = QStruct("damage_modifiers",
     *(float_zero_to_inf(material_name) for material_name in materials_list)
     )
 
@@ -740,27 +745,16 @@ uv_float = QStruct('uv_float',
 #############################
 # Open Sauce related things #
 #############################
-def tag_class_os(*args):
+def tag_class_os(*args, **kwargs):
     '''
     A macro for creating an Open Sauce tag_class enum desc
     with the enumerations set to the provided tag_class fcc's.
     '''
-    default = 0xffffffff
-    classes = []
-    for four_cc in args:
-        classes.append((tag_class_fcc_to_ext_os[four_cc], four_cc))
-
-    if len(classes) == 1:
-        default = classes[0][1]
-
-    return UEnum32(
-        'tag_class',
-        *(tuple(classes) + (("NONE", 0xffffffff),) ),
-        DEFAULT=0xffffffff, GUI_NAME=''
-        )
+    kwargs["class_mapping"] = tag_class_fcc_to_ext_os
+    return tag_class(*args, **kwargs)
 
 
-def dependency_os(name='tag ref', valid_ids=None, **kwargs):
+def dependency_os(name='tag_ref', valid_ids=None, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
         valid_ids = tag_class_os(*valid_ids)
@@ -791,7 +785,7 @@ def blam_header_os(tagid, version=1):
 valid_tags_os = tag_class_os(*sorted(tag_class_fcc_to_ext_os.keys()))
 
 # i'm so cheeky, look at me abusing Courier New
-blam_engine_id = UEnum32("engine id",
+blam_engine_id = UEnum32("engine_id",
     ("halo_1", 'blam'),
     ("halo_2", 'b2am'),
     ("halo_3", 'b3am'),
@@ -805,15 +799,15 @@ blam_engine_id = UEnum32("engine id",
     )
 
 # Descriptors
-tag_header_os = Struct("blam header",
+tag_header_os = Struct("blam_header",
     Pad(36),
     UEnum32("tag_class",
-        GUI_NAME="tag class", INCLUDE=valid_tags_os, EDITABLE=False
+        GUI_NAME="tag_class", INCLUDE=valid_tags_os, EDITABLE=False
         ),
     UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False), 
-    UInt32("header size", DEFAULT=64, EDITABLE=False),
+    UInt32("header_size", DEFAULT=64, EDITABLE=False),
     Bool64("flags",
-        "edited with mozz",
+        "edited_with_mozz",
         EDITABLE=False
         ),
     UInt16("version", DEFAULT=1, EDITABLE=False),
@@ -825,12 +819,33 @@ tag_header_os = Struct("blam header",
 
 valid_model_animations_yelo = tag_class_os('antr', 'magy')
 
-os_shader_extension = Struct("os shader extension",
+os_shader_extension = Struct("os_shader_extension",
     Pad(4),
-    QStruct("fade controls",
-        Float("depth fade distance"),
-        Float("camera fade distance"),
+    QStruct("fade_controls",
+        Float("depth_fade_distance"),
+        Float("camera_fade_distance"),
         COMMENT="Controls the softness of an effect"
         ),
     SIZE=48
     )
+
+
+def make_dependency_block(class_name="NONE", tag_id=0xFFffFFff,
+                          tag_path="", tag_path_pointer=0xFFffFFff,
+                          block_def=BlockDef(dependency())):
+    block = block_def.build()
+    try:
+        block.tag_class.set_to(class_name)
+    except Exception:
+        pass
+    block.id = tag_id & 0xFFffFFff
+    block.path_pointer = tag_path_pointer & 0xFFffFFff
+    block.filepath = str(tag_path)
+    return block
+
+
+def make_dependency_os_block(class_name="NONE", tag_id=0xFFffFFff,
+                             tag_path="", tag_path_pointer=0xFFffFFff,
+                             block_def=BlockDef(dependency_os())):
+    return make_dependency_block(class_name, tag_id, tag_path,
+                                 tag_path_pointer, block_def)

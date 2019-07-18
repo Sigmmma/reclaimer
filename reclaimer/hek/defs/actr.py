@@ -1,13 +1,13 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.actr import ActrTag
 from supyr_struct.defs.tag_def import TagDef
 
 danger_triggers = (
     "never",
     "visible",
     "shooting",
-    "shooting near us",
-    "damaging us",
+    "shooting_near_us",
+    "damaging_us",
     "unused1",
     "unused2",
     "unused3",
@@ -17,47 +17,47 @@ danger_triggers = (
 
 actr_body = Struct("tagdata",
     Bool32('flags',
-        "can see in darkness",
-        "sneak uncovering target",
-        "sneak uncovering pursuit location",
+        "can_see_in_darkness",
+        "sneak_uncovering_target",
+        "sneak_uncovering_pursuit_location",
         "unused1",
-        "shoot at targets last location",
-        "try to stay still when crouched",
-        "crouch when not in combat",
-        "crouch when guarding",
+        "shoot_at_targets_last_location",
+        "try_to_stay_still_when_crouched",
+        "crouch_when_not_in_combat",
+        "crouch_when_guarding",
         "unused2",
-        "must crouch to shoot",
-        "panic when surprised",
-        "always charge at enemies",
-        "gets in vehicles with player",
-        "starts firing before aligned",
-        "standing must move forward",
-        "crouching must move forward",
-        "defensive crouch while charging",
-        "use stalking behavior",
-        "stalking freeze if exposed",
-        "always berserk in attacking mode",
-        "berserking uses panicked movement",
+        "must_crouch_to_shoot",
+        "panic_when_surprised",
+        "always_charge_at_enemies",
+        "gets_in_vehicles_with_player",
+        "starts_firing_before_aligned",
+        "standing_must_move_forward",
+        "crouching_must_move_forward",
+        "defensive_crouch_while_charging",
+        "use_stalking_behavior",
+        "stalking_freeze_if_exposed",
+        "always_berserk_in_attacking_mode",
+        "berserking_uses_panicked_movement",
         "flying",
-        "panicked by unopposable enemy",
-        "crouch when hiding from unopposable",
-        "always charge in attacking mode",
-        "dive off ledges",
+        "panicked_by_unopposable_enemy",
+        "crouch_when_hiding_from_unopposable",
+        "always_charge_in_attacking_mode",
+        "dive_off_ledges",
         "swarm",
-        "suicidal melee attack",
-        "cannot move while crouching",
-        "fixed crouch facing",
-        "crouch when in line of fire",
-        "avoid friends line of fire"
+        "suicidal_melee_attack",
+        "cannot_move_while_crouching",
+        "fixed_crouch_facing",
+        "crouch_when_in_line_of_fire",
+        "avoid_friends_line_of_fire"
         ),
-    Bool32('more flags',
-        "avoid all enemy attack vectors",
-        "must stand to fire",
-        "must stop to fire",
-        "disallow vehicle combat",
-        "pathfinding ignores danger",
-        "panic in groups",
-        "no corpse shooting"
+    Bool32('more_flags',
+        "avoid_all_enemy_attack_vectors",
+        "must_stand_to_fire",
+        "must_stop_to_fire",
+        "disallow_vehicle_combat",
+        "pathfinding_ignores_danger",
+        "panic_in_groups",
+        "no_corpse_shooting"
         ),
 
     Pad(12),
@@ -65,177 +65,186 @@ actr_body = Struct("tagdata",
 
     Pad(2),
     Struct("perception",
-        float_wu("max vision distance"),  # world units
-        float_rad("central vision angle"),  # radians
-        float_rad("max vision angle"),  # radians
+        float_wu("max_vision_distance"),  # world units
+        float_rad("central_vision_angle"),  # radians
+        float_rad("max_vision_angle"),  # radians
 
         Pad(4),
-        float_rad("peripheral vision angle"),  # radians
-        float_wu("peripheral distance"),  # world units
+        float_rad("peripheral_vision_angle"),  # radians
+        float_wu("peripheral_distance"),  # world units
 
         Pad(4),
-        QStruct("standing gun offset", INCLUDE=ijk_float),
-        QStruct("crouching gun offset", INCLUDE=ijk_float),
-        float_wu("hearing distance"),  # world units
-        float_zero_to_one("notice projectile chance"),
-        float_zero_to_one("notice vehicle chance"),
+        QStruct("standing_gun_offset", INCLUDE=ijk_float),
+        QStruct("crouching_gun_offset", INCLUDE=ijk_float),
+        float_wu("hearing_distance"),  # world units
+        float_zero_to_one("notice_projectile_chance"),
+        float_zero_to_one("notice_vehicle_chance"),
 
         Pad(8),
-        float_sec("combat perception time",
+        float_sec("combat_perception_time",
                   UNIT_SCALE=sec_unit_scale),  # seconds
-        float_sec("guard perception time",
+        float_sec("guard_perception_time",
                   UNIT_SCALE=sec_unit_scale),  # seconds
-        float_sec("non-combat perception time",
+        float_sec("non_combat_perception_time",
                   UNIT_SCALE=sec_unit_scale),  # seconds
+
+        float_sec("inv_combat_perception_time",
+                  UNIT_SCALE=sec_unit_scale, VISIBLE=False),
+        float_sec("inv_guard_perception_time",
+                  UNIT_SCALE=sec_unit_scale, VISIBLE=False),
+        float_sec("inv_non_combat_perception_time",
+                  UNIT_SCALE=sec_unit_scale, VISIBLE=False),
         ),
 
-    Pad(20),
+    Pad(8),
     Struct("movement",
-        float_zero_to_one("dive into cover chance"),
-        float_zero_to_one("emerge from cover chance"),
-        float_zero_to_one("dive from grenade cover chance"),
-        float_wu("pathfinding radius"),  # world units
-        float_zero_to_one("glass ignorance chance"),
-        float_wu("stationary movement dist"),  # world units
-        float_wu("free-flying sidestep"),  # world units
-        float_rad("begin moving angle"),  # radians
+        float_zero_to_one("dive_into_cover_chance"),
+        float_zero_to_one("emerge_from_cover_chance"),
+        float_zero_to_one("dive_from_grenade_cover_chance"),
+        float_wu("pathfinding_radius"),  # world units
+        float_zero_to_one("glass_ignorance_chance"),
+        float_wu("stationary_movement_dist"),  # world units
+        float_wu("free_flying_sidestep"),  # world units
+        float_rad("begin_moving_angle"),  # radians
         ),
 
     Pad(4),
     Struct("looking",
-        yp_float_rad("maximum aiming deviation"),  # radians
-        yp_float_rad("maximum looking deviation"),  # radians
-        float_rad("noncombat look delta l"),  # radians
-        float_rad("noncombat look delta r"),  # radians
-        float_rad("combat look delta l"),  # radians
-        float_rad("combat look delta r"),  # radians
-        from_to_rad("idle aiming range"),  # radians
-        from_to_rad("idle looking range"),  # radians
-        QStruct("event look time modifier", INCLUDE=from_to),
-        from_to_sec("noncombat idle facing"),  # seconds
-        from_to_sec("noncombat idle aiming"),  # seconds
-        from_to_sec("noncombat idle looking"),  # seconds
-        from_to_sec("guard idle facing"),  # seconds
-        from_to_sec("guard idle aiming"),  # seconds
-        from_to_sec("guard idle looking"),  # seconds
-        from_to_sec("combat idle facing"),  # seconds
-        from_to_sec("combat idle aiming"),  # seconds
-        from_to_sec("combat idle looking"),  # seconds
+        yp_float_rad("maximum_aiming_deviation"),  # radians
+        yp_float_rad("maximum_looking_deviation"),  # radians
+        float_rad("noncombat_look_delta_l"),  # radians
+        float_rad("noncombat_look_delta_r"),  # radians
+        float_rad("combat_look_delta_l"),  # radians
+        float_rad("combat_look_delta_r"),  # radians
+        from_to_rad("idle_aiming_range"),  # radians
+        from_to_rad("idle_looking_range"),  # radians
+        QStruct("event_look_time_modifier", INCLUDE=from_to),
+        from_to_sec("noncombat_idle_facing"),  # seconds
+        from_to_sec("noncombat_idle_aiming"),  # seconds
+        from_to_sec("noncombat_idle_looking"),  # seconds
+        from_to_sec("guard_idle_facing"),  # seconds
+        from_to_sec("guard_idle_aiming"),  # seconds
+        from_to_sec("guard_idle_looking"),  # seconds
+        from_to_sec("combat_idle_facing"),  # seconds
+        from_to_sec("combat_idle_aiming"),  # seconds
+        from_to_sec("combat_idle_looking"),  # seconds
+        Pad(8),
+        from_to_neg_one_to_one("cosine_maximum_aiming_deviation", VISIBLE=False),
+        from_to_neg_one_to_one("cosine_maximum_looking_deviation", VISIBLE=False),
 
-        Pad(24),
-        dependency("DO NOT USE 1", "weap"),
+        dependency("DO_NOT_USE_1", "weap"),
 
         Pad(268),
-        dependency("DO NOT USE 2", "proj")
+        dependency("DO_NOT_USE_2", "proj")
         ),
 
     Struct("unopposable",
-        SEnum16("unreachable danger trigger", *danger_triggers),
-        SEnum16("vehicle danger trigger", *danger_triggers),
-        SEnum16("player danger trigger", *danger_triggers),
+        SEnum16("unreachable_danger_trigger", *danger_triggers),
+        SEnum16("vehicle_danger_trigger", *danger_triggers),
+        SEnum16("player_danger_trigger", *danger_triggers),
 
         Pad(2),
-        from_to_sec("danger trigger time"),  # seconds
-        SInt16("friends killed trigger"),
-        SInt16("friends retreating trigger"),
+        from_to_sec("danger_trigger_time"),  # seconds
+        SInt16("friends_killed_trigger"),
+        SInt16("friends_retreating_trigger"),
 
         Pad(12),
-        from_to_sec("retreat time"),  # seconds
+        from_to_sec("retreat_time"),  # seconds
         ),
 
     Pad(8),
     Struct("panic",
-        from_to_sec("cowering time"),  # seconds
-        float_zero_to_one("friend killed panic chance"),
-        SEnum16("leader type", *actor_types),
+        from_to_sec("cowering_time"),  # seconds
+        float_zero_to_one("friend_killed_panic_chance"),
+        SEnum16("leader_type", *actor_types),
 
         Pad(2),
-        float_zero_to_one("leader killed panic chance"),
-        float_zero_to_one("panic damage threshold"),
-        float_wu("surprise distance"),  # world units
+        float_zero_to_one("leader_killed_panic_chance"),
+        float_zero_to_one("panic_damage_threshold"),
+        float_wu("surprise_distance"),  # world units
         ),
 
     Pad(28),
     Struct("defensive",
-        from_to_sec("hide behind cover time"),  # seconds
-        float_sec("hide target-not-visible time",
+        from_to_sec("hide_behind_cover_time"),  # seconds
+        float_sec("hide_target_not_visible_time",
                   UNIT_SCALE=sec_unit_scale),  # seconds
-        float_zero_to_one("hide shield fraction"),
-        float_zero_to_one("attack shield fraction"),
-        float_zero_to_one("pursue shield fraction"),
+        float_zero_to_one("hide_shield_fraction"),
+        float_zero_to_one("attack_shield_fraction"),
+        float_zero_to_one("pursue_shield_fraction"),
 
         Pad(16),
-        SEnum16("defensive crouch type",
+        SEnum16("defensive_crouch_type",
             "never",
             "danger",
-            "low shields",
-            "hide behind shield",
-            "any target",
-            "flood shamble"
+            "low_shields",
+            "hide_behind_shield",
+            "any_target",
+            "flood_shamble"
             ),
 
         Pad(2),
-        Float("attacking crouch threshold"),
-        Float("defending crouch threshold"),
-        float_sec("mim stand time",  UNIT_SCALE=sec_unit_scale),  # seconds
-        float_sec("mim crouch time", UNIT_SCALE=sec_unit_scale),  # seconds
-        Float("defending hide time modifier"),
-        Float("attacking evasion threshold"),
-        Float("defending evasion threshold"),
-        float_zero_to_one("evasion seek-cover chance"),
-        float_sec("evasion delay time", UNIT_SCALE=sec_unit_scale),  # seconds
-        float_wu("max seek cover distance"),  # world units
-        float_zero_to_one("cover damage threshold"),
-        float_sec("stalking discovery time",
+        Float("attacking_crouch_threshold"),
+        Float("defending_crouch_threshold"),
+        float_sec("mim_stand_time",  UNIT_SCALE=sec_unit_scale),  # seconds
+        float_sec("mim_crouch_time", UNIT_SCALE=sec_unit_scale),  # seconds
+        Float("defending_hide_time_modifier"),
+        Float("attacking_evasion_threshold"),
+        Float("defending_evasion_threshold"),
+        float_zero_to_one("evasion_seek_cover_chance"),
+        float_sec("evasion_delay_time", UNIT_SCALE=sec_unit_scale),  # seconds
+        float_wu("max_seek_cover_distance"),  # world units
+        float_zero_to_one("cover_damage_threshold"),
+        float_sec("stalking_discovery_time",
                   UNIT_SCALE=sec_unit_scale),  # seconds
-        float_wu("stalking max distance"),  # world units
-        float_rad("stationary facing angle"),  # radians
-        float_sec("change facing stand time",
+        float_wu("stalking_max_distance"),  # world units
+        float_rad("stationary_facing_angle"),  # radians
+        float_sec("change_facing_stand_time",
                   UNIT_SCALE=sec_unit_scale),  # seconds
         ),
 
     Pad(4),
     Struct("pursuit",
-        from_to_sec("uncover delay time"),  # seconds
-        from_to_sec("target search time"),  # seconds
-        from_to_sec("pursuit position time"),  # seconds
-        SInt16("coordinated position count", MIN=0),
-        SInt16("normal position count", MIN=0),
+        from_to_sec("uncover_delay_time"),  # seconds
+        from_to_sec("target_search_time"),  # seconds
+        from_to_sec("pursuit_position_time"),  # seconds
+        SInt16("coordinated_position_count", MIN=0),
+        SInt16("normal_position_count", MIN=0),
         ),
 
     Pad(32),
     QStruct("berserk",
-        float_sec("melee attack delay", UNIT_SCALE=sec_unit_scale),  # seconds
-        float_wu("melee fudge factor"),  # world units
-        float_sec("melee charge time",  UNIT_SCALE=sec_unit_scale),  # seconds
-        float_wu("melee leap range lower bound"),  # world units
-        float_wu("melee leap range upper bound"),  # world units
-        Float("melee leap velocity", SIDETIP="world units/tick",
+        float_sec("melee_attack_delay", UNIT_SCALE=sec_unit_scale),  # seconds
+        float_wu("melee_fudge_factor"),  # world units
+        float_sec("melee_charge_time",  UNIT_SCALE=sec_unit_scale),  # seconds
+        float_wu("melee_leap_range_lower_bound"),  # world units
+        float_wu("melee_leap_range_upper_bound"),  # world units
+        Float("melee_leap_velocity", SIDETIP="world units/tick",
                UNIT_SCALE=per_sec_unit_scale),  # world units/tick
-        float_zero_to_one("melee leap chance"),
-        float_zero_to_one("melee leap ballistic"),
-        float_zero_to_one("berserk damage amount"),
-        float_zero_to_one("berserk damage threshold"),
-        float_wu("berserk proximity"),  # world units
-        float_wu("suicide sensing dist"),  # world units
-        float_zero_to_one("berserk grenade chance"),
+        float_zero_to_one("melee_leap_chance"),
+        float_zero_to_one("melee_leap_ballistic"),
+        float_zero_to_one("berserk_damage_amount"),
+        float_zero_to_one("berserk_damage_threshold"),
+        float_wu("berserk_proximity"),  # world units
+        float_wu("suicide_sensing_dist"),  # world units
+        float_zero_to_one("berserk_grenade_chance"),
         ),
 
     Pad(12),
-    Struct("firing positions",
-        from_to_sec("guard position time"),  # seconds
-        from_to_sec("combat position time"),  # seconds
-        Float("old position avoid dist"),  # world units
-        Float("friend avoid dist"),  # world units
+    Struct("firing_positions",
+        from_to_sec("guard_position_time"),  # seconds
+        from_to_sec("combat_position_time"),  # seconds
+        Float("old_position_avoid_dist"),  # world units
+        Float("friend_avoid_dist"),  # world units
         ),
 
     Pad(40),
     Struct("communication",
-        from_to_sec("noncombat idle speech time"),  # seconds
-        from_to_sec("combat idle speech time"),  # seconds
+        from_to_sec("noncombat_idle_speech_time"),  # seconds
+        from_to_sec("combat_idle_speech_time"),  # seconds
 
         Pad(176),
-        dependency("DO NOT USE 3", "actr"),
+        dependency("DO_NOT_USE_3", "actr"),
         ),
     SIZE=1272
     )
@@ -248,5 +257,5 @@ actr_def = TagDef("actr",
     blam_header('actr', 2),
     actr_body,
 
-    ext=".actor", endian=">", tag_cls=HekTag
+    ext=".actor", endian=">", tag_cls=ActrTag
     )

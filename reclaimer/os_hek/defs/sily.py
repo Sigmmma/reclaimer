@@ -2,20 +2,20 @@ from ...common_descs import *
 from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
-text_value_pair = Struct("text value pair",
+text_value_pair = Struct("text_value_pair",
     Bool8("flags",
-        "default setting",
-        "unchanged setting",
+        "default_setting",
+        "unchanged_setting",
         ),
     Pad(3),
 
     SInt32("integer"),
     Float("real"),
-    dependency_os("string id", "sidy"),
+    dependency_os("string_id", "sidy"),
     Pad(4),
-    dependency_os("label string id", "sidy"),
+    dependency_os("label_string_id", "sidy"),
     Pad(4),
-    dependency_os("description string id", "sidy"),
+    dependency_os("description_string_id", "sidy"),
 
     SIZE=72
     )
@@ -23,20 +23,20 @@ text_value_pair = Struct("text value pair",
 sily_body = Struct("tagdata",
     dependency_os("parameter", "sidy"),
     Pad(4),
-    dependency_os("title text", "sidy"),
+    dependency_os("title_text", "sidy"),
     Pad(4),
-    dependency_os("description text", "sidy"),
+    dependency_os("description_text", "sidy"),
 
     Pad(4),
     SEnum16("type",
         "integer",
-        "string id",
+        "string_id",
         "unused",
         "real",
         ),
 
     Pad(2),
-    reflexive("text value pairs", text_value_pair, 32),
+    reflexive("text_value_pairs", text_value_pair, 32),
     SIZE=76
     )
 

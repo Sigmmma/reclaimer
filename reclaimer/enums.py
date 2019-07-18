@@ -55,20 +55,35 @@ material_effect_types = (
     "vehicle_unused1",
     "vehicle_unused2"
     )
+shader_types = (
+    "shdr",  # Shader
+    "unused0",
+    "unused1",
+    "unused2",
+    "senv",  # shader_environment
+    "soso",  # shader_model
+    "sotr",  # shader_transparent_generic
+    "schi",  # shader_transparent_chicago
+    "scex",  # shader_transparent_chicago_extended
+    "swat",  # shader_water
+    "sgla",  # shader_glass
+    "smet",  # shader_meter
+    "spla",  # shader_plasma
+    )
 object_types = (
-    "obje",
-    "bipd",
-    "vehi",
-    "weap",
-    "eqip",
-    "garb",
-    "proj",
-    "scen",
-    "mach",
-    "ctrl",
-    "lifi",
-    "plac",
-    "ssce",
+    "obje",  # object
+    "bipd",  # biped
+    "vehi",  # vehicle
+    "weap",  # weapon
+    "eqip",  # equipment
+    "garb",  # garbage
+    "proj",  # projectile
+    "scen",  # scenery
+    "mach",  # device_machine
+    "ctrl",  # device_control
+    "lifi",  # device_light_fixture
+    "plac",  # placeholder
+    "ssce",  # sound_scenery
     )
 actor_types = (
     "elite",
@@ -308,10 +323,10 @@ script_object_types = (
 # uses these strings to reconstruct scripts
 
     "string",
-    # lower 16bits of data points to entry in scripts
+    # lower 16bits of data points to an entry in scripts
     "script", # 10
 
-    # lower 16bits of data points to entry in their
+    # lower 16bits of data points to an entry in their
     # respectively named arrays in the scenario. also,
     # cutscene_recording refers to recorded_animations.
     "trigger_volume",
@@ -320,9 +335,9 @@ script_object_types = (
     "cutscene_title",
     "cutscene_recording", # 15
 
-    # lower 16bits of data points to entry in device groups
+    # lower 16bits of data points to an entry in device groups
     "device_group",
-    # lower 16bits of data points to entry in
+    # lower 16bits of data points to an entry in
     # encounters array, next 8bits points to entry
     # in squad array, and upper 8bits seem to be flags,
     # with the 8th bit signifying whether or not to
@@ -361,7 +376,7 @@ script_object_types = (
     "hud_corner", # 36
 
     # lower 16bits of data in all of these
-    # points to entry in object names array
+    # points to an entry in object names array
     "object",
     "unit",
     "vehicle",
@@ -370,7 +385,7 @@ script_object_types = (
     "scenery", # 42
 
     # lower 16bits of data in all of these
-    # points to entry in object names array
+    # points to an entry in object names array
     "object_name",
     "unit_name",
     "vehicle_name",
@@ -1139,6 +1154,11 @@ detail_mask = (
     "auxiliary_mask_inverse",
     "auxiliary_mask"
     )
+
+# DO NOT RENAME THESE OPTIONS.
+# animation extraction/compilation depends on
+# the anim_types and anim_frame_info_types
+# options being named exactly like this
 anim_types = (
     "base",
     "overlay",
@@ -1146,11 +1166,71 @@ anim_types = (
     )
 anim_frame_info_types = (
     "none",
-    "dx,dy",
-    "dx,dy,dyaw",
-    "dx,dy,dz,dyaw",
+    "dx_dy",
+    "dx_dy_dyaw",
+    "dx_dy_dz_dyaw",
     )
+unit_animation_names = (
+    'airborne-dead', 'landing-dead',
+    'acc-front-back', 'acc-left-right', 'acc-up-down',
+    'push', 'twist', 'enter', 'exit', 'look', 'talk', 'emotions', 'unused0',
+    'user0', 'user1', 'user2', 'user3', 'user4',
+    'user5', 'user6', 'user7', 'user8', 'user9',
+    'flying-front', 'flying-back', 'flying-left', 'flying-right',
+    'opening', 'closing', 'hovering'
+    )
+unit_weapon_animation_names = (
+    'idle', 'gesture', 'turn-left', 'turn-right',
+    'dive-front', 'dive-back', 'dive-left', 'dive-right',
+    'move-front', 'move-back', 'move-left', 'move-right',
+    'slide-front', 'slide-back', 'slide-left', 'slide-right',
+    'airborne', 'land-soft', 'land-hard', 'unused0', 'throw-grenade',
+    'disarm', 'drop', 'ready', 'put-away', 'aim-still', 'aim-move',
+    'surprise-front', 'surprise-back', 'berserk',
+    'evade-left', 'evade-right', 'signal-move', 'signal-attack', 'warn',
+    'stunned-front', 'stunned-back', 'stunned-left', 'stunned-right',
+    'melee', 'celebrate', 'panic', 'melee-airborne', 'flaming',
+    'resurrect-front', 'resurrect-back', 'melee-continuous',
+    'feeding', 'leap-start', 'leap-airborne', 'leap-melee',
+    'zapping', 'unused1', 'unused2', 'unused3'
+    )
+unit_weapon_type_animation_names = (
+    'reload-1', 'reload-2', 'chamber-1', 'chamber-2',
+    'fire-1', 'fire-2', 'charged-1', 'charged-2',
+    'melee', 'overheat'
+    )
+vehicle_animation_names = (
+    'steering', 'roll', 'throttle', 'velocity',
+    'braking', 'ground-speed', 'occupied', 'unoccupied'
+    )
+weapon_animation_names = (
+    'idle', 'ready', 'put-away',
+    'reload-1', 'reload-2', 'chamber-1', 'chamber-2',
+    'charged-1', 'charged-2', 'fire-1', 'fire-2'
+    )
+device_animation_names = (
+    'position','power'
+    )
+fp_animation_names = (
+    'idle', 'posing', 'fire-1',
+    'moving', 'overlays', 'light-off', 'light-on',
+    'reload-empty', 'reload-full', 'overheated', 'ready', 'put-away',
+    'overcharged', 'melee', 'fire-2', 'overcharged-jitter',
+    'throw-grenade', 'ammunition', 'misfire-1', 'misfire-2',
+    'throw-overheated', 'overheating', 'overheating-again',
+    'enter', 'exit-empty', 'exit-full', 'o-h-exit', 'o-h-s-enter'
+    )
+unit_damage_animation_names = []
+for typ in ("s-ping", "h-ping", "s-kill", "h-kill"):
+    for side in ("front", "left", "right", "back"):
+        for reg in ("gut", "chest", "head",
+                    "l-arm", "l-hand", "l-leg", "l-foot",
+                    "r-arm", "r-hand", "r-leg", "r-foot"):
+            unit_damage_animation_names.append("%s %s %s" % (typ, side, reg))
 
+del typ
+del side
+del reg
 
 # ########################################################################
 # The element order in all the enumerators is important(DONT SHUFFLE THEM)
@@ -1158,23 +1238,23 @@ anim_frame_info_types = (
 
 #Shared Enumerator options
 grenade_types_os = (
-    'human frag',
-    'covenant plasma',
-    'custom 2',
-    'custom 3',
+    'human_frag',
+    'covenant_plasma',
+    'custom_2',
+    'custom_3',
     )
 
 actor_states = (
     'none',
     'sleeping',
     'alert',
-    'moving repeat same position',
-    'moving loop',
-    'moving loop back and forth',
-    'moving loop randomly',
-    'moving randomly',
+    'moving_repeat_same_position',
+    'moving_loop',
+    'moving_loop_back_and_forth',
+    'moving_loop_randomly',
+    'moving_randomly',
     'guarding',
-    'guarding at guard position',
+    'guarding_at_guard_position',
     'searching',
     'fleeing'
     )

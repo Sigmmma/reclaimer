@@ -1,58 +1,58 @@
 from .shdr import *
-from .objs.tag import HekTag
+from .objs.shdr import ShdrTag
 from supyr_struct.defs.tag_def import TagDef
 
-sgla_attrs = Struct("sgla attrs",
-    #Environment Shader Properties
-    Bool16("glass shader flags",
-        "alpha tested",
+sgla_attrs = Struct("sgla_attrs",
+    #Glass Shader Properties
+    Bool16("glass_shader_flags",
+        "alpha_tested",
         "decal",
-        "two-sided",
-        "bump map is specular mask",
+        "two_sided",
+        "bump_map_is_specular_mask",
         ),
 
     Pad(42),
     #Background Tint Properties
-    Struct("background tint properties",
+    Struct("background_tint_properties",
         QStruct("color", INCLUDE=rgb_float),
-        Float("map scale"),
+        Float("map_scale"),
         dependency("map", "bitm"),
         ),
 
     Pad(22),
     #Reflection Properties
-    Struct("reflection properties",
+    Struct("reflection_properties",
         SEnum16("type",
-            "bumped cubemap",
-            "flat cubemap",
-            "dynamic mirror",
+            "bumped_cubemap",
+            "flat_cubemap",
+            "dynamic_mirror",
             ),
-        float_zero_to_one("perpendicular brightness"),  # [0,1]
-        QStruct("perpendicular tint color", INCLUDE=rgb_float),
-        float_zero_to_one("parallel brightness"),  # [0,1]
-        QStruct("parallel tint color", INCLUDE=rgb_float),
+        float_zero_to_one("perpendicular_brightness"),  # [0,1]
+        QStruct("perpendicular_tint_color", INCLUDE=rgb_float),
+        float_zero_to_one("parallel_brightness"),  # [0,1]
+        QStruct("parallel_tint_color", INCLUDE=rgb_float),
         dependency("map", "bitm"),
 
-        Float("bump map scale"),
-        dependency("bump map", "bitm"),
+        Float("bump_map_scale"),
+        dependency("bump_map", "bitm"),
         ),
 
     Pad(132),
     #Diffuse Properties
-    Struct("diffuse properties",
-        Float("map scale"),
+    Struct("diffuse_properties",
+        Float("map_scale"),
         dependency("map", "bitm"),
-        Float("detail map scale"),
-        dependency("detail map", "bitm"),
+        Float("detail_map_scale"),
+        dependency("detail_map", "bitm"),
         ),
 
     Pad(32),
     #Specular Properties
-    Struct("specular properties",
-        Float("map scale"),
+    Struct("specular_properties",
+        Float("map_scale"),
         dependency("map", "bitm"),
-        Float("detail map scale"),
-        dependency("detail map", "bitm"),
+        Float("detail_map_scale"),
+        dependency("detail_map", "bitm"),
         ),
     SIZE=440
     )
@@ -71,5 +71,5 @@ sgla_def = TagDef("sgla",
     blam_header('sgla'),
     sgla_body,
 
-    ext=".shader_transparent_glass", endian=">", tag_cls=HekTag
+    ext=".shader_transparent_glass", endian=">", tag_cls=ShdrTag
     )

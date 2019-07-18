@@ -1,15 +1,21 @@
 from copy import copy, deepcopy
 
 try:
-    from mozzarilla.field_widgets import *
+    from mozzarilla.field_widgets import ReflexiveFrame, HaloRawdataFrame,\
+         TextFrame, ColorPickerFrame, EntryFrame, SoundSampleFrame,\
+         DynamicArrayFrame, Halo2BitmapTagFrame
 except Exception:
     ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
                      EntryFrame = SoundSampleFrame = DynamicArrayFrame =\
-                     H2BitmapTagFrame = None
-from ..common_descs import *
-from .field_types import *
-from .constants import *
-from .enums import *
+                     Halo2BitmapTagFrame = None
+from reclaimer.common_descs import *
+from reclaimer.h2.constants import STEPTREE, DYN_NAME_PATH, NAME_MAP,\
+     COMMENT, TOOLTIP, WIDGET, MAX, MAX_REFLEXIVE_COUNT, VISIBLE, ORIENT,\
+     MAX_TAG_PATH_LEN, DEFAULT, h2_tag_class_fcc_to_ext
+from reclaimer.h2.field_types import *
+from reclaimer.h2.enums import *
+
+from supyr_struct.defs.block_def import BlockDef
 
 
 resource = Struct("resource",
@@ -38,15 +44,8 @@ def h2_tag_class(*args, **kwargs):
     A macro for creating a tag_class enum desc with the
     enumerations set to the provided tag_class fcc's.
     '''
-    classes = []
-    for four_cc in args:
-        classes.append((h2_tag_class_fcc_to_ext[four_cc], four_cc))
-
-    return UEnum32(
-        'tag_class',
-        *(tuple(sorted(classes)) + (("NONE", 0xffffffff),) ),
-        DEFAULT=0xffffffff, GUI_NAME='', WIDGET_WIDTH=20, **kwargs
-        )
+    kwargs["class_mapping"] = h2_tag_class_fcc_to_ext
+    return tag_class(*args, **kwargs)
 
 def h2_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     '''This function serves to macro the creation of a reflexive'''

@@ -1,7 +1,7 @@
 from struct import unpack
 
 from supyr_struct.defs.constants import *
-from supyr_struct.defs.util import fcc
+from supyr_struct.util import fourcc_to_int
 from binilla.constants import *
 
 # some reflexives are so massive that it's significantly faster to treat them
@@ -11,10 +11,12 @@ STRINGID_IDX_BITS = "STRINGID_IDX_BITS"
 STRINGID_SET_BITS = "STRINGID_SET_BITS"
 STRINGID_LEN_BITS = "STRINGID_LEN_BITS"
 COLOR_CHANNELS = "COLOR_CHANNELS"
+IGNORE_SAFE_MODE = "IGNORE_SAFE_MODE"
 
 def inject_halo_constants():
     # add the new descriptor keywords to the sets
     add_desc_keywords(RAW_REFLEXIVE_INFO, COLOR_CHANNELS,
+                      MAX, MIN, IGNORE_SAFE_MODE,
                       STRINGID_IDX_BITS, STRINGID_SET_BITS, STRINGID_LEN_BITS)
 
 
@@ -38,6 +40,7 @@ map_build_dates = {
     "halo1anni":       "01.00.01.0563",
     "halo1ce":         "01.00.00.0609",
     "halo1yelo":       "01.00.00.0609",
+    "halo1vap":        "01.00.00.0609",
     "halo1pc":         "01.00.00.0564",
     "halo2alpha":      "02.01.07.4998",
     "halo2beta":       "02.06.28.07902",
@@ -65,6 +68,7 @@ map_versions = {
     "halo1anni":       7,
     "halo1ce":         609,
     "halo1yelo":       609,
+    "halo1vap":        134,
     "halo2alpha":      7,
     "halo2beta":       8,
     "halo2epsilon":    8,
@@ -81,7 +85,7 @@ map_versions = {
     }
 
 GEN_1_HALO_ENGINES = ("halo1xboxdemo", "halo1xbox",
-                      "halo1ce", "halo1yelo",
+                      "halo1ce", "halo1vap", "halo1yelo",
                       "halo1pcdemo", "halo1pc", "halo1anni", )
 
 GEN_1_ENGINES = GEN_1_HALO_ENGINES + (
@@ -108,6 +112,7 @@ map_magics = {
     "halo1anni":       ANNIVERSARY_INDEX_MAGIC,
     "halo1ce":         CE_INDEX_MAGIC,
     "halo1yelo":       CE_INDEX_MAGIC,
+    "halo1vap":        CE_INDEX_MAGIC,
     "halo2alpha":      H2_XBOX_INDEX_MAGIC,
     "halo2beta":       H2_XBOX_INDEX_MAGIC,
     "halo2epsilon":    H2_XBOX_INDEX_MAGIC,
@@ -287,19 +292,16 @@ tag_class_ext_to_fcc = {}
 
 for tag_cls in tag_class_fcc_to_ext:
     tag_class_ext_to_fcc[tag_class_fcc_to_ext[tag_cls]] = tag_cls
-    tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls, 'big')
-    tag_class_be_int_to_fcc[fcc(tag_cls, 'big')] = tag_cls
-    tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
-    tag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls
+    tag_class_fcc_to_be_int[tag_cls] = fourcc_to_int(tag_cls, 'big')
+    tag_class_be_int_to_fcc[fourcc_to_int(tag_cls, 'big')] = tag_cls
+    tag_class_fcc_to_le_int[tag_cls] = fourcc_to_int(tag_cls)
+    tag_class_le_int_to_fcc[fourcc_to_int(tag_cls)] = tag_cls
 
 
 ################################
 # Open Sauce related constants #
 ################################
 tag_class_fcc_to_ext_os = {
-    'avti': "actor_variant_transform_in",
-    'avto': "actor_variant_transform_out",
-    'avtc': "actor_variant_transform_collection",
     'efpp': "effect_postprocess",
     'efpc': "effect_postprocess_collection",
     'efpg': "effect_postprocess_generic",
@@ -308,13 +310,18 @@ tag_class_fcc_to_ext_os = {
     'unic': "multilingual_unicode_string_list",
     'yelo': "project_yellow",
     'gelo': "project_yellow_globals",
-    'gelc': "project_yellow_globals_cv",
+    'gelc': "project_yellow_globals_cv",  # removed in OS v4
     'shpp': "shader_postprocess",
     'shpg': "shader_postprocess_generic",
     'sppg': "shader_postprocess_globals",
     'sidy': "string_id_yelo",
     'tag+': "tag_database",
     'sily': "text_value_pair_definition",
+
+    # added in OS v4
+    'avti': "actor_variant_transform_in",
+    'avto': "actor_variant_transform_out",
+    'avtc': "actor_variant_transform_collection",
     }
 
 tag_class_fcc_to_ext_os.update(tag_class_fcc_to_ext)
@@ -333,10 +340,10 @@ tag_class_be_int_to_fcc_os = {}
 tag_class_le_int_to_fcc_os = {}
 
 for tag_cls in tag_class_fcc_to_ext_os:
-    tag_class_fcc_to_be_int_os[tag_cls] = fcc(tag_cls, 'big')
-    tag_class_be_int_to_fcc_os[fcc(tag_cls, 'big')] = tag_cls
-    tag_class_fcc_to_le_int_os[tag_cls] = fcc(tag_cls)
-    tag_class_le_int_to_fcc_os[fcc(tag_cls)] = tag_cls
+    tag_class_fcc_to_be_int_os[tag_cls] = fourcc_to_int(tag_cls, 'big')
+    tag_class_be_int_to_fcc_os[fourcc_to_int(tag_cls, 'big')] = tag_cls
+    tag_class_fcc_to_le_int_os[tag_cls] = fourcc_to_int(tag_cls)
+    tag_class_le_int_to_fcc_os[fourcc_to_int(tag_cls)] = tag_cls
 
 
 
@@ -365,8 +372,8 @@ tag_class_be_int_to_fcc_stubbs = {}
 tag_class_le_int_to_fcc_stubbs = {}
 
 for tag_cls in tag_class_fcc_to_ext_stubbs:
-    tag_class_fcc_to_be_int_stubbs[tag_cls] = fcc(tag_cls, 'big')
-    tag_class_be_int_to_fcc_stubbs[fcc(tag_cls, 'big')] = tag_cls
-    tag_class_fcc_to_le_int_stubbs[tag_cls] = fcc(tag_cls)
-    tag_class_le_int_to_fcc_stubbs[fcc(tag_cls)] = tag_cls
+    tag_class_fcc_to_be_int_stubbs[tag_cls] = fourcc_to_int(tag_cls, 'big')
+    tag_class_be_int_to_fcc_stubbs[fourcc_to_int(tag_cls, 'big')] = tag_cls
+    tag_class_fcc_to_le_int_stubbs[tag_cls] = fourcc_to_int(tag_cls)
+    tag_class_le_int_to_fcc_stubbs[fourcc_to_int(tag_cls)] = tag_cls
 

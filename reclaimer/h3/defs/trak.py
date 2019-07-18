@@ -17,7 +17,6 @@ from supyr_struct.defs.tag_def import TagDef
 trak_camera_point = Struct("camera_point", 
     QStruct("position", INCLUDE=ijk_float, VISIBLE=False),
     QStruct("orientation", INCLUDE=ijkw_float, VISIBLE=False),
-    VISIBLE=False,
     ENDIAN=">", SIZE=28
     )
 

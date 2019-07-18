@@ -1,14 +1,21 @@
 from copy import copy, deepcopy
 
 try:
-    from mozzarilla.field_widgets import *
+    from mozzarilla.widgets.field_widgets import ReflexiveFrame,\
+         HaloRawdataFrame, TextFrame, ColorPickerFrame, EntryFrame,\
+         SoundSampleFrame, DynamicArrayFrame, Halo3BitmapTagFrame
 except Exception:
     ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
-                     EntryFrame = SoundSampleFrame = DynamicArrayFrame = None
-from ..common_descs import *
-from .field_types import *
-from .constants import *
-from .enums import *
+                     EntryFrame = SoundSampleFrame = DynamicArrayFrame = \
+                     Halo3BitmapTagFrame = None
+from reclaimer.common_descs import *
+from reclaimer.h3.field_types import H3TagRef, H3Reflexive, H3RawdataRef
+from reclaimer.h3.constants import DYN_NAME_PATH, STEPTREE, NAME_MAP, WIDGET,\
+     TOOLTIP, COMMENT, MAX, DEFAULT, VISIBLE, SIZE, MAX_REFLEXIVE_COUNT,\
+     h3_tag_class_fcc_to_ext
+from reclaimer.h3.enums import *
+
+from supyr_struct.defs.block_def import BlockDef
 
 
 def h3_tag_class(*args, **kwargs):

@@ -5,9 +5,9 @@ from supyr_struct.defs.tag_def import TagDef
 def get():
     return mod2_def
 
-local_marker = Struct('local marker',
+local_marker = Struct('local_marker',
     ascii_str32("name"),
-    dyn_senum16('node index',
+    dyn_senum16('node_index',
         DYN_NAME_PATH="tagdata.nodes.nodes_array[DYN_I].name"),
     Pad(2),
 
@@ -16,21 +16,21 @@ local_marker = Struct('local marker',
     SIZE=80
     )
 
-fast_uncompressed_vertex = QStruct('uncompressed vertex',
-    Float('position x'), Float('position y'), Float('position z'),
-    Float('normal i'),   Float('normal j'),   Float('normal k'),
-    Float('binormal i'), Float('binormal j'), Float('binormal k'),
-    Float('tangent i'),  Float('tangent j'),  Float('tangent k'),
+fast_uncompressed_vertex = QStruct('uncompressed_vertex',
+    Float('position_x'), Float('position_y'), Float('position_z'),
+    Float('normal_i'),   Float('normal_j'),   Float('normal_k'),
+    Float('binormal_i'), Float('binormal_j'), Float('binormal_k'),
+    Float('tangent_i'),  Float('tangent_j'),  Float('tangent_k'),
 
     Float('u'), Float('v'),
 
-    SInt16('node 0 index'), SInt16('node 1 index'),
-    Float('node 0 weight'), Float('node 1 weight'),
+    SInt16('node_0_index'), SInt16('node_1_index'),
+    Float('node_0_weight'), Float('node_1_weight'),
     SIZE=68
     )
 
-fast_compressed_vertex = QStruct('compressed vertex',
-    Float('position x'), Float('position y'), Float('position z'),
+fast_compressed_vertex = QStruct('compressed_vertex',
+    Float('position_x'), Float('position_y'), Float('position_z'),
     UInt32('normal'),
     UInt32('binormal'),
     UInt32('tangent'),
@@ -38,13 +38,13 @@ fast_compressed_vertex = QStruct('compressed vertex',
     SInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
     SInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
 
-    SInt8('node 0 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
-    SInt8('node 1 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
-    SInt16('node 0 weight', UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
+    SInt8('node_0_index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
+    SInt8('node_1_index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
+    SInt16('node_0_weight', UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
     SIZE=32
     )
 
-uncompressed_vertex = Struct('uncompressed vertex',
+uncompressed_vertex = Struct('uncompressed_vertex',
     QStruct("position", INCLUDE=xyz_float),
     QStruct("normal", INCLUDE=ijk_float),
     QStruct("binormal", INCLUDE=ijk_float),
@@ -53,19 +53,18 @@ uncompressed_vertex = Struct('uncompressed vertex',
     Float('u'),
     Float('v'),
 
-    SInt16('node 0 index',
+    SInt16('node_0_index',
         TOOLTIP="If local nodes are used, this is a local index"),
-    SInt16('node 1 index',
+    SInt16('node_1_index',
         TOOLTIP="If local nodes are used, this is a local index"),
-    Float('node 0 weight'),
-    Float('node 1 weight'),
+    Float('node_0_weight'),
+    Float('node_1_weight'),
     SIZE=68
     )
 
-compressed_vertex = Struct('compressed vertex',
+compressed_vertex = Struct('compressed_vertex',
     QStruct("position", INCLUDE=xyz_float),
 
-    # These wont work in a QStruct, so make sure not to use them with it.
     BBitStruct('normal',   INCLUDE=compressed_normal_32, SIZE=4),
     BBitStruct('binormal', INCLUDE=compressed_normal_32, SIZE=4),
     BBitStruct('tangent',  INCLUDE=compressed_normal_32, SIZE=4),
@@ -73,22 +72,22 @@ compressed_vertex = Struct('compressed vertex',
     SInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
     SInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
 
-    SInt8('node 0 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
-    SInt8('node 1 index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
-    SInt16('node 0 weight', UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
+    SInt8('node_0_index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
+    SInt8('node_1_index', UNIT_SCALE=1/3, MIN=0, WIDGET_WIDTH=10),
+    SInt16('node_0_weight', UNIT_SCALE=1/32767, MIN=0, WIDGET_WIDTH=10),
     SIZE=32
     )
 
 triangle = QStruct('triangle',
-    SInt16('v0 index'), SInt16('v1 index'), SInt16('v2 index'),
+    SInt16('v0_index'), SInt16('v1_index'), SInt16('v2_index'),
     SIZE=6, ORIENT='h'
     )
 
-uncompressed_vertex_union = Union('uncompressed vertex',
+uncompressed_vertex_union = Union('uncompressed_vertex',
     CASES={'uncompressed_vertex': uncompressed_vertex},
     )
 
-compressed_vertex_union = Union('compressed vertex',
+compressed_vertex_union = Union('compressed_vertex',
     CASES={'compressed_vertex': compressed_vertex},
     )
 
@@ -97,11 +96,11 @@ triangle_union = Union('triangle',
     )
 
 
-marker_instance = Struct('marker instance',
-    dyn_senum8('region index',
+marker_instance = Struct('marker_instance',
+    dyn_senum8('region_index',
         DYN_NAME_PATH="tagdata.regions.regions_array[DYN_I].name"),
-    SInt8('permutation index', MIN=-1),
-    dyn_senum8('node index',
+    SInt8('permutation_index', MIN=-1),
+    dyn_senum8('node_index',
         DYN_NAME_PATH="tagdata.nodes.nodes_array[DYN_I].name"),
     Pad(1),
 
@@ -113,23 +112,32 @@ marker_instance = Struct('marker instance',
 permutation = Struct('permutation',
     ascii_str32("name"),
     Bool32('flags',
-        'cannot be chosen randomly'
+        'cannot_be_chosen_randomly'
         ),
-    Pad(28),
+    # permutations ending with -XXX where XXX is a number will belong to
+    # the permutation set XXX. Trailing non-numeric characters are ignored.
+    # Example:
+    #     head_marcus_cap-101asdf
+    #     Will have its permutation_set be set to 101
+    # For all parts of a permutation to be properly chosen across
+    # all regions, they must share a permutation set number.
+    # Anything not ending in -XXX will have this set to 0.
+    FlUInt16("permutation_set", VISIBLE=False),  # meta only field
+    Pad(26),
 
-    dyn_senum16('superlow geometry block',
+    dyn_senum16('superlow_geometry_block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
-    dyn_senum16('low geometry block',
+    dyn_senum16('low_geometry_block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
-    dyn_senum16('medium geometry block',
+    dyn_senum16('medium_geometry_block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
-    dyn_senum16('high geometry block',
+    dyn_senum16('high_geometry_block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
-    dyn_senum16('superhigh geometry block',
+    dyn_senum16('superhigh_geometry_block',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
     Pad(2),
 
-    reflexive("local markers", local_marker, 32, DYN_NAME_PATH=".name"),
+    reflexive("local_markers", local_marker, 32, DYN_NAME_PATH=".name"),
     SIZE=88
     )
 
@@ -138,52 +146,52 @@ part = Struct('part',
         'stripped',
         'ZONER',
         ),
-    dyn_senum16('shader index',
+    dyn_senum16('shader_index',
         DYN_NAME_PATH="tagdata.shaders.shaders_array[DYN_I].shader.filepath"),
-    SInt8('previous part index'),
-    SInt8('next part index'),
+    SInt8('previous_part_index'),
+    SInt8('next_part_index'),
 
-    SInt16('centroid primary node'),
-    SInt16('centroid secondary node'),
-    Float('centroid primary weight'),
-    Float('centroid secondary weight'),
+    SInt16('centroid_primary_node'),
+    SInt16('centroid_secondary_node'),
+    Float('centroid_primary_weight'),
+    Float('centroid_secondary_weight'),
 
-    QStruct('centroid translation', INCLUDE=xyz_float),
+    QStruct('centroid_translation', INCLUDE=xyz_float),
 
-    #reflexive("uncompressed vertices", uncompressed_vertex_union, 32767),
-    #reflexive("compressed vertices", compressed_vertex_union, 32767),
+    #reflexive("uncompressed_vertices", uncompressed_vertex_union, 32767),
+    #reflexive("compressed_vertices", compressed_vertex_union, 32767),
     #reflexive("triangles", triangle_union, 32767),
-    reflexive("uncompressed vertices", fast_uncompressed_vertex, 32767),
-    reflexive("compressed vertices", fast_compressed_vertex, 32767),
+    reflexive("uncompressed_vertices", fast_uncompressed_vertex, 32767),
+    reflexive("compressed_vertices", fast_compressed_vertex, 32767),
     reflexive("triangles", triangle, 32767),
     #Pad(36),
-    Struct("model meta info",
-        UEnum16("index type",  # name is a guess.  always 1?
+    Struct("model_meta_info",
+        UEnum16("index_type",  # name is a guess.  always 1?
             ("uncompressed", 1),
             ),
         Pad(2),
-        UInt32("index count"),
+        UInt32("index_count"),
         # THESE TWO VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
-        UInt32("indices magic offset"),
-        UInt32("indices offset"),
+        UInt32("indices_magic_offset"),
+        UInt32("indices_offset"),
 
-        UEnum16("vertex type",  # name is a guess
+        UEnum16("vertex_type",  # name is a guess
             ("uncompressed", 4),
             ("compressed",   5),
             ),
         Pad(2),
-        UInt32("vertex count"),
+        UInt32("vertex_count"),
         Pad(4),  # always 0?
         # THESE TWO VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
-        UInt32("vertices magic offset"),
-        UInt32("vertices offset"),
+        UInt32("vertices_magic_offset"),
+        UInt32("vertices_offset"),
         VISIBLE=False, SIZE=36
         ),
 
     Pad(3),
-    SInt8('local node count', MIN=0, MAX=22),
-    #UInt8Array('local nodes', SIZE=22),
-    Array("local nodes", SUB_STRUCT=UInt8("local node index"), SIZE=22),
+    SInt8('local_node_count', MIN=0, MAX=22),
+    #UInt8Array('local_nodes', SIZE=22),
+    Array("local_nodes", SUB_STRUCT=UInt8("local_node_index"), SIZE=22),
 
     # this COULD be 2 more potential local nodes, but I've seen tool
     # split models when they reach 22 nodes, so im assuming 22 is the max
@@ -192,29 +200,29 @@ part = Struct('part',
     )
 
 fast_part = dict(part)
-fast_part[9]  = raw_reflexive("uncompressed vertices", fast_uncompressed_vertex)
-fast_part[10] = raw_reflexive("compressed vertices", fast_compressed_vertex)
-fast_part[11] = raw_reflexive("triangles", triangle)
+fast_part[9]  = raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex, 65535)
+fast_part[10] = raw_reflexive("compressed_vertices", fast_compressed_vertex, 65535)
+fast_part[11] = raw_reflexive("triangles", triangle, 65535)
 
 marker = Struct('marker',
     ascii_str32("name"),
-    UInt16('magic identifier'),
+    UInt16('magic_identifier'),
     Pad(18),
 
-    reflexive("marker instances", marker_instance, 32),
+    reflexive("marker_instances", marker_instance, 32),
     SIZE=64
     )
 
 node = Struct('node',
     ascii_str32("name"),
-    dyn_senum16('next sibling node', DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16('first child node', DYN_NAME_PATH="..[DYN_I].name"),
-    dyn_senum16('parent node', DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16('next_sibling_node', DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16('first_child_node', DYN_NAME_PATH="..[DYN_I].name"),
+    dyn_senum16('parent_node', DYN_NAME_PATH="..[DYN_I].name"),
     Pad(2),
 
     QStruct('translation', INCLUDE=xyz_float),
     QStruct('rotation', INCLUDE=ijkw_float),
-    Float('distance from parent'),
+    Float('distance_from_parent'),
     Pad(32),
 
     # xbox specific values
@@ -225,7 +233,7 @@ node = Struct('node',
         INCLUDE=ijk_float, ENDIAN='<', VISIBLE=False),
     QStruct("rot_ii_jj", GUI_NAME="2[ik+jw]   2[jk-iw]   [1-2i^2-2j^2]",
         INCLUDE=ijk_float, ENDIAN='<', VISIBLE=False),
-    QStruct('translation to root',
+    QStruct('translation_to_root',
         INCLUDE=xyz_float, ENDIAN='<', VISIBLE=False),
     SIZE=156,
     )
@@ -251,35 +259,35 @@ fast_geometry = Struct('geometry',
 
 shader = Struct('shader',
     dependency("shader", valid_shaders),
-    SInt16('permutation index'),
+    SInt16('permutation_index'),
     SIZE=32,
     )
 
 
 mod2_body = Struct('tagdata',
     Bool32('flags',
-        'blend shared normals',
-        'parts have local nodes',
-        'ignore skinning'
+        'blend_shared_normals',
+        'parts_have_local_nodes',
+        'ignore_skinning'
         ),
-    SInt32('node list checksum'),
+    SInt32('node_list_checksum'),
 
-    Float('superhigh lod cutoff', SIDETIP="pixels"),
-    Float('high lod cutoff', SIDETIP="pixels"),
-    Float('medium lod cutoff', SIDETIP="pixels"),
-    Float('low lod cutoff', SIDETIP="pixels"),
-    Float('superlow lod cutoff', SIDETIP="pixels"),
+    Float('superhigh_lod_cutoff', SIDETIP="pixels"),
+    Float('high_lod_cutoff', SIDETIP="pixels"),
+    Float('medium_lod_cutoff', SIDETIP="pixels"),
+    Float('low_lod_cutoff', SIDETIP="pixels"),
+    Float('superlow_lod_cutoff', SIDETIP="pixels"),
 
-    SInt16('superhigh lod nodes', SIDETIP="nodes"),
-    SInt16('high lod nodes', SIDETIP="nodes"),
-    SInt16('medium lod nodes', SIDETIP="nodes"),
-    SInt16('low lod nodes', SIDETIP="nodes"),
-    SInt16('superlow lod nodes', SIDETIP="nodes"),
+    SInt16('superhigh_lod_nodes', SIDETIP="nodes"),
+    SInt16('high_lod_nodes', SIDETIP="nodes"),
+    SInt16('medium_lod_nodes', SIDETIP="nodes"),
+    SInt16('low_lod_nodes', SIDETIP="nodes"),
+    SInt16('superlow_lod_nodes', SIDETIP="nodes"),
 
     Pad(10),
 
-    Float('base map u scale'),
-    Float('base map v scale'),
+    Float('base_map_u_scale'),
+    Float('base_map_v_scale'),
 
     Pad(116),
 

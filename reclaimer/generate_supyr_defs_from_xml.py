@@ -5,7 +5,7 @@ from datetime import datetime
 from xml.etree.ElementTree import ElementTree
 from traceback import format_exc
 from string import ascii_letters
-from supyr_struct.defs.util import str_to_identifier
+from supyr_struct.util import str_to_identifier
 
 
 VALID_MODULE_NAME_CHARS = ascii_letters + '_' + '0123456789'

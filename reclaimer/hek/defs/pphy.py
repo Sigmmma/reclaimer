@@ -24,24 +24,24 @@ gold       19.3"""
 
 pphy_body = Struct("tagdata",
     Bool32("flags",
-        "flamethrower particle collision",
-        "collides with structures",
-        "collides with water surface",
-        "uses simple wind",
-        "uses damped wind",
-        "no gravity"
+        "flamethrower_particle_collision",
+        "collides_with_structures",
+        "collides_with_water_surface",
+        "uses_simple_wind",
+        "uses_damped_wind",
+        "no_gravity"
         ),
     # these next three are courtesy of Sparky. I had
     # no idea these existed till I looked in Eschaton.
     # kavawuvi figured out how to calculate them(see PphyTag)
-    FlFloat("scaled density", VISIBLE=False),
-    FlFloat("water gravity scale", VISIBLE=False),
-    FlFloat("air gravity scale", VISIBLE=False),
+    FlFloat("scaled_density", VISIBLE=False),
+    FlFloat("water_gravity_scale", VISIBLE=False),
+    FlFloat("air_gravity_scale", VISIBLE=False),
     Pad(16),
     Float("density", SIDETIP="g/mL", COMMENT=density_comment),#g/mL
-    Float("air friction"),
-    Float("water friction"),
-    Float("surface friction"),
+    Float("air_friction"),
+    Float("water_friction"),
+    Float("surface_friction"),
     Float("elasticity"),
 
     SIZE=64

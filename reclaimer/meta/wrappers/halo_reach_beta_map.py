@@ -1,4 +1,4 @@
-from .halo_reach_map import HaloReachMap
+from reclaimer.meta.wrappers.halo_reach_map import HaloReachMap
 
 class HaloReachBetaMap(HaloReachMap):
     tag_defs_module = ""

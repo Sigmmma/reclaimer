@@ -1,10 +1,15 @@
 from math import sqrt
 from struct import Struct as PyStruct
 
-from reclaimer.util import compress_normal32_normalize, decompress_normal32
-from .tag import *
-from .matrices import quaternion_to_matrix, Matrix
+from reclaimer.hek.defs.objs.tag import HekTag
+from reclaimer.util.compression import compress_normal32_normalize,\
+     decompress_normal32
+from reclaimer.util.matrices import quaternion_to_matrix, Matrix
 
+# TODO: Make calc_internal_data recalculate the lod nodes, and remove that
+# same function from model.model_compilation.compile_gbxmodel and replace
+# it with a call to calc_internal_data. lod nodes are recalculated when
+# tags are compiled into maps, but the functionality should still be here.
 class ModeTag(HekTag):
 
     def calc_internal_data(self):

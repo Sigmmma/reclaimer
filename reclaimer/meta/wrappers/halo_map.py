@@ -1,29 +1,18 @@
+import os
 import re
+import tempfile
 
 from mmap import mmap
-from os.path import dirname, splitext, isfile
-from struct import unpack
-from tkinter.filedialog import asksaveasfilename
 from traceback import format_exc
 from string import ascii_letters
 
-from reclaimer.util import is_protected_tag, fourcc
-from supyr_struct.defs.constants import *
-from supyr_struct.defs.util import *
-from supyr_struct.buffer import BytearrayBuffer, BytesBuffer, PeekableMmap
-from supyr_struct.field_types import FieldType
-from supyr_struct.defs.frozen_dict import FrozenDict
-
-from ..halo_map import get_map_version, get_map_header,\
+from reclaimer.meta.halo_map import get_map_version, get_map_header,\
      get_tag_index, get_index_magic, get_map_magic, get_is_compressed_map,\
-     decompress_map, map_header_demo_def, tag_index_pc_def
+     decompress_map
+from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
+from reclaimer.util import is_protected_tag, int_to_fourcc, sanitize_path
 
-from .map_pointer_converter import MapPointerConverter
-from .string_id_manager import StringIdManager
-from .tag_index_manager import TagIndexManager
-from .tag_index_converters import h2_alpha_to_h1_tag_index,\
-     h2_to_h1_tag_index, h3_to_h1_tag_index
-from .rawdata_manager import RawdataManager
+from supyr_struct.buffer import BytearrayBuffer, get_rawdata
 
 
 VALID_MODULE_NAME_CHARS = ascii_letters + '_' + '0123456789'
@@ -57,10 +46,14 @@ class HaloMap:
     matg_meta = None
 
     # determines how to work with this map
-    filepath      = ""
-    engine        = ""
-    is_resource   = False
-    is_compressed = False
+    filepath        = ""  # the filepath of the map being opened
+    decomp_filepath = ""  # the filepath of the map that map_data is actually
+    #                       mapping. Typically only different from filepath if
+    #                       the map had to be decompressed to a different file.
+    map_name        = ""
+    engine          = ""
+    is_resource     = False
+    is_compressed   = False
 
     handler = None
 
@@ -76,16 +69,78 @@ class HaloMap:
 
     tag_defs_module = ""
     tag_classes_to_load = ()
+    data_extractors = ()
+
+    resource_map_class = None
+
+    _decomp_file_ext = ".map"
 
     def __init__(self, maps=None, map_data_cache_limit=None):
-        self.orig_tag_paths = ()
+        self.resource_map_class = type(self)
         self.setup_defs()
+
+        self.cache_original_tag_paths()
 
         self._ids_of_tags_read = set()
         if map_data_cache_limit is not None:
             self.map_data_cache_limit = HaloMap.map_data_cache_limit
 
         self.maps = {} if maps is None else maps
+
+    def __del__(self):
+        self.unload_map()
+
+    @property
+    def decomp_file_ext(self): return self._decomp_file_ext
+
+    def get_writable_map_data(self):
+        if not self.map_data:
+            return None
+        elif getattr(self.map_data, "writable", False):
+            return self.map_data
+
+        try:
+            writable_map_data = get_rawdata(
+                filepath=self.decomp_filepath, writable=True)
+        except Exception:
+            writable_map_data = None
+
+        if not getattr(writable_map_data, "writable"):
+            raise OSError("Cannot open map in write mode: %s" %
+                          self.decomp_filepath)
+
+        self.map_data.close()
+        self.map_data = writable_map_data
+
+        # need to reopen the map as a writable stream
+        # and replace self.map_data with it
+        return self.map_data
+
+    # wrappers around the tag index handler
+    def get_total_dir_count(self, dir=""):  return self.tag_index_manager.get_total_dir_count(dir)
+    def get_total_file_count(self, dir=""): return self.tag_index_manager.get_total_file_count(dir)
+    def get_dir_count(self, dir=""):  return self.tag_index_manager.get_dir_count(dir)
+    def get_file_count(self, dir=""): return self.tag_index_manager.get_file_count(dir)
+    def get_dir_names(self, dir=""):  return self.tag_index_manager.get_dir_names(dir)
+    def get_file_names(self, dir=""): return self.tag_index_manager.get_file_names(dir)
+
+    def rename_tag(self, tag_path, new_path):
+        return self.tag_index_manager.rename_tag(tag_path, new_path)
+
+    def rename_tag_by_id(self, tag_id, new_path):
+        return self.tag_index_manager.rename_tag_by_id(tag_id, new_path)
+
+    def rename_dir(self, curr_dir, new_dir):
+        return self.tag_index_manager.rename_dir(curr_dir, new_dir)
+
+    def print_tag_index(self, dir="", **kw):
+        return self.tag_index_manager.pprint(dir, **kw)
+
+    def print_tag_index_files(self, dir="", **kw):
+        return self.tag_index_manager.pprint_files(dir, **kw)
+
+    def walk(self, top_down=True):
+        yield from self.tag_index_manager.walk(top_down)
 
     def setup_tag_headers(self):
         if type(self).tag_headers is not None:
@@ -122,11 +177,17 @@ class HaloMap:
             except Exception:
                 print(format_exc())
 
-    def __del__(self):
-        self.unload_map(False)
+    def get_dependencies(self, meta, tag_id, tag_cls):
+        return ()
 
     def is_indexed(self, tag_id):
         return bool(self.tag_index.tag_index[tag_id].indexed)
+
+    def cache_original_tag_paths(self):
+        tags = () if self.tag_index is None else self.tag_index.tag_index
+
+        # record the original tag_paths so we know if they change
+        self.orig_tag_paths = tuple(b.path for b in tags)
 
     def basic_deprotection(self):
         if self.tag_index is None or self.is_resource:
@@ -135,20 +196,20 @@ class HaloMap:
         i = 0
         found_counts = {}
         for b in self.tag_index.tag_index:
-            tag_path = backslash_fix.sub(r'\\', b.path)
+            tag_path = backslash_fix.sub(r'\\', b.path).\
+                       replace("/", "\\").strip().lower()
 
-            tag_cls  = b.class_1.data
-            name_id  = (tag_path, tag_cls)
+            name_id = (tag_path, b.class_1.enum_name)
             if is_protected_tag(tag_path):
                 tag_path = "protected_%s" % i
-                i += 1
             elif name_id in found_counts:
                 tag_path = "%s_%s" % (tag_path, found_counts[name_id])
                 found_counts[name_id] += 1
             else:
-                found_counts[name_id] = 0
+                found_counts[name_id] = 1
 
             b.path = tag_path
+            i += 1
 
     def get_meta_descriptor(self, tag_cls):
         tagdef = self.defs.get(tag_cls)
@@ -171,7 +232,7 @@ class HaloMap:
         try:
             self.map_data.clear_cache()
         except Exception:
-            print(format_exc())
+            pass
 
         self._ids_of_tags_read.clear()
         self._map_cache_byte_count = 0
@@ -191,14 +252,60 @@ class HaloMap:
     def get_meta(self, tag_id, *a, **kw):
         raise NotImplementedError()
 
-    def load_all_resource_maps(self, maps_dir=""):
-        pass
+    def get_resource_map_paths(self, maps_dir=""):
+        return {}
+
+    def is_data_extractable(self, tag_index_ref):
+        return int_to_fourcc(tag_index_ref.class_1.data) in self.data_extractors
+
+    def extract_tag_data(self, meta, tag_index_ref, **kw):
+        if not self.is_data_extractable(tag_index_ref):
+            return "No extractor for this type of tag."
+
+        extractor = self.data_extractors.get(
+            int_to_fourcc(tag_index_ref.class_1.data))
+        kw['halo_map'] = self
+        return extractor(meta, tag_index_ref.path, **kw)
+
+    def load_resource_maps(self, maps_dir="", map_paths=(), **kw):
+        do_printout = kw.get("do_printout", False)
+        detected_map_paths = self.get_resource_map_paths(maps_dir)
+        if isinstance(map_paths, dict):
+            for name in detected_map_paths:
+                if name in map_paths:
+                    detected_map_paths[name] = map_paths[name]
+
+        map_paths = detected_map_paths
+        for map_name in sorted(map_paths.keys()):
+            map_path = map_paths[map_name]
+            if not(self.maps.get(map_name) is None and map_path):
+                continue
+
+            new_map = None
+            try:
+                new_map = self.resource_map_class(self.maps)
+                if do_printout:
+                    print("Loading %s..." % map_name)
+
+                new_map.load_map(map_path, **kw)
+                if new_map.engine != self.engine:
+                    if do_printout:
+                        print("Incorrect engine for this map.")
+                    self.maps.pop(new_map.map_name, None)
+            except Exception:
+                if do_printout:
+                    print(format_exc())
+
+                # make sure to clear out any potentially bad maps
+                for name in sorted(self.maps):
+                    if self.maps[name] is new_map:
+                        self.maps.pop(name, None)
+
+        return set(name for name in map_paths if not self.maps.get(name))
 
     def load_map(self, map_path, **kwargs):
-        will_be_active = kwargs.get("will_be_active", True)
-
-        with open(map_path, 'rb+') as f:
-            comp_data = PeekableMmap(f.fileno(), 0)
+        decompress_overwrite = kwargs.get("decompress_overwrite")
+        comp_data = get_rawdata(filepath=map_path, writable=False)
 
         map_header = get_map_header(comp_data, True)
         if map_header is None:
@@ -206,70 +313,90 @@ class HaloMap:
             comp_data.close()
             return
 
-        engine = get_map_version(map_header)
+        # set self.engine early so self.decomp_file_ext will be accurate
+        self.engine = get_map_version(map_header)
+        self.map_name = map_header.map_name
 
-        decomp_path = None
-        map_name = map_header.map_name
         self.is_compressed = get_is_compressed_map(comp_data, map_header)
         if self.is_compressed:
-            decomp_path = splitext(map_path)
+            decomp_path = os.path.splitext(map_path)
             while decomp_path[1]:
-                decomp_path = splitext(decomp_path[0])
-            decomp_path = decomp_path[0] + "_DECOMP.map"
+                decomp_path = os.path.splitext(decomp_path[0])
 
-            if isfile(decomp_path):
-                new_decomp_path = asksaveasfilename(
-                    initialdir=dirname(map_path),
-                    title="Decompress '%s' to..." % map_name,
-                    filetypes=(("mapfile", "*.map"),
-                               ("All", "*.*")))
-                if new_decomp_path:
-                    decomp_path = new_decomp_path
-
-            if not(decomp_path.lower().endswith(".map") or
-                   isfile(decomp_path + ".map")):
-                decomp_path += ".map"
+            decomp_path = decomp_path[0] + "_DECOMP" + self.decomp_file_ext
+            if not decompress_overwrite and os.path.isfile(decomp_path):
+                decomp_path = os.path.join(
+                    tempfile.gettempdir(), os.path.basename(decomp_path))
 
             print("    Decompressing to: %s" % decomp_path)
+            self.map_data = decompress_map(comp_data, map_header, decomp_path)
+            if comp_data is not self.map_data:
+                comp_data.close()
+        else:
+            self.map_data = comp_data
+            decomp_path = map_path
 
-        map_data = decompress_map(comp_data, map_header, decomp_path)
-        if self.is_compressed:
-            print("    Decompressed")
-        self.map_data = map_data
-
-        if comp_data is not map_data: comp_data.close()
-
-        map_header = get_map_header(map_data)
-        tag_index  = self.orig_tag_index = get_tag_index(map_data, map_header)
+        map_header = get_map_header(self.map_data)
+        tag_index  = self.orig_tag_index = get_tag_index(
+            self.map_data, map_header)
 
         if tag_index is None:
             print("    Could not read tag index.")
             return
 
-        self.maps[map_header.map_name] = self
-        if will_be_active:
-            self.maps["<active>"] = self
-
-        self.filepath    = map_path
-        self.engine      = engine
+        self.maps[self.map_name] = self
+        self.filepath        = sanitize_path(map_path)
+        self.decomp_filepath = sanitize_path(decomp_path)
         self.map_header  = map_header
         self.index_magic = get_index_magic(map_header)
         self.map_magic   = get_map_magic(map_header)
         self.tag_index   = tag_index
         self.map_pointer_converter = MapPointerConverter()
 
-    def unload_map(self, keep_resources_loaded=True):
-        keep_resources_loaded &= self.is_resource
-        try: map_name = self.map_header.map_name
-        except Exception: map_name = None
-
-        if self.maps.get('<active>') is self:
-            self.maps.pop('<active>')
-        if self.maps.get(map_name) is self:
-            self.maps.pop(map_name, None)
-
-        if keep_resources_loaded and map_name in self.maps:
+    def unload_map(self):
+        if not isinstance(getattr(self, "maps", None), dict):
             return
+
+        keys_to_pop = list(k for k, v in self.maps.items() if v is self)
+        for k in keys_to_pop:
+            self.maps.pop(k, None)
 
         try: self.map_data.close()
         except Exception: pass
+
+    def generate_map_info_string(self):
+        if hasattr(self.map_data, '__len__'):
+            decomp_size = str(len(self.map_data))
+        elif (hasattr(self.map_data, 'seek') and
+              hasattr(self.map_data, 'tell')):
+            curr_pos = self.map_data.tell()
+            self.map_data.seek(0, 2)
+            decomp_size = str(self.map_data.tell())
+            self.map_data.seek(curr_pos)
+        else:
+            decomp_size = "unknown"
+
+        if not self.is_compressed:
+            decomp_size += "(is already uncompressed)"
+
+        map_type = self.map_header.map_type.enum_name
+        if   map_type == "sp": map_type = "singleplayer"
+        elif map_type == "mp": map_type = "multiplayer"
+        elif map_type == "ui": map_type = "mainmenu"
+        elif map_type == "shared":   map_type = "shared"
+        elif map_type == "sharedsp": map_type = "shared single player"
+        elif self.is_resource: map_type = "resource cache"
+        elif "INVALID" in map_type:  map_type = "unknown"
+
+        return (("""%s
+Header:
+    engine              == %s
+    name                == %s
+    build date          == %s
+    type                == %s
+    checksum            == %s
+    decompressed size   == %s
+    index header offset == %s""") %
+        (self.filepath, self.engine, self.map_header.map_name,
+         self.map_header.build_date, map_type, self.map_header.crc32,
+         decomp_size, self.map_header.tag_index_header_offset))
