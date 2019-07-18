@@ -3,178 +3,178 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 change_color = Struct("change_color",
-    QStruct("color lower bound", INCLUDE=rgb_float),
-    QStruct("color upper bound", INCLUDE=rgb_float),
+    QStruct("color_lower_bound", INCLUDE=rgb_float),
+    QStruct("color_upper_bound", INCLUDE=rgb_float),
     SIZE=32
     )
 
 actv_body = Struct("tagdata",
     Bool32('flags',
-        "can shoot while flying",
-        "blend color in hsv",
-        "has unlimited grenades",
-        "moveswitch stay with friends",
-        "active camouflage",
-        "super active camouflage",
-        "cannot use ranged weapons",
-        "prefer passenger seat",
+        "can_shoot_while_flying",
+        "blend_color_in_hsv",
+        "has_unlimited_grenades",
+        "moveswitch_stay_with_friends",
+        "active_camouflage",
+        "super_active_camouflage",
+        "cannot_use_ranged_weapons",
+        "prefer_passenger_seat",
         ),
-    dependency("actor definition", "actr"),
+    dependency("actor_definition", "actr"),
     dependency("unit", valid_units),
-    dependency("major variant", "actv"),
+    dependency("major_variant", "actv"),
 
     #Movement switching
-    Struct("movement switching",
+    Struct("movement_switching",
         Pad(24),
-        SEnum16("movement type",
-            "always run",
-            "always crouch",
-            "switch types",
+        SEnum16("movement_type",
+            "always_run",
+            "always_crouch",
+            "switch_types",
             ),
         Pad(2),
-        float_zero_to_one("initial crouch chance"),
-        from_to_sec("crouch time", UNIT_SCALE=sec_unit_scale),  # seconds
-        from_to_sec("run time",    UNIT_SCALE=sec_unit_scale)   # seconds
+        float_zero_to_one("initial_crouch_chance"),
+        from_to_sec("crouch_time", UNIT_SCALE=sec_unit_scale),  # seconds
+        from_to_sec("run_time",    UNIT_SCALE=sec_unit_scale)   # seconds
         ),
 
     #Ranged combat
-    Struct("ranged combat",
+    Struct("ranged_combat",
         dependency("weapon", "weap"),
-        float_wu("maximum firing distance"),
-        Float("rate of fire", UNIT_SCALE=per_sec_unit_scale),  # rounds/sec
-        float_rad("projectile error"),  # radians
-        from_to_sec("first burst delay time",
+        float_wu("maximum_firing_distance"),
+        Float("rate_of_fire", UNIT_SCALE=per_sec_unit_scale),  # rounds/sec
+        float_rad("projectile_error"),  # radians
+        from_to_sec("first_burst_delay_time",
                     UNIT_SCALE=sec_unit_scale),  # seconds
-        Float("new-target firing pattern time",
+        Float("new_target_firing_pattern_time",
                UNIT_SCALE=sec_unit_scale),  # seconds
-        Float("surprise delay time", UNIT_SCALE=sec_unit_scale),  # seconds
-        Float("surprise fire-wildly time",
+        Float("surprise_delay_time", UNIT_SCALE=sec_unit_scale),  # seconds
+        Float("surprise_fire_wildly_time",
                UNIT_SCALE=sec_unit_scale),  # seconds
-        float_zero_to_one("death fire-wildly chance"),
-        float_sec("death fire-wildly time",
+        float_zero_to_one("death_fire_wildly_chance"),
+        float_sec("death_fire_wildly_time",
                   UNIT_SCALE=sec_unit_scale),  # seconds
-        from_to_wu("desired combat range"),
-        QStruct("custom stand gun offset", INCLUDE=ijk_float),
-        QStruct("custom crouch gun offset", INCLUDE=ijk_float),
-        float_zero_to_one("target tracking"),
-        float_zero_to_one("target leading"),
-        Float("weapon damage modifier"),
-        Float("damage per second", UNIT_SCALE=per_sec_unit_scale),  # seconds
+        from_to_wu("desired_combat_range"),
+        QStruct("custom_stand_gun_offset", INCLUDE=ijk_float),
+        QStruct("custom_crouch_gun_offset", INCLUDE=ijk_float),
+        float_zero_to_one("target_tracking"),
+        float_zero_to_one("target_leading"),
+        Float("weapon_damage_modifier"),
+        Float("damage_per_second", UNIT_SCALE=per_sec_unit_scale),  # seconds
         ),
 
     #Burst geometry
-    Struct("burst geometry",
-        float_wu("burst origin radius"),
-        float_rad("burst origin angle"),  # radians
-        from_to_sec("burst return length"),
-        float_rad("burst return angle"),  # radians
-        from_to_sec("burst duration", UNIT_SCALE=sec_unit_scale),  # seconds
-        from_to_sec("burst separation"),
-        Float("burst angular velocity", SIDETIP="degrees/sec",
+    Struct("burst_geometry",
+        float_wu("burst_origin_radius"),
+        float_rad("burst_origin_angle"),  # radians
+        from_to_sec("burst_return_length"),
+        float_rad("burst_return_angle"),  # radians
+        from_to_sec("burst_duration", UNIT_SCALE=sec_unit_scale),  # seconds
+        from_to_sec("burst_separation"),
+        Float("burst_angular_velocity", SIDETIP="degrees/sec",
                UNIT_SCALE=irad_per_sec_unit_scale), # radians/second
         Pad(4),
-        float_zero_to_one("special damage modifier"),
-        float_rad("special projectile error")  # radians
+        float_zero_to_one("special_damage_modifier"),
+        float_rad("special_projectile_error")  # radians
         ),
 
     #Firing patterns"
-    Struct("firing patterns",
-        Float("new-target burst duration"),
-        Float("new-target burst separation"),
-        Float("new-target rate of fire", UNIT_SCALE=per_sec_unit_scale),
-        Float("new-target projectile error"),
+    Struct("firing_patterns",
+        Float("new_target_burst_duration"),
+        Float("new_target_burst_separation"),
+        Float("new_target_rate_of_fire", UNIT_SCALE=per_sec_unit_scale),
+        Float("new_target_projectile_error"),
 
         Pad(8),
-        Float("moving burst duration"),
-        Float("moving burst separation"),
-        Float("moving rate of fire", UNIT_SCALE=per_sec_unit_scale),
-        Float("moving projectile error"),
+        Float("moving_burst_duration"),
+        Float("moving_burst_separation"),
+        Float("moving_rate_of_fire", UNIT_SCALE=per_sec_unit_scale),
+        Float("moving_projectile_error"),
 
         Pad(8),
-        Float("berserk burst duration"),
-        Float("berserk burst separation"),
-        Float("berserk rate of fire", UNIT_SCALE=per_sec_unit_scale),
-        Float("berserk projectile error")
+        Float("berserk_burst_duration"),
+        Float("berserk_burst_separation"),
+        Float("berserk_rate_of_fire", UNIT_SCALE=per_sec_unit_scale),
+        Float("berserk_projectile_error")
         ),
 
     #Special-case firing patterns
-    Struct("special case firing patterns",
+    Struct("special_case_firing_patterns",
         Pad(8),
-        Float("super-ballistic range"),
-        Float("bombardment range"),
-        Float("modified vision range"),
-        SEnum16("special-fire mode",
+        Float("super_ballistic_range"),
+        Float("bombardment_range"),
+        Float("modified_vision_range"),
+        SEnum16("special_fire_mode",
             "none",
             "overcharge",
-            "secondary trigger",
+            "secondary_trigger",
             ),
-        SEnum16("special-fire situation",
+        SEnum16("special_fire_situation",
             "never",
-            "enemy visible",
-            "enemy out of sight",
+            "enemy_visible",
+            "enemy_out_of_sight",
             "strafing",
             ),
-        float_zero_to_one("special-fire chance"),
-        float_sec("special-fire delay", UNIT_SCALE=sec_unit_scale)
+        float_zero_to_one("special_fire_chance"),
+        float_sec("special_fire_delay", UNIT_SCALE=sec_unit_scale)
         ),
 
     #Berserking and melee
-    Struct("berserking and melee",
-        float_wu("melee range"),
-        float_wu("melee abort range"),
-        from_to_wu("berserk firing ranges", INCLUDE=from_to),
-        float_wu("berserk melee range"),
-        float_wu("berserk melee abort range")
+    Struct("berserking_and_melee",
+        float_wu("melee_range"),
+        float_wu("melee_abort_range"),
+        from_to_wu("berserk_firing_ranges", INCLUDE=from_to),
+        float_wu("berserk_melee_range"),
+        float_wu("berserk_melee_abort_range")
         ),
 
     #Grenades
     Struct("grenades",
         Pad(8),
-        SEnum16("grenade type", *grenade_types),
-        SEnum16("trajectory type",
+        SEnum16("grenade_type", *grenade_types),
+        SEnum16("trajectory_type",
             "toss",
             "lob",
             "bounce",
             ),
-        SEnum16("grenade stimulus",
+        SEnum16("grenade_stimulus",
             "never",
-            "visible target",
-            "seek cover",
+            "visible_target",
+            "seek_cover",
             ),
-        SInt16("minimum enemy count"),
-        float_wu("enemy radius"),
+        SInt16("minimum_enemy_count"),
+        float_wu("enemy_radius"),
 
         Pad(4),
-        float_wu_sec("grenade velocity", UNIT_SCALE=per_sec_unit_scale),
-        from_to_wu("grenade ranges"),
-        float_wu("collateral damage radius"),
-        float_zero_to_one("grenade chance"),
-        float_sec("grenade check time", UNIT_SCALE=sec_unit_scale),
-        float_sec("encounter grenade timeout", UNIT_SCALE=sec_unit_scale)
+        float_wu_sec("grenade_velocity", UNIT_SCALE=per_sec_unit_scale),
+        from_to_wu("grenade_ranges"),
+        float_wu("collateral_damage_radius"),
+        float_zero_to_one("grenade_chance"),
+        float_sec("grenade_check_time", UNIT_SCALE=sec_unit_scale),
+        float_sec("encounter_grenade_timeout", UNIT_SCALE=sec_unit_scale)
         ),
 
     #Items
     Struct("items",
         Pad(20),
         dependency("equipment", "eqip"),
-        QStruct("grenade count",
+        QStruct("grenade_count",
             SInt16("from", GUI_NAME=""), SInt16("to"), ORIENT='h'
             ),
-        float_zero_to_one("dont drop grenades chance"),
-        QStruct("drop weapon loaded", INCLUDE=from_to),
-        QStruct("drop weapon ammo",
+        float_zero_to_one("dont_drop_grenades_chance"),
+        QStruct("drop_weapon_loaded", INCLUDE=from_to),
+        QStruct("drop_weapon_ammo",
             SInt16("from", GUI_NAME=""),
             SInt16("to"), ORIENT='h'
             )
         ),
 
     #Unit properties
-    Struct("unit properties",
+    Struct("unit_properties",
         Pad(28),
-        Float("body vitality"),
-        Float("shield vitality"),
-        float_wu("shield sapping radius"),
-        SInt16("forced shader permutation"),
+        Float("body_vitality"),
+        Float("shield_vitality"),
+        float_wu("shield_sapping_radius"),
+        SInt16("forced_shader_permutation"),
         ),
 
     Pad(30),

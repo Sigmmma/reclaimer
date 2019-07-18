@@ -1,9 +1,12 @@
 from struct import unpack
 
 from supyr_struct.field_types import *
-from supyr_struct.blocks import *
-from .field_type_methods import *
-from .constants import *
+from supyr_struct.blocks import EnumBlock
+from reclaimer.field_type_methods import encode_tag_ref_str, enum_sanitizer,\
+     tag_ref_str_sizecalc, tag_ref_str_parser, tag_ref_str_serializer,\
+     decode_raw_string, decode_string, decoder_wrapper, encoder_wrapper,\
+     tag_cstring_parser, rawdata_ref_parser, reflexive_parser, encode_string,\
+     utf_sizecalc, delim_utf_sizecalc, sizecalc_wrapper, len_sizecalc
 
 
 '''These are varients of the standard FieldTypes that have been
@@ -20,6 +23,9 @@ FlStrUTF16 = FieldType(
     base=StrUtf16, name="StrUTF16",
     enc={">": StrUtf16.little.enc, "<": StrUtf16.little.enc},
     decoder=decode_string, sizecalc=delim_utf_sizecalc)
+CStrTagRef = FieldType(
+    base=CStrLatin1, name="CStrTagRef", parser=tag_cstring_parser
+    )
 
 #forces little endian integers and float
 FlUInt16 = FieldType(
@@ -60,9 +66,28 @@ ZoneAsset = FieldType(base=QStruct, name="ZoneAsset")
 StringID  = FieldType(base=QStruct, name="StringID")
 TagIndex  = FieldType(base=Array, name="TagIndex")
 
-StrLatin1Enum = FieldType(base=StrRawLatin1, name="StrLatin1Enum",
-                          is_block=True, is_data=True, data_cls=str,
-                          sizecalc=sizecalc_wrapper(len_sizecalc),
-                          decoder=decoder_wrapper(decode_string),
-                          encoder=encoder_wrapper(encode_string),
-                          node_cls=EnumBlock, sanitizer=enum_sanitizer)
+StrLatin1Enum = FieldType(
+    base=StrRawLatin1, name="StrLatin1Enum", is_block=True, is_data=True,
+    sizecalc=sizecalc_wrapper(len_sizecalc), data_cls=str,
+    decoder=decoder_wrapper(decode_string),
+    encoder=encoder_wrapper(encode_string),
+    node_cls=EnumBlock, sanitizer=enum_sanitizer)
+
+del EnumBlock
+del encode_tag_ref_str
+del enum_sanitizer
+del tag_ref_str_sizecalc
+del tag_ref_str_parser
+del tag_ref_str_serializer
+del decode_raw_string
+del decode_string
+del decoder_wrapper
+del encoder_wrapper
+del tag_cstring_parser
+del rawdata_ref_parser
+del reflexive_parser
+del encode_string
+del utf_sizecalc
+del delim_utf_sizecalc
+del sizecalc_wrapper
+del len_sizecalc

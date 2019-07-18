@@ -1,25 +1,36 @@
-from math import pi, sqrt, log
-from os.path import exists, join
-from struct import Struct as PyStruct
-from tkinter.filedialog import askopenfilename
+import os
 
-from .halo_map import *
-from reclaimer.hsc import SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES,\
-     get_hsc_data_block
+from copy import deepcopy
+from math import pi, sqrt, log
+from struct import unpack, Struct as PyStruct
+from traceback import format_exc
+
+from supyr_struct.buffer import BytearrayBuffer
+from supyr_struct.field_types import FieldType
+from supyr_struct.defs.frozen_dict import FrozenDict
+
+from reclaimer.halo_script.hsc import get_hsc_data_block,\
+     HSC_IS_SCRIPT_OR_GLOBAL, SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES
+from reclaimer.common_descs import make_dependency_os_block
 from reclaimer.hek.defs.snd_ import snd__meta_stub_blockdef
 from reclaimer.hek.defs.sbsp import sbsp_meta_header_def
 from reclaimer.os_hek.defs.gelc    import gelc_def
 from reclaimer.os_v4_hek.defs.coll import fast_coll_def
 from reclaimer.os_v4_hek.defs.sbsp import fast_sbsp_def
 from reclaimer.os_v4_hek.handler   import OsV4HaloHandler
-from .halo1_rsrc_map import Halo1RsrcMap, inject_sound_data, get_is_xbox_map
-from .byteswapping import raw_block_def, byteswap_animation,\
+from reclaimer.meta.wrappers.byteswapping import raw_block_def, byteswap_animation,\
      byteswap_uncomp_verts, byteswap_comp_verts, byteswap_tris,\
      byteswap_coll_bsp, byteswap_sbsp_meta, byteswap_scnr_script_syntax_data,\
      byteswap_pcm16_samples
+from reclaimer.meta.wrappers.halo_map import HaloMap
+from reclaimer.meta.wrappers.halo1_rsrc_map import Halo1RsrcMap, inject_sound_data, get_is_xbox_map
+from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
+from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
 from reclaimer import data_extraction
 from reclaimer.constants import tag_class_fcc_to_ext
-from reclaimer.util import compress_normal32, decompress_normal32
+from reclaimer.util.compression import compress_normal32, decompress_normal32
+from reclaimer.util import is_overlapping_ranges, is_valid_ascii_name_str,\
+     int_to_fourcc
 
 
 __all__ = ("Halo1Map", "Halo1RsrcMap")
@@ -47,8 +58,12 @@ class Halo1Map(HaloMap):
     bsp_header_offsets = ()
     bsp_pointer_converters = ()
 
+    data_extractors = data_extraction.h1_data_extractors
+
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
+
+        self.resource_map_class = Halo1RsrcMap
         self.ce_rsrc_sound_indexes_by_path = {}
         self.ce_tag_indexs_by_paths = {}
 
@@ -60,13 +75,23 @@ class Halo1Map(HaloMap):
 
         self.setup_tag_headers()
 
+    @property
+    def decomp_file_ext(self):
+        if self.engine == "halo1yelo":
+            return ".yelo"
+        elif self.engine == "halo1vap":
+            return ".vap"
+        else:
+            return ".map"
+
     def setup_defs(self):
         this_class = type(self)
         if this_class.defs is None:
             this_class.defs = defs = {}
-            print("    Loading definitions in %s" % self.tag_defs_module)
+            print("    Loading definitions in '%s'" % self.tag_defs_module)
             this_class.handler = self.handler_class(
-                build_reflexive_cache=False, build_raw_data_cache=False)
+                build_reflexive_cache=False, build_raw_data_cache=False,
+                debug=2)
 
             this_class.defs = dict(this_class.handler.defs)
             this_class.defs["coll"] = fast_coll_def
@@ -88,7 +113,7 @@ class Halo1Map(HaloMap):
             return
 
         self.sound_rsrc_id = id(sounds)
-        if self.engine in ("halo1ce", "halo1yelo"):
+        if self.engine in ("halo1ce", "halo1yelo", "halo1vap"):
             # ce resource sounds are recognized by tag_path
             # so we must cache their offsets by their paths
             rsrc_snd_map = self.ce_rsrc_sound_indexes_by_path = {}
@@ -106,24 +131,34 @@ class Halo1Map(HaloMap):
                 i += 1
 
     def get_dependencies(self, meta, tag_id, tag_cls):
-        if self.is_indexed(tag_id):
-            if tag_cls != "snd!":
-                return ()
-
+        tag_index_array = self.tag_index.tag_index
+        if not self.is_indexed(tag_id):
+            # not indexed. get dependencies like normal
+            pass
+        elif tag_cls != "snd!":
+            # among the indexable tags, only sounds can have valid dependencies
+            return ()
+        elif not hasattr(meta, "pitch_ranges"):
+            # tag is indexed AND we were provided with the indexed version
             rsrc_id = meta.promotion_sound.id & 0xFFff
             if rsrc_id == 0xFFFF: return ()
 
             sounds = self.maps.get("sounds")
-            rsrc_id = rsrc_id // 2
             if   sounds is None: return ()
             elif rsrc_id >= len(sounds.tag_index.tag_index): return ()
 
             tag_path = sounds.tag_index.tag_index[rsrc_id].path
             inv_snd_map = getattr(self, 'ce_tag_indexs_by_paths', {})
             tag_id = inv_snd_map.get(tag_path, 0xFFFF)
-            if tag_id >= len(self.tag_index.tag_index): return ()
+            if tag_id >= len(tag_index_array): return ()
 
-            return [self.tag_index.tag_index[tag_id]]
+            ref = deepcopy(meta.promotion_sound)
+            tag_index_ref = tag_index_array[tag_id]
+            ref.tag_class.data = tag_index_ref.class_1.data
+            ref.id             = tag_index_ref.id
+            ref.filepath       = tag_index_ref.path
+
+            return [ref]
 
         if self.handler is None: return ()
 
@@ -137,6 +172,29 @@ class Halo1Map(HaloMap):
             if node.id & 0xFFff == 0xFFFF:
                 continue
             dependencies.append(node)
+
+        if tag_cls == "scnr":
+            # collect the tag references from the scenarios syntax data
+            try:
+                seen_tag_ids = set()
+                syntax_data = get_hsc_data_block(meta.script_syntax_data.data)
+                for node in syntax_data.nodes:
+                    if (node.flags & HSC_IS_SCRIPT_OR_GLOBAL or
+                        node.type not in range(24, 32)):
+                        # not a tag index ref
+                        continue
+
+                    tag_index_id = node.data & 0xFFff
+                    if (tag_index_id in range(len(tag_index_array)) and
+                        tag_index_id not in seen_tag_ids):
+                        seen_tag_ids.add(tag_index_id)
+                        tag_index_ref = tag_index_array[tag_index_id]
+                        dependencies.append(make_dependency_os_block(
+                            tag_index_ref.class_1.enum_name, tag_index_ref.id,
+                            tag_index_ref.path, tag_index_ref.path_offset))
+            except Exception:
+                pass
+
         return dependencies
 
     def setup_sbsp_pointer_converters(self):
@@ -146,15 +204,34 @@ class Halo1Map(HaloMap):
             return
 
         try:
+            metadata_range = range(self.map_header.tag_index_header_offset,
+                                   self.map_header.tag_index_header_offset +
+                                   self.map_header.tag_data_size)
+            invalid_bsp_tag_ids = [self.tag_index.scenario_tag_id & 0xFFff]
+            i = 0
             for b in self.scnr_meta.structure_bsps.STEPTREE:
                 bsp_id = b.structure_bsp.id & 0xFFff
-                self.bsp_header_offsets[bsp_id] = b.bsp_pointer
-                self.bsp_magics[bsp_id]         = b.bsp_magic
-                self.bsp_sizes[bsp_id]          = b.bsp_size
 
-                self.bsp_pointer_converters[bsp_id] = MapPointerConverter(
-                    (b.bsp_magic, b.bsp_pointer, b.bsp_size)
-                    )
+                # these checks are necessary because apparently these structs
+                # can be super fucked up, and might not affect anything
+                if (bsp_id not in range(len(self.tag_index.tag_index)) or
+                    bsp_id in invalid_bsp_tag_ids):
+                    print("Scenario structure_bsp %s contains invalid tag_id." % i)
+                elif is_overlapping_ranges(
+                        metadata_range, range(b.bsp_pointer, b.bsp_size)):
+                    print("Scenario structure_bsp %s contains invalid pointer." % i)
+                elif self.tag_index.tag_index[bsp_id].id != b.structure_bsp.id:
+                    print("Scenario structure_bsp %s contains invalid tag_id." % i)
+                else:
+                    self.bsp_header_offsets[bsp_id] = b.bsp_pointer
+                    self.bsp_magics[bsp_id]         = b.bsp_magic
+                    self.bsp_sizes[bsp_id]          = b.bsp_size
+
+                    self.bsp_pointer_converters[bsp_id] = MapPointerConverter(
+                        (b.bsp_magic, b.bsp_pointer, b.bsp_size)
+                        )
+
+                i += 1
 
             # read the sbsp headers
             for tag_id, offset in self.bsp_header_offsets.items():
@@ -168,7 +245,7 @@ class Halo1Map(HaloMap):
 
                 if header.sig != header.get_desc("DEFAULT", "sig"):
                     print("Sbsp header is invalid for '%s'" %
-                          tag_index_array[tag_id].path)
+                          self.tag_index.tag_index[tag_id].path)
                 self.bsp_headers[tag_id] = header
                 self.tag_index.tag_index[tag_id].meta_offset = header.meta_pointer
 
@@ -176,18 +253,18 @@ class Halo1Map(HaloMap):
             print(format_exc())
 
     def load_map(self, map_path, **kwargs):
-        autoload_resources = kwargs.get("autoload_resources", True)
         HaloMap.load_map(self, map_path, **kwargs)
 
         tag_index = self.tag_index
         tag_index_array = tag_index.tag_index
-        self.tag_index_manager = TagIndexManager(tag_index_array)
 
-        # record the original halo 1 tag_paths so we know if they change
-        self.orig_tag_paths = tuple(b.path for b in tag_index_array)
+        # cache the original paths BEFORE running basic deprotection
+        self.cache_original_tag_paths()
 
-        # make all contents of the map parasble
+        # make all contents of the map parseable
         self.basic_deprotection()
+
+        self.tag_index_manager = TagIndexManager(tag_index_array)
 
         # add the tag data section
         self.map_pointer_converter.add_page_info(
@@ -238,7 +315,7 @@ class Halo1Map(HaloMap):
         try:
             matg_id = None
             for b in tag_index_array:
-                if fourcc(b.class_1.data) == "matg":
+                if int_to_fourcc(b.class_1.data) == "matg":
                     matg_id = b.id & 0xFFff
                     break
 
@@ -249,17 +326,12 @@ class Halo1Map(HaloMap):
             print(format_exc())
             print("Could not read globals tag")
 
-        if autoload_resources:
-            self.load_all_resource_maps(dirname(map_path))
-        self.map_data.clear_cache()
+        if self.map_name == "sounds":
+            for halo_map in self.maps.values():
+                if hasattr(halo_map, "ensure_sound_maps_valid"):
+                    halo_map.ensure_sound_maps_valid()
 
-    def extract_tag_data(self, meta, tag_index_ref, **kw):
-        extractor = data_extraction.h1_data_extractors.get(
-            fourcc(tag_index_ref.class_1.data))
-        if extractor is None:
-            return "No extractor for this type of tag."
-        kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.path, **kw)
+        self.clear_map_cache()
 
     def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, **kw):
         '''
@@ -268,6 +340,7 @@ class Halo1Map(HaloMap):
         '''
         if tag_id is None:
             return
+
         magic     = self.map_magic
         engine    = self.engine
         map_data  = self.map_data
@@ -281,10 +354,10 @@ class Halo1Map(HaloMap):
             return
 
         tag_cls = None
-        if tag_id == tag_index.scenario_tag_id & 0xFFFF:
+        if tag_id == (tag_index.scenario_tag_id & 0xFFFF):
             tag_cls = "scnr"
         elif tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
-            tag_cls = fourcc(tag_index_ref.class_1.data)
+            tag_cls = int_to_fourcc(tag_index_ref.class_1.data)
 
         # if we dont have a defintion for this tag_cls, then return nothing
         if self.get_meta_descriptor(tag_cls) is None:
@@ -298,8 +371,8 @@ class Halo1Map(HaloMap):
         if tag_cls is None:
             # couldn't determine the tag class
             return
-        elif self.is_indexed(tag_id) and (tag_cls != "snd!" or
-                                          not ignore_rsrc_sounds):
+        elif self.is_indexed(tag_id) and (
+                tag_cls != "snd!" or not ignore_rsrc_sounds):
             # tag exists in a resource cache
             tag_id = offset
 
@@ -354,6 +427,10 @@ class Halo1Map(HaloMap):
             elif tag_cls == "matg" and self.matg_meta:
                 return self.matg_meta
 
+        force_parsing_rsrc = False
+        if tag_cls in ("antr", "magy") and not kw.get("disable_tag_cleaning"):
+            force_parsing_rsrc = True
+
         desc = self.get_meta_descriptor(tag_cls)
         block = [None]
         try:
@@ -363,12 +440,13 @@ class Halo1Map(HaloMap):
                     desc, parent=block, attr_index=0, rawdata=map_data,
                     map_pointer_converter=pointer_converter,
                     offset=pointer_converter.v_ptr_to_f_ptr(offset),
-                    tag_index_manager=self.tag_index_manager)
+                    tag_index_manager=self.tag_index_manager,
+                    safe_mode=not kw.get("disable_safe_mode"),
+                    parsing_resource=force_parsing_rsrc)
         except Exception:
             print(format_exc())
-            if kw.get("allow_corrupt"):
-                return block[0]
-            return
+            if not kw.get("allow_corrupt"):
+                return
 
         meta = block[0]
         try:
@@ -378,7 +456,7 @@ class Halo1Map(HaloMap):
                     # so they can be interpreted properly
                     bitmap.base_address = 1073751810
 
-            self.record_map_cache_read(tag_id, 0)  # cant get size quickly enough
+            self.record_map_cache_read(tag_id, 0)
             if self.map_cache_over_limit():
                 self.clear_map_cache()
 
@@ -389,7 +467,290 @@ class Halo1Map(HaloMap):
             if not kw.get("allow_corrupt"):
                 meta = None
 
+        if not kw.get("disable_tag_cleaning"):
+            try:
+                self.clean_tag_meta(meta, tag_id, tag_cls)
+            except Exception:
+                print(format_exc())
+
         return meta
+
+    def clean_tag_meta(self, meta, tag_id, tag_cls):
+        tag_index_array = self.tag_index.tag_index
+
+        if tag_cls in ("antr", "magy"):
+            highest_valid = -1
+            animations = meta.animations.STEPTREE
+            main_node_ct = animations[0].node_count if animations else 0
+
+            permutation_chains = {}
+            for i in range(len(animations)):
+                if i in permutation_chains:
+                    continue
+
+                permutation_chains[i] = i
+                next_anim = animations[i].next_animation
+                while (next_anim in range(len(animations)) and
+                       next_anim not in permutation_chains):
+                    permutation_chains[next_anim] = i
+                    next_anim = animations[next_anim].next_animation
+
+            for i in range(len(animations)):
+                if self.engine != "halo1yelo" and i >= 256:
+                    # cap it to the non-OS limit of 256 animations
+                    break
+
+                anim = animations[i]
+                valid = is_valid_ascii_name_str(anim.name)
+
+                trans_int = anim.trans_flags0 + (anim.trans_flags1 << 32)
+                rot_int   = anim.rot_flags0   + (anim.rot_flags1   << 32)
+                scale_int = anim.scale_flags0 + (anim.scale_flags1 << 32)
+
+                trans_flags = (bool(trans_int & (1 << i))
+                               for i in range(anim.node_count))
+                rot_flags   = (bool(rot_int   & (1 << i))
+                               for i in range(anim.node_count))
+                scale_flags = (bool(scale_int & (1 << i))
+                               for i in range(anim.node_count))
+
+                expected_frame_size = (12 * sum(trans_flags) +
+                                       8  * sum(rot_flags) +
+                                       4  * sum(scale_flags))
+                expected_frame_info_size = {1: 8, 2: 12, 3: 16}.get(
+                    anim.frame_info_type.data, 0) * anim.frame_count
+                expected_frame_data_size = expected_frame_size * anim.frame_count
+                expected_default_data_size = (
+                    anim.node_count * (12 + 8 + 4) - anim.frame_size)
+
+                if (anim.type.enum_name == "<INVALID>" or
+                    anim.frame_info_type.enum_name == "<INVALID>"):
+                    valid = False
+                elif anim.node_count != main_node_ct:
+                    valid = False
+                elif anim.first_permutation_index != permutation_chains[i]:
+                    valid = False
+                elif not(anim.frame_count and anim.node_count in range(1, 65)):
+                    valid = False
+                elif not anim.flags.compressed_data:
+                    if anim.default_data.size < expected_default_data_size:
+                        valid = False
+                    elif anim.frame_info.size < expected_frame_info_size:
+                        valid = False
+                    elif anim.frame_data.size < expected_frame_data_size:
+                        valid = False
+                    elif anim.frame_size != expected_frame_size:
+                        valid = False
+                elif anim.offset_to_compressed_data >= anim.frame_data.size:
+                    valid = False
+
+                if valid:
+                    highest_valid = i
+                else:
+                    # delete the animation info
+                    animations.pop(i)
+                    animations.insert(i)
+
+            # remove the highest invalid animations
+            if highest_valid + 1 < len(animations):
+                del animations[highest_valid + 1: ]
+
+            # inject the animation data for all remaining animations since
+            # it's not safe to try and read it all at parse time
+            for anim in animations:
+                for block in (anim.default_data, anim.frame_info, anim.frame_data):
+                    if not block.size:
+                        continue
+
+                    file_ptr = self.map_pointer_converter.v_ptr_to_f_ptr(
+                        block.pointer)
+                    if not block.pointer or file_ptr < 0:
+                        file_ptr = block.raw_pointer
+
+                    if file_ptr + block.size > len(self.map_data) or file_ptr <= 0:
+                        continue
+
+                    try:
+                        self.map_data.seek(file_ptr)
+                        block.data = bytearray(self.map_data.read(block.size))
+                    except Exception:
+                        print("Couldn't read animation data.")
+
+        elif tag_cls in ("sbsp", "coll"):
+            if tag_cls == "sbsp" :
+                bsps = meta.collision_bsp.STEPTREE
+            else:
+                bsps = []
+                for node in meta.nodes.STEPTREE:
+                    bsps.extend(node.bsps.STEPTREE)
+
+            for bsp in bsps:
+                highest_used_vert = -1
+                edge_data = bsp.edges.STEPTREE
+                vert_data = bsp.vertices.STEPTREE
+                for i in range(0, len(edge_data), 24):
+                    v0_i = (edge_data[i] +
+                            (edge_data[i + 1] << 8) +
+                            (edge_data[i + 2] << 16) +
+                            (edge_data[i + 3] << 24))
+                    v1_i = (edge_data[i + 4] +
+                            (edge_data[i + 5] << 8) +
+                            (edge_data[i + 6] << 16) +
+                            (edge_data[i + 7] << 24))
+                    highest_used_vert = max(highest_used_vert, v0_i, v1_i)
+
+                if highest_used_vert * 16 < len(vert_data):
+                    del vert_data[(highest_used_vert + 1) * 16: ]
+                    bsp.vertices.size = highest_used_vert
+
+        elif tag_cls in ("mode", "mod2"):
+            used_shaders = set()
+            shaders = meta.shaders.STEPTREE
+
+            for geom in meta.geometries.STEPTREE:
+                for part in geom.parts.STEPTREE:
+                    if part.shader_index in range(len(shaders)):
+                        used_shaders.add(part.shader_index)
+
+            new_i = 0
+            rebase_map = {}
+            new_shaders = [None] * len(used_shaders)
+            for i in sorted(used_shaders):
+                new_shaders[new_i] = shaders[i]
+                rebase_map[i] = new_i
+                new_i += 1
+
+            # rebase the shader indices
+            for geom in meta.geometries.STEPTREE:
+                for part in geom.parts.STEPTREE:
+                    if part.shader_index in range(len(shaders)):
+                        part.shader_index = rebase_map[part.shader_index]
+                    else:
+                        part.shader_index = -1
+
+            shaders[:] = new_shaders
+
+        elif tag_cls == "scnr":
+            skies = meta.skies.STEPTREE
+            comments = meta.comments.STEPTREE
+
+            highest_valid_sky = -1
+            for i in range(len(skies)):
+                sky = skies[i].sky
+                sky_tag_index_id = sky.id & 0xFFff
+                if (sky_tag_index_id not in range(len(tag_index_array)) or
+                    tag_index_array[sky_tag_index_id].id != sky.id):
+                    # invalid sky
+                    sky.id = 0xFFffFFff
+                    sky.filepath = ""
+                    sky.tag_class.set_to("sky")
+                else:
+                    highest_valid_sky = i
+
+            # clear the highest invalid skies
+            del skies[highest_valid_sky + 1: ]
+
+            # clear the child scenarios since they aren't used
+            del meta.child_scenarios.STEPTREE[:]
+
+            # determine if there are any fucked up comments
+            comments_to_keep = set()
+            for i in range(len(comments)):
+                comment = comments[i]
+                if max(max(comment.position), abs(min(comment.position))) > 5000:
+                    # check if the position is outside halos max world bounds
+                    continue
+
+                if not (comment.comment_data.data and
+                        is_valid_ascii_name_str(comment.comment_data.data)):
+                    comments_to_keep.add(i)
+
+            if len(comments_to_keep) != len(comments):
+                # clean up any fucked up comments
+                comments[:] = [comments[i] for i in sorted(comments_to_keep)]
+
+            syntax_data = get_hsc_data_block(meta.script_syntax_data.data)
+            script_nodes_modified = False
+
+            # clean up any fucked up palettes
+            for pal_block, inst_block in (
+                    (meta.sceneries_palette, meta.sceneries),
+                    (meta.bipeds_palette, meta.bipeds),
+                    (meta.vehicles_palette, meta.vehicles),
+                    (meta.equipments_palette, meta.equipments),
+                    (meta.weapons_palette, meta.weapons),
+                    (meta.machines_palette, meta.machines),
+                    (meta.controls_palette, meta.controls),
+                    (meta.light_fixtures_palette, meta.light_fixtures),
+                    (meta.sound_sceneries_palette, meta.sound_sceneries),
+                    ):
+                palette, instances = pal_block.STEPTREE, inst_block.STEPTREE
+
+                used_pal_indices = set(inst.type for inst in instances
+                                       if inst.type in range(len(palette)))
+                script_nodes_to_modify = set()
+
+                if inst_block.NAME == "bipeds":
+                    # determine which palette indices are used by script data
+                    for i in range(len(syntax_data.nodes)):
+                        node = syntax_data.nodes[i]
+                        # 35 == "actor_type"  script type
+                        if node.type == 35 and not(node.flags & HSC_IS_SCRIPT_OR_GLOBAL):
+                            script_nodes_to_modify.add(i)
+                            used_pal_indices.add(node.data & 0xFFff)
+
+                # figure out what to rebase the palette swatch indices to
+                new_i = 0
+                rebase_map = {}
+                new_palette = [None] * len(used_pal_indices)
+                for i in sorted(used_pal_indices):
+                    new_palette[new_i] = palette[i]
+                    rebase_map[i] = new_i
+                    new_i += 1
+
+                # rebase the palette indices of the instances and
+                # move the palette swatches into their new indices
+                for inst in instances:
+                    if inst.type in range(len(instances)):
+                        inst.type = rebase_map[inst.type]
+                    else:
+                        inst.type = -1
+
+                palette[:] = new_palette
+
+                # modify the script syntax nodes that need to be
+                for i in script_nodes_to_modify:
+                    node = syntax_data.nodes[i]
+                    salt = node.data & 0xFFff0000
+                    cur_index = node.data & 0xFFff
+                    new_index = rebase_map[cur_index]
+                    if cur_index != new_index:
+                        script_nodes_modified = True
+                        node.data = salt + new_index
+
+            # replace the script syntax data
+            if script_nodes_modified:
+                with FieldType.force_little:
+                    new_script_data = syntax_data.serialize()
+                    meta.script_syntax_data.data[: len(new_script_data)] = new_script_data
+                    meta.script_syntax_data.size = len(meta.script_syntax_data.data)
+
+        elif tag_cls in ("tagc", "Soul"):
+            tag_collection = meta[0].STEPTREE
+            highest_valid = -1
+            for i in range(len(tag_collection)):
+                tag_ref = tag_collection[i][0]
+                if tag_cls == "Soul" and tag_ref.tag_class.enum_name != "ui_widget_definition":
+                    continue
+                elif (tag_ref.id & 0xFFff) not in range(len(tag_index_array)):
+                    continue
+                elif tag_index_array[tag_ref.id & 0xFFff].id != tag_ref.id:
+                    continue
+
+                highest_valid = i
+
+            # clear the highest invalid entries
+            del tag_collection[highest_valid + 1: ]
 
     def meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs):
         magic      = self.map_magic
@@ -527,7 +888,7 @@ class Halo1Map(HaloMap):
             meta.stencil_bitmap.filepath = meta.source_bitmap.filepath = ''
 
         elif tag_cls in ("mode", "mod2"):
-            if engine in ("halo1yelo", "halo1ce", "halo1pc",
+            if engine in ("halo1yelo", "halo1ce", "halo1pc", "halo1vap",
                           "halo1anni", "halo1pcdemo", "stubbspc"):
                 # model_magic seems to be the same for all pc maps
                 verts_start = tag_index.model_data_offset
@@ -902,61 +1263,173 @@ class Halo1Map(HaloMap):
 
         return meta
 
-    def load_all_resource_maps(self, maps_dir=""):
-        if self.is_resource:
-            return
-        elif self.engine not in ("halo1pc", "halo1pcdemo",
-                                 "halo1ce", "halo1yelo"):
-            return
+    def get_resource_map_paths(self, maps_dir=""):
+        if self.is_resource or self.engine not in ("halo1pc", "halo1pcdemo",
+                                                   "halo1ce", "halo1yelo",
+                                                   "halo1vap"):
+            return {}
 
-        if not maps_dir:
-            maps_dir = dirname(self.filepath)
-
-        map_paths = {name: None for name in ("bitmaps", "sounds")}
-        if self.engine in ("halo1ce", "halo1yelo"):
-            map_paths['loc'] = None
+        map_paths = {"bitmaps": None, "sounds": None, "loc": None}
+        if self.engine not in ("halo1ce", "halo1yelo", "halo1vap"):
+            map_paths.pop('loc')
 
         data_files = False
         if hasattr(self.map_header, "yelo_header"):
             data_files = self.map_header.yelo_header.flags.uses_mod_data_files
 
-        # detect/ask for the map paths for the resource maps
-        for map_name in sorted(map_paths.keys()):
-            if self.maps.get(map_name) is not None:
-                # map already loaded
-                continue
-
+        if maps_dir:
+            maps_dir = os.path.join(maps_dir, "")
+        else:
+            maps_dir = os.path.dirname(self.filepath)
             if data_files:
-                map_name = "-" + map_name
-                map_path = join(maps_dir, "data_files", "%s.map" % map_name)
-            else:
-                map_path = join(maps_dir, "%s.map" % map_name)
+                maps_dir = os.path.join(maps_dir, "data_files")
 
-            while map_path and not exists(map_path):
-                map_path = askopenfilename(
-                    initialdir=maps_dir,
-                    title="Select the %s.map" % map_name,
-                    filetypes=(("%s.map" % map_name, "*.map"), ("All", "*.*")))
+        if data_files:
+            maps_dir = os.path.join(maps_dir, "~")
 
-                if map_path:
-                    maps_dir = dirname(map_path)
-                else:
-                    print("    You wont be able to extract from %s.map" % map_name)
-
-            map_paths[map_name] = map_path
-
+        # detect the map paths for the resource maps
         for map_name in sorted(map_paths.keys()):
-            map_path = map_paths[map_name]
-            try:
-                if self.maps.get(map_name) is None and map_path:
-                    print("    Loading %s.map..." % map_name)
-                    Halo1RsrcMap(self.maps).load_map(
-                        map_path, will_be_active=False)
-                    print("        Finished")
+            map_path = os.path.join(maps_dir, "%s.map" % map_name)
+            if self.maps.get(map_name) is not None:
+                map_paths[map_name] = self.maps[map_name].filepath
+            elif os.path.exists(map_path):
+                map_paths[map_name] = map_path
 
-                if map_name == "sounds":
-                    self.ensure_sound_maps_valid()
+        return map_paths
 
-            except Exception:
-                self.maps.pop(map_name, None)
-                print(format_exc())
+    def generate_map_info_string(self):
+        string = HaloMap.generate_map_info_string(self)
+        index, header = self.tag_index, self.map_header
+
+        string += """
+
+Calculated information:
+    index magic == %s
+    map magic   == %s
+
+Tag index:
+    tag count           == %s
+    scenario tag id     == %s
+    index array pointer == %s   non-magic == %s
+    model data pointer  == %s
+    meta data length    == %s
+    vertex parts count  == %s
+    index  parts count  == %s""" % (
+        self.index_magic, self.map_magic,
+        index.tag_count, index.scenario_tag_id & 0xFFff,
+        index.tag_index_offset, index.tag_index_offset - self.map_magic,
+        index.model_data_offset, header.tag_data_size,
+        index.vertex_parts_count, index.index_parts_count)
+
+        if index.SIZE == 36:
+            string += """
+    index parts pointer == %s   non-magic == %s""" % (
+        index.index_parts_offset, index.index_parts_offset - self.map_magic)
+        else:
+            string += """
+    vertex data size    == %s
+    index  data size    == %s
+    model  data size    == %s""" % (
+        index.vertex_data_size,
+        index.model_data_size - index.vertex_data_size,
+        index.model_data_size)
+
+        string += "\n\nSbsp magic and headers:\n"
+        for tag_id in self.bsp_magics:
+            header = self.bsp_headers.get(tag_id)
+            if header is None: continue
+
+            magic  = self.bsp_magics[tag_id]
+            string += """    %s.structure_scenario_bsp
+        bsp base pointer     == %s
+        bsp magic            == %s
+        bsp size             == %s
+        bsp metadata pointer == %s   non-magic == %s\n""" % (
+            index.tag_index[tag_id].path, self.bsp_header_offsets[tag_id],
+            magic, self.bsp_sizes[tag_id], header.meta_pointer,
+            header.meta_pointer - magic)
+
+        if self.engine == "halo1yelo":
+            string += self.generate_yelo_info_string()
+        elif self.engine == "halo1vap":
+            string += self.generate_vap_info_string()
+
+        return string
+
+    def generate_yelo_info_string(self):
+        yelo    = self.map_header.yelo_header
+        flags   = yelo.flags
+        info    = yelo.build_info
+        version = yelo.tag_versioning
+        cheape  = yelo.cheape_definitions
+        rsrc    = yelo.resources
+        min_os  = info.minimum_os_build
+
+        return """
+Yelo information:
+    Mod name              == %s
+    Memory upgrade amount == %sx
+
+    Flags:
+        uses memory upgrades       == %s
+        uses mod data files        == %s
+        is protected               == %s
+        uses game state upgrades   == %s
+        has compression parameters == %s
+
+    Build info:
+        build string  == %s
+        timestamp     == %s
+        stage         == %s
+        revision      == %s
+
+    Cheape:
+        build string      == %s
+        version           == %s.%s.%s
+        size              == %s
+        offset            == %s
+        decompressed size == %s
+
+    Versioning:
+        minimum open sauce     == %s.%s.%s
+        project yellow         == %s
+        project yellow globals == %s
+
+    Resources:
+        compression parameters header offset   == %s
+        tag symbol storage header offset       == %s
+        string id storage header offset        == %s
+        tag string to id storage header offset == %s\n""" % (
+            yelo.mod_name, yelo.memory_upgrade_multiplier,
+            bool(flags.uses_memory_upgrades),
+            bool(flags.uses_mod_data_files),
+            bool(flags.is_protected),
+            bool(flags.uses_game_state_upgrades),
+            bool(flags.has_compression_params),
+            info.build_string, info.timestamp, info.stage.enum_name,
+            info.revision, cheape.build_string,
+            info.cheape.maj, info.cheape.min, info.cheape.build,
+            cheape.size, cheape.offset, cheape.decompressed_size,
+            min_os.maj, min_os.min, min_os.build,
+            version.project_yellow, version.project_yellow_globals,
+            rsrc.compression_params_header_offset,
+            rsrc.tag_symbol_storage_header_offset,
+            rsrc.string_id_storage_header_offset,
+            rsrc.tag_string_to_id_storage_header_offset)
+
+    def generate_vap_info_string(self):
+        vap = self.map_header.vap_header
+
+        return """
+VAP information:
+    name        == %s
+    build date  == %s
+    description == %s
+
+    vap version   == %s
+    feature level == %s
+    max players   == %s\n""" % (
+            vap.name, vap.build_date, vap.description,
+            vap.vap_version.enum_name, vap.feature_level.enum_name,
+            vap.max_players,
+            )

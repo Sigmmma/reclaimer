@@ -1,5 +1,6 @@
-from .halo2_map import *
-from .halo1_map import tag_path_pointer, tag_index_array_pointer
+from reclaimer.h2.common_descs import *
+from reclaimer.meta.halo2_map import valid_h2_tags
+from reclaimer.meta.halo1_map import tag_path_pointer, tag_index_array_pointer
 
 
 h2_alpha_map_header = Struct("map header",

@@ -1,0 +1,17 @@
+; these tags and their dependencies are added to a pc map by tool in this order
+
+{PATH_TO_SCENARIO}.scenario
+globals\globals.globals
+
+ui\ui_tags_loaded_all_scenario_types.tag_collection
+ui\ui_tags_loaded_solo_scenario_type.tag_collection;		IF SINGLEPLAYER
+ui\ui_tags_loaded_multiplayer_scenario_type.tag_collection;	IF MULTIPLAYER
+ui\ui_tags_loaded_mainmenu_scenario_type.tag_collection;	IF UI
+
+sound\sfx\ui\cursor.sound
+sound\sfx\ui\back.sound
+
+ui\shell\strings\loading.unicode_string_list
+
+ui\shell\bitmaps\trouble_brewing.bitmap
+ui\shell\bitmaps\background.bitmap

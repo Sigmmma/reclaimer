@@ -2,13 +2,13 @@ from ...common_descs import *
 from ...hek.defs.objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
-tag_reference = Struct("tag reference",
+tag_reference = Struct("tag_reference",
     dependency_os("tag"),
     SIZE=16
     )
 
 tagc_body = Struct("tagdata",
-    reflexive("tag references", tag_reference, 200),
+    reflexive("tag_references", tag_reference, 200),
     SIZE=12,
     )
 

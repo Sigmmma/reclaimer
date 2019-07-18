@@ -1,4 +1,4 @@
-from .tag import *
+from reclaimer.hek.defs.objs.tag import HekTag
 
 class Str_Tag(HekTag):
 

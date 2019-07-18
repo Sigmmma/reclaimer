@@ -15,5 +15,5 @@ sgla_def = TagDef("sgla",
     blam_header_stubbs('sgla'),
     sgla_body,
 
-    ext=".shader_transparent_glass", endian=">"
+    ext=".shader_transparent_glass", endian=">", tag_cls=ShdrTag
     )

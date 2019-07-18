@@ -1,5 +1,5 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.ligh import LighTag
 from supyr_struct.defs.tag_def import TagDef
 
 gel_comment = """The map tints the light per-pixel of cubemap."""
@@ -14,54 +14,58 @@ effect_parameters_comment = """If the light is created by an effect, it will ani
 ligh_body = Struct("tagdata",
     Bool32("flags",
         "dynamic",
-        "no specular",
-        "dont light own object",
-        "supersize in first person",
-        "first person flashlight",
-        "dont fade active camouflage",
+        "no_specular",
+        "dont_light_own_object",
+        "supersize_in_first_person",
+        "first_person_flashlight",
+        "dont_fade_active_camouflage",
         ),
 
     #Shape
     Struct("shape",
         Float("radius"),
-        QStruct("radius modifier", INCLUDE=from_to),
-        float_rad("falloff angle"),  # radians
-        float_rad("cutoff angle"),  # radians
-        Float("lens flare only radius"),
-        Pad(24),
+        QStruct("radius_modifier", INCLUDE=from_to),
+        float_rad("falloff_angle"),  # radians
+        float_rad("cutoff_angle"),  # radians
+        Float("lens_flare_only_radius"),
+        Float("cosine_falloff_angle", VISIBLE=False),
+        Float("cosine_cutoff_angle", VISIBLE=False),
+        Float("unknown", VISIBLE=False),
+        Float("sine_cutoff_angle", VISIBLE=False),
+        Pad(8),
         ),
 
     #Color
     Struct("color",
-        Bool32("interpolation flags", *blend_flags),
-        QStruct("color lower bound", INCLUDE=argb_float),
-        QStruct("color upper bound", INCLUDE=argb_float),
+        Bool32("interpolation_flags", *blend_flags),
+        QStruct("color_lower_bound", INCLUDE=argb_float),
+        QStruct("color_upper_bound", INCLUDE=argb_float),
         Pad(12),
         ),
 
     #Gel
-    Struct("gel map",
-        dependency("primary cube map", "bitm"),
+    Struct("gel_map",
+        dependency("primary_cube_map", "bitm"),
         Pad(2),
-        SEnum16("texture animation function", *animation_functions),
-        float_sec("texture animation period"),
+        SEnum16("texture_animation_function", *animation_functions),
+        float_sec("texture_animation_period"),
 
-        dependency("secondary cube map", "bitm"),
+        dependency("secondary_cube_map", "bitm"),
         Pad(2),
-        SEnum16("yaw animation function", *animation_functions),
-        float_sec("yaw animation period"),
+        SEnum16("yaw_animation_function", *animation_functions),
+        float_sec("yaw_animation_period"),
         Pad(2),
-        SEnum16("roll animation function", *animation_functions),
-        float_sec("roll animation period"),
+        SEnum16("roll_animation_function", *animation_functions),
+        float_sec("roll_animation_period"),
         Pad(2),
-        SEnum16("pitch animation function", *animation_functions),
-        float_sec("pitch animation period"),
+        SEnum16("pitch_animation_function", *animation_functions),
+        float_sec("pitch_animation_period"),
         Pad(8),
         COMMENT=gel_comment
         ),
 
     #Lens flare
-    dependency("lens flare", "lens", COMMENT=lens_flare_comment),
+    dependency("lens_flare", "lens", COMMENT=lens_flare_comment),
     Pad(24),
 
     #Radiosity
@@ -73,10 +77,10 @@ ligh_body = Struct("tagdata",
         ),
 
     #Effect parameters
-    Struct("effect parameters",
+    Struct("effect_parameters",
         float_sec("duration"),
         Pad(2),
-        SEnum16("falloff function", *fade_functions),
+        SEnum16("falloff_function", *fade_functions),
         COMMENT=effect_parameters_comment
         ),
 
@@ -91,5 +95,5 @@ ligh_def = TagDef("ligh",
     blam_header("ligh", 3),
     ligh_body,
 
-    ext=".light", endian=">", tag_cls=HekTag,
+    ext=".light", endian=">", tag_cls=LighTag,
     )

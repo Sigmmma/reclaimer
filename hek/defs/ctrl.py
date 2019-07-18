@@ -1,6 +1,6 @@
 from .obje import *
 from .devi import *
-from .objs.tag import HekTag
+from .objs.obje import ObjeTag
 from supyr_struct.defs.tag_def import TagDef
 
 # replace the object_type enum one that uses
@@ -8,18 +8,18 @@ from supyr_struct.defs.tag_def import TagDef
 obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=8)
 
-ctrl_attrs = Struct("ctrl attrs",
+ctrl_attrs = Struct("ctrl_attrs",
     SEnum16('type',
-        'toggle switch',
-        'on button',
-        'off button',
-        'call button'
+        'toggle_switch',
+        'on_button',
+        'off_button',
+        'call_button'
         ),
-    SEnum16('triggers when',
-        'touched by player',
+    SEnum16('triggers_when',
+        'touched_by_player',
         'destroyed'
         ),
-    float_zero_to_one('call value'),
+    float_zero_to_one('call_value'),
 
     Pad(80),
     dependency("on", valid_event_effects),
@@ -43,5 +43,5 @@ ctrl_def = TagDef("ctrl",
     blam_header('ctrl'),
     ctrl_body,
 
-    ext=".device_control", endian=">", tag_cls=HekTag
+    ext=".device_control", endian=">", tag_cls=ObjeTag
     )

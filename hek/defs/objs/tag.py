@@ -1,5 +1,5 @@
-from ....field_types import *
-from supyr_struct.tag import *
+from supyr_struct.defs.constants import DEFAULT
+from supyr_struct.tag import Tag
 
 class HekTag(Tag):
     def __init__(self, **kwargs):

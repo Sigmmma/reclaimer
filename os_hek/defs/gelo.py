@@ -4,24 +4,24 @@ from ...hek.defs.objs.tag import HekTag
 gelo_body = Struct("tagdata",
     SInt16("version"),
     Bool16("flags",
-        "hide health when zoomed",
-        "hide shield when zoomed",
-        "hide motion sensor when zoomed",
-        "force game to use stun jumping penalty"
+        "hide_health_when_zoomed",
+        "hide_shield_when_zoomed",
+        "hide_motion_sensor_when_zoomed",
+        "force_game_to_use_stun_jumping_penalty"
         ),
-    SInt32("base address"),
-    ascii_str32("mod name"),
-    dependency_os("global explicit references", "tagc"),
-    dependency_os("chokin victim globals", "gelc"),
+    SInt32("base_address"),
+    ascii_str32("mod_name"),
+    dependency_os("global_explicit_references", "tagc"),
+    dependency_os("chokin_victim_globals", "gelc"),
 
     Pad(16),
     Pad(12), #reflexive("unknown1", void_desc),
     Pad(52),
-    reflexive("scripted ui widgets", scripted_ui_widget, 128),
+    reflexive("scripted_ui_widgets", scripted_ui_widget, 128),
 
     Pad(12), #reflexive("unknown2", void_desc),
     Pad(20),
-    reflexive("yelo scripting", yelo_scripting, 1),
+    reflexive("yelo_scripting", yelo_scripting, 1),
 
     SIZE=288
     )

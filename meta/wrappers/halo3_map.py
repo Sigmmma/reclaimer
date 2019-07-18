@@ -1,16 +1,21 @@
-from math import ceil, log
-from os.path import exists, join
-from tkinter.filedialog import askopenfilename
+import os
 
+from math import ceil, log
+from traceback import format_exc
 
 from reclaimer import data_extraction
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext, FORMAT_NAME_MAP
-from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES, get_h3_pixel_bytes_size
+from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES, get_h3_pixel_bytes_size,\
+     int_to_fourcc
 from reclaimer.h3.handler import Halo3Handler
 from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
-from reclaimer.meta.wrappers.halo_map import *
 from reclaimer.meta.gen3_resources.bitmap import s_tag_d3d_texture_def,\
      s_tag_d3d_texture_interleaved_def
+from reclaimer.meta.wrappers.halo_map import HaloMap
+from reclaimer.meta.wrappers.string_id_manager import StringIdManager
+from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
+from reclaimer.meta.wrappers.rawdata_manager import RawdataManager
+from reclaimer.meta.wrappers.tag_index_converters import h3_to_h1_tag_index
 
 from arbytmap.format_defs import VALID_FORMATS
 
@@ -134,6 +139,8 @@ class Halo3Map(HaloMap):
         (0x4B7, 0xC11), (0x0, 0x4B7), (0x0, 0xA7D),
         (0x0, 0xB0F),   (0x0, 0xBAF), (0x0, 0xB63),
         (0x0, 0xBBF),   (0x0, 0xBF0), (0x0, 0xC04))
+    
+    data_extractors = data_extraction.h3_data_extractors
 
     def __init__(self, maps=None):
         self.root_tags = {}
@@ -193,8 +200,6 @@ class Halo3Map(HaloMap):
                     self.root_tags[tag_cls] = meta
 
     def load_map(self, map_path, **kwargs):
-        autoload_resources = kwargs.get("autoload_resources", True)
-        will_be_active = kwargs.get("will_be_active", True)
         HaloMap.load_map(self, map_path, **kwargs)
         self.tag_index = h3_to_h1_tag_index(self.map_header, self.tag_index)
         self.basic_deprotection()
@@ -231,69 +236,29 @@ class Halo3Map(HaloMap):
             for map_name, halo_map in self.maps.items():
                 # update each map's rawdata_manager so each one
                 # knows what name the shared caches are named.
-                if map_name != "<active>":
-                    halo_map.rawdata_manager.add_shared_map_name(
-                        ext_cache_name, self.map_header.map_name)
+                halo_map.rawdata_manager.add_shared_map_name(
+                    ext_cache_name, self.map_header.map_name)
 
-        if autoload_resources and map_type <= 2:
-            self.load_all_resource_maps(dirname(map_path))
+        self.clear_map_cache()
 
-        self.map_data.clear_cache()
-
-    def load_all_resource_maps(self, maps_dir=""):
+    def get_resource_map_paths(self, maps_dir=""):
         play_meta = self.root_tags.get("cache_file_resource_layout_table")
         if not play_meta:
-            print("Could not get cache_file_resource_layout_table meta.\n"
-                  "Cannot determine resource maps.")
-            return
+            return {}
 
-        map_paths = {name: None for name in self.shared_map_names}
+        map_paths = {name.split(".")[0]: None for name in self.shared_map_names}
         if not maps_dir:
-            maps_dir = dirname(self.filepath)
+            maps_dir = os.path.dirname(self.filepath)
 
         # detect/ask for the map paths for the resource maps
-        for map_name in sorted(map_paths.keys()):
-            map_name = map_name.split(".")[0]
+        for map_name in sorted(map_paths):
+            map_path = os.path.join(maps_dir, "%s.map" % map_name)
             if self.maps.get(map_name) is not None:
-                # map already loaded
-                continue
+                map_paths[map_name] = self.maps[map_name].filepath
+            elif os.path.exists(map_path):
+                map_paths[map_name] = map_path
 
-            map_path = join(maps_dir, map_name)
-            if exists(map_path + ".map"):
-                map_path += ".map"
-
-            while map_path and not exists(map_path):
-                map_path = askopenfilename(
-                    initialdir=maps_dir,
-                    title="Select the %s.map" % map_name,
-                    filetypes=((map_name, "*.map"),
-                               (map_name, "*.*")))
-
-                if map_path:
-                    maps_dir = dirname(map_path)
-                else:
-                    print("    You wont be able to extract from %s.map" % map_name)
-                    break
-
-            map_paths[map_name] = map_path
-
-        for map_name in sorted(map_paths.keys()):
-            map_path = map_paths[map_name]
-            try:
-                if self.maps.get(map_name) is None and map_path:
-                    print("    Loading %s..." % map_name)
-                    type(self)(self.maps).load_map(map_path, will_be_active=False)
-                    print("        Finished")
-            except Exception:
-                print(format_exc())
-
-    def extract_tag_data(self, meta, tag_index_ref, **kw):
-        extractor = data_extraction.h3_data_extractors.get(
-            fourcc(tag_index_ref.class_1.data))
-        if extractor is None:
-            return "No extractor for this type of tag."
-        kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.path, **kw)
+        return map_paths
 
     def get_meta(self, tag_id, reextract=False, **kw):
         if tag_id is None or self.map_header.map_type.data > 2:
@@ -309,7 +274,7 @@ class Halo3Map(HaloMap):
         tag_cls = None
         full_tag_cls_name = tag_index_ref.class_1.enum_name
         if full_tag_cls_name not in ("<INVALID>", "NONE"):
-            tag_cls = fourcc(tag_index_ref.class_1.data)
+            tag_cls = int_to_fourcc(tag_index_ref.class_1.data)
 
         desc = self.get_meta_descriptor(tag_cls)
         if desc is None or tag_cls is None:
@@ -369,3 +334,33 @@ class Halo3Map(HaloMap):
             return None
 
         return meta
+
+    def generate_map_info_string(self):
+        string = HaloMap.generate_map_info_string(self)
+
+        string += """
+
+Tag index:
+    tag count           == %s
+    tag types count     == %s
+    root tags count     == %s
+    index array pointer == %s""" % (
+        self.orig_tag_index.tag_count,
+        self.orig_tag_index.tag_types_count,
+        self.orig_tag_index.root_tags_count,
+        self.tag_index.tag_index_offset - self.map_magic)
+
+        for arr_name, arr in (("Partitions", self.map_header.partitions),
+                              ("Sections", self.map_header.sections),):
+            string += "\n%s:\n" % arr_name
+            names = ("debug", "resource", "tag", "locale")\
+                    if arr.NAME_MAP else range(len(arr))
+            for name in names:
+                section = arr[name]
+                string += """
+    %s:
+        address == %s
+        size    == %s
+        offset  == %s""" % (
+            name, section[0], section[1], section.file_offset)
+        return string
