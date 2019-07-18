@@ -1,18 +1,18 @@
 from .shdr import *
-from .objs.tag import HekTag
+from .objs.shdr import ShdrTag
 from supyr_struct.defs.tag_def import TagDef
 
 noise_map = Struct("noise_map",
     FlUInt16("unknown0", VISIBLE=False),
     FlUInt16("unknown1", VISIBLE=False),
-    float_sec("animation period"),
-    QStruct("animation direction", INCLUDE=ijk_float),
-    Float("noise map scale"),
-    dependency("noise map", "bitm"),
+    float_sec("animation_period"),
+    QStruct("animation_direction", INCLUDE=ijk_float),
+    Float("noise_map_scale"),
+    dependency("noise_map", "bitm"),
     Pad(32),
     )
 
-spla_attrs = Struct("spla attrs",
+spla_attrs = Struct("spla_attrs",
     Pad(4),
     #Intensity
     Struct("intensity",
@@ -33,19 +33,19 @@ spla_attrs = Struct("spla attrs",
 
     #Color
     Struct("color",
-        float_zero_to_one("perpendicular brightness"),
-        QStruct("perpendicular tint color", INCLUDE=rgb_float),
-        float_zero_to_one("parallel brightness"),
-        QStruct("parallel tint color", INCLUDE=rgb_float),
-        SEnum16("tint color source", *function_names),
+        float_zero_to_one("perpendicular_brightness"),
+        QStruct("perpendicular_tint_color", INCLUDE=rgb_float),
+        float_zero_to_one("parallel_brightness"),
+        QStruct("parallel_tint_color", INCLUDE=rgb_float),
+        SEnum16("tint_color_source", *function_names),
         ),
 
     Pad(58),
     #Primary Noise Map
-    Struct("primary noise map", INCLUDE=noise_map),
+    Struct("primary_noise_map", INCLUDE=noise_map),
 
     #Secondary Noise Map
-    Struct("secondary noise map", INCLUDE=noise_map),
+    Struct("secondary_noise_map", INCLUDE=noise_map),
     SIZE=292
     )
 
@@ -63,5 +63,5 @@ spla_def = TagDef("spla",
     blam_header('spla'),
     spla_body,
 
-    ext=".shader_transparent_plasma", endian=">", tag_cls=HekTag
+    ext=".shader_transparent_plasma", endian=">", tag_cls=ShdrTag
     )

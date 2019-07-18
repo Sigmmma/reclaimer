@@ -1,4 +1,5 @@
 from ..constants import *
+from reclaimer.util import fourcc_to_int
 
 # maps tag class four character codes(fccs) in
 # their string encoding to their int encoding.
@@ -25,7 +26,7 @@ sr_tag_class_fcc_to_ext = dict(
     )
 
 for tag_cls in sr_tag_class_fcc_to_ext:
-    sr_tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls)
-    sr_tag_class_be_int_to_fcc[fcc(tag_cls)] = tag_cls
-    sr_tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
-    sr_tag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls
+    sr_tag_class_fcc_to_be_int[tag_cls] = fourcc_to_int(tag_cls)
+    sr_tag_class_be_int_to_fcc[fourcc_to_int(tag_cls)] = tag_cls
+    sr_tag_class_fcc_to_le_int[tag_cls] = fourcc_to_int(tag_cls)
+    sr_tag_class_le_int_to_fcc[fourcc_to_int(tag_cls)] = tag_cls

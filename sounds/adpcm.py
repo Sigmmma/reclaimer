@@ -1,6 +1,6 @@
 import audioop
 from array import array
-from struct import Struct
+from struct import Struct as PyStruct
 
 __all__ = ("decode_adpcm_samples", "ADPCM_BLOCKSIZE", "PCM_BLOCKSIZE", )
 
@@ -35,7 +35,7 @@ def _fast_decode_mono_adpcm_samples(samples, endian="<"):
     out_data = bytearray(block_ct * pcm_size)
 
     pcm_i = 0
-    unpacker = Struct(endian + "hh").unpack_from
+    unpacker = PyStruct(endian + "hh").unpack_from
     for i in range(0, len(samples), adpcm_size):
         # why couldn't it be nice and just follow the same
         # step packing pattern where the first step is the

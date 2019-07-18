@@ -16,5 +16,5 @@ spla_def = TagDef("spla",
     blam_header_stubbs('spla'),
     spla_body,
 
-    ext=".shader_transparent_plasma", endian=">"
+    ext=".shader_transparent_plasma", endian=">", tag_cls=ShdrTag
     )

@@ -1,8 +1,8 @@
 from math import ceil, log
 
 from arbytmap.bitmap_io import get_pixel_bytes_size
-from .constants import HALO3_SHARED_MAP_TYPES
-from ..util import *
+from reclaimer.h3.constants import HALO3_SHARED_MAP_TYPES
+from reclaimer.util import *
 
 
 def get_virtual_dimension(bitm_fmt, dim, mip_level=0, tiled=False):

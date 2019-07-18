@@ -1,4 +1,4 @@
-import struct
+from struct import Struct as PyStruct
 
 from reclaimer.field_types import *
 from reclaimer.constants import *
@@ -8,6 +8,7 @@ from reclaimer.common_descs import ascii_str32,\
 from reclaimer.util import float_to_str
 from reclaimer.h2.common_descs import script_types as h2_script_types,\
      script_object_types as h2_script_object_types
+
 from supyr_struct.defs.block_def import BlockDef
 from supyr_struct.field_types import FieldType
 
@@ -40,6 +41,7 @@ HSC_IS_PRIMITIVE   = 1 << 0
 HSC_IS_SCRIPT_CALL = 1 << 1
 HSC_IS_GLOBAL      = 1 << 2
 HSC_IS_GARBAGE_COLLECTABLE = 1 << 3
+HSC_IS_SCRIPT_OR_GLOBAL = HSC_IS_SCRIPT_CALL | HSC_IS_GLOBAL
 
 SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES = dict((
     (10, "scripts"), (11, "trigger_volumes"), (12, "cutscene_flags"),
@@ -121,8 +123,8 @@ h1_script_syntax_data_def    = BlockDef(h1_script_syntax_data)
 h1_script_syntax_data_os_def = BlockDef(h1_script_syntax_data_os)
 
 
-def cast_uint32_to_float(uint32, packer=struct.Struct("<I"),
-                         unpacker=struct.Struct("<f")):
+def cast_uint32_to_float(uint32, packer=PyStruct("<I"),
+                         unpacker=PyStruct("<f")):
     return unpacker.unpack(packer.pack(uint32))[0]
 
 
@@ -137,7 +139,7 @@ def cast_uint32_to_sint32(uint32):
 def get_hsc_node_string(string_data, node, hsc_node_strings_by_type=()):
     # if this is not a script or global, try to get the
     # string from the provided hsc_node_strings_by_type
-    if (not(node.flags & (HSC_IS_SCRIPT_CALL | HSC_IS_GLOBAL)) and
+    if (not(node.flags & HSC_IS_SCRIPT_OR_GLOBAL) and
             node.type in hsc_node_strings_by_type):
         hsc_node_strings = hsc_node_strings_by_type[node.type]
 

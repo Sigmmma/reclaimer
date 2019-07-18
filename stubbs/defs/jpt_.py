@@ -7,19 +7,21 @@ jpt__body[17] = damage_modifiers
 
 jpt__body[16][1] = SEnum16("category", *damage_category)
 jpt__body[16][2] = Bool32("flags",
-    "does not hurt owner",
+    "does_not_hurt_owner",
     {NAME: "headshot", GUI_NAME: "causes headshots"},
-    "pings resistant units",
-    "does not hurt friends",
-    "does not ping units",
-    "detonates explosives",
-    "only hurts shields",
-    "causes flaming death",
-    {NAME: "indicator_points_down", GUI_NAME: "damage indicators always point down"},
-    "skips shields",
-    "unknown1",
-    {NAME: "multiplayer headshot", GUI_NAME: "causes multiplayer headshots"},
-    "unknown2",
+    "pings_resistant_units",
+    "does_not_hurt_friends",
+    "does_not_ping_units",
+    "detonates_explosives",
+    "only_hurts_shields",
+    "causes_flaming_death",
+    {NAME: "indicator_points_down",
+     GUI_NAME: "damage indicators always points down"},
+    "skips_shields",
+    "only_hurts_one_infection_form",
+    {NAME: "multiplayer_headshot",
+     GUI_NAME: "causes multiplayer headshots"},
+    "infection_form_pop",
     )
 
     

@@ -1,17 +1,18 @@
 from math import pi, sqrt, log
-from os.path import exists, join
 from struct import Struct as PyStruct
-from tkinter.filedialog import askopenfilename
+from traceback import format_exc
 
-from .halo_map import *
-from .halo1_rsrc_map import Halo1RsrcMap
-from .halo1_map import Halo1Map
+from reclaimer.meta.wrappers.halo_map import HaloMap
+from reclaimer.meta.wrappers.halo1_rsrc_map import Halo1RsrcMap
+from reclaimer.meta.wrappers.halo1_map import Halo1Map
 from reclaimer import data_extraction
-
-from reclaimer.hsc import h1_script_syntax_data_def
+from reclaimer.halo_script.hsc import h1_script_syntax_data_def
 from reclaimer.hek.defs.coll import fast_coll_def
 from reclaimer.hek.defs.sbsp import fast_sbsp_def
 from reclaimer.hek.handler import HaloHandler
+from reclaimer.util import int_to_fourcc
+
+from supyr_struct.field_types import FieldType
 
 __all__ = ("Halo1AnniMap",)
 
@@ -122,7 +123,7 @@ class Halo1AnniMap(Halo1Map):
         if tag_id == tag_index.scenario_tag_id & 0xFFff:
             tag_cls = "scnr"
         elif tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
-            tag_cls = fourcc(tag_index_ref.class_1.data)
+            tag_cls = int_to_fourcc(tag_index_ref.class_1.data)
 
         # if we dont have a defintion for this tag_cls, then return nothing
         if self.get_meta_descriptor(tag_cls) is None:

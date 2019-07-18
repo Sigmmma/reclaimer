@@ -5,9 +5,8 @@ raw offsets and map magic must be provided explicitely.
 '''
 
 from struct import Struct as PyStruct
-from supyr_struct.defs.constants import *
-from supyr_struct.defs.util import *
-from reclaimer.os_v4_hek.handler import \
+
+from reclaimer.constants import \
      tag_class_be_int_to_fcc_os,     tag_class_fcc_to_ext_os,\
      tag_class_be_int_to_fcc_stubbs, tag_class_fcc_to_ext_stubbs
 
@@ -60,41 +59,67 @@ object_class_bytes = (
     )
 
 _3_uint32_struct = PyStruct("<LLL")
-
-def move_rawdata_ref(map_data, raw_ref_offset, magic, engine, diffs_by_offsets,
-                     unpacker=_3_uint32_struct.unpack,
-                     packer=_3_uint32_struct.pack):
-    map_data.seek(raw_ref_offset - magic)
-    size, flags, raw_ptr = unpacker(map_data.read(12))
-    if not size: return
-    ptr_diff = 0
-    for off, diff in diffs_by_offsets.items():
-        if off <= raw_ptr:
-            ptr_diff = diff
-
-    if not ptr_diff or ((flags & 1) and "xbox" not in engine):
-        return
-
-    map_data.seek(0, 2)
-    raw_ptr += ptr_diff
-    assert raw_ptr + size <= map_data.tell()
-    map_data.seek(raw_ref_offset - magic)
-    map_data.write(packer(size, flags, raw_ptr))
+_4_uint32_struct = PyStruct("<LLLL")
+_5_uint32_struct = PyStruct("<LLLLL")
 
 
-def read_reflexive(map_data, refl_offset, unpacker=_3_uint32_struct.unpack):
+def read_reflexive(map_data, refl_offset, max_count=0xFFffFFff,
+                   struct_size=1, tag_magic=None,
+                   unpacker=_3_uint32_struct.unpack):
     '''
     Reads a reflexive from the given map_data at the given offset.
     Returns the reflexive's offset and pointer.
     '''
     map_data.seek(refl_offset)
-    return unpacker(map_data.read(12))
+    count, start, id = unpacker(map_data.read(12))
+    if tag_magic is not None:
+        map_data.seek(0, 2)
+        max_count = min(max_count,
+                        (map_data.tell() - (start - tag_magic)) // struct_size)
+    return min(count, max_count), start, id
+
+
+def read_rawdata_ref(map_data, ref_offset, tag_magic=None,
+                     unpacker=_5_uint32_struct.unpack):
+    map_data.seek(ref_offset)
+    size, flags, raw_pointer, pointer, id = unpacker(map_data.read(20))
+    if tag_magic is not None:
+        map_data.seek(0, 2)
+        size = min(size, map_data.tell() - (pointer - tag_magic))
+    return size, flags, raw_pointer, pointer, id
+
+
+def move_rawdata_ref(map_data, raw_ref_offset, magic, engine, diffs_by_offsets,
+                     unpacker=_4_uint32_struct.unpack,
+                     packer=_4_uint32_struct.pack):
+    map_data.seek(raw_ref_offset - magic)
+    size, flags, raw_ptr, ptr = unpacker(map_data.read(16))
+    if not size or ((flags & 1) and "xbox" not in engine):
+        return
+
+    ptr_diff = 0
+    # find the highest pointer that is still at or below this rawdatas pointer
+    for off in diffs_by_offsets:
+        if off <= raw_ptr:
+            ptr_diff = max(diffs_by_offsets[off], ptr_diff)
+
+    if not ptr_diff:
+        return
+
+    # TODO: Determine if we need to modify the regular pointer
+    # and also determine in what way to modify it
+
+    map_data.seek(0, 2)
+    raw_ptr += ptr_diff
+    assert raw_ptr + size <= map_data.tell()
+    map_data.seek(raw_ref_offset - magic)
+    map_data.write(packer(size, flags, raw_ptr, ptr))
 
 
 def iter_reflexive_offs(map_data, refl_offset, struct_size,
-                        unpacker=_3_uint32_struct.unpack):
-    map_data.seek(refl_offset)
-    count, start, _ = unpacker(map_data.read(12))
+                        max_count=0xFFffFFff, tag_magic=None):
+    count, start, _ = read_reflexive(map_data, refl_offset, max_count,
+                                     struct_size, tag_magic)
     return range(start, start + count*struct_size, struct_size)
 
 
@@ -105,10 +130,19 @@ def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
 
     dep_offset -= tag_magic
 
-    map_data.seek(dep_offset + 12)
-    tag_id = int.from_bytes(map_data.read(4), "little") & 0xFFFF
+    try:
+        map_data.seek(dep_offset + 12)
+    except ValueError:
+        return
 
-    if tag_id == 0xFFFF:
+    tag_id = int.from_bytes(map_data.read(4), "little")
+    tag_index_id = tag_id & 0xFFff
+
+    if tag_index_id not in range(len(index_array)):
+        return
+
+    tag_index_ref = index_array[tag_index_id]
+    if tag_index_ref.id != tag_id:
         return
 
     if cls is None:
@@ -117,13 +151,19 @@ def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
 
     # if the class is obje or shdr, make sure to get the ACTUAL class
     if cls in (b'ejbo', b'meti', b'ived', b'tinu'):
-        map_data.seek(index_array[tag_id].meta_offset - map_magic)
-        cls = object_class_bytes[
-            int.from_bytes(map_data.read(2), 'little')]
+        map_data.seek(tag_index_ref.meta_offset - map_magic)
+        object_type = int.from_bytes(map_data.read(2), 'little')
+        if object_type not in range(-1, len(object_class_bytes) - 1):
+            return
+
+        cls = object_class_bytes[object_type]
     elif cls == b'rdhs':
-        map_data.seek(index_array[tag_id].meta_offset - map_magic + 36)
-        cls = shader_class_bytes[
-            int.from_bytes(map_data.read(2), 'little')]
+        map_data.seek(tag_index_ref.meta_offset - map_magic + 36)
+        shader_type = int.from_bytes(map_data.read(2), 'little')
+        if shader_type not in range(3, len(shader_class_bytes) - 1):
+            return
+
+        cls = shader_class_bytes[shader_type]
     elif cls in (b'2dom', b'edom'):
         if "xbox" in engine:
             cls = b'edom'
@@ -133,8 +173,8 @@ def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
     map_data.seek(dep_offset)
     map_data.write(cls)
 
-    if tag_id not in repair:
-        repair[tag_id] = cls[::-1].decode('latin1')
+    if tag_index_id not in repair:
+        repair[tag_index_id] = cls[::-1].decode('latin1')
         #DEBUG
         # print("        %s %s %s" % (tag_id, cls, dep_offset))
 

@@ -1,5 +1,5 @@
-from ..common_descs import *
-from .objs.tag import H2Tag
+from reclaimer.h2.common_descs import *
+from reclaimer.h2.defs.objs.tag import H2Tag
 from supyr_struct.defs.tag_def import TagDef
 
 # This is the reflexive that needs the MMAP struct headering the tbfd inside

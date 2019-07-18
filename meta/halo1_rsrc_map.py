@@ -1,6 +1,6 @@
-from ..common_descs import *
-from .objs.halo1_rsrc_map import Halo1RsrcMapTag
-from supyr_struct.defs.tag_def import TagDef, BlockDef
+from reclaimer.common_descs import *
+from reclaimer.meta.objs.halo1_rsrc_map import Halo1RsrcMapTag
+from supyr_struct.defs.tag_def import TagDef
 
 
 def get():
@@ -18,7 +18,7 @@ def tag_path_pointer(parent=None, new_value=None, **kwargs):
 
 rsrc_tag = Container("tag",
     BytesRaw("data", SIZE="..size", POINTER="..offset"),
-    CStrLatin1("path", POINTER=tag_path_pointer),
+    CStrTagRef("path", POINTER=tag_path_pointer, MAX=768),
     )
 
 tag_header = Struct("tag header",

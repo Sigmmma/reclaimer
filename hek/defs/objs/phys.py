@@ -1,6 +1,7 @@
 from math import log
-from .tag import *
-from .matrices import Matrix
+
+from reclaimer.hek.defs.objs.tag import HekTag
+from reclaimer.util.matrices import Matrix
 
 
 class PhysTag(HekTag):
@@ -122,6 +123,7 @@ class PhysTag(HekTag):
             inverse = regular.inverse
         except ZeroDivisionError:
             inverse = Matrix((1, 0, 0), (0, 1, 0), (0, 0, 1))
+            print("Could not calculate inertia matrix inverse.")
 
         # place the inverse matrix into the tag
         inv.yy_zz[:] = inverse[0][:]

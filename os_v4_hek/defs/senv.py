@@ -14,36 +14,36 @@ dlm_specular_comment = """DLM SPECULAR INTENSITY
 Exponent controls the highlight size, the bigger the exponent, the smaller the highlight.
 Coefficient controls the brightness of the highlights."""
 
-os_senv_ext = Struct("shader environment extension",
-    Bool16("dlm flags",
-        "do not use dlms",
+os_senv_ext = Struct("shader_environment_extension",
+    Bool16("dlm_flags",
+        "do_not_use_dlms",
         COMMENT=dlm_comment
         ),
     Pad(2),
-    Float("bump amount"),
+    Float("bump_amount"),
 
-    dependency_os("specular color map", "bitm", COMMENT=dlm_specular_map_comment),
-    Float("specular color coefficient"),
-    Float("specular color exponent"),
-    Bool16("specular flags",
-        "alpha as exponent mask",
+    dependency_os("specular_color_map", "bitm", COMMENT=dlm_specular_map_comment),
+    Float("specular_color_coefficient"),
+    Float("specular_color_exponent"),
+    Bool16("specular_flags",
+        "alpha_as_exponent_mask",
         ),
     Pad(2),
 
-    float_zero_to_one("perpendicular brightness", COMMENT=dlm_tint_comment),
-    QStruct("perpendicular tint color", INCLUDE=rgb_float),
-    float_zero_to_one("parallel brightness"),
-    QStruct("parallel tint color", INCLUDE=rgb_float),
+    float_zero_to_one("perpendicular_brightness", COMMENT=dlm_tint_comment),
+    QStruct("perpendicular_tint_color", INCLUDE=rgb_float),
+    float_zero_to_one("parallel_brightness"),
+    QStruct("parallel_tint_color", INCLUDE=rgb_float),
 
-    Float("specular lighting exponent", COMMENT=dlm_specular_comment),
-    Float("specular lighting coefficient"),
+    Float("specular_lighting_exponent", COMMENT=dlm_specular_comment),
+    Float("specular_lighting_coefficient"),
 
     SIZE=100,
     )
 
 # replace the padding with an open sauce shader environment extension reflexive
 senv_attrs = dict(senv_attrs)
-senv_attrs[3] = reflexive("os shader environment ext", os_senv_ext, 1)
+senv_attrs[3] = reflexive("os_shader_environment_ext", os_senv_ext, 1)
 
 senv_body = Struct("tagdata",
     shdr_attrs,
@@ -58,5 +58,5 @@ senv_def = TagDef("senv",
     blam_header('senv', 2),
     senv_body,
 
-    ext=".shader_environment", endian=">", tag_cls=HekTag
+    ext=".shader_environment", endian=">", tag_cls=ShdrTag
     )

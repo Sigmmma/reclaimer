@@ -1,4 +1,5 @@
-from ..constants import *
+from reclaimer.constants import *
+from reclaimer.util import fourcc_to_int
 
 
 # These are the 4 fourCC that I've found in tag headers
@@ -162,7 +163,7 @@ h2_tag_class_fcc_to_ext = {
     }
 
 for tag_cls in h2_tag_class_fcc_to_ext:
-    h2_tag_class_fcc_to_be_int[tag_cls] = fcc(tag_cls)
-    h2_tag_class_be_int_to_fcc[fcc(tag_cls)] = tag_cls
-    h2_tag_class_fcc_to_le_int[tag_cls] = fcc(tag_cls)
-    h2_tag_class_le_int_to_fcc[fcc(tag_cls)] = tag_cls
+    h2_tag_class_fcc_to_be_int[tag_cls] = fourcc_to_int(tag_cls)
+    h2_tag_class_be_int_to_fcc[fourcc_to_int(tag_cls)] = tag_cls
+    h2_tag_class_fcc_to_le_int[tag_cls] = fourcc_to_int(tag_cls)
+    h2_tag_class_le_int_to_fcc[fourcc_to_int(tag_cls)] = tag_cls

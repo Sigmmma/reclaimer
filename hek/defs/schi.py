@@ -1,63 +1,63 @@
 from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
-from .objs.schi import SchiTag
+from .objs.shdr import ShdrTag
 
-chicago_4_stage_maps = Struct("four stage map",
+chicago_4_stage_maps = Struct("four_stage_map",
     Bool16("flags" ,
         "unfiltered",
-        "alpha replicate",
-        "u-clamped",
-        "v-clamped",
+        "alpha_replicate",
+        "u_clamped",
+        "v_clamped",
         ),
 
     Pad(42),
-    SEnum16("color function", *blend_functions),
-    SEnum16("alpha function", *blend_functions),
+    SEnum16("color_function", *blend_functions),
+    SEnum16("alpha_function", *blend_functions),
 
     Pad(36),
     #shader transformations
-    Float("map u-scale"),
-    Float("map v-scale"),
-    Float("map u-offset"),
-    Float("map v-offset"),
-    float_deg("map rotation"),  # degrees
-    float_zero_to_one("map bias"),  # [0,1]
+    Float("map_u_scale"),
+    Float("map_v_scale"),
+    Float("map_u_offset"),
+    Float("map_v_offset"),
+    float_deg("map_rotation"),  # degrees
+    float_zero_to_one("map_bias"),  # [0,1]
     dependency("bitmap", "bitm"),
 
     #shader animations
     Pad(40),
-    Struct("u-animation", INCLUDE=anim_src_func_per_pha_sca),
-    Struct("v-animation", INCLUDE=anim_src_func_per_pha_sca),
-    Struct("rotation-animation", INCLUDE=anim_src_func_per_pha_sca_rot),
+    Struct("u_animation", INCLUDE=anim_src_func_per_pha_sca),
+    Struct("v_animation", INCLUDE=anim_src_func_per_pha_sca),
+    Struct("rotation_animation", INCLUDE=anim_src_func_per_pha_sca_rot),
 
-    QStruct("rotation center", INCLUDE=xy_float),
+    QStruct("rotation_center", INCLUDE=xy_float),
     SIZE=220,
     )
 
-schi_attrs = Struct("schi attrs",
+schi_attrs = Struct("schi_attrs",
     # Shader Properties
-    Struct("chicago shader",
-        UInt8("numeric counter limit",
+    Struct("chicago_shader",
+        UInt8("numeric_counter_limit",
             MIN=0, MAX=255, SIDETIP="[0,255]"),  # [0,255]
 
-        Bool8("chicago shader flags", *trans_shdr_properties),
-        SEnum16("first map type", *trans_shdr_first_map_type),
-        SEnum16("framebuffer blend function", *framebuffer_blend_functions),
-        SEnum16("framebuffer fade mode", *render_fade_mode),
-        SEnum16("framebuffer fade source", *function_outputs),
+        Bool8("chicago_shader_flags", *trans_shdr_properties),
+        SEnum16("first_map_type", *trans_shdr_first_map_type),
+        SEnum16("framebuffer_blend_function", *framebuffer_blend_functions),
+        SEnum16("framebuffer_fade_mode", *render_fade_mode),
+        SEnum16("framebuffer_fade_source", *function_outputs),
         Pad(2),
         ),
 
     #Lens Flare
-    float_wu("lens flare spacing"),  # world units
-    dependency("lens flare", "lens"),
-    reflexive("extra layers", extra_layers_block, 4,
+    float_wu("lens_flare_spacing"),  # world units
+    dependency("lens_flare", "lens"),
+    reflexive("extra_layers", extra_layers_block, 4,
         DYN_NAME_PATH='.filepath'),
     reflexive("maps", chicago_4_stage_maps, 4,
         DYN_NAME_PATH='.bitmap.filepath'),
-    Bool32("extra flags",
-        "dont fade active camouflage",
-        "numeric countdown timer"
+    Bool32("extra_flags",
+        "dont_fade_active_camouflage",
+        "numeric_countdown_timer"
         ),
     SIZE=68
     )
@@ -77,5 +77,5 @@ schi_def = TagDef("schi",
     schi_body,
 
     ext=".shader_transparent_chicago",
-    endian=">", tag_cls=SchiTag
+    endian=">", tag_cls=ShdrTag
     )

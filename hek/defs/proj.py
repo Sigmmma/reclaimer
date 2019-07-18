@@ -1,5 +1,5 @@
 from .obje import *
-from .objs.tag import HekTag
+from .objs.obje import ObjeTag
 
 # replace the object_type enum one that uses
 # the correct default value for this object
@@ -14,99 +14,99 @@ responses = (
     "attach"
     )
 
-material_response = Struct("material response",
+material_response = Struct("material_response",
     Bool16("flags",
-        "cannot be overpenetrated",
+        "cannot_be_overpenetrated",
         ),
     SEnum16('response', *responses),
     dependency('effect', "effe"),
 
     Pad(16),
-    Struct("potential response",
+    Struct("potential_response",
         SEnum16('response', *responses),
         Bool16("flags",
-            "only against units",
+            "only_against_units",
             ),
-        float_zero_to_one("skip fraction"),
-        from_to_rad("impact angle"),  # radians
-        from_to_wu_sec("impact velocity"),  # world units/second
+        float_zero_to_one("skip_fraction"),
+        from_to_rad("impact_angle"),  # radians
+        from_to_wu_sec("impact_velocity"),  # world units/second
         dependency('effect', "effe"),
         ),
 
     Pad(16),
-    SEnum16("scale effects by",
+    SEnum16("scale_effects_by",
         "damage",
         "angle",
         ),
     Pad(2),
-    float_rad("angular noise"),
-    float_wu_sec("velocity noise"),
-    dependency('detonation effect', "effe"),
+    float_rad("angular_noise"),
+    float_wu_sec("velocity_noise"),
+    dependency('detonation_effect', "effe"),
 
     Pad(24),
     # Penetration
-    Float("initial friction", UNIT_SCALE=per_sec_unit_scale),
-    Float("maximum distance"),
+    Float("initial_friction", UNIT_SCALE=per_sec_unit_scale),
+    Float("maximum_distance"),
 
     # Reflection
-    Float("parallel refriction",    UNIT_SCALE=per_sec_unit_scale),
-    Float("perpendicular friction", UNIT_SCALE=per_sec_unit_scale),
+    Float("parallel_refriction",    UNIT_SCALE=per_sec_unit_scale),
+    Float("perpendicular_friction", UNIT_SCALE=per_sec_unit_scale),
 
     SIZE=160
     )
 
-proj_attrs = Struct("proj attrs",
+proj_attrs = Struct("proj_attrs",
     Bool32("flags",
-        "oriented along velocity",
-        "ai must use ballistic aiming",
-        "detonation max time if attached",
-        "has super combining explosion",
-        "add parent velocity to initial velocity",
-        "random attached detonation time",
-        "minimum unattached detonation time",
+        "oriented_along_velocity",
+        "ai_must_use_ballistic_aiming",
+        "detonation_max_time_if_attached",
+        "has_super_combining_explosion",
+        "add_parent_velocity_to_initial_velocity",
+        "random_attached_detonation_time",
+        "minimum_unattached_detonation_time",
         ),
-    SEnum16('detonation timer starts',
+    SEnum16('detonation_timer_starts',
         "immediately",
-        "on first bounce",
-        "when at rest",
+        "on_first_bounce",
+        "when_at_rest",
         ),
-    SEnum16('impact noise', *sound_volumes),
-    SEnum16('A in', *projectile_inputs),
-    SEnum16('B in', *projectile_inputs),
-    SEnum16('C in', *projectile_inputs),
-    SEnum16('D in', *projectile_inputs),
-    dependency('super detonation', "effe"),
-    float_wu("ai perception radius"),
-    float_wu("collision radius"),
+    SEnum16('impact_noise', *sound_volumes),
+    SEnum16('A_in', *projectile_inputs),
+    SEnum16('B_in', *projectile_inputs),
+    SEnum16('C_in', *projectile_inputs),
+    SEnum16('D_in', *projectile_inputs),
+    dependency('super_detonation', "effe"),
+    float_wu("ai_perception_radius"),
+    float_wu("collision_radius"),
 
     Struct("detonation",
-        float_sec("arming time"),
-        float_wu("danger radius"),
+        float_sec("arming_time"),
+        float_wu("danger_radius"),
         dependency('effect', "effe"),
         from_to_sec("timer"),
-        float_wu_sec("minimum velocity"),
-        float_wu("maximum range"),
+        float_wu_sec("minimum_velocity"),
+        float_wu("maximum_range"),
         ),
 
     Struct("physics",
-        Float("air gravity scale"),
-        from_to_wu("air damage range"),
-        Float("water gravity scale"),
-        from_to_wu("water damage range"),
-        float_wu_sec("initial velocity"),  # world units/sec
-        float_wu_sec("final velocity"),  # world units/sec
-        float_rad_sec("guided angular velocity"),  # radians/second
-        SEnum16('detonation noise', *sound_volumes),
+        Float("air_gravity_scale"),
+        from_to_wu("air_damage_range"),
+        Float("water_gravity_scale"),
+        from_to_wu("water_damage_range"),
+        float_wu_sec("initial_velocity"),  # world units/sec
+        float_wu_sec("final_velocity"),  # world units/sec
+        float_rad_sec("guided_angular_velocity"),  # radians/second
+        SEnum16('detonation_noise', *sound_volumes),
 
         Pad(2),
-        dependency('detonation started', "effe"),
-        dependency('flyby sound', "snd!"),
-        dependency('attached detonation damage', "jpt!"),
-        dependency('impact damage', "jpt!"),
+        dependency('detonation_started', "effe"),
+        dependency('flyby_sound', "snd!"),
+        dependency('attached_detonation_damage', "jpt!"),
+        dependency('impact_damage', "jpt!"),
         ),
 
     Pad(12),
-    reflexive("material responses", material_response,
+    reflexive("material_responses", material_response,
         len(materials_list), *materials_list),
 
     SIZE=208
@@ -126,5 +126,5 @@ proj_def = TagDef("proj",
     blam_header('proj', 5),
     proj_body,
 
-    ext=".projectile", endian=">", tag_cls=HekTag
+    ext=".projectile", endian=">", tag_cls=ObjeTag
     )

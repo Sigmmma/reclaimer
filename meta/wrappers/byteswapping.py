@@ -3,6 +3,7 @@ Most byteswapping is handeled by supyr_struct by changing the endianness,
 but certain chunks of raw data are significantly faster to just write
 byteswapping routines for, like raw vertex, triangle, and animation data.
 '''
+import array
 
 from supyr_struct.field_types import BytearrayRaw
 from supyr_struct.defs.block_def import BlockDef
@@ -43,13 +44,11 @@ def byteswap_coll_bsp(bsp):
 
 
 def byteswap_pcm16_samples(pcm_block):
-    data = pcm_block.STEPTREE
-
+    data_array = array.array(
+        "h", pcm_block.STEPTREE[: (len(pcm_block.STEPTREE) >> 1) << 1])
+    data_array.byteswap()
     # replace the verts with the byteswapped ones
-    pcm_block.STEPTREE = new_data = bytearray(len(data))
-    for i in range(0, len(data), 2):
-        new_data[i]     = data[i + 1]
-        new_data[i + 1] = data[i]
+    pcm_block.STEPTREE = bytearray(data_array.tobytes())
 
 
 def byteswap_sbsp_meta(meta):
@@ -225,53 +224,29 @@ def byteswap_animation(anim):
     new_uncomp_frame_data = bytearray(uncomp_frame_data_size)
 
     # byteswap the frame info
-    for i in range(0, frame_info_size, 4):
-        new_frame_info[i]   = frame_info[i+3]
-        new_frame_info[i+1] = frame_info[i+2]
-        new_frame_info[i+2] = frame_info[i+1]
-        new_frame_info[i+3] = frame_info[i]
+    try:
+        for i in range(0, frame_info_size, 4):
+            new_frame_info[i]   = frame_info[i+3]
+            new_frame_info[i+1] = frame_info[i+2]
+            new_frame_info[i+2] = frame_info[i+1]
+            new_frame_info[i+3] = frame_info[i]
+    except IndexError:
+        pass
 
     if default_data:
         i = 0
         swap = new_default_data
         raw = default_data
-        # byteswap the default_data
-        for n in range(node_count):
-            if not rot_flags[n]:
-                for j in range(0, 8, 2):
-                    swap[i] = raw[i+1]
-                    swap[i+1] = raw[i]
-                    i += 2
-
-            if not trans_flags[n]:
-                for j in range(0, 12, 4):
-                    swap[i] = raw[i+3]
-                    swap[i+1] = raw[i+2]
-                    swap[i+2] = raw[i+1]
-                    swap[i+3] = raw[i]
-                    i += 4
-
-            if not scale_flags[n]:
-                swap[i] = raw[i+3]
-                swap[i+1] = raw[i+2]
-                swap[i+2] = raw[i+1]
-                swap[i+3] = raw[i]
-                i += 4
-
-    if not anim.flags.compressed_data or comp_data_offset:
-        i = 0
-        swap = new_uncomp_frame_data
-        raw = frame_data
-        # byteswap the frame_data
-        for f in range(frame_count):
+        try:
+            # byteswap the default_data
             for n in range(node_count):
-                if rot_flags[n]:
+                if not rot_flags[n]:
                     for j in range(0, 8, 2):
                         swap[i] = raw[i+1]
                         swap[i+1] = raw[i]
                         i += 2
 
-                if trans_flags[n]:
+                if not trans_flags[n]:
                     for j in range(0, 12, 4):
                         swap[i] = raw[i+3]
                         swap[i+1] = raw[i+2]
@@ -279,12 +254,45 @@ def byteswap_animation(anim):
                         swap[i+3] = raw[i]
                         i += 4
 
-                if scale_flags[n]:
+                if not scale_flags[n]:
                     swap[i] = raw[i+3]
                     swap[i+1] = raw[i+2]
                     swap[i+2] = raw[i+1]
                     swap[i+3] = raw[i]
                     i += 4
+        except IndexError:
+            pass
+
+    if not anim.flags.compressed_data or comp_data_offset:
+        i = 0
+        swap = new_uncomp_frame_data
+        raw = frame_data
+        try:
+            # byteswap the frame_data
+            for f in range(frame_count):
+                for n in range(node_count):
+                    if rot_flags[n]:
+                        for j in range(0, 8, 2):
+                            swap[i] = raw[i+1]
+                            swap[i+1] = raw[i]
+                            i += 2
+
+                    if trans_flags[n]:
+                        for j in range(0, 12, 4):
+                            swap[i] = raw[i+3]
+                            swap[i+1] = raw[i+2]
+                            swap[i+2] = raw[i+1]
+                            swap[i+3] = raw[i]
+                            i += 4
+
+                    if scale_flags[n]:
+                        swap[i] = raw[i+3]
+                        swap[i+1] = raw[i+2]
+                        swap[i+2] = raw[i+1]
+                        swap[i+3] = raw[i]
+                        i += 4
+        except IndexError:
+            pass
 
     anim.frame_info.STEPTREE   = new_frame_info
     anim.default_data.STEPTREE = new_default_data

@@ -1,42 +1,42 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.effe import EffeTag
 from supyr_struct.defs.tag_def import TagDef
 
 part_scale_modifiers = (
     "velocity",
-    "velocity delta",
-    "velocity cone angle",
-    "angular velocity",
-    "angular velocity delta",
-    "type-specific scale"
+    "velocity_delta",
+    "velocity_cone_angle",
+    "angular_velocity",
+    "angular_velocity_delta",
+    "type_specific_scale"
     )
 
 particle_scale_modifiers = (
     "velocity",
-    "velocity delta",
-    "velocity cone angle",
-    "angular velocity",
-    "angular velocity delta",
+    "velocity_delta",
+    "velocity_cone_angle",
+    "angular_velocity",
+    "angular_velocity_delta",
     "count",
-    "count delta",
-    "distribution radius",
-    "distribution radius delta",
-    "particle radius",
-    "particle radius delta",
+    "count_delta",
+    "distribution_radius",
+    "distribution_radius_delta",
+    "particle_radius",
+    "particle_radius_delta",
     "tint"
     )
 
-create_in_env = SEnum16("create in env",
-    "any environment",
-    "air only",
-    "water only",
-    "space only",
+create_in_env = SEnum16("create_in_env",
+    "any_environment",
+    "air_only",
+    "water_only",
+    "space_only",
     )
 
-create_in_mode = SEnum16("create in mode",
-    "either mode",
-    "violent mode only",
-    "nonviolent mode only",
+create_in_mode = SEnum16("create_in_mode",
+    "either_mode",
+    "violent_mode_only",
+    "nonviolent_mode_only",
     )
 
 part = Struct("part",
@@ -49,90 +49,91 @@ part = Struct("part",
         ),
     Pad(12),
 
-    UEnum32("effect class", INCLUDE=valid_tags_os, VISIBLE=False),
+    UEnum32("effect_class", INCLUDE=valid_tags_os, VISIBLE=False),
     dependency("type", valid_effect_events),
     Pad(24),
 
-    from_to_wu_sec("velocity bounds"),  # world units/sec
-    float_rad("velocity cone angle"),  # radians
-    from_to_rad_sec("angular velocity bounds"),  # radians/sec
-    QStruct("radius modifier bounds"),
+    from_to_wu_sec("velocity_bounds"),  # world units/sec
+    float_rad("velocity_cone_angle"),  # radians
+    from_to_rad_sec("angular_velocity_bounds"),  # radians/sec
+    QStruct("radius_modifier_bounds"),
 
-    Bool32("A scales values", *part_scale_modifiers),
-    Bool32("B scales values", *part_scale_modifiers),
+    Bool32("A_scales_values", *part_scale_modifiers),
+    Bool32("B_scales_values", *part_scale_modifiers),
     SIZE=104,
     )
 
 particle = Struct("particle",
     create_in_env,
     create_in_mode,
-    SEnum16("create in camera",
+    SEnum16("create_in_camera",
         "either",
-        "first person only",
-        "third person only",
-        "first person if possible",
+        "first_person_only",
+        "third_person_only",
+        "first_person_if_possible",
         ),
     FlSInt16("unknown0", VISIBLE=False),
     dyn_senum16("location",
         DYN_NAME_PATH="........locations.locations_array[DYN_I].marker_name"),
     FlSInt16("unknown1", VISIBLE=False),
 
-    yp_float_rad("relative direction"),  # radians
-    QStruct("relative offset", INCLUDE=ijk_float),
-    Pad(52),
+    yp_float_rad("relative_direction"),  # radians
+    QStruct("relative_offset", INCLUDE=ijk_float),
+    QStruct("relative_direction_vector", INCLUDE=xyz_float, VISIBLE=False),
+    Pad(40),
 
-    dependency("particle type", "part"),
+    dependency("particle_type", "part"),
     Bool32("flags",
-        "stay attached to marker",
-        "random initial angle",
-        "tint from object color",
+        "stay_attached_to_marker",
+        "random_initial_angle",
+        "tint_from_object_color",
         {NAME: "tint_as_hsv", GUI_NAME: "interpolate tint as hsv"},
         {NAME: "use_long_hue_path", GUI_NAME: "...across the long hue path"},
         ),
-    SEnum16("distribution function",
+    SEnum16("distribution_function",
         "start",
         "end",
         "constant",
         "buildup",
         "falloff",
-        "buildup and falloff",
+        "buildup_and_falloff",
         ),
     Pad(2),
 
-    QStruct("created count",
+    QStruct("created_count",
         SInt16("from", GUI_NAME=""),
         SInt16("to"), ORIENT='h'
         ),
-    from_to_wu("distribution radius"),
+    from_to_wu("distribution_radius"),
     Pad(12),
 
     from_to_wu_sec("velocity"),
-    float_rad("velocity cone angle"),  # radians
-    from_to_rad_sec("angular velocity"),  # radians
+    float_rad("velocity_cone_angle"),  # radians
+    from_to_rad_sec("angular_velocity"),  # radians
     Pad(8),
 
     from_to_wu("radius"),
     Pad(8),
 
-    QStruct("tint lower bound", INCLUDE=argb_float),
-    QStruct("tint upper bound", INCLUDE=argb_float),
+    QStruct("tint_lower_bound", INCLUDE=argb_float),
+    QStruct("tint_upper_bound", INCLUDE=argb_float),
     Pad(16),
 
-    Bool32("A scales values", *particle_scale_modifiers),
-    Bool32("B scales values", *particle_scale_modifiers),
+    Bool32("A_scales_values", *particle_scale_modifiers),
+    Bool32("B_scales_values", *particle_scale_modifiers),
     SIZE=232
     )
 
 
 location = Struct("location",
-    ascii_str32("marker name"),
+    ascii_str32("marker_name"),
     )
 
 event = Struct("event",
     Pad(4),
-    Float("skip fraction"),
-    from_to_sec("delay bounds"),
-    from_to_sec("duration bounds"),
+    Float("skip_fraction"),
+    from_to_sec("delay_bounds"),
+    from_to_sec("duration_bounds"),
 
     Pad(20),
     reflexive("parts", part, 32, DYN_NAME_PATH='.type.filepath'),
@@ -143,13 +144,13 @@ event = Struct("event",
 
 effe_body = Struct("tagdata",
     Bool32("flags",
-        {NAME: "deleted when inactive", GUI_NAME: "deleted when attachment deactivates"},
+        {NAME: "deleted_when_inactive", GUI_NAME: "deleted when attachment deactivates"},
         {NAME: "required", GUI_NAME: "required for gameplay(cannot optimize)"},
-        "use in dedicated servers"
+        "use_in_dedicated_servers"
         ),
-    dyn_senum16("loop start event",
+    dyn_senum16("loop_start_event",
         DYN_NAME_PATH=".events.events_array[DYN_I].NAME"),
-    dyn_senum16("loop stop event",
+    dyn_senum16("loop_stop_event",
         DYN_NAME_PATH=".events.events_array[DYN_I].NAME"),
 
     Pad(32),
@@ -167,5 +168,5 @@ effe_def = TagDef("effe",
     blam_header("effe", 4),
     effe_body,
 
-    ext=".effect", endian=">", tag_cls=HekTag,
+    ext=".effect", endian=">", tag_cls=EffeTag,
     )

@@ -3,7 +3,7 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 
-control_point = Struct("control point",
+control_point = Struct("control_point",
     QStruct("position", INCLUDE=ijk_float),
     QStruct("orientation", INCLUDE=ijkw_float),
     SIZE=60,
@@ -11,7 +11,7 @@ control_point = Struct("control point",
 
 trak_body = Struct("tagdata",
     Pad(4),
-    reflexive("control points", control_point, 16),
+    reflexive("control_points", control_point, 16),
     SIZE=48,
     )
 

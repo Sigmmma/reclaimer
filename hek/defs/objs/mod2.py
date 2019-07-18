@@ -1,4 +1,4 @@
-from .mode import ModeTag
+from reclaimer.hek.defs.objs.mode import ModeTag
 
 class Mod2Tag(ModeTag):
 
@@ -34,6 +34,12 @@ class Mod2Tag(ModeTag):
                     global_marker.translation[:] = local_marker.translation[:]
 
                 del perm.local_markers.STEPTREE[:]
+
+        # sort the markers how Halo's picky ass wants them
+        name_map = {all_global_markers[i].name: i
+                    for i in range(len(all_global_markers))}
+        all_global_markers[:] = list(all_global_markers[name_map[name]]
+                                     for name in sorted(name_map))
 
     def delocalize_part_nodes(self, geometry_index, part_index):
         part = self.data.tagdata.geometries.STEPTREE\

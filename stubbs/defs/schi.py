@@ -15,5 +15,5 @@ schi_def = TagDef("schi",
     blam_header_stubbs('schi'),
     schi_body,
 
-    ext=".shader_transparent_chicago", endian=">",
+    ext=".shader_transparent_chicago", endian=">", tag_cls=ShdrTag,
     )

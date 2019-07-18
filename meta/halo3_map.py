@@ -1,5 +1,5 @@
-from ..h3.common_descs import *
-from supyr_struct.defs.tag_def import TagDef, BlockDef
+from reclaimer.h3.common_descs import *
+from supyr_struct.defs.tag_def import BlockDef
 
 
 def compute_partition_offset(parent, **kwargs):
@@ -223,7 +223,7 @@ h3_map_header = Struct("map header",
     UInt32("tag name table size"),
     UInt32("tag name index offset"),
 
-    UInt32("checksum"),
+    UInt32("crc32"),
     BytesRaw("unknown9", SIZE=32, VISIBLE=False),
     UInt32("virtual address"),
     UInt32("xkd version"),

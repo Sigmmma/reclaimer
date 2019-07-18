@@ -1,11 +1,18 @@
+import os
 import zlib
 
-from os.path import exists, join
-from tkinter.filedialog import askopenfilename
+from traceback import format_exc
 
-from .halo_map import *
+from reclaimer.meta.wrappers.halo_map import HaloMap
 from reclaimer import data_extraction
 from reclaimer.h2.util import HALO2_MAP_TYPES, split_raw_pointer
+from reclaimer.util import is_reserved_tag, int_to_fourcc
+from reclaimer.meta.wrappers.string_id_manager import StringIdManager
+from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
+from reclaimer.meta.wrappers.tag_index_converters import h2_alpha_to_h1_tag_index,\
+     h2_to_h1_tag_index, h3_to_h1_tag_index
+
+from supyr_struct.buffer import BytearrayBuffer
 
 
 class Halo2Map(HaloMap):
@@ -16,6 +23,7 @@ class Halo2Map(HaloMap):
     tag_classes_to_load = (
         "ant!", "bitm", "hsc*", "pphy", "snd!", "shad", "trak", "ugh!"
         )
+    data_extractors = data_extraction.h2_data_extractors
 
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
@@ -73,58 +81,33 @@ class Halo2Map(HaloMap):
 
         return meta
 
-    def load_all_resource_maps(self, maps_dir=""):
+    def get_resource_map_paths(self, maps_dir=""):
         map_paths = {name: None for name in HALO2_MAP_TYPES[1:]}
         if self.engine == "halo2alpha":
             map_paths.pop("single_player_shared", None)
 
         if not maps_dir:
-            maps_dir = dirname(self.filepath)
+            maps_dir = os.path.dirname(self.filepath)
 
-        # detect/ask for the map paths for the resource maps
-        for map_name in sorted(map_paths.keys()):
+        # detect the map paths for the resource maps
+        for map_name in sorted(map_paths):
+            map_path = os.path.join(maps_dir, map_name)
             if self.maps.get(map_name) is not None:
-                # map already loaded
-                continue
-
-            map_path = join(maps_dir, map_name)
-
-            if exists(map_path + ".map"):
+                map_path = self.maps[map_name].filepath
+            elif os.path.exists(map_path + ".map"):
                 map_path += ".map"
-            elif exists(map_path + "_DECOMP.map"):
+            elif os.path.exists(map_path + "_DECOMP.map"):
                 map_path += "_DECOMP.map"
-            else:
+            elif os.path.exists(map_path + ".map.dtz"):
                 map_path += ".map.dtz"
-
-            while map_path and not exists(map_path):
-                map_path = askopenfilename(
-                    initialdir=maps_dir,
-                    title="Select the %s.map" % map_name,
-                    filetypes=((map_name, "*.map"),
-                               (map_name, "*.map.dtz"),
-                               (map_name, "*.*")))
-
-                if map_path:
-                    maps_dir = dirname(map_path)
-                else:
-                    print("    You wont be able to extract from %s.map" % map_name)
-                    break
+            else:
+                map_path = None
 
             map_paths[map_name] = map_path
 
-        for map_name in sorted(map_paths.keys()):
-            map_path = map_paths[map_name]
-            try:
-                if self.maps.get(map_name) is None and map_path:
-                    print("    Loading %s.map..." % map_name)
-                    type(self)(self.maps).load_map(map_path, will_be_active=False)
-                    print("        Finished")
-            except Exception:
-                print(format_exc())
+        return map_paths
 
     def load_map(self, map_path, **kwargs):
-        autoload_resources = kwargs.get("autoload_resources", True)
-        will_be_active = kwargs.get("will_be_active", True)
         HaloMap.load_map(self, map_path, **kwargs)
         tag_index = self.tag_index
         if self.engine == "halo2alpha":
@@ -152,7 +135,7 @@ class Halo2Map(HaloMap):
             if self.engine == "halo2vista":
                 ugh__id = None
                 for b in self.tag_index.tag_index:
-                    if fourcc(b.class_1.data) == "ugh!":
+                    if int_to_fourcc(b.class_1.data) == "ugh!":
                         ugh__id = b.id & 0xFFff
                         break
 
@@ -163,18 +146,7 @@ class Halo2Map(HaloMap):
             print(format_exc())
             print("Could not read sound_cache_file_gestalt tag")
 
-        if autoload_resources and (will_be_active or not self.is_resource):
-            self.load_all_resource_maps(dirname(map_path))
-
-        self.map_data.clear_cache()
-
-    def extract_tag_data(self, meta, tag_index_ref, **kw):
-        extractor = data_extraction.h2_data_extractors.get(
-            fourcc(tag_index_ref.class_1.data))
-        if extractor is None:
-            return "No extractor for this type of tag."
-        kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.path, **kw)
+        self.clear_map_cache()
 
     def get_meta(self, tag_id, reextract=False, **kw):
         if tag_id is None:
@@ -207,7 +179,7 @@ class Halo2Map(HaloMap):
         if   tag_id == scnr_id: tag_cls = "scnr"
         elif tag_id == matg_id: tag_cls = "matg"
         elif tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
-            tag_cls = fourcc(tag_index_ref.class_1.data)
+            tag_cls = int_to_fourcc(tag_index_ref.class_1.data)
 
         desc = self.get_meta_descriptor(tag_cls)
         if desc is None or tag_cls is None:        return
@@ -248,3 +220,48 @@ class Halo2Map(HaloMap):
                 meta = None
 
         return meta
+
+    def generate_map_info_string(self):
+        string = HaloMap.generate_map_info_string(self)
+        string += """
+
+Calculated information:
+    index magic == %s
+    map magic   == %s
+""" % (self.index_magic, self.map_magic)
+
+        if self.engine == "halo2alpha":
+            string += (("""
+Tag index:
+    tag count           == %s
+    scenario tag id     == %s
+    index array pointer == %s""") %
+            (self.orig_tag_index.tag_count,
+             self.orig_tag_index.scenario_tag_id & 0xFFff,
+             self.tag_index.tag_index_offset))
+        else:
+            used_tag_count = 0
+            local_tag_count = 0
+            for index_ref in self.tag_index.tag_index:
+                if is_reserved_tag(index_ref):
+                    continue
+                elif index_ref.meta_offset != 0:
+                    local_tag_count += 1
+                used_tag_count += 1
+
+            string += (("""
+Tag index:
+    tag count           == %s
+    used tag count      == %s
+    local tag count     == %s
+    tag types count     == %s
+    scenario tag id     == %s
+    globals  tag id     == %s
+    index array pointer == %s""") %
+            (self.orig_tag_index.tag_count, used_tag_count, local_tag_count,
+             self.orig_tag_index.tag_types_count,
+             self.orig_tag_index.scenario_tag_id & 0xFFff,
+             self.orig_tag_index.globals_tag_id & 0xFFff,
+             self.tag_index.tag_index_offset))
+
+        return string
