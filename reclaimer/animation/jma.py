@@ -569,6 +569,9 @@ def read_jma(jma_string, stop_at="", anim_name=""):
         print("Could not read frame count.")
         return jma_anim
 
+    if frame_count > 2048:
+        raise ValueError("Cannot parse jma files with more than 2048 frames.")
+
     try:
         frame_rate = parse_jm_int(data[dat_i]) & 0xFFffFFff
         dat_i += 1
@@ -579,78 +582,93 @@ def read_jma(jma_string, stop_at="", anim_name=""):
 
     if stop_at == "actors": return jma_anim
 
-    # read the actors
     try:
-        i = 0 # make sure i is defined in case of exception
         jma_anim.actors = [None] * (parse_jm_int(data[dat_i]) & 0xFFffFFff)
         dat_i += 1
-        for i in range(len(jma_anim.actors)):
-            jma_anim.actors[i] = data[dat_i]
+    except Exception:
+        print(traceback.format_exc())
+        print("Failed to read actor count.")
+        del jma_anim.actors[:]
+        return jma_anim
+
+    if jma_anim.actor_count != 1:
+        raise ValueError("Cannot parse jma files with more than one actor.")
+
+    # read the actors
+    for actor_i in range(len(jma_anim.actors)):
+        # TODO: update getting these if multiple actors are ever supported
+        nodes  = jma_anim.nodes
+        frames = jma_anim.frames
+        try:
+            jma_anim.actors[actor_i] = data[dat_i]
             dat_i += 1
-    except Exception:
-        print(traceback.format_exc())
-        print("Failed to read actors.")
-        del jma_anim.actors[i: ]
-        return jma_anim
+        except Exception:
+            print(traceback.format_exc())
+            print("Failed to read actors.")
+            del jma_anim.actors[actor_i: ]
+            return jma_anim
 
-    try:
-        node_count = parse_jm_int(data[dat_i]) & 0xFFffFFff
-        dat_i += 1
-    except Exception:
-        print(traceback.format_exc())
-        print("Could not node count.")
-        return jma_anim
+        try:
+            node_count = parse_jm_int(data[dat_i]) & 0xFFffFFff
+            dat_i += 1
+        except Exception:
+            print(traceback.format_exc())
+            print("Could not node count.")
+            return jma_anim
 
-    if stop_at == "checksum": return jma_anim
+        if node_count > 256:
+            raise ValueError("Cannot parse jma files with more than 256 nodes.")
 
-    try:
-        jma_anim.node_list_checksum = parse_jm_int(data[dat_i])
-        dat_i += 1
-    except Exception:
-        print(traceback.format_exc())
-        print("Could not read node list checksum.")
-        return jma_anim
+        if stop_at == "checksum": continue
 
-    if stop_at == "nodes": return jma_anim
+        try:
+            jma_anim.node_list_checksum = parse_jm_int(data[dat_i])
+            dat_i += 1
+        except Exception:
+            print(traceback.format_exc())
+            print("Could not read node list checksum.")
+            return jma_anim
 
-    # read the nodes
-    try:
-        i = 0 # make sure i is defined in case of exception
-        jma_anim.nodes = [None] * node_count
-        for i in range(node_count):
-            jma_anim.nodes[i] = JmsNode(
-                data[dat_i], parse_jm_int(data[dat_i+1]), parse_jm_int(data[dat_i+2])
-                )
-            dat_i += 3
-        JmsNode.setup_node_hierarchy(jma_anim.nodes)
-    except Exception:
-        print(traceback.format_exc())
-        print("Failed to read nodes.")
-        del jma_anim.nodes[i: ]
-        return jma_anim
+        if stop_at == "nodes": continue
 
-
-    if stop_at == "frames": return jma_anim
-
-    # read the frame data
-    try:
-        i = 0 # make sure i is defined in case of exception
-        for i in range(frame_count):
-            frame = [None] * node_count
-            for j in range(node_count):
-                frame[j] = JmaNodeState(
-                    parse_jm_float(data[dat_i]),   parse_jm_float(data[dat_i+1]),
-                    parse_jm_float(data[dat_i+2]), parse_jm_float(data[dat_i+3]),
-                    parse_jm_float(data[dat_i+4]), parse_jm_float(data[dat_i+5]),
-                    parse_jm_float(data[dat_i+6]), parse_jm_float(data[dat_i+7])
+        # read the nodes
+        try:
+            i = 0  # make sure i is defined in case of exception
+            nodes[:] = [None] * node_count
+            for i in range(node_count):
+                nodes[i] = JmsNode(
+                    data[dat_i], parse_jm_int(data[dat_i+1]), parse_jm_int(data[dat_i+2])
                     )
-                dat_i += 8
-            jma_anim.frames.append(frame)
-    except Exception:
-        print(traceback.format_exc())
-        print("Failed to read frames.")
-        del jma_anim.frames[i: ]
-        return jma_anim
+                dat_i += 3
+            JmsNode.setup_node_hierarchy(nodes)
+        except Exception:
+            print(traceback.format_exc())
+            print("Failed to read nodes.")
+            del nodes[i: ]
+            return jma_anim
+
+
+        if stop_at == "frames": continue
+
+        # read the frame data
+        try:
+            i = 0 # make sure i is defined in case of exception
+            for i in range(frame_count):
+                frame = [None] * node_count
+                for j in range(node_count):
+                    frame[j] = JmaNodeState(
+                        parse_jm_float(data[dat_i]),   parse_jm_float(data[dat_i+1]),
+                        parse_jm_float(data[dat_i+2]), parse_jm_float(data[dat_i+3]),
+                        parse_jm_float(data[dat_i+4]), parse_jm_float(data[dat_i+5]),
+                        parse_jm_float(data[dat_i+6]), parse_jm_float(data[dat_i+7])
+                        )
+                    dat_i += 8
+                frames.append(frame)
+        except Exception:
+            print(traceback.format_exc())
+            print("Failed to read frames.")
+            del frames[i: ]
+            return jma_anim
 
     jma_anim.calculate_root_node_info()
     jma_anim.apply_root_node_info_to_states(True)
@@ -659,6 +677,9 @@ def read_jma(jma_string, stop_at="", anim_name=""):
 
 
 def write_jma(filepath, jma_anim, use_blitzkrieg_rounding=False):
+    if jma_anim.actor_count != 1:
+        raise ValueError("Cannot write jma files with more than one actor.")
+
     if use_blitzkrieg_rounding:
         to_str = lambda f: float_to_str_truncate(f, 6)
     else:
@@ -678,25 +699,29 @@ def write_jma(filepath, jma_anim, use_blitzkrieg_rounding=False):
         f.write("%s\n" % jma_anim.frame_rate)
 
         f.write("%s\n" % jma_anim.actor_count)
+
         for actor_name in jma_anim.actors:
+            # TODO: update getting these if multiple actors are ever supported
+            nodes  = jma_anim.nodes
+            frames = jma_anim.frames
+
             f.write("%s\n" % actor_name)
+            f.write("%s\n" % len(nodes))
+            f.write("%s\n" % int(jma_anim.node_list_checksum))
 
-        f.write("%s\n" % jma_anim.node_count)
-        f.write("%s\n" % int(jma_anim.node_list_checksum))
-
-        for node in jma_anim.nodes:
-            f.write("%s\n%s\n%s\n" %
-                (node.name[: 31], node.first_child, node.sibling_index)
-            )
-
-        for frame in jma_anim.frames:
-            for nf in frame:
-                f.write("%s\t%s\t%s\n%s\t%s\t%s\t%s\n%s\n" % (
-                    to_str(nf.pos_x), to_str(nf.pos_y), to_str(nf.pos_z),
-                    to_str(nf.rot_i), to_str(nf.rot_j),
-                    to_str(nf.rot_k), to_str(nf.rot_w),
-                    to_str(nf.scale))
+            for node in nodes:
+                f.write("%s\n%s\n%s\n" %
+                    (node.name[: 31], node.first_child, node.sibling_index)
                 )
+
+            for frame in frames:
+                for nf in frame:
+                    f.write("%s\t%s\t%s\n%s\t%s\t%s\t%s\n%s\n" % (
+                        to_str(nf.pos_x), to_str(nf.pos_y), to_str(nf.pos_z),
+                        to_str(nf.rot_i), to_str(nf.rot_j),
+                        to_str(nf.rot_k), to_str(nf.rot_w),
+                        to_str(nf.scale))
+                    )
 
 #jma_file = open(r'C:\Users\Moses\Desktop\halo\data\characters\cyborg\animations\alert unarmed turn-right.jmt', 'r')
 #data = read_jma(jma_file.read(), "", "alert unarmed turn-right.jmt")
