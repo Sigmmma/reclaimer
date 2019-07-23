@@ -15,9 +15,9 @@ soul_body = Struct("tagdata",
 
 
 def get():
-    return soul_def
+    return Soul_def
 
-soul_def = TagDef("Soul",
+Soul_def = TagDef("Soul",
     blam_header('Soul'),
     soul_body,#lol Megaman X4
 
