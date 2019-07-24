@@ -5,10 +5,6 @@ on which ones are missing, different things can happen.
 Maps might not load, menus might not appear, sounds might not play, etc.
 '''
 
-
-# TODO: Turn this into a py module and split it into pieces based on what type of map is affected
-
-
 # unicode_string_list
 HARDCODED_ustr_TAG_PATHS = (
     "ui\\multiplayer_game_text.unicode_string_list",
