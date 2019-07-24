@@ -2,6 +2,11 @@ from ...common_descs import *
 from .objs.coll import CollTag
 from supyr_struct.defs.tag_def import TagDef
 
+bsp_node_tooltip = (
+    "Refers to a leaf node if negative.\n"
+    "Add 0x100000000 to get leaf node index."
+    )
+
 modifier = Struct("modifier",
     Pad(52),
     )
@@ -55,8 +60,8 @@ shield = Struct("shield",
 
 bsp3d_node = QStruct("bsp3d_node",
     SInt32("plane"),
-    SInt32("back_child"),
-    SInt32("front_child"),
+    SInt32("back_child", TOOLTIP=bsp_node_tooltip),
+    SInt32("front_child", TOOLTIP=bsp_node_tooltip),
     SIZE=12
     )
 
@@ -78,7 +83,7 @@ leaf = Struct("leaf",
 
 bsp2d_reference = QStruct("bsp2d_reference",
     SInt32("plane"),
-    SInt32("bsp2d_node"),
+    SInt32("bsp2d_node", TOOLTIP=bsp_node_tooltip),
     SIZE=8
     )
 
@@ -86,8 +91,8 @@ bsp2d_node = QStruct("bsp2d_node",
     Float("plane_i"),
     Float("plane_j"),
     Float("plane_d"),
-    SInt32("left_child"),
-    SInt32("right_child"),
+    SInt32("left_child", TOOLTIP=bsp_node_tooltip),
+    SInt32("right_child", TOOLTIP=bsp_node_tooltip),
     SIZE=20
     )
 
