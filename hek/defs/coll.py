@@ -4,7 +4,7 @@ from supyr_struct.defs.tag_def import TagDef
 
 bsp_node_tooltip = (
     "Refers to a leaf node if negative.\n"
-    "Add 0x100000000 to get leaf node index."
+    "Add 0x80000000 to get leaf node index."
     )
 
 modifier = Struct("modifier",

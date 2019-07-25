@@ -2,6 +2,11 @@ from .coll import *
 from .objs.tag import HekTag
 from supyr_struct.defs.block_def import BlockDef
 
+cluster_fog_tooltip = (
+    "Unknown flag is set if negative.\n"
+    "Add 0x8000 to get fog index."
+    )
+
 
 # the order is an array of vertices first, then an array of lightmap vertices.
 # 
@@ -203,7 +208,7 @@ subcluster = Struct("subcluster",
 
 cluster = Struct("cluster",
     SInt16('sky'),
-    SInt16('fog'),
+    SInt16('fog', TOOLTIP=cluster_fog_tooltip),
     dyn_senum16('background_sound',
         DYN_NAME_PATH="tagdata.background_sounds_palette.STEPTREE[DYN_I].name"),
     dyn_senum16('sound_environment',
