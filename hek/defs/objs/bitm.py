@@ -106,17 +106,22 @@ class BitmTag(HekTag):
     @property
     def is_xbox_bitmap(self):
         # we only need to check the first bitmap
+        if not self.bitmap_count(): return False
         return self.bitmap_base_address() == 1073751810
 
     def is_power_of_2_bitmap(self, b_index=0):
+        if not self.bitmap_count(): return False
         return self.bitmap_flags(b_index).power_of_2_dim
 
     def is_compressed_bitmap(self, b_index=0):
+        if not self.bitmap_count(): return False
         return self.bitmap_flags(b_index).compressed
 
     def swizzled(self, b_index=0, new_flag=None):
         if new_flag is None:
+            if not self.bitmap_count(): return False
             return self.bitmap_flags(b_index).swizzled
+        if not self.bitmap_count(): return
         self.bitmap_flags(b_index).swizzled = new_flag
 
     def color_plate_data_bytes_size(self, new_value=None):
