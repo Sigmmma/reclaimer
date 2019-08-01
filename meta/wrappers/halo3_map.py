@@ -148,20 +148,14 @@ class Halo3Map(HaloMap):
         self.setup_tag_headers()
 
     def basic_deprotection(self):
-        found_counts = {}
+        if self.tag_index is None:
+            return
+
         for b in self.tag_index.tag_index:
-            if b.path: continue
+            if not b.path:
+                b.path = self.map_header.map_name
 
-            tag_path = self.map_header.map_name
-            tag_cls  = b.class_1.data
-            name_id  = (tag_path, tag_cls)
-            if name_id in found_counts:
-                tag_path = "%s_%s" % (tag_path, found_counts[name_id])
-                found_counts[name_id] += 1
-            else:
-                found_counts[name_id] = 0
-
-            b.path = tag_path
+        HaloMap.basic_deprotection(self)
 
     def get_meta_descriptor(self, tag_cls):
         tagdef = self.defs.get(tag_cls)

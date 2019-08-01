@@ -33,22 +33,19 @@ sound_rsrc_id_map = {
     1546: 265,  # sound\sfx\impulse\glass\glass_large
     }
 
-DEFAULT_CE_LOC_TAG_COUNT = 176
-DEFAULT_CE_SOUNDS_TAG_COUNT = 376
-DEFAULT_CE_BITMAPS_TAG_COUNT = 853
-
-DEFAULT_PC_SOUNDS_TAG_COUNT = 7192
-DEFAULT_PC_BITMAPS_TAG_COUNT = 1107
+DEFAULT_LOC_TAG_COUNT = 176
+DEFAULT_SOUNDS_TAG_COUNT = 376
+DEFAULT_BITMAPS_TAG_COUNT = 853
 
 
 # Tag classes aren't stored in the cache maps, so we need to
 # have a cache of them somewhere. Might as well do it manually
 loc_exts = {0:'font', 1:'font', 4:'hud_message_text', 56:'font', 58:'font'}
 
-bitmap_exts = ('bitmap', ) * DEFAULT_CE_BITMAPS_TAG_COUNT
-sound_exts  = ('sound', ) * DEFAULT_CE_SOUNDS_TAG_COUNT
+bitmap_exts = ('bitmap', ) * DEFAULT_BITMAPS_TAG_COUNT
+sound_exts  = ('sound', ) * DEFAULT_SOUNDS_TAG_COUNT
 loc_exts    = tuple(loc_exts.get(i, 'unicode_string_list')
-                    for i in range(DEFAULT_CE_LOC_TAG_COUNT))
+                    for i in range(DEFAULT_LOC_TAG_COUNT))
 
 
 def inject_sound_data(map_data, rsrc_data, rawdata_ref, map_magic):
@@ -111,8 +108,8 @@ class Halo1RsrcMap(HaloMap):
                 self.engine = ce_engine
             else:
                 self.engine = "halo1ce"
-        elif ((resource_type == 1 and rsrc_tag_count == DEFAULT_PC_BITMAPS_TAG_COUNT) or
-              (resource_type == 2 and rsrc_tag_count == DEFAULT_PC_SOUNDS_TAG_COUNT)):
+        elif ((resource_type == 1 and rsrc_tag_count == 1107) or
+              (resource_type == 2 and rsrc_tag_count == 7192)):
             self.engine = "halo1pcdemo"
         else:
             self.engine = "halo1pc"
@@ -141,9 +138,9 @@ class Halo1RsrcMap(HaloMap):
         elif resource_type == 3:
             head.map_name = "loc"
             tag_classes, def_cls = loc_exts, 'NONE'
-            if self.engine == "halo1ce" and rsrc_tag_count != DEFAULT_CE_LOC_TAG_COUNT:
+            if self.engine == "halo1ce" and rsrc_tag_count != 176:
                 # this is a custom edition loc.map, but we can't trust it to be accurate
-                # if it contains a different number than DEFAULT_CE_LOC_TAG_COUNT tags.
+                # if it contains a different number than 176 tags.
                 tag_classes = ()
         else:
             raise ValueError("Unknown resource map type.")
@@ -169,8 +166,16 @@ class Halo1RsrcMap(HaloMap):
             tag_ref.id = i
 
             tag_ref.meta_offset  = rsrc_map.data.tags[j].offset
-            tag_ref.indexed      = 1
             tag_ref.path = rsrc_map.data.tags[j].tag.path
+            # not necessary to set it as indexed, as it isn't used
+            # when extracting the tags, and leaving it as False
+            # allows efinery to display pointer information, and
+            # change the classes of tags in custom loc maps.
+            #tag_ref.indexed      = 1
+
+        # apparently this is needed(thank spv3/open sauce v4/neil
+        #                           for fucking up resource maps)
+        self.basic_deprotection()
 
         self.map_pointer_converter = MapPointerConverter((0, 0, 0xFFffFFff))
         self.tag_index_manager = TagIndexManager(tags.tag_index)
@@ -187,6 +192,9 @@ class Halo1RsrcMap(HaloMap):
             return ()
 
         return [self.tag_index.tag_index[tag_id]]
+
+    def is_indexed(self, tag_id):
+        return True
 
     def get_meta(self, tag_id, reextract=False, **kw):
         '''Returns just the meta of the tag without any raw data.'''
