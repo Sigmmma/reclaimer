@@ -33,14 +33,22 @@ sound_rsrc_id_map = {
     1546: 265,  # sound\sfx\impulse\glass\glass_large
     }
 
+DEFAULT_CE_LOC_TAG_COUNT = 176
+DEFAULT_CE_SOUNDS_TAG_COUNT = 376
+DEFAULT_CE_BITMAPS_TAG_COUNT = 853
+
+DEFAULT_PC_SOUNDS_TAG_COUNT = 7192
+DEFAULT_PC_BITMAPS_TAG_COUNT = 1107
+
 
 # Tag classes aren't stored in the cache maps, so we need to
 # have a cache of them somewhere. Might as well do it manually
 loc_exts = {0:'font', 1:'font', 4:'hud_message_text', 56:'font', 58:'font'}
 
-bitmap_exts = ('bitmap',)*853
-sound_exts  = ('sound',)*376
-loc_exts    = tuple(loc_exts.get(i, 'unicode_string_list') for i in range(176))
+bitmap_exts = ('bitmap', ) * DEFAULT_CE_BITMAPS_TAG_COUNT
+sound_exts  = ('sound', ) * DEFAULT_CE_SOUNDS_TAG_COUNT
+loc_exts    = tuple(loc_exts.get(i, 'unicode_string_list')
+                    for i in range(DEFAULT_CE_LOC_TAG_COUNT))
 
 
 def inject_sound_data(map_data, rsrc_data, rawdata_ref, map_magic):
@@ -96,14 +104,15 @@ class Halo1RsrcMap(HaloMap):
             if ce_engine:
                 break
 
+        rsrc_tag_count = len(rsrc_map.data.tags)
         if resource_type == 3 or (pth.endswith('__pixels') or
                                   pth.endswith('__permutations')):
             if ce_engine:
                 self.engine = ce_engine
             else:
                 self.engine = "halo1ce"
-        elif ((resource_type == 1 and len(rsrc_map.data.tags) == 1107) or
-              (resource_type == 2 and len(rsrc_map.data.tags) == 7192)):
+        elif ((resource_type == 1 and rsrc_tag_count == DEFAULT_PC_BITMAPS_TAG_COUNT) or
+              (resource_type == 2 and rsrc_tag_count == DEFAULT_PC_SOUNDS_TAG_COUNT)):
             self.engine = "halo1pcdemo"
         else:
             self.engine = "halo1pc"
@@ -122,22 +131,32 @@ class Halo1RsrcMap(HaloMap):
         if self.engine == "halo1pc" or resource_type == 3:
             index_mul = 1
 
-        head.map_name, tag_classes, def_cls = {
-            1: ("bitmaps", bitmap_exts, 'bitmap'),
-            2: ("sounds",  sound_exts,  'sound'),
-            3: ("loc",     loc_exts,    'NONE')
-            }[resource_type]
+        rsrc_tag_count = rsrc_tag_count // index_mul
+        if resource_type == 1:
+            head.map_name = "bitmaps"
+            tag_classes, def_cls = bitmap_exts, 'bitmap'
+        elif resource_type == 2:
+            head.map_name = "sounds"
+            tag_classes, def_cls = sound_exts, 'sound'
+        elif resource_type == 3:
+            head.map_name = "loc"
+            tag_classes, def_cls = loc_exts, 'NONE'
+            if self.engine == "halo1ce" and rsrc_tag_count != DEFAULT_CE_LOC_TAG_COUNT:
+                # this is a custom edition loc.map, but we can't trust it to be accurate
+                # if it contains a different number than DEFAULT_CE_LOC_TAG_COUNT tags.
+                tag_classes = ()
+        else:
+            raise ValueError("Unknown resource map type.")
 
         # allow an override to be specified before the map is loaded
         if self.tag_classes is None:
             self.tag_classes = tag_classes
 
         self.maps[head.map_name] = self
-        rsrc_tag_count = len(rsrc_map.data.tags)//index_mul
-        self.tag_classes += (def_cls,)*(rsrc_tag_count - len(self.tag_classes))
+        self.tag_classes += (def_cls, )*(rsrc_tag_count - len(self.tag_classes))
         tags.tag_index.extend(rsrc_tag_count)
-        tags.scenario_tag_id = 0
 
+        tags.scenario_tag_id = 0
         tags.tag_count = rsrc_tag_count
         # fill in the fake tag_index
         for i in range(rsrc_tag_count):
@@ -155,8 +174,8 @@ class Halo1RsrcMap(HaloMap):
 
         self.map_pointer_converter = MapPointerConverter((0, 0, 0xFFffFFff))
         self.tag_index_manager = TagIndexManager(tags.tag_index)
-        self.snd_rsrc_tag_index_manager = TagIndexManager(tags.tag_index,
-                                                          sound_rsrc_id_map)
+        self.snd_rsrc_tag_index_manager = TagIndexManager(
+            tags.tag_index, sound_rsrc_id_map)
         self.clear_map_cache()
 
     def get_dependencies(self, meta, tag_id, tag_cls):
