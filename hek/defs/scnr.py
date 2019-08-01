@@ -711,6 +711,9 @@ platoon = Struct("platoon",
 firing_position = Struct("firing_position",
     QStruct("position", INCLUDE=xyz_float),
     SEnum16("group_index", *group_indices),
+    FlUInt16('bsp_cluster_index', VISIBLE=False),  # calculated on map compile
+    Pad(4),
+    FlUInt32('unknown_1', VISIBLE=False),  # calculated on map compile
     SIZE=24
     )
 

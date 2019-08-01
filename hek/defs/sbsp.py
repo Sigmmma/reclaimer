@@ -65,6 +65,9 @@ fast_collision_bsp = Struct("collision_bsp", INCLUDE=fast_permutation_bsp)
 node = Struct("node",
     # these dont get byteswapped going from meta to tag
     BytesRaw("unknown", SIZE=6),
+    #QStruct("unknown_0", UInt8("val0"), SInt8("val1"), ORIENT="h"),
+    #QStruct("unknown_1", UInt8("val0"), SInt8("val1"), ORIENT="h"),
+    #QStruct("unknown_2", UInt8("val0"), SInt8("val1"), ORIENT="h"),
     SIZE=6
     )
 
@@ -395,6 +398,14 @@ leaf_map_portal = Struct("leaf_map_portal",
     SIZE=24
     )
 
+raw_cluster_data = QStruct("raw_cluster_data",
+    UInt16("unknown0"),
+    UInt16("unknown1"),
+    UInt16("unknown2"),
+    UInt16("unknown3"),
+    SIZE=8
+    )
+
 sbsp_body = Struct("tagdata",
     dependency("lightmap_bitmaps", 'bitm'),
     float_wu("vehicle_floor"),  # world units
@@ -431,6 +442,8 @@ sbsp_body = Struct("tagdata",
         DYN_NAME_PATH='.shader.filepath'),
     reflexive("lens_flare_markers", lens_flare_marker, 65535),
     reflexive("clusters", cluster, 8192),
+
+    # this is an array of 8 byte structs for each cluster
     rawdata_ref("cluster_data", max_size=65536),
     reflexive("cluster_portals", cluster_portal, 512),
 
