@@ -1013,7 +1013,7 @@ class Halo1Map(HaloMap):
             for cluster in meta.clusters.STEPTREE:
                 predicted_resources.append(cluster.predicted_resources)
 
-            compressed = "xbox" in engine or engine in ("stubbs", "shadowrun_beta")
+            compressed = "xbox" in engine or engine in ("stubbs", "shadowrun_proto")
 
             if compressed:
                 generate_verts = kwargs.get("generate_uncomp_verts", False)
