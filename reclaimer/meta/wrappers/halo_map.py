@@ -190,14 +190,14 @@ class HaloMap:
         self.orig_tag_paths = tuple(b.path for b in tags)
 
     def basic_deprotection(self):
-        if self.tag_index is None or self.is_resource:
+        if self.tag_index is None:
             return
 
         i = 0
         found_counts = {}
         for b in self.tag_index.tag_index:
-            tag_path = backslash_fix.sub(r'\\', b.path).\
-                       replace("/", "\\").strip().lower()
+            tag_path = backslash_fix.sub(
+                r'\\', b.path.replace("/", "\\")).strip().lower()
 
             name_id = (tag_path, b.class_1.enum_name)
             if is_protected_tag(tag_path):
