@@ -226,7 +226,7 @@ node = Struct('node',
     Pad(32),
 
     # xbox specific values
-    LFloat('unknown', ENDIAN='<', DEFAULT=1.0, VISIBLE=False),
+    LFloat('scale', ENDIAN='<', DEFAULT=1.0, VISIBLE=False),
     QStruct("rot_jj_kk", GUI_NAME="[1-2j^2-2k^2]   2[ij+kw]   2[ik-jw]",
         INCLUDE=ijk_float, ENDIAN='<', VISIBLE=False),
     QStruct("rot_kk_ii", GUI_NAME="2[ij-kw]   [1-2k^2-2i^2]   2[jk+iw]",
