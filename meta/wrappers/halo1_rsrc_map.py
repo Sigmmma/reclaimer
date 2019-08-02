@@ -150,6 +150,7 @@ class Halo1RsrcMap(HaloMap):
             self.tag_classes = tag_classes
 
         self.maps[head.map_name] = self
+        self.map_name = head.map_name
         self.tag_classes += (def_cls, )*(rsrc_tag_count - len(self.tag_classes))
         tags.tag_index.extend(rsrc_tag_count)
 
