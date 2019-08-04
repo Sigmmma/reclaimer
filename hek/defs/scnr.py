@@ -218,9 +218,9 @@ object_name = Struct("object_name",
     FlSEnum16("object_type",
         *((object_types[i], i - 1) for i in
           range(len(object_types))),
-        VISIBLE=False, DEFAULT=-1
+        VISIBLE=False, EDITABLE=False, DEFAULT=-1
         ),
-    FlSInt16("reflexive_index", VISIBLE=False),
+    FlSInt16("reflexive_index", VISIBLE=False, EDITABLE=False),
     SIZE=36
     )
 
@@ -390,20 +390,26 @@ player_starting_location2[3] = dyn_senum16("bsp_index",
         )
 
 trigger_volume = Struct("trigger_volume",
-    FlUInt16("unknown", DEFAULT=1, EDITABLE=False),
+    # if this unknown != 1, the trigger volume is disabled
+    FlUInt16("unknown0", DEFAULT=1, EDITABLE=False, VISIBLE=False),
     Pad(2),
     ascii_str32("name"),
-    # find out what if these fields actually what i'm calling them
-    QStruct("normal",   INCLUDE=ijk_float),
+    BytesRaw("unknown1", SIZE=12, VISIBLE=False),
     QStruct("binormal", INCLUDE=ijk_float),
-    QStruct("tangent",  INCLUDE=ijk_float),
-    QStruct("position", INCLUDE=xyz_float),
+    QStruct("normal",   INCLUDE=ijk_float),
+    QStruct("position", INCLUDE=xyz_float,
+        TOOLTIP=("Volume sides extend in one direction from this position.\n"
+                 "This position is the origin corner for the trigger volume.")),
     QStruct("sides",
-        Float("w"), Float("l"), Float("h"),
+        Float("w", TOOLTIP="Along local y axis"),
+        Float("h", TOOLTIP="Along local z axis"),
+        Float("l", TOOLTIP="Along local x axis"),
         ORIENT='h'
         ),
     SIZE=96,
-    COMMENT="I'm not sure if these are the actual names, but they seem to fit."
+    COMMENT=(
+        "To make the trigger volumes rotation be zero, the normal and\n"
+        "binormal should be (1, 0, 0) and (0, 1, 0) respectively.")
     )
 
 recorded_animation = Struct("recorded_animation",
