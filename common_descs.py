@@ -149,7 +149,7 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
     ref_struct = dict(rawdata_ref_struct)
     kwargs.update(WIDGET=widget)
     ref_struct[0] = dict(ref_struct[0])
-    ref_struct[0][VISIBLE] = False
+    ref_struct[0][VISIBLE] = VISIBILITY_METADATA
     if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
     if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     if max_size is not None:
@@ -172,7 +172,7 @@ def get_meta_dependency_filepath(parent=None, tag_index_manager=None, **kwargs):
 
 
 def dependency_uint32(name='tag_ref', **kwargs):
-    kwargs.setdefault(VISIBLE, False)
+    kwargs.setdefault(VISIBLE, VISIBILITY_METADATA)
     kwargs.setdefault(ORIENT, "h")
     return QStruct(name,
         UInt32("id"),
@@ -214,7 +214,7 @@ def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
     kwargs.setdefault(STRINGID_LEN_BITS, len_bit_ct)
     kwargs.setdefault(ORIENT, "h")
     return StringID(name,
-        UInt32('string_id', VISIBLE=False),
+        UInt32('string_id', VISIBLE=VISIBILITY_METADATA),
         STEPTREE=WritableComputed("string",
             COMPUTE_READ=read_string_id_string,
             COMPUTE_WRITE=write_string_id_string,
@@ -569,7 +569,7 @@ tag_header = Struct("blam_header",
         ("halo_1", 'blam'),
         DEFAULT='blam', EDITABLE=False
         ),
-    VISIBLE=False, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
+    VISIBLE=VISIBILITY_METADATA, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
     )
 
 # Miscellaneous, Halo specific descriptors
@@ -609,27 +609,27 @@ rawdata_ref_struct = RawdataRef('rawdata_ref',
     SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
     Bool32("flags",
         "data_in_resource_map",
-        VISIBLE=False,
+        VISIBLE=VISIBILITY_METADATA, EDITABLE=False
         ),
-    UInt32("raw_pointer", VISIBLE=False),  # doesnt use magic
-    UInt32("pointer", VISIBLE=False),
-    UInt32("id", VISIBLE=False),
+    UInt32("raw_pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),  # doesnt use magic
+    UInt32("pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    UInt32("id", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     ORIENT='h'
     )
 
 # This is the descriptor used wherever a tag reference a reflexive
 reflexive_struct = Reflexive('reflexive',
-    SInt32("size", VISIBLE=False),
-    UInt32("pointer", VISIBLE=False),
-    UInt32("id", VISIBLE=False),  # 0 in meta it seems
+    SInt32("size", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    UInt32("pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    UInt32("id", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),  # 0 in meta it seems
     )
 
 # This is the descriptor used wherever a tag references another tag
 tag_ref_struct = TagRef('dependency',
     valid_tags,
-    SInt32("path_pointer", VISIBLE=False, EDITABLE=False),
-    SInt32("path_length", MAX=MAX_TAG_PATH_LEN, VISIBLE=False, EDITABLE=False),
-    UInt32("id", VISIBLE=False),
+    SInt32("path_pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    SInt32("path_length", MAX=MAX_TAG_PATH_LEN, VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    UInt32("id", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     ORIENT='h'
     )
 
@@ -645,7 +645,7 @@ predicted_resource = Struct('predicted_resource',
 zone_asset_struct = ZoneAsset("zone_asset",
     UInt16("salt"),
     UInt16("idx"),
-    UInt32("unused", VISIBLE=False),
+    UInt32("unused", VISIBLE=VISIBILITY_METADATA),
     )
 
 extra_layers_block = dependency("extra_layer", valid_shaders)
@@ -814,7 +814,7 @@ tag_header_os = Struct("blam_header",
     UInt8("integrity0", DEFAULT=0, EDITABLE=False),
     UInt8("integrity1", DEFAULT=255, EDITABLE=False),
     blam_engine_id,
-    VISIBLE=False, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
+    VISIBLE=VISIBILITY_METADATA, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
     )
 
 valid_model_animations_yelo = tag_class_os('antr', 'magy')
