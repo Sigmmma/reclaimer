@@ -133,30 +133,30 @@ h3_tag_header = Struct("blam_header",
     UInt8("integrity0", DEFAULT=0, EDITABLE=False),
     UInt8("integrity1", DEFAULT=255, EDITABLE=False),
     h3_blam_engine_id,
-    VISIBLE=False, SIZE=64
+    VISIBLE=VISIBILITY_METADATA, SIZE=64
     )
 
 # these structs replace the above ones when used outside a map
 h3_tag_index_ref_struct = H3TagRef('dependency',
     valid_h3_tags,
-    SInt32("path pointer", VISIBLE=False, EDITABLE=False),
-    SInt32("path length", MAX=254, VISIBLE=False, EDITABLE=False),
-    UInt32("id", VISIBLE=False),
+    SInt32("path pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    SInt32("path length", MAX=254, VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    UInt32("id", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     ORIENT='h'
     )
 
 h3_reflexive_struct = H3Reflexive('reflexive',
-    SInt32("size", VISIBLE=False),
-    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
-    UInt32("id", VISIBLE=False),
+    SInt32("size", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    UInt32("pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False, DEFAULT=0xFFFFFFFF),
+    UInt32("id", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     )
 
 h3_rawdata_ref_struct = H3RawdataRef('rawdata ref', 
     SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
-    Bool32("flags", VISIBLE=False),
-    UInt32("raw pointer", VISIBLE=False),
-    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
-    UInt32("id", VISIBLE=False),
+    Bool32("flags", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    UInt32("raw pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    UInt32("pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False, DEFAULT=0xFFFFFFFF),
+    UInt32("id", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     ORIENT='h'
     )
 
