@@ -53,12 +53,12 @@ sbsp_def = TagDef("sbsp",
     blam_header_stubbs("sbsp", 5),
     sbsp_body,
 
-    ext=".scenario_structure_bsp", endian=">", tag_cls=HekTag,
+    ext=".scenario_structure_bsp", endian=">", tag_cls=SbspTag,
     )
 
 fast_sbsp_def = TagDef("sbsp",
     blam_header_stubbs("sbsp", 5),
     fast_sbsp_body,
 
-    ext=".scenario_structure_bsp", endian=">", tag_cls=HekTag,
+    ext=".scenario_structure_bsp", endian=">", tag_cls=SbspTag,
     )
