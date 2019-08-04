@@ -2,6 +2,8 @@ from supyr_struct.defs.common_descs import *
 from supyr_struct.field_types import *
 from supyr_struct.defs.tag_def import TagDef
 
+from binilla.constants import VISIBILITY_METADATA
+
 def get(): return composer_playlist_def
 
 
@@ -19,7 +21,7 @@ def get_str_len(parent=None, attr_index=None, path=None, new_value=None,
 command = Struct("command",
     UEnum32("sig",
         ("Cmnd", "dnmC"),
-        DEFAULT="dnmC", VISIBLE=False,
+        DEFAULT="dnmC", VISIBLE=VISIBILITY_METADATA,
         ),
     UInt16("perm_index"),
     Pad(2),
@@ -39,15 +41,15 @@ command = Struct("command",
 command_list = Struct("command_list",
     UEnum32("sig",
         ("Clst", "tslC"),
-        DEFAULT="tslC", VISIBLE=False
+        DEFAULT="tslC", VISIBLE=VISIBILITY_METADATA
         ),
-    UInt32("lsnd_path_len", VISIBLE=False),
-    UInt32("lsnd_path_pointer", VISIBLE=False),
+    UInt32("lsnd_path_len", VISIBLE=VISIBILITY_METADATA),
+    UInt32("lsnd_path_pointer", VISIBLE=VISIBILITY_METADATA),
 
-    UInt32("command_count", VISIBLE=False),
-    UInt32("commands_pointer", VISIBLE=False),
+    UInt32("command_count", VISIBLE=VISIBILITY_METADATA),
+    UInt32("commands_pointer", VISIBLE=VISIBILITY_METADATA),
 
-    UInt32("lsnd_tag_pointer", VISIBLE=False),
+    UInt32("lsnd_tag_pointer", VISIBLE=VISIBILITY_METADATA),
     UInt32("play_length", DEFAULT=180),
 
     SIZE=64,
@@ -62,14 +64,14 @@ command_list = Struct("command_list",
 header = Struct("header",
     UEnum32("sig",
         ("Play", "yalP"),
-        DEFAULT="yalP", VISIBLE=False,
+        DEFAULT="yalP", VISIBLE=VISIBILITY_METADATA,
         ),
 
-    UInt32("tags_dir_len", VISIBLE=False),
-    UInt32("tags_dir_pointer", VISIBLE=False),
+    UInt32("tags_dir_len", VISIBLE=VISIBILITY_METADATA),
+    UInt32("tags_dir_pointer", VISIBLE=VISIBILITY_METADATA),
 
-    UInt32("command_list_count", VISIBLE=False),
-    UInt32("command_list_pointer", VISIBLE=False),
+    UInt32("command_list_count", VISIBLE=VISIBILITY_METADATA),
+    UInt32("command_list_pointer", VISIBLE=VISIBILITY_METADATA),
 
     Bool32("flags",
         "shuffle",

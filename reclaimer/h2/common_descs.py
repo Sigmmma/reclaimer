@@ -78,7 +78,7 @@ def h2_rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
     if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     kwargs.update(WIDGET=widget)
     ref_struct[0] = dict(ref_struct[0])
-    ref_struct[0][VISIBLE] = False
+    ref_struct[0][VISIBLE] = VISIBILITY_METADATA
     if max_size is not None:
         ref_struct[0][MAX] = max_size
         kwargs[MAX] = max_size
@@ -122,9 +122,9 @@ def h2_dependency(name='tag ref', valid_ids=None, **kwargs):
 
     return H2TagRef(name,
         valid_ids,
-        UInt32("id", VISIBLE=False),
+        UInt32("id", VISIBLE=VISIBILITY_METADATA),
         SInt32("path length",
-            MAX=MAX_TAG_PATH_LEN, OFFSET=4, VISIBLE=False, EDITABLE=False),
+            MAX=MAX_TAG_PATH_LEN, OFFSET=4, VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
         STEPTREE=StrTagRef(
             "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254),
         **kwargs
@@ -245,18 +245,18 @@ h2_tag_header = Struct("blam_header",
     UInt8("integrity0", DEFAULT=0, EDITABLE=False),
     UInt8("integrity1", DEFAULT=255, EDITABLE=False),
     h2_blam_engine_id,
-    VISIBLE=False, SIZE=64
+    VISIBLE=VISIBILITY_METADATA, SIZE=64
     )
 
 
 h2_reflexive_struct = H2Reflexive('reflexive',
-    SInt32("size", VISIBLE=False),
-    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    SInt32("size", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    UInt32("pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False, DEFAULT=0xFFFFFFFF),
     )
 
 h2_rawdata_ref_struct = H2RawdataRef('rawdata_ref', 
     SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
-    UInt32("pointer", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    UInt32("pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False, DEFAULT=0xFFFFFFFF),
     ORIENT='h'
     )
 

@@ -61,5 +61,5 @@ sr_tag_header = Struct("blam_header",
         ("shadowrun_xbox", 'sr_x'),
         DEFAULT='sr_x', EDITABLE=False
         ),
-    VISIBLE=False, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
+    VISIBLE=VISIBILITY_METADATA, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
     )

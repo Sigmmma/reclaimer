@@ -1,5 +1,5 @@
 from .coll import *
-from .objs.tag import HekTag
+from .objs.sbsp import SbspTag
 from supyr_struct.defs.block_def import BlockDef
 
 cluster_fog_tooltip = (
@@ -94,7 +94,8 @@ surface = QStruct("surface",
     SInt16("a"),
     SInt16("b"),
     SInt16("c"),
-    SIZE=6, ORIENT='h'
+    SIZE=6, ORIENT='h', COMMENT="""
+This is a renderable surface(visible geometry and lightmap geometry)"""
     )
 
 material = Struct("material",
@@ -104,8 +105,14 @@ material = Struct("material",
         "coplanar",
         "fog_plane",
         ),
-    SInt32("surfaces", EDITABLE=False),
-    SInt32("surface_count", EDITABLE=False),
+    SInt32("surfaces", EDITABLE=False,
+        TOOLTIP=("The offset into the surfaces array that this\n"
+                 "lightmap materials surfaces are located at.")
+        ),
+    SInt32("surface_count", EDITABLE=False,
+        TOOLTIP=("The number of surfaces in the array belonging\n"
+                 "to this lightmap material.")
+        ),
     QStruct("centroid", INCLUDE=xyz_float),
     QStruct("ambient_color", INCLUDE=rgb_float),
     SInt16("distant_light_count"),
@@ -141,7 +148,7 @@ material = Struct("material",
         VISIBLE=False,
         ),
     Pad(2),
-    SInt32("lightmap_vertices_count", VISIBLE=False),
+    SInt32("lightmap_vertices_count", EDITABLE=False),
     SInt32("lightmap_vertices_offset", VISIBLE=False),
 
     FlUInt32("unknown_meta_offset1", VISIBLE=False),
@@ -206,7 +213,10 @@ subcluster = Struct("subcluster",
     QStruct('world_bounds_y', INCLUDE=from_to),
     QStruct('world_bounds_z', INCLUDE=from_to),
     reflexive("surface_indices", surface_index, 128),
-    SIZE=36
+    SIZE=36, COMMENT="""
+Subclusters define areas to render in square chunks. Surfaces indices are
+the renderable surfaces(not collision) to render in this subcluster. This is
+how Halo's renderer knows what surfaces to render in each cluster."""
     )
 
 cluster = Struct("cluster",
@@ -460,8 +470,8 @@ sbsp_body = Struct("tagdata",
     reflexive("weather_polyhedras", weather_polyhedra, 32),
 
     Pad(24),
-    reflexive("pathfinding_surfaces", pathfinding_surface, 131072),
-    reflexive("pathfinding_edges", pathfinding_edge, 262144),
+    reflexive("pathfinding_surfaces", pathfinding_surface, 131072, VISIBLE=False),
+    reflexive("pathfinding_edges", pathfinding_edge, 262144, VISIBLE=False),
     reflexive("background_sounds_palette", background_sound_palette, 64,
         DYN_NAME_PATH='.name'),
     reflexive("sound_environments_palette", sound_environment_palette, 64,
@@ -471,15 +481,15 @@ sbsp_body = Struct("tagdata",
     UInt32("unknown", VISIBLE=False),
     Pad(20),
     reflexive("markers", marker, 1024, DYN_NAME_PATH='.name'),
-    reflexive("detail_objects", detail_object, 1),
+    reflexive("detail_objects", detail_object, 1, VISIBLE=False),
 
     # the runtime decals reflexive is populated ONLY by the
     # engine while it is running(I'm making an educated guess)
     reflexive("runtime_decals", runtime_decal, 6144, VISIBLE=False),
 
     Pad(12),
-    reflexive("leaf_map_leaves", leaf_map_leaf, 65536),
-    reflexive("leaf_map_portals", leaf_map_portal, 524288),
+    reflexive("leaf_map_leaves", leaf_map_leaf, 65536, VISIBLE=False),
+    reflexive("leaf_map_portals", leaf_map_portal, 524288, VISIBLE=False),
     SIZE=648,
     )
 
@@ -515,12 +525,12 @@ sbsp_def = TagDef("sbsp",
     blam_header("sbsp", 5),
     sbsp_body,
 
-    ext=".scenario_structure_bsp", endian=">", tag_cls=HekTag,
+    ext=".scenario_structure_bsp", endian=">", tag_cls=SbspTag,
     )
 
 fast_sbsp_def = TagDef("sbsp",
     blam_header("sbsp", 5),
     fast_sbsp_body,
 
-    ext=".scenario_structure_bsp", endian=">", tag_cls=HekTag,
+    ext=".scenario_structure_bsp", endian=">", tag_cls=SbspTag,
     )
