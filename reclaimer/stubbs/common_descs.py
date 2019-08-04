@@ -176,5 +176,5 @@ tag_header_stubbs = Struct("blam_header",
         ("halo_1", 'blam'),
         DEFAULT='blam', EDITABLE=False
         ),
-    VISIBLE=False, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
+    VISIBLE=VISIBILITY_METADATA, SIZE=64, ENDIAN=">"  # KEEP THE ENDIAN SPECIFICATION
     )
