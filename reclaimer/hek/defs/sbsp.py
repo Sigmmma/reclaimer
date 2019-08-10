@@ -31,12 +31,16 @@ compressed_vertex = QStruct("compressed_vertex",
     )
 
 uncompressed_lightmap_vertex = QStruct("uncompressed_lightmap_vertex",
-    Float('normal_i'),   Float('normal_j'),   Float('normal_k'),
+    # this normal is the direction the light is hitting from, and
+    # is used for calculating dynamic shadows on dynamic objects
+    Float('normal_i'), Float('normal_j'), Float('normal_k'),
     Float('u'), Float('v'),
     SIZE=20
     )
 
 compressed_lightmap_vertex = QStruct("compressed_lightmap_vertex",
+    # this normal is the direction the light is hitting from, and
+    # is used for calculating dynamic shadows on dynamic objects
     UInt32('normal'),
     SInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
     SInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
@@ -132,7 +136,7 @@ material = Struct("material",
     Pad(6),
 
     SInt32("vertices_count", EDITABLE=False),
-    SInt32("vertices_offset", VISIBLE=False),
+    SInt32("vertices_offset", EDITABLE=False, VISIBLE=False),
 
     FlUInt32("unknown_meta_offset0", VISIBLE=False),
     FlUInt32("vertices_meta_offset",
@@ -149,7 +153,7 @@ material = Struct("material",
         ),
     Pad(2),
     SInt32("lightmap_vertices_count", EDITABLE=False),
-    SInt32("lightmap_vertices_offset", VISIBLE=False),
+    SInt32("lightmap_vertices_offset", EDITABLE=False, VISIBLE=False),
 
     FlUInt32("unknown_meta_offset1", VISIBLE=False),
     FlUInt32("lightmap_vertices_meta_offset",
@@ -444,7 +448,7 @@ sbsp_body = Struct("tagdata",
     QStruct("world_bounds_z", INCLUDE=from_to),
     reflexive("leaves", leaf, 65535),
     reflexive("leaf_surfaces", leaf_surface, 262144),
-    reflexive("surface", surface, 131072),
+    reflexive("surfaces", surface, 131072),
     reflexive("lightmaps", lightmap, 128),
 
     Pad(12),
