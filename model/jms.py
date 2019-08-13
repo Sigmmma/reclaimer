@@ -584,9 +584,12 @@ class JmsModel:
         errors = []
         if len(self.nodes) == 0:
             errors.append("No nodes. Must contain at least one node.")
-        elif len(self.nodes) >= 64:
+            return errors
+
+        if len(self.nodes) >= 64:
             errors.append("Too many nodes. Max count is 64.")
 
+        seen_names = set()
         for i in range(len(self.nodes)):
             n = self.nodes[i]
             if n.first_child >= len(self.nodes):
@@ -595,25 +598,70 @@ class JmsModel:
                 errors.append("Sibling node of node '%s' is invalid." % n.name)
             elif len(n.name) >= 32:
                 errors.append("Node name node '%s' is too long." % n.name)
+            elif n.name.lower() in seen_names:
+                errors.append("Multiple nodes named '%s'." % n.name)
+
+            seen_names.add(n.name.lower())
 
         if self.nodes and self.nodes[0].sibling_index != -1:
             errors.append("Root node must not have siblings.")
 
-        seen_hierarchy = set()
-        for node in self.nodes:
-            sib_idx = node.sibling_index
-            child_idx = node.first_child
-            if sib_idx in seen_hierarchy or child_idx in seen_hierarchy:
-                errors.append("Node hierarchy is janked up. " +
-                              "Can't really explain why tho.")
+        seen_hierarchy = set((-1, ))
+        node_depths = [-1] * len(self.nodes)
+        node_depths[0] = 0
 
-            if sib_idx >= 0:
-                seen_hierarchy.add(sib_idx)
-
-            if child_idx >= 0:
+        # figure out the hierarchy depth of each node
+        for i in range(len(self.nodes)):
+            child_depth = node_depths[i] + 1
+            child_idx = self.nodes[i].first_child
+            while (child_idx not in seen_hierarchy and
+                   child_idx in range(len(self.nodes))):
                 seen_hierarchy.add(child_idx)
+                node_depths[child_idx] = child_depth
+                child_idx = self.nodes[child_idx].sibling_index
 
-        # TODO: Check hierarchy for non-halo sorting
+        # make sure the nodes are sorted in increasing hierarchy depth
+        curr_depth = node_depths[0]
+        prev_name = ""
+        for i in range(len(node_depths)):
+            if curr_depth > node_depths[i]:
+                errors.append("Nodes are not sorted by hierarchy depth.")
+                break
+
+            curr_name = self.nodes[i].name
+            if curr_depth != node_depths[i]:
+                curr_depth = node_depths[i]
+            elif curr_name < prev_name:
+                errors.append(("Nodes within depth %s are not sorted "
+                               "alphabetically.") % curr_depth)
+                break
+
+            prev_name = curr_name
+
+        sib_errors = set()
+        child_errors = set()
+        seen_hierarchy = set()
+        for i in range(len(self.nodes)):
+            node = self.nodes[i]
+
+            if node.first_child in child_errors:
+                pass
+            elif node.first_child in seen_hierarchy:
+                errors.append(
+                    ("Node hierarchy is corrupt. Node %s is specified as the "
+                     "child of multiple nodes.") % node.first_child)
+            elif node.first_child >= 0:
+                seen_hierarchy.add(node.first_child)
+
+            if node.sibling_index in sib_errors:
+                pass
+            elif node.sibling_index in seen_hierarchy:
+                errors.append(
+                    ("Node hierarchy is corrupt. Node %s is specified as the "
+                     "sibling of multiple nodes.") % node.sibling_index)
+            elif node.sibling_index >= 0:
+                seen_hierarchy.add(node.sibling_index)
+
         if not errors:
             # check all nodes to make sure their hierarchy is valid
             all_seen_siblings = set()
