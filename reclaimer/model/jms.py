@@ -1417,12 +1417,13 @@ def generate_fake_nodes(node_count):
     if node_count <= 0:
         return nodes
 
-    for i in range(node_count):
+    nodes.append(JmsNode("fake_node0", 1, -1))
+    for i in range(1, node_count):
         nodes.append(JmsNode("fake_node%s" % i, -1, i + 1))
 
-    nodes[0].first_child = 1
     nodes[-1].first_child = -1
-    nodes[0].sibling_index = nodes[-1].sibling_index = -1
+    nodes[-1].sibling_index = -1
+    JmsNode.setup_node_hierarchy(nodes)
     return nodes
 
 
