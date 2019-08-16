@@ -383,6 +383,11 @@ detail_object = Struct("detail_object",
     reflexive("instances", detail_object_instance, 2097152),
     reflexive("counts", detail_object_count, 8388608),
     reflexive("z_reference_vectors", detail_object_z_reference_vector, 262144),
+    Bool8("flags",
+        "enabled",  # required to be set on map compile.
+        #             set to   "parent.instances.size != 0"
+        VISIBLE=False
+        ),
     SIZE=64
     )
 
