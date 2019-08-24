@@ -1168,6 +1168,9 @@ class Halo1Map(HaloMap):
                 #     reclaimer.enums.script_object_types
                 keep_these = {i: set() for i in
                               SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES}
+                for b in meta.bsp_switch_trigger_volumes.STEPTREE:
+                    keep_these[11].add(b.trigger_volume)
+    
                 for i in range(min(syntax_data.last_node, len(syntax_data.nodes))):
                     node = syntax_data.nodes[i]
                     if node.type not in keep_these:
