@@ -2,6 +2,8 @@ import os
 
 from traceback import format_exc
 
+from arbytmap.bitmap_io import get_channel_order_by_masks,\
+     get_channel_swap_mapping, swap_array_items
 from supyr_struct.util import sanitize_path
 from supyr_struct.defs.bitmaps.dds import dds_def
 
@@ -134,6 +136,7 @@ def parse_dds_file(filepath):
 
     bitm_format = ""
     bpp = 8  # bits per pixel
+    channel_map = None
 
     # choose bitmap format
     if fcc == "DXT1":
@@ -146,10 +149,18 @@ def parse_dds_file(filepath):
     elif pf_flags.rgb_space:
         bitcount = pixelformat.rgb_bitcount
         bpp = 32
-        if pf_flags.has_alpha and bitcount == 32:
-            bitm_format = "a8r8g8b8"
-        elif bitcount == 32:
-            bitm_format = "x8r8g8b8"
+
+        if bitcount == 32:
+            channel_order = get_channel_order_by_masks(
+                pixelformat.a_bitmask, pixelformat.r_bitmask,
+                pixelformat.g_bitmask, pixelformat.b_bitmask)
+
+            channel_map = get_channel_swap_mapping("BGRA", channel_order)
+            if pf_flags.has_alpha:
+                bitm_format = "a8r8g8b8"
+            elif bitcount == 32:
+                bitm_format = "x8r8g8b8"
+
         elif bitcount in (15, 16):
             bpp = 16
             a_mask = pixelformat.a_bitmask
@@ -217,13 +228,12 @@ def parse_dds_file(filepath):
     mip_count = len(pixel_counts)
 
     # choose the texture type
-    pixels = dds_pixels
-    bitm_type = "texture_2d"
     if caps2.volume:
         bitm_type = "texture_3d"
+        pixels = dds_pixels
+
     elif caps2.cubemap:
         # gotta rearrange the mipmaps and cubemap faces
-        pixels = b''
         image_count = mip_count + 1
         images = [None]*6*(image_count)
         pos = 0
@@ -245,9 +255,18 @@ def parse_dds_file(filepath):
                            max(d//2, min_d))
                 pos += image_size
 
+        bitm_type = "cubemap"
+        pixels = b''
         for image in images:
             pixels += image
 
-        bitm_type = "cubemap"
+    else:
+        bitm_type = "texture_2d"
+        pixels = dds_pixels
+
+    if channel_map:
+        # swap 32bit channels around to the format expected of bitmap tags
+        pixels = bytearray(pixels)
+        swap_array_items(pixels, channel_map)
 
     return width, height, depth, bitm_type, bitm_format, mip_count, pixels
