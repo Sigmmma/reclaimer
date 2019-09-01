@@ -530,7 +530,7 @@ class Halo1Map(HaloMap):
                     valid = False
                 elif anim.first_permutation_index != permutation_chains[i]:
                     valid = False
-                elif not(anim.frame_count and anim.node_count in range(1, 65)):
+                elif anim.node_count not in range(1, 65):
                     valid = False
                 elif not anim.flags.compressed_data:
                     if anim.default_data.size < expected_default_data_size:
