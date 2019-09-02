@@ -62,7 +62,8 @@ def extract_model(tagdata, tag_path="", **kw):
         nodes.append(JmsNode(
             b.name, b.first_child_node, b.next_sibling_node,
             rot.i, rot.j, rot.k, rot.w,
-            trans.x * 100, trans.y * 100, trans.z * 100
+            trans.x * 100, trans.y * 100, trans.z * 100,
+            b.parent_node
             ))
 
     for b in tagdata.shaders.STEPTREE:
