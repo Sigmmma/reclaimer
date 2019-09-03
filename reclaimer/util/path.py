@@ -10,7 +10,7 @@ from os import path
 if os.name != 'nt':
     # If not windows then we're likely on a posix filesystem.
     # This function will not break on windows. But it's just slower.
-    def tagpath_to_fullpath(tagdir, tagpath, extension="", force_windows=False):
+    def tagpath_to_fullpath(tagdir, tagpath, extension="", force_windows=False, folder=False):
         '''Takes a tagpath and case-insenstively goes through the directory
         tree to find the true path if it exists. (True path being the path with
         proper capitalization.) If force_windows is True, it will always treat
@@ -19,6 +19,9 @@ if os.name != 'nt':
 
         Tagpaths from saved tagfiles should always be treated as windows.
         Tagpaths from filepickers must be native, and thus not forced_windows.
+
+        If folder is True this program will search for a folder and assume
+        that the path does not contain a file at the end.
 
         Returns properly capitalized path if found. None if not found.'''
 
@@ -30,7 +33,9 @@ if os.name != 'nt':
         else:
             tagpath = list(pathlib.PurePath(tagpath).parts)
         # Get the final element: The tag!
-        tagname = (tagpath.pop(-1) + extension).lower()
+        tagname = ""
+        if not folder:
+            tagname = (tagpath.pop(-1) + extension).lower()
         # Store our current progression through the tree.
         cur_path = tagdir
         for dir in tagpath:
@@ -50,11 +55,12 @@ if os.name != 'nt':
             if not found:
                 return None
         # Check if we can find the right file at the end of the chain
-        files = os.listdir(cur_path) # Get all files in the current dir
-        for file in files:
-            fullpath = os.path.join(cur_path, file)
-            if file.lower() == tagname and os.path.isfile(fullpath):
-                return fullpath
+        if not folder:
+            files = os.listdir(cur_path) # Get all files in the current dir
+            for file in files:
+                fullpath = os.path.join(cur_path, file)
+                if file.lower() == tagname and os.path.isfile(fullpath):
+                    return fullpath
         # If the execution reaches this point, nothing is found.
         return None
 
