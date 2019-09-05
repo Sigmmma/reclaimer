@@ -1,5 +1,5 @@
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.devi import DeviTag
 from supyr_struct.defs.tag_def import TagDef
 
 devi_attrs = Struct("devi_attrs",
@@ -32,6 +32,15 @@ devi_attrs = Struct("devi_attrs",
     dependency("delay_effect", valid_event_effects),
     float_wu("automatic_activation_radius"),
 
+    Pad(84),
+    FlFloat("inv_power_acceleration_time"),
+    FlFloat("inv_power_transition_time"),
+    FlFloat("inv_depowered_acceleration_time"),
+    FlFloat("inv_depowered_transition_time"),
+    FlFloat("inv_position_acceleration_time"),
+    FlFloat("inv_position_transition_time"),
+    Pad(4),
+
     SIZE=276,
     )
 
@@ -47,5 +56,5 @@ devi_def = TagDef("devi",
     blam_header('devi'),
     devi_body,
 
-    ext=".device", endian=">", tag_cls=HekTag
+    ext=".device", endian=">", tag_cls=DeviTag
     )
