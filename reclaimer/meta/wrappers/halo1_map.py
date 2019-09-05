@@ -480,8 +480,10 @@ class Halo1Map(HaloMap):
 
         if tag_cls in ("antr", "magy"):
             highest_valid = -1
+            found_valid = False
             animations = meta.animations.STEPTREE
-            main_node_ct = animations[0].node_count if animations else 0
+            main_node_count = animations[0].node_count if animations else 0
+            main_node_list_checksum = animations[0].node_list_checksum if animations else 0
 
             permutation_chains = {}
             for i in range(len(animations)):
@@ -494,6 +496,8 @@ class Halo1Map(HaloMap):
                        next_anim not in permutation_chains):
                     permutation_chains[next_anim] = i
                     next_anim = animations[next_anim].next_animation
+
+            anims_to_remove = []
 
             for i in range(len(animations)):
                 if self.engine != "halo1yelo" and i >= 256:
@@ -523,14 +527,16 @@ class Halo1Map(HaloMap):
                 expected_default_data_size = (
                     anim.node_count * (12 + 8 + 4) - anim.frame_size)
 
+                if anim.frame_count == 0:
+                    expected_default_data_size = 0
+
                 if (anim.type.enum_name == "<INVALID>" or
                     anim.frame_info_type.enum_name == "<INVALID>"):
                     valid = False
-                elif anim.node_count != main_node_ct:
+                elif (anim.node_count != main_node_count or
+                      anim.node_count not in range(1, 65)):
                     valid = False
                 elif anim.first_permutation_index != permutation_chains[i]:
-                    valid = False
-                elif anim.node_count not in range(1, 65):
                     valid = False
                 elif not anim.flags.compressed_data:
                     if anim.default_data.size < expected_default_data_size:
@@ -546,10 +552,21 @@ class Halo1Map(HaloMap):
 
                 if valid:
                     highest_valid = i
+                    if not found_valid:
+                        main_node_count = anim.node_count
+                        main_node_list_checksum = anim.node_list_checksum
+                        found_valid = True
                 else:
                     # delete the animation info
-                    animations.pop(i)
-                    animations.insert(i)
+                    anims_to_remove.append(i)
+
+            # make sure all animations have the same node count, checksum, and a name
+            for i in anims_to_remove:
+                animations.pop(i)
+                animations.insert(i)
+                animations[i].node_count = main_node_count
+                animations[i].node_list_checksum = main_node_list_checksum
+                animations[i].name = "REMOVED_%s" % i
 
             # remove the highest invalid animations
             if highest_valid + 1 < len(animations):
