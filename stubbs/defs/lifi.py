@@ -1,5 +1,6 @@
 from .obje import *
 from .devi import *
+from ...hek.defs.lifi import *
 
 # replace the object_type enum one that uses
 # the correct default value for this object
@@ -20,5 +21,5 @@ lifi_def = TagDef("lifi",
     blam_header_stubbs('lifi'),
     lifi_body,
 
-    ext=".device_light_fixture", endian=">", tag_cls=ObjeTag
+    ext=".device_light_fixture", endian=">", tag_cls=LifiTag
     )

@@ -803,8 +803,10 @@ command_list = Struct("command_list",
     Pad(8),
     dyn_senum16("manual_bsp_index",
         DYN_NAME_PATH=".....structure_bsps.STEPTREE[DYN_I].structure_bsp.filepath"),
-
-    Pad(2),
+    dyn_senum16("bsp_index",
+        DYN_NAME_PATH=".....structure_bsps.STEPTREE[DYN_I].structure_bsp.filepath",
+        VISIBLE=False
+        ),
     reflexive("commands", command, 64),
     reflexive("points", point, 64),
     SIZE=96
