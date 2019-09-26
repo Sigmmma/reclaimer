@@ -7,6 +7,10 @@ from reclaimer.halo_script.hsc import get_hsc_data_block,\
 
 __all__ = ("extract_h1_scripts", )
 
+
+MAX_SCRIPT_SOURCE_SIZE = 1 << 18
+
+
 def extract_h1_scripts(tagdata, tag_path, **kw):
     filepath_base = os.path.join(kw['out_dir'], os.path.dirname(tag_path), "scripts")
     overwrite = kw.get('overwrite', True)
@@ -28,6 +32,8 @@ def extract_h1_scripts(tagdata, tag_path, **kw):
     for typ, arr in (("global", tagdata.globals.STEPTREE),
                      ("script", tagdata.scripts.STEPTREE)):
         filepath = os.path.join(filepath_base, "%ss" % typ)
+
+        header = "; Extracted with Reclaimer\n\n"
         comments = ""
         src_file_i = 0
         global_uses  = {}
@@ -85,23 +91,37 @@ def extract_h1_scripts(tagdata, tag_path, **kw):
 
                 if need_to_sort.keys() == next_need_to_sort.keys():
                     print("Could not sort these %ss so dependencies come first:" % typ)
-                    for src in need_to_sort.keys():
-                        print("\t%s" % src)
-                        sorted_sources.append(src)
+                    for name in need_to_sort.keys():
+                        print("\t%s" % name)
+                        print("\t  Requires: ", ", ".join(sorted(sort_by[name])))
+                        print()
+                        sorted_sources.append(need_to_sort[name])
                     break
                 need_to_sort = next_need_to_sort
 
             merged_sources = []
             merged_src = ""
+            merged_src_len = 0
+            # figure out how much data we can fit in the source file
+            max_size = MAX_SCRIPT_SOURCE_SIZE - len(header) - len(comments)
+
             for src in sorted_sources:
                 if not src:
                     continue
+
+                src += "\n\n\n"
+                # \n will be translated to \r\n, so the actual serialized string
+                # length will be incremented by the number of newline characters
+                src_len = len(src) + src.count("\n")
+
                 # concatenate sources until they are too large to be compiled
-                if len(merged_src) + len(src) > 262100:
+                if merged_src_len + src_len >= max_size:
                     merged_sources.append(merged_src)
                     merged_src = ""
+                    merged_src_len = 0
 
-                merged_src += src + "\n\n\n"
+                merged_src += src
+                merged_src_len += src_len
 
             if merged_src:
                 merged_sources.append(merged_src)
@@ -118,8 +138,8 @@ def extract_h1_scripts(tagdata, tag_path, **kw):
                     continue
 
                 # apparently the scripts use latin1 encoding, who knew....
-                with open(fp, "w", encoding='latin1') as f:
-                    f.write("; Extracted with Reclaimer\n\n")
+                with open(fp, "w", encoding='latin1', newline="\r\n") as f:
+                    f.write(header)
                     f.write(out_data)
                     f.write(comments)
 

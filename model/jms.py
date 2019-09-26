@@ -1358,7 +1358,7 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
     if not materials:
         materials = (JmsMaterial("__unnamed", "<none>"), )
 
-    with open(filepath, "w", encoding='latin1') as f:
+    with open(filepath, "w", encoding='latin1', newline="\r\n") as f:
         f.write("%s\n" % jms_model.version)
         f.write("%s\n" % int(jms_model.node_list_checksum))
 

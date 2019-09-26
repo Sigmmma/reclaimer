@@ -693,7 +693,7 @@ def write_jma(filepath, jma_anim, use_blitzkrieg_rounding=False):
         jma_anim = deepcopy(jma_anim)
         jma_anim.apply_root_node_info_to_states()
 
-    with open(filepath, "w", encoding='latin1') as f:
+    with open(filepath, "w", encoding='latin1', newline="\r\n") as f:
         f.write("16392\n")  # version number
         f.write("%s\n" % jma_anim.frame_count)
         f.write("%s\n" % jma_anim.frame_rate)
