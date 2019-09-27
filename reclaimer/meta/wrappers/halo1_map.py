@@ -50,7 +50,7 @@ def reparse_reflexive(block, new_size, pointer_converter,
         del steptree[:]
         steptree.extend(new_size)
         steptree.TYPE.parser(
-            palette.desc, node=steptree,
+            steptree.desc, node=steptree,
             map_pointer_converter=pointer_converter,
             rawdata=map_data, offset=file_ptr,
             safe_mode=False, parsing_resource=False,
@@ -661,7 +661,6 @@ class Halo1Map(HaloMap):
                 except Exception:
                     print(format_exc())
                     print("Couldn't re-parse %s data." % shaders_block)
-                    continue
 
             new_i = 0
             rebase_map = {}
@@ -752,7 +751,6 @@ class Halo1Map(HaloMap):
                     except Exception:
                         print(format_exc())
                         print("Couldn't re-parse %s data." % pal_block.NAME)
-                        continue
 
                 if inst_block.NAME == "bipeds":
                     # determine which palette indices are used by script data
