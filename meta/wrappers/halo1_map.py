@@ -740,6 +740,15 @@ class Halo1Map(HaloMap):
                                        if inst.type >= 0)
                 script_nodes_to_modify = set()
 
+                if inst_block.NAME == "bipeds":
+                    # determine which palette indices are used by script data
+                    for i in range(len(syntax_data.nodes)):
+                        node = syntax_data.nodes[i]
+                        # 35 == "actor_type"  script type
+                        if node.type == 35 and not(node.flags & HSC_IS_SCRIPT_OR_GLOBAL):
+                            script_nodes_to_modify.add(i)
+                            used_pal_indices.add(node.data & 0xFFff)
+
                 # determine the max number of palette indices actually used by all
                 # the object instances, and reparse the palette with that many.
                 if used_pal_indices:
@@ -751,15 +760,6 @@ class Halo1Map(HaloMap):
                     except Exception:
                         print(format_exc())
                         print("Couldn't re-parse %s data." % pal_block.NAME)
-
-                if inst_block.NAME == "bipeds":
-                    # determine which palette indices are used by script data
-                    for i in range(len(syntax_data.nodes)):
-                        node = syntax_data.nodes[i]
-                        # 35 == "actor_type"  script type
-                        if node.type == 35 and not(node.flags & HSC_IS_SCRIPT_OR_GLOBAL):
-                            script_nodes_to_modify.add(i)
-                            used_pal_indices.add(node.data & 0xFFff)
 
                 # figure out what to rebase the palette swatch indices to
                 new_i = 0
