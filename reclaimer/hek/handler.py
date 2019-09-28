@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from time import time
 from hashlib import md5
@@ -169,10 +170,11 @@ class HaloHandler(Handler):
         return ()
 
     def get_def_id(self, filepath):
-        if not filepath.startswith('.') and '.' in filepath:
-            ext = os.path.splitext(filepath)[-1].lower()
-        else:
-            ext = filepath.lower()
+        filepath = Path(filepath)
+
+        ext = filepath.suffix
+        if len(ext) > 1:
+            ext = ext[1:]
 
         if ext in self.ext_id_map:
             return self.ext_id_map[ext]
