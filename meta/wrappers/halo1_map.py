@@ -751,7 +751,8 @@ class Halo1Map(HaloMap):
 
                 # determine the max number of palette indices actually used by all
                 # the object instances, and reparse the palette with that many.
-                if used_pal_indices:
+                # Only do this if the pallete size is out of normal bounds.
+                if used_pal_indices and used_pal_indices > 100:
                     try:
                         reparse_reflexive(
                             pal_block, max(used_pal_indices) + 1,
