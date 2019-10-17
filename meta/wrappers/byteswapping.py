@@ -44,11 +44,14 @@ def byteswap_coll_bsp(bsp):
 
 
 def byteswap_pcm16_samples(pcm_block):
-    data_array = array.array(
-        "h", pcm_block.STEPTREE[: (len(pcm_block.STEPTREE) >> 1) << 1])
-    data_array.byteswap()
     # replace the verts with the byteswapped ones
-    pcm_block.STEPTREE = bytearray(data_array.tobytes())
+    pcm_block.STEPTREE = byteswap_pcm16_sample_data(pcm_block.STEPTREE)
+
+
+def byteswap_pcm16_sample_data(pcm_data):
+    data_array = array.array("h", pcm_data[: (len(pcm_data) >> 1) << 1])
+    data_array.byteswap()
+    return bytearray(data_array.tobytes())
 
 
 def byteswap_sbsp_meta(meta):
