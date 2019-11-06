@@ -36,6 +36,27 @@ from reclaimer.util import is_overlapping_ranges, is_valid_ascii_name_str,\
 __all__ = ("Halo1Map", "Halo1RsrcMap")
 
 
+def reparse_reflexive(block, new_size, pointer_converter,
+                      map_data, tag_index_manager):
+    steptree = block.STEPTREE
+    file_ptr = pointer_converter.v_ptr_to_f_ptr(block.pointer)
+
+    if (file_ptr + new_size * steptree.get_desc("SIZE", 0) > len(map_data) or
+        file_ptr <= 0):
+        return
+
+    # read the palette array from the map
+    with FieldType.force_little:
+        del steptree[:]
+        steptree.extend(new_size)
+        steptree.TYPE.parser(
+            steptree.desc, node=steptree,
+            map_pointer_converter=pointer_converter,
+            rawdata=map_data, offset=file_ptr,
+            safe_mode=False, parsing_resource=False,
+            tag_index_manager=tag_index_manager)
+
+
 class Halo1Map(HaloMap):
     '''Generation 1 map'''
     ce_rsrc_sound_indexes_by_path = None
@@ -626,8 +647,20 @@ class Halo1Map(HaloMap):
 
             for geom in meta.geometries.STEPTREE:
                 for part in geom.parts.STEPTREE:
-                    if part.shader_index in range(len(shaders)):
+                    if part.shader_index >= 0:
                         used_shaders.add(part.shader_index)
+
+            # determine the max number of shader indices actually used
+            # by all the geometry parts, and reparse them with that many.
+            if used_shaders:
+                try:
+                    reparse_reflexive(
+                        meta.shaders, max(used_shaders) + 1,
+                        self.map_pointer_converter,
+                        self.map_data, self.tag_index_manager)
+                except Exception:
+                    print(format_exc())
+                    print("Couldn't re-parse %s data." % shaders_block)
 
             new_i = 0
             rebase_map = {}
@@ -704,7 +737,7 @@ class Halo1Map(HaloMap):
                 palette, instances = pal_block.STEPTREE, inst_block.STEPTREE
 
                 used_pal_indices = set(inst.type for inst in instances
-                                       if inst.type in range(len(palette)))
+                                       if inst.type >= 0)
                 script_nodes_to_modify = set()
 
                 if inst_block.NAME == "bipeds":
@@ -715,6 +748,18 @@ class Halo1Map(HaloMap):
                         if node.type == 35 and not(node.flags & HSC_IS_SCRIPT_OR_GLOBAL):
                             script_nodes_to_modify.add(i)
                             used_pal_indices.add(node.data & 0xFFff)
+
+                # determine the max number of palette indices actually used by all
+                # the object instances, and reparse the palette with that many.
+                if used_pal_indices:
+                    try:
+                        reparse_reflexive(
+                            pal_block, max(used_pal_indices) + 1,
+                            self.map_pointer_converter,
+                            self.map_data, self.tag_index_manager)
+                    except Exception:
+                        print(format_exc())
+                        print("Couldn't re-parse %s data." % pal_block.NAME)
 
                 # figure out what to rebase the palette swatch indices to
                 new_i = 0
