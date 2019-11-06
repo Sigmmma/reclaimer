@@ -140,7 +140,7 @@ def repair_unit_attrs(offset, index_array, map_data, magic, repair, engine):
                     repair_dependency(*(args + (b'effe', moff3 + 24)))
 
 
-def repair_actv(tag_id, index_array, map_data, magic, repair, engine):
+def repair_actv(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'rtca', tag_offset + 0x4)))
@@ -150,21 +150,21 @@ def repair_actv(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency(*(args + (b'piqe', tag_offset + 0x1C0)))
 
 
-def repair_ant_(tag_id, index_array, map_data, magic, repair, engine):
+def repair_ant_(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'mtib', tag_offset + 0x20)))
     repair_dependency(*(args + (b'yhpp', tag_offset + 0x30)))
 
 
-def repair_antr(tag_id, index_array, map_data, magic, repair, engine):
+def repair_antr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     ct, moff, _ = read_reflexive(
         map_data, index_array[tag_id].meta_offset + 0x54 - magic, 257, 20, magic)
     repair_dependency_array(index_array, map_data, magic, repair, engine,
                             b'!dns', moff, ct, 20)
 
 
-def repair_coll(tag_id, index_array, map_data, magic, repair, engine):
+def repair_coll(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine, b'effe')
     repair_dependency(*(args + (tag_offset + 0x70, )))
@@ -181,7 +181,7 @@ def repair_coll(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency_array(*(args + (moff + 0x38, ct, 0x54)))
 
 
-def repair_cont(tag_id, index_array, map_data, magic, repair, engine):
+def repair_cont(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -193,14 +193,14 @@ def repair_cont(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency_array(*(args + (b'yhpp', moff + 16, ct, 104)))
 
 
-def repair_deca(tag_id, index_array, map_data, magic, repair, engine):
+def repair_deca(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     moff = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'aced', moff + 0x8)))
     repair_dependency(*(args + (b'mtib', moff + 0xD8)))
 
 
-def repair_DeLa(tag_id, index_array, map_data, magic, repair, engine):
+def repair_DeLa(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'mtib', tag_offset + 56)))
@@ -234,12 +234,12 @@ def repair_DeLa(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency_array(*(args + (b'aLeD', moff, ct, 80)))
 
 
-def repair_dobc(tag_id, index_array, map_data, magic, repair, engine):
+def repair_dobc(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_dependency(index_array, map_data, magic, repair, engine,
                       b'mtib', index_array[tag_id].meta_offset + 52)
 
 
-def repair_effe(tag_id, index_array, map_data, magic, repair, engine):
+def repair_effe(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     # events
@@ -255,11 +255,11 @@ def repair_effe(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency_array(*(args + (b'trap', moff2 + 0x54, ct, 0xE8)))
 
 
-def repair_elec(tag_id, index_array, map_data, magic, repair, engine):
+def repair_elec(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_dependency(index_array, map_data, magic, repair, engine,
                       b'mtib', index_array[tag_id].meta_offset + 52)
 
-def repair_flag(tag_id, index_array, map_data, magic, repair, engine):
+def repair_flag(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'rdhs', tag_offset + 0x18)))
@@ -267,7 +267,7 @@ def repair_flag(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency(*(args + (b'rdhs', tag_offset + 0x44)))
 
 
-def repair_fog(tag_id, index_array, map_data, magic, repair, engine):
+def repair_fog(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'mtib', tag_offset + 0xBC)))
@@ -275,12 +275,12 @@ def repair_fog(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency(*(args + (b'edns', tag_offset + 0x104)))
 
 
-def repair_font(tag_id, index_array, map_data, magic, repair, engine):
+def repair_font(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_dependency_array(index_array, map_data, magic, repair, engine,
                             b'mtib', index_array[tag_id].meta_offset + 0x3C, 4)
 
 
-def repair_foot(tag_id, index_array, map_data, magic, repair, engine):
+def repair_foot(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     # effects
@@ -291,11 +291,11 @@ def repair_foot(tag_id, index_array, map_data, magic, repair, engine):
             repair_dependency(*(args + (b'!dns', moff2 + 16)))
 
 
-def repair_glw_(tag_id, index_array, map_data, magic, repair, engine):
+def repair_glw_(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_dependency(index_array, map_data, magic, repair, engine,
                       b'mtib', index_array[tag_id].meta_offset + 324)
 
-def repair_grhi(tag_id, index_array, map_data, magic, repair, engine):
+def repair_grhi(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -316,12 +316,12 @@ def repair_grhi(tag_id, index_array, map_data, magic, repair, engine):
             repair_dependency(*(args + (b'!dns', moff)))
 
 
-def repair_hud_(tag_id, index_array, map_data, magic, repair, engine):
+def repair_hud_(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_dependency(index_array, map_data, magic, repair, engine,
                       b'mtib', index_array[tag_id].meta_offset)
 
 
-def repair_hudg(tag_id, index_array, map_data, magic, repair, engine):
+def repair_hudg(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'tnof', tag_offset + 0x48, )))
@@ -337,7 +337,7 @@ def repair_hudg(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency(*(args + (b'!dns', tag_offset + 0x3E0, )))
 
 
-def repair_itmc(tag_id, index_array, map_data, magic, repair, engine):
+def repair_itmc(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -346,17 +346,17 @@ def repair_itmc(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency_array(*(args + (b'meti', moff + 36, ct, 84)))
 
 
-def repair_jpt_(tag_id, index_array, map_data, magic, repair, engine):
+def repair_jpt_(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_dependency(index_array, map_data, magic, repair, engine,
                       b'!dns', index_array[tag_id].meta_offset + 0x114)
 
 
-def repair_lens(tag_id, index_array, map_data, magic, repair, engine):
+def repair_lens(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_dependency(index_array, map_data, magic, repair, engine,
                       b'mtib', index_array[tag_id].meta_offset + 0x20)
 
 
-def repair_ligh(tag_id, index_array, map_data, magic, repair, engine):
+def repair_ligh(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -365,7 +365,7 @@ def repair_ligh(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency(*(args + (b'snel', tag_offset + 0xAC)))
 
 
-def repair_lsnd(tag_id, index_array, map_data, magic, repair, engine):
+def repair_lsnd(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'gmdc', tag_offset + 0x2C)))
@@ -383,7 +383,7 @@ def repair_lsnd(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency_array(*(args + (b'!dns', moff, ct, 104)))
 
 
-def repair_matg(tag_id, index_array, map_data, magic, repair, engine):
+def repair_matg(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -473,34 +473,37 @@ def repair_matg(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency_array(*(args + (b'trap', p_moff, p_ct, 128)))
 
 
-def repair_mgs2(tag_id, index_array, map_data, magic, repair, engine):
+def repair_mgs2(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_dependency(index_array, map_data, magic, repair, engine,
                       b'mtib', index_array[tag_id].meta_offset + 92)
 
 
-def repair_mode(tag_id, index_array, map_data, magic, repair, engine):
+def repair_mode(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     # shaders
     shader_ct, shader_moff, _ = read_reflexive(
         map_data, tag_offset + 220 - magic, 256, 32, magic)
 
-    used_shader_indices = set()
-    # loop over each geometries parts and determine which
-    # shader indices are actually used across all of them
-    for moff in iter_reflexive_offs(map_data, tag_offset + 208 - magic, 48):
-        for moff2 in iter_reflexive_offs(map_data, moff + 36 - magic, 132):
-            map_data.seek(moff2 + 4 - magic)
-            shader_type = int.from_bytes(
-                map_data.read(2), 'little', signed=True)
-            if shader_type in range(shader_ct):
-                used_shader_indices.add(shader_type)
+    if safe_mode:
+        used_shader_indices = set()
+        # loop over each geometries parts and determine which
+        # shader indices are actually used across all of them
+        for moff in iter_reflexive_offs(map_data, tag_offset + 208 - magic, 48):
+            for moff2 in iter_reflexive_offs(map_data, moff + 36 - magic, 132):
+                map_data.seek(moff2 + 4 - magic)
+                shader_type = int.from_bytes(
+                    map_data.read(2), 'little', signed=True)
+                if shader_type in range(shader_ct):
+                    used_shader_indices.add(shader_type)
+    else:
+        used_shader_indices = list(range(shader_ct))
 
     for i in sorted(used_shader_indices):
         repair_dependency(index_array, map_data, magic, repair, engine,
                           b'rdhs', shader_moff + 32 * i)
 
 
-def repair_mply(tag_id, index_array, map_data, magic, repair, engine):
+def repair_mply(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -510,7 +513,7 @@ def repair_mply(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency(*(args + (b'rtsu', moff + 16)))
 
 
-def repair_ngpr(tag_id, index_array, map_data, magic, repair, engine):
+def repair_ngpr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -534,7 +537,7 @@ def repair_predicted_resources(map_data, offset, magic, repair, max_count=0xFFff
             repair[tag_id] = 'snd!'
 
 
-def repair_object(tag_id, index_array, map_data, magic, repair, engine):
+def repair_object(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     map_data.seek(tag_offset - magic)
     object_type = int.from_bytes(map_data.read(2), 'little')
@@ -674,7 +677,7 @@ def repair_object(tag_id, index_array, map_data, magic, repair, engine):
         pass  # nothing else to do for these
 
 
-def repair_part(tag_id, index_array, map_data, magic, repair, engine):
+def repair_part(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -686,7 +689,7 @@ def repair_part(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency(*(args + (b'mtib', tag_offset + 0xFC)))
 
 
-def repair_pctl(tag_id, index_array, map_data, magic, repair, engine):
+def repair_pctl(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'yhpp', tag_offset + 56)))
@@ -700,7 +703,7 @@ def repair_pctl(tag_id, index_array, map_data, magic, repair, engine):
             repair_dependency(*(args + (b'mtib', moff2 + 260)))
 
 
-def repair_rain(tag_id, index_array, map_data, magic, repair, engine):
+def repair_rain(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -712,7 +715,7 @@ def repair_rain(tag_id, index_array, map_data, magic, repair, engine):
 
 
 def repair_sbsp(tag_offset, index_array, map_data, magic, repair, engine,
-                map_magic):
+                map_magic, safe_mode=True):
     # This function requires the first argument is the tag's magic offset
     # relative to the bsp magic, rather than the tag's index id
     args = (index_array, map_data, magic, repair, engine)
@@ -751,7 +754,7 @@ def repair_sbsp(tag_offset, index_array, map_data, magic, repair, engine,
     repair_dependency_array(*(args + (b'edns', moff + 32, ct, 80)), **kwargs)
 
 
-def repair_scnr(tag_id, index_array, map_data, magic, repair, engine):
+def repair_scnr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     ### Need to finish this up. not all the limits specified here
     # should be as low as they are because open sauce is a thing
     tag_offset = index_array[tag_id].meta_offset
@@ -836,15 +839,18 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine):
             (696, 64), (720, 88), (744, 40)):  # ctrl  lifi  ssce
         pal_ct, pal_moff, _ = read_reflexive(map_data, tag_offset + off - magic)
 
-        used_pal_indices = set()
-        # loop over each object instance and determine which
-        # palette indices are actually used across all of them
-        for moff in iter_reflexive_offs(
-                map_data, tag_offset + off - 12 - magic, inst_size, tag_magic=magic):
-            map_data.seek(moff - magic)
-            inst_type = int.from_bytes(map_data.read(2), 'little', signed=True)
-            if inst_type in range(pal_ct):
-                used_pal_indices.add(inst_type)
+        if safe_mode:
+            used_pal_indices = set()
+            # loop over each object instance and determine which
+            # palette indices are actually used across all of them
+            for moff in iter_reflexive_offs(
+                    map_data, tag_offset + off - 12 - magic, inst_size, tag_magic=magic):
+                map_data.seek(moff - magic)
+                inst_type = int.from_bytes(map_data.read(2), 'little', signed=True)
+                if inst_type in range(pal_ct):
+                    used_pal_indices.add(inst_type)
+        else:
+            used_pal_indices = list(range(pal_ct))
 
         for i in sorted(used_pal_indices):
             repair_dependency(*(args + (b'ejbo', pal_moff + 48 * i)))
@@ -892,7 +898,7 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency_array(*(args + (b'vtca', moff, ct)))
 
 
-def repair_shader(tag_id, index_array, map_data, magic, repair, engine):
+def repair_shader(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     map_data.seek(tag_offset + 36 - magic)
     shader_type = int.from_bytes(map_data.read(2), 'little')
@@ -975,7 +981,7 @@ def repair_shader(tag_id, index_array, map_data, magic, repair, engine):
             repair_dependency_array(*(args + (b'mtib', moff + 0x6C, ct, 0xDC)))
 
 
-def repair_sky(tag_id, index_array, map_data, magic, repair, engine):
+def repair_sky(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -987,16 +993,16 @@ def repair_sky(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency_array(*(args + (b'snel', moff, ct, 116)))
 
 
-def repair_snd_(tag_id, index_array, map_data, magic, repair, engine):
+def repair_snd_(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_dependency(index_array, map_data, magic, repair, engine,
                       b'!dns', index_array[tag_id].meta_offset + 0x70)
 
 
-def repair_Soul(tag_id, index_array, map_data, magic, repair, engine):
-    repair_tagc(tag_id, index_array, map_data, magic, repair, engine, b'aLeD', 32)
+def repair_Soul(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
+    repair_tagc(tag_id, index_array, map_data, magic, repair, engine, safe_mode, b'aLeD', 32)
 
 
-def repair_tagc(tag_id, index_array, map_data, magic, repair, engine,
+def repair_tagc(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True,
                 tag_cls=None, max_count=200):
     ct, moff, _ = read_reflexive(
         map_data, index_array[tag_id].meta_offset - magic, max_count, 16, magic)
@@ -1016,7 +1022,7 @@ def repair_tagc(tag_id, index_array, map_data, magic, repair, engine,
                           tag_cls, moff2)
 
 
-def repair_udlg(tag_id, index_array, map_data, magic, repair, engine):
+def repair_udlg(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine, b'!dns')
     repair_dependency_array(*(args + (tag_offset + 0x10, 3)))
@@ -1034,7 +1040,7 @@ def repair_udlg(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency_array(*(args + (tag_offset + 0xC60, 8)))
 
 
-def repair_unhi(tag_id, index_array, map_data, magic, repair, engine):
+def repair_unhi(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -1071,7 +1077,7 @@ def repair_unhi(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency(*(args + (b'mtib', moff + 160)))
 
 
-def repair_vcky(tag_id, index_array, map_data, magic, repair, engine):
+def repair_vcky(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'tnof', tag_offset)))
@@ -1082,7 +1088,7 @@ def repair_vcky(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency_array(*(args + (b'mtib', moff + 16, 4)))
 
 
-def repair_wphi(tag_id, index_array, map_data, magic, repair, engine):
+def repair_wphi(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -1116,7 +1122,7 @@ def repair_wphi(tag_id, index_array, map_data, magic, repair, engine):
 
 
 # open-sauce repair functions
-def repair_avtc(tag_id, index_array, map_data, magic, repair, engine):
+def repair_avtc(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -1130,7 +1136,7 @@ def repair_avtc(tag_id, index_array, map_data, magic, repair, engine):
             repair_dependency(*(args + (b'itva', moff2 + 72)))
 
 
-def repair_avti(tag_id, index_array, map_data, magic, repair, engine):
+def repair_avti(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
     # targets
@@ -1143,7 +1149,7 @@ def repair_avti(tag_id, index_array, map_data, magic, repair, engine):
             repair_dependency(*(args + (b'effe', moff2 + 24)))
 
 
-def repair_avto(tag_id, index_array, map_data, magic, repair, engine):
+def repair_avto(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset - magic
     args = (index_array, map_data, magic, repair, engine)
 
@@ -1161,7 +1167,7 @@ def repair_avto(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency(*(args + (b'ejbo', moff)))
 
 
-def repair_efpc(tag_id, index_array, map_data, magic, repair, engine):
+def repair_efpc(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     # effects
     ct, moff, _ = read_reflexive(
         map_data, index_array[tag_id].meta_offset + 24 - magic, 32, 72, magic)
@@ -1169,7 +1175,7 @@ def repair_efpc(tag_id, index_array, map_data, magic, repair, engine):
         index_array, map_data, magic, repair, engine, b'gpfe', moff, ct, 72)
 
 
-def repair_efpg(tag_id, index_array, map_data, magic, repair, engine):
+def repair_efpg(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     # shaders
     ct, moff, _ = read_reflexive(
         map_data, index_array[tag_id].meta_offset + 60 - magic, 12, 16, magic)
@@ -1177,7 +1183,7 @@ def repair_efpg(tag_id, index_array, map_data, magic, repair, engine):
         index_array, map_data, magic, repair, engine, b'gphs', moff, ct)
 
 
-def repair_gelc(tag_id, index_array, map_data, magic, repair, engine):
+def repair_gelc(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -1202,7 +1208,7 @@ def repair_gelc(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency_array(*(args + (b'!tpj', moff2 + 72, ct, 120)))
 
 
-def repair_gelo(tag_id, index_array, map_data, magic, repair, engine):
+def repair_gelo(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
@@ -1214,13 +1220,13 @@ def repair_gelo(tag_id, index_array, map_data, magic, repair, engine):
     repair_dependency_array(*(args + (b'aLeD', moff + 32, ct, 76)))
 
 
-def repair_magy(tag_id, index_array, map_data, magic, repair, engine):
+def repair_magy(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_antr(tag_id, index_array, map_data, magic, repair, engine)
     repair_dependency(index_array, map_data, magic, repair, engine,
                       b'rtna', index_array[tag_id].meta_offset + 0x80)
 
 
-def repair_shpg(tag_id, index_array, map_data, magic, repair, engine):
+def repair_shpg(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_shpp(tag_id, index_array, map_data, magic, repair, engine)
 
     tag_offset = index_array[tag_id].meta_offset
@@ -1232,19 +1238,19 @@ def repair_shpg(tag_id, index_array, map_data, magic, repair, engine):
         repair_dependency(*(args + (b'mtib', moff + 88)))
 
 
-def repair_shpp(tag_id, index_array, map_data, magic, repair, engine):
+def repair_shpp(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_predicted_resources(
         map_data, index_array[tag_id].meta_offset + 120, magic, repair, 1024)
 
 
-def repair_unic(tag_id, index_array, map_data, magic, repair, engine):
+def repair_unic(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     ct, moff, _ = read_reflexive(
         map_data, index_array[tag_id].meta_offset - magic, 9216, 56, magic)
     repair_dependency_array(index_array, map_data, magic, repair, engine,
                             b'ydis', moff, ct, 56)
 
 
-def repair_yelo(tag_id, index_array, map_data, magic, repair, engine):
+def repair_yelo(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 

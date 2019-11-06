@@ -6,6 +6,7 @@ from traceback import format_exc
 from supyr_struct.defs.audio.wav import wav_def
 
 from reclaimer.h2.util import split_raw_pointer
+from reclaimer.meta.wrappers.byteswapping import byteswap_pcm16_sample_data
 from reclaimer.sounds.adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
 
 from supyr_struct.buffer import BytearrayBuffer
@@ -88,6 +89,7 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
 def extract_h1_sounds(tagdata, tag_path, **kw):
     overwrite = kw.get('overwrite', True)
     decode_adpcm = kw.get('decode_adpcm', True)
+    byteswap_pcm_samples = kw.get('byteswap_pcm_samples', False)
     tagpath_base = os.path.join(kw['out_dir'], os.path.splitext(tag_path)[0])
     pitch_ranges = tagdata.pitch_ranges.STEPTREE
     same_pr_names = {}
@@ -114,7 +116,7 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
 
         perm_indices = range(min(actual_perm_count, len(unchecked_perms)))
         if not perm_indices:
-            perm_indices = unchecked_perms
+            perm_indices = set(unchecked_perms)
 
         while perm_indices:
             # loop over all of the actual permutation indices and combine
@@ -149,13 +151,13 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                 if compression == "ogg":
                     # cant combine this shit
                     merged_permlist.append((compression, perm.samples.data))
-                    continue
-
-                merged_data += perm.samples.data
+                elif byteswap_pcm_samples and compression == "none":
+                    merged_data += byteswap_pcm16_sample_data(perm.samples.data)
+                else:
+                    merged_data += perm.samples.data
 
             if merged_data:
                 merged_permlist.append((compression, merged_data))
-
 
         for name, permlist in merged_permlists.items():
             save_sound_perms(permlist, os.path.join(pitchpath_base, name),
