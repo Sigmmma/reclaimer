@@ -98,7 +98,7 @@ class HaloHandler(Handler):
 
         if self.tag_ref_cache is None:
             self.tag_ref_cache   = self.build_loc_caches(TagRef)
-        
+
         if self.reflexive_cache is None:
             self.reflexive_cache = self.build_loc_caches(Reflexive)
 
@@ -120,7 +120,7 @@ class HaloHandler(Handler):
             sub_nodepath_ref = self._build_loc_cache(cond, desc[key])
             if sub_nodepath_ref.is_ref or sub_nodepath_ref:
                 nodepath_ref[key] = sub_nodepath_ref
-                    
+
         return nodepath_ref
 
     def build_loc_caches(self, cond):
@@ -172,7 +172,7 @@ class HaloHandler(Handler):
     def get_def_id(self, filepath):
         filepath = Path(filepath)
 
-        ext = filepath.suffix
+        ext = filepath.suffix.lower()
         if len(ext) > 1:
             ext = ext[1:]
 
@@ -339,7 +339,7 @@ class HaloHandler(Handler):
                 data.TYPE.serializer(data, writebuffer=hashbuffer)
             finally:
                 FieldType.force_normal()
-            
+
         # we'll include the def_id on the end of the data
         # to make sure tags of different types, but identical
         # contents, aren't detected as the same tag.
@@ -366,7 +366,7 @@ class HaloHandler(Handler):
         if not node.filepath:
             return False
         filepath = sanitize_path(os.path.join(self.tagsdir, node.filepath))
-        
+
         try:
             ext = '.' + node.tag_class.enum_name
             if (self.treat_mode_as_mod2 and (
@@ -375,7 +375,7 @@ class HaloHandler(Handler):
             filepath += ext
         except Exception:
             pass
-        
+
         return not os.path.exists(filepath)
 
     def get_tagref_exists(self, parent, attr_index):
@@ -383,7 +383,7 @@ class HaloHandler(Handler):
         if not node.filepath:
             return False
         filepath = sanitize_path(os.path.join(self.tagsdir, node.filepath))
-        
+
         try:
             ext = '.' + node.tag_class.enum_name
             if (self.treat_mode_as_mod2 and (
@@ -392,7 +392,7 @@ class HaloHandler(Handler):
             filepath += ext
         except Exception:
             pass
-        
+
         return os.path.exists(filepath)
 
     def get_tagref_matches(self, parent, attr_index):
