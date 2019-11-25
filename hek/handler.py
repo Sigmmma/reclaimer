@@ -23,13 +23,6 @@ def bytes_to_hex(taghash):
     return '0x' + '0'*(len(taghash)*2-len(hsh)) + hsh
 
 
-# TODO: DELETE THIS WHEN IT IS CONFIRMED THAT NOTHING REFERENCES IT
-def fps_60_related(desc):
-    unit_scale = desc.get("UNIT_SCALE")
-    if hasattr(unit_scale, "fps_60_scale") and unit_scale.fps_60_scale:
-        return True
-
-
 BAD_DEPENDENCY_HASH = (b"<BAD_DEPENDENCY>", bytes_to_hex(b"<BAD_DEPENDENCY>"))
 CANT_PARSE_TAG_HASH = (b"<CANT_PARSE_TAG>", bytes_to_hex(b"<CANT_PARSE_TAG>"))
 
@@ -97,7 +90,7 @@ class HaloHandler(Handler):
 
         if self.tag_ref_cache is None:
             self.tag_ref_cache   = self.build_loc_caches(TagRef)
-        
+
         if self.reflexive_cache is None:
             self.reflexive_cache = self.build_loc_caches(Reflexive)
 
@@ -119,7 +112,7 @@ class HaloHandler(Handler):
             sub_nodepath_ref = self._build_loc_cache(cond, desc[key])
             if sub_nodepath_ref.is_ref or sub_nodepath_ref:
                 nodepath_ref[key] = sub_nodepath_ref
-                    
+
         return nodepath_ref
 
     def build_loc_caches(self, cond):
@@ -337,7 +330,7 @@ class HaloHandler(Handler):
                 data.TYPE.serializer(data, writebuffer=hashbuffer)
             finally:
                 FieldType.force_normal()
-            
+
         # we'll include the def_id on the end of the data
         # to make sure tags of different types, but identical
         # contents, aren't detected as the same tag.
@@ -364,7 +357,7 @@ class HaloHandler(Handler):
         if not node.filepath:
             return False
         filepath = sanitize_path(os.path.join(self.tagsdir, node.filepath))
-        
+
         try:
             ext = '.' + node.tag_class.enum_name
             if (self.treat_mode_as_mod2 and (
@@ -373,7 +366,7 @@ class HaloHandler(Handler):
             filepath += ext
         except Exception:
             pass
-        
+
         return not os.path.exists(filepath)
 
     def get_tagref_exists(self, parent, attr_index):
@@ -381,7 +374,7 @@ class HaloHandler(Handler):
         if not node.filepath:
             return False
         filepath = sanitize_path(os.path.join(self.tagsdir, node.filepath))
-        
+
         try:
             ext = '.' + node.tag_class.enum_name
             if (self.treat_mode_as_mod2 and (
@@ -390,7 +383,7 @@ class HaloHandler(Handler):
             filepath += ext
         except Exception:
             pass
-        
+
         return os.path.exists(filepath)
 
     def get_tagref_matches(self, parent, attr_index):
