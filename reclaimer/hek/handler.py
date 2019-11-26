@@ -170,8 +170,8 @@ class HaloHandler(Handler):
         if ext in self.ext_id_map:
             return self.ext_id_map[ext]
 
-        '''It is more reliable to determine a Halo tag
-        based on its 4CC def_id than by file extension'''
+        # It is more reliable to determine a Halo tag
+        # based on its 4CC def_id than by file extension
         try:
             with open(filepath, 'rb') as f:
                 f.seek(36)
@@ -180,8 +180,10 @@ class HaloHandler(Handler):
                 engine_id = f.read(4).decode(encoding='latin-1')
             if def_id in self.defs and engine_id == self.tag_header_engine_id:
                 return def_id
-        except Exception:
-            return None
+        except:
+            pass
+
+        return None
 
     def get_tag_hash(self, data, def_id, data_key, hashes=None, is_meta=False):
         if hashes is None:
