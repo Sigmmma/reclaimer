@@ -180,7 +180,7 @@ class HaloHandler(Handler):
         '''It is more reliable to determine a Halo tag
         based on its 4CC def_id than by file extension'''
         try:
-            with open(filepath, 'rb') as f:
+            with filepath.open('rb') as f:
                 f.seek(36)
                 def_id = str(f.read(4), 'latin-1')
                 f.seek(60)
