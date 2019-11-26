@@ -173,8 +173,6 @@ class HaloHandler(Handler):
         filepath = Path(filepath)
 
         ext = filepath.suffix.lower()
-        if len(ext) > 1:
-            ext = ext[1:]
 
         if ext in self.ext_id_map:
             return self.ext_id_map[ext]
