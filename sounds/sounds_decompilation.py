@@ -7,7 +7,8 @@ from supyr_struct.defs.audio.wav import wav_def
 
 from reclaimer.h2.util import split_raw_pointer
 from reclaimer.meta.wrappers.byteswapping import byteswap_pcm16_sample_data
-from reclaimer.sounds.adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
+from reclaimer.sounds.adpcm import decode_adpcm_samples,\
+     XBOX_ADPCM_ENCODED_BLOCKSIZE, XBOX_ADPCM_DECODED_BLOCKSIZE
 
 from supyr_struct.buffer import BytearrayBuffer
 
@@ -75,9 +76,9 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
                 wav_fmt.block_align = 2 * wav_fmt.channels
             else:
                 wav_fmt.fmt.set_to('ima_adpcm')
-                wav_fmt.block_align = ADPCM_BLOCKSIZE * wav_fmt.channels
+                wav_fmt.block_align = XBOX_ADPCM_ENCODED_BLOCKSIZE * wav_fmt.channels
                 wav_fmt.byte_rate = int(wav_fmt.byte_rate *
-                                        ADPCM_BLOCKSIZE/PCM_BLOCKSIZE/2)
+                                        XBOX_ADPCM_ENCODED_BLOCKSIZE/XBOX_ADPCM_DECODED_BLOCKSIZE/2)
 
             wav_file.data.wav_data.audio_data = samples
             wav_file.data.wav_data.audio_data_size = samples_len
