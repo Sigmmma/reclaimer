@@ -2,6 +2,12 @@ import audioop
 from array import array
 from struct import Struct as PyStruct
 
+try:
+    from .ext import adpcm_ext
+    fast_adpcm = True
+except:
+    fast_adpcm = False
+
 __all__ = ("decode_adpcm_samples", "ADPCM_BLOCKSIZE", "PCM_BLOCKSIZE", )
 
 STEP_TABLE = (
@@ -24,7 +30,7 @@ ADPCM_BLOCKSIZE = 36
 PCM_BLOCKSIZE   = 130
 
 
-def _fast_decode_mono_adpcm_samples(samples, endian="<"):
+def _semi_fast_decode_mono_adpcm_samples(samples, endian="<"):
     adpcm2lin = audioop.adpcm2lin
 
     pcm_size   = PCM_BLOCKSIZE
@@ -58,8 +64,16 @@ def _fast_decode_mono_adpcm_samples(samples, endian="<"):
 def decode_adpcm_samples(samples, channel_ct, endian="<"):
     if channel_ct <= 0:
         return
-    elif channel_ct == 1:
-        return _fast_decode_mono_adpcm_samples(samples, endian)
+    elif channel_ct == 1 and not fast_adpcm:
+        return _semi_fast_decode_mono_adpcm_samples(samples, endian)
+
+    block_ct = len(samples) // (channel_ct * ADPCM_BLOCKSIZE)
+    out_data = array("h", bytes(block_ct * channel_ct * PCM_BLOCKSIZE))
+
+    if fast_adpcm:
+        adpcm_ext.decode_adpcm_samples(
+            samples, out_data, channel_ct, endian == ">")
+        return out_data
 
     pcm_mask  = 1 << 16
     code_shifts = tuple(range(0, 8*4, 4))
@@ -68,10 +82,8 @@ def decode_adpcm_samples(samples, channel_ct, endian="<"):
     adpcm_size  = channel_ct * ADPCM_BLOCKSIZE // 2
     skip_size   = channel_ct * 2
     code_skip_size = skip_size * 8
-
-    block_ct = len(samples) // (channel_ct * ADPCM_BLOCKSIZE)
+    is_big_endian = endian == ">"
     in_data  = array("H", samples)
-    out_data = array("h", bytes(block_ct * channel_ct * PCM_BLOCKSIZE))
 
     for c in range(channel_ct):
         pcm_i = c
@@ -80,11 +92,12 @@ def decode_adpcm_samples(samples, channel_ct, endian="<"):
             predictor = in_data[i]
             index     = in_data[i + 1]
             i += skip_size
-            if endian == ">":
+            if is_big_endian:
                 predictor = (predictor >> 8) + ((predictor << 8) & 0xFF)
                 index = (index >> 8) + ((index << 8) & 0xFF)
 
             if predictor & 32768:
+                # signed bit set, so make negative
                 predictor -= pcm_mask
 
             out_data[pcm_i] = predictor

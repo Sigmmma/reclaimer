@@ -1,13 +1,45 @@
 #!/usr/bin/env python
+import sys
 from os.path import dirname, join
+from traceback import format_exc
 try:
-    from setuptools import setup
+    from setuptools import setup, Extension, Command
 except ImportError:
-    from distutils.core import setup
+    from distutils.core import setup, Extension, Command
+from distutils.command.build_ext import build_ext
+from distutils.errors import CCompilerError, DistutilsExecError, \
+     DistutilsPlatformError
 
 curr_dir = dirname(__file__)
 
 import reclaimer
+
+is_pypy = hasattr(sys, 'pypy_translation_info')
+ext_errors = None
+if sys.platform == 'win32':
+   ext_errors = (CCompilerError, DistutilsExecError, DistutilsPlatformError,
+                 IOError, ValueError)
+
+class BuildFailed(Exception):
+    pass
+
+class ve_build_ext(build_ext):
+    # This class allows C extension building to fail.
+
+    def run(self):
+        try:
+            build_ext.run(self)
+        except DistutilsPlatformError:
+            raise BuildFailed()
+
+    def build_extension(self, ext):
+        if ext_errors:
+            try:
+                build_ext.build_extension(self, ext)
+            except ext_errors:
+                raise BuildFailed()
+        else:
+            build_ext.build_extension(self, ext)
 
 try:
     try:
@@ -19,7 +51,7 @@ except Exception:
     long_desc = 'Could not read long description from readme.'
 
 
-setup(
+setup_kwargs = dict(
     name='reclaimer',
     description='A libray of SupyrStruct structures and objects for \
 games built with the Blam engine',
@@ -60,6 +92,7 @@ games built with the Blam engine',
         'reclaimer.os_v4_hek.defs',
         'reclaimer.physics',
         'reclaimer.sounds',
+        'reclaimer.sounds.ext',
         'reclaimer.shadowrun_prototype',
         'reclaimer.shadowrun_prototype.defs',
         'reclaimer.strings',
@@ -68,10 +101,14 @@ games built with the Blam engine',
         'reclaimer.stubbs.defs.objs',
         'reclaimer.util',
         ],
+    ext_modules = [
+        Extension("reclaimer.sounds.ext.adpcm_ext", ["reclaimer/sounds/src/adpcm_ext.c"]),
+        ],
     package_data={
         '': ['*.txt', '*.md', '*.rst',
              '**/p8_palette_halo',   '**/p8_palette_halo_diff_map',
-             '**/p8_palette_stubbs', '**/p8_palette_stubbs_diff_map'],
+             '**/p8_palette_stubbs', '**/p8_palette_stubbs_diff_map',
+             '**/sounds/src/*'],
         },
     platforms=["POSIX", "Windows"],
     keywords="reclaimer, halo",
@@ -88,4 +125,25 @@ games built with the Blam engine',
         "Programming Language :: Python :: 3",
         ],
     zip_safe=False,
+    cmdclass=dict(build_ext=ve_build_ext)
     )
+
+
+success = False
+kwargs = dict(setup_kwargs)
+if not is_pypy:
+    try:
+        setup(**kwargs)
+        success = True
+    except BuildFailed:
+        print(format_exc())
+        print('*' * 80)
+        print("WARNING: The C accelerator modules could not be compiled.\n" +
+              "Attempting to install without accelerators now.\n" +
+              "Any errors that occurred are printed above.")
+        print('*' * 80)
+
+if not success:
+    kwargs.pop('ext_modules')
+    setup(**kwargs)
+    print("Installation successful.")
