@@ -8,7 +8,11 @@ try:
 except:
     fast_adpcm = False
 
-__all__ = ("decode_adpcm_samples", "ADPCM_BLOCKSIZE", "PCM_BLOCKSIZE", )
+__all__ = (
+    "decode_adpcm_samples", "get_adpcm_blocksize", "get_pcm_blocksize",
+    "XBOX_ADPCM_DIFF_SAMPLE_COUNT",
+    "XBOX_ADPCM_ENCODED_BLOCKSIZE", "XBOX_ADPCM_DECODED_BLOCKSIZE",
+    )
 
 STEP_TABLE = (
     7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
@@ -26,60 +30,84 @@ INDEX_TABLE = (
     -1, -1, -1, -1, 2, 4, 6, 8
     )
 
-ADPCM_BLOCKSIZE = 36
-PCM_BLOCKSIZE   = 130
+def get_adpcm_encoded_blocksize(diff_sample_count):
+    return 4 + (diff_sample_count + 1) // 2
 
 
-def _semi_fast_decode_mono_adpcm_samples(samples, endian="<"):
+def get_adpcm_decoded_blocksize(diff_sample_count):
+    return 2 * (diff_sample_count + 1)
+
+
+# The number of encoded samples in an xbox adpcm block.
+# This does NOT include the uncompressed sample starting the block.
+XBOX_ADPCM_DIFF_SAMPLE_COUNT = 64
+# Byte size of an encoded xbox adpcm block
+XBOX_ADPCM_ENCODED_BLOCKSIZE = get_adpcm_encoded_blocksize(XBOX_ADPCM_DIFF_SAMPLE_COUNT)
+# Byte size of a decoded xbox adpcm block
+XBOX_ADPCM_DECODED_BLOCKSIZE = get_adpcm_decoded_blocksize(XBOX_ADPCM_DIFF_SAMPLE_COUNT)
+
+
+def _semi_fast_decode_mono_adpcm_samples(
+        samples, endian="<",
+        diff_sample_count=XBOX_ADPCM_DIFF_SAMPLE_COUNT):
     adpcm2lin = audioop.adpcm2lin
-
-    pcm_size   = PCM_BLOCKSIZE
-    adpcm_size = ADPCM_BLOCKSIZE
     state_size = 4
 
-    block_ct = len(samples) // adpcm_size
-    out_data = bytearray(block_ct * pcm_size)
+    encoded_blocksize = get_adpcm_encoded_blocksize(diff_sample_count)
+    decoded_blocksize = get_adpcm_decoded_blocksize(diff_sample_count)
+
+    block_ct = len(samples) // encoded_blocksize
+    out_data = bytearray(block_ct * decoded_blocksize)
 
     pcm_i = 0
     unpacker = PyStruct(endian + "hh").unpack_from
-    for i in range(0, len(samples), adpcm_size):
+    for i in range(0, len(samples), encoded_blocksize):
         # why couldn't it be nice and just follow the same
         # step packing pattern where the first step is the
         # first 4 bits and the second is the last 4 bits.
         steps = bytes(((b<<4) + (b>>4))&0xFF for b in
-                      samples[i + state_size: i + adpcm_size])
+                      samples[i + state_size: i + encoded_blocksize])
         predictor = samples[i: i+2]
         if endian == ">":
             predictor = predictor[::-1]
 
-        out_data[pcm_i: pcm_i + pcm_size] = (
+        out_data[pcm_i: pcm_i + decoded_blocksize] = (
             predictor + adpcm2lin(steps, 2, unpacker(samples, i))[0]
             )
 
-        pcm_i += pcm_size
+        pcm_i += decoded_blocksize
 
     return array("h", out_data)
 
 
-def decode_adpcm_samples(samples, channel_ct, endian="<"):
+def decode_adpcm_samples(
+        samples, channel_ct, endian="<",
+        diff_sample_count=XBOX_ADPCM_DIFF_SAMPLE_COUNT):
+
     if channel_ct <= 0:
         return
     elif channel_ct == 1 and not fast_adpcm:
-        return _semi_fast_decode_mono_adpcm_samples(samples, endian)
+        return _semi_fast_decode_mono_adpcm_samples(
+            samples, endian, diff_sample_count)
 
-    block_ct = len(samples) // (channel_ct * ADPCM_BLOCKSIZE)
-    out_data = array("h", bytes(block_ct * channel_ct * PCM_BLOCKSIZE))
+    encoded_blocksize = get_adpcm_encoded_blocksize(diff_sample_count)
+    decoded_blocksize = get_adpcm_decoded_blocksize(diff_sample_count)
+
+    block_ct = len(samples) // (channel_ct * encoded_blocksize)
+    out_data = array("h", bytes(
+        block_ct * channel_ct * decoded_blocksize))
 
     if fast_adpcm:
         adpcm_ext.decode_adpcm_samples(
-            samples, out_data, channel_ct, endian == ">")
+            samples, out_data, channel_ct,
+            endian == ">", diff_sample_count)
         return out_data
 
     pcm_mask  = 1 << 16
     code_shifts = tuple(range(0, 8*4, 4))
     step_table  = STEP_TABLE
     index_table = INDEX_TABLE
-    adpcm_size  = channel_ct * ADPCM_BLOCKSIZE // 2
+    adpcm_size  = channel_ct * encoded_blocksize // 2
     skip_size   = channel_ct * 2
     code_skip_size = skip_size * 8
     is_big_endian = endian == ">"
