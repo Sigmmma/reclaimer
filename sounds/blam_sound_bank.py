@@ -4,20 +4,43 @@ import re
 from traceback import format_exc
 from supyr_struct.defs.audio.wav import wav_def
 from reclaimer.sounds.adpcm import ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
+from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation,\
+     DEF_SAMPLE_CHUNK_SIZE
 
 BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]{1, }')
 
 
-class BlamSoundPermutation:
-    pass
-
-
 class BlamSoundPitchRange:
-    pass
+    name = "default"
+
+    natural_pitch = 1.0
+    pitch_bend_lower = 0.0
+    pitch_bend_upper = 1.0
+
+    _permutations = ()
+
+    def __init__(self, ):
+        self._permutations = {}
+
+    @property
+    def permutations(self): return self._permutations
 
 
 class BlamSoundBank:
-    pass
+    # TODO: Finish putting sound processing settings in here
+
+    # processing settings
+    sample_chunk_size = DEF_SAMPLE_CHUNK_SIZE
+    split_into_smaller_chunks = True
+    split_to_adpcm_blocksize = True
+
+    _pitch_ranges = ()
+
+    def __init__(self, ):
+        self._pitch_ranges = {}
+
+    @property
+    def pitch_ranges(self): return self._pitch_ranges
 
 
 def write_blam_sound_bank_permutation_list(
