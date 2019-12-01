@@ -16,13 +16,26 @@ const static int ADPCM_INDEX_TABLE[16] = {
     -1, -1, -1, -1, 2, 4, 6, 8,
     -1, -1, -1, -1, 2, 4, 6, 8
     };
+const static int ADPCM_STEP_TABLE_MAX_INDEX = sizeof(ADPCM_STEP_TABLE) / sizeof(ADPCM_STEP_TABLE[0]) - 1;
 const static int XBOX_ADPCM_DIFF_SAMPLE_COUNT = 64;
 
 
-// Description of ADPCM stream block
-//   first 2 bytes are the initial 16bit pcm sample
-//   next 2 bytes are the initial step table index(do a CLAMP(0, 88))
-//   each byte afterward is a pair of adpcm codes encoded in each nibble
+// Description of ADPCM stream block:
+//   The stream starts with a 4 byte chunk for each audio channel:
+//     bytes 0-2: the initial 16bit pcm sample(little endian sint16)
+//     byte 2:    the initial step table index
+//       NOTE: do a CLAMP(0, ADPCM_STEP_TABLE_SIZE))
+//     byte 3: reserved(usually left at 0)
+//
+//   The rest of the stream is alternating chunks of adpcm codes for each channel.
+//   Each chunk is 4 bytes, and contains 8 codes. The code bytes are sequential, 
+//   and the first nibble of each byte is the first code. So the stream will look
+//   like this:
+//     channel 0: (left)   b0   b1   b2   b3
+//     channel 1: (right)  b4   b5   b6   b7
+//     channel 0: (left)   b8   b9   b10  b11
+//     channel 1: (right)  b12  b13  b14  b15
+//     cont...
 
 typedef struct {
     sint16 pcm_sample;  /* the current decoded adpcm sample. When calling
@@ -71,10 +84,10 @@ static AdpcmState decode_adpcm_sample(AdpcmState state) {
         state.pcm_sample = (sint16)result;
 
     state.index += ADPCM_INDEX_TABLE[state.code];
-    if (state.code < 0)
-        state.code = 0;
-    else if (state.code > 88)
-        state.code = 88;
+    if (state.index < 0)
+        state.index = 0;
+    else if (state.index > ADPCM_STEP_TABLE_MAX_INDEX)
+        state.index = ADPCM_STEP_TABLE_MAX_INDEX;
 
     return state;
 }
@@ -82,47 +95,101 @@ static AdpcmState decode_adpcm_sample(AdpcmState state) {
 
 static void decode_adpcm_stream(
     Py_buffer *adpcm_stream_buf, Py_buffer *pcm_stream_buf,
-    uint8 channel_count, int is_big_endian, int coded_sample_count) {
+    uint8 channel_count, int code_chunks_count) {
 
-    AdpcmState adpcm_state[MAX_AUDIO_CHANNEL_COUNT];
+    AdpcmState adpcm_states[MAX_AUDIO_CHANNEL_COUNT];
+    int block_count = (int)(
+        adpcm_stream_buf->len / 
+        (channel_count * get_adpcm_encoded_blocksize(code_chunks_count * 8)));
+    uint8 *adpcm_stream = adpcm_stream_buf->buf;
+    sint16 *pcm_stream = pcm_stream_buf->buf;
+    uint32 codes;
+
+    for (int b = 0; b < block_count; b++) {
+        // initialize the adpcm state structs
+        for (int c = 0; c < channel_count; c++) {
+            adpcm_states[c].pcm_sample = adpcm_stream[0] | (adpcm_stream[1] << 8);
+            adpcm_states[c].index = adpcm_stream[2];
+            adpcm_stream += 4;
+
+            pcm_stream[0] = adpcm_states[c].pcm_sample;
+            pcm_stream++;
+
+            if (adpcm_states[c].index < 0)
+                adpcm_states[c].index = 0;
+            else if (adpcm_states[c].index > ADPCM_STEP_TABLE_MAX_INDEX)
+                adpcm_states[c].index = ADPCM_STEP_TABLE_MAX_INDEX;
+        }
+
+        // loop over each code chunk(8 codes in 4 bytes per chunk)
+        for (int h = 0; h < code_chunks_count; h++) {
+            // loop over each channel in each chunk
+            for (int c = 0; c < channel_count; c++) {
+                // OR the codes together for easy access
+                codes = (
+                     adpcm_stream[0] | 
+                    (adpcm_stream[1] << 8) |
+                    (adpcm_stream[2] << 16) |
+                    (adpcm_stream[3] << 24));
+                adpcm_stream += 4;
+
+                // loop over the 8 codes in this channels chunk.
+                // loop is structured like this to properly interleave the pcm data.
+                // otherwise we would have to store the decoded samples to several temp
+                // buffers and then interleave those temp buffers into the pcm stream.
+                for (int i = c; i < 8 * channel_count; i += channel_count) {
+                    adpcm_states[c].code = codes & 0xF;
+                    codes >>= 4;
+                    adpcm_states[c] = decode_adpcm_sample(adpcm_states[c]);
+                    pcm_stream[i] = adpcm_states[c].pcm_sample;
+                }
+            }
+            // skip over the chunk of 8 samples per channel we just decoded
+            pcm_stream += channel_count * 8;
+        }
+    }
 }
 
 
 static PyObject *py_decode_adpcm_samples(PyObject *self, PyObject *args) {
     Py_buffer bufs[2];
     uint8 channel_count;
-    int is_big_endian, i, coded_sample_count, block_count;
+    int coded_sample_count, block_count;
 
-    if (!PyArg_ParseTuple(args, "w*w*bpi:decode_adpcm_samples",
-        &bufs[0], &bufs[1], &channel_count, &is_big_endian, &coded_sample_count)) {
+    if (!PyArg_ParseTuple(args, "y*w*bi:decode_adpcm_samples",
+        &bufs[0], &bufs[1], &channel_count, &coded_sample_count)) {
         return Py_BuildValue("");  // return Py_None while incrementing it
     }
 
     if (coded_sample_count <= 0)
         coded_sample_count = XBOX_ADPCM_DIFF_SAMPLE_COUNT;
 
-    block_count = bufs[0].len / get_adpcm_encoded_blocksize(coded_sample_count);
+    block_count = (int)(bufs[0].len / (channel_count * get_adpcm_encoded_blocksize(coded_sample_count)));
 
     // handle invalid data sizes and such
     if (bufs[0].len % get_adpcm_encoded_blocksize(coded_sample_count)) {
-        RELEASE_PY_BUFFER_ARRAY(bufs, i)
+        RELEASE_PY_BUFFER_ARRAY(bufs)
         PySys_FormatStdout("Provided adpcm buffer is not a multiple of block size.\n");
         return Py_BuildValue("");  // return Py_None while incrementing it
     } else if (bufs[1].len < block_count * get_adpcm_decoded_blocksize(coded_sample_count)) {
-        RELEASE_PY_BUFFER_ARRAY(bufs, i)
+        RELEASE_PY_BUFFER_ARRAY(bufs)
             PySys_FormatStdout("Provided pcm buffer is not large enough to hold decoded data.\n");
         return Py_BuildValue("");  // return Py_None while incrementing it
     } else if (channel_count > MAX_AUDIO_CHANNEL_COUNT) {
-        RELEASE_PY_BUFFER_ARRAY(bufs, i)
+        RELEASE_PY_BUFFER_ARRAY(bufs)
             PySys_FormatStdout("Too many channels to decode in adpcm stream.\n");
+        return Py_BuildValue("");  // return Py_None while incrementing it
+    } else if (coded_sample_count % 8) {
+        RELEASE_PY_BUFFER_ARRAY(bufs)
+            PySys_FormatStdout("coded_sample_count must be a multiple of 8.\n");
         return Py_BuildValue("");  // return Py_None while incrementing it
     }
 
     // do the decoding!
-    decode_adpcm_stream(&bufs[0], &bufs[1], channel_count, is_big_endian, coded_sample_count);
+    decode_adpcm_stream(&bufs[0], &bufs[1], channel_count, coded_sample_count / 8);
 
     // Release the buffer objects
-    RELEASE_PY_BUFFER_ARRAY(bufs, i)
+    RELEASE_PY_BUFFER_ARRAY(bufs)
 
     return Py_BuildValue("");  // return Py_None while incrementing it
 }

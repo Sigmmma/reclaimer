@@ -48,8 +48,7 @@ XBOX_ADPCM_DECODED_BLOCKSIZE = get_adpcm_decoded_blocksize(XBOX_ADPCM_DIFF_SAMPL
 
 
 def _semi_fast_decode_mono_adpcm_samples(
-        samples, endian="<",
-        diff_sample_count=XBOX_ADPCM_DIFF_SAMPLE_COUNT):
+        samples, diff_sample_count=XBOX_ADPCM_DIFF_SAMPLE_COUNT):
     adpcm2lin = audioop.adpcm2lin
     state_size = 4
 
@@ -60,7 +59,7 @@ def _semi_fast_decode_mono_adpcm_samples(
     out_data = bytearray(block_ct * decoded_blocksize)
 
     pcm_i = 0
-    unpacker = PyStruct(endian + "hh").unpack_from
+    unpacker = PyStruct("<hh").unpack_from
     for i in range(0, len(samples), encoded_blocksize):
         # why couldn't it be nice and just follow the same
         # step packing pattern where the first step is the
@@ -68,8 +67,6 @@ def _semi_fast_decode_mono_adpcm_samples(
         steps = bytes(((b<<4) + (b>>4))&0xFF for b in
                       samples[i + state_size: i + encoded_blocksize])
         predictor = samples[i: i+2]
-        if endian == ">":
-            predictor = predictor[::-1]
 
         out_data[pcm_i: pcm_i + decoded_blocksize] = (
             predictor + adpcm2lin(steps, 2, unpacker(samples, i))[0]
@@ -81,14 +78,14 @@ def _semi_fast_decode_mono_adpcm_samples(
 
 
 def decode_adpcm_samples(
-        samples, channel_ct, endian="<",
+        samples, channel_ct,
         diff_sample_count=XBOX_ADPCM_DIFF_SAMPLE_COUNT):
 
     if channel_ct <= 0:
         return
     elif channel_ct == 1 and not fast_adpcm:
         return _semi_fast_decode_mono_adpcm_samples(
-            samples, endian, diff_sample_count)
+            samples, diff_sample_count)
 
     encoded_blocksize = get_adpcm_encoded_blocksize(diff_sample_count)
     decoded_blocksize = get_adpcm_decoded_blocksize(diff_sample_count)
@@ -99,8 +96,7 @@ def decode_adpcm_samples(
 
     if fast_adpcm:
         adpcm_ext.decode_adpcm_samples(
-            samples, out_data, channel_ct,
-            endian == ">", diff_sample_count)
+            samples, out_data, channel_ct, diff_sample_count)
         return out_data
 
     pcm_mask  = 1 << 16
@@ -110,7 +106,6 @@ def decode_adpcm_samples(
     adpcm_size  = channel_ct * encoded_blocksize // 2
     skip_size   = channel_ct * 2
     code_skip_size = skip_size * 8
-    is_big_endian = endian == ">"
     in_data  = array("H", samples)
 
     for c in range(channel_ct):
@@ -120,10 +115,6 @@ def decode_adpcm_samples(
             predictor = in_data[i]
             index     = in_data[i + 1]
             i += skip_size
-            if is_big_endian:
-                predictor = (predictor >> 8) + ((predictor << 8) & 0xFF)
-                index = (index >> 8) + ((index << 8) & 0xFF)
-
             if predictor & 32768:
                 # signed bit set, so make negative
                 predictor -= pcm_mask
