@@ -1,83 +1,12 @@
 import os
-import re
-
-from traceback import format_exc
-
-from supyr_struct.defs.audio.wav import wav_def
 
 from reclaimer.h2.util import split_raw_pointer
 from reclaimer.meta.wrappers.byteswapping import byteswap_pcm16_sample_data
-from reclaimer.sounds.adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
-
-from supyr_struct.buffer import BytearrayBuffer
-
-
-BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]{1, }')
+from reclaimer.sounds.blam_sound_bank import write_blam_sound_bank_permutation_list
+from reclaimer.sounds.adpcm import decode_adpcm_samples
 
 
 __all__ = ("extract_h1_sounds", "extract_h2_sounds", )
-
-
-def save_sound_perms(permlist, filepath_base, sample_rate,
-                     channels=1, overwrite=True):
-    wav_file = wav_def.build()
-    for i in range(len(permlist)):
-        encoding, samples = permlist[i]
-        filepath = filepath_base
-        if not samples:
-            continue
-
-        if len(permlist) > 1: filepath += "__%s" % i
-
-        if encoding in ("ogg", "wma"):
-            filepath += ".%s" % encoding
-        elif not encoding:
-            filepath += ".bin"
-        else:
-            filepath += ".wav"
-
-        filepath = BAD_PATH_CHAR_REMOVAL.sub("_", filepath)
-
-        if not overwrite and os.path.isfile(filepath):
-            continue
-
-        if encoding in ("ogg", "wma") or not encoding:
-            try:
-                folderpath = os.path.dirname(filepath)
-                # If the path doesnt exist, create it
-                if not os.path.exists(folderpath):
-                    os.makedirs(folderpath)
-
-                with open(filepath, "wb") as f:
-                    f.write(samples)
-            except Exception:
-                print(format_exc())
-        else:
-            wav_file.filepath = filepath
-
-            wav_fmt = wav_file.data.format
-            wav_fmt.channels = channels
-            wav_fmt.sample_rate = sample_rate
-            wav_fmt.bits_per_sample = 16
-            wav_fmt.byte_rate = ((wav_fmt.sample_rate *
-                                  wav_fmt.bits_per_sample *
-                                  wav_fmt.channels) // 8)
-
-            samples_len = len(samples)
-            if encoding == "none":
-                wav_fmt.fmt.set_to('pcm')
-                wav_fmt.block_align = 2 * wav_fmt.channels
-            else:
-                wav_fmt.fmt.set_to('ima_adpcm')
-                wav_fmt.block_align = ADPCM_BLOCKSIZE * wav_fmt.channels
-                wav_fmt.byte_rate = int(wav_fmt.byte_rate *
-                                        ADPCM_BLOCKSIZE/PCM_BLOCKSIZE/2)
-
-            wav_file.data.wav_data.audio_data = samples
-            wav_file.data.wav_data.audio_data_size = samples_len
-            wav_file.data.wav_header.filesize = 36 + samples_len
-
-            wav_file.serialize(temp=False, backup=False)
 
 
 def extract_h1_sounds(tagdata, tag_path, **kw):
@@ -166,8 +95,9 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                 merged_permlist.append((compression, merged_data))
 
         for name, permlist in merged_permlists.items():
-            save_sound_perms(permlist, os.path.join(pitchpath_base, name),
-                             sample_rate, channels, overwrite)
+            write_blam_sound_bank_permutation_list(
+                permlist, os.path.join(pitchpath_base, name),
+                sample_rate, channels, overwrite)
 
 
 def get_sound_name(import_names, index):
@@ -288,5 +218,6 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
                 merged_data += samples
 
             permpath_base = permpath_base.replace('|', '')
-            save_sound_perms([(compression, merged_data)], permpath_base,
-                             sample_rate, channels, overwrite)
+            write_blam_sound_bank_permutation_list(
+                [(compression, merged_data)], permpath_base,
+                sample_rate, channels, overwrite)
