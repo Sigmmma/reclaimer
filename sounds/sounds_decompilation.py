@@ -19,7 +19,7 @@ __all__ = ("extract_h1_sounds", "extract_h2_sounds", )
 
 
 def save_sound_perms(permlist, filepath_base, sample_rate,
-                     channels=1, overwrite=True, decode_adpcm=True):
+                     channels=1, overwrite=True):
     wav_file = wav_def.build()
     for i in range(len(permlist)):
         encoding, samples = permlist[i]
@@ -64,13 +64,7 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
                                   wav_fmt.channels) // 8)
 
             samples_len = len(samples)
-            if "adpcm" in encoding and decode_adpcm:
-                samples = decode_adpcm_samples(samples, channels)
-
-                wav_fmt.fmt.set_to('pcm')
-                wav_fmt.block_align = 2 * wav_fmt.channels
-                samples_len = len(samples) * 2  # UInt16 array, not bytes
-            elif encoding == "none":
+            if encoding == "none":
                 wav_fmt.fmt.set_to('pcm')
                 wav_fmt.block_align = 2 * wav_fmt.channels
             else:
@@ -149,19 +143,31 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
             for perm in permlist:
                 compression = perm.compression.enum_name
                 if compression == "ogg":
+                    if merged_data:
+                        merged_permlist.append((compression, merged_data))
+                        merged_data = None
+
                     # cant combine this shit
                     merged_permlist.append((compression, perm.samples.data))
-                elif byteswap_pcm_samples and compression == "none":
-                    merged_data += byteswap_pcm16_sample_data(perm.samples.data)
+                elif compression == "none":
+                    if byteswap_pcm_samples:
+                        merged_data += byteswap_pcm16_sample_data(perm.samples.data)
+                    else:
+                        merged_data += perm.samples.data
+                elif "adpcm" in compression:
+                    if decode_adpcm:
+                        merged_data += decode_adpcm_samples(perm.samples.data, channels)
+                    else:
+                        merged_data += perm.samples.data
                 else:
-                    merged_data += perm.samples.data
+                    print("Unknown audio compression type:", perm.compression.data)
 
             if merged_data:
                 merged_permlist.append((compression, merged_data))
 
         for name, permlist in merged_permlists.items():
             save_sound_perms(permlist, os.path.join(pitchpath_base, name),
-                             sample_rate, channels, overwrite, decode_adpcm)
+                             sample_rate, channels, overwrite)
 
 
 def get_sound_name(import_names, index):
@@ -274,8 +280,13 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
                     continue
 
                 this_map.map_data.seek(ptr)
-                merged_data += this_map.map_data.read(size)
+                samples = this_map.map_data.read(size)
+
+                if decode_adpcm and "adpcm" in compression:
+                    samples = decode_adpcm_samples(samples, channels)
+
+                merged_data += samples
 
             permpath_base = permpath_base.replace('|', '')
             save_sound_perms([(compression, merged_data)], permpath_base,
-                             sample_rate, channels, overwrite, decode_adpcm)
+                             sample_rate, channels, overwrite)
