@@ -1,8 +1,11 @@
 import audioop
+
 from array import array
 from struct import Struct as PyStruct
 
-__all__ = ("decode_adpcm_samples", "ADPCM_BLOCKSIZE", "PCM_BLOCKSIZE", )
+from reclaimer.sounds import constants
+
+__all__ = ("decode_adpcm_samples", )
 
 STEP_TABLE = (
     7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
@@ -20,15 +23,12 @@ INDEX_TABLE = (
     -1, -1, -1, -1, 2, 4, 6, 8
     )
 
-ADPCM_BLOCKSIZE = 36
-PCM_BLOCKSIZE   = 130
-
 
 def _fast_decode_mono_adpcm_samples(samples, endian="<"):
     adpcm2lin = audioop.adpcm2lin
 
-    pcm_size   = PCM_BLOCKSIZE
-    adpcm_size = ADPCM_BLOCKSIZE
+    pcm_size   = constants.ADPCM_DECOMPRESSED_BLOCKSIZE
+    adpcm_size = constants.ADPCM_COMPRESSED_BLOCKSIZE
     state_size = 4
 
     block_ct = len(samples) // adpcm_size
@@ -65,13 +65,14 @@ def decode_adpcm_samples(samples, channel_ct, endian="<"):
     code_shifts = tuple(range(0, 8*4, 4))
     step_table  = STEP_TABLE
     index_table = INDEX_TABLE
-    adpcm_size  = channel_ct * ADPCM_BLOCKSIZE // 2
+    # divide by 2 since we're reading the data as uint16's rather than uint8's
+    adpcm_size  = channel_ct * constants.ADPCM_COMPRESSED_BLOCKSIZE // 2
     skip_size   = channel_ct * 2
     code_skip_size = skip_size * 8
 
-    block_ct = len(samples) // (channel_ct * ADPCM_BLOCKSIZE)
+    block_ct = len(samples) // (channel_ct * constants.ADPCM_COMPRESSED_BLOCKSIZE)
     in_data  = array("H", samples)
-    out_data = array("h", bytes(block_ct * channel_ct * PCM_BLOCKSIZE))
+    out_data = array("h", bytes(block_ct * channel_ct * constants.ADPCM_DECOMPRESSED_BLOCKSIZE))
 
     for c in range(channel_ct):
         pcm_i = c

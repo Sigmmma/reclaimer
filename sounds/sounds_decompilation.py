@@ -72,10 +72,6 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
             for perm in permlist:
                 compression = perm.compression.enum_name
                 if compression == "ogg":
-                    if merged_data:
-                        merged_permlist.append((compression, merged_data))
-                        merged_data = None
-
                     # cant combine this shit
                     merged_permlist.append((compression, perm.samples.data))
                 elif compression == "none":
@@ -92,6 +88,8 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                     print("Unknown audio compression type:", perm.compression.data)
 
             if merged_data:
+                if "adpcm" in compression and decode_adpcm:
+                    compression = "none"
                 merged_permlist.append((compression, merged_data))
 
         for name, permlist in merged_permlists.items():
