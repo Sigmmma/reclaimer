@@ -1,4 +1,5 @@
 import os
+from pathlib import Path
 
 from time import time
 from hashlib import md5
@@ -162,10 +163,9 @@ class HaloHandler(Handler):
         return ()
 
     def get_def_id(self, filepath):
-        if not filepath.startswith('.') and '.' in filepath:
-            ext = os.path.splitext(filepath)[-1].lower()
-        else:
-            ext = filepath.lower()
+        filepath = Path(filepath)
+
+        ext = filepath.suffix.lower()
 
         if ext in self.ext_id_map:
             return self.ext_id_map[ext]
@@ -173,7 +173,7 @@ class HaloHandler(Handler):
         # It is more reliable to determine a Halo tag
         # based on its 4CC def_id than by file extension
         try:
-            with open(filepath, 'rb') as f:
+            with filepath.open('rb') as f:
                 f.seek(36)
                 def_id = str(f.read(4), 'latin-1')
                 f.seek(60)
