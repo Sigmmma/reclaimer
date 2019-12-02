@@ -3,34 +3,38 @@ import re
 
 from traceback import format_exc
 from supyr_struct.defs.audio.wav import wav_def
-from reclaimer.sounds.adpcm import ADPCM_BLOCKSIZE, PCM_BLOCKSIZE
-from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation,\
-     DEF_SAMPLE_CHUNK_SIZE
+from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation
+from reclaimer.sounds import constants
 
 BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]{1, }')
 
 
 class BlamSoundPitchRange:
     name = "default"
-
-    natural_pitch = 1.0
-    pitch_bend_lower = 0.0
-    pitch_bend_upper = 1.0
-
     _permutations = ()
 
     def __init__(self, ):
         self._permutations = {}
 
     @property
-    def permutations(self): return self._permutations
+    def permutations(self):
+        return self._permutations
+
+    def process_samples(
+            self, compression=constants.COMPRESSION_NONE,
+            sample_rate=constants.SAMPLE_RATE_22K,
+            sample_chunk_size=constants.MAX_SAMPLE_CHUNK_SIZE):
+        for perm in self.permutations.values():
+            perm.process_samples(
+                compression, sample_rate, sample_chunk_size)
 
 
 class BlamSoundBank:
-    # TODO: Finish putting sound processing settings in here
-
     # processing settings
-    sample_chunk_size = DEF_SAMPLE_CHUNK_SIZE
+    encoding = constants.ENCODING_MONO
+    compression = constants.COMPRESSION_NONE
+    sample_chunk_size = constants.DEF_SAMPLE_CHUNK_SIZE
+    sample_rate = constants.SAMPLE_RATE_22K
     split_into_smaller_chunks = True
     split_to_adpcm_blocksize = True
 
@@ -40,7 +44,13 @@ class BlamSoundBank:
         self._pitch_ranges = {}
 
     @property
-    def pitch_ranges(self): return self._pitch_ranges
+    def pitch_ranges(self):
+        return self._pitch_ranges
+
+    def process_samples(self):
+        for pitch_range in self.permutations.values():
+            pitch_range.process_samples(
+                self.compression, self.sample_rate, self.sample_chunk_size)
 
 
 def write_blam_sound_bank_permutation_list(
@@ -95,9 +105,11 @@ def write_blam_sound_bank_permutation_list(
                 wav_fmt.block_align = 2 * wav_fmt.channels
             else:
                 wav_fmt.fmt.set_to('ima_adpcm')
-                wav_fmt.block_align = XBOX_ADPCM_ENCODED_BLOCKSIZE * wav_fmt.channels
-                wav_fmt.byte_rate = int(wav_fmt.byte_rate *
-                                        XBOX_ADPCM_ENCODED_BLOCKSIZE/XBOX_ADPCM_DECODED_BLOCKSIZE/2)
+                wav_fmt.block_align = constants.ADPCM_COMPRESSED_BLOCKSIZE * wav_fmt.channels
+                wav_fmt.byte_rate = int(
+                    wav_fmt.byte_rate *
+                    (constants.ADPCM_COMPRESSED_BLOCKSIZE /
+                     constants.ADPCM_DECOMPRESSED_BLOCKSIZE))
 
             wav_file.data.wav_data.audio_data = samples
             wav_file.data.wav_data.audio_data_size = samples_len
