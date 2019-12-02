@@ -58,16 +58,23 @@ def write_blam_sound_bank_permutation_list(
     wav_file = wav_def.build()
 
     for i in range(len(permlist)):
-        encoding, samples = permlist[i]
+        compression, samples = permlist[i]
         filepath = filepath_base
         if not samples:
             continue
 
         if len(permlist) > 1: filepath += "__%s" % i
 
-        if encoding in ("ogg", "wma"):
-            filepath += ".%s" % encoding
-        elif not encoding:
+        is_container_format = compression in (
+            constants.COMPRESSION_OGG, constants.COMPRESSION_WMA,
+            constants.COMPRESSION_UNKNOWN,
+            )
+
+        if compression == constants.COMPRESSION_OGG:
+            filepath += ".ogg"
+        elif compression == constants.COMPRESSION_WMA:
+            filepath += ".wma"
+        elif compression == constants.COMPRESSION_UNKNOWN:
             filepath += ".bin"
         else:
             filepath += ".wav"
@@ -77,7 +84,7 @@ def write_blam_sound_bank_permutation_list(
         if not overwrite and os.path.isfile(filepath):
             continue
 
-        if encoding in ("ogg", "wma") or not encoding:
+        if is_container_format:
             try:
                 folderpath = os.path.dirname(filepath)
                 # If the path doesnt exist, create it
@@ -100,7 +107,7 @@ def write_blam_sound_bank_permutation_list(
                                   wav_fmt.channels) // 8)
 
             samples_len = len(samples)
-            if encoding == "none":
+            if compression == constants.COMPRESSION_NONE:
                 wav_fmt.fmt.set_to('pcm')
                 wav_fmt.block_align = 2 * wav_fmt.channels
             else:

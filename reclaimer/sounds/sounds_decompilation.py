@@ -2,8 +2,10 @@ import os
 
 from reclaimer.h2.util import split_raw_pointer
 from reclaimer.meta.wrappers.byteswapping import byteswap_pcm16_sample_data
+from reclaimer.sounds import constants
 from reclaimer.sounds.blam_sound_bank import write_blam_sound_bank_permutation_list
-from reclaimer.sounds.adpcm import decode_adpcm_samples
+from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation,\
+     BlamProcessedSoundSamples
 
 
 __all__ = ("extract_h1_sounds", "extract_h2_sounds", )
@@ -11,13 +13,14 @@ __all__ = ("extract_h1_sounds", "extract_h2_sounds", )
 
 def extract_h1_sounds(tagdata, tag_path, **kw):
     overwrite = kw.get('overwrite', True)
-    decode_adpcm = kw.get('decode_adpcm', True)
+    decompress = kw.get('decode_adpcm', True)
     byteswap_pcm_samples = kw.get('byteswap_pcm_samples', False)
     tagpath_base = os.path.join(kw['out_dir'], os.path.splitext(tag_path)[0])
     pitch_ranges = tagdata.pitch_ranges.STEPTREE
     same_pr_names = {}
 
-    channels = tagdata.encoding.data + 1
+    encoding = tagdata.encoding.data
+    channels = encoding + 1
     sample_rate = 22050 * (tagdata.sample_rate.data + 1)
 
     for i in range(len(pitch_ranges)):
@@ -67,30 +70,49 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
 
         merged_permlists = {}
         for name, permlist in same_names_permlists.items():
-            merged_permlists[name] = merged_permlist = []
-            merged_data = b''
+            blam_permutation = BlamSoundPermutation(
+                sample_rate=sample_rate, encoding=encoding)
+
             for perm in permlist:
-                compression = perm.compression.enum_name
-                if compression == "ogg":
-                    # cant combine this shit
-                    merged_permlist.append((compression, perm.samples.data))
-                elif compression == "none":
+                sample_data = perm.samples.data
+                if perm.compression.enum_name == "ogg":
+                    # not actually a sample count. fix struct field name
+                    sample_count = perm.ogg_sample_count // 2
+                    compression = constants.COMPRESSION_OGG
+                elif perm.compression.enum_name == "none":
                     if byteswap_pcm_samples:
-                        merged_data += byteswap_pcm16_sample_data(perm.samples.data)
-                    else:
-                        merged_data += perm.samples.data
-                elif "adpcm" in compression:
-                    if decode_adpcm:
-                        merged_data += decode_adpcm_samples(perm.samples.data, channels)
-                    else:
-                        merged_data += perm.samples.data
+                        sample_data = byteswap_pcm16_sample_data(sample_data)
+                    sample_count = len(sample_data) // 2
+                    compression = constants.COMPRESSION_NONE
+                elif "adpcm" in perm.compression.enum_name:
+                    sample_count = (
+                        (constants.ADPCM_DECOMPRESSED_BLOCKSIZE // 2) *
+                        (len(sample_data) // constants.ADPCM_COMPRESSED_BLOCKSIZE))
+                    compression = constants.COMPRESSION_ADPCM
                 else:
                     print("Unknown audio compression type:", perm.compression.data)
+                    continue
 
-            if merged_data:
-                if "adpcm" in compression and decode_adpcm:
-                    compression = "none"
-                merged_permlist.append((compression, merged_data))
+                blam_permutation.processed_samples.append(
+                    BlamProcessedSoundSamples(
+                        sample_data, sample_count, compression, encoding)
+                    )
+
+            if not blam_permutation.processed_samples:
+                continue
+
+            try:
+                compression = blam_permutation.processed_samples[0].compression
+                if decompress:
+                    compression = constants.COMPRESSION_NONE
+
+                merged_permlists[name] = [
+                    (compression, blam_permutation.get_concatenated(decompress))
+                    ]
+            except ValueError:
+                merged_permlists[name] = []
+                for piece in blam_permutation.processed_samples:
+                    merged_permlists[name].append((piece.compression, piece.samples))
 
         for name, permlist in merged_permlists.items():
             write_blam_sound_bank_permutation_list(
@@ -111,7 +133,7 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
         return
 
     overwrite = kw.get('overwrite', True)
-    decode_adpcm = kw.get('decode_adpcm', True)
+    decompress = kw.get('decode_adpcm', True)
     tagpath_base = os.path.join(kw['out_dir'], os.path.splitext(tag_path)[0])
 
     ugh__meta = halo_map.ugh__meta
@@ -125,11 +147,18 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
 
     same_pr_names = {}
 
-    channels    = {0: 1,     1: 2,     2: 6    }.get(tagdata.encoding.data)
-    sample_rate = {0: 22050, 1: 44100, 2: 32000}.get(tagdata.sample_rate.data)
-    compression = ""
-    if channels in (1, 2):
-        compression = tagdata.compression.enum_name
+    channels = {
+        0: 1, 1: 2, 2: 6}.get(tagdata.encoding.data)
+    sample_rate = {
+        0: constants.SAMPLE_RATE_22K, 1: constants.SAMPLE_RATE_44K,
+        2: constants.SAMPLE_RATE_32K}.get(tagdata.sample_rate.data)
+    compression = {
+        0: constants.COMPRESSION_NONE,  3: constants.COMPRESSION_NONE,
+        1: constants.COMPRESSION_ADPCM, 2: constants.COMPRESSION_ADPCM,
+        4: constants.COMPRESSION_WMA}.get(tagdata.compression.data)
+
+    if channels not in (1, 2):
+        compression = constants.COMPRESSION_UNKNOWN
 
     if tagdata.encoding.enum_name == "codec":
         pass # return "    CANNOT YET EXTRACT THIS FORMAT."
@@ -210,7 +239,7 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
                 this_map.map_data.seek(ptr)
                 samples = this_map.map_data.read(size)
 
-                if decode_adpcm and "adpcm" in compression:
+                if decompress and "adpcm" in compression:
                     samples = decode_adpcm_samples(samples, channels)
 
                 merged_data += samples

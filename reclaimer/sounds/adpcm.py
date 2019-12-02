@@ -42,12 +42,8 @@ def _fast_decode_mono_adpcm_samples(samples, endian="<"):
         # first 4 bits and the second is the last 4 bits.
         steps = bytes(((b<<4) + (b>>4))&0xFF for b in
                       samples[i + state_size: i + adpcm_size])
-        predictor = samples[i: i+2]
-        if endian == ">":
-            predictor = predictor[::-1]
-
         out_data[pcm_i: pcm_i + pcm_size] = (
-            predictor + adpcm2lin(steps, 2, unpacker(samples, i))[0]
+            adpcm2lin(steps, 2, unpacker(samples, i))[0]
             )
 
         pcm_i += pcm_size
@@ -87,9 +83,6 @@ def decode_adpcm_samples(samples, channel_ct, endian="<"):
 
             if predictor & 32768:
                 predictor -= pcm_mask
-
-            out_data[pcm_i] = predictor
-            pcm_i += channel_ct
 
             for j in range(i, i + code_skip_size, skip_size):
                 codes = (in_data[j + 1] << 16) + in_data[j]
