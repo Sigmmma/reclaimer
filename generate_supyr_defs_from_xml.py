@@ -468,7 +468,7 @@ def optimize_numbered_arrays(struct_node, engine_name, report_optimize):
                     field.typ  != base_field_typ or
                     field_name != base_field_name):
                     break
-            except:
+            except Exception:
                 break
 
             field_ct += 1
@@ -841,7 +841,7 @@ def parse_xml(xml_path, version_infos):
         tag_id = os.path.splitext(os.path.basename(xml_path))[0].strip(".")
         nodes = parse_xml_node(xml_root, version_infos)
         nodes.name = fix_name_identifier(tag_id + ("_" * (4 - len(tag_id))))
-    except:
+    except Exception:
         print(format_exc())
         nodes = None
 
