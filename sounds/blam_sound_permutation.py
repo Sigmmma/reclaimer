@@ -1,4 +1,5 @@
 from reclaimer.sounds import constants
+from reclaimer.sounds.adpcm import decode_adpcm_samples
 
 
 def calculate_sample_chunk_size(compression, chunk_size, encoding):
@@ -48,7 +49,7 @@ class BlamProcessedSoundSamples:
         if self.compression == constants.COMPRESSION_NONE:
             return self.samples
         elif self.compression == constants.COMPRESSION_ADPCM:
-            channel_count = 2 if encoding == constants.ENCODING_STEREO else 1
+            channel_count = 2 if self.encoding == constants.ENCODING_STEREO else 1
             return decode_adpcm_samples(self.samples, channel_count)
         else:
             raise NotImplementedError("whoops, decompressing this isn't implemented.")
@@ -79,8 +80,8 @@ class BlamSoundPermutation:
     def source_encoding(self):
         return self._source_encoding
     @property
-    def processed_sample_pieces(self):
-        return list(self._processed_sample_pieces)
+    def processed_samples(self):
+        return self._processed_sample_pieces
 
     def load_samples(self, samples, sample_rate, encoding):
         self._source_samples = samples
@@ -92,4 +93,29 @@ class BlamSoundPermutation:
         chunk_size = calculate_sample_chunk_size(
             compression, chunk_size, encoding)
 
+        source_samples = self.source_samples
+        if sample_rate != self.source_sample_rate:
+            # resample to the target sample rate
+            pass
+
         self._processed_sample_pieces = []
+
+    def get_concatenated(self, decompress=True):
+        if decompress:
+            samples = b''.join(p.get_decompressed() for p in self.processed_samples)
+        elif self.processed_samples:
+            # make sure we're able to combine samples without decompressing
+            compression = self.processed_samples[0].compression
+            for piece in self.processed_samples:
+                if piece.compression != compression:
+                    raise ValueError(
+                        "Cannot combine differently compressed samples without decompressing.")
+                elif piece.compression == constants.COMPRESSION_OGG:
+                    raise ValueError(
+                        "Cannot combine ogg samples without decompressing.")
+
+            samples = b''.join(p.samples for p in self.processed_samples)
+        else:
+            samples = b''
+
+        return samples
