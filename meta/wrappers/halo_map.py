@@ -10,7 +10,7 @@ from reclaimer.meta.halo_map import get_map_version, get_map_header,\
      get_tag_index, get_index_magic, get_map_magic, get_is_compressed_map,\
      decompress_map
 from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
-from reclaimer.util import is_protected_tag, int_to_fourcc, sanitize_path
+from reclaimer.util import is_protected_tag, int_to_fourcc, path_normalize
 
 from supyr_struct.buffer import BytearrayBuffer, get_rawdata
 
@@ -345,8 +345,8 @@ class HaloMap:
             return
 
         self.maps[self.map_name] = self
-        self.filepath        = sanitize_path(map_path)
-        self.decomp_filepath = sanitize_path(decomp_path)
+        self.filepath        = path_normalize(map_path)
+        self.decomp_filepath = path_normalize(decomp_path)
         self.map_header  = map_header
         self.index_magic = get_index_magic(map_header)
         self.map_magic   = get_map_magic(map_header)
