@@ -1,5 +1,5 @@
 import os
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 
 from time import time
 from hashlib import md5
@@ -14,7 +14,7 @@ from reclaimer.hek.defs.objs.tag import HekTag
 from reclaimer.hek.defs import __all__ as all_def_names
 
 from supyr_struct.buffer import BytearrayBuffer
-from supyr_struct.util import sanitize_path
+from supyr_struct.util import tagpath_to_fullpath
 from supyr_struct.defs.constants import PATHDIV
 from supyr_struct.field_types import FieldType
 
@@ -355,43 +355,35 @@ class HaloHandler(Handler):
 
     def get_tagref_invalid(self, parent, attr_index):
         '''
-        Returns whether or not the filepath of the tag reference isnt valid.
-        Returns False if the filepath is empty or the file exists.
-        Returns True otherwise.
+        Checks if filepath of a tag reference is invalid.
+        Returns False if file exists.
+        Returns True if does not or if the reference is empty.
         '''
         node = parent[attr_index]
-        #if the string is empty, then it doesnt NOT exist, so return False
+        #if the string is empty, there is no reference, can't be invalid.
         if not node.filepath:
             return False
-        filepath = sanitize_path(os.path.join(self.tagsdir, node.filepath))
 
-        try:
-            ext = '.' + node.tag_class.enum_name
-            if (self.treat_mode_as_mod2 and (
-                ext == '.model' and not os.path.exists(filepath + ext))):
-                return not os.path.exists(filepath + '.gbxmodel')
-            filepath += ext
-        except Exception:
-            pass
-
-        return not os.path.exists(filepath)
+        return not self.get_tagref_exists(parent, attr_index)
 
     def get_tagref_exists(self, parent, attr_index):
+        '''Returns whether or not a tag reference is valid.'''
         node = parent[attr_index]
         if not node.filepath:
             return False
-        filepath = sanitize_path(os.path.join(self.tagsdir, node.filepath))
 
-        try:
-            ext = '.' + node.tag_class.enum_name
-            if (self.treat_mode_as_mod2 and (
-                ext == '.model' and not os.path.exists(filepath + ext))):
-                return os.path.exists(filepath + '.gbxmodel')
-            filepath += ext
-        except Exception:
-            pass
+        ext = '.' + node.tag_class.enum_name
 
-        return os.path.exists(filepath)
+        # Get full path with proper capitalization if it points to a file.
+        filepath = tagpath_to_fullpath(
+            self.tagsdir, PureWindowsPath(node.filepath), extension=ext)
+
+        if filepath is None and (
+        self.treat_mode_as_mod2 and ext == '.model'):
+            filepath = tagpath_to_fullpath(
+                self.tagsdir, PureWindowsPath(node.filepath), extension='.gbxmodel')
+
+        return filepath is not None
 
     def get_tagref_matches(self, parent, attr_index):
         '''
