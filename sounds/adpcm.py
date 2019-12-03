@@ -35,7 +35,7 @@ def get_adpcm_encoded_blocksize(diff_sample_count):
 
 
 def get_adpcm_decoded_blocksize(diff_sample_count):
-    return 2 * (diff_sample_count + 1)
+    return 2 * diff_sample_count
 
 
 # The number of encoded samples in an xbox adpcm block.
@@ -66,10 +66,8 @@ def _semi_fast_decode_mono_adpcm_samples(
         # first 4 bits and the second is the last 4 bits.
         steps = bytes(((b<<4) + (b>>4))&0xFF for b in
                       samples[i + state_size: i + encoded_blocksize])
-        predictor = samples[i: i+2]
-
         out_data[pcm_i: pcm_i + decoded_blocksize] = (
-            predictor + adpcm2lin(steps, 2, unpacker(samples, i))[0]
+            adpcm2lin(steps, 2, unpacker(samples, i))[0]
             )
 
         pcm_i += decoded_blocksize
@@ -118,9 +116,6 @@ def decode_adpcm_samples(
             if predictor & 32768:
                 # signed bit set, so make negative
                 predictor -= pcm_mask
-
-            out_data[pcm_i] = predictor
-            pcm_i += channel_ct
 
             for j in range(i, i + code_skip_size, skip_size):
                 codes = (in_data[j + 1] << 16) + in_data[j]

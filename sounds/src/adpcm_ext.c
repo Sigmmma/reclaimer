@@ -55,7 +55,7 @@ static int get_adpcm_encoded_blocksize(int coded_sample_count) {
     return 4 + ((coded_sample_count + 1) / 2);
 }
 static int get_adpcm_decoded_blocksize(int coded_sample_count) {
-    return 2 * (coded_sample_count + 1);
+    return 2 * coded_sample_count;
 }
 
 
@@ -111,9 +111,6 @@ static void decode_adpcm_stream(
             adpcm_states[c].pcm_sample = adpcm_stream[0] | (adpcm_stream[1] << 8);
             adpcm_states[c].index = adpcm_stream[2];
             adpcm_stream += 4;
-
-            pcm_stream[0] = adpcm_states[c].pcm_sample;
-            pcm_stream++;
 
             if (adpcm_states[c].index < 0)
                 adpcm_states[c].index = 0;
