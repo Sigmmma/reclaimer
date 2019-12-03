@@ -1,15 +1,15 @@
+from pathlib import Path
 import os
 
 from binilla.handler import Handler
 from reclaimer.misc.defs import __all__ as all_def_names
-from supyr_struct.defs.constants import PATHDIV
 
 
 class MiscHaloLoader(Handler):
     frozen_imp_paths = all_def_names
     default_defs_path = "reclaimer.misc.defs"
 
-    tagsdir = "%s%stags%s" % (os.path.abspath(os.curdir), PATHDIV, PATHDIV)
+    tagsdir = tagsdir = str(Path.cwd().join("tags"))
 
     def get_def_id(self, filepath):
         '''docstring'''
