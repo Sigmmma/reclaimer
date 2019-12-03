@@ -1,6 +1,5 @@
 from math import log
 
-from os.path import sep as PATHDIV
 from supyr_struct.util import *
 from reclaimer.util import compression
 from reclaimer.util import geometry

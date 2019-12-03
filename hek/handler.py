@@ -1,5 +1,5 @@
-import os
 from pathlib import Path, PureWindowsPath
+import os
 
 from time import time
 from hashlib import md5
@@ -15,7 +15,6 @@ from reclaimer.hek.defs import __all__ as all_def_names
 
 from supyr_struct.buffer import BytearrayBuffer
 from supyr_struct.util import tagpath_to_fullpath
-from supyr_struct.defs.constants import PATHDIV
 from supyr_struct.field_types import FieldType
 
 
@@ -52,7 +51,7 @@ class HaloHandler(Handler):
     tag_fcc_match_set = frozenset()
     tag_filepath_match_set = frozenset()
 
-    tagsdir = "%s%stags%s" % (os.path.abspath(os.curdir), PATHDIV, PATHDIV)
+    tagsdir = str(Path.cwd().join("tags"))
 
     case_sensitive = False
     tagsdir_relative = True
