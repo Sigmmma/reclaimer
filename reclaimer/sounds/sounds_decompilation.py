@@ -64,25 +64,23 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
                                   wav_fmt.bits_per_sample *
                                   wav_fmt.channels) // 8)
 
-            samples_len = len(samples)
             if "adpcm" in encoding and decode_adpcm:
-                samples = decode_adpcm_samples(samples, channels)
-
+                samples = decode_adpcm_samples(samples, channels).tobytes()
                 wav_fmt.fmt.set_to('pcm')
                 wav_fmt.block_align = 2 * wav_fmt.channels
-                samples_len = len(samples) * 2  # UInt16 array, not bytes
             elif encoding == "none":
                 wav_fmt.fmt.set_to('pcm')
                 wav_fmt.block_align = 2 * wav_fmt.channels
             else:
                 wav_fmt.fmt.set_to('ima_adpcm')
                 wav_fmt.block_align = XBOX_ADPCM_ENCODED_BLOCKSIZE * wav_fmt.channels
-                wav_fmt.byte_rate = int(wav_fmt.byte_rate *
-                                        XBOX_ADPCM_ENCODED_BLOCKSIZE/XBOX_ADPCM_DECODED_BLOCKSIZE/2)
+                wav_fmt.byte_rate = int(
+                    (XBOX_ADPCM_ENCODED_BLOCKSIZE * wav_fmt.byte_rate) /
+                    XBOX_ADPCM_DECODED_BLOCKSIZE)
 
             wav_file.data.wav_data.audio_data = samples
-            wav_file.data.wav_data.audio_data_size = samples_len
-            wav_file.data.wav_header.filesize = 36 + samples_len
+            wav_file.data.wav_data.audio_data_size = len(samples)
+            wav_file.data.wav_header.filesize = 36 + len(samples)
 
             wav_file.serialize(temp=False, backup=False)
 
