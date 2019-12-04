@@ -72,7 +72,7 @@ def _semi_fast_decode_mono_adpcm_samples(
 
         pcm_i += decoded_blocksize
 
-    return array("h", out_data)
+    return bytes(out_data)
 
 
 def decode_adpcm_samples(
@@ -89,8 +89,8 @@ def decode_adpcm_samples(
     decoded_blocksize = get_adpcm_decoded_blocksize(diff_sample_count)
 
     block_ct = len(samples) // (channel_ct * encoded_blocksize)
-    out_data = array("h", bytes(
-        block_ct * channel_ct * decoded_blocksize))
+    out_data = array("h", (0,)) * (
+        block_ct * channel_ct * decoded_blocksize // 2)
 
     if fast_adpcm:
         adpcm_ext.decode_adpcm_samples(
@@ -138,4 +138,4 @@ def decode_adpcm_samples(
                     out_data[pcm_i] = predictor
                     pcm_i += channel_ct
 
-    return out_data
+    return bytes(out_data)
