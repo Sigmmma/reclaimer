@@ -48,7 +48,7 @@ def _fast_decode_mono_adpcm_samples(samples, endian="<"):
 
         pcm_i += pcm_size
 
-    return array("h", out_data)
+    return bytes(out_data)
 
 
 def decode_adpcm_samples(samples, channel_ct, endian="<"):
@@ -68,7 +68,8 @@ def decode_adpcm_samples(samples, channel_ct, endian="<"):
 
     block_ct = len(samples) // (channel_ct * constants.ADPCM_COMPRESSED_BLOCKSIZE)
     in_data  = array("H", samples)
-    out_data = array("h", bytes(block_ct * channel_ct * constants.ADPCM_DECOMPRESSED_BLOCKSIZE))
+    out_data = array("h", (0, )) * (
+        block_ct * channel_ct * constants.ADPCM_DECOMPRESSED_BLOCKSIZE // 2)
 
     for c in range(channel_ct):
         pcm_i = c
@@ -105,4 +106,4 @@ def decode_adpcm_samples(samples, channel_ct, endian="<"):
                     out_data[pcm_i] = predictor
                     pcm_i += channel_ct
 
-    return out_data
+    return out_data.tobytes()

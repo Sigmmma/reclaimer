@@ -59,17 +59,13 @@ def write_blam_sound_bank_permutation_list(
 
     for i in range(len(permlist)):
         compression, samples = permlist[i]
-        filepath = filepath_base
+        filepath = BAD_PATH_CHAR_REMOVAL.sub("_", filepath_base)
         if not samples:
             continue
 
         if len(permlist) > 1: filepath += "__%s" % i
 
-        is_container_format = compression in (
-            constants.COMPRESSION_OGG, constants.COMPRESSION_WMA,
-            constants.COMPRESSION_UNKNOWN,
-            )
-
+        is_container_format = True
         if compression == constants.COMPRESSION_OGG:
             filepath += ".ogg"
         elif compression == constants.COMPRESSION_WMA:
@@ -77,9 +73,9 @@ def write_blam_sound_bank_permutation_list(
         elif compression == constants.COMPRESSION_UNKNOWN:
             filepath += ".bin"
         else:
+            is_container_format = False
             filepath += ".wav"
 
-        filepath = BAD_PATH_CHAR_REMOVAL.sub("_", filepath)
 
         if not overwrite and os.path.isfile(filepath):
             continue
