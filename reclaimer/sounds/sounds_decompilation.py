@@ -65,7 +65,7 @@ def save_sound_perms(permlist, filepath_base, sample_rate,
                                   wav_fmt.channels) // 8)
 
             if "adpcm" in encoding and decode_adpcm:
-                samples = decode_adpcm_samples(samples, channels).tobytes()
+                samples = decode_adpcm_samples(samples, channels)
                 wav_fmt.fmt.set_to('pcm')
                 wav_fmt.block_align = 2 * wav_fmt.channels
             elif encoding == "none":
