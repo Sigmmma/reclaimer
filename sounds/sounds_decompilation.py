@@ -133,11 +133,11 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
     same_pr_names = {}
 
     sample_rate = tagdata.sample_rate.data
-    channels = constants.channel_counts.get(tagdata.encoding.data, 1)
+    encoding = tagdata.encoding.data
     compression = constants.halo_2_compressions.get(
         tagdata.compression.data, constants.COMPRESSION_UNKNOWN)
 
-    if channels not in (1, 2):
+    if encoding == constants.ENCODING_CODEC:
         compression = constants.COMPRESSION_UNKNOWN
 
     if tagdata.encoding.enum_name == "codec":
@@ -168,25 +168,31 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
             Everything after this appears to be audio data.
         '''
 
+    # get the pitch range indices to iterate over
     pr_index = tagdata.pitch_range_index
     pr_count = min(tagdata.pitch_range_count, len(pitch_ranges) - pr_index)
     if pr_index < 0 or pr_count < 0:
         # nothing to extract
         return
 
+    # make a BlamSoundBank to store all our sound data
+    sound_bank = BlamSoundBank()
     for i in range(pr_index, pr_index + pr_count):
         pr = pitch_ranges[i]
-        pitchpath_base = tagpath_base
-        if pr_count > 1:
-            name = get_sound_name(import_names, pr.import_name_index)
-            if not name: name = str(i)
+        pr_name = get_sound_name(import_names, pr.import_name_index)
+        pr_name = util.BAD_PATH_CHAR_REMOVAL.sub(
+            "_", pr_name).strip().replace('|', ' ')
+        if not pr_name:
+            pr_name = str(i)
 
-            same_pr_ct = same_pr_names.get(name, 0)
-            same_pr_names[name] = same_pr_ct + 1
-            if same_pr_ct: name += "_%s" % same_pr_ct
+        same_pr_names[pr_name] = same_pr_names.get(pr_name, -1) + 1
+        if same_pr_names[pr_name]:
+            pr_name += "_%s" % same_pr_names[pr_name]
 
-            pitchpath_base = os.path.join(pitchpath_base, name)
+        # make a BlamPitchRange to store all the permutations
+        sound_bank.pitch_ranges[pr_name] = BlamSoundPitchRange()
 
+        # get the permutation indices to iterate over
         perm_index = pr.first_permutation
         perm_count = min(pr.permutation_count, len(permutations) - perm_index)
         if perm_index < 0 or perm_count < 0:
@@ -194,37 +200,34 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
 
         for j in range(perm_index, perm_index + perm_count):
             perm = permutations[j]
-            name = get_sound_name(import_names, perm.import_name_index)
-            if not name: name = str(j)
-            permpath_base = os.path.join(pitchpath_base, name)
+            perm_name = get_sound_name(
+                import_names, perm.import_name_index).replace('|', ' ')
+            if not perm_name: perm_name = str(j)
 
+            blam_permutation = BlamSoundPermutation(
+                sample_rate=sample_rate, encoding=encoding)
+            sound_bank.pitch_ranges[pr_name].permutations[perm_name] = blam_permutation
+
+            # get the chunk indices to iterate over
             chunk_index = perm.first_chunk
             chunk_count = min(perm.chunk_count, len(perm_chunks) - chunk_index)
             if chunk_index < 0 or chunk_count < 0:
                 continue
 
-            merged_data = b''
             for k in range(chunk_index, chunk_index + chunk_count):
                 ptr, map_name = split_raw_pointer(perm_chunks[k].pointer)
-                size = perm_chunks[k].size
                 this_map = halo_map
                 if map_name != "local":
                     this_map = halo_map.maps.get(map_name)
 
-                if this_map is None:
-                    continue
-                elif this_map.map_data is None:
+                if this_map is None or this_map.map_data is None:
                     continue
 
                 this_map.map_data.seek(ptr)
-                samples = this_map.map_data.read(size)
+                blam_permutation.processed_samples.append(
+                    BlamSoundSamples(
+                        this_map.map_data.read(perm_chunks[k].size),
+                        0, compression, sample_rate, encoding)
+                    )
 
-                if decompress and "adpcm" in compression:
-                    samples = decode_adpcm_samples(samples, channels)
-
-                merged_data += samples
-
-            permpath_base = permpath_base.replace('|', '')
-            write_blam_sound_bank_permutation_list(
-                [(compression, merged_data)], permpath_base,
-                sample_rate, channels, overwrite)
+    sound_bank.export_to_directory(tagpath_base, overwrite, False, decompress)
