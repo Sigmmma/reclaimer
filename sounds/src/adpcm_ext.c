@@ -170,15 +170,15 @@ static PyObject *py_decode_adpcm_samples(PyObject *self, PyObject *args) {
         return Py_BuildValue("");  // return Py_None while incrementing it
     } else if (bufs[1].len < block_count * get_adpcm_decoded_blocksize(coded_sample_count)) {
         RELEASE_PY_BUFFER_ARRAY(bufs)
-            PySys_FormatStdout("Provided pcm buffer is not large enough to hold decoded data.\n");
+        PySys_FormatStdout("Provided pcm buffer is not large enough to hold decoded data.\n");
         return Py_BuildValue("");  // return Py_None while incrementing it
     } else if (channel_count > MAX_AUDIO_CHANNEL_COUNT) {
         RELEASE_PY_BUFFER_ARRAY(bufs)
-            PySys_FormatStdout("Too many channels to decode in adpcm stream.\n");
+        PySys_FormatStdout("Too many channels to decode in adpcm stream.\n");
         return Py_BuildValue("");  // return Py_None while incrementing it
     } else if (coded_sample_count % 8) {
         RELEASE_PY_BUFFER_ARRAY(bufs)
-            PySys_FormatStdout("coded_sample_count must be a multiple of 8.\n");
+        PySys_FormatStdout("coded_sample_count must be a multiple of 8.\n");
         return Py_BuildValue("");  // return Py_None while incrementing it
     }
 
