@@ -2,6 +2,8 @@ import os
 
 from reclaimer.h2.util import split_raw_pointer
 from reclaimer.sounds import constants
+from reclaimer.sounds import util
+from reclaimer.sounds.blam_sound_bank import BlamSoundBank, BlamSoundPitchRange
 from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation,\
      BlamSoundSamples
 
@@ -14,8 +16,6 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
     decompress = kw.get('decode_adpcm', True)
     byteswap_pcm_samples = kw.get('byteswap_pcm_samples', False)
     tagpath_base = os.path.join(kw['out_dir'], os.path.splitext(tag_path)[0])
-    pitch_ranges = tagdata.pitch_ranges.STEPTREE
-    same_pr_names = {}
 
     encoding = tagdata.encoding.data
     channels = constants.channel_counts.get(encoding, 1)
@@ -23,24 +23,28 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
     compression = constants.halo_1_compressions.get(
         tagdata.compression.data, constants.COMPRESSION_UNKNOWN)
 
-    for i in range(len(pitch_ranges)):
-        pr = pitch_ranges[i]
-        perms = pr.permutations.STEPTREE
-        pitchpath_base = tagpath_base
-        if len(pitch_ranges) > 1:
-            name = pr.name if pr.name else str(i)
+    # make a BlamSoundBank to store all our sound data
+    sound_bank = BlamSoundBank()
 
-            same_pr_ct = same_pr_names.get(name, 0)
-            same_pr_names[name] = same_pr_ct + 1
-            if same_pr_ct: name += "_%s" % same_pr_ct
+    same_pr_names = {}
+    for i, pr in enumerate(tagdata.pitch_ranges.STEPTREE):
+        # determine a usable name for this pitch range
+        pr_name = util.BAD_PATH_CHAR_REMOVAL.sub("_", pr.name.strip())
+        if not pr_name:
+            pr_name = str(i)
 
-            pitchpath_base = os.path.join(pitchpath_base, name)
+        same_pr_names[pr_name] = same_pr_names.get(pr_name, -1) + 1
+        if same_pr_names[pr_name]:
+            pr_name += "_%s" % same_pr_names[pr_name]
+
+        # make a BlamPitchRange to store all the permutations
+        sound_bank.pitch_ranges[pr_name] = BlamSoundPitchRange()
 
         same_names_permlists = {}
-        actual_perm_count = pr.actual_permutation_count
         unchecked_perms = set(range(len(pr.permutations.STEPTREE)))
 
-        perm_indices = range(min(actual_perm_count, len(unchecked_perms)))
+        perm_indices = list(
+            range(min(pr.actual_permutation_count, len(unchecked_perms))))
         if not perm_indices:
             perm_indices = set(unchecked_perms)
 
@@ -49,14 +53,14 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
             # the permutations they point to into a list with a shared name.
             # we do this so we can combine the permutations together into one.
             for j in perm_indices:
-                perm = perms[j]
+                perm = pr.permutations.STEPTREE[j]
                 compression = perm.compression.enum_name
                 name = perm.name if perm.name else str(j)
                 permlist = same_names_permlists.get(name, [])
                 same_names_permlists[name] = permlist
 
                 while j in unchecked_perms:
-                    perm = perms[j]
+                    perm = pr.permutations.STEPTREE[j]
                     if compression != perm.compression.enum_name:
                         # cant combine when compression is different
                         break
@@ -65,13 +69,12 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                     permlist.append(perm)
 
                     j = perm.next_permutation_index
-
             perm_indices = set(unchecked_perms)
 
-        merged_permlists = {}
         for name, permlist in same_names_permlists.items():
             blam_permutation = BlamSoundPermutation(
                 sample_rate=sample_rate, encoding=encoding)
+            sound_bank.pitch_ranges[pr_name].permutations[name] = blam_permutation
 
             for perm in permlist:
                 sample_data = perm.samples.data
@@ -95,29 +98,11 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
 
                 blam_permutation.processed_samples.append(
                     BlamSoundSamples(
-                        sample_data, sample_count, compression, encoding)
+                        sample_data, sample_count, compression,
+                        sample_rate, encoding)
                     )
 
-            if not blam_permutation.processed_samples:
-                continue
-
-            try:
-                compression = blam_permutation.compression
-                if decompress:
-                    compression = constants.COMPRESSION_PCM_16_LE
-
-                merged_permlists[name] = [
-                    (compression, blam_permutation.get_concatenated(decompress))
-                    ]
-            except ValueError:
-                merged_permlists[name] = []
-                for piece in blam_permutation.processed_samples:
-                    merged_permlists[name].append((piece.compression, piece.samples))
-
-        for name, permlist in merged_permlists.items():
-            write_blam_sound_bank_permutation_list(
-                permlist, os.path.join(pitchpath_base, name),
-                sample_rate, channels, overwrite)
+    sound_bank.export_to_directory(tagpath_base, overwrite, False, decompress)
 
 
 def get_sound_name(import_names, index):

@@ -1,5 +1,4 @@
 import os
-import re
 
 from array import array
 from traceback import format_exc
@@ -10,18 +9,18 @@ from reclaimer.sounds.adpcm import decode_adpcm_samples
 
 from supyr_struct.defs.audio.wav import wav_def
 
-BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]{1, }')
-
 
 class BlamSoundSamples:
     _samples = b''
     _sample_count = 0
     _compression = constants.COMPRESSION_PCM_16_LE
+    _sample_rate = constants.SAMPLE_RATE_22K
     _encoding = constants.ENCODING_MONO
-    def __init__(self, samples, sample_count, compression, encoding):
+    def __init__(self, samples, sample_count, compression, sample_rate, encoding):
         self._samples = samples
         self._sample_count = sample_count
         self._compression = compression
+        self._sample_rate = sample_rate
         self._encoding = encoding
 
     @property
@@ -33,6 +32,9 @@ class BlamSoundSamples:
     @property
     def compression(self):
         return self._compression
+    @property
+    def sample_rate(self):
+        return self._sample_rate
     @property
     def encoding(self):
         return self._encoding
@@ -61,28 +63,32 @@ class BlamSoundSamples:
 
 class BlamSoundPermutation:
     # permutation properties
-    name = "unnamed"
     _source_sample_data = b''
+    _source_compression = constants.COMPRESSION_PCM_16_LE
     _source_sample_rate = constants.SAMPLE_RATE_22K
     _source_encoding = constants.ENCODING_MONO
 
     # processed properties
     _processed_samples = ()
 
-    def __init__(self, samples=b'', sample_rate=constants.SAMPLE_RATE_22K,
+    def __init__(self, samples=b'', compression=constants.COMPRESSION_PCM_16_LE,
+                 sample_rate=constants.SAMPLE_RATE_22K,
                  encoding=constants.ENCODING_MONO, **kwargs):
-        self.name = kwargs.get("name", self.name)
-        self.load_samples(samples, sample_rate, encoding)
+        self.load_samples(samples, compression, sample_rate, encoding)
 
     @property
     def source_sample_data(self):
         return self._source_sample_data
     @property
-    def source_encoding(self):
-        return self._source_encoding
+    def source_compression(self):
+        return self._source_compression
+    @property
+    def source_sample_rate(self):
+        return self._source_sample_rate
     @property
     def source_encoding(self):
         return self._source_encoding
+
     @property
     def processed_samples(self):
         return self._processed_samples
@@ -93,14 +99,21 @@ class BlamSoundPermutation:
         except Exception:
             return constants.COMPRESSION_UNKNOWN
     @property
+    def sample_rate(self):
+        try:
+            return self.processed_samples[0].sample_rate
+        except Exception:
+            return constants.SAMPLE_RATE_22K
+    @property
     def encoding(self):
         try:
             return self.processed_samples[0].encoding
         except Exception:
             return constants.ENCODING_UNKNOWN
 
-    def load_samples(self, samples, sample_rate, encoding):
+    def load_samples(self, samples, compression, sample_rate, encoding):
         self._source_samples = samples
+        self._source_compression = compression
         self._source_sample_rate = sample_rate
         self._source_encoding = encoding
         self._processed_samples = []
@@ -109,10 +122,13 @@ class BlamSoundPermutation:
         chunk_size = util.calculate_sample_chunk_size(
             compression, chunk_size, encoding)
 
-        source_samples = self.source_samples
-        if sample_rate != self.source_sample_rate:
+        samples = self.source_sample_data
+        if (self.source_sample_rate == constants.SAMPLE_RATE_44K and
+            sample_rate == constants.SAMPLE_RATE_22K):
             # resample to the target sample rate
-            pass
+            samples = util.downsample_half(samples, self.source_compression)
+        elif sample_rate != self.source_sample_rate:
+            raise ValueError("Cannot resample this audio stream.")
 
         self._processed_samples = []
 
@@ -126,7 +142,6 @@ class BlamSoundPermutation:
                                for p in self.processed_samples)
         else:
             # join samples without decompressing
-
             compression = self.compression
             # make sure we're able to combine samples without decompressing
             for piece in self.processed_samples:
@@ -141,21 +156,35 @@ class BlamSoundPermutation:
 
         return samples
 
-    def export_to_file(filepath_base, export_source=True, decompress=True):
+    def regenerate_source(self, target_compression=constants.COMPRESSION_UNKNOWN):
+        if target_compression == constants.COMPRESSION_UNKNOWN:
+            target_compression = self.source_compression
+
+        if target_compression == constants.COMPRESSION_UNKNOWN:
+            self.source_compression = constants.COMPRESSION_PCM_16_LE
+
+        self._source_samples = self.get_concatenated(self.source_compression)
+        self._source_sample_rate = self.sample_rate
+        self._source_encoding = self.encoding
+
+    def export_to_directory(self, directory_base, overwrite=False,
+                            export_source=True, decompress=True):
         perm_chunks = []
         encoding = self.encoding
+        sample_rate = self.sample_rate
         if export_source and self.source_sample_data:
             # export the source data
             perm_chunks.append(
                 (compression, self.source_encoding, self.source_sample_data)
                 )
+            sample_rate = self.source_sample_rate
         elif self.processed_samples:
             # concatenate processed samples if source samples don't exist.
             # also, if compression is ogg, we have to decompress
-            if decompress or self.compression == constants.COMPRESSION_OGG:
+            compression = self.compression
+            sample_rate = self.sample_rate
+            if decompress or compression == constants.COMPRESSION_OGG:
                 compression = constants.COMPRESSION_PCM_16_LE
-            else:
-                compression = self.compression
 
             try:
                 samples = self.get_concatenated(compression)
@@ -171,7 +200,7 @@ class BlamSoundPermutation:
         wav_file = wav_def.build()
         for compression, encoding, samples in perm_chunks:
             i += 1
-            filepath = BAD_PATH_CHAR_REMOVAL.sub("_", filepath_base)
+            filepath = util.BAD_PATH_CHAR_REMOVAL.sub("_", directory_base)
 
             if len(perm_chunks) > 1:
                 filepath += "__%s" % i
@@ -210,8 +239,8 @@ class BlamSoundPermutation:
 
             wav_fmt = wav_file.data.format
             wav_fmt.fmt.set_to('pcm')
-            wav_fmt.channels = constants.encoding_channels.get(encoding, 1)
-            wav_fmt.sample_rate = sample_rate
+            wav_fmt.channels = constants.channel_counts.get(encoding, 1)
+            wav_fmt.sample_rate = constants.sample_rates.get(sample_rate, 0)
 
             samples_len = len(samples)
             if compression in constants.PCM_FORMATS:
@@ -231,8 +260,9 @@ class BlamSoundPermutation:
                 wav_fmt.bits_per_sample = 16
                 wav_fmt.block_align = constants.ADPCM_COMPRESSED_BLOCKSIZE * wav_fmt.channels
                 wav_fmt.byte_rate = int(
-                    (wav_fmt.sample_rate * wav_fmt.block_align) /
-                     constants.ADPCM_DECOMPRESSED_BLOCKSIZE)
+                    (wav_fmt.sample_rate * wav_fmt.block_align /
+                     (constants.ADPCM_DECOMPRESSED_BLOCKSIZE // 2))
+                    )
             else:
                 print("Unknown compression method:", compression)
                 continue

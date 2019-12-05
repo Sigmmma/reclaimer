@@ -1,12 +1,13 @@
+import os
+
 from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation
 from reclaimer.sounds import constants
 
 
 class BlamSoundPitchRange:
-    name = "default"
     _permutations = ()
 
-    def __init__(self, ):
+    def __init__(self):
         self._permutations = {}
 
     @property
@@ -20,6 +21,13 @@ class BlamSoundPitchRange:
         for perm in self.permutations.values():
             perm.process_samples(
                 compression, sample_rate, sample_chunk_size)
+
+    def export_to_directory(self, directory_base, overwrite=False,
+                            export_source=True, decompress=True):
+        for name, perm in self.permutations.items():
+            perm.export_to_directory(
+                os.path.join(directory_base, name), overwrite,
+                export_source, decompress)
 
 
 class BlamSoundBank:
@@ -44,3 +52,14 @@ class BlamSoundBank:
         for pitch_range in self.permutations.values():
             pitch_range.process_samples(
                 self.compression, self.sample_rate, self.sample_chunk_size)
+
+    def export_to_directory(self, directory_base, overwrite=False,
+                            export_source=True, decompress=True):
+        for name, pitch_range in self.pitch_ranges.items():
+            if len(self.pitch_ranges) > 1:
+                pitchpath_base = os.path.join(directory_base, name)
+            else:
+                pitchpath_base = directory_base
+
+            pitch_range.export_to_directory(
+                pitchpath_base, overwrite, export_source, decompress)
