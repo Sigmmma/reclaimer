@@ -1,7 +1,10 @@
 import array
 import audioop
+import re
 
 from reclaimer.sounds import constants
+
+BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]{1, }')
 
 
 def calculate_sample_chunk_size(compression, chunk_size, encoding):
