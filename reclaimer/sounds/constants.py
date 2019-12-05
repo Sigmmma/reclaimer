@@ -1,17 +1,32 @@
-COMPRESSION_UNKNOWN = -1
-COMPRESSION_NONE  = 0  # 16bit pcm
-COMPRESSION_ADPCM = 1
-COMPRESSION_OGG   = 2  # halo pc only
-COMPRESSION_WMA   = 3  # halo 2 only
+import sys
 
+COMPRESSION_UNKNOWN = -1
+# NOTE: the ordering of these constants is such that their endianess
+# can be swapped by flipping the first bit. This is used in util.py
+COMPRESSION_PCM_16_LE = 0  # 16bit signed pcm
+COMPRESSION_PCM_16_BE = COMPRESSION_PCM_16_LE + 1
+COMPRESSION_PCM_24_LE = 2  # 24bit signed pcm
+COMPRESSION_PCM_24_BE = COMPRESSION_PCM_24_LE + 1
+COMPRESSION_PCM_32_LE = 4  # 32bit signed pcm
+COMPRESSION_PCM_32_BE = COMPRESSION_PCM_32_LE + 1
+
+COMPRESSION_PCM_8_SIGNED   = 6
+COMPRESSION_PCM_8_UNSIGNED = 7
+
+COMPRESSION_ADPCM = 16
+COMPRESSION_OGG   = 17  # halo pc only
+COMPRESSION_WMA   = 18  # halo 2 only
+
+# these encoding constants mirror halo 1/2 enum values.
 ENCODING_UNKNOWN = -1
 ENCODING_MONO   = 0
 ENCODING_STEREO = 1
 ENCODING_CODEC  = 2
 
-SAMPLE_RATE_22K = 22050
-SAMPLE_RATE_32K = 32000  # halo 2 only
-SAMPLE_RATE_44K = 44100
+# these encoding constants mirror halo 1/2 enum values.
+SAMPLE_RATE_22K = 0
+SAMPLE_RATE_44K = 1
+SAMPLE_RATE_32K = 2  # halo 2 only
 
 DEF_SAMPLE_CHUNK_SIZE = 0x10000
 MAX_SAMPLE_CHUNK_SIZE = 0x400000
@@ -19,3 +34,70 @@ MAX_MOUTH_DATA        = 0x2000
 
 ADPCM_COMPRESSED_BLOCKSIZE   = 36
 ADPCM_DECOMPRESSED_BLOCKSIZE = 128
+
+# Endianness interop constants
+if sys.byteorder == "little":
+    ADPCM_DECOMPRESSED_ENDIANNESS = COMPRESSION_PCM_16_LE
+    NATIVE_ENDIANNESS_FORMATS = {
+        (COMPRESSION_PCM_16_LE, COMPRESSION_PCM_24_LE,
+         COMPRESSION_PCM_32_LE,
+         COMPRESSION_PCM_8_SIGNED, COMPRESSION_PCM_8_UNSIGNED)
+        }
+else:
+    ADPCM_DECOMPRESSED_ENDIANNESS = COMPRESSION_PCM_16_BE
+    NATIVE_ENDIANNESS_FORMATS = {
+        (COMPRESSION_PCM_16_BE, COMPRESSION_PCM_24_BE,
+         COMPRESSION_PCM_32_BE,
+         COMPRESSION_PCM_8_SIGNED, COMPRESSION_PCM_8_UNSIGNED)
+        }
+
+PCM_FORMATS = {
+    COMPRESSION_PCM_16_LE, COMPRESSION_PCM_16_BE,
+    COMPRESSION_PCM_24_LE, COMPRESSION_PCM_24_BE,
+    COMPRESSION_PCM_32_LE, COMPRESSION_PCM_32_BE,
+    COMPRESSION_PCM_8_SIGNED, COMPRESSION_PCM_8_UNSIGNED
+    }
+
+channel_counts = {
+    ENCODING_UNKNOWN: 1,
+    ENCODING_MONO:    1,
+    ENCODING_STEREO:  2,
+    ENCODING_CODEC:   6,
+    }
+
+sample_rates = {
+    SAMPLE_RATE_22K: 22050,
+    SAMPLE_RATE_44K: 44100,
+    SAMPLE_RATE_32K: 32000,
+    }
+
+sample_widths = {
+    COMPRESSION_PCM_8_SIGNED: 1,
+    COMPRESSION_PCM_8_UNSIGNED: 1,
+    COMPRESSION_PCM_16_LE: 2,
+    COMPRESSION_PCM_16_BE: 2,
+    COMPRESSION_PCM_24_LE: 3,
+    COMPRESSION_PCM_24_BE: 3,
+    COMPRESSION_PCM_32_LE: 4,
+    COMPRESSION_PCM_32_BE: 4,
+    }
+
+# maps halo 1 compression enums to the compression constants
+halo_1_compressions = {
+    0: COMPRESSION_PCM_16_LE,
+    1: COMPRESSION_ADPCM,
+    2: COMPRESSION_ADPCM,
+    3: COMPRESSION_OGG,
+    }
+
+# maps halo 2 compression enums to the compression constants
+halo_2_compressions = {
+    0: COMPRESSION_PCM_16_BE,
+    1: COMPRESSION_ADPCM,
+    2: COMPRESSION_ADPCM,
+    3: COMPRESSION_PCM_16_LE,
+    4: COMPRESSION_WMA,
+    }
+
+# unneeded for export
+del sys

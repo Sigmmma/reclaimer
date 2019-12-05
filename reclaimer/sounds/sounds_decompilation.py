@@ -1,11 +1,9 @@
 import os
 
 from reclaimer.h2.util import split_raw_pointer
-from reclaimer.meta.wrappers.byteswapping import byteswap_pcm16_sample_data
 from reclaimer.sounds import constants
-from reclaimer.sounds.blam_sound_bank import write_blam_sound_bank_permutation_list
 from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation,\
-     BlamProcessedSoundSamples
+     BlamSoundSamples
 
 
 __all__ = ("extract_h1_sounds", "extract_h2_sounds", )
@@ -20,8 +18,10 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
     same_pr_names = {}
 
     encoding = tagdata.encoding.data
-    channels = encoding + 1
-    sample_rate = 22050 * (tagdata.sample_rate.data + 1)
+    channels = constants.channel_counts.get(encoding, 1)
+    sample_rate = tagdata.sample_rate.data
+    compression = constants.halo_1_compressions.get(
+        tagdata.compression.data, constants.COMPRESSION_UNKNOWN)
 
     for i in range(len(pitch_ranges)):
         pr = pitch_ranges[i]
@@ -77,24 +77,24 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                 sample_data = perm.samples.data
                 if perm.compression.enum_name == "ogg":
                     # not actually a sample count. fix struct field name
-                    sample_count = perm.ogg_sample_count // 2
                     compression = constants.COMPRESSION_OGG
+                    sample_count = perm.ogg_sample_count // 2
                 elif perm.compression.enum_name == "none":
-                    if byteswap_pcm_samples:
-                        sample_data = byteswap_pcm16_sample_data(sample_data)
+                    compression = (constants.COMPRESSION_PCM_16_BE
+                                   if byteswap_pcm_samples else
+                                   constants.COMPRESSION_PCM_16_LE)
                     sample_count = len(sample_data) // 2
-                    compression = constants.COMPRESSION_NONE
                 elif "adpcm" in perm.compression.enum_name:
+                    compression = constants.COMPRESSION_ADPCM
                     sample_count = (
                         (constants.ADPCM_DECOMPRESSED_BLOCKSIZE // 2) *
                         (len(sample_data) // constants.ADPCM_COMPRESSED_BLOCKSIZE))
-                    compression = constants.COMPRESSION_ADPCM
                 else:
                     print("Unknown audio compression type:", perm.compression.data)
                     continue
 
                 blam_permutation.processed_samples.append(
-                    BlamProcessedSoundSamples(
+                    BlamSoundSamples(
                         sample_data, sample_count, compression, encoding)
                     )
 
@@ -102,9 +102,9 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                 continue
 
             try:
-                compression = blam_permutation.processed_samples[0].compression
+                compression = blam_permutation.compression
                 if decompress:
-                    compression = constants.COMPRESSION_NONE
+                    compression = constants.COMPRESSION_PCM_16_LE
 
                 merged_permlists[name] = [
                     (compression, blam_permutation.get_concatenated(decompress))
@@ -147,15 +147,10 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
 
     same_pr_names = {}
 
-    channels = {
-        0: 1, 1: 2, 2: 6}.get(tagdata.encoding.data)
-    sample_rate = {
-        0: constants.SAMPLE_RATE_22K, 1: constants.SAMPLE_RATE_44K,
-        2: constants.SAMPLE_RATE_32K}.get(tagdata.sample_rate.data)
-    compression = {
-        0: constants.COMPRESSION_NONE,  3: constants.COMPRESSION_NONE,
-        1: constants.COMPRESSION_ADPCM, 2: constants.COMPRESSION_ADPCM,
-        4: constants.COMPRESSION_WMA}.get(tagdata.compression.data)
+    sample_rate = tagdata.sample_rate.data
+    channels = constants.channel_counts.get(tagdata.encoding.data, 1)
+    compression = constants.halo_2_compressions.get(
+        tagdata.compression.data, constants.COMPRESSION_UNKNOWN)
 
     if channels not in (1, 2):
         compression = constants.COMPRESSION_UNKNOWN
