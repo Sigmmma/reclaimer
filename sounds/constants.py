@@ -1,5 +1,13 @@
 import sys
 
+DEFAULT_PITCH_RANGE_NAME = "default"
+DEFAULT_PERMUTATION_NAME = "unnamed"
+
+SOUND_COMPILE_MODE_NEW = 0
+SOUND_COMPILE_MODE_PRESERVE = 1
+SOUND_COMPILE_MODE_ADDITIVE = 2
+
+
 COMPRESSION_UNKNOWN = -1
 # NOTE: the ordering of these constants is such that their endianess
 # can be swapped by flipping the first bit. This is used in util.py

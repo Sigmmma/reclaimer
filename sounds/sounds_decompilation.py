@@ -12,9 +12,10 @@ __all__ = ("extract_h1_sounds", "extract_h2_sounds", )
 
 
 def extract_h1_sounds(tagdata, tag_path, **kw):
+    do_write_wav = kw.get('write_wav', True)
     overwrite = kw.get('overwrite', True)
     decompress = kw.get('decode_adpcm', True)
-    byteswap_pcm_samples = kw.get('byteswap_pcm_samples', False)
+    pcm_is_big_endian = kw.get('byteswap_pcm_samples', False)
     tagpath_base = os.path.join(kw['out_dir'], os.path.splitext(tag_path)[0])
 
     encoding = tagdata.encoding.data
@@ -84,7 +85,7 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                     sample_count = perm.ogg_sample_count // 2
                 elif perm.compression.enum_name == "none":
                     compression = (constants.COMPRESSION_PCM_16_BE
-                                   if byteswap_pcm_samples else
+                                   if pcm_is_big_endian else
                                    constants.COMPRESSION_PCM_16_LE)
                     sample_count = len(sample_data) // 2
                 elif "adpcm" in perm.compression.enum_name:
@@ -99,10 +100,14 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                 blam_permutation.processed_samples.append(
                     BlamSoundSamples(
                         sample_data, sample_count, compression,
-                        sample_rate, encoding)
+                        sample_rate, encoding, perm.mouth_data.data)
                     )
 
-    sound_bank.export_to_directory(tagpath_base, overwrite, False, decompress)
+    if do_write_wav:
+        sound_bank.export_to_directory(
+            tagpath_base, overwrite, False, decompress)
+    else:
+        return sound_bank
 
 
 def get_sound_name(import_names, index):
@@ -117,6 +122,7 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
         print("Cannot run this function on tags.")
         return
 
+    do_write_wav = kw.get('write_wav', True)
     overwrite = kw.get('overwrite', True)
     decompress = kw.get('decode_adpcm', True)
     tagpath_base = os.path.join(kw['out_dir'], os.path.splitext(tag_path)[0])
@@ -230,4 +236,8 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
                         0, compression, sample_rate, encoding)
                     )
 
-    sound_bank.export_to_directory(tagpath_base, overwrite, False, decompress)
+    if do_write_wav:
+        sound_bank.export_to_directory(
+            tagpath_base, overwrite, False, decompress)
+    else:
+        return sound_bank
