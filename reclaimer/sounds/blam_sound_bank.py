@@ -16,13 +16,23 @@ class BlamSoundPitchRange:
     def permutations(self):
         return self._permutations
 
+    def generate_mouth_data(self):
+        for perm in self.permutations.values():
+            perm.generate_mouth_data()
+
     def process_samples(
             self, compression=constants.COMPRESSION_PCM_16_LE,
             sample_rate=constants.SAMPLE_RATE_22K,
-            sample_chunk_size=constants.MAX_SAMPLE_CHUNK_SIZE):
+            sample_chunk_size=constants.MAX_SAMPLE_CHUNK_SIZE,
+            generate_mouth_data=False):
         for perm in self.permutations.values():
             perm.process_samples(
-                compression, sample_rate, sample_chunk_size)
+                compression, sample_rate,
+                sample_chunk_size, generate_mouth_data)
+
+    def regenerate_source(self):
+        for perm in self.permutations.values():
+            perm.regenerate_source()
 
     @classmethod
     def create_from_directory(directory):
@@ -72,20 +82,30 @@ class BlamSoundBank:
     sample_rate = constants.SAMPLE_RATE_22K
     split_into_smaller_chunks = True
     split_to_adpcm_blocksize = True
+    generate_mouth_data = False
 
     _pitch_ranges = ()
 
-    def __init__(self, ):
+    def __init__(self):
         self._pitch_ranges = {}
 
     @property
     def pitch_ranges(self):
         return self._pitch_ranges
 
+    def generate_mouth_data(self):
+        for pitch_range in self.pitch_ranges.values():
+            pitch_range.generate_mouth_data()
+
     def process_samples(self):
-        for pitch_range in self.permutations.values():
+        for pitch_range in self.pitch_ranges.values():
             pitch_range.process_samples(
-                self.compression, self.sample_rate, self.sample_chunk_size)
+                self.compression, self.sample_rate,
+                self.sample_chunk_size, self.generate_mouth_data)
+
+    def regenerate_source(self):
+        for pitch_range in self.pitch_ranges.values():
+            pitch_range.regenerate_source()
 
     @classmethod
     def create_from_directory(directory, *args, **kwargs):

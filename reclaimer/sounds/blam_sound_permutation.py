@@ -1,3 +1,4 @@
+import audioop
 import os
 
 from array import array
@@ -45,14 +46,21 @@ class BlamSoundSamples:
     def encoding(self):
         return self._encoding
 
-    def get_decompressed(self, target_compression):
+    def compress(self, target_compression, target_encoding=None):
+        pass
+
+    def get_decompressed(self, target_compression, target_encoding=None):
+        if target_encoding is None:
+            target_encoding = self.encoding
+
         assert target_compression in constants.PCM_FORMATS
+        assert target_encoding in constants.channel_counts
 
         if self.compression == constants.COMPRESSION_ADPCM:
             # decompress adpcm to 16bit pcm
             sample_data = decode_adpcm_samples(
                 self.sample_data, constants.channel_counts.get(self.encoding, 1))
-            curr_compression = constants.ADPCM_DECOMPRESSED_ENDIANNESS
+            curr_compression = constants.ADPCM_DECOMPRESSED_FORMAT
         elif self.compression in constants.PCM_FORMATS:
             # samples are decompressed. use as-is
             sample_data = self.sample_data
@@ -60,20 +68,30 @@ class BlamSoundSamples:
         else:
             raise NotImplementedError("whoops, decompressing this isn't implemented.")
 
-        if curr_compression != target_compression:
+        if (curr_compression != target_compression or
+            self.encoding != target_encoding):
             sample_data = util.convert_pcm_to_pcm(
-                sample_data, curr_compression, target_compression)
+                sample_data, curr_compression, target_compression,
+                self.encoding, target_encoding)
 
         return sample_data
 
     def generate_mouth_data(self):
-        pass
+        # decompress to constants.ADPCM_DECOMPRESSED_FORMAT
+        # as it is guaranteed to be a decompressed PCM format,
+        # is guaranteed to be the correct system endianness,
+        # and is high enough fidelity to generate mouth_data.
+        sample_data = self.get_decompressed(
+            constants.ADPCM_DECOMPRESSED_FORMAT, self.encoding)
+
+        self._mouth_data = util.generate_mouth_data(
+            sample_data, constants.ADPCM_DECOMPRESSED_FORMAT,
+            self.sample_rate, self.encoding)
 
 
 class BlamSoundPermutation:
     # permutation properties
     _source_sample_data = b''
-    _source_mouth_data = b''
     _source_compression = constants.COMPRESSION_PCM_16_LE
     _source_sample_rate = constants.SAMPLE_RATE_22K
     _source_encoding = constants.ENCODING_MONO
@@ -84,17 +102,13 @@ class BlamSoundPermutation:
     def __init__(self, sample_data=b'',
                  compression=constants.COMPRESSION_PCM_16_LE,
                  sample_rate=constants.SAMPLE_RATE_22K,
-                 encoding=constants.ENCODING_MONO,
-                 mouth_data=b'', **kwargs):
-        self.load_samples(sample_data, compression, sample_rate, encoding,
-                          mouth_data)
+                 encoding=constants.ENCODING_MONO, **kwargs):
+        self.load_source_samples(
+            sample_data, compression, sample_rate, encoding)
 
     @property
     def source_sample_data(self):
         return self._source_sample_data
-    @property
-    def source_mouth_data(self):
-        return self._source_mouth_data
     @property
     def source_compression(self):
         return self._source_compression
@@ -113,54 +127,66 @@ class BlamSoundPermutation:
         try:
             return self.processed_samples[0].compression
         except Exception:
-            return constants.COMPRESSION_UNKNOWN
+            return self._source_compression
     @property
     def sample_rate(self):
         try:
             return self.processed_samples[0].sample_rate
         except Exception:
-            return constants.SAMPLE_RATE_22K
+            return self._source_sample_rate
     @property
     def encoding(self):
         try:
             return self.processed_samples[0].encoding
         except Exception:
-            return constants.ENCODING_UNKNOWN
+            return self._source_encoding
 
-    def load_samples(self, sample_data, compression, sample_rate,
-                     encoding, mouth_data=b''):
+    def load_source_samples(self, sample_data, compression,
+                            sample_rate, encoding):
         self._source_sample_data = sample_data
-        self._source_mouth_data = mouth_data
         self._source_compression = compression
         self._source_sample_rate = sample_rate
         self._source_encoding = encoding
         self._processed_samples = []
 
-    def process_samples(self, compression, sample_rate, chunk_size=0):
+    def generate_mouth_data(self):
+        for samples in self.processed_samples:
+            samples.generate_mouth_data()
+
+    def process_samples(self, compression, sample_rate, chunk_size=0,
+                        generate_mouth_data=False):
         chunk_size = util.calculate_sample_chunk_size(
             compression, chunk_size, encoding)
 
         sample_data = self.source_sample_data
-        if (self.source_sample_rate == constants.SAMPLE_RATE_44K and
-            sample_rate == constants.SAMPLE_RATE_22K):
+        if sample_rate != self.source_sample_rate:
             # resample to the target sample rate
-            sample_data = util.downsample_half(
-                sample_data, self.source_compression)
-        elif sample_rate != self.source_sample_rate:
-            raise ValueError("Cannot resample this audio stream.")
+            audioop.ratecv(
+                sample_data,
+                constants.sample_widths[self.source_encoding],
+                constants.channel_counts[self.source_encoding],
+                self.source_sample_rate, sample_rate, None)
 
         self._processed_samples = []
 
         # TODO: generate sample pieces and mouth data
+        if generate_mouth_data:
+            for samples in self.processed_samples:
+                samples.generate_mouth_data()
 
-    def get_concatenated_sample_data(self, target_compression=None):
+    def get_concatenated_sample_data(self, target_compression=None,
+                                     target_encoding=None):
         if target_compression is None:
-            target_compression = self.compression
+            target_compression = self.source_compression
+        if target_encoding is None:
+            target_encoding = self.source_encoding
 
-        if target_compression != self.compression:
+        assert target_encoding in constants.channel_counts
+
+        if target_compression != self.compression or target_encoding != self.encoding:
             # decompress processed samples to the target compression
             sample_data = b''.join(
-                p.get_decompressed(target_compression)
+                p.get_decompressed(target_compression, target_encoding)
                 for p in self.processed_samples)
         else:
             # join samples without decompressing
@@ -181,17 +207,18 @@ class BlamSoundPermutation:
     def get_concatenated_mouth_data(self):
         return b''.join(p.mouth_data for p in self.processed_samples)
 
-    def regenerate_source(self, target_compression=constants.COMPRESSION_UNKNOWN):
-        if target_compression == constants.COMPRESSION_UNKNOWN:
-            target_compression = self.source_compression
-
-        if target_compression == constants.COMPRESSION_UNKNOWN:
-            self.source_compression = constants.COMPRESSION_PCM_16_LE
-
-        assert target_compression in constants.PCM_FORMATS
-
-        self._source_sample_data = self.get_concatenated_sample_data(self.source_compression)
-        self._source_mouth_data = self.get_concatenated_mouth_data()
+    def regenerate_source(self):
+        '''
+        Regenerates an uncompressed, concatenated audio stream
+        from the compressed samples. Use when loading a sound tag
+        for re-compression, re-sampling, or re-encoding.
+        '''
+        # always regenerate to constants.DEFAULT_COMPRESSION_FORMAT
+        # because, technically speaking, that is highest sample depth
+        # we can ever possibly see in Halo CE.
+        self._source_sample_data = self.get_concatenated_sample_data(
+            constants.DEFAULT_COMPRESSION_FORMAT, self.encoding)
+        self._source_compression = constants.DEFAULT_COMPRESSION_FORMAT
         self._source_sample_rate = self.sample_rate
         self._source_encoding = self.encoding
 
@@ -222,12 +249,12 @@ class BlamSoundPermutation:
             # concatenate processed samples if source samples don't exist.
             # also, if compression is ogg, we have to decompress
             compression = self.compression
-            sample_rate = self.sample_rate
             if decompress or compression == constants.COMPRESSION_OGG:
                 compression = constants.COMPRESSION_PCM_16_LE
 
             try:
-                sample_data = self.get_concatenated_sample_data(compression)
+                sample_data = self.get_concatenated_sample_data(
+                    compression, encoding)
                 if sample_data:
                     perm_chunks.append((compression, self.encoding, sample_data))
             except Exception:
@@ -280,7 +307,7 @@ class BlamSoundPermutation:
             wav_fmt = wav_file.data.format
             wav_fmt.fmt.set_to('pcm')
             wav_fmt.channels = constants.channel_counts.get(encoding, 1)
-            wav_fmt.sample_rate = constants.sample_rates.get(sample_rate, 0)
+            wav_fmt.sample_rate = sample_rate
 
             samples_len = len(sample_data)
             if compression in constants.PCM_FORMATS:

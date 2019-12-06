@@ -31,10 +31,9 @@ ENCODING_MONO   = 0
 ENCODING_STEREO = 1
 ENCODING_CODEC  = 2
 
-# these encoding constants mirror halo 1/2 enum values.
-SAMPLE_RATE_22K = 0
-SAMPLE_RATE_44K = 1
-SAMPLE_RATE_32K = 2  # halo 2 only
+SAMPLE_RATE_22K = 22050
+SAMPLE_RATE_32K = 32000
+SAMPLE_RATE_44K = 44100
 
 DEF_SAMPLE_CHUNK_SIZE = 0x10000
 MAX_SAMPLE_CHUNK_SIZE = 0x400000
@@ -43,16 +42,20 @@ MAX_MOUTH_DATA        = 0x2000
 ADPCM_COMPRESSED_BLOCKSIZE   = 36
 ADPCM_DECOMPRESSED_BLOCKSIZE = 128
 
+MOUTH_DATA_SAMPLE_RATE = 30
+
 # Endianness interop constants
 if sys.byteorder == "little":
-    ADPCM_DECOMPRESSED_ENDIANNESS = COMPRESSION_PCM_16_LE
+    ADPCM_DECOMPRESSED_FORMAT = COMPRESSION_PCM_16_LE
+    DEFAULT_COMPRESSION_FORMAT = COMPRESSION_PCM_16_LE
     NATIVE_ENDIANNESS_FORMATS = {
         (COMPRESSION_PCM_16_LE, COMPRESSION_PCM_24_LE,
          COMPRESSION_PCM_32_LE,
          COMPRESSION_PCM_8_SIGNED, COMPRESSION_PCM_8_UNSIGNED)
         }
 else:
-    ADPCM_DECOMPRESSED_ENDIANNESS = COMPRESSION_PCM_16_BE
+    ADPCM_DECOMPRESSED_FORMAT = COMPRESSION_PCM_16_BE
+    DEFAULT_COMPRESSION_FORMAT = COMPRESSION_PCM_16_BE
     NATIVE_ENDIANNESS_FORMATS = {
         (COMPRESSION_PCM_16_BE, COMPRESSION_PCM_24_BE,
          COMPRESSION_PCM_32_BE,
@@ -73,12 +76,6 @@ channel_counts = {
     ENCODING_CODEC:   6,
     }
 
-sample_rates = {
-    SAMPLE_RATE_22K: 22050,
-    SAMPLE_RATE_44K: 44100,
-    SAMPLE_RATE_32K: 32000,
-    }
-
 sample_widths = {
     COMPRESSION_PCM_8_SIGNED: 1,
     COMPRESSION_PCM_8_UNSIGNED: 1,
@@ -90,21 +87,32 @@ sample_widths = {
     COMPRESSION_PCM_32_BE: 4,
     }
 
-# maps halo 1 compression enums to the compression constants
+# these mappings key halo 1 compression enums
+# to the compression/sample rate constants
 halo_1_compressions = {
     0: COMPRESSION_PCM_16_LE,
     1: COMPRESSION_ADPCM,
     2: COMPRESSION_ADPCM,
     3: COMPRESSION_OGG,
     }
+halo_1_sample_rates = {
+    0: SAMPLE_RATE_22K,
+    1: SAMPLE_RATE_44K,
+    }
 
-# maps halo 2 compression enums to the compression constants
+# these mappings key halo 2 compression enums
+# to the compression/sample rate constants
 halo_2_compressions = {
     0: COMPRESSION_PCM_16_BE,
     1: COMPRESSION_ADPCM,
     2: COMPRESSION_ADPCM,
     3: COMPRESSION_PCM_16_LE,
     4: COMPRESSION_WMA,
+    }
+halo_2_sample_rates = {
+    0: SAMPLE_RATE_22K,
+    1: SAMPLE_RATE_44K,
+    2: SAMPLE_RATE_32K,
     }
 
 # unneeded for export

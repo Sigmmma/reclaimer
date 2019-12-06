@@ -20,12 +20,18 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
 
     encoding = tagdata.encoding.data
     channels = constants.channel_counts.get(encoding, 1)
-    sample_rate = tagdata.sample_rate.data
+    sample_rate = constants.halo_1_sample_rates.get(
+        tagdata.sample_rate.data, 0)
     compression = constants.halo_1_compressions.get(
         tagdata.compression.data, constants.COMPRESSION_UNKNOWN)
 
     # make a BlamSoundBank to store all our sound data
     sound_bank = BlamSoundBank()
+    sound_bank.split_into_smaller_chunks = tagdata.flags.split_long_sound_into_permutations
+    sound_bank.split_to_adpcm_blocksize = tagdata.flags.fit_to_adpcm_blocksize
+    sound_bank.sample_rate = sample_rate
+    sound_bank.compression = compression
+    sound_bank.encoding = encoding
 
     same_pr_names = {}
     for i, pr in enumerate(tagdata.pitch_ranges.STEPTREE):
@@ -138,8 +144,9 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
 
     same_pr_names = {}
 
-    sample_rate = tagdata.sample_rate.data
     encoding = tagdata.encoding.data
+    sample_rate = constants.halo_2_sample_rates.get(
+        tagdata.sample_rate.data, 0)
     compression = constants.halo_2_compressions.get(
         tagdata.compression.data, constants.COMPRESSION_UNKNOWN)
 
@@ -183,6 +190,12 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
 
     # make a BlamSoundBank to store all our sound data
     sound_bank = BlamSoundBank()
+    sound_bank.split_into_smaller_chunks = tagdata.flags.split_long_sound_into_permutations
+    sound_bank.split_to_adpcm_blocksize = tagdata.flags.fit_to_adpcm_blocksize
+    sound_bank.sample_rate = sample_rate
+    sound_bank.compression = compression
+    sound_bank.encoding = encoding
+
     for i in range(pr_index, pr_index + pr_count):
         pr = pitch_ranges[i]
         pr_name = get_sound_name(import_names, pr.import_name_index)
