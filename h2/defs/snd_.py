@@ -52,7 +52,7 @@ sound_classes = (
 snd__body = Struct("tagdata",
     Bool16("flags",
         "fit to adpcm blocksize",
-        "split long sounds into permutations",
+        "split long sound into permutations",
         "always spatialize",
         "never obstruct",
         {NAME: "INTERNAL DONT TOUCH", EDITABLE:False},
