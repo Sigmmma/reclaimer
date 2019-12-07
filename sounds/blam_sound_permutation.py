@@ -46,8 +46,18 @@ class BlamSoundSamples:
     def encoding(self):
         return self._encoding
 
-    def compress(self, target_compression, target_encoding=None):
-        pass
+    def compress(self, target_compression,
+                 target_sample_rate=None, target_encoding=None):
+        if target_sample_rate is None:
+            target_encoding = self.sample_rate
+
+        if target_encoding is None:
+            target_encoding = self.encoding
+
+        if (target_compression == constants.COMPRESSION_OGG and
+            not constants.OGG_VORBIS_AVAILABLE):
+            raise NotImplementedError(
+                "Ogg encoder not available. Cannot compress.")
 
     def get_decompressed(self, target_compression, target_encoding=None):
         if target_encoding is None:
@@ -67,9 +77,11 @@ class BlamSoundSamples:
             curr_compression = self.compression
         elif (self.compression == constants.COMPRESSION_OGG and
               not constants.OGG_VORBIS_AVAILABLE):
-            raise NotImplementedError("Ogg encoder not available. Cannot compress.")
+            raise NotImplementedError(
+                "Ogg encoder not available. Cannot decompress.")
         else:
-            raise NotImplementedError("whoops, decompressing this isn't implemented.")
+            raise NotImplementedError(
+                "whoops, decompressing this isn't implemented.")
 
         if (curr_compression != target_compression or
             self.encoding != target_encoding):
@@ -179,17 +191,9 @@ class BlamSoundPermutation:
         for samples in self.processed_samples:
             samples.generate_mouth_data()
 
-    def compress_samples(self, compression, sample_rate=None):
-        if sample_rate is None:
-            sample_rate = self.source_sample_rate
-
-        if (compression == constants.COMPRESSION_OGG and
-            not constants.OGG_VORBIS_AVAILABLE):
-            raise NotImplementedError(
-                "Ogg encoder not available. Cannot compress.")
-
+    def compress_samples(self, compression, sample_rate=None, encoding=None):
         for samples in self.processed_samples:
-            samples.compress(compression)
+            samples.compress(compression, sample_rate, encoding)
 
     def get_concatenated_sample_data(self, target_compression=None,
                                      target_encoding=None):

@@ -20,11 +20,6 @@ class BlamSoundPitchRange:
             self, compression=constants.COMPRESSION_PCM_16_LE,
             sample_rate=None,
             sample_chunk_size=constants.MAX_SAMPLE_CHUNK_SIZE):
-        if (compression == constants.COMPRESSION_OGG and
-            not constants.OGG_VORBIS_AVAILABLE):
-            raise NotImplementedError(
-                "Ogg encoder not available. Cannot partition.")
-
         for perm in self.permutations.values():
             perm.partition_samples(
                 compression, sample_rate, sample_chunk_size)
@@ -35,14 +30,9 @@ class BlamSoundPitchRange:
 
     def compress_samples(
             self, compression=constants.COMPRESSION_PCM_16_LE,
-            sample_rate=None):
-        if (compression == constants.COMPRESSION_OGG and
-            not constants.OGG_VORBIS_AVAILABLE):
-            raise NotImplementedError(
-                "Ogg encoder not available. Cannot compress.")
-
+            sample_rate=None, encoding=None):
         for perm in self.permutations.values():
-            perm.compress_samples(compression, sample_rate)
+            perm.compress_samples(compression, sample_rate, encoding)
 
     def regenerate_source(self):
         for perm in self.permutations.values():
@@ -108,11 +98,6 @@ class BlamSoundBank:
         return self._pitch_ranges
 
     def partition_samples():
-        if (compression == constants.COMPRESSION_OGG and
-            not constants.OGG_VORBIS_AVAILABLE):
-            raise NotImplementedError(
-                "Ogg encoder not available. Cannot partition.")
-
         for pitch_range in self.pitch_ranges.values():
             pitch_range.partition_samples(
                 compression, sample_rate, sample_chunk_size)
@@ -122,14 +107,9 @@ class BlamSoundBank:
             pitch_range.generate_mouth_data()
 
     def compress_samples(self):
-        if (compression == constants.COMPRESSION_OGG and
-            not constants.OGG_VORBIS_AVAILABLE):
-            raise NotImplementedError(
-                "Ogg encoder not available. Cannot compress.")
-
         for pitch_range in self.pitch_ranges.values():
             pitch_range.compress_samples(
-                self.compression, self.sample_rate)
+                self.compression, self.sample_rate, self.encoding)
 
     def regenerate_source(self):
         for pitch_range in self.pitch_ranges.values():
