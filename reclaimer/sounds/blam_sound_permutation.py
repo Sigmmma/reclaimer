@@ -65,6 +65,9 @@ class BlamSoundSamples:
             # samples are decompressed. use as-is
             sample_data = self.sample_data
             curr_compression = self.compression
+        elif (self.compression == constants.COMPRESSION_OGG and
+              not constants.OGG_VORBIS_AVAILABLE):
+            raise NotImplementedError("Ogg encoder not available. Cannot compress.")
         else:
             raise NotImplementedError("whoops, decompressing this isn't implemented.")
 
@@ -149,12 +152,15 @@ class BlamSoundPermutation:
         self._source_encoding = encoding
         self._processed_samples = []
 
-    def generate_mouth_data(self):
-        for samples in self.processed_samples:
-            samples.generate_mouth_data()
+    def partition_samples(self, compression, sample_rate=None, chunk_size=0):
+        if (compression == constants.COMPRESSION_OGG and
+            not constants.OGG_VORBIS_AVAILABLE):
+            raise NotImplementedError(
+                "Ogg encoder not available. Cannot compress.")
 
-    def process_samples(self, compression, sample_rate, chunk_size=0,
-                        generate_mouth_data=False):
+        if sample_rate is None:
+            sample_rate = self.source_sample_rate
+
         chunk_size = util.calculate_sample_chunk_size(
             compression, chunk_size, encoding)
 
@@ -167,12 +173,23 @@ class BlamSoundPermutation:
                 constants.channel_counts[self.source_encoding],
                 self.source_sample_rate, sample_rate, None)
 
-        self._processed_samples = []
+        # TODO: Finish this
 
-        # TODO: generate sample pieces and mouth data
-        if generate_mouth_data:
-            for samples in self.processed_samples:
-                samples.generate_mouth_data()
+    def generate_mouth_data(self):
+        for samples in self.processed_samples:
+            samples.generate_mouth_data()
+
+    def compress_samples(self, compression, sample_rate=None):
+        if sample_rate is None:
+            sample_rate = self.source_sample_rate
+
+        if (compression == constants.COMPRESSION_OGG and
+            not constants.OGG_VORBIS_AVAILABLE):
+            raise NotImplementedError(
+                "Ogg encoder not available. Cannot compress.")
+
+        for samples in self.processed_samples:
+            samples.compress(compression)
 
     def get_concatenated_sample_data(self, target_compression=None,
                                      target_encoding=None):
@@ -213,12 +230,12 @@ class BlamSoundPermutation:
         from the compressed samples. Use when loading a sound tag
         for re-compression, re-sampling, or re-encoding.
         '''
-        # always regenerate to constants.DEFAULT_COMPRESSION_FORMAT
+        # always regenerate to constants.DEFAULT_UNCOMPRESSED_FORMAT
         # because, technically speaking, that is highest sample depth
         # we can ever possibly see in Halo CE.
         self._source_sample_data = self.get_concatenated_sample_data(
-            constants.DEFAULT_COMPRESSION_FORMAT, self.encoding)
-        self._source_compression = constants.DEFAULT_COMPRESSION_FORMAT
+            constants.DEFAULT_UNCOMPRESSED_FORMAT, self.encoding)
+        self._source_compression = constants.DEFAULT_UNCOMPRESSED_FORMAT
         self._source_sample_rate = self.sample_rate
         self._source_encoding = self.encoding
 

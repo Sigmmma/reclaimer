@@ -16,19 +16,33 @@ class BlamSoundPitchRange:
     def permutations(self):
         return self._permutations
 
+    def partition_samples(
+            self, compression=constants.COMPRESSION_PCM_16_LE,
+            sample_rate=None,
+            sample_chunk_size=constants.MAX_SAMPLE_CHUNK_SIZE):
+        if (compression == constants.COMPRESSION_OGG and
+            not constants.OGG_VORBIS_AVAILABLE):
+            raise NotImplementedError(
+                "Ogg encoder not available. Cannot compress.")
+
+        for perm in self.permutations.values():
+            perm.partition_samples(
+                compression, sample_rate, sample_chunk_size)
+
     def generate_mouth_data(self):
         for perm in self.permutations.values():
             perm.generate_mouth_data()
 
-    def process_samples(
+    def compress_samples(
             self, compression=constants.COMPRESSION_PCM_16_LE,
-            sample_rate=constants.SAMPLE_RATE_22K,
-            sample_chunk_size=constants.MAX_SAMPLE_CHUNK_SIZE,
-            generate_mouth_data=False):
+            sample_rate=None):
+        if (compression == constants.COMPRESSION_OGG and
+            not constants.OGG_VORBIS_AVAILABLE):
+            raise NotImplementedError(
+                "Ogg encoder not available. Cannot compress.")
+
         for perm in self.permutations.values():
-            perm.process_samples(
-                compression, sample_rate,
-                sample_chunk_size, generate_mouth_data)
+            perm.compress_samples(compression, sample_rate)
 
     def regenerate_source(self):
         for perm in self.permutations.values():
@@ -93,15 +107,29 @@ class BlamSoundBank:
     def pitch_ranges(self):
         return self._pitch_ranges
 
+    def partition_samples():
+        if (compression == constants.COMPRESSION_OGG and
+            not constants.OGG_VORBIS_AVAILABLE):
+            raise NotImplementedError(
+                "Ogg encoder not available. Cannot compress.")
+
+        for pitch_range in self.pitch_ranges.values():
+            pitch_range.partition_samples(
+                compression, sample_rate, sample_chunk_size)
+
     def generate_mouth_data(self):
         for pitch_range in self.pitch_ranges.values():
             pitch_range.generate_mouth_data()
 
-    def process_samples(self):
+    def compress_samples(self):
+        if (compression == constants.COMPRESSION_OGG and
+            not constants.OGG_VORBIS_AVAILABLE):
+            raise NotImplementedError(
+                "Ogg encoder not available. Cannot compress.")
+
         for pitch_range in self.pitch_ranges.values():
-            pitch_range.process_samples(
-                self.compression, self.sample_rate,
-                self.sample_chunk_size, self.generate_mouth_data)
+            pitch_range.compress_samples(
+                self.compression, self.sample_rate)
 
     def regenerate_source(self):
         for pitch_range in self.pitch_ranges.values():
