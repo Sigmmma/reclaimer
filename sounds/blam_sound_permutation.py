@@ -66,22 +66,24 @@ class BlamSoundSamples:
         assert target_compression in constants.PCM_FORMATS
         assert target_encoding in constants.channel_counts
 
-        if self.compression == constants.COMPRESSION_ADPCM:
+        curr_compression = self.compression
+        if curr_compression == constants.COMPRESSION_ADPCM:
             # decompress adpcm to 16bit pcm
             sample_data = decode_adpcm_samples(
                 self.sample_data, constants.channel_counts.get(self.encoding, 1))
             curr_compression = constants.ADPCM_DECOMPRESSED_FORMAT
-        elif self.compression in constants.PCM_FORMATS:
+        elif curr_compression in constants.PCM_FORMATS:
             # samples are decompressed. use as-is
             sample_data = self.sample_data
-            curr_compression = self.compression
-        elif (self.compression == constants.COMPRESSION_OGG and
+        elif (curr_compression == constants.COMPRESSION_OGG and
               not constants.OGG_VORBIS_AVAILABLE):
             raise NotImplementedError(
-                "Ogg encoder not available. Cannot decompress.")
-        else:
+                "Ogg decoder not available. Cannot decompress.")
+        elif curr_compression == constants.COMPRESSION_WMA:
             raise NotImplementedError(
-                "whoops, decompressing this isn't implemented.")
+                "Wma decoder not available. Cannot decompress.")
+        else:
+            raise ValueError("Unknown compression format.")
 
         if (curr_compression != target_compression or
             self.encoding != target_encoding):
