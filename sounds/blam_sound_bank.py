@@ -23,7 +23,7 @@ class BlamSoundPitchRange:
         if (compression == constants.COMPRESSION_OGG and
             not constants.OGG_VORBIS_AVAILABLE):
             raise NotImplementedError(
-                "Ogg encoder not available. Cannot compress.")
+                "Ogg encoder not available. Cannot partition.")
 
         for perm in self.permutations.values():
             perm.partition_samples(
@@ -111,7 +111,7 @@ class BlamSoundBank:
         if (compression == constants.COMPRESSION_OGG and
             not constants.OGG_VORBIS_AVAILABLE):
             raise NotImplementedError(
-                "Ogg encoder not available. Cannot compress.")
+                "Ogg encoder not available. Cannot partition.")
 
         for pitch_range in self.pitch_ranges.values():
             pitch_range.partition_samples(
