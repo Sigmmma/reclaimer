@@ -156,7 +156,7 @@ class BlamSoundPermutation:
         if (compression == constants.COMPRESSION_OGG and
             not constants.OGG_VORBIS_AVAILABLE):
             raise NotImplementedError(
-                "Ogg encoder not available. Cannot compress.")
+                "Ogg encoder not available. Cannot partition.")
 
         if sample_rate is None:
             sample_rate = self.source_sample_rate
