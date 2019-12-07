@@ -142,6 +142,10 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
         # byteswap samples to system endianness before processing
         sample_data = audioop.byteswap(sample_data, sample_width)
 
+    # make this a memoryview to make it more efficient(copies of slices
+    # won't be created each time we pass a slice to audioop.max)
+    slicable_samples = memoryview(sample_data)
+
     # fragment_width will be number of bytes for all the samples
     # that must be scanned to calculate one mouth data sample.
 
@@ -158,14 +162,11 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
     fragment_count = (
         len(sample_data) + fragment_width - 1) // fragment_width
 
-    # generate mouth data samples
-    mouth_data = bytearray(fragment_count)
-    # make this a memoryview to make it more efficient(copies of slices
-    # won't be created each time we pass a slice to get_fragment_max)
-    slicable_samples = memoryview(sample_data)
     # used to scale the max fragment to the [0, 255] scale of a uint8
     sample_scale = 255.5 / ((1 << (8 * sample_width - 1)) - 1)
     j = 0
+    # generate mouth data samples
+    mouth_data = bytearray(fragment_count)
     for i in range(0, fragment_count * fragment_width, fragment_width):
         fragment_max = audioop.max(
             slicable_samples[i: i + fragment_width], sample_width)

@@ -181,7 +181,7 @@ class BlamSoundPermutation:
         sample_data = self.source_sample_data
         if sample_rate != self.source_sample_rate:
             # resample to the target sample rate
-            audioop.ratecv(
+            sample_data, _ = audioop.ratecv(
                 sample_data,
                 constants.sample_widths[self.source_encoding],
                 constants.channel_counts[self.source_encoding],
