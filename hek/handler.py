@@ -51,7 +51,7 @@ class HaloHandler(Handler):
     tag_fcc_match_set = frozenset()
     tag_filepath_match_set = frozenset()
 
-    tagsdir = str(Path.cwd().join("tags"))
+    tagsdir = str(Path.cwd().joinpath("tags"))
 
     case_sensitive = False
     tagsdir_relative = True

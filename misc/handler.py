@@ -9,7 +9,7 @@ class MiscHaloLoader(Handler):
     frozen_imp_paths = all_def_names
     default_defs_path = "reclaimer.misc.defs"
 
-    tagsdir = tagsdir = str(Path.cwd().join("tags"))
+    tagsdir = tagsdir = str(Path.cwd().joinpath("tags"))
 
     def get_def_id(self, filepath):
         '''docstring'''
