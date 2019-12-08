@@ -42,14 +42,20 @@ SAMPLE_RATE_22K = 22050
 SAMPLE_RATE_32K = 32000
 SAMPLE_RATE_44K = 44100
 
+SAMPLE_RATE_VOICE = 7350  # Chosen as it should filter out high frequency
+#                           signals while being high enough fidelity to
+#                           capture the human voice frequency range.
+#                           Also chosen rather than 8000 as it divides
+#                           22050 and 44100 into whole integers.
+
+SAMPLE_RATE_MOUTH_DATA = 30
+
 DEF_SAMPLE_CHUNK_SIZE = 0x10000
 MAX_SAMPLE_CHUNK_SIZE = 0x400000
 MAX_MOUTH_DATA        = 0x2000
 
 ADPCM_COMPRESSED_BLOCKSIZE   = 36
 ADPCM_DECOMPRESSED_BLOCKSIZE = 128
-
-MOUTH_DATA_SAMPLE_RATE = 30
 
 # Endianness interop constants
 if sys.byteorder == "little":
