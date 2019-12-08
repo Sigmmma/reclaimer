@@ -10,4 +10,4 @@ class StubbsHandler(HaloHandler):
     default_defs_path = "reclaimer.stubbs.defs"
     treat_mode_as_mod2 = False
 
-    tagsdir = str(Path.cwd().join("tags"))
+    tagsdir = str(Path.cwd().joinpath("tags"))

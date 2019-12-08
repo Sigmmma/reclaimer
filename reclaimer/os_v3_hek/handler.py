@@ -9,4 +9,4 @@ class OsV3HaloHandler(HaloHandler):
     frozen_imp_paths = all_def_names
     default_defs_path = "reclaimer.os_v3_hek.defs"
 
-    tagsdir = str(Path.cwd().join("tags"))
+    tagsdir = str(Path.cwd().joinpath("tags"))
