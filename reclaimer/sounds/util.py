@@ -134,6 +134,7 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
     assert sample_rate > 0
 
     sample_width = constants.sample_widths[compression]
+    channel_count = constants.channel_counts[encoding]
 
     if compression == constants.COMPRESSION_PCM_8_UNSIGNED:
         # bias by 128 to shift unsigned into signed
@@ -141,6 +142,12 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
     elif sample_width > 1 and compression not in constants.NATIVE_ENDIANNESS_FORMATS:
         # byteswap samples to system endianness before processing
         sample_data = audioop.byteswap(sample_data, sample_width)
+
+    if sample_rate > constants.SAMPLE_RATE_VOICE:
+        sample_data, _ = audioop.ratecv(
+            sample_data, sample_width, channel_count,
+            sample_rate, constants.SAMPLE_RATE_VOICE, None)
+        sample_rate = constants.SAMPLE_RATE_VOICE
 
     # make this a memoryview to make it more efficient(copies of slices
     # won't be created each time we pass a slice to audioop.max)
@@ -155,22 +162,29 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
     # use multiple channels, and the audio samples are interleaved,
     # we multiply the channel count into the fragment_width.
     fragment_width = int(
-        sample_width * constants.channel_counts[encoding] *
-        (sample_rate / constants.MOUTH_DATA_SAMPLE_RATE) + 0.5)
+        sample_width * channel_count *
+        (sample_rate / constants.SAMPLE_RATE_MOUTH_DATA) + 0.5)
 
     # add fragment_width - 1 to round up to next multiple of fragment_width
     fragment_count = (
         len(sample_data) + fragment_width - 1) // fragment_width
 
     # used to scale the max fragment to the [0, 255] scale of a uint8
-    sample_scale = 255.5 / ((1 << (8 * sample_width - 1)) - 1)
+    max_scale = 1 / (1 << (8 * sample_width - 1))
+    power_scale = max_scale * 2
     j = 0
     # generate mouth data samples
     mouth_data = bytearray(fragment_count)
     for i in range(0, fragment_count * fragment_width, fragment_width):
-        fragment_max = audioop.max(
-            slicable_samples[i: i + fragment_width], sample_width)
-        mouth_data[j] = int(sample_scale * fragment_max)
+        fragment = slicable_samples[i: i + fragment_width]
+        fragment_max = audioop.max(fragment, sample_width) * max_scale
+        fragment_power = audioop.rms(fragment, sample_width) * power_scale
+        mouth_sample = fragment_max * fragment_power
+        if mouth_sample > 1.0:
+            mouth_sample = 1.0
+
+        mouth_sample = audioop.max(fragment, sample_width) * max_scale
+        mouth_data[j] = int(mouth_sample * 255.5)
         j += 1
 
     return bytes(mouth_data)
