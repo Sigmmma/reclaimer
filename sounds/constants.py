@@ -57,6 +57,16 @@ MAX_MOUTH_DATA        = 0x2000
 ADPCM_COMPRESSED_BLOCKSIZE   = 36
 ADPCM_DECOMPRESSED_BLOCKSIZE = 128
 
+WAV_FORMAT_PCM = 0x0001
+WAV_FORMAT_IMA_ADPCM = 0x0011
+WAV_FORMAT_XBOX_ADPCM = 0x0069
+
+ALLOWED_WAV_FORMATS = set((
+    WAV_FORMAT_PCM,
+    WAV_FORMAT_IMA_ADPCM,
+    WAV_FORMAT_XBOX_ADPCM
+    ))
+
 # Endianness interop constants
 if sys.byteorder == "little":
     ADPCM_DECOMPRESSED_FORMAT = COMPRESSION_PCM_16_LE
@@ -98,6 +108,16 @@ sample_widths = {
     COMPRESSION_PCM_24_BE: 3,
     COMPRESSION_PCM_32_LE: 4,
     COMPRESSION_PCM_32_BE: 4,
+    }
+
+# maps wave format enum options and sample widths to our compression constants
+wav_format_mapping = {
+    (WAV_FORMAT_PCM, 1): COMPRESSION_PCM_8_UNSIGNED,
+    (WAV_FORMAT_PCM, 2): COMPRESSION_PCM_16_LE,
+    (WAV_FORMAT_PCM, 3): COMPRESSION_PCM_24_LE,
+    (WAV_FORMAT_PCM, 4): COMPRESSION_PCM_32_LE,
+    (WAV_FORMAT_IMA_ADPCM, None): COMPRESSION_ADPCM,
+    (WAV_FORMAT_XBOX_ADPCM, None): COMPRESSION_ADPCM,
     }
 
 # these mappings key halo 1 compression enums

@@ -38,7 +38,7 @@ class BlamSoundPitchRange:
         for perm in self.permutations.values():
             perm.regenerate_source()
 
-    @classmethod
+    @staticmethod
     def create_from_directory(directory):
         try:
             new_pitch_range = BlamSoundPitchRange()
@@ -66,6 +66,10 @@ class BlamSoundPitchRange:
         for root, _, files in os.walk(directory):
             # import each sound file to a new sound permutation
             for filename in files:
+                if os.path.splitext(filename)[1].lower() != ".wav":
+                    # only import wav files
+                    continue
+
                 name_key = filename.lower().strip()
                 perm = BlamSoundPermutation.create_from_file(
                     os.path.join(root, filename))
@@ -115,7 +119,7 @@ class BlamSoundBank:
         for pitch_range in self.pitch_ranges.values():
             pitch_range.regenerate_source()
 
-    @classmethod
+    @staticmethod
     def create_from_directory(directory, *args, **kwargs):
         try:
             new_sound_bank = BlamSoundBank(*args, **kwargs)

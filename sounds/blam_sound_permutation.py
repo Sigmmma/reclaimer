@@ -245,7 +245,7 @@ class BlamSoundPermutation:
         self._source_sample_rate = self.sample_rate
         self._source_encoding = self.encoding
 
-    @classmethod
+    @staticmethod
     def create_from_file(filepath):
         try:
             new_perm = BlamSoundPermutation()
@@ -265,7 +265,7 @@ class BlamSoundPermutation:
         if export_source and self.source_sample_data:
             # export the source data
             perm_chunks.append(
-                (compression, self.source_encoding, self.source_sample_data)
+                (self.compression, self.source_encoding, self.source_sample_data)
                 )
             sample_rate = self.source_sample_rate
         elif self.processed_samples:
@@ -299,14 +299,17 @@ class BlamSoundPermutation:
             # container, or if it'll need to be encapsulated in a wav file.
             is_container_format = True
             if compression == constants.COMPRESSION_OGG:
-                filepath += ".ogg"
+                ext = ".ogg"
             elif compression == constants.COMPRESSION_WMA:
-                filepath += ".wma"
+                ext = ".wma"
             elif compression == constants.COMPRESSION_UNKNOWN:
-                filepath += ".bin"
+                ext = ".bin"
             else:
                 is_container_format = False
-                filepath += ".wav"
+                ext = ".wav"
+
+            if os.path.splitext(filepath)[1].lower() != ext:
+                filepath += ext
 
             if not sample_data or (not overwrite and os.path.isfile(filepath)):
                 continue
@@ -328,7 +331,7 @@ class BlamSoundPermutation:
             wav_file.filepath = filepath
 
             wav_fmt = wav_file.data.format
-            wav_fmt.fmt.set_to('pcm')
+            wav_fmt.fmt.data = constants.WAV_FORMAT_PCM
             wav_fmt.channels = constants.channel_counts.get(encoding, 1)
             wav_fmt.sample_rate = sample_rate
 
@@ -346,7 +349,7 @@ class BlamSoundPermutation:
                 wav_fmt.byte_rate = wav_fmt.sample_rate * wav_fmt.block_align
             elif compression == constants.COMPRESSION_ADPCM:
                 # 16bit adpcm
-                wav_fmt.fmt.set_to('ima_adpcm')
+                wav_fmt.fmt.data = constants.WAV_FORMAT_IMA_ADPCM
                 wav_fmt.bits_per_sample = 16
                 wav_fmt.block_align = constants.ADPCM_COMPRESSED_BLOCKSIZE * wav_fmt.channels
                 wav_fmt.byte_rate = int(
@@ -363,7 +366,7 @@ class BlamSoundPermutation:
 
             wav_file.serialize(temp=False, backup=False)
 
-            continue
+            #continue
             orig_mouth_data = self.get_concatenated_mouth_data()
             if orig_mouth_data:
                 # multiply by 4 so audacity can import it at 120Hz
@@ -382,5 +385,58 @@ class BlamSoundPermutation:
                                   for i in range(len(gen_mouth_data))))
 
     def import_from_file(self, filepath):
-        # TODO: Make this accept loading wav and possibly ogg files.
-        pass
+        if not os.path.isfile(filepath):
+            raise OSError('File "%s" does not exist. Cannot import.' % filepath)
+
+        wav_file = wav_def.build(filepath=filepath)
+        wav_header = wav_file.data.wav_header
+        wav_format = wav_file.data.format
+        wav_data = wav_file.data.wav_data
+        if wav_header.riff_sig != wav_header.get_desc("DEFAULT", "riff_sig"):
+            raise ValueError(
+                "RIFF signature is invalid. Not a valid wav file.")
+        elif wav_header.wave_sig != wav_header.get_desc("DEFAULT", "wave_sig"):
+            raise ValueError(
+                "WAVE signature is invalid. Not a valid wav file.")
+        elif wav_format.sig != wav_format.get_desc("DEFAULT", "sig"):
+            raise ValueError(
+                "Format signature is invalid. Not a valid wav file.")
+        elif wav_format.fmt.data not in constants.ALLOWED_WAV_FORMATS:
+            raise ValueError(
+                'Invalid compression format "%s".' % wav_format.fmt.data)
+        elif wav_format.channels not in (1, 2):
+            raise ValueError(
+                "Invalid number of channels. Must be 1 or 2, not %s." %
+                wav_format.channels)
+        elif wav_format.sample_rate == 0:
+            raise ValueError(
+                "Sample rate cannot be zero. Not a valid wav file")
+        elif (wav_format.fmt.data == constants.WAV_FORMAT_PCM and
+              wav_format.bits_per_sample not in (8, 16, 24, 32)):
+            raise ValueError(
+                "Pcm sample width must be 8, 16, 24, or 32, not %s." %
+                wav_format.bits_per_sample)
+
+        if wav_data.audio_data_size != len(wav_data.audio_data):
+            print("Audio sample data length does not match available data "
+                  "length. Sample data may be truncated.")
+
+        if wav_format.block_align and (len(wav_data.audio_data) %
+                                       wav_format.block_align):
+            print("Audio sample data length not a multiple of block_align. "
+                  "Sample data may be truncated.")
+
+        sample_width = None
+        encoding = constants.ENCODING_MONO
+        if wav_format.fmt.data == constants.WAV_FORMAT_PCM
+            sample_width = wav_format.bits_per_sample // 8
+
+        if wav_format.channels == 2
+            encoding = constants.ENCODING_STEREO
+
+        compression = constants.wav_format_mapping.get(
+            (wav_format.fmt.data, sample_width))
+
+        self.load_source_samples(
+            wav_data.audio_data, compression,
+            wav_format.sample_rate, encoding)
