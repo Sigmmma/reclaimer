@@ -3,7 +3,7 @@ import os
 from traceback import format_exc
 
 from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation
-from reclaimer.sounds import constants
+from reclaimer.sounds import constants, ogg
 
 
 class BlamSoundPitchRange:
@@ -30,9 +30,10 @@ class BlamSoundPitchRange:
 
     def compress_samples(
             self, compression=constants.COMPRESSION_PCM_16_LE,
-            sample_rate=None, encoding=None):
+            sample_rate=None, encoding=None, vorbis_bitrate_info=None):
         for perm in self.permutations.values():
-            perm.compress_samples(compression, sample_rate, encoding)
+            perm.compress_samples(compression, sample_rate, encoding,
+                                  vorbis_bitrate_info)
 
     def regenerate_source(self):
         for perm in self.permutations.values():
@@ -92,10 +93,13 @@ class BlamSoundBank:
     split_to_adpcm_blocksize = True
     generate_mouth_data = False
 
+    vorbis_bitrate_info = None
+
     _pitch_ranges = ()
 
     def __init__(self):
         self._pitch_ranges = {}
+        self.vorbis_bitrate_info = ogg.VorbisBitrateInfo()
 
     @property
     def pitch_ranges(self):
@@ -113,7 +117,8 @@ class BlamSoundBank:
     def compress_samples(self):
         for pitch_range in self.pitch_ranges.values():
             pitch_range.compress_samples(
-                self.compression, self.sample_rate, self.encoding)
+                self.compression, self.sample_rate, self.encoding,
+                self.vorbis_bitrate_info)
 
     def regenerate_source(self):
         for pitch_range in self.pitch_ranges.values():
