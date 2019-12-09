@@ -82,11 +82,16 @@ def change_pcm_width(compression, new_width):
 
 def convert_pcm_to_pcm(samples, compression, target_compression,
                        encoding=constants.ENCODING_MONO,
-                       target_encoding=constants.ENCODING_MONO):
+                       target_encoding=constants.ENCODING_MONO,
+                       sample_rate=constants.SAMPLE_RATE_22K,
+                       target_sample_rate=constants.SAMPLE_RATE_22K):
     '''
-    Converts a stream of PCM audio in one compression to another compression.
+    Converts a stream of PCM audio to one with a different compression
+    and/or encoding and/or sample rate.
     '''
-    current_width = constants.sample_widths.get(curr_compression, 1)
+    assert compression in constants.PCM_FORMATS
+    assert target_compression in constants.PCM_FORMATS
+    current_width = constants.sample_widths.get(compression, 1)
     target_width  = constants.sample_widths.get(target_compression, 1)
     if len(samples) % current_width:
         # ensure samples are a multiple of their width
@@ -117,6 +122,12 @@ def convert_pcm_to_pcm(samples, compression, target_compression,
         else:
             raise ValueError("Can only convert between mono and stereo encodings.")
 
+    # convert sample rate if necessary
+    if sample_rate != target_sample_rate:
+        samples, _ = audioop.ratecv(
+            samples, target_width, constants.channel_counts[encoding],
+            sample_rate, target_sample_rate, None)
+
     if target_compression == constants.COMPRESSION_PCM_8_UNSIGNED:
         # bias by 128 to shift signed back into unsigned
         samples = audioop.bias(samples, 1, 128)
@@ -144,9 +155,10 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
         sample_data = audioop.byteswap(sample_data, sample_width)
 
     if sample_rate > constants.SAMPLE_RATE_VOICE:
-        sample_data, _ = audioop.ratecv(
-            sample_data, sample_width, channel_count,
-            sample_rate, constants.SAMPLE_RATE_VOICE, None)
+        sample_data = convert_pcm_to_pcm(
+            sample_data, compression, compression, encoding, encoding,
+            sample_rate, constants.SAMPLE_RATE_VOICE
+            )
         sample_rate = constants.SAMPLE_RATE_VOICE
 
     # make this a memoryview to make it more efficient(copies of slices

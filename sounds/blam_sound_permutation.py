@@ -4,8 +4,7 @@ import os
 from array import array
 from traceback import format_exc
 
-from reclaimer.sounds import constants
-from reclaimer.sounds import util
+from reclaimer.sounds import constants, ogg, util
 from reclaimer.sounds.adpcm import decode_adpcm_samples
 
 from supyr_struct.defs.audio.wav import wav_def
@@ -45,19 +44,64 @@ class BlamSoundSamples:
     @property
     def encoding(self):
         return self._encoding
+    @property
+    def is_compressed(self):
+        return self.compression not in constants.PCM_FORMATS
 
-    def compress(self, target_compression,
-                 target_sample_rate=None, target_encoding=None):
+    def compress(self, target_compression, target_sample_rate=None,
+                 target_encoding=None, vorbis_bitrate_info=None):
         if target_sample_rate is None:
-            target_encoding = self.sample_rate
+            target_sample_rate = self.sample_rate
 
         if target_encoding is None:
             target_encoding = self.encoding
 
-        if (target_compression == constants.COMPRESSION_OGG and
-            not constants.OGG_VORBIS_AVAILABLE):
+        if vorbis_bitrate_info is None:
+            vorbis_bitrate_info = ogg.VorbisBitrateInfo()
+
+        if self.is_compressed:
+            raise ValueError("Cannot compress already compressed samples.")
+        elif (target_compression == constants.COMPRESSION_OGG and
+              not constants.OGG_VORBIS_AVAILABLE):
             raise NotImplementedError(
                 "Ogg encoder not available. Cannot compress.")
+        elif (target_compression not in constants.PCM_FORMATS and
+              target_compression != constants.COMPRESSION_ADPCM and
+              target_compression != constants.COMPRESSION_OGG):
+              raise ValueError('Unknown compression type "%s"' %
+                               target_compression)
+        elif target_encoding not in (constants.ENCODING_MONO,
+                                     constants.ENCODING_STEREO):
+            raise ValueError("Compression encoding must be mono or stereo.")
+        elif target_sample_rate <= 0:
+            raise ValueError("Sample rate must be greater than zero.")
+
+        sample_data = self.sample_data
+        # make sure the sample data is the correct sample rate
+        # and encoding before we try to compress it
+        if (self.encoding != target_encoding or
+            self.sample_rate != target_sample_rate):
+            sample_data = util.convert_pcm_to_pcm(
+                sample_data,
+                self.compression, self.compression,
+                self.encoding, target_encoding,
+                self.sample_rate, target_sample_rate)
+
+        if target_compression == constants.COMPRESSION_ADPCM:
+            # compress to adpcm
+            pass
+        elif target_compression == constants.COMPRESSION_OGG:
+            # compress to ogg vorbis
+            pass
+        elif target_compression != self.compression:
+            # convert to a different pcm format
+            sample_data = util.convert_pcm_to_pcm(
+                sample_data, self.compression, target_compression)
+
+        self._sample_data = sample_data
+        self._compression = target_compression
+        self._encoding = target_encoding
+        self._sample_rate = target_sample_rate
 
     def get_decompressed(self, target_compression, target_encoding=None):
         if target_encoding is None:
@@ -72,7 +116,7 @@ class BlamSoundSamples:
             sample_data = decode_adpcm_samples(
                 self.sample_data, constants.channel_counts.get(self.encoding, 1))
             curr_compression = constants.ADPCM_DECOMPRESSED_FORMAT
-        elif curr_compression in constants.PCM_FORMATS:
+        elif not self.is_compressed:
             # samples are decompressed. use as-is
             sample_data = self.sample_data
         elif (curr_compression == constants.COMPRESSION_OGG and
@@ -166,7 +210,8 @@ class BlamSoundPermutation:
         self._source_encoding = encoding
         self._processed_samples = []
 
-    def partition_samples(self, compression, sample_rate=None, chunk_size=0):
+    def partition_samples(self, compression, sample_rate=None, chunk_size=0,
+                          vorbis_bitrate_info=None):
         if (compression == constants.COMPRESSION_OGG and
             not constants.OGG_VORBIS_AVAILABLE):
             raise NotImplementedError(
@@ -179,13 +224,6 @@ class BlamSoundPermutation:
             compression, chunk_size, encoding)
 
         sample_data = self.source_sample_data
-        if sample_rate != self.source_sample_rate:
-            # resample to the target sample rate
-            sample_data, _ = audioop.ratecv(
-                sample_data,
-                constants.sample_widths[self.source_encoding],
-                constants.channel_counts[self.source_encoding],
-                self.source_sample_rate, sample_rate, None)
 
         # TODO: Finish this
 
@@ -193,9 +231,11 @@ class BlamSoundPermutation:
         for samples in self.processed_samples:
             samples.generate_mouth_data()
 
-    def compress_samples(self, compression, sample_rate=None, encoding=None):
+    def compress_samples(self, compression, sample_rate=None, encoding=None,
+                         vorbis_bitrate_info=None):
         for samples in self.processed_samples:
-            samples.compress(compression, sample_rate, encoding)
+            samples.compress(compression, sample_rate, encoding,
+                             vorbis_bitrate_info)
 
     def get_concatenated_sample_data(self, target_compression=None,
                                      target_encoding=None):
@@ -428,10 +468,10 @@ class BlamSoundPermutation:
 
         sample_width = None
         encoding = constants.ENCODING_MONO
-        if wav_format.fmt.data == constants.WAV_FORMAT_PCM
+        if wav_format.fmt.data == constants.WAV_FORMAT_PCM:
             sample_width = wav_format.bits_per_sample // 8
 
-        if wav_format.channels == 2
+        if wav_format.channels == 2:
             encoding = constants.ENCODING_STEREO
 
         compression = constants.wav_format_mapping.get(
