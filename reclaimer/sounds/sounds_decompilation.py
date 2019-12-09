@@ -4,8 +4,8 @@ from reclaimer.h2.util import split_raw_pointer
 from reclaimer.sounds import constants
 from reclaimer.sounds import util
 from reclaimer.sounds.blam_sound_bank import BlamSoundBank, BlamSoundPitchRange
-from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation,\
-     BlamSoundSamples
+from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation
+from reclaimer.sounds.blam_sound_samples import BlamSoundSamples
 
 
 __all__ = ("extract_h1_sounds", "extract_h2_sounds", )
