@@ -429,6 +429,7 @@ class JmaAnimation:
             yaw += dyaw
 
     verify_nodes_valid = JmsModel.verify_nodes_valid
+    get_node_depths = JmsModel.get_node_depths
 
     def calculate_animation_flags(self, tolerance=None):
         if tolerance is None:
