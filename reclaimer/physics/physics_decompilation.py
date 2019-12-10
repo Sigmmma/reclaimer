@@ -12,7 +12,8 @@ def extract_physics(tagdata, tag_path="", **kw):
     filepath = ""
     if do_write_jms:
         filepath = os.path.join(
-            kw['out_dir'], os.path.dirname(tag_path), "physics", "physics.jms")
+            str(kw['out_dir']), os.path.dirname(str(tag_path)),
+            "physics", "physics.jms")
         if not kw.get('overwrite', True) and os.path.isfile(filepath):
             return
 

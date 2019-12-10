@@ -15,7 +15,7 @@ def extract_model(tagdata, tag_path="", **kw):
     if do_write_jms:
         jms_models = None
         filepath_base = os.path.join(
-            kw['out_dir'], os.path.dirname(tag_path), "models")
+            str(kw['out_dir']), os.path.dirname(str(tag_path)), "models")
     else:
         jms_models = []
         filepath_base = ""

@@ -58,8 +58,8 @@ def extract_animation(anim_index, tagdata, tag_path="", **kw):
     do_write_jma = kw.get('write_jma', True)
     if do_write_jma:
         filepath = os.path.join(
-            kw['out_dir'], os.path.dirname(tag_path), "animations",
-            anim.name + anim_ext)
+            str(kw['out_dir']), os.path.dirname(str(tag_path)),
+            "animations", anim.name + anim_ext)
         if not kw.get('overwrite', True) and os.path.isfile(filepath):
             return
 
