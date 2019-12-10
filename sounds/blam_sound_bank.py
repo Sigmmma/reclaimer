@@ -18,11 +18,9 @@ class BlamSoundPitchRange:
 
     def partition_samples(
             self, compression=constants.COMPRESSION_PCM_16_LE,
-            sample_rate=None,
-            sample_chunk_size=constants.MAX_SAMPLE_CHUNK_SIZE):
+            sample_rate=None, encoding=None):
         for perm in self.permutations.values():
-            perm.partition_samples(
-                compression, sample_rate, sample_chunk_size)
+            perm.partition_samples(compression, sample_rate, encoding)
 
     def generate_mouth_data(self):
         for perm in self.permutations.values():
@@ -44,8 +42,6 @@ class BlamSoundPitchRange:
         try:
             new_pitch_range = BlamSoundPitchRange()
             new_pitch_range.import_from_directory(directory)
-            if not new_pitch_range.permutations:
-                new_pitch_range = None
         except Exception:
             print(format_exc())
             new_pitch_range = None
@@ -67,16 +63,17 @@ class BlamSoundPitchRange:
         for root, _, files in os.walk(directory):
             # import each sound file to a new sound permutation
             for filename in files:
-                if os.path.splitext(filename)[1].lower() != ".wav":
+                name, ext = os.path.splitext(filename)
+                if ext.lower() != ".wav":
                     # only import wav files
                     continue
 
-                name_key = filename.lower().strip()
+                name_key = name.lower().strip()
                 perm = BlamSoundPermutation.create_from_file(
                     os.path.join(root, filename))
 
-                if perm and (replace_existing or
-                             name_key not in self.permutations):
+                if (perm and perm.source_sample_data) and (
+                    replace_existing or name_key not in self.permutations):
                     self.permutations[name_key] = perm
 
             # only loop over the files
@@ -87,7 +84,6 @@ class BlamSoundBank:
     # processing settings
     encoding = constants.ENCODING_MONO
     compression = constants.COMPRESSION_PCM_16_LE
-    sample_chunk_size = constants.DEF_SAMPLE_CHUNK_SIZE
     sample_rate = constants.SAMPLE_RATE_22K
     split_into_smaller_chunks = True
     split_to_adpcm_blocksize = True
@@ -108,7 +104,7 @@ class BlamSoundBank:
     def partition_samples():
         for pitch_range in self.pitch_ranges.values():
             pitch_range.partition_samples(
-                compression, sample_rate, sample_chunk_size)
+                self.compression, self.sample_rate, self.encoding)
 
     def generate_mouth_data(self):
         for pitch_range in self.pitch_ranges.values():
@@ -129,8 +125,6 @@ class BlamSoundBank:
         try:
             new_sound_bank = BlamSoundBank()
             new_sound_bank.import_from_directory(directory)
-            if not new_sound_bank.pitch_ranges:
-                new_sound_bank = None
         except Exception:
             print(format_exc())
             new_sound_bank = None
@@ -163,15 +157,15 @@ class BlamSoundBank:
 
         # either update the root default pitch ranges with the
         # other, or replace it with the directory one
-        if default_dir_pitch_range:
-            if default_pitch_range:
+        if default_dir_pitch_range and default_dir_pitch_range.permutations:
+            if default_pitch_range and default_pitch_range.permutations:
                 default_pitch_range.permutations.update(
                     default_dir_pitch_range.permutations)
             else:
                 default_pitch_range = default_dir_pitch_range
 
         # merge the default pitch range into this sound bank
-        if default_pitch_range:
+        if default_pitch_range and default_pitch_range.permutations:
             name_key = constants.DEFAULT_PITCH_RANGE_NAME
             if self.pitch_ranges.get(name_key) is None:
                 self.pitch_ranges[name_key] = default_pitch_range
@@ -190,7 +184,7 @@ class BlamSoundBank:
                     os.path.join(root, dirname))
 
                 # merge the pitch range into this sound bank
-                if pitch_range is not None:
+                if pitch_range and pitch_range.permutations:
                     if self.pitch_ranges.get(name_key) is None:
                         self.pitch_ranges[name_key] = pitch_range
                     elif merge_same_names:

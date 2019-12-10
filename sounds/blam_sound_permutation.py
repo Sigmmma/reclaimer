@@ -66,22 +66,80 @@ class BlamSoundPermutation:
         self._source_encoding = encoding
         self._processed_samples = []
 
-    def partition_samples(self, compression, sample_rate=None, chunk_size=0,
-                          vorbis_bitrate_info=None):
-        if (compression == constants.COMPRESSION_OGG and
-            not constants.OGG_VORBIS_AVAILABLE):
+    def partition_samples(self, target_compression=None,
+                          target_sample_rate=None,
+                          target_encoding=None, vorbis_bitrate_info=None):
+        if target_compression is None:
+            target_compression = self.source_compression
+
+        if target_sample_rate is None:
+            target_sample_rate = self.source_sample_rate
+
+        if target_encoding is None:
+            target_encoding = self.source_encoding
+
+        if self.source_compression == constants.COMPRESSION_OGG:
             raise NotImplementedError(
-                "Ogg encoder not available. Cannot partition.")
+                "Cannot partition Ogg Vorbis samples.")
+        elif (target_compression not in constants.PCM_FORMATS and
+              target_compression != constants.COMPRESSION_ADPCM and
+              target_compression != constants.COMPRESSION_OGG):
+            raise ValueError('Unknown compression type "%s"' % compression)
+        elif target_encoding not in (constants.ENCODING_MONO,
+                                     constants.ENCODING_STEREO):
+            raise ValueError("Compression encoding must be mono or stereo.")
+        elif target_sample_rate <= 0:
+            raise ValueError("Sample rate must be greater than zero.")
 
-        if sample_rate is None:
-            sample_rate = self.source_sample_rate
+        source_sample_data = self.source_sample_data
 
-        chunk_size = util.calculate_sample_chunk_size(
-            compression, chunk_size, encoding)
+        target_chunk_size = util.get_sample_chunk_size(
+            target_compression, target_encoding)
+        if (self.source_compression == target_compression and
+            self.source_sample_rate == target_sample_rate and
+            self.source_encoding == target_encoding and
+            (self.source_compression in constants.PCM_FORMATS or
+             self.source_compression == constants.COMPRESSION_ADPCM)):
+            # compressing to same settings and can split at target_chunk_size
+            # because format has fixed compression ratio. recompression not
+            # necessary. Just split source into pieces at target_chunk_size.
 
-        sample_data = self.source_sample_data
+            source_chunk_size = target_chunk_size
+        else:
+            # decompress samples so we can partition to a
+            # different compression/encoding/sample rate
+            decompressor = BlamSoundSamples(
+                source_sample_data, 0, source_compression,
+                self.source_sample_rate, self.source_encoding
+                )
+            source_sample_data = decompressor.get_decompressed(
+                constants.DEFAULT_UNCOMPRESSED_FORMAT,
+                target_sample_rate, target_encoding)
+            source_compression = decompressor.compression
+            source_blocksize = util.get_block_size(
+                source_compression, source_encoding)
 
-        # TODO: Finish this
+            if target_compression == constants.COMPRESSION_OGG:
+                # partition for ogg vorbis
+                pass
+            elif target_compression == constants.COMPRESSION_ADPCM:
+                # partition for adpcm
+                pass
+            else:
+                # partition for pcm
+                pass
+
+        self._processed_samples = []
+        for i in range(0, len(source_sample_data), source_chunk_size):
+            chunk = source_sample_data[i: i + source_chunk_size]
+            sample_count = util.calculate_sample_count(
+                chunk, source_compression, source_encoding)
+
+            self.processed_samples.append(
+                BlamSoundSamples(
+                    chunk, sample_count, source_compression,
+                    source_sample_rate, source_encoding)
+                )
 
     def generate_mouth_data(self):
         for samples in self.processed_samples:
@@ -148,9 +206,8 @@ class BlamSoundPermutation:
             new_perm.import_from_file(filepath)
         except Exception:
             print(format_exc())
-
-        if not new_perm.source_sample_data:
             new_perm = None
+
         return new_perm
 
     def export_to_file(self, filepath_base, overwrite=False,
@@ -262,7 +319,7 @@ class BlamSoundPermutation:
 
             wav_file.serialize(temp=False, backup=False)
 
-            #continue
+            continue
             orig_mouth_data = self.get_concatenated_mouth_data()
             if orig_mouth_data:
                 # multiply by 4 so audacity can import it at 120Hz

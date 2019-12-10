@@ -49,20 +49,24 @@ class BlamSoundSamples:
         if target_encoding is None:
             target_encoding = self.encoding
 
+        if (target_compression == self.compression and
+            target_sample_rate == self.sample_rate and
+            target_encoding == self.encoding):
+            # compressing to same settings. nothing to do.
+            return
+
         if vorbis_bitrate_info is None:
             vorbis_bitrate_info = ogg.VorbisBitrateInfo()
 
-        if self.is_compressed:
-            raise ValueError("Cannot compress already compressed samples.")
-        elif (target_compression == constants.COMPRESSION_OGG and
+        if (target_compression == constants.COMPRESSION_OGG and
               not constants.OGG_VORBIS_AVAILABLE):
             raise NotImplementedError(
                 "Ogg encoder not available. Cannot compress.")
         elif (target_compression not in constants.PCM_FORMATS and
               target_compression != constants.COMPRESSION_ADPCM and
               target_compression != constants.COMPRESSION_OGG):
-              raise ValueError('Unknown compression type "%s"' %
-                               target_compression)
+            raise ValueError('Unknown compression type "%s"' %
+                             target_compression)
         elif target_encoding not in (constants.ENCODING_MONO,
                                      constants.ENCODING_STEREO):
             raise ValueError("Compression encoding must be mono or stereo.")
@@ -70,6 +74,16 @@ class BlamSoundSamples:
             raise ValueError("Sample rate must be greater than zero.")
 
         sample_data = self.sample_data
+        compression = self.compression
+        if self.is_compressed:
+            # decompress samples so we can recompress(ugh, whatever, i don't care)
+            compression = (
+                ADPCM_DECOMPRESSED_FORMAT if
+                compression == constants.COMPRESSION_ADPCM
+                else constants.HIGHEST_FIDELITY_FORMAT)
+            sample_data = self.get_decompressed(
+                compression, self.sample_rate, self.encoding)
+
         # make sure the sample data is the correct sample rate
         # and encoding before we try to compress it
         if (self.encoding != target_encoding or
