@@ -82,10 +82,10 @@ class BlamSoundSamples:
 
         if target_compression == constants.COMPRESSION_ADPCM:
             # compress to adpcm
-            pass
+            raise NotImplementedError("Whoops, adpcm is not implemented.")
         elif target_compression == constants.COMPRESSION_OGG:
             # compress to ogg vorbis
-            pass
+            raise NotImplementedError("Whoops, ogg is not implemented.")
         elif target_compression != self.compression:
             # convert to a different pcm format
             sample_data = util.convert_pcm_to_pcm(
