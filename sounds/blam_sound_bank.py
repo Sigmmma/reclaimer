@@ -125,9 +125,9 @@ class BlamSoundBank:
             pitch_range.regenerate_source()
 
     @staticmethod
-    def create_from_directory(directory, *args, **kwargs):
+    def create_from_directory(directory):
         try:
-            new_sound_bank = BlamSoundBank(*args, **kwargs)
+            new_sound_bank = BlamSoundBank()
             new_sound_bank.import_from_directory(directory)
             if not new_sound_bank.pitch_ranges:
                 new_sound_bank = None
