@@ -7,23 +7,44 @@ from reclaimer.sounds import constants
 BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]{1, }')
 
 
-def calculate_sample_chunk_size(compression, chunk_size, encoding):
+def get_sample_chunk_size(compression, encoding):
+    if compression == constants.COMPRESSION_OGG:
+        return constants.MAX_OGG_DECOMP_BUFFER_SIZE
+
     if compression == constants.COMPRESSION_ADPCM:
-        block_size = ADPCM_COMPRESSED_BLOCKSIZE
-        if encoding == constants.ENCODING_STEREO:
-            block_size *= 2
-
-        chunk_size = min(max(chunk_size, block_size),
-                         constants.MAX_SAMPLE_CHUNK_SIZE)
-        chunk_size -= chunk_size % block_size
-
-    elif chunk_size <= 0:
-        chunk_size = constants.DEF_SAMPLE_CHUNK_SIZE
-
-    elif chunk_size > constants.MAX_SAMPLE_CHUNK_SIZE:
+        chunk_size = constants.ADPCM_SAMPLE_CHUNK_SIZE
+    else:
         chunk_size = constants.MAX_SAMPLE_CHUNK_SIZE
 
-    return chunk_size
+    return chunk_size - (
+        chunk_size % get_block_size(compression, encoding))
+
+
+def get_block_size(compression, encoding):
+    if compression == constants.COMPRESSION_OGG:
+        return 1
+
+    if compression == constants.COMPRESSION_ADPCM:
+        block_size = constants.ADPCM_COMPRESSED_BLOCKSIZE
+    else:
+        block_size = constants.sample_widths[compression]
+
+    return block_size * constants.channel_counts.get(encoding, 1)
+
+
+def get_sample_count(sample_data, compression, encoding):
+    if compression == constants.COMPRESSION_OGG:
+        raise NotImplementedError(
+            "Cannot yet calculate ogg sample count")
+
+    block_size = get_block_size(compression, encoding)
+    chunk_count = len(sample_data) // block_size
+
+    if compression == constants.COMPRESSION_ADPCM:
+        chunk_count *= constants.ADPCM_DECOMPRESSED_BLOCKSIZE // (
+            constants.sample_widths[constants.ADPCM_DECOMPRESSED_FORMAT])
+
+    return chunk_count
 
 
 def byteswap_pcm16_sample_data(samples):

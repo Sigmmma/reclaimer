@@ -103,6 +103,7 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                     print("Unknown audio compression type:", perm.compression.data)
                     continue
 
+                sample_count = sample_count // channels
                 blam_permutation.processed_samples.append(
                     BlamSoundSamples(
                         sample_data, sample_count, compression,
