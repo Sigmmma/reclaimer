@@ -5,6 +5,12 @@ try:
     OGG_VORBIS_AVAILABLE = True
 except ImportError:
     OGG_VORBIS_AVAILABLE = False
+
+try:
+    from reclaimer.sounds.ext import wma_ext
+    WMA_AVAILABLE = True
+except ImportError:
+    WMA_AVAILABLE = False
     
 
 DEFAULT_PITCH_RANGE_NAME = "default"

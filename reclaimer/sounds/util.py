@@ -7,14 +7,17 @@ from reclaimer.sounds import constants
 BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]{1, }')
 
 
-def get_sample_chunk_size(compression, encoding):
+def get_sample_chunk_size(compression, encoding,
+                          max_chunk_size=constants.MAX_SAMPLE_CHUNK_SIZE):
     if compression == constants.COMPRESSION_OGG:
         return constants.MAX_OGG_DECOMP_BUFFER_SIZE
 
     if compression == constants.COMPRESSION_ADPCM:
         chunk_size = constants.ADPCM_SAMPLE_CHUNK_SIZE
     else:
-        chunk_size = constants.MAX_SAMPLE_CHUNK_SIZE
+        chunk_size = max_chunk_size
+
+    chunk_size = min(chunk_size, constants.MAX_SAMPLE_CHUNK_SIZE)
 
     return chunk_size - (
         chunk_size % get_block_size(compression, encoding))
@@ -28,8 +31,13 @@ def get_block_size(compression, encoding):
         block_size = constants.ADPCM_COMPRESSED_BLOCKSIZE
     else:
         block_size = constants.sample_widths[compression]
-
     return block_size * constants.channel_counts.get(encoding, 1)
+
+
+def get_samples_per_block(compression):
+    if compression == constants.COMPRESSION_ADPCM:
+        return constants.ADPCM_DECOMPRESSED_BLOCKSIZE // 2
+    return 1
 
 
 def get_sample_count(sample_data, compression, encoding):
@@ -41,8 +49,7 @@ def get_sample_count(sample_data, compression, encoding):
     chunk_count = len(sample_data) // block_size
 
     if compression == constants.COMPRESSION_ADPCM:
-        chunk_count *= constants.ADPCM_DECOMPRESSED_BLOCKSIZE // (
-            constants.sample_widths[constants.ADPCM_DECOMPRESSED_FORMAT])
+        chunk_count *= constants.ADPCM_DECOMPRESSED_BLOCKSIZE // 2
 
     return chunk_count
 
@@ -142,12 +149,14 @@ def convert_pcm_to_pcm(samples, compression, target_compression,
             samples = audioop.tomono(samples, target_width, 0.5, 0.5)
         else:
             raise ValueError("Can only convert between mono and stereo encodings.")
+        encoding = target_encoding
 
     # convert sample rate if necessary
     if sample_rate != target_sample_rate:
         samples, _ = audioop.ratecv(
             samples, target_width, constants.channel_counts[encoding],
             sample_rate, target_sample_rate, None)
+        sample_rate = target_sample_rate
 
     if target_compression == constants.COMPRESSION_PCM_8_UNSIGNED:
         # bias by 128 to shift signed back into unsigned
@@ -164,6 +173,9 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
     assert compression in constants.PCM_FORMATS
     assert encoding in constants.channel_counts
     assert sample_rate > 0
+
+    # TODO: Finish making this function generate data
+    #       identical to that which tool.exe outputs.
 
     sample_width = constants.sample_widths[compression]
     channel_count = constants.channel_counts[encoding]

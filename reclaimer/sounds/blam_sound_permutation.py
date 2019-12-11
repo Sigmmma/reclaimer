@@ -67,8 +67,8 @@ class BlamSoundPermutation:
         self._processed_samples = []
 
     def partition_samples(self, target_compression=None,
-                          target_sample_rate=None,
-                          target_encoding=None, vorbis_bitrate_info=None):
+                          target_sample_rate=None, target_encoding=None,
+                          vorbis_bitrate_info=None):
         if target_compression is None:
             target_compression = self.source_compression
 
@@ -91,15 +91,18 @@ class BlamSoundPermutation:
         elif target_sample_rate <= 0:
             raise ValueError("Sample rate must be greater than zero.")
 
+        source_compression = self.source_compression
+        source_sample_rate = self.source_sample_rate
+        source_encoding = self.source_encoding
         source_sample_data = self.source_sample_data
 
         target_chunk_size = util.get_sample_chunk_size(
             target_compression, target_encoding)
-        if (self.source_compression == target_compression and
-            self.source_sample_rate == target_sample_rate and
-            self.source_encoding == target_encoding and
-            (self.source_compression in constants.PCM_FORMATS or
-             self.source_compression == constants.COMPRESSION_ADPCM)):
+        if (source_compression == target_compression and
+            source_sample_rate == target_sample_rate and
+            source_encoding == target_encoding and
+            (source_compression in constants.PCM_FORMATS or
+             source_compression == constants.COMPRESSION_ADPCM)):
             # compressing to same settings and can split at target_chunk_size
             # because format has fixed compression ratio. recompression not
             # necessary. Just split source into pieces at target_chunk_size.
@@ -108,35 +111,38 @@ class BlamSoundPermutation:
         else:
             # decompress samples so we can partition to a
             # different compression/encoding/sample rate
-            decompressor = BlamSoundSamples(
+            decompressor = blam_sound_samples.BlamSoundSamples(
                 source_sample_data, 0, source_compression,
-                self.source_sample_rate, self.source_encoding
+                source_sample_rate, source_encoding
                 )
+            source_compression = constants.DEFAULT_UNCOMPRESSED_FORMAT
+            source_sample_rate = target_sample_rate
+            source_encoding = target_encoding
             source_sample_data = decompressor.get_decompressed(
-                constants.DEFAULT_UNCOMPRESSED_FORMAT,
-                target_sample_rate, target_encoding)
-            source_compression = decompressor.compression
-            source_blocksize = util.get_block_size(
+                source_compression, source_sample_rate, source_encoding)
+
+            source_bytes_per_sample = util.get_block_size(
                 source_compression, source_encoding)
 
-            if target_compression == constants.COMPRESSION_OGG:
-                # partition for ogg vorbis
-                pass
-            elif target_compression == constants.COMPRESSION_ADPCM:
-                # partition for adpcm
-                pass
-            else:
-                # partition for pcm
-                pass
+            target_blocksize = util.get_block_size(
+                target_compression, target_encoding)
+            target_samples_per_block = util.get_samples_per_block(
+                target_compression)
+
+            target_blocks_per_chunk = target_chunk_size // target_blocksize
+            target_samples_per_chunk = (target_samples_per_block *
+                                        target_blocks_per_chunk)
+            source_chunk_size = (source_bytes_per_sample *
+                                 target_samples_per_chunk)
 
         self._processed_samples = []
         for i in range(0, len(source_sample_data), source_chunk_size):
             chunk = source_sample_data[i: i + source_chunk_size]
-            sample_count = util.calculate_sample_count(
+            sample_count = util.get_sample_count(
                 chunk, source_compression, source_encoding)
 
             self.processed_samples.append(
-                BlamSoundSamples(
+                blam_sound_samples.BlamSoundSamples(
                     chunk, sample_count, source_compression,
                     source_sample_rate, source_encoding)
                 )
@@ -147,6 +153,8 @@ class BlamSoundPermutation:
 
     def compress_samples(self, compression, sample_rate=None, encoding=None,
                          vorbis_bitrate_info=None):
+        self.partition_samples(
+            compression, sample_rate, encoding, vorbis_bitrate_info)
         for samples in self.processed_samples:
             samples.compress(compression, sample_rate, encoding,
                              vorbis_bitrate_info)
