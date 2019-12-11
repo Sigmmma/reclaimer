@@ -157,13 +157,13 @@ class BlamSoundSamples:
         return sample_data
 
     def generate_mouth_data(self):
-        # decompress to constants.ADPCM_DECOMPRESSED_FORMAT
+        # decompress to constants.DEFAULT_UNCOMPRESSED_FORMAT
         # as it is guaranteed to be a decompressed PCM format,
         # is guaranteed to be the correct system endianness,
         # and is high enough fidelity to generate mouth_data.
         sample_data = self.get_decompressed(
-            constants.ADPCM_DECOMPRESSED_FORMAT, self.encoding)
+            constants.DEFAULT_UNCOMPRESSED_FORMAT, self.encoding)
 
         self._mouth_data = util.generate_mouth_data(
-            sample_data, constants.ADPCM_DECOMPRESSED_FORMAT,
+            sample_data, constants.DEFAULT_UNCOMPRESSED_FORMAT,
             self.sample_rate, self.encoding)
