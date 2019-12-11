@@ -96,9 +96,11 @@ class BlamSoundSamples:
 
         if target_compression == constants.COMPRESSION_ADPCM:
             # compress to adpcm
+            # TODO: Finish this
             raise NotImplementedError("Whoops, adpcm is not implemented.")
         elif target_compression == constants.COMPRESSION_OGG:
             # compress to ogg vorbis
+            # TODO: Finish this
             raise NotImplementedError("Whoops, ogg is not implemented.")
         elif target_compression != self.compression:
             # convert to a different pcm format
@@ -110,12 +112,17 @@ class BlamSoundSamples:
         self._encoding = target_encoding
         self._sample_rate = target_sample_rate
 
-    def get_decompressed(self, target_compression, target_encoding=None):
+    def get_decompressed(self, target_compression, target_sample_rate=None,
+                         target_encoding=None):
         if target_encoding is None:
             target_encoding = self.encoding
 
+        if target_sample_rate is None:
+            target_sample_rate = self.sample_rate
+
         assert target_compression in constants.PCM_FORMATS
         assert target_encoding in constants.channel_counts
+        assert target_sample_rate > 0
 
         curr_compression = self.compression
         if curr_compression == constants.COMPRESSION_ADPCM:
@@ -126,21 +133,26 @@ class BlamSoundSamples:
         elif not self.is_compressed:
             # samples are decompressed. use as-is
             sample_data = self.sample_data
-        elif (curr_compression == constants.COMPRESSION_OGG and
-              not constants.OGG_VORBIS_AVAILABLE):
-            raise NotImplementedError(
-                "Ogg decoder not available. Cannot decompress.")
+        elif curr_compression == constants.COMPRESSION_OGG:
+            if not constants.OGG_VORBIS_AVAILABLE:
+                raise NotImplementedError(
+                    "Ogg decoder not available. Cannot decompress.")
+            # TODO: Finish this
         elif curr_compression == constants.COMPRESSION_WMA:
-            raise NotImplementedError(
-                "Wma decoder not available. Cannot decompress.")
+            if not constants.WMA_AVAILABLE:
+                raise NotImplementedError(
+                    "Wma decoder not available. Cannot decompress.")
+            # TODO: Finish this
         else:
             raise ValueError("Unknown compression format.")
 
         if (curr_compression != target_compression or
-            self.encoding != target_encoding):
+            self.encoding != target_encoding or
+            self.sample_rate != target_sample_rate):
             sample_data = util.convert_pcm_to_pcm(
                 sample_data, curr_compression, target_compression,
-                self.encoding, target_encoding)
+                self.encoding, target_encoding,
+                self.sample_rate, target_sample_rate)
 
         return sample_data
 
