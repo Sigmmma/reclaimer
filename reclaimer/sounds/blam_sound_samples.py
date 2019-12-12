@@ -162,7 +162,8 @@ class BlamSoundSamples:
         # is guaranteed to be the correct system endianness,
         # and is high enough fidelity to generate mouth_data.
         sample_data = self.get_decompressed(
-            constants.DEFAULT_UNCOMPRESSED_FORMAT, self.encoding)
+            constants.DEFAULT_UNCOMPRESSED_FORMAT,
+            self.sample_rate, self.encoding)
 
         self._mouth_data = util.generate_mouth_data(
             sample_data, constants.DEFAULT_UNCOMPRESSED_FORMAT,
