@@ -7,17 +7,13 @@ from reclaimer.sounds import constants
 BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]{1, }')
 
 
-def get_sample_chunk_size(compression, encoding,
-                          max_chunk_size=constants.MAX_SAMPLE_CHUNK_SIZE):
-    if compression == constants.COMPRESSION_OGG:
-        return constants.MAX_OGG_DECOMP_BUFFER_SIZE
+def get_sample_chunk_size(compression, encoding, small_chunks=False):
+    chunk_size = (constants.DEF_SAMPLE_CHUNK_SIZE
+                  if small_chunks
+                  else constants.MAX_SAMPLE_CHUNK_SIZE)
 
     if compression == constants.COMPRESSION_ADPCM:
-        chunk_size = constants.ADPCM_SAMPLE_CHUNK_SIZE
-    else:
-        chunk_size = max_chunk_size
-
-    chunk_size = min(chunk_size, constants.MAX_SAMPLE_CHUNK_SIZE)
+        chunk_size = (chunk_size // 128) * 36
 
     return chunk_size - (
         chunk_size % get_block_size(compression, encoding))

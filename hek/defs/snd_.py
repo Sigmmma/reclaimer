@@ -62,8 +62,10 @@ permutation = Struct('permutation',
     FlSInt32("unknown0", VISIBLE=False),
     FlUInt32("unknown1", VISIBLE=False),  # always zero?
     FlUInt32("unknown2", VISIBLE=False),
-    # this is actually the required decompression buffer length in bytes
-    # needed to decompress this ogg sound(ogg_decompression_buffer_length)
+    # this is actually the required length of the ogg
+    # decompression buffer. For "none" compression, this
+    # mirrors samples.size, so a more appropriate name
+    # for this field should be pcm_buffer_size
     FlUInt32("ogg_sample_count", EDITABLE=False),
     FlUInt32("unknown3", VISIBLE=False),  # seems to always be == unknown2
     rawdata_ref("samples", max_size=4194304, widget=SoundSampleFrame),
