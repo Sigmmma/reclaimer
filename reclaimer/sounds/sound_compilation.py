@@ -26,12 +26,12 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
         if channel_count != blam_channel_count:
             errors.append('Cannot add %s channel sounds to %s channel tag.' %
                           (blam_channel_count, sample_rate))
-            
+
         if blam_sound_perm.compression not in (constants.COMPRESSION_PCM_16_LE,
                                                constants.COMPRESSION_PCM_16_BE,
                                                constants.COMPRESSION_ADPCM,
                                                constants.COMPRESSION_OGG):
-            errors.append('Unknown compression "%s"' %
+            errors.append('Unknown permutation compression "%s"' %
                           blam_sound_perm.compression)
 
         for blam_samples in blam_sound_perm.processed_samples:
@@ -189,7 +189,7 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
             errors.append(traceback.format_exc())
             errors.append("Could not compile pitch range '%s'" % blam_pr_name)
             snd__pitch_ranges_by_name.pop(name)
-    
+
 
     if update_mode != constants.SOUND_COMPILE_MODE_NEW:
         # preserve any old tag values and/or permutations
@@ -264,7 +264,7 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
         pitch_range = snd__pitch_ranges_by_name[snd__pr_name]
         if not pitch_range.permutations.STEPTREE:
             continue
-        
+
         if len(snd__pitch_ranges) < snd__pitch_ranges.MAX or ignore_size_limits:
             snd__pitch_ranges.append(pitch_range)
         else:

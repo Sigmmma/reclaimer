@@ -1,6 +1,8 @@
 import array
 import audioop
 import re
+import struct
+import sys
 
 from reclaimer.sounds import constants
 
@@ -162,6 +164,19 @@ def convert_pcm_to_pcm(samples, compression, target_compression,
         samples = audioop.byteswap(samples, target_width)
 
     return samples
+
+
+def convert_pcm_float32_to_pcm_32(sample_data):
+    samples = array.array('f', sample_data)
+    if sys.byteorder == "big":
+        samples.byteswap()
+
+    samples = [-0x7fFFffFF if val <= -1.0 else
+               (0x7fFFffFF if val >=  1.0 else
+                int(val * 0x7fFFffFF))
+               for val in samples]
+
+    return struct.pack("<%di" % len(samples), *samples)
 
 
 def generate_mouth_data(sample_data, compression, sample_rate, encoding):
