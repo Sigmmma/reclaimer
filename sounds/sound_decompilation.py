@@ -55,6 +55,10 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
         if not perm_indices:
             perm_indices = set(unchecked_perms)
 
+        natural_pitch = pr.natural_pitch
+        if natural_pitch <= 0:
+            natural_pitch = 1.0
+
         while perm_indices:
             # loop over all of the actual permutation indices and combine
             # the permutations they point to into a list with a shared name.
@@ -107,7 +111,8 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                 blam_permutation.processed_samples.append(
                     BlamSoundSamples(
                         sample_data, sample_count, compression,
-                        sample_rate, encoding, perm.mouth_data.data)
+                        int(round(sample_rate * natural_pitch)),
+                        encoding, perm.mouth_data.data)
                     )
 
     if do_write_wav:
@@ -124,6 +129,8 @@ def get_sound_name(import_names, index):
 
 
 def extract_h2_sounds(tagdata, tag_path, **kw):
+    # TODO: Make this multiply the sample rate by the natural pitch
+
     halo_map = kw.get('halo_map')
     if not halo_map:
         print("Cannot run this function on tags.")

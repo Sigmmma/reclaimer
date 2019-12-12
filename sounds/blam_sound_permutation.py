@@ -161,18 +161,26 @@ class BlamSoundPermutation:
                              vorbis_bitrate_info)
 
     def get_concatenated_sample_data(self, target_compression=None,
+                                     target_sample_rate=None,
                                      target_encoding=None):
         if target_compression is None:
             target_compression = self.source_compression
+
+        if target_sample_rate is None:
+            target_sample_rate = self.source_sample_rate
+
         if target_encoding is None:
             target_encoding = self.source_encoding
 
         assert target_encoding in constants.channel_counts
 
-        if target_compression != self.compression or target_encoding != self.encoding:
+        if (target_compression != self.compression or
+            target_sample_rate != self.sample_rate or
+            target_encoding != self.encoding):
             # decompress processed samples to the target compression
             sample_data = b''.join(
-                p.get_decompressed(target_compression, target_encoding)
+                p.get_decompressed(
+                    target_compression, target_sample_rate, target_encoding)
                 for p in self.processed_samples)
         else:
             # join samples without decompressing
@@ -203,7 +211,8 @@ class BlamSoundPermutation:
         # because, technically speaking, that is highest sample depth
         # we can ever possibly see in Halo CE.
         self._source_sample_data = self.get_concatenated_sample_data(
-            constants.DEFAULT_UNCOMPRESSED_FORMAT, self.encoding)
+            constants.DEFAULT_UNCOMPRESSED_FORMAT,
+            self.sample_rate, self.encoding)
         self._source_compression = constants.DEFAULT_UNCOMPRESSED_FORMAT
         self._source_sample_rate = self.sample_rate
         self._source_encoding = self.encoding
@@ -236,10 +245,9 @@ class BlamSoundPermutation:
             compression = self.compression
             if decompress or compression == constants.COMPRESSION_OGG:
                 compression = constants.COMPRESSION_PCM_16_LE
-
             try:
                 sample_data = self.get_concatenated_sample_data(
-                    compression, encoding)
+                    compression, sample_rate, encoding)
                 if sample_data:
                     perm_chunks.append((compression, self.encoding, sample_data))
             except Exception:
@@ -292,7 +300,11 @@ class BlamSoundPermutation:
 
             wav_file.filepath = filepath
 
-            wav_fmt = wav_file.data.format
+            wav_fmt = wav_file.data.wav_format
+            wav_chunks = wav_file.data.wav_chunks
+            wav_chunks.append(case="data")
+            data_chunk = wav_chunks[-1]
+
             wav_fmt.fmt.data = constants.WAV_FORMAT_PCM
             wav_fmt.channels = constants.channel_counts.get(encoding, 1)
             wav_fmt.sample_rate = sample_rate
@@ -322,8 +334,7 @@ class BlamSoundPermutation:
                 print("Unknown compression method:", compression)
                 continue
 
-            wav_file.data.wav_data.audio_data = sample_data
-            wav_file.data.wav_data.audio_data_size = samples_len
+            data_chunk.data = sample_data
             wav_file.data.wav_header.filesize = 36 + samples_len
 
             wav_file.serialize(temp=False, backup=False)
@@ -352,8 +363,14 @@ class BlamSoundPermutation:
 
         wav_file = wav_def.build(filepath=filepath)
         wav_header = wav_file.data.wav_header
-        wav_format = wav_file.data.format
-        wav_data = wav_file.data.wav_data
+        wav_format = wav_file.data.wav_format
+        wav_chunks = wav_file.data.wav_chunks
+        data_chunk = None
+        for chunk in wav_chunks:
+            if chunk.sig.enum_name == "data":
+                data_chunk = chunk
+                break
+
         if wav_header.riff_sig != wav_header.get_desc("DEFAULT", "riff_sig"):
             raise ValueError(
                 "RIFF signature is invalid. Not a valid wav file.")
@@ -363,6 +380,8 @@ class BlamSoundPermutation:
         elif wav_format.sig != wav_format.get_desc("DEFAULT", "sig"):
             raise ValueError(
                 "Format signature is invalid. Not a valid wav file.")
+        elif data_chunk is None:
+            raise ValueError("Data chunk not present. Not a valid wav file.")
         elif wav_format.fmt.data not in constants.ALLOWED_WAV_FORMATS:
             raise ValueError(
                 'Invalid compression format "%s".' % wav_format.fmt.data)
@@ -373,32 +392,42 @@ class BlamSoundPermutation:
         elif wav_format.sample_rate == 0:
             raise ValueError(
                 "Sample rate cannot be zero. Not a valid wav file")
+        elif (wav_format.fmt.data == constants.WAV_FORMAT_PCM_FLOAT and
+              wav_format.bits_per_sample != 32):
+            raise ValueError(
+                "Pcm float sample width must be 32, not %s." %
+                wav_format.bits_per_sample)
         elif (wav_format.fmt.data == constants.WAV_FORMAT_PCM and
               wav_format.bits_per_sample not in (8, 16, 24, 32)):
             raise ValueError(
                 "Pcm sample width must be 8, 16, 24, or 32, not %s." %
                 wav_format.bits_per_sample)
 
-        if wav_data.audio_data_size != len(wav_data.audio_data):
+        if data_chunk.data_size != len(data_chunk.data):
             print("Audio sample data length does not match available data "
                   "length. Sample data may be truncated.")
 
-        if wav_format.block_align and (len(wav_data.audio_data) %
+        if wav_format.block_align and (len(data_chunk.data) %
                                        wav_format.block_align):
             print("Audio sample data length not a multiple of block_align. "
                   "Sample data may be truncated.")
 
-        sample_width = None
-        encoding = constants.ENCODING_MONO
-        if wav_format.fmt.data == constants.WAV_FORMAT_PCM:
-            sample_width = wav_format.bits_per_sample // 8
-
         if wav_format.channels == 2:
             encoding = constants.ENCODING_STEREO
+        else:
+            encoding = constants.ENCODING_MONO
 
-        compression = constants.wav_format_mapping.get(
-            (wav_format.fmt.data, sample_width))
+        sample_data = data_chunk.data
+        if wav_format.fmt.data == constants.WAV_FORMAT_PCM_FLOAT:
+            sample_data = util.convert_pcm_float32_to_pcm_32(sample_data)
+            compression = constants.COMPRESSION_PCM_32_LE
+        else:
+            sample_width = None
+            if wav_format.fmt.data == constants.WAV_FORMAT_PCM:
+                sample_width = wav_format.bits_per_sample // 8
+
+            compression = constants.wav_format_mapping.get(
+                (wav_format.fmt.data, sample_width))
 
         self.load_source_samples(
-            wav_data.audio_data, compression,
-            wav_format.sample_rate, encoding)
+            sample_data, compression, wav_format.sample_rate, encoding)
