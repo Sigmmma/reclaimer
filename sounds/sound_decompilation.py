@@ -55,9 +55,9 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
         if not perm_indices:
             perm_indices = set(unchecked_perms)
 
-        natural_pitch = pr.natural_pitch
-        if natural_pitch <= 0:
-            natural_pitch = 1.0
+        playback_speed = 1.0
+        if pr.natural_pitch > 0:
+            playback_speed = 1 / pr.natural_pitch
 
         while perm_indices:
             # loop over all of the actual permutation indices and combine
