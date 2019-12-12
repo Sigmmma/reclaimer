@@ -30,6 +30,9 @@ INDEX_TABLE = (
     -1, -1, -1, -1, 2, 4, 6, 8
     )
 
+NIBBLE_SWAP_MAPPING = tuple(((val&15)<<4) | (val>>4) for val in range(256))
+
+
 def get_adpcm_encoded_blocksize(diff_sample_count):
     return 4 + (diff_sample_count + 1) // 2
 
@@ -60,12 +63,43 @@ def _semi_fast_decode_mono_adpcm_samples(
 
     pcm_i = 0
     unpacker = PyStruct("<hh").unpack_from
+    step_samples = memoryview(samples)
     for i in range(0, len(samples), encoded_blocksize):
         # why couldn't it be nice and just follow the same
         # step packing pattern where the first step is the
         # first 4 bits and the second is the last 4 bits.
-        steps = bytes(((b<<4) + (b>>4))&0xFF for b in
-                      samples[i + state_size: i + encoded_blocksize])
+        steps = bytes(map(NIBBLE_SWAP_MAPPING.__getitem__,
+                          step_samples[i + state_size: i + encoded_blocksize]))
+        out_data[pcm_i: pcm_i + decoded_blocksize] = (
+            adpcm2lin(steps, 2, unpacker(samples, i))[0]
+            )
+
+        pcm_i += decoded_blocksize
+
+    return bytes(out_data)
+
+
+def semi_fast_decode_adpcm_samples(
+        samples, channel_ct, diff_sample_count=XBOX_ADPCM_DIFF_SAMPLE_COUNT):
+    adpcm2lin = audioop.adpcm2lin
+    state_size = 4
+
+    encoded_blocksize = get_adpcm_encoded_blocksize(diff_sample_count)
+    decoded_blocksize = get_adpcm_decoded_blocksize(diff_sample_count)
+
+    block_ct = len(samples) // encoded_blocksize
+    out_data = bytearray(block_ct * decoded_blocksize)
+
+    pcm_i = 0
+    unpacker = PyStruct("<hh").unpack_from
+    step_samples = memoryview(samples)
+    for i in range(0, len(samples), encoded_blocksize):
+        # why couldn't it be nice and just follow the same
+        # step packing pattern where the first step is the
+        # first 4 bits and the second is the last 4 bits.
+        steps = bytes(map(
+            NIBBLE_SWAP_MAPPING.__getitem__,
+            step_samples[i + state_size: i + encoded_blocksize]))
         out_data[pcm_i: pcm_i + decoded_blocksize] = (
             adpcm2lin(steps, 2, unpacker(samples, i))[0]
             )
@@ -118,7 +152,7 @@ def decode_adpcm_samples(
                 predictor -= pcm_mask
 
             for j in range(i, i + code_skip_size, skip_size):
-                codes = (in_data[j + 1] << 16) + in_data[j]
+                codes = (in_data[j + 1] << 16) | in_data[j]
 
                 for shift in code_shifts:
                     if   index > 88: index = 88
