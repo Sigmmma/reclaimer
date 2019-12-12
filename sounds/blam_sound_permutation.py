@@ -68,7 +68,7 @@ class BlamSoundPermutation:
 
     def partition_samples(self, target_compression=None,
                           target_sample_rate=None, target_encoding=None,
-                          vorbis_bitrate_info=None, small_chunks=False):
+                          vorbis_bitrate_info=None, chunk_size=None):
         if target_compression is None:
             target_compression = self.source_compression
 
@@ -97,7 +97,7 @@ class BlamSoundPermutation:
         source_sample_data = self.source_sample_data
 
         target_chunk_size = util.get_sample_chunk_size(
-            target_compression, target_encoding, small_chunks)
+            target_compression, target_encoding, chunk_size)
         if (source_compression == target_compression and
             source_sample_rate == target_sample_rate and
             source_encoding == target_encoding and
@@ -152,10 +152,10 @@ class BlamSoundPermutation:
             samples.generate_mouth_data()
 
     def compress_samples(self, compression, sample_rate=None, encoding=None,
-                         vorbis_bitrate_info=None, small_chunks=False):
+                         vorbis_bitrate_info=None, chunk_size=None):
         self.partition_samples(
             compression, sample_rate, encoding,
-            vorbis_bitrate_info, small_chunks)
+            vorbis_bitrate_info, chunk_size)
         for samples in self.processed_samples:
             samples.compress(compression, sample_rate, encoding,
                              vorbis_bitrate_info)

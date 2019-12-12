@@ -23,10 +23,10 @@ class BlamSoundPitchRange:
     def compress_samples(
             self, compression=constants.COMPRESSION_PCM_16_LE,
             sample_rate=None, encoding=None,
-            vorbis_bitrate_info=None, small_chunks=False):
+            vorbis_bitrate_info=None, chunk_size=None):
         for perm in self.permutations.values():
             perm.compress_samples(compression, sample_rate, encoding,
-                                  vorbis_bitrate_info, small_chunks)
+                                  vorbis_bitrate_info, chunk_size)
 
     def regenerate_source(self):
         for perm in self.permutations.values():
@@ -81,7 +81,9 @@ class BlamSoundBank:
     compression = constants.COMPRESSION_PCM_16_LE
     sample_rate = constants.SAMPLE_RATE_22K
     split_into_smaller_chunks = True
-    generate_mouth_data = False
+
+    # chunk_size is capped to constants.MAX_SAMPLE_CHUNK_SIZE
+    chunk_size = constants.DEF_SAMPLE_CHUNK_SIZE
 
     vorbis_bitrate_info = None
 
@@ -100,10 +102,14 @@ class BlamSoundBank:
             pitch_range.generate_mouth_data()
 
     def compress_samples(self):
+        chunk_size = None
+        if self.split_into_smaller_chunks:
+            chunk_size = self.chunk_size
+
         for pitch_range in self.pitch_ranges.values():
             pitch_range.compress_samples(
                 self.compression, self.sample_rate, self.encoding,
-                self.vorbis_bitrate_info, self.split_into_smaller_chunks)
+                self.vorbis_bitrate_info, chunk_size)
 
     def regenerate_source(self):
         for pitch_range in self.pitch_ranges.values():
