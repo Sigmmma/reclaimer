@@ -56,17 +56,17 @@ SAMPLE_RATE_VOICE = 7350  # Chosen as it should filter out high frequency
 
 SAMPLE_RATE_MOUTH_DATA = 30
 
-MAX_SAMPLE_CHUNK_SIZE   = 0x400000
-MAX_MOUTH_DATA          = 0x2000
-MAX_OGG_DECOMP_BUFFER_SIZE = 0xE3800
-
-ADPCM_SAMPLE_CHUNK_SIZE = 0x10000
+MAX_SAMPLE_CHUNK_SIZE = 0x400000
+MAX_MOUTH_DATA        = 0x2000
+DEF_SAMPLE_CHUNK_SIZE = 0x38E00  # the number of bytes of pcm data
+#                                  to split input samples into when
+#                                  splitting into smaller chunks
 
 ADPCM_COMPRESSED_BLOCKSIZE   = 36
 ADPCM_DECOMPRESSED_BLOCKSIZE = 128
 
-WAV_FORMAT_PCM = 0x0001
-WAV_FORMAT_IMA_ADPCM = 0x0011
+WAV_FORMAT_PCM        = 0x0001
+WAV_FORMAT_IMA_ADPCM  = 0x0011
 WAV_FORMAT_XBOX_ADPCM = 0x0069
 
 ALLOWED_WAV_FORMATS = set((

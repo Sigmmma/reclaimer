@@ -16,22 +16,17 @@ class BlamSoundPitchRange:
     def permutations(self):
         return self._permutations
 
-    def partition_samples(
-            self, compression=constants.COMPRESSION_PCM_16_LE,
-            sample_rate=None, encoding=None):
-        for perm in self.permutations.values():
-            perm.partition_samples(compression, sample_rate, encoding)
-
     def generate_mouth_data(self):
         for perm in self.permutations.values():
             perm.generate_mouth_data()
 
     def compress_samples(
             self, compression=constants.COMPRESSION_PCM_16_LE,
-            sample_rate=None, encoding=None, vorbis_bitrate_info=None):
+            sample_rate=None, encoding=None,
+            vorbis_bitrate_info=None, small_chunks=False):
         for perm in self.permutations.values():
             perm.compress_samples(compression, sample_rate, encoding,
-                                  vorbis_bitrate_info)
+                                  vorbis_bitrate_info, small_chunks)
 
     def regenerate_source(self):
         for perm in self.permutations.values():
@@ -86,7 +81,6 @@ class BlamSoundBank:
     compression = constants.COMPRESSION_PCM_16_LE
     sample_rate = constants.SAMPLE_RATE_22K
     split_into_smaller_chunks = True
-    split_to_adpcm_blocksize = True
     generate_mouth_data = False
 
     vorbis_bitrate_info = None
@@ -101,11 +95,6 @@ class BlamSoundBank:
     def pitch_ranges(self):
         return self._pitch_ranges
 
-    def partition_samples():
-        for pitch_range in self.pitch_ranges.values():
-            pitch_range.partition_samples(
-                self.compression, self.sample_rate, self.encoding)
-
     def generate_mouth_data(self):
         for pitch_range in self.pitch_ranges.values():
             pitch_range.generate_mouth_data()
@@ -114,7 +103,7 @@ class BlamSoundBank:
         for pitch_range in self.pitch_ranges.values():
             pitch_range.compress_samples(
                 self.compression, self.sample_rate, self.encoding,
-                self.vorbis_bitrate_info)
+                self.vorbis_bitrate_info, self.split_into_smaller_chunks)
 
     def regenerate_source(self):
         for pitch_range in self.pitch_ranges.values():
