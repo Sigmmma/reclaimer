@@ -83,6 +83,7 @@ class BlamSoundBank:
     split_into_smaller_chunks = True
 
     # chunk_size is capped to constants.MAX_SAMPLE_CHUNK_SIZE
+    # this value is fine to bump under most circumstances.
     chunk_size = constants.DEF_SAMPLE_CHUNK_SIZE
 
     vorbis_bitrate_info = None
