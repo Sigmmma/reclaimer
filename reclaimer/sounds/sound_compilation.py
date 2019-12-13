@@ -1,3 +1,4 @@
+import math
 import traceback
 
 from reclaimer.sounds import util, constants
@@ -6,7 +7,9 @@ __all__ = ("compile_sound", "compile_pitch_range",)
 
 
 def compile_pitch_range(pitch_range, blam_pitch_range,
-                        channel_count, sample_rate, ignore_size_limits=False):
+                        channel_count, sample_rate,
+                        ignore_size_limits=False,
+                        force_sample_rate=False):
     '''
     Compiles the provided BlamSoundPitchRange into the
     provided snd! pitch range block.
@@ -19,7 +22,7 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
         blam_channel_count = constants.channel_counts.get(
             blam_sound_perm.encoding, "invalid")
 
-        if sample_rate != blam_sound_perm.sample_rate:
+        if not force_sample_rate and sample_rate != blam_sound_perm.sample_rate:
             errors.append('Cannot add %skHz sounds to %skHz tag.' %
                           (blam_sound_perm.sample_rate, sample_rate))
 
@@ -69,7 +72,8 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
                     snd__perm.compression.set_to("none")
 
                 snd__perm.name = name
-                snd__perm.ogg_sample_count = blam_samples.sample_count
+                snd__perm.ogg_sample_count = (
+                    channel_count * 2 * blam_samples.sample_count)
                 snd__perm.samples.data = blam_samples.sample_data
                 snd__perm.mouth_data.data = blam_samples.mouth_data
 
@@ -87,7 +91,8 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
 
 
 def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
-                  update_mode=constants.SOUND_COMPILE_MODE_PRESERVE):
+                  update_mode=constants.SOUND_COMPILE_MODE_PRESERVE,
+                  force_sample_rate=False):
     assert update_mode in (constants.SOUND_COMPILE_MODE_NEW,
                            constants.SOUND_COMPILE_MODE_PRESERVE,
                            constants.SOUND_COMPILE_MODE_ADDITIVE)
@@ -96,8 +101,18 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
     if update_mode == constants.SOUND_COMPILE_MODE_NEW:
         # clear the old contents of the tag
         tagdata.parse()
-        if blam_sound_bank.generate_mouth_data:
-            tagdata.sound_class.set_to("unit_dialog")
+
+    forced_natural_pitch = 0
+    if update_mode == constants.SOUND_COMPILE_MODE_NEW:
+        # set some nice default values
+        tagdata.random_pitch_bounds[:] = (1.0, 1.0)
+        tagdata.inner_cone_angle = 2*math.pi
+        tagdata.outer_cone_angle = 2*math.pi
+        tagdata.outer_cone_gain = 1.0
+
+        tagdata.modifiers_when_scale_is_zero[:] = (1.0, 0.0, 1.0)
+        tagdata.modifiers_when_scale_is_one[:]  = (1.0, 1.0, 1.0)
+
 
     if update_mode != constants.SOUND_COMPILE_MODE_ADDITIVE:
         # update the flags, compression, encoding, and sample rate
@@ -108,7 +123,10 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
 
         if blam_sound_bank.compression in (constants.COMPRESSION_PCM_16_LE,
                                            constants.COMPRESSION_PCM_16_BE):
-            tagdata.compression.set_to("none")
+            # intentionally set this to something other than "none"
+            # as otherwise the sound won't play in sapien
+            tagdata.compression.set_to("ogg")
+            # tagdata.compression.set_to("none")
         elif blam_sound_bank.compression == constants.COMPRESSION_ADPCM:
             tagdata.flags.fit_to_adpcm_blocksize = True
             tagdata.compression.set_to("xbox_adpcm")
@@ -126,7 +144,12 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
             errors.append('Unknown encoding "%s"' %
                           blam_sound_bank.encoding)
 
-        if blam_sound_bank.sample_rate == constants.SAMPLE_RATE_22K:
+        if (blam_sound_bank.sample_rate == constants.SAMPLE_RATE_22K or
+                force_sample_rate):
+            if force_sample_rate:
+                forced_natural_pitch = (constants.SAMPLE_RATE_22K /
+                                        blam_sound_bank.sample_rate)
+
             tagdata.sample_rate.set_to("khz_22")
         elif blam_sound_bank.sample_rate == constants.SAMPLE_RATE_44K:
             tagdata.sample_rate.set_to("khz_44")
@@ -134,9 +157,12 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
             errors.append('Unsupported sample rate "%s"' %
                           blam_sound_bank.sample_rate)
 
-        if errors:
-            return errors
+    elif force_sample_rate:
+        errors.append('Cannot force sample rate in additive compile mode.')
 
+
+    if errors:
+        return errors
 
     # make sure the encoding and sample rate of the
     # BlamSoundBank match the settings in the tagdata.
@@ -147,7 +173,7 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
     blam_channel_count = constants.channel_counts.get(
         blam_sound_bank.encoding, "invalid")
 
-    if snd__sample_rate != blam_sound_bank.sample_rate:
+    if not force_sample_rate and snd__sample_rate != blam_sound_bank.sample_rate:
         errors.append('Cannot add %skHz sounds to %skHz tag.' %
                       (blam_sound_bank.sample_rate, snd__sample_rate))
 
@@ -184,7 +210,8 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
             errors.extend(compile_pitch_range(
                 snd__pitch_ranges_by_name[name],
                 blam_pitch_ranges[blam_pr_name],
-                snd__channel_count, snd__sample_rate, ignore_size_limits))
+                snd__channel_count, snd__sample_rate,
+                ignore_size_limits, force_sample_rate))
         except Exception:
             errors.append(traceback.format_exc())
             errors.append("Could not compile pitch range '%s'" % blam_pr_name)
@@ -260,16 +287,18 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
 
     # clear the pitch ranges and update with the new ones
     del snd__pitch_ranges[:]
-    for snd__pr_name in sorted(snd__pitch_ranges_by_name):
-        pitch_range = snd__pitch_ranges_by_name[snd__pr_name]
+    for name in sorted(snd__pitch_ranges_by_name):
+        pitch_range = snd__pitch_ranges_by_name[name]
+        if forced_natural_pitch:
+            pitch_range.natural_pitch = forced_natural_pitch
+
         if not pitch_range.permutations.STEPTREE:
             continue
 
         if len(snd__pitch_ranges) < snd__pitch_ranges.MAX or ignore_size_limits:
             snd__pitch_ranges.append(pitch_range)
         else:
-            errors.append("Too many pitch ranges. Cannot add '%s'" %
-                          snd__pr_name)
+            errors.append("Too many pitch ranges. Cannot add '%s'" % name)
 
     return errors
 
