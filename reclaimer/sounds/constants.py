@@ -11,10 +11,7 @@ try:
     WMA_AVAILABLE = True
 except ImportError:
     WMA_AVAILABLE = False
-    
 
-DEFAULT_PITCH_RANGE_NAME = "default"
-DEFAULT_PERMUTATION_NAME = "unnamed"
 
 SOUND_COMPILE_MODE_NEW = 0
 SOUND_COMPILE_MODE_PRESERVE = 1
@@ -48,6 +45,9 @@ SAMPLE_RATE_22K = 22050
 SAMPLE_RATE_32K = 32000
 SAMPLE_RATE_44K = 44100
 
+# Halo constants
+DEFAULT_PITCH_RANGE_NAME = "default"
+
 SAMPLE_RATE_VOICE = 7350  # Chosen as it should filter out high frequency
 #                           signals while being high enough fidelity to
 #                           capture the human voice frequency range.
@@ -62,9 +62,12 @@ DEF_SAMPLE_CHUNK_SIZE = 0x38E00  # the number of bytes of pcm data
 #                                  to split input samples into when
 #                                  splitting into smaller chunks
 
+MAX_HALO_SAMPLE_RATE = 48000
+
 ADPCM_COMPRESSED_BLOCKSIZE   = 36
 ADPCM_DECOMPRESSED_BLOCKSIZE = 128
 
+# Wave file format constants
 WAV_FORMAT_PCM        = 0x0001
 WAV_FORMAT_PCM_FLOAT  = 0x0003
 WAV_FORMAT_IMA_ADPCM  = 0x0011
