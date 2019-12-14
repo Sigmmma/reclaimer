@@ -30,8 +30,9 @@ except ImportError:
 import os
 import zlib
 
-from struct import unpack
 from array import array
+from pathlib import Path
+from struct import unpack
 
 from reclaimer.util import get_is_xbox_map
 from reclaimer.h3.util import get_virtual_dimension,\
@@ -46,8 +47,9 @@ CUBEMAP_PADDING = 128
 
 
 def extract_bitmap_tiff_data(tag_path):
+    tag_path = Path(tag_path)
     try:
-        with open(tag_path, 'rb') as f:
+        with tag_path.open('rb') as f:
             tag_header_data = f.read(256)  # 256 is enough to read all the
             #                                pertinent header information
 
@@ -80,7 +82,7 @@ def extract_bitmap_tiff_data(tag_path):
         return 0, 0, bytearray()
 
 
-    with open(tag_path, 'rb') as f:
+    with tag_path.open('rb') as f:
         f.seek(data_off)
         comp_data = f.read(comp_size)
 
