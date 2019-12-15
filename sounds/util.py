@@ -213,7 +213,7 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
         len(sample_data) + fragment_width - 1) // fragment_width
 
     # used to scale the max fragment to the [0, 255] scale of a uint8
-    scale_to_uint8 = 255 / 0x7FFF
+    scale_to_uint8 = 255 / ((1 << (sample_width * 8 - 1)) - 1)
 
     # generate mouth data samples
     mouth_data = bytearray(fragment_count)
