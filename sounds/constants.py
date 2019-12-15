@@ -48,12 +48,6 @@ SAMPLE_RATE_44K = 44100
 # Halo constants
 DEFAULT_PITCH_RANGE_NAME = "default"
 
-SAMPLE_RATE_VOICE = 7350  # Chosen as it should filter out high frequency
-#                           signals while being high enough fidelity to
-#                           capture the human voice frequency range.
-#                           Also chosen rather than 8000 as it divides
-#                           22050 and 44100 into whole integers.
-
 SAMPLE_RATE_MOUTH_DATA = 30
 
 MAX_SAMPLE_CHUNK_SIZE = 0x400000

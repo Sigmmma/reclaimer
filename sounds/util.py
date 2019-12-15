@@ -184,9 +184,6 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
     assert encoding in constants.channel_counts
     assert sample_rate > 0
 
-    # TODO: Finish making this function generate data
-    #       identical to that which tool.exe outputs.
-
     sample_width = constants.sample_widths[compression]
     channel_count = constants.channel_counts[encoding]
 
@@ -197,49 +194,58 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
         # byteswap samples to system endianness before processing
         sample_data = audioop.byteswap(sample_data, sample_width)
 
-    if sample_rate > constants.SAMPLE_RATE_VOICE:
-        sample_data = convert_pcm_to_pcm(
-            sample_data, compression, compression, encoding, encoding,
-            sample_rate, constants.SAMPLE_RATE_VOICE
-            )
-        sample_rate = constants.SAMPLE_RATE_VOICE
-
-    # make this a memoryview to make it more efficient(copies of slices
-    # won't be created each time we pass a slice to audioop.max)
-    slicable_samples = memoryview(sample_data)
-
-    # fragment_width will be number of bytes for all the samples
-    # that must be scanned to calculate one mouth data sample.
+    if sample_width == 2:
+        sample_data = memoryview(sample_data).cast("h")
+    elif sample_width == 4:
+        sample_data = memoryview(sample_data).cast("i")
 
     # mouth data is sampled at 30Hz, so we divide the audio
     # sample_rate by that to determine how many samples we must
     # consider for each fragment. also, since mouth data doesn't
     # use multiple channels, and the audio samples are interleaved,
     # we multiply the channel count into the fragment_width.
+    samples_per_mouth_sample = sample_rate / constants.SAMPLE_RATE_MOUTH_DATA
     fragment_width = int(
-        sample_width * channel_count *
-        (sample_rate / constants.SAMPLE_RATE_MOUTH_DATA) + 0.5)
+        channel_count * samples_per_mouth_sample + 0.5)
 
     # add fragment_width - 1 to round up to next multiple of fragment_width
     fragment_count = (
         len(sample_data) + fragment_width - 1) // fragment_width
 
     # used to scale the max fragment to the [0, 255] scale of a uint8
-    max_scale = 1 / (1 << (8 * sample_width - 1))
-    power_scale = max_scale * 2
-    j = 0
+    scale_to_uint8 = 255 / 0x7FFF
+
     # generate mouth data samples
     mouth_data = bytearray(fragment_count)
-    for i in range(0, fragment_count * fragment_width, fragment_width):
-        fragment = slicable_samples[i: i + fragment_width]
-        fragment_max = audioop.max(fragment, sample_width) * max_scale
-        fragment_power = audioop.rms(fragment, sample_width) * power_scale
-        mouth_sample = fragment_max * fragment_power
-        if mouth_sample > 1.0:
-            mouth_sample = 1.0
+    for i in range(fragment_count):
+        fragment = sample_data[i * fragment_width:
+                               (i + 1) * fragment_width]
+        fragment_avg = sum(map(abs, fragment)) / samples_per_mouth_sample
 
-        mouth_sample = audioop.max(fragment, sample_width) * max_scale
-        mouth_data[j] = int(mouth_sample * 255.5)
-        j += 1
+        mouth_sample = fragment_avg * scale_to_uint8
+        if mouth_sample >= 255:
+            mouth_data[i] = 255
+        else:
+            mouth_data[i] = int(mouth_sample)
+
+    # shift/scale the mouth samples based on the range of the mouth data
+    mouth_avg = sum(mouth_data) / len(mouth_data)
+    mouth_max = max(mouth_data)
+    mouth_min = max(0, min(255, 2 * mouth_avg - mouth_max))
+
+    mouth_range = (mouth_avg + mouth_max) / 2 - mouth_min
+    if mouth_range == 0:
+        # no range in the volume. don't try to scale
+        # or shift, or else we'll divide by zero
+        return bytes(mouth_data)
+
+    for i in range(len(mouth_data)):
+        mouth_sample = (mouth_data[i] - mouth_min) / mouth_range
+        if mouth_sample >= 1.0:
+            mouth_data[i] = 255
+        elif mouth_sample <= 0.0:
+            mouth_data[i] = 0
+        else:
+            mouth_data[i] = int(255 * mouth_sample)
 
     return bytes(mouth_data)
