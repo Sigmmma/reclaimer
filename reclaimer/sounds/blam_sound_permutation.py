@@ -339,24 +339,6 @@ class BlamSoundPermutation:
 
             wav_file.serialize(temp=False, backup=False)
 
-            continue
-            orig_mouth_data = self.get_concatenated_mouth_data()
-            if orig_mouth_data:
-                # multiply by 4 so audacity can import it at 120Hz
-                orig_mouth_data = b''.join(bytes([b])*4 for b in orig_mouth_data)
-                with open(filepath + ".ORIG.mouth", "wb") as f:
-                    f.write(orig_mouth_data)
-
-                self.generate_mouth_data()
-                gen_mouth_data = self.get_concatenated_mouth_data()
-                gen_mouth_data = b''.join(bytes([b])*4 for b in gen_mouth_data)
-                with open(filepath + ".MADE.mouth", "wb") as f:
-                    f.write(gen_mouth_data)
-
-                with open(filepath + ".DIFF.mouth", "wb") as f:
-                    f.write(bytes(abs(gen_mouth_data[i] - orig_mouth_data[i])
-                                  for i in range(len(gen_mouth_data))))
-
     def import_from_file(self, filepath):
         if not os.path.isfile(filepath):
             raise OSError('File "%s" does not exist. Cannot import.' % filepath)
