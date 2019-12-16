@@ -11,7 +11,7 @@ except:
     fast_adpcm = False
 
 __all__ = (
-    "decode_adpcm_samples", "get_adpcm_blocksize", "get_pcm_blocksize",
+    "decode_adpcm_samples",
     )
 
 NIBBLE_SWAP_MAPPING = tuple(((val&15)<<4) | (val>>4) for val in range(256))
@@ -22,7 +22,7 @@ XBOX_ADPCM_ENCODED_BLOCKSIZE = 36
 XBOX_ADPCM_DECODED_BLOCKSIZE = 128
 
 
-def slow_decode_adpcm_samples(in_data, channel_ct):
+def _slow_decode_adpcm_samples(in_data, channel_ct):
     if channel_ct < 1:
         return b''
 
@@ -74,7 +74,7 @@ def decode_adpcm_samples(in_data, channel_ct):
 
         adpcm_ext.decode_adpcm_samples(in_data, out_data, channel_ct)
     else:
-        out_data = slow_decode_adpcm_samples(in_data, channel_ct)
+        out_data = _slow_decode_adpcm_samples(in_data, channel_ct)
 
     if sys.byteorder == "big":
         # always return as little endian
