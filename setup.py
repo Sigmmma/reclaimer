@@ -53,8 +53,8 @@ except Exception:
 
 setup_kwargs = dict(
     name='reclaimer',
-    description='A libray of SupyrStruct structures and objects for \
-games built with the Blam engine',
+    description='A libray of SupyrStruct structures and objects for '
+        'games built with the Blam engine',
     long_description=long_desc,
     version='%s.%s.%s' % reclaimer.__version__,
     url='https://bitbucket.org/Moses_of_Egypt/reclaimer',
