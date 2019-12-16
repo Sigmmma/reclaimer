@@ -78,7 +78,7 @@ class BlamSoundSamples:
         if self.is_compressed:
             # decompress samples so we can recompress(ugh, whatever, i don't care)
             compression = (
-                ADPCM_DECOMPRESSED_FORMAT if
+                constants.ADPCM_DECOMPRESSED_FORMAT if
                 compression == constants.COMPRESSION_ADPCM
                 else constants.HIGHEST_FIDELITY_FORMAT)
             sample_data = self.get_decompressed(
@@ -96,8 +96,16 @@ class BlamSoundSamples:
 
         if target_compression == constants.COMPRESSION_ADPCM:
             # compress to adpcm
-            # TODO: Finish this
-            raise NotImplementedError("Whoops, adpcm is not implemented.")
+            if constants.sample_widths[compression] != 2:
+                # adpcm encoder only accepts 16bit pcm as input
+                sample_data = util.convert_pcm_to_pcm(
+                    sample_data, compression,
+                    constants.ADPCM_DECOMPRESSED_FORMAT)
+                compression = constants.ADPCM_DECOMPRESSED_FORMAT
+
+            sample_data = adpcm.encode_adpcm_samples(
+                sample_data, constants.channel_counts[target_encoding],
+                util.is_big_endian_pcm(compression))
         elif target_compression == constants.COMPRESSION_OGG:
             # compress to ogg vorbis
             # TODO: Finish this
@@ -128,7 +136,8 @@ class BlamSoundSamples:
         if curr_compression == constants.COMPRESSION_ADPCM:
             # decompress adpcm to 16bit pcm
             sample_data = adpcm.decode_adpcm_samples(
-                self.sample_data, constants.channel_counts.get(self.encoding, 1))
+                self.sample_data, constants.channel_counts[self.encoding],
+                util.is_big_endian_pcm(target_compression))
             curr_compression = constants.ADPCM_DECOMPRESSED_FORMAT
         elif not self.is_compressed:
             # samples are decompressed. use as-is
