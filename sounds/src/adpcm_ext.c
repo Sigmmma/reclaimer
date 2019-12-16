@@ -17,7 +17,8 @@ const static int ADPCM_INDEX_TABLE[16] = {
     -1, -1, -1, -1, 2, 4, 6, 8
     };
 const static int ADPCM_STEP_TABLE_MAX_INDEX = sizeof(ADPCM_STEP_TABLE) / sizeof(ADPCM_STEP_TABLE[0]) - 1;
-const static int XBOX_ADPCM_DIFF_SAMPLE_COUNT = 64;
+const static int XBOX_ADPCM_ENCODED_BLOCKSIZE = 36;
+const static int XBOX_ADPCM_DECODED_BLOCKSIZE = 128;
 
 
 // Description of ADPCM stream block:
@@ -49,14 +50,6 @@ typedef struct {
     **              The 4bit adpcm code for calculating the next differential index.
     **              Update this before calling decode_adpcm_sample.*/
 } AdpcmState;
-
-
-static int get_adpcm_encoded_blocksize(int coded_sample_count) {
-    return 4 + ((coded_sample_count + 1) / 2);
-}
-static int get_adpcm_decoded_blocksize(int coded_sample_count) {
-    return 2 * coded_sample_count;
-}
 
 
 /* This function will decode the next adpcm sample given as an AdpcmState struct.
@@ -100,7 +93,7 @@ static void decode_adpcm_stream(
     AdpcmState adpcm_states[MAX_AUDIO_CHANNEL_COUNT];
     int block_count = (int)(
         adpcm_stream_buf->len / 
-        (channel_count * get_adpcm_encoded_blocksize(code_chunks_count * 8)));
+        (channel_count * (4 + 4 * code_chunks_count)));
     uint8 *adpcm_stream = adpcm_stream_buf->buf;
     sint16 *pcm_stream = pcm_stream_buf->buf;
     uint32 codes;
@@ -151,24 +144,21 @@ static void decode_adpcm_stream(
 static PyObject *py_decode_adpcm_samples(PyObject *self, PyObject *args) {
     Py_buffer bufs[2];
     uint8 channel_count;
-    int coded_sample_count, block_count;
+    int block_count;
 
-    if (!PyArg_ParseTuple(args, "y*w*bi:decode_adpcm_samples",
-        &bufs[0], &bufs[1], &channel_count, &coded_sample_count)) {
+    if (!PyArg_ParseTuple(args, "y*w*b:decode_adpcm_samples",
+        &bufs[0], &bufs[1], &channel_count)) {
         return Py_BuildValue("");  // return Py_None while incrementing it
     }
 
-    if (coded_sample_count <= 0)
-        coded_sample_count = XBOX_ADPCM_DIFF_SAMPLE_COUNT;
-
-    block_count = (int)(bufs[0].len / (channel_count * get_adpcm_encoded_blocksize(coded_sample_count)));
+    block_count = (int)(bufs[0].len / (channel_count * XBOX_ADPCM_ENCODED_BLOCKSIZE));
 
     // handle invalid data sizes and such
-    if (bufs[0].len % get_adpcm_encoded_blocksize(coded_sample_count)) {
+    if (bufs[0].len % XBOX_ADPCM_ENCODED_BLOCKSIZE) {
         RELEASE_PY_BUFFER_ARRAY(bufs)
         PySys_FormatStdout("Provided adpcm buffer is not a multiple of block size.\n");
         return Py_BuildValue("");  // return Py_None while incrementing it
-    } else if (bufs[1].len < block_count * get_adpcm_decoded_blocksize(coded_sample_count)) {
+    } else if (bufs[1].len < block_count * XBOX_ADPCM_DECODED_BLOCKSIZE) {
         RELEASE_PY_BUFFER_ARRAY(bufs)
         PySys_FormatStdout("Provided pcm buffer is not large enough to hold decoded data.\n");
         return Py_BuildValue("");  // return Py_None while incrementing it
@@ -176,14 +166,10 @@ static PyObject *py_decode_adpcm_samples(PyObject *self, PyObject *args) {
         RELEASE_PY_BUFFER_ARRAY(bufs)
         PySys_FormatStdout("Too many channels to decode in adpcm stream.\n");
         return Py_BuildValue("");  // return Py_None while incrementing it
-    } else if (coded_sample_count % 8) {
-        RELEASE_PY_BUFFER_ARRAY(bufs)
-        PySys_FormatStdout("coded_sample_count must be a multiple of 8.\n");
-        return Py_BuildValue("");  // return Py_None while incrementing it
     }
 
     // do the decoding!
-    decode_adpcm_stream(&bufs[0], &bufs[1], channel_count, coded_sample_count / 8);
+    decode_adpcm_stream(&bufs[0], &bufs[1], channel_count, 8);
 
     // Release the buffer objects
     RELEASE_PY_BUFFER_ARRAY(bufs)
