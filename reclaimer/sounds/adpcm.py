@@ -1,109 +1,149 @@
+import array
 import audioop
+import sys
 
-from array import array
 from struct import Struct as PyStruct
 
-from reclaimer.sounds import constants
+try:
+    from .ext import adpcm_ext
+    fast_adpcm = True
+except:
+    fast_adpcm = False
 
-__all__ = ("decode_adpcm_samples", )
-
-STEP_TABLE = (
-    7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
-    19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
-    50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
-    130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
-    337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
-    876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
-    2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
-    5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
-    15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
-    )
-INDEX_TABLE = (
-    -1, -1, -1, -1, 2, 4, 6, 8,
-    -1, -1, -1, -1, 2, 4, 6, 8
+__all__ = (
+    "decode_adpcm_samples",
+    "encode_adpcm_samples",
     )
 
+NIBBLE_SWAP_MAPPING = tuple(((val&15)<<4) | (val>>4) for val in range(256))
 
-def _fast_decode_mono_adpcm_samples(samples, endian="<"):
+# Byte size of an encoded xbox adpcm block
+XBOX_ADPCM_ENCODED_BLOCKSIZE = 36
+# Byte size of a decoded xbox adpcm block
+XBOX_ADPCM_DECODED_BLOCKSIZE = 128
+
+
+def _slow_decode_adpcm_samples(in_data, out_data, channel_ct):
+    # divide by 2 since we're treating out_data as a sint16 iterable
+    pcm_blocksize   = channel_ct * XBOX_ADPCM_DECODED_BLOCKSIZE // 2
+    adpcm_blocksize = channel_ct * XBOX_ADPCM_ENCODED_BLOCKSIZE
+
     adpcm2lin = audioop.adpcm2lin
+    all_codes = memoryview(in_data)
 
-    pcm_size   = constants.ADPCM_DECOMPRESSED_BLOCKSIZE
-    adpcm_size = constants.ADPCM_COMPRESSED_BLOCKSIZE
-    state_size = 4
+    state_unpacker = PyStruct("<" + "hBx" * channel_ct).unpack_from
+    code_block_size = 4 * channel_ct
 
-    block_ct = len(samples) // adpcm_size
-    out_data = bytearray(block_ct * pcm_size)
+    k = 0
+    interleaved = channel_ct > 1
+    for i in range(0, len(in_data), adpcm_blocksize):
+        state_vals = state_unpacker(in_data, i)
+        all_states = tuple(zip(state_vals[::2], state_vals[1::2]))
+        all_swapped_codes = bytes(map(
+            NIBBLE_SWAP_MAPPING.__getitem__,
+            all_codes[i + code_block_size: i + adpcm_blocksize]))
 
-    pcm_i = 0
-    unpacker = PyStruct(endian + "hh").unpack_from
-    for i in range(0, len(samples), adpcm_size):
-        # why couldn't it be nice and just follow the same
-        # step packing pattern where the first step is the
-        # first 4 bits and the second is the last 4 bits.
-        steps = bytes(((b<<4) + (b>>4))&0xFF for b in
-                      samples[i + state_size: i + adpcm_size])
-        out_data[pcm_i: pcm_i + pcm_size] = (
-            adpcm2lin(steps, 2, unpacker(samples, i))[0]
-            )
+        for c in range(channel_ct):
+            # join all 4 bytes codes for this channel
+            swapped_codes = all_swapped_codes
+            if interleaved:
+                swapped_codes = b''.join(
+                    # join the 4 byte codes
+                    swapped_codes[j: j + 4]
+                    for j in range(c * 4, len(swapped_codes), code_block_size)
+                    )
+            decoded_samples = memoryview(
+                adpcm2lin(swapped_codes, 2, all_states[c])[0]).cast("h")
 
-        pcm_i += pcm_size
+            # interleave the samples for each channel
+            out_data[k + c: k + pcm_blocksize: channel_ct] = array.array(
+                "h", decoded_samples)
+
+        k += pcm_blocksize
+
+
+def _slow_encode_adpcm_samples(in_data, out_data, channel_ct):
+    pcm_blocksize   = channel_ct * XBOX_ADPCM_DECODED_BLOCKSIZE
+    adpcm_blocksize = channel_ct * XBOX_ADPCM_ENCODED_BLOCKSIZE
+
+    lin2adpcm = audioop.lin2adpcm
+
+    state_packer = PyStruct("<hB").pack_into
+    pcm_block_size = 2 * channel_ct
+    
+    all_states = [None] * channel_ct
+    all_codes = [None] * channel_ct
+
+    k = 0
+    interleave = channel_ct > 1
+    for i in range(0, len(in_data), pcm_blocksize):
+        for c in range(channel_ct):
+            # join all 4 bytes codes for this channel
+            samples = b''.join(
+                # join the 2 byte samples
+                in_data[j: j + 2]
+                for j in range(c * 2, pcm_blocksize, pcm_block_size)
+                )
+            all_codes[c], all_states[c] = lin2adpcm(samples, 2, all_states[c])
+            state_packer(out_data, k, *all_states[c])
+            k += 4
+
+        # interleave the 32 byte code strings every 4 bytes
+        codes = all_codes[c]
+        if interleave:
+            codes = b''.join(
+                b''.join(codes[j: j + 4] for c in range(channel_ct))
+                for j in range(0, 32, 4)
+                )
+
+        # swap the nibbles of the codes
+        codes = bytes(map(NIBBLE_SWAP_MAPPING.__getitem__, codes))
+
+        # write the 32 byte codes into the out_data
+        out_data[k: k + len(codes)] = codes
+        k += len(codes)
+
+
+def decode_adpcm_samples(in_data, channel_ct, output_big_endian=False):
+    if channel_ct < 1:
+        return b''
+
+    # divide by 2 since we're treating out_data as a sint16 iterable
+    out_data = array.array("h", (0,)) * (
+        (len(in_data) // XBOX_ADPCM_ENCODED_BLOCKSIZE) *
+        (XBOX_ADPCM_DECODED_BLOCKSIZE // 2))
+
+    if fast_adpcm:
+        adpcm_ext.decode_adpcm_samples(in_data, out_data, channel_ct)
+    else:
+        _slow_decode_adpcm_samples(in_data, out_data, channel_ct)
+
+    if (sys.byteorder == "big") != output_big_endian:
+        out_data.byteswap()
 
     return bytes(out_data)
 
 
-def decode_adpcm_samples(samples, channel_ct, endian="<"):
-    if channel_ct <= 0:
-        return
-    elif channel_ct == 1:
-        return _fast_decode_mono_adpcm_samples(samples, endian)
+def encode_adpcm_samples(in_data, channel_ct, input_big_endian=False):
+    if channel_ct < 1:
+        return b''
 
-    pcm_mask  = 1 << 16
-    code_shifts = tuple(range(0, 8*4, 4))
-    step_table  = STEP_TABLE
-    index_table = INDEX_TABLE
-    # divide by 2 since we're reading the data as uint16's rather than uint8's
-    adpcm_size  = channel_ct * constants.ADPCM_COMPRESSED_BLOCKSIZE // 2
-    skip_size   = channel_ct * 2
-    code_skip_size = skip_size * 8
+    if (sys.byteorder == "big") != input_big_endian:
+        out_data = audioop.byteswap(out_data, 2)
 
-    block_ct = len(samples) // (channel_ct * constants.ADPCM_COMPRESSED_BLOCKSIZE)
-    in_data  = array("H", samples)
-    out_data = array("h", (0, )) * (
-        block_ct * channel_ct * constants.ADPCM_DECOMPRESSED_BLOCKSIZE // 2)
+    pad_size = (len(in_data) // channel_ct) % XBOX_ADPCM_DECODED_BLOCKSIZE
+    if pad_size:
+        # repeat the last sample to the end to pad to a multiple of blocksize
+        in_data += in_data[-(channel_ct * 2): ] * pad_size
 
-    for c in range(channel_ct):
-        pcm_i = c
+    out_data = bytearray(
+        (len(in_data) // XBOX_ADPCM_DECODED_BLOCKSIZE) *
+        XBOX_ADPCM_ENCODED_BLOCKSIZE
+        )
 
-        for i in range(c * 2, block_ct * adpcm_size, adpcm_size):
-            predictor = in_data[i]
-            index     = in_data[i + 1]
-            i += skip_size
-            if endian == ">":
-                predictor = (predictor >> 8) + ((predictor << 8) & 0xFF)
-                index = (index >> 8) + ((index << 8) & 0xFF)
+    if False and fast_adpcm:
+        adpcm_ext.encode_adpcm_samples(in_data, out_data, channel_ct)
+    else:
+        _slow_encode_adpcm_samples(in_data, out_data, channel_ct)
 
-            if predictor & 32768:
-                predictor -= pcm_mask
-
-            for j in range(i, i + code_skip_size, skip_size):
-                codes = (in_data[j + 1] << 16) + in_data[j]
-
-                for shift in code_shifts:
-                    if   index > 88: index = 88
-                    elif index < 0:  index = 0
-
-                    code = codes >> shift
-                    step = step_table[index]
-                    index += index_table[code & 15]
-
-                    if code & 8:
-                        predictor -= ((step >> 1) + (code & 7) * step) >> 2
-                        if predictor < -32768: predictor = -32768
-                    else:
-                        predictor += ((step >> 1) + (code & 15) * step) >> 2
-                        if predictor >  32767: predictor =  32767
-
-                    out_data[pcm_i] = predictor
-                    pcm_i += channel_ct
-
-    return out_data.tobytes()
+    return bytes(out_data)

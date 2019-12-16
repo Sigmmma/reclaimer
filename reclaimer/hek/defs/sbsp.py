@@ -328,7 +328,13 @@ weather_polyhedra = Struct("weather_polyhedra",
     SIZE=32
     )
 
-pathfinding_surface = QStruct("pathfinding_surface", UInt8("data"), SIZE=1)
+pathfinding_surface = QStruct("pathfinding_surface",
+    # this is actually a 3bit width index, 3bit height
+    # index, and 2 flags(is_walkable and is_breakable/is_broken)
+    # stored in a single byte(in that order)
+    UInt8("data"),
+    SIZE=1
+    )
 
 pathfinding_edge = QStruct("pathfinding_edge", UInt8("midpoint"), SIZE=1)
 
