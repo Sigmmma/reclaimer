@@ -70,9 +70,9 @@ def _slow_encode_adpcm_samples(in_data, out_data, channel_ct):
 
     state_packer = PyStruct("<hB").pack_into
     pcm_block_size = 2 * channel_ct
-    
+
+    all_codes  = [None] * channel_ct
     all_states = [None] * channel_ct
-    all_codes = [None] * channel_ct
 
     k = 0
     interleave = channel_ct > 1
@@ -82,9 +82,9 @@ def _slow_encode_adpcm_samples(in_data, out_data, channel_ct):
             samples = b''.join(
                 # join the 2 byte samples
                 in_data[j: j + 2]
-                for j in range(c * 2, pcm_blocksize, pcm_block_size)
+                for j in range(i + c * 2, i + pcm_blocksize, pcm_block_size)
                 )
-            all_codes[c], all_states[c] = lin2adpcm(samples, 2, all_states[c])
+            all_codes[c], all_states[c] = lin2adpcm(samples, 2, None)
             state_packer(out_data, k, *all_states[c])
             k += 4
 
