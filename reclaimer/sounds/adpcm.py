@@ -69,7 +69,7 @@ def _slow_encode_adpcm_samples(in_data, out_data, channel_ct):
     lin2adpcm = audioop.lin2adpcm
 
     state_packer = PyStruct("<hB").pack_into
-    pcm_block_size = 2 * channel_ct
+    pcm_sample_size = 2 * channel_ct
 
     all_codes  = [None] * channel_ct
     all_states = [None] * channel_ct
@@ -78,11 +78,10 @@ def _slow_encode_adpcm_samples(in_data, out_data, channel_ct):
     interleave = channel_ct > 1
     for i in range(0, len(in_data), pcm_blocksize):
         for c in range(channel_ct):
-            # join all 4 bytes codes for this channel
+            # join all the samples for this channel
             samples = b''.join(
-                # join the 2 byte samples
-                in_data[j: j + 2]
-                for j in range(i + c * 2, i + pcm_blocksize, pcm_block_size)
+                in_data[j: j + 2]  # grab one sample
+                for j in range(i + c * 2, i + pcm_blocksize, pcm_sample_size)
                 )
             all_codes[c], all_states[c] = lin2adpcm(samples, 2, None)
             state_packer(out_data, k, *all_states[c])
