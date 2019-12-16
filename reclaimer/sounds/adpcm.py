@@ -1,5 +1,7 @@
+import array
 import audioop
-from array import array
+import sys
+
 from struct import Struct as PyStruct
 
 try:
@@ -10,166 +12,72 @@ except:
 
 __all__ = (
     "decode_adpcm_samples", "get_adpcm_blocksize", "get_pcm_blocksize",
-    "XBOX_ADPCM_DIFF_SAMPLE_COUNT",
-    "XBOX_ADPCM_ENCODED_BLOCKSIZE", "XBOX_ADPCM_DECODED_BLOCKSIZE",
-    )
-
-STEP_TABLE = (
-    7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
-    19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
-    50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
-    130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
-    337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
-    876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
-    2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
-    5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
-    15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
-    )
-INDEX_TABLE = (
-    -1, -1, -1, -1, 2, 4, 6, 8,
-    -1, -1, -1, -1, 2, 4, 6, 8
     )
 
 NIBBLE_SWAP_MAPPING = tuple(((val&15)<<4) | (val>>4) for val in range(256))
 
-
-def get_adpcm_encoded_blocksize(diff_sample_count):
-    return 4 + (diff_sample_count + 1) // 2
-
-
-def get_adpcm_decoded_blocksize(diff_sample_count):
-    return 2 * diff_sample_count
-
-
-# The number of encoded samples in an xbox adpcm block.
-# This does NOT include the uncompressed sample starting the block.
-XBOX_ADPCM_DIFF_SAMPLE_COUNT = 64
 # Byte size of an encoded xbox adpcm block
-XBOX_ADPCM_ENCODED_BLOCKSIZE = get_adpcm_encoded_blocksize(XBOX_ADPCM_DIFF_SAMPLE_COUNT)
+XBOX_ADPCM_ENCODED_BLOCKSIZE = 36
 # Byte size of a decoded xbox adpcm block
-XBOX_ADPCM_DECODED_BLOCKSIZE = get_adpcm_decoded_blocksize(XBOX_ADPCM_DIFF_SAMPLE_COUNT)
+XBOX_ADPCM_DECODED_BLOCKSIZE = 128
 
 
-def _semi_fast_decode_mono_adpcm_samples(
-        samples, diff_sample_count=XBOX_ADPCM_DIFF_SAMPLE_COUNT):
+def slow_decode_adpcm_samples(in_data, channel_ct):
+    if channel_ct < 1:
+        return b''
+
     adpcm2lin = audioop.adpcm2lin
-    state_size = 4
+    encoded_blocksize = channel_ct * XBOX_ADPCM_ENCODED_BLOCKSIZE
+    decoded_blocksize = channel_ct * XBOX_ADPCM_DECODED_BLOCKSIZE
+    # divide by 2 since we're treating out_data as a sint16 iterable
+    decoded_blocksize = decoded_blocksize // 2
 
-    encoded_blocksize = get_adpcm_encoded_blocksize(diff_sample_count)
-    decoded_blocksize = get_adpcm_decoded_blocksize(diff_sample_count)
+    block_ct = len(in_data) // encoded_blocksize
+    out_data = array.array("h", (0,)) * (block_ct * decoded_blocksize)
+    codes = memoryview(in_data)
 
-    block_ct = len(samples) // encoded_blocksize
-    out_data = bytearray(block_ct * decoded_blocksize)
+    state_unpacker = PyStruct("<" + "hBx" * channel_ct).unpack_from
+    block_size = 4 * channel_ct
 
-    pcm_i = 0
-    unpacker = PyStruct("<hh").unpack_from
-    step_samples = memoryview(samples)
-    for i in range(0, len(samples), encoded_blocksize):
-        # why couldn't it be nice and just follow the same
-        # step packing pattern where the first step is the
-        # first 4 bits and the second is the last 4 bits.
-        steps = bytes(map(NIBBLE_SWAP_MAPPING.__getitem__,
-                          step_samples[i + state_size: i + encoded_blocksize]))
-        out_data[pcm_i: pcm_i + decoded_blocksize] = (
-            adpcm2lin(steps, 2, unpacker(samples, i))[0]
-            )
-
-        pcm_i += decoded_blocksize
-
-    return bytes(out_data)
-
-
-def semi_fast_decode_adpcm_samples(
-        samples, channel_ct, diff_sample_count=XBOX_ADPCM_DIFF_SAMPLE_COUNT):
-    adpcm2lin = audioop.adpcm2lin
-    state_size = 4
-
-    encoded_blocksize = get_adpcm_encoded_blocksize(diff_sample_count)
-    decoded_blocksize = get_adpcm_decoded_blocksize(diff_sample_count)
-
-    block_ct = len(samples) // encoded_blocksize
-    out_data = bytearray(block_ct * decoded_blocksize)
-
-    pcm_i = 0
-    unpacker = PyStruct("<hh").unpack_from
-    step_samples = memoryview(samples)
-    for i in range(0, len(samples), encoded_blocksize):
-        # why couldn't it be nice and just follow the same
-        # step packing pattern where the first step is the
-        # first 4 bits and the second is the last 4 bits.
-        steps = bytes(map(
+    k = 0
+    for i in range(0, len(in_data), encoded_blocksize):
+        state_vals = state_unpacker(in_data, i)
+        states = tuple(zip(state_vals[::2], state_vals[1::2]))
+        all_swapped_codes = bytes(map(
             NIBBLE_SWAP_MAPPING.__getitem__,
-            step_samples[i + state_size: i + encoded_blocksize]))
-        out_data[pcm_i: pcm_i + decoded_blocksize] = (
-            adpcm2lin(steps, 2, unpacker(samples, i))[0]
-            )
+            codes[i + block_size: i + encoded_blocksize]))
 
-        pcm_i += decoded_blocksize
+        for c in range(channel_ct):
+            # join all 4 bytes codes for this channel
+            swapped_codes = b''.join(
+                # join the 4 byte codes
+                all_swapped_codes[j: j + 4]
+                for j in range(c * 4, len(all_swapped_codes), block_size)
+                )
+            decoded_samples = memoryview(
+                adpcm2lin(swapped_codes, 2, states[c])[0]).cast("h")
 
-    return bytes(out_data)
+            # interleave the samples for each channel
+            out_data[k + c: k + decoded_blocksize: channel_ct] = array.array(
+                "h", decoded_samples)
+
+        k += decoded_blocksize
+
+    return out_data
 
 
-def decode_adpcm_samples(
-        samples, channel_ct,
-        diff_sample_count=XBOX_ADPCM_DIFF_SAMPLE_COUNT):
-
-    if channel_ct <= 0:
-        return
-    elif channel_ct == 1 and not fast_adpcm:
-        return _semi_fast_decode_mono_adpcm_samples(
-            samples, diff_sample_count)
-
-    encoded_blocksize = get_adpcm_encoded_blocksize(diff_sample_count)
-    decoded_blocksize = get_adpcm_decoded_blocksize(diff_sample_count)
-
-    block_ct = len(samples) // (channel_ct * encoded_blocksize)
-    out_data = array("h", (0,)) * (
-        block_ct * channel_ct * decoded_blocksize // 2)
-
+def decode_adpcm_samples(in_data, channel_ct):
     if fast_adpcm:
-        adpcm_ext.decode_adpcm_samples(
-            samples, out_data, channel_ct, diff_sample_count)
-        return out_data
+        block_ct = len(in_data) // (channel_ct * XBOX_ADPCM_ENCODED_BLOCKSIZE)
+        out_data = array.array("h", (0,)) * (
+            block_ct * channel_ct * XBOX_ADPCM_DECODED_BLOCKSIZE // 2)
 
-    pcm_mask  = 1 << 16
-    code_shifts = tuple(range(0, 8*4, 4))
-    step_table  = STEP_TABLE
-    index_table = INDEX_TABLE
-    adpcm_size  = channel_ct * encoded_blocksize // 2
-    skip_size   = channel_ct * 2
-    code_skip_size = skip_size * 8
-    in_data  = array("H", samples)
+        adpcm_ext.decode_adpcm_samples(in_data, out_data, channel_ct)
+    else:
+        out_data = slow_decode_adpcm_samples(in_data, channel_ct)
 
-    for c in range(channel_ct):
-        pcm_i = c
-
-        for i in range(c * 2, block_ct * adpcm_size, adpcm_size):
-            predictor = in_data[i]
-            index     = in_data[i + 1]
-            i += skip_size
-            if predictor & 32768:
-                # signed bit set, so make negative
-                predictor -= pcm_mask
-
-            for j in range(i, i + code_skip_size, skip_size):
-                codes = (in_data[j + 1] << 16) | in_data[j]
-
-                for shift in code_shifts:
-                    if   index > 88: index = 88
-                    elif index < 0:  index = 0
-
-                    code = codes >> shift
-                    step = step_table[index]
-                    index += index_table[code & 15]
-
-                    if code & 8:
-                        predictor -= ((step >> 1) + (code & 7) * step) >> 2
-                        if predictor < -32768: predictor = -32768
-                    else:
-                        predictor += ((step >> 1) + (code & 15) * step) >> 2
-                        if predictor >  32767: predictor =  32767
-
-                    out_data[pcm_i] = predictor
-                    pcm_i += channel_ct
+    if sys.byteorder == "big":
+        # always return as little endian
+        out_data.byteswap()
 
     return bytes(out_data)
