@@ -27,12 +27,12 @@ else if ((data) < (min)) data = min;
 
 struct adpcm_channel {
     int32_t pcmdata;                        // current PCM value
-    int32_t error, weight, history [2];     // for noise shaping
+    int32_t error, weight, history [MAX_AUDIO_CHANNEL_COUNT];     // for noise shaping
     int8_t index;                           // current index into step size table
 };
 
 struct adpcm_context {
-    struct adpcm_channel channels [2];
+    struct adpcm_channel channels [MAX_AUDIO_CHANNEL_COUNT];
     int num_channels, lookahead, noise_shaping;
 };
 
@@ -44,7 +44,7 @@ struct adpcm_context {
  * for encoding independent frames).
  */
 
-void *adpcm_create_context (int num_channels, int lookahead, int noise_shaping, int32_t initial_deltas [2])
+void *adpcm_create_context (int num_channels, int lookahead, int noise_shaping, int32_t initial_deltas [MAX_AUDIO_CHANNEL_COUNT])
 {
     struct adpcm_context *pcnxt = malloc (sizeof (struct adpcm_context));
     int ch, i;
@@ -265,8 +265,8 @@ static void encode_chunks (struct adpcm_context *pcnxt, uint8_t **outbuf, size_t
 int adpcm_encode_block (void *p, uint8_t *outbuf, size_t *outbufsize, const int16_t *inbuf, int inbufcount)
 {
     struct adpcm_context *pcnxt = (struct adpcm_context *) p;
-    int32_t init_pcmdata[2];
-    int8_t init_index[2];
+    int32_t init_pcmdata[MAX_AUDIO_CHANNEL_COUNT];
+    int8_t init_index[MAX_AUDIO_CHANNEL_COUNT];
     int ch;
 
     *outbufsize = 0;

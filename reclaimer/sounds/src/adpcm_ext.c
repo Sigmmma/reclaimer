@@ -183,8 +183,8 @@ static PyObject *py_encode_adpcm_samples(PyObject *self, PyObject *args) {
         PySys_FormatStdout("Provided pcm buffer is not a multiple of block size.\n");
     else if (bufs[1].len < block_count * XBOX_ADPCM_ENCODED_BLOCKSIZE)
         PySys_FormatStdout("Provided adpcm buffer is not large enough to hold encoded data.\n");
-    else if (channel_count > 2)
-        PySys_FormatStdout("Cannot encode more than 2 audio channels to adpcm.\n");
+    else if (channel_count > MAX_AUDIO_CHANNEL_COUNT)
+        PySys_FormatStdout("Too many channels to encode to adpcm.\n");
     else {
         // do the encoding!
         encode_adpcm_stream(&bufs[0], &bufs[1], channel_count, 8);

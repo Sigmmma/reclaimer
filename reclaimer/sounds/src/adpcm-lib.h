@@ -53,4 +53,6 @@ int adpcm_encode_block (void *p, uint8_t *outbuf, size_t *outbufsize, const int1
 #define NOISE_SHAPING_STATIC    1   // first-order highpass shaping
 #define NOISE_SHAPING_DYNAMIC   2   // dynamically tilted noise based on signal
 
+#define MAX_AUDIO_CHANNEL_COUNT 8
+
 #endif /* ADPCMLIB_H_ */
