@@ -23,6 +23,11 @@ XBOX_ADPCM_ENCODED_BLOCKSIZE = 36
 XBOX_ADPCM_DECODED_BLOCKSIZE = 128
 
 
+NOISE_SHAPING_OFF     = 0  # flat noise (no shaping)
+NOISE_SHAPING_STATIC  = 1  # first-order highpass shaping
+NOISE_SHAPING_DYNAMIC = 2  # dynamically tilted noise based on signal
+
+
 def _slow_decode_adpcm_samples(in_data, out_data, channel_ct):
     # divide by 2 since we're treating out_data as a sint16 iterable
     pcm_blocksize   = channel_ct * XBOX_ADPCM_DECODED_BLOCKSIZE // 2
