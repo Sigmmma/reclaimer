@@ -111,7 +111,7 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                 blam_permutation.processed_samples.append(
                     BlamSoundSamples(
                         sample_data, sample_count, compression,
-                        int(round(sample_rate * natural_pitch)),
+                        int(round(sample_rate * playback_speed)),
                         encoding, perm.mouth_data.data)
                     )
 

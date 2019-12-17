@@ -1,22 +1,7 @@
 #include "shared.h"
+#include "adpcm-lib.h"
 
-
-const static int ADPCM_STEP_TABLE[89] = {
-    7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
-    19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
-    50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
-    130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
-    337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
-    876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
-    2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
-    5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
-    15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
-    };
-const static int ADPCM_INDEX_TABLE[16] = {
-    -1, -1, -1, -1, 2, 4, 6, 8,
-    -1, -1, -1, -1, 2, 4, 6, 8
-    };
-const static int ADPCM_STEP_TABLE_MAX_INDEX = sizeof(ADPCM_STEP_TABLE) / sizeof(ADPCM_STEP_TABLE[0]) - 1;
+const static int ADPCM_STEP_TABLE_MAX_INDEX = sizeof(step_table) / sizeof(step_table[0]) - 1;
 const static int XBOX_ADPCM_ENCODED_BLOCKSIZE = 36;
 const static int XBOX_ADPCM_DECODED_BLOCKSIZE = 128;
 
@@ -43,10 +28,10 @@ typedef struct {
     **                     decode_adpcm_sample this is supposed to be the
     **                     predictor for decoding the next sample. Contains
     **                     the decoded sample when the function returns.*/
-    sint8 index;  /* An index into ADPCM_STEP_TABLE.
+    sint8 index;  /* An index into step_table.
     **               Used for calculating the current differential step.
     **               Contains the next step index when the function returns.*/
-    uint8 code;  /* An index into ADPCM_INDEX_TABLE.
+    uint8 code;  /* An index into index_table.
     **              The 4bit adpcm code for calculating the next differential index.
     **              Update this before calling decode_adpcm_sample.*/
 } AdpcmState;
@@ -57,7 +42,7 @@ This function accepts and returns the whole struct since it can easily fit in a
 single 32bit register, and should be more efficient than passing a pointer to a struct.
 */
 static AdpcmState decode_adpcm_sample(AdpcmState state) {
-    int delta, step_size = ADPCM_STEP_TABLE[state.index];
+    int delta, step_size = step_table[state.index];
     int result = state.pcm_sample;  /* pcm_sample could over/underflow in the code below,
     **                                 so we keep the result as an int for clamping.*/
 
@@ -76,7 +61,7 @@ static AdpcmState decode_adpcm_sample(AdpcmState state) {
     else
         state.pcm_sample = (sint16)result;
 
-    state.index += ADPCM_INDEX_TABLE[state.code];
+    state.index += index_table[state.code];
     if (state.index < 0)
         state.index = 0;
     else if (state.index > ADPCM_STEP_TABLE_MAX_INDEX)
@@ -177,11 +162,49 @@ static PyObject *py_decode_adpcm_samples(PyObject *self, PyObject *args) {
     return Py_BuildValue("");  // return Py_None while incrementing it
 }
 
+
+static PyObject *py_encode_adpcm_samples(PyObject *self, PyObject *args) {
+    Py_buffer bufs[2];
+    uint8 channel_count;
+    int block_count;
+
+    if (!PyArg_ParseTuple(args, "y*w*b:encode_adpcm_samples",
+        &bufs[0], &bufs[1], &channel_count)) {
+        return Py_BuildValue("");  // return Py_None while incrementing it
+    }
+
+    block_count = (int)(bufs[0].len / (channel_count * XBOX_ADPCM_ENCODED_BLOCKSIZE));
+
+    // handle invalid data sizes and such
+    if (bufs[0].len % XBOX_ADPCM_ENCODED_BLOCKSIZE) {
+        RELEASE_PY_BUFFER_ARRAY(bufs)
+        PySys_FormatStdout("Provided adpcm buffer is not a multiple of block size.\n");
+        return Py_BuildValue("");  // return Py_None while incrementing it
+    } else if (bufs[1].len < block_count * XBOX_ADPCM_DECODED_BLOCKSIZE) {
+        RELEASE_PY_BUFFER_ARRAY(bufs)
+        PySys_FormatStdout("Provided pcm buffer is not large enough to hold decoded data.\n");
+        return Py_BuildValue("");  // return Py_None while incrementing it
+    } else if (channel_count > MAX_AUDIO_CHANNEL_COUNT) {
+        RELEASE_PY_BUFFER_ARRAY(bufs)
+        PySys_FormatStdout("Too many channels to decode in adpcm stream.\n");
+        return Py_BuildValue("");  // return Py_None while incrementing it
+    }
+
+    // do the encoding!
+    encode_adpcm_stream(&bufs[0], &bufs[1], channel_count, 8);
+
+    // Release the buffer objects
+    RELEASE_PY_BUFFER_ARRAY(bufs)
+
+    return Py_BuildValue("");  // return Py_None while incrementing it
+}
+
 /* A list of all the methods defined by this module.
 "METH_VARGS" tells Python how to call the handler.
 The {NULL, NULL} entry indicates the end of the method definitions */
 static PyMethodDef adpcm_ext_methods[] = {
     {"decode_adpcm_samples", py_decode_adpcm_samples, METH_VARARGS, ""},
+    {"encode_adpcm_samples", py_encode_adpcm_samples, METH_VARARGS, ""},
     {NULL, NULL, 0, NULL}      /* sentinel */
 };
 
