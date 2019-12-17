@@ -62,47 +62,6 @@ def _slow_decode_adpcm_samples(in_data, out_data, channel_ct):
         k += pcm_blocksize
 
 
-def _slow_encode_adpcm_samples(in_data, out_data, channel_ct):
-    pcm_blocksize   = channel_ct * XBOX_ADPCM_DECODED_BLOCKSIZE
-    adpcm_blocksize = channel_ct * XBOX_ADPCM_ENCODED_BLOCKSIZE
-
-    lin2adpcm = audioop.lin2adpcm
-
-    state_packer = PyStruct("<hB").pack_into
-    pcm_sample_size = 2 * channel_ct
-
-    all_codes  = [None] * channel_ct
-    all_states = [None] * channel_ct
-
-    k = 0
-    interleave = channel_ct > 1
-    for i in range(0, len(in_data), pcm_blocksize):
-        for c in range(channel_ct):
-            # join all the samples for this channel
-            samples = b''.join(
-                in_data[j: j + 2]  # grab one sample
-                for j in range(i + c * 2, i + pcm_blocksize, pcm_sample_size)
-                )
-            all_codes[c], all_states[c] = lin2adpcm(samples, 2, None)
-            state_packer(out_data, k, *all_states[c])
-            k += 4
-
-        # interleave the 32 byte code strings every 4 bytes
-        codes = all_codes[c]
-        if interleave:
-            codes = b''.join(
-                b''.join(codes[j: j + 4] for c in range(channel_ct))
-                for j in range(0, 32, 4)
-                )
-
-        # swap the nibbles of the codes
-        codes = bytes(map(NIBBLE_SWAP_MAPPING.__getitem__, codes))
-
-        # write the 32 byte codes into the out_data
-        out_data[k: k + len(codes)] = codes
-        k += len(codes)
-
-
 def decode_adpcm_samples(in_data, channel_ct, output_big_endian=False):
     if channel_ct < 1:
         return b''
@@ -140,9 +99,10 @@ def encode_adpcm_samples(in_data, channel_ct, input_big_endian=False):
         XBOX_ADPCM_ENCODED_BLOCKSIZE
         )
 
-    if False and fast_adpcm:
-        adpcm_ext.encode_adpcm_samples(in_data, out_data, channel_ct)
-    else:
-        _slow_encode_adpcm_samples(in_data, out_data, channel_ct)
+    if not fast_adpcm:
+        raise NotImplementedError(
+            "Accelerator module not detected. Cannot compress to ADPCM.")
+
+    adpcm_ext.encode_adpcm_samples(in_data, out_data, channel_ct)
 
     return bytes(out_data)

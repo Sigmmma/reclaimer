@@ -15,7 +15,7 @@ typedef uint16_t uint16;
 typedef uint32_t uint32;
 typedef uint64_t uint64;
 
-#define MAX_AUDIO_CHANNEL_COUNT 7
+#define MAX_AUDIO_CHANNEL_COUNT 8
 
 #define RELEASE_PY_BUFFER_ARRAY(bufs)\
     for (int py_buffer_release_index = 0; py_buffer_release_index < (sizeof(bufs) / sizeof(bufs[0])); py_buffer_release_index++) {\
