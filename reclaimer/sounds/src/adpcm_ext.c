@@ -139,22 +139,16 @@ static PyObject *py_decode_adpcm_samples(PyObject *self, PyObject *args) {
     block_count = (int)(bufs[0].len / (channel_count * XBOX_ADPCM_ENCODED_BLOCKSIZE));
 
     // handle invalid data sizes and such
-    if (bufs[0].len % XBOX_ADPCM_ENCODED_BLOCKSIZE) {
-        RELEASE_PY_BUFFER_ARRAY(bufs)
+    if (bufs[0].len % XBOX_ADPCM_ENCODED_BLOCKSIZE)
         PySys_FormatStdout("Provided adpcm buffer is not a multiple of block size.\n");
-        return Py_BuildValue("");  // return Py_None while incrementing it
-    } else if (bufs[1].len < block_count * XBOX_ADPCM_DECODED_BLOCKSIZE) {
-        RELEASE_PY_BUFFER_ARRAY(bufs)
+    else if (bufs[1].len < block_count * XBOX_ADPCM_DECODED_BLOCKSIZE)
         PySys_FormatStdout("Provided pcm buffer is not large enough to hold decoded data.\n");
-        return Py_BuildValue("");  // return Py_None while incrementing it
-    } else if (channel_count > MAX_AUDIO_CHANNEL_COUNT) {
-        RELEASE_PY_BUFFER_ARRAY(bufs)
+    else if (channel_count > MAX_AUDIO_CHANNEL_COUNT)
         PySys_FormatStdout("Too many channels to decode in adpcm stream.\n");
-        return Py_BuildValue("");  // return Py_None while incrementing it
+    else {
+        // do the decoding!
+        decode_adpcm_stream(&bufs[0], &bufs[1], channel_count, 8);
     }
-
-    // do the decoding!
-    decode_adpcm_stream(&bufs[0], &bufs[1], channel_count, 8);
 
     // Release the buffer objects
     RELEASE_PY_BUFFER_ARRAY(bufs)
@@ -176,22 +170,16 @@ static PyObject *py_encode_adpcm_samples(PyObject *self, PyObject *args) {
     block_count = (int)(bufs[0].len / (channel_count * XBOX_ADPCM_ENCODED_BLOCKSIZE));
 
     // handle invalid data sizes and such
-    if (bufs[0].len % XBOX_ADPCM_ENCODED_BLOCKSIZE) {
-        RELEASE_PY_BUFFER_ARRAY(bufs)
+    if (bufs[0].len % XBOX_ADPCM_ENCODED_BLOCKSIZE)
         PySys_FormatStdout("Provided adpcm buffer is not a multiple of block size.\n");
-        return Py_BuildValue("");  // return Py_None while incrementing it
-    } else if (bufs[1].len < block_count * XBOX_ADPCM_DECODED_BLOCKSIZE) {
-        RELEASE_PY_BUFFER_ARRAY(bufs)
+    else if (bufs[1].len < block_count * XBOX_ADPCM_DECODED_BLOCKSIZE)
         PySys_FormatStdout("Provided pcm buffer is not large enough to hold decoded data.\n");
-        return Py_BuildValue("");  // return Py_None while incrementing it
-    } else if (channel_count > MAX_AUDIO_CHANNEL_COUNT) {
-        RELEASE_PY_BUFFER_ARRAY(bufs)
+    else if (channel_count > MAX_AUDIO_CHANNEL_COUNT)
         PySys_FormatStdout("Too many channels to decode in adpcm stream.\n");
-        return Py_BuildValue("");  // return Py_None while incrementing it
+    else {
+        // do the encoding!
+        encode_adpcm_stream(&bufs[0], &bufs[1], channel_count, 8);
     }
-
-    // do the encoding!
-    encode_adpcm_stream(&bufs[0], &bufs[1], channel_count, 8);
 
     // Release the buffer objects
     RELEASE_PY_BUFFER_ARRAY(bufs)
