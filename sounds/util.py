@@ -13,8 +13,14 @@ def get_sample_chunk_size(compression, encoding, chunk_size=None):
     if chunk_size is None:
         chunk_size = constants.MAX_SAMPLE_CHUNK_SIZE
 
-    if compression == constants.COMPRESSION_ADPCM:
-        chunk_size = (chunk_size // 128) * 36
+    if compression == constants.COMPRESSION_XBOX_ADPCM:
+        chunk_size = (
+            chunk_size // constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE
+            ) * constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE
+    elif compression == constants.COMPRESSION_IMA_ADPCM:
+        chunk_size = (
+            chunk_size // constants.IMA_ADPCM_DECOMPRESSED_BLOCKSIZE
+            ) * constants.IMA_ADPCM_COMPRESSED_BLOCKSIZE
 
     return chunk_size - (
         chunk_size % get_block_size(compression, encoding))
@@ -24,16 +30,20 @@ def get_block_size(compression, encoding):
     if compression == constants.COMPRESSION_OGG:
         return 1
 
-    if compression == constants.COMPRESSION_ADPCM:
-        block_size = constants.ADPCM_COMPRESSED_BLOCKSIZE
+    if compression == constants.COMPRESSION_XBOX_ADPCM:
+        block_size = constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE
+    elif compression == constants.COMPRESSION_IMA_ADPCM:
+        block_size = constants.IMA_ADPCM_COMPRESSED_BLOCKSIZE
     else:
         block_size = constants.sample_widths[compression]
     return block_size * constants.channel_counts.get(encoding, 1)
 
 
 def get_samples_per_block(compression):
-    if compression == constants.COMPRESSION_ADPCM:
-        return constants.ADPCM_DECOMPRESSED_BLOCKSIZE // 2
+    if compression == constants.COMPRESSION_XBOX_ADPCM:
+        return constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE // 2
+    elif compression == constants.COMPRESSION_IMA_ADPCM:
+        return constants.IMA_ADPCM_DECOMPRESSED_BLOCKSIZE // 2
     return 1
 
 
@@ -45,8 +55,10 @@ def get_sample_count(sample_data, compression, encoding):
     block_size = get_block_size(compression, encoding)
     chunk_count = len(sample_data) // block_size
 
-    if compression == constants.COMPRESSION_ADPCM:
-        chunk_count *= constants.ADPCM_DECOMPRESSED_BLOCKSIZE // 2
+    if compression == constants.COMPRESSION_XBOX_ADPCM:
+        chunk_count *= constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE // 2
+    elif compression == constants.COMPRESSION_IMA_ADPCM:
+        chunk_count *= constants.IMA_ADPCM_DECOMPRESSED_BLOCKSIZE // 2
 
     return chunk_count
 

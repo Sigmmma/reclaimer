@@ -278,9 +278,7 @@ int adpcm_encode_block (void *p, uint8_t *outbuf, size_t *outbufsize, const int1
     get_decode_parameters(pcnxt, init_pcmdata, init_index);
 
     for (ch = 0; ch < pcnxt->num_channels; ch++) {
-        init_pcmdata[ch] = inbuf[ch];  // we want to encode 64 samples per block, not 65.
-        //                                don't increment inbuf and skip the first sample.
-        //init_pcmdata[ch] = *inbuf++;
+        init_pcmdata[ch] = *inbuf++;
         outbuf[0] = init_pcmdata[ch] & 0xFF;
         outbuf[1] = (init_pcmdata[ch] >> 8) & 0xFF;
         outbuf[2] = init_index[ch];

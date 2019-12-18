@@ -32,7 +32,8 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
 
         if blam_sound_perm.compression not in (constants.COMPRESSION_PCM_16_LE,
                                                constants.COMPRESSION_PCM_16_BE,
-                                               constants.COMPRESSION_ADPCM,
+                                               constants.COMPRESSION_XBOX_ADPCM,
+                                               constants.COMPRESSION_IMA_ADPCM,
                                                constants.COMPRESSION_OGG):
             errors.append('Unknown permutation compression "%s"' %
                           blam_sound_perm.compression)
@@ -68,8 +69,11 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
                 snd__perm.samples.data = blam_samples.sample_data
                 snd__perm.mouth_data.data = blam_samples.mouth_data
 
-                if blam_samples.compression == constants.COMPRESSION_ADPCM:
+                if blam_samples.compression == constants.COMPRESSION_XBOX_ADPCM:
                     snd__perm.compression.set_to("xbox_adpcm")
+                    snd__perm.ogg_sample_count = 0  # adpcm has this as 0 always
+                elif blam_samples.compression == constants.COMPRESSION_IMA_ADPCM:
+                    snd__perm.compression.set_to("ima_adpcm")
                     snd__perm.ogg_sample_count = 0  # adpcm has this as 0 always
                 elif blam_samples.compression == constants.COMPRESSION_OGG:
                     snd__perm.compression.set_to("ogg")
@@ -126,9 +130,12 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
             # as otherwise the sound won't play in sapien
             tagdata.compression.set_to("ogg")
             # tagdata.compression.set_to("none")
-        elif blam_sound_bank.compression == constants.COMPRESSION_ADPCM:
+        elif blam_sound_bank.compression == constants.COMPRESSION_XBOX_ADPCM:
             tagdata.flags.fit_to_adpcm_blocksize = True
             tagdata.compression.set_to("xbox_adpcm")
+        elif blam_sound_bank.compression == constants.COMPRESSION_IMA_ADPCM:
+            tagdata.flags.fit_to_adpcm_blocksize = True
+            tagdata.compression.set_to("ima_adpcm")
         elif blam_sound_bank.compression == constants.COMPRESSION_OGG:
             tagdata.compression.set_to("ogg")
         else:

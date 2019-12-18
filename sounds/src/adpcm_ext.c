@@ -82,13 +82,23 @@ static void decode_adpcm_stream(
     uint8 *adpcm_stream = adpcm_stream_buf->buf;
     sint16 *pcm_stream = pcm_stream_buf->buf;
     uint32 codes;
+    uint32 samples_per_block = 8 * code_chunks_count * channel_count;
+    uint32 samples_decoded = 0, samples_decoded_this_chunk = 0;
+
+    if (channel_count < 0)
+        return;
 
     for (int b = 0; b < block_count; b++) {
+        samples_decoded = 0;
         // initialize the adpcm state structs
         for (int c = 0; c < channel_count; c++) {
             adpcm_states[c].pcm_sample = adpcm_stream[0] | (adpcm_stream[1] << 8);
             adpcm_states[c].index = adpcm_stream[2];
             adpcm_stream += 4;
+
+            pcm_stream[c] = adpcm_states[c].pcm_sample;
+            pcm_stream++;
+            samples_decoded++;
 
             if (adpcm_states[c].index < 0)
                 adpcm_states[c].index = 0;
@@ -96,9 +106,9 @@ static void decode_adpcm_stream(
                 adpcm_states[c].index = ADPCM_STEP_TABLE_MAX_INDEX;
         }
 
-        // loop over each code chunk(8 codes in 4 bytes per chunk)
-        for (int h = 0; h < code_chunks_count; h++) {
+        while (samples_decoded < samples_per_block) {
             // loop over each channel in each chunk
+            samples_decoded_this_chunk = 0;
             for (int c = 0; c < channel_count; c++) {
                 // OR the codes together for easy access
                 codes = (
@@ -113,14 +123,18 @@ static void decode_adpcm_stream(
                 // otherwise we would have to store the decoded samples to several temp
                 // buffers and then interleave those temp buffers into the pcm stream.
                 for (int i = c; i < 8 * channel_count; i += channel_count) {
+                    if (samples_decoded_this_chunk == samples_per_block)
+                        continue;
                     adpcm_states[c].code = codes & 0xF;
                     codes >>= 4;
                     adpcm_states[c] = decode_adpcm_sample(adpcm_states[c]);
                     pcm_stream[i] = adpcm_states[c].pcm_sample;
+                    samples_decoded_this_chunk++;
                 }
             }
-            // skip over the chunk of 8 samples per channel we just decoded
-            pcm_stream += channel_count * 8;
+            // skip over the chunk of samples we just decoded
+            pcm_stream += samples_decoded_this_chunk;
+            samples_decoded += samples_decoded_this_chunk;
         }
     }
 }
@@ -167,10 +181,10 @@ static void encode_adpcm_stream(
 static PyObject *py_decode_adpcm_samples(PyObject *self, PyObject *args) {
     Py_buffer bufs[2];
     uint8 channel_count;
-    int block_count;
+    int block_count, use_xbadpcm;
 
-    if (!PyArg_ParseTuple(args, "y*w*b:decode_adpcm_samples",
-        &bufs[0], &bufs[1], &channel_count)) {
+    if (!PyArg_ParseTuple(args, "y*w*bp:decode_adpcm_samples",
+        &bufs[0], &bufs[1], &channel_count, &use_xbadpcm)) {
         return Py_BuildValue("");  // return Py_None while incrementing it
     }
 
@@ -198,11 +212,11 @@ static PyObject *py_decode_adpcm_samples(PyObject *self, PyObject *args) {
 static PyObject *py_encode_adpcm_samples(PyObject *self, PyObject *args) {
     Py_buffer bufs[2];
     uint8 channel_count, noise_shaping = NOISE_SHAPING_OFF;
-    int block_count;
+    int block_count, use_xbadpcm;
     uint16 lookahead = 3;
 
-    if (!PyArg_ParseTuple(args, "y*w*b|BH:encode_adpcm_samples",
-        &bufs[0], &bufs[1], &channel_count, &noise_shaping, &lookahead)) {
+    if (!PyArg_ParseTuple(args, "y*w*bp|BH:encode_adpcm_samples",
+        &bufs[0], &bufs[1], &channel_count, &use_xbadpcm, &noise_shaping, &lookahead)) {
         return Py_BuildValue("");  // return Py_None while incrementing it
     }
 
