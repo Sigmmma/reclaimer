@@ -108,7 +108,6 @@ class BlamSoundSamples:
 
             sample_data = adpcm.encode_adpcm_samples(
                 sample_data, constants.channel_counts[target_encoding],
-                target_compression == constants.COMPRESSION_XBOX_ADPCM,
                 util.is_big_endian_pcm(compression))
         elif target_compression == constants.COMPRESSION_OGG:
             # compress to ogg vorbis
@@ -142,7 +141,6 @@ class BlamSoundSamples:
             # decompress adpcm to 16bit pcm
             sample_data = adpcm.decode_adpcm_samples(
                 self.sample_data, constants.channel_counts[self.encoding],
-                curr_compression == constants.COMPRESSION_XBOX_ADPCM,
                 util.is_big_endian_pcm(target_compression))
             curr_compression = constants.ADPCM_DECOMPRESSED_FORMAT
         elif not self.is_compressed:

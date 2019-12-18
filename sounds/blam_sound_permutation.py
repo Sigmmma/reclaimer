@@ -247,6 +247,7 @@ class BlamSoundPermutation:
             compression = self.compression
             if decompress or compression == constants.COMPRESSION_OGG:
                 compression = constants.COMPRESSION_PCM_16_LE
+
             try:
                 sample_data = self.get_concatenated_sample_data(
                     compression, sample_rate, encoding)

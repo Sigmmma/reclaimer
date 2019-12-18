@@ -71,7 +71,7 @@ static AdpcmState decode_adpcm_sample(AdpcmState state) {
 }
 
 
-static void decode_adpcm_stream(
+static void decode_xbadpcm_stream(
     Py_buffer *adpcm_stream_buf, Py_buffer *pcm_stream_buf,
     uint8 channel_count, uint32 code_chunks_count) {
 
@@ -82,23 +82,25 @@ static void decode_adpcm_stream(
     uint8 *adpcm_stream = adpcm_stream_buf->buf;
     sint16 *pcm_stream = pcm_stream_buf->buf;
     uint32 codes;
-    uint32 samples_per_block = 8 * code_chunks_count * channel_count;
-    uint32 samples_decoded = 0, samples_decoded_this_chunk = 0;
+    uint32 samples_per_chunk = 8 * channel_count;
+    uint32 samples_this_chunk = 0, samples_remaining_this_block = 0;
+    uint32 samples_per_block = samples_per_chunk * code_chunks_count;
+    uint32 samples_decoded = 0;
 
     if (channel_count < 0)
         return;
 
     for (int b = 0; b < block_count; b++) {
-        samples_decoded = 0;
+        samples_remaining_this_block = samples_per_block;
         // initialize the adpcm state structs
         for (int c = 0; c < channel_count; c++) {
             adpcm_states[c].pcm_sample = adpcm_stream[0] | (adpcm_stream[1] << 8);
             adpcm_states[c].index = adpcm_stream[2];
             adpcm_stream += 4;
 
-            pcm_stream[c] = adpcm_states[c].pcm_sample;
+            pcm_stream[0] = adpcm_states[c].pcm_sample;
             pcm_stream++;
-            samples_decoded++;
+            samples_remaining_this_block--;
 
             if (adpcm_states[c].index < 0)
                 adpcm_states[c].index = 0;
@@ -106,9 +108,13 @@ static void decode_adpcm_stream(
                 adpcm_states[c].index = ADPCM_STEP_TABLE_MAX_INDEX;
         }
 
-        while (samples_decoded < samples_per_block) {
+        while (samples_remaining_this_block) {
             // loop over each channel in each chunk
-            samples_decoded_this_chunk = 0;
+            if (samples_remaining_this_block < samples_per_chunk)
+                samples_this_chunk = samples_remaining_this_block;
+            else
+                samples_this_chunk = samples_per_chunk;
+
             for (int c = 0; c < channel_count; c++) {
                 // OR the codes together for easy access
                 codes = (
@@ -122,25 +128,22 @@ static void decode_adpcm_stream(
                 // loop is structured like this to properly interleave the pcm data.
                 // otherwise we would have to store the decoded samples to several temp
                 // buffers and then interleave those temp buffers into the pcm stream.
-                for (int i = c; i < 8 * channel_count; i += channel_count) {
-                    if (samples_decoded_this_chunk == samples_per_block)
-                        continue;
+                for (int i = c; i < samples_this_chunk; i += channel_count) {
                     adpcm_states[c].code = codes & 0xF;
                     codes >>= 4;
                     adpcm_states[c] = decode_adpcm_sample(adpcm_states[c]);
                     pcm_stream[i] = adpcm_states[c].pcm_sample;
-                    samples_decoded_this_chunk++;
                 }
             }
             // skip over the chunk of samples we just decoded
-            pcm_stream += samples_decoded_this_chunk;
-            samples_decoded += samples_decoded_this_chunk;
+            pcm_stream += samples_this_chunk;
+            samples_remaining_this_block -= samples_this_chunk;
         }
     }
 }
 
 
-static void encode_adpcm_stream(
+static void encode_xbadpcm_stream(
     Py_buffer *pcm_stream_buf, Py_buffer *adpcm_stream_buf,
     uint8 channel_count, uint32 code_chunks_count, uint16 lookahead, uint8 noise_shaping) {
 
@@ -178,13 +181,13 @@ static void encode_adpcm_stream(
 }
 
 
-static PyObject *py_decode_adpcm_samples(PyObject *self, PyObject *args) {
+static PyObject *py_decode_xbadpcm_samples(PyObject *self, PyObject *args) {
     Py_buffer bufs[2];
     uint8 channel_count;
-    int block_count, use_xbadpcm;
+    int block_count;
 
-    if (!PyArg_ParseTuple(args, "y*w*bp:decode_adpcm_samples",
-        &bufs[0], &bufs[1], &channel_count, &use_xbadpcm)) {
+    if (!PyArg_ParseTuple(args, "y*w*b:decode_xbadpcm_samples",
+        &bufs[0], &bufs[1], &channel_count)) {
         return Py_BuildValue("");  // return Py_None while incrementing it
     }
 
@@ -192,14 +195,14 @@ static PyObject *py_decode_adpcm_samples(PyObject *self, PyObject *args) {
 
     // handle invalid data sizes and such
     if (bufs[0].len % XBOX_ADPCM_ENCODED_BLOCKSIZE)
-        PySys_FormatStdout("Provided adpcm buffer is not a multiple of block size.\n");
+        PySys_FormatStdout("Provided xbadpcm buffer is not a multiple of block size.\n");
     else if (bufs[1].len < block_count * XBOX_ADPCM_DECODED_BLOCKSIZE)
         PySys_FormatStdout("Provided pcm buffer is not large enough to hold decoded data.\n");
     else if (channel_count > MAX_AUDIO_CHANNEL_COUNT)
-        PySys_FormatStdout("Too many channels to decode in adpcm stream.\n");
+        PySys_FormatStdout("Too many channels to decode in xbadpcm stream.\n");
     else {
         // do the decoding!
-        decode_adpcm_stream(&bufs[0], &bufs[1], channel_count, 8);
+        decode_xbadpcm_stream(&bufs[0], &bufs[1], channel_count, 8);
     }
 
     // Release the buffer objects
@@ -209,14 +212,13 @@ static PyObject *py_decode_adpcm_samples(PyObject *self, PyObject *args) {
 }
 
 
-static PyObject *py_encode_adpcm_samples(PyObject *self, PyObject *args) {
+static PyObject *py_encode_xbadpcm_samples(PyObject *self, PyObject *args) {
     Py_buffer bufs[2];
-    uint8 channel_count, noise_shaping = NOISE_SHAPING_OFF;
-    int block_count, use_xbadpcm;
-    uint16 lookahead = 3;
+    uint8 channel_count, noise_shaping = NOISE_SHAPING_OFF, lookahead = 3;
+    int block_count;
 
-    if (!PyArg_ParseTuple(args, "y*w*bp|BH:encode_adpcm_samples",
-        &bufs[0], &bufs[1], &channel_count, &use_xbadpcm, &noise_shaping, &lookahead)) {
+    if (!PyArg_ParseTuple(args, "y*w*b|BB:encode_xbadpcm_samples",
+        &bufs[0], &bufs[1], &channel_count, &noise_shaping, &lookahead)) {
         return Py_BuildValue("");  // return Py_None while incrementing it
     }
 
@@ -226,18 +228,18 @@ static PyObject *py_encode_adpcm_samples(PyObject *self, PyObject *args) {
     if (bufs[0].len % XBOX_ADPCM_DECODED_BLOCKSIZE)
         PySys_FormatStdout("Provided pcm buffer is not a multiple of block size.\n");
     else if (bufs[1].len < block_count * XBOX_ADPCM_ENCODED_BLOCKSIZE)
-        PySys_FormatStdout("Provided adpcm buffer is not large enough to hold encoded data.\n");
+        PySys_FormatStdout("Provided xbadpcm buffer is not large enough to hold encoded data.\n");
     else if (channel_count > MAX_AUDIO_CHANNEL_COUNT)
         PySys_FormatStdout("Too many channels to encode to adpcm.\n");
     else if (noise_shaping != NOISE_SHAPING_OFF &&
              noise_shaping != NOISE_SHAPING_STATIC &&
              noise_shaping != NOISE_SHAPING_DYNAMIC)
         PySys_FormatStdout("Invalid value for noise_shaping parameter.\n");
-    else if (lookahead >= 8)
-        PySys_FormatStdout("Invalid value for lookahead parameter. Must be in the range [0, 8]\n");
+    else if (lookahead > 5)
+        PySys_FormatStdout("Invalid value for lookahead parameter. Must be in the range [0, 5]\n");
     else {
         // do the encoding!
-        encode_adpcm_stream(&bufs[0], &bufs[1], channel_count, 8, lookahead, noise_shaping);
+        encode_xbadpcm_stream(&bufs[0], &bufs[1], channel_count, 8, lookahead, noise_shaping);
     }
 
     // Release the buffer objects
@@ -250,8 +252,8 @@ static PyObject *py_encode_adpcm_samples(PyObject *self, PyObject *args) {
 "METH_VARGS" tells Python how to call the handler.
 The {NULL, NULL} entry indicates the end of the method definitions */
 static PyMethodDef adpcm_ext_methods[] = {
-    {"decode_adpcm_samples", py_decode_adpcm_samples, METH_VARARGS, ""},
-    {"encode_adpcm_samples", py_encode_adpcm_samples, METH_VARARGS, ""},
+    {"decode_xbadpcm_samples", py_decode_xbadpcm_samples, METH_VARARGS, ""},
+    {"encode_xbadpcm_samples", py_encode_xbadpcm_samples, METH_VARARGS, ""},
     {NULL, NULL, 0, NULL}      /* sentinel */
 };
 
