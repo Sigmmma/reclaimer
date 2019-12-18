@@ -47,7 +47,7 @@ static const int index_table[] = {
 
 #define MAX_AUDIO_CHANNEL_COUNT 8
 
-void *adpcm_create_context (int num_channels, int lookahead, int noise_shaping, int32_t initial_deltas [MAX_AUDIO_CHANNEL_COUNT]);
+void *adpcm_create_context (int num_channels, int lookahead, int noise_shaping, int32_t *initial_deltas);
 void adpcm_free_context(void *p);
 int adpcm_encode_block (void *p, uint8_t *outbuf, size_t *outbufsize, const int16_t *inbuf, int inbufcount);
 

@@ -94,14 +94,18 @@ def encode_adpcm_samples(in_data, channel_ct, input_big_endian=False):
     if (sys.byteorder == "big") != input_big_endian:
         out_data = audioop.byteswap(out_data, 2)
 
-    pad_size = (len(in_data) // channel_ct) % XBOX_ADPCM_DECODED_BLOCKSIZE
+    pcm_blocksize   = channel_ct * XBOX_ADPCM_DECODED_BLOCKSIZE
+    adpcm_blocksize = channel_ct * XBOX_ADPCM_ENCODED_BLOCKSIZE
+
+    pad_size = len(in_data) % pcm_blocksize
     if pad_size:
+        pad_size = XBOX_ADPCM_DECODED_BLOCKSIZE - pad_size
         # repeat the last sample to the end to pad to a multiple of blocksize
-        in_data += in_data[-(channel_ct * 2): ] * pad_size
+        pad_piece_size = (channel_ct * 2)
+        in_data += in_data[-pad_piece_size: ] * (pad_size // pad_piece_size)
 
     out_data = bytearray(
-        (len(in_data) // XBOX_ADPCM_DECODED_BLOCKSIZE) *
-        XBOX_ADPCM_ENCODED_BLOCKSIZE
+        (len(in_data) // pcm_blocksize) * adpcm_blocksize
         )
 
     if not fast_adpcm:
