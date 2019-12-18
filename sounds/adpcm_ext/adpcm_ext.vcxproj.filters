@@ -18,5 +18,16 @@
     <ClCompile Include="..\src\adpcm_ext.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\adpcm-xq\adpcm-lib.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\shared.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\adpcm-xq\adpcm-lib.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

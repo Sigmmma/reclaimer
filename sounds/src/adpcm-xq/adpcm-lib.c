@@ -44,7 +44,7 @@ struct adpcm_context {
  * for encoding independent frames).
  */
 
-void *adpcm_create_context (int num_channels, int lookahead, int noise_shaping, int32_t initial_deltas [MAX_AUDIO_CHANNEL_COUNT])
+void *adpcm_create_context (int num_channels, int lookahead, int noise_shaping, int32_t *initial_deltas)
 {
     struct adpcm_context *pcnxt = malloc (sizeof (struct adpcm_context));
     int ch, i;
@@ -225,7 +225,8 @@ static void encode_chunks (struct adpcm_context *pcnxt, uint8_t **outbuf, size_t
     const int16_t *pcmbuf;
     int chunks, ch, i;
 
-    chunks = (inbufcount - 1) / 8;
+    //chunks = (inbufcount - 1) / 8;
+    chunks = inbufcount / 8;  // we want to encode multiples of 8 samples per block.
     *outbufsize += (chunks * 4) * pcnxt->num_channels;
 
     while (chunks--)

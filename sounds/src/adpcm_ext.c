@@ -1,5 +1,5 @@
 #include "shared.h"
-#include "adpcm-lib.h"
+#include "adpcm-xq/adpcm-lib.h"
 
 const static int ADPCM_STEP_TABLE_MAX_INDEX = sizeof(step_table) / sizeof(step_table[0]) - 1;
 const static int XBOX_ADPCM_ENCODED_BLOCKSIZE = 36;
@@ -73,7 +73,7 @@ static AdpcmState decode_adpcm_sample(AdpcmState state) {
 
 static void decode_adpcm_stream(
     Py_buffer *adpcm_stream_buf, Py_buffer *pcm_stream_buf,
-    uint8 channel_count, int code_chunks_count) {
+    uint8 channel_count, uint32 code_chunks_count) {
 
     AdpcmState adpcm_states[MAX_AUDIO_CHANNEL_COUNT];
     int block_count = (int)(
@@ -128,18 +128,26 @@ static void decode_adpcm_stream(
 
 static void encode_adpcm_stream(
     Py_buffer *pcm_stream_buf, Py_buffer *adpcm_stream_buf,
-    uint8 channel_count, int code_chunks_count, uint16 lookahead, uint8 noise_shaping) {
+    uint8 channel_count, uint32 code_chunks_count, uint16 lookahead, uint8 noise_shaping) {
 
-    uint8 *adpcm_stream = adpcm_stream_buf->buf;
     sint16 *pcm_stream = pcm_stream_buf->buf;
+    uint8 *adpcm_stream = adpcm_stream_buf->buf;
+
+    uint32 sample_count = pcm_stream_buf->len / (channel_count * sizeof(sint16));
+    uint32 samples_per_block = code_chunks_count * 8;
+    uint32 block_count = sample_count / samples_per_block;
+    size_t num_bytes_decoded = 0;
+
+    uint32 pcm_block_size   = samples_per_block * channel_count;  // number of pcm sint16 per block
+    uint32 adpcm_block_size = (code_chunks_count * 4 + 4) * channel_count;  // number of adpcm bytes per block
+
     sint32 average_deltas[MAX_AUDIO_CHANNEL_COUNT];
-    uint32 sample_count = pcm_stream_buf->len * pcm_stream_buf->itemsize;
     void *adpcm_context = NULL;
 
-    // calculate decaying average for initial adpcm predictors
+    // calculate initial adpcm predictors using decaying average
     for (int c = 0; c < channel_count; c++) {
         average_deltas[c] = 0;
-        for (int i = c + sample_count - channel_count; i >= channel_count; i -= channel_count) {
+        for (int i = c + pcm_block_size - channel_count; i >= channel_count; i -= channel_count) {
             average_deltas[c] = (average_deltas[c] / 8) + abs(
                 (sint32)pcm_stream[i] - pcm_stream[i - channel_count]);
         }
@@ -147,9 +155,11 @@ static void encode_adpcm_stream(
     }
 
     adpcm_context = adpcm_create_context(channel_count, lookahead, noise_shaping, average_deltas);
-
-    // TODO: Do encoding here
-
+    for (int b = 0; b < block_count; b++) {
+        adpcm_encode_block(adpcm_context, adpcm_stream, &num_bytes_decoded, pcm_stream, samples_per_block);
+        adpcm_stream += adpcm_block_size;
+        pcm_stream += pcm_block_size;
+    }
     adpcm_free_context(adpcm_context);
 }
 
@@ -189,7 +199,7 @@ static PyObject *py_encode_adpcm_samples(PyObject *self, PyObject *args) {
     Py_buffer bufs[2];
     uint8 channel_count, noise_shaping = NOISE_SHAPING_OFF;
     int block_count;
-    uint16 lookahead = 0;
+    uint16 lookahead = 3;
 
     if (!PyArg_ParseTuple(args, "y*w*b|BH:encode_adpcm_samples",
         &bufs[0], &bufs[1], &channel_count, &noise_shaping, &lookahead)) {
@@ -206,9 +216,11 @@ static PyObject *py_encode_adpcm_samples(PyObject *self, PyObject *args) {
     else if (channel_count > MAX_AUDIO_CHANNEL_COUNT)
         PySys_FormatStdout("Too many channels to encode to adpcm.\n");
     else if (noise_shaping != NOISE_SHAPING_OFF &&
-        noise_shaping != NOISE_SHAPING_STATIC &&
-        noise_shaping != NOISE_SHAPING_DYNAMIC)
+             noise_shaping != NOISE_SHAPING_STATIC &&
+             noise_shaping != NOISE_SHAPING_DYNAMIC)
         PySys_FormatStdout("Invalid value for noise_shaping parameter.\n");
+    else if (lookahead >= 8)
+        PySys_FormatStdout("Invalid value for lookahead parameter. Must be in the range [0, 8]\n");
     else {
         // do the encoding!
         encode_adpcm_stream(&bufs[0], &bufs[1], channel_count, 8, lookahead, noise_shaping);

@@ -19,7 +19,12 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\adpcm-xq\adpcm-lib.c" />
     <ClCompile Include="..\src\adpcm_ext.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\src\adpcm-xq\adpcm-lib.h" />
+    <ClInclude Include="..\src\shared.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
