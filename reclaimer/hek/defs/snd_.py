@@ -49,7 +49,12 @@ compression = SEnum16("compression",
     'none',
     'xbox_adpcm',
     'ima_adpcm',
-    'ogg'
+    'ogg',
+    TOOLTIP="""
+IMA ADPCM is unsupported on pc, and is actually treated as
+MS ADPCM, with an additional header on the data stream.
+For all intents and purposes, "ima adpcm" is useless.
+"""
     )
 
 
