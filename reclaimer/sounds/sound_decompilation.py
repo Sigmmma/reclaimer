@@ -16,7 +16,7 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
     overwrite = kw.get('overwrite', True)
     decompress = kw.get('decode_adpcm', True)
     pcm_is_big_endian = kw.get('byteswap_pcm_samples', False)
-    tagpath_base = os.path.join(kw['out_dir'], os.path.splitext(tag_path)[0])
+    tagpath_base = os.path.join(kw.get('out_dir', ''), os.path.splitext(tag_path)[0])
 
     encoding = tagdata.encoding.data
     channels = constants.channel_counts.get(encoding, 1)
@@ -98,11 +98,16 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                                    if pcm_is_big_endian else
                                    constants.COMPRESSION_PCM_16_LE)
                     sample_count = len(sample_data) // 2
-                elif "adpcm" in perm.compression.enum_name:
-                    compression = constants.COMPRESSION_ADPCM
+                elif perm.compression.enum_name == "xbox_adpcm":
+                    compression = constants.COMPRESSION_XBOX_ADPCM
                     sample_count = (
-                        (constants.ADPCM_DECOMPRESSED_BLOCKSIZE // 2) *
-                        (len(sample_data) // constants.ADPCM_COMPRESSED_BLOCKSIZE))
+                        (constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE // 2) *
+                        (len(sample_data) // constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE))
+                elif perm.compression.enum_name == "ima_adpcm":
+                    compression = constants.COMPRESSION_IMA_ADPCM
+                    sample_count = (
+                        (constants.IMA_ADPCM_DECOMPRESSED_BLOCKSIZE // 2) *
+                        (len(sample_data) // constants.IMA_ADPCM_COMPRESSED_BLOCKSIZE))
                 else:
                     print("Unknown audio compression type:", perm.compression.data)
                     continue

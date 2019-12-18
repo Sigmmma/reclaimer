@@ -63,7 +63,8 @@ class BlamSoundSamples:
             raise NotImplementedError(
                 "Ogg encoder not available. Cannot compress.")
         elif (target_compression not in constants.PCM_FORMATS and
-              target_compression != constants.COMPRESSION_ADPCM and
+              target_compression != constants.COMPRESSION_XBOX_ADPCM and
+              target_compression != constants.COMPRESSION_IMA_ADPCM and
               target_compression != constants.COMPRESSION_OGG):
             raise ValueError('Unknown compression type "%s"' %
                              target_compression)
@@ -79,7 +80,8 @@ class BlamSoundSamples:
             # decompress samples so we can recompress(ugh, whatever, i don't care)
             compression = (
                 constants.ADPCM_DECOMPRESSED_FORMAT if
-                compression == constants.COMPRESSION_ADPCM
+                compression in (constants.COMPRESSION_XBOX_ADPCM,
+                                constants.COMPRESSION_IMA_ADPCM)
                 else constants.HIGHEST_FIDELITY_FORMAT)
             sample_data = self.get_decompressed(
                 compression, self.sample_rate, self.encoding)
@@ -94,7 +96,8 @@ class BlamSoundSamples:
                 self.encoding, target_encoding,
                 self.sample_rate, target_sample_rate)
 
-        if target_compression == constants.COMPRESSION_ADPCM:
+        if target_compression in (constants.COMPRESSION_XBOX_ADPCM,
+                                  constants.COMPRESSION_IMA_ADPCM):
             # compress to adpcm
             if constants.sample_widths[compression] != 2:
                 # adpcm encoder only accepts 16bit pcm as input
@@ -105,6 +108,7 @@ class BlamSoundSamples:
 
             sample_data = adpcm.encode_adpcm_samples(
                 sample_data, constants.channel_counts[target_encoding],
+                target_compression == constants.COMPRESSION_XBOX_ADPCM,
                 util.is_big_endian_pcm(compression))
         elif target_compression == constants.COMPRESSION_OGG:
             # compress to ogg vorbis
@@ -133,10 +137,12 @@ class BlamSoundSamples:
         assert target_sample_rate > 0
 
         curr_compression = self.compression
-        if curr_compression == constants.COMPRESSION_ADPCM:
+        if curr_compression in (constants.COMPRESSION_XBOX_ADPCM,
+                                constants.COMPRESSION_IMA_ADPCM):
             # decompress adpcm to 16bit pcm
             sample_data = adpcm.decode_adpcm_samples(
                 self.sample_data, constants.channel_counts[self.encoding],
+                curr_compression == constants.COMPRESSION_XBOX_ADPCM,
                 util.is_big_endian_pcm(target_compression))
             curr_compression = constants.ADPCM_DECOMPRESSED_FORMAT
         elif not self.is_compressed:

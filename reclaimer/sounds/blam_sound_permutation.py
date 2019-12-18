@@ -82,7 +82,8 @@ class BlamSoundPermutation:
             raise NotImplementedError(
                 "Cannot partition Ogg Vorbis samples.")
         elif (target_compression not in constants.PCM_FORMATS and
-              target_compression != constants.COMPRESSION_ADPCM and
+              target_compression != constants.COMPRESSION_IMA_ADPCM and
+              target_compression != constants.COMPRESSION_XBOX_ADPCM and
               target_compression != constants.COMPRESSION_OGG):
             raise ValueError('Unknown compression type "%s"' % compression)
         elif target_encoding not in (constants.ENCODING_MONO,
@@ -102,7 +103,8 @@ class BlamSoundPermutation:
             source_sample_rate == target_sample_rate and
             source_encoding == target_encoding and
             (source_compression in constants.PCM_FORMATS or
-             source_compression == constants.COMPRESSION_ADPCM)):
+             source_compression == constants.COMPRESSION_IMA_ADPCM or
+             source_compression == constants.COMPRESSION_XBOX_ADPCM)):
             # compressing to same settings and can split at target_chunk_size
             # because format has fixed compression ratio. recompression not
             # necessary. Just split source into pieces at target_chunk_size.
@@ -321,14 +323,23 @@ class BlamSoundPermutation:
                 wav_fmt.bits_per_sample = sample_width * 8
                 wav_fmt.block_align = sample_width * wav_fmt.channels
                 wav_fmt.byte_rate = wav_fmt.sample_rate * wav_fmt.block_align
-            elif compression == constants.COMPRESSION_ADPCM:
+            elif compression == constants.COMPRESSION_IMA_ADPCM:
                 # 16bit adpcm
                 wav_fmt.fmt.data = constants.WAV_FORMAT_IMA_ADPCM
                 wav_fmt.bits_per_sample = 16
-                wav_fmt.block_align = constants.ADPCM_COMPRESSED_BLOCKSIZE * wav_fmt.channels
+                wav_fmt.block_align = constants.IMA_ADPCM_COMPRESSED_BLOCKSIZE * wav_fmt.channels
                 wav_fmt.byte_rate = int(
                     (wav_fmt.sample_rate * wav_fmt.block_align /
-                     (constants.ADPCM_DECOMPRESSED_BLOCKSIZE // 2))
+                     (constants.IMA_ADPCM_DECOMPRESSED_BLOCKSIZE // 2))
+                    )
+            elif compression == constants.COMPRESSION_XBOX_ADPCM:
+                # 16bit adpcm
+                wav_fmt.fmt.data = constants.WAV_FORMAT_XBOX_ADPCM
+                wav_fmt.bits_per_sample = 16
+                wav_fmt.block_align = constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE * wav_fmt.channels
+                wav_fmt.byte_rate = int(
+                    (wav_fmt.sample_rate * wav_fmt.block_align /
+                     (constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE // 2))
                     )
             else:
                 print("Unknown compression method:", compression)
