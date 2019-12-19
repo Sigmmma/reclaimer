@@ -54,8 +54,8 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
     # them together into lists of permutation blocks
     for blam_perm_name in sorted(blam_pitch_range.permutations):
         blam_sound_perm = blam_pitch_range.permutations[blam_perm_name]
-        name = get_unique_name_31char(blam_perm_name.strip().lower(),
-                                      snd__perm_names)
+        name = get_unique_name_31char(
+            blam_sound_perm.name.strip(), snd__perm_names)
         snd__perm_names.add(name)
 
         snd__perm_chain = []
@@ -88,7 +88,7 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
                 )
         except Exception:
             errors.append(traceback.format_exc())
-            errors.append("Could not compile permutation '%s'" % blam_perm_name)
+            errors.append("Could not compile permutation '%s'" % blam_perm.name)
 
     return errors
 
@@ -205,22 +205,21 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
 
     # loop over the blam_sound_bank pitch ranges and compile them
     for blam_pr_name in sorted(blam_pitch_ranges):
-        name = get_unique_name_31char(blam_pr_name.strip().lower(),
-                                      snd__pitch_ranges_by_name)
+        blam_pr = blam_pitch_ranges[blam_pr_name]
+        name = get_unique_name_31char(
+            blam_pr.name.strip(), snd__pitch_ranges_by_name)
 
         snd__pitch_ranges.append()  # create the new pitch range block
         snd__pitch_ranges_by_name[name], _ = snd__pitch_ranges.pop(-1)
-        snd__pitch_ranges_by_name[name].name = name
+        snd__pitch_ranges_by_name[name].name = blam_pr_name
         try:
-            print("Compiling '%s'" % blam_pr_name)
             errors.extend(compile_pitch_range(
-                snd__pitch_ranges_by_name[name],
-                blam_pitch_ranges[blam_pr_name],
+                snd__pitch_ranges_by_name[name], blam_pr,
                 snd__channel_count, snd__sample_rate,
                 ignore_size_limits, force_sample_rate))
         except Exception:
             errors.append(traceback.format_exc())
-            errors.append("Could not compile pitch range '%s'" % blam_pr_name)
+            errors.append("Could not compile pitch range '%s'" % blam_pr.name)
             snd__pitch_ranges_by_name.pop(name)
 
 

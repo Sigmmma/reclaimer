@@ -7,6 +7,8 @@ from supyr_struct.defs.audio.wav import wav_def
 
 
 class BlamSoundPermutation:
+    name = ""
+
     # permutation properties
     _source_sample_data = b''
     _source_compression = constants.COMPRESSION_PCM_16_LE
