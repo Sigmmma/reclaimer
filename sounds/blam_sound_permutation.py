@@ -68,7 +68,7 @@ class BlamSoundPermutation:
 
     def partition_samples(self, target_compression=None,
                           target_sample_rate=None, target_encoding=None,
-                          vorbis_bitrate_info=None, chunk_size=None):
+                          chunk_size=None, **compressor_kwargs):
         if target_compression is None:
             target_compression = self.source_compression
 
@@ -154,13 +154,13 @@ class BlamSoundPermutation:
             samples.generate_mouth_data()
 
     def compress_samples(self, compression, sample_rate=None, encoding=None,
-                         vorbis_bitrate_info=None, chunk_size=None):
+                         chunk_size=None, **compressor_kwargs):
         self.partition_samples(
             compression, sample_rate, encoding,
-            vorbis_bitrate_info, chunk_size)
+            chunk_size, **compressor_kwargs)
         for samples in self.processed_samples:
             samples.compress(compression, sample_rate, encoding,
-                             vorbis_bitrate_info)
+                             **compressor_kwargs)
 
     def get_concatenated_sample_data(self, target_compression=None,
                                      target_sample_rate=None,
@@ -254,6 +254,7 @@ class BlamSoundPermutation:
                 if sample_data:
                     perm_chunks.append((compression, self.encoding, sample_data))
             except Exception:
+                print("Could not decompress permutation pieces. Concatenating.")
                 perm_chunks.extend(
                     (piece.compression, piece.encoding, piece.sample_data)
                     for piece in self.processed_samples

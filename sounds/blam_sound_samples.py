@@ -42,7 +42,7 @@ class BlamSoundSamples:
         return self.compression not in constants.PCM_FORMATS
 
     def compress(self, target_compression, target_sample_rate=None,
-                 target_encoding=None, vorbis_bitrate_info=None):
+                 target_encoding=None, **compressor_kwargs):
         if target_sample_rate is None:
             target_sample_rate = self.sample_rate
 
@@ -54,9 +54,6 @@ class BlamSoundSamples:
             target_encoding == self.encoding):
             # compressing to same settings. nothing to do.
             return
-
-        if vorbis_bitrate_info is None:
-            vorbis_bitrate_info = ogg.VorbisBitrateInfo()
 
         if (target_compression == constants.COMPRESSION_OGG and
               not constants.OGG_VORBIS_AVAILABLE):
@@ -106,12 +103,16 @@ class BlamSoundSamples:
                     constants.ADPCM_DECOMPRESSED_FORMAT)
                 compression = constants.ADPCM_DECOMPRESSED_FORMAT
 
+            adpcm_kwargs = compressor_kwargs.get("adpcm_kwargs", {})
+
             sample_data = adpcm.encode_adpcm_samples(
                 sample_data, constants.channel_counts[target_encoding],
-                util.is_big_endian_pcm(compression))
+                util.is_big_endian_pcm(compression), **adpcm_kwargs)
         elif target_compression == constants.COMPRESSION_OGG:
             # compress to ogg vorbis
             # TODO: Finish this
+            ogg_kwargs = compressor_kwargs.get("ogg_kwargs", {})
+
             raise NotImplementedError("Whoops, ogg is not implemented.")
         elif target_compression != self.compression:
             # convert to a different pcm format

@@ -3,7 +3,7 @@ import os
 from traceback import format_exc
 
 from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation
-from reclaimer.sounds import constants, ogg
+from reclaimer.sounds import constants, ogg, adpcm
 
 
 class BlamSoundPitchRange:
@@ -22,11 +22,11 @@ class BlamSoundPitchRange:
 
     def compress_samples(
             self, compression=constants.COMPRESSION_PCM_16_LE,
-            sample_rate=None, encoding=None,
-            vorbis_bitrate_info=None, chunk_size=None):
+            sample_rate=None, encoding=None, chunk_size=None,
+            **compressor_kwargs):
         for perm in self.permutations.values():
             perm.compress_samples(compression, sample_rate, encoding,
-                                  vorbis_bitrate_info, chunk_size)
+                                  chunk_size, **compressor_kwargs)
 
     def regenerate_source(self):
         for perm in self.permutations.values():
@@ -88,6 +88,9 @@ class BlamSoundBank:
 
     vorbis_bitrate_info = None
 
+    adpcm_noise_shaping = adpcm.NOISE_SHAPING_OFF
+    adpcm_lookahead = 3
+
     _pitch_ranges = ()
 
     def __init__(self):
@@ -107,10 +110,19 @@ class BlamSoundBank:
         if self.split_into_smaller_chunks:
             chunk_size = self.chunk_size
 
+        adpcm_kwargs = dict(
+            noise_shaping=self.adpcm_noise_shaping,
+            lookahead=self.adpcm_lookahead
+            )
+        ogg_kwargs = dict(
+            bitrate_info=self.vorbis_bitrate_info
+            )
+
         for pitch_range in self.pitch_ranges.values():
             pitch_range.compress_samples(
                 self.compression, self.sample_rate, self.encoding,
-                self.vorbis_bitrate_info, chunk_size)
+                chunk_size, adpcm_kwargs=adpcm_kwargs, ogg_kwargs=ogg_kwargs,
+                )
 
     def regenerate_source(self):
         for pitch_range in self.pitch_ranges.values():
