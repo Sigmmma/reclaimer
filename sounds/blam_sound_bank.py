@@ -7,6 +7,7 @@ from reclaimer.sounds import constants, ogg, adpcm
 
 
 class BlamSoundPitchRange:
+    name = ""
     _permutations = ()
 
     def __init__(self):
@@ -67,6 +68,7 @@ class BlamSoundPitchRange:
                 perm = BlamSoundPermutation.create_from_file(
                     os.path.join(root, filename))
 
+                perm.name = name.strip()
                 if (perm and perm.source_sample_data) and (
                     replace_existing or name_key not in self.permutations):
                     self.permutations[name_key] = perm
@@ -173,9 +175,13 @@ class BlamSoundBank:
                 default_pitch_range = default_dir_pitch_range
 
         # merge the default pitch range into this sound bank
-        if default_pitch_range and default_pitch_range.permutations:
+        if default_pitch_range:
+            default_pitch_range.name = constants.DEFAULT_PITCH_RANGE_NAME
             name_key = constants.DEFAULT_PITCH_RANGE_NAME
-            if self.pitch_ranges.get(name_key) is None:
+
+            if not default_pitch_range.permutations:
+                pass
+            elif self.pitch_ranges.get(name_key) is None:
                 self.pitch_ranges[name_key] = default_pitch_range
             elif merge_same_names:
                 self.pitch_ranges[name_key].permutations.update(
@@ -190,6 +196,7 @@ class BlamSoundBank:
 
                 pitch_range = BlamSoundPitchRange.create_from_directory(
                     os.path.join(root, dirname))
+                pitch_range.name = dirname.strip()
 
                 # merge the pitch range into this sound bank
                 if pitch_range and pitch_range.permutations:
