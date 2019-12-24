@@ -1,7 +1,7 @@
 from copy import copy, deepcopy
 
 try:
-    from mozzarilla.field_widgets import ReflexiveFrame, HaloRawdataFrame,\
+    from mozzarilla.widgets.field_widgets import ReflexiveFrame, HaloRawdataFrame,\
          TextFrame, ColorPickerFrame, EntryFrame, SoundSampleFrame,\
          DynamicArrayFrame, Halo2BitmapTagFrame
 except Exception:
