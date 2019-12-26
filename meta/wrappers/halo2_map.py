@@ -12,6 +12,8 @@ from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
 from reclaimer.meta.wrappers.tag_index_converters import h2_alpha_to_h1_tag_index,\
      h2_to_h1_tag_index, h3_to_h1_tag_index
 
+from supyr_struct.util import is_path_empty
+
 from supyr_struct.buffer import BytearrayBuffer
 
 
