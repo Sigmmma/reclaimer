@@ -1,5 +1,3 @@
-import os
-
 from reclaimer.util.matrices import Matrix, matrix_to_quaternion
 from reclaimer.model.jms import write_jms, JmsModel, JmsNode, JmsMarker,\
      generate_fake_nodes
@@ -9,12 +7,11 @@ __all__ = ("extract_physics", )
 
 def extract_physics(tagdata, tag_path="", **kw):
     do_write_jms = kw.get('write_jms', True)
-    filepath = ""
+    filepath = Path("")
     if do_write_jms:
-        filepath = os.path.join(
-            str(kw['out_dir']), os.path.dirname(str(tag_path)),
-            "physics", "physics.jms")
-        if not kw.get('overwrite', True) and os.path.isfile(filepath):
+        filepath = Path(kw.get("out_dir", "")).joinpath(
+            Path(tag_path).parent, "physics", "physics.jms")
+        if not kw.get('overwrite', True) and filepath.is_file():
             return
 
     jms_model = JmsModel()

@@ -1,5 +1,3 @@
-import os
-
 from reclaimer.util.matrices import Matrix, quaternion_to_matrix
 
 
