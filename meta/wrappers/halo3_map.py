@@ -241,12 +241,14 @@ class Halo3Map(HaloMap):
             return {}
 
         map_paths = {name.split(".")[0]: None for name in self.shared_map_names}
-        if not maps_dir:
-            maps_dir = os.path.dirname(self.filepath)
+        if not is_path_empty(maps_dir):
+            maps_dir = Path(maps_dir)
+        else:
+            maps_dir = self.filepath.parent
 
         # detect/ask for the map paths for the resource maps
         for map_name in sorted(map_paths):
-            map_path = os.path.join(maps_dir, "%s.map" % map_name)
+            map_path = str(maps_dir.joinpath("%s.map" % map_name))
             if self.maps.get(map_name) is not None:
                 map_paths[map_name] = self.maps[map_name].filepath
             elif os.path.exists(map_path):

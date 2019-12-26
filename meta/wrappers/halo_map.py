@@ -3,6 +3,7 @@ import re
 import tempfile
 
 from mmap import mmap
+from pathlib import Path
 from traceback import format_exc
 from string import ascii_letters
 
@@ -13,6 +14,7 @@ from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
 from reclaimer.util import is_protected_tag, int_to_fourcc, path_normalize
 
 from supyr_struct.buffer import BytearrayBuffer, get_rawdata
+from supyr_struct.util import is_path_empty
 
 
 VALID_MODULE_NAME_CHARS = ascii_letters + '_' + '0123456789'
@@ -46,10 +48,11 @@ class HaloMap:
     matg_meta = None
 
     # determines how to work with this map
-    filepath        = ""  # the filepath of the map being opened
-    decomp_filepath = ""  # the filepath of the map that map_data is actually
-    #                       mapping. Typically only different from filepath if
-    #                       the map had to be decompressed to a different file.
+    _filepath        = Path("")  # the filepath of the map being opened
+    _decomp_filepath = Path("")  # the filepath of the map that map_data
+    #                              is actually mapping. Typically only
+    #                              different from filepath if the map had
+    #                              to be decompressed to a different file.
     map_name        = ""
     engine          = ""
     is_resource     = False
@@ -91,7 +94,26 @@ class HaloMap:
         self.unload_map()
 
     @property
-    def decomp_file_ext(self): return self._decomp_file_ext
+    def filepath(self):
+        return self._filepath
+    @filepath.setter
+    def filepath(self, new_val):
+        if not isinstance(new_val, Path):
+            new_val = Path(new_val)
+        self._filepath = new_val
+
+    @property
+    def decomp_filepath(self):
+        return self._decomp_filepath
+    @decomp_filepath.setter
+    def decomp_filepath(self, new_val):
+        if not isinstance(new_val, Path):
+            new_val = Path(new_val)
+        self._decomp_filepath = new_val
+
+    @property
+    def decomp_file_ext(self):
+        return self._decomp_file_ext
 
     def get_writable_map_data(self):
         if not self.map_data:

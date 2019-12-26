@@ -2,6 +2,7 @@ import os
 
 from copy import deepcopy
 from math import pi, sqrt, log
+from pathlib import Path
 from struct import unpack, Struct as PyStruct
 from traceback import format_exc
 
@@ -31,6 +32,8 @@ from reclaimer.constants import tag_class_fcc_to_ext
 from reclaimer.util.compression import compress_normal32, decompress_normal32
 from reclaimer.util import is_overlapping_ranges, is_valid_ascii_name_str,\
      int_to_fourcc
+
+from supyr_struct.util import is_path_empty
 
 
 __all__ = ("Halo1Map", "Halo1RsrcMap")
@@ -1342,22 +1345,23 @@ class Halo1Map(HaloMap):
         if hasattr(self.map_header, "yelo_header"):
             data_files = self.map_header.yelo_header.flags.uses_mod_data_files
 
-        if maps_dir:
-            maps_dir = os.path.join(maps_dir, "")
+        if not is_path_empty(maps_dir):
+            maps_dir = Path(maps_dir)
+        elif data_files:
+            maps_dir = self.filepath.parent.joinpath("data_files")
         else:
-            maps_dir = os.path.dirname(self.filepath)
-            if data_files:
-                maps_dir = os.path.join(maps_dir, "data_files")
+            maps_dir = self.filepath.parent
 
+        map_name_str = "%s.map"
         if data_files:
-            maps_dir = os.path.join(maps_dir, "~")
+            map_name_str = "~" + map_name_str
 
         # detect the map paths for the resource maps
         for map_name in sorted(map_paths.keys()):
-            map_path = os.path.join(maps_dir, "%s.map" % map_name)
+            map_path = maps_dir.joinpath(map_name_str % map_name)
             if self.maps.get(map_name) is not None:
                 map_paths[map_name] = self.maps[map_name].filepath
-            elif os.path.exists(map_path):
+            elif map_path.is_file():
                 map_paths[map_name] = map_path
 
         return map_paths
