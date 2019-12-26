@@ -3,6 +3,7 @@ import re
 import traceback
 
 from copy import deepcopy
+from pathlib import Path
 from reclaimer.common_descs import anim_types, anim_frame_info_types
 from reclaimer.model.jms import JmsNode, JmsModel
 from reclaimer.util import float_to_str, float_to_str_truncate,\
