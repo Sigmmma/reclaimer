@@ -17,6 +17,8 @@ from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
 from reclaimer.meta.wrappers.rawdata_manager import RawdataManager
 from reclaimer.meta.wrappers.tag_index_converters import h3_to_h1_tag_index
 
+from supyr_struct.util import is_path_empty
+
 from arbytmap.format_defs import VALID_FORMATS
 
 __all__ = ("Halo3Map", )

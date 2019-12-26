@@ -72,7 +72,7 @@ class HaloMap:
 
     tag_defs_module = ""
     tag_classes_to_load = ()
-    data_extractors = ()
+    data_extractors = {}
 
     resource_map_class = None
 
