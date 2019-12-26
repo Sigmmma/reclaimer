@@ -925,8 +925,9 @@ class Halo1Map(HaloMap):
                 b.attachment.data += 1
 
         elif tag_cls == "lens":
-            # multiply corona rotation by pi/180
-            meta.corona_rotation.function_scale *= pi/180
+            # DON'T multiply corona rotation by pi/180
+            # reminder that this is not supposed to be changed
+            pass # meta.corona_rotation.function_scale *= pi/180
 
         elif tag_cls == "ligh":
             # divide light time by 30
