@@ -3,7 +3,7 @@ import re
 import tempfile
 
 from mmap import mmap
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from traceback import format_exc
 from string import ascii_letters
 
@@ -287,7 +287,7 @@ class HaloMap:
         extractor = self.data_extractors.get(
             int_to_fourcc(tag_index_ref.class_1.data))
         kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.path, **kw)
+        return extractor(meta, Path(PureWindowsPath(tag_index_ref.path)), **kw)
 
     def load_resource_maps(self, maps_dir="", map_paths=(), **kw):
         do_printout = kw.get("do_printout", False)
