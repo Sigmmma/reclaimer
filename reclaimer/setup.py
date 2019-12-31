@@ -25,7 +25,7 @@ setup(
 games built with the Blam engine',
     long_description=long_desc,
     version='%s.%s.%s' % reclaimer.__version__,
-    url='https://bitbucket.org/Moses_of_Egypt/reclaimer',
+    url=reclaimer.__website__,
     author='Devin Bobadilla',
     author_email='MosesBobadilla@gmail.com',
     license='MIT',
