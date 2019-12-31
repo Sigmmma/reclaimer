@@ -1,5 +1,3 @@
-import os
-
 from math import sqrt
 from struct import Struct as PyStruct
 

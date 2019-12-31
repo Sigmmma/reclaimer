@@ -1,8 +1,8 @@
-import os
 import traceback
 
 from copy import deepcopy
 from math import sqrt
+from pathlib import Path
 from struct import Struct as PyStruct
 
 from reclaimer.util.matrices import axis_angle_to_quat, multiply_quaternions
@@ -54,13 +54,12 @@ def extract_animation(anim_index, tagdata, tag_path="", **kw):
                             anim.frame_info_type.enum_name,
                             anim.flags.world_relative)
 
-    filepath = ""
+    filepath = Path("")
     do_write_jma = kw.get('write_jma', True)
     if do_write_jma:
-        filepath = os.path.join(
-            kw['out_dir'], os.path.dirname(tag_path), "animations",
-            anim.name + anim_ext)
-        if not kw.get('overwrite', True) and os.path.isfile(filepath):
+        filepath = Path(kw.get("out_dir", "")).joinpath(
+            Path(tag_path).parent, "animations", anim.name + anim_ext)
+        if not kw.get('overwrite', True) and filepath.is_file():
             return
 
     if len(anim_nodes) != anim.node_count:

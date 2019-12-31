@@ -3,6 +3,7 @@ import re
 import tempfile
 
 from mmap import mmap
+from pathlib import Path, PureWindowsPath
 from traceback import format_exc
 from string import ascii_letters
 
@@ -10,9 +11,10 @@ from reclaimer.meta.halo_map import get_map_version, get_map_header,\
      get_tag_index, get_index_magic, get_map_magic, get_is_compressed_map,\
      decompress_map
 from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
-from reclaimer.util import is_protected_tag, int_to_fourcc, sanitize_path
+from reclaimer.util import is_protected_tag, int_to_fourcc, path_normalize
 
 from supyr_struct.buffer import BytearrayBuffer, get_rawdata
+from supyr_struct.util import is_path_empty
 
 
 VALID_MODULE_NAME_CHARS = ascii_letters + '_' + '0123456789'
@@ -46,10 +48,11 @@ class HaloMap:
     matg_meta = None
 
     # determines how to work with this map
-    filepath        = ""  # the filepath of the map being opened
-    decomp_filepath = ""  # the filepath of the map that map_data is actually
-    #                       mapping. Typically only different from filepath if
-    #                       the map had to be decompressed to a different file.
+    _filepath        = Path("")  # the filepath of the map being opened
+    _decomp_filepath = Path("")  # the filepath of the map that map_data
+    #                              is actually mapping. Typically only
+    #                              different from filepath if the map had
+    #                              to be decompressed to a different file.
     map_name        = ""
     engine          = ""
     is_resource     = False
@@ -69,7 +72,7 @@ class HaloMap:
 
     tag_defs_module = ""
     tag_classes_to_load = ()
-    data_extractors = ()
+    data_extractors = {}
 
     resource_map_class = None
 
@@ -91,7 +94,26 @@ class HaloMap:
         self.unload_map()
 
     @property
-    def decomp_file_ext(self): return self._decomp_file_ext
+    def filepath(self):
+        return self._filepath
+    @filepath.setter
+    def filepath(self, new_val):
+        if not isinstance(new_val, Path):
+            new_val = Path(new_val)
+        self._filepath = new_val
+
+    @property
+    def decomp_filepath(self):
+        return self._decomp_filepath
+    @decomp_filepath.setter
+    def decomp_filepath(self, new_val):
+        if not isinstance(new_val, Path):
+            new_val = Path(new_val)
+        self._decomp_filepath = new_val
+
+    @property
+    def decomp_file_ext(self):
+        return self._decomp_file_ext
 
     def get_writable_map_data(self):
         if not self.map_data:
@@ -265,7 +287,7 @@ class HaloMap:
         extractor = self.data_extractors.get(
             int_to_fourcc(tag_index_ref.class_1.data))
         kw['halo_map'] = self
-        return extractor(meta, tag_index_ref.path, **kw)
+        return extractor(meta, Path(PureWindowsPath(tag_index_ref.path)), **kw)
 
     def load_resource_maps(self, maps_dir="", map_paths=(), **kw):
         do_printout = kw.get("do_printout", False)
@@ -345,8 +367,8 @@ class HaloMap:
             return
 
         self.maps[self.map_name] = self
-        self.filepath        = sanitize_path(map_path)
-        self.decomp_filepath = sanitize_path(decomp_path)
+        self.filepath        = path_normalize(map_path)
+        self.decomp_filepath = path_normalize(decomp_path)
         self.map_header  = map_header
         self.index_magic = get_index_magic(map_header)
         self.map_magic   = get_map_magic(map_header)

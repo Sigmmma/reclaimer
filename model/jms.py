@@ -1,9 +1,10 @@
 import math
-import os
 import re
 import traceback
 
 from copy import deepcopy
+from pathlib import Path
+
 from reclaimer.util import float_to_str, float_to_str_truncate,\
      parse_jm_float, parse_jm_int
 
@@ -287,7 +288,7 @@ class JmsVertex:
 
         norm_len = self.norm_i**2 + self.norm_j**2 + self.norm_k**2
         if norm_len > 0.0:
-            norm_len = math.sqrt(norm_len)
+            norm_len = norm_len**0.5
             self.norm_i /= norm_len
             self.norm_j /= norm_len
             self.norm_k /= norm_len
@@ -1349,8 +1350,8 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
     regions = jms_model.regions
 
     # If the path doesnt exist, create it
-    if not os.path.exists(os.path.dirname(filepath)):
-        os.makedirs(os.path.dirname(filepath))
+    filepath = Path(filepath)
+    filepath.parent.mkdir(exist_ok=True, parents=True)
 
     if not regions:
         regions = ("__unnamed", )
@@ -1358,7 +1359,7 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
     if not materials:
         materials = (JmsMaterial("__unnamed", "<none>"), )
 
-    with open(filepath, "w", encoding='latin1', newline="\r\n") as f:
+    with filepath.open("w", encoding='latin1', newline="\r\n") as f:
         f.write("%s\n" % jms_model.version)
         f.write("%s\n" % int(jms_model.node_list_checksum))
 

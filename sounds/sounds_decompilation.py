@@ -90,7 +90,8 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
     overwrite = kw.get('overwrite', True)
     decode_adpcm = kw.get('decode_adpcm', True)
     byteswap_pcm_samples = kw.get('byteswap_pcm_samples', False)
-    tagpath_base = os.path.join(kw['out_dir'], os.path.splitext(tag_path)[0])
+    tagpath_base = os.path.join(str(kw['out_dir']),
+                                os.path.splitext(str(tag_path))[0])
     pitch_ranges = tagdata.pitch_ranges.STEPTREE
     same_pr_names = {}
 

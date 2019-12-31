@@ -1,5 +1,4 @@
-import os
-
+from pathlib import Path
 from traceback import format_exc
 from reclaimer.enums import hmt_icon_types
 
@@ -38,9 +37,9 @@ def parse_hmt_message(hmt_data, message_indices=None):
 
 
 def extract_hud_message_text(tagdata, tag_path, **kw):
-    filepath = os.path.join(
-        kw['out_dir'], os.path.splitext(tag_path)[0] + ".hmt")
-    if os.path.isfile(filepath) and not kw.get('overwrite', True):
+    out_dir = Path(kw.get("out_dir", ""))
+    filepath = out_dir.joinpath(Path(str(tag_path) + ".hmt"))
+    if filepath.is_file() and not kw.get('overwrite', True):
         return
 
     out_data = b""
@@ -56,12 +55,8 @@ def extract_hud_message_text(tagdata, tag_path, **kw):
         out_data += b"\x0D\x00\x0A\x00"  # cr + lf
 
     try:
-        folderpath = os.path.dirname(filepath)
-        # If the path doesnt exist, create it
-        if not os.path.exists(folderpath):
-            os.makedirs(folderpath)
-
-        with open(filepath, "wb") as f:
+        filepath.parent.mkdir(exist_ok=True, parents=True)
+        with filepath.open("wb") as f:
             f.write(b"\xFF\xFE")  # little endian unicode sig
             f.write(out_data)
     except Exception:
@@ -71,9 +66,9 @@ def extract_hud_message_text(tagdata, tag_path, **kw):
 
 
 def extract_string_list(tagdata, tag_path, encoding="latin-1", **kw):
-    filepath = os.path.join(
-        kw['out_dir'], os.path.splitext(tag_path)[0] + ".txt")
-    if os.path.isfile(filepath) and not kw.get('overwrite', True):
+    out_dir = Path(kw.get("out_dir", ""))
+    filepath = out_dir.joinpath(Path(str(tag_path) + ".txt"))
+    if filepath.is_file() and not kw.get('overwrite', True):
         return
 
     out_data = b""
@@ -83,12 +78,8 @@ def extract_string_list(tagdata, tag_path, encoding="latin-1", **kw):
         out_data += string.encode(encoding)
 
     try:
-        folderpath = os.path.dirname(filepath)
-        # If the path doesnt exist, create it
-        if not os.path.exists(folderpath):
-            os.makedirs(folderpath)
-
-        with open(filepath, "wb") as f:
+        filepath.parent.mkdir(exist_ok=True, parents=True)
+        with filepath.open("wb") as f:
             if encoding == "utf-16-le":
                 f.write(b"\xFF\xFE")  # little endian unicode sig
             f.write(out_data)
