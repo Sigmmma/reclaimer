@@ -1,9 +1,9 @@
 import math
-import os
 import re
 import traceback
 
 from copy import deepcopy
+from pathlib import Path
 from reclaimer.common_descs import anim_types, anim_frame_info_types
 from reclaimer.model.jms import JmsNode, JmsModel
 from reclaimer.util import float_to_str, float_to_str_truncate,\
@@ -687,14 +687,14 @@ def write_jma(filepath, jma_anim, use_blitzkrieg_rounding=False):
         to_str = float_to_str
 
     # If the path doesnt exist, create it
-    if not os.path.exists(os.path.dirname(filepath)):
-        os.makedirs(os.path.dirname(filepath))
+    filepath = Path(filepath)
+    filepath.parent.mkdir(exist_ok=True, parents=True)
 
     if not jma_anim.root_node_info_applied:
         jma_anim = deepcopy(jma_anim)
         jma_anim.apply_root_node_info_to_states()
 
-    with open(filepath, "w", encoding='latin1', newline="\r\n") as f:
+    with filepath.open("w", encoding='latin1', newline="\r\n") as f:
         f.write("16392\n")  # version number
         f.write("%s\n" % jma_anim.frame_count)
         f.write("%s\n" % jma_anim.frame_rate)
