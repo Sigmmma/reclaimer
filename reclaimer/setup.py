@@ -10,23 +10,19 @@ curr_dir = dirname(__file__)
 import reclaimer
 
 try:
-    try:
-        long_desc = open(join(curr_dir, "readme.rst")).read()
-    except Exception:
-        long_desc = "Since PyPI refuses to let me upload due to my readme being Markdown, I wont be using a readme."
-        #long_desc = open(join(curr_dir, "readme.md")).read()
+    long_desc = open(join(curr_dir, "readme.md")).read()
 except Exception:
     long_desc = 'Could not read long description from readme.'
 
 
 setup(
     name='reclaimer',
-    description='A libray of SupyrStruct structures and objects for \
-games built with the Blam engine',
+    description='A libray of SupyrStruct structures and objects for '
+                'games built with the Blam engine',
     long_description=long_desc,
     version='%s.%s.%s' % reclaimer.__version__,
     url=reclaimer.__website__,
-    author='Devin Bobadilla',
+    author=reclaimer.__author__,
     author_email='MosesBobadilla@gmail.com',
     license='MIT',
     packages=[
@@ -74,7 +70,7 @@ games built with the Blam engine',
              '**/p8_palette_stubbs', '**/p8_palette_stubbs_diff_map'],
         },
     platforms=["POSIX", "Windows"],
-    keywords="reclaimer, halo",
+    keywords=["reclaimer", "halo"],
     # arbytmap can be removed from the dependencies if you cannot install
     # it for some reason, though it will prevent certain things from working.
     install_requires=['supyr_struct>=1.4.0', 'binilla>=1.2.0', 'arbytmap'],
