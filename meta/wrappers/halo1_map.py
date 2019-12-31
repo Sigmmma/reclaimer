@@ -922,8 +922,9 @@ class Halo1Map(HaloMap):
                 b.attachment.data += 1
 
         elif tag_cls == "lens":
-            # multiply corona rotation by pi/180
-            meta.corona_rotation.function_scale *= pi/180
+            # DON'T multiply corona rotation by pi/180
+            # Default value of this was 360 radians. Which confused us.
+            pass #meta.corona_rotation.function_scale *= pi/180
 
         elif tag_cls == "ligh":
             # divide light time by 30
@@ -1232,7 +1233,7 @@ class Halo1Map(HaloMap):
                               SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES}
                 for b in meta.bsp_switch_trigger_volumes.STEPTREE:
                     keep_these[11].add(b.trigger_volume)
-    
+
                 for i in range(min(syntax_data.last_node, len(syntax_data.nodes))):
                     node = syntax_data.nodes[i]
                     if node.type not in keep_these:
