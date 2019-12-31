@@ -1,5 +1,4 @@
-import os
-
+from pathlib import Path
 from struct import Struct as PyStruct
 from traceback import format_exc
 
@@ -14,11 +13,11 @@ def extract_model(tagdata, tag_path="", **kw):
     do_write_jms = kw.get('write_jms', True)
     if do_write_jms:
         jms_models = None
-        filepath_base = os.path.join(
-            kw['out_dir'], os.path.dirname(tag_path), "models")
+        filepath_base = Path(kw.get("out_dir", "")).joinpath(
+            Path(tag_path).parent, "models")
     else:
         jms_models = []
-        filepath_base = ""
+        filepath_base = Path("")
 
     global_markers = {}
     materials = []
@@ -139,7 +138,7 @@ def extract_model(tagdata, tag_path="", **kw):
             jms_name = perm_name + {4: " superlow", 3: " low", 2: " medium",
                                     1: " high", 0: " superhigh"}.get(lod, "")
 
-            filepath = os.path.join(filepath_base, jms_name + ".jms")
+            filepath = filepath_base.joinpath(jms_name + ".jms")
 
             markers = list(perm_markers)
             markers.extend(global_markers.get(perm_name, ()))
