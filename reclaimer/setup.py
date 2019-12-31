@@ -77,8 +77,8 @@ games built with the Blam engine',
     keywords="reclaimer, halo",
     # arbytmap can be removed from the dependencies if you cannot install
     # it for some reason, though it will prevent certain things from working.
-    install_requires=['supyr_struct', 'binilla', 'arbytmap'],
-    requires=['supyr_struct', 'binilla', 'arbytmap'],
+    install_requires=['supyr_struct>=1.4.0', 'binilla>=1.2.0', 'arbytmap'],
+    requires=['supyr_struct>=1.4.0', 'binilla>=1.2.0', 'arbytmap'],
     provides=['reclaimer'],
     classifiers=[
         "Development Status :: 4 - Beta",
