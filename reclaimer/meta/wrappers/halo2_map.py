@@ -12,6 +12,8 @@ from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
 from reclaimer.meta.wrappers.tag_index_converters import h2_alpha_to_h1_tag_index,\
      h2_to_h1_tag_index, h3_to_h1_tag_index
 
+from supyr_struct.util import is_path_empty
+
 from supyr_struct.buffer import BytearrayBuffer
 
 
@@ -86,20 +88,22 @@ class Halo2Map(HaloMap):
         if self.engine == "halo2alpha":
             map_paths.pop("single_player_shared", None)
 
-        if not maps_dir:
-            maps_dir = os.path.dirname(self.filepath)
+        if not is_path_empty(maps_dir):
+            maps_dir = Path(maps_dir)
+        else:
+            maps_dir = self.filepath.parent
 
         # detect the map paths for the resource maps
         for map_name in sorted(map_paths):
-            map_path = os.path.join(maps_dir, map_name)
+            map_path = str(maps_dir.joinpath(map_name))
             if self.maps.get(map_name) is not None:
                 map_path = self.maps[map_name].filepath
             elif os.path.exists(map_path + ".map"):
-                map_path += ".map"
+                map_path = Path(map_path + ".map")
             elif os.path.exists(map_path + "_DECOMP.map"):
-                map_path += "_DECOMP.map"
+                map_path = Path(map_path + "_DECOMP.map")
             elif os.path.exists(map_path + ".map.dtz"):
-                map_path += ".map.dtz"
+                map_path = Path(map_path + ".map.dtz")
             else:
                 map_path = None
 

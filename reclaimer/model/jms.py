@@ -1,5 +1,9 @@
-import os
+import math
+import re
 import traceback
+
+from copy import deepcopy
+from pathlib import Path
 
 from reclaimer.util import float_to_str, float_to_str_truncate,\
      parse_jm_float, parse_jm_int
@@ -1346,8 +1350,8 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
     regions = jms_model.regions
 
     # If the path doesnt exist, create it
-    if not os.path.exists(os.path.dirname(filepath)):
-        os.makedirs(os.path.dirname(filepath))
+    filepath = Path(filepath)
+    filepath.parent.mkdir(exist_ok=True, parents=True)
 
     if not regions:
         regions = ("__unnamed", )
@@ -1355,7 +1359,7 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
     if not materials:
         materials = (JmsMaterial("__unnamed", "<none>"), )
 
-    with open(filepath, "w", encoding='latin1', newline="\r\n") as f:
+    with filepath.open("w", encoding='latin1', newline="\r\n") as f:
         f.write("%s\n" % jms_model.version)
         f.write("%s\n" % int(jms_model.node_list_checksum))
 

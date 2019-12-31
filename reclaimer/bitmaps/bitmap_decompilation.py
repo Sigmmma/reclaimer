@@ -27,11 +27,11 @@ try:
 except ImportError:
     arbytmap = Arbytmap = None
 
-import os
 import zlib
 
-from struct import unpack
 from array import array
+from pathlib import Path
+from struct import unpack
 
 from reclaimer.util import get_is_xbox_map
 from reclaimer.h3.util import get_virtual_dimension,\
@@ -46,8 +46,9 @@ CUBEMAP_PADDING = 128
 
 
 def extract_bitmap_tiff_data(tag_path):
+    tag_path = Path(tag_path)
     try:
-        with open(tag_path, 'rb') as f:
+        with tag_path.open('rb') as f:
             tag_header_data = f.read(256)  # 256 is enough to read all the
             #                                pertinent header information
 
@@ -80,7 +81,7 @@ def extract_bitmap_tiff_data(tag_path):
         return 0, 0, bytearray()
 
 
-    with open(tag_path, 'rb') as f:
+    with tag_path.open('rb') as f:
         f.seek(data_off)
         comp_data = f.read(comp_size)
 
@@ -101,8 +102,9 @@ def extract_bitmap_tiff_data(tag_path):
 
 
 def extract_bitmaps(tagdata, tag_path, **kw):
-    filepath_base = os.path.join(
-        kw['out_dir'], os.path.splitext(tag_path)[0])
+    out_dir = Path(kw.get("out_dir", ""))
+    filepath_base = out_dir.joinpath(tag_path).parent
+    filename_base = Path(tag_path).name
 
     ext = kw.get("bitmap_ext", "").strip(". ")
     keep_alpha = kw.get("bitmap_keep_alpha", True)
@@ -137,9 +139,9 @@ def extract_bitmaps(tagdata, tag_path, **kw):
         if hasattr(bitmap, "format_flags"):
             tiled = bitmap.format_flags.tiled
 
-        filepath = filepath_base
+        filename = filename_base
         if multi_bitmap:
-            filepath += "__%s" % bitm_i
+            filename += "__%s" % bitm_i
             bitm_i += 1
 
         tex_block = []
@@ -148,7 +150,7 @@ def extract_bitmaps(tagdata, tag_path, **kw):
             swizzled=bitmap.flags.swizzled, big_endian=is_gen3,
             packed=True, tiled=tiled, tile_method="DXGI",
             packed_width_calc=dim_calc, packed_height_calc=dim_calc,
-            filepath=filepath + "." + ext,
+            filepath=str(filepath_base.joinpath(filename + "." + ext))
             )
         tex_info["texture_type"] = {
             "texture_2d": TYPE_2D, "texture_3d": TYPE_3D,
