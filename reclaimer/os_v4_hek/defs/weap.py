@@ -7,6 +7,7 @@
 # See LICENSE for more information.
 #
 
+from .weap import *
 from .obje import *
 from .item import *
 
