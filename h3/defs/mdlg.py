@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -16,7 +25,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-mdlg_line_variant = Struct("variant", 
+mdlg_line_variant = Struct("variant",
     h3_string_id("variant_designation"),
     h3_dependency("sound"),
     h3_string_id("sound_effect"),
@@ -25,7 +34,7 @@ mdlg_line_variant = Struct("variant",
     )
 
 
-mdlg_line = Struct("line", 
+mdlg_line = Struct("line",
     h3_string_id("name"),
     h3_reflexive("variants", mdlg_line_variant),
     h3_string_id("default_sound_effect"),
@@ -33,7 +42,7 @@ mdlg_line = Struct("line",
     )
 
 
-mdlg_body = Struct("tagdata", 
+mdlg_body = Struct("tagdata",
     h3_reflexive("lines", mdlg_line),
     ENDIAN=">", SIZE=12
     )

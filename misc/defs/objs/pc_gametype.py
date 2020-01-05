@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 '''
     Adapted from source files located here
     https://github.com/Halogen002/Flare-Qt
@@ -23,11 +32,11 @@ HALO_SIGKEY = (b'\x1F\x71\xDE\x93\xD5\x2A\xAD\xB1'+
                b'\x94\x46\xD7\x49\x4F\x73\x11\x58')
 
 class PcGametypeTag(XboxSaveTag):
-    
+
     sigkey     = HALO_SIGKEY
     data_start = 0
     data_end   = 104
-    
+
     is_xbox    = False
     is_powerpc = False
 
@@ -92,7 +101,7 @@ class PcGametypeTag(XboxSaveTag):
         if rawdata is None:
             rawdata = self.data.serialize(buffer=BytearrayBuffer()
                                           )[:self.data_end]
-            
+
         hmac_sig = self.calc_hmac_sig(rawdata, authkey)
         self.data.gametype_footer.hmac_sig = hmac_sig
 

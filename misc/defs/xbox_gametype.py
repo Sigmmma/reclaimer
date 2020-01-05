@@ -1,5 +1,14 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 '''
-    This varient of the gametype tag is intended to allow easily creating a
+    This variant of the gametype tag is intended to allow easily creating a
     gametype from within Mozzarilla by just selecting the xbox_gametype def
 '''
 

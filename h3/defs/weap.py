@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -122,15 +131,15 @@ weap_weapon_type = (
     )
 
 
-weap_early_mover_propertie = Struct("early_mover_propertie", 
+weap_early_mover_propertie = Struct("early_mover_propertie",
     h3_string_id("name"),
     Pad(36),
     ENDIAN=">", SIZE=40
     )
 
 
-weap_ai_propertie = Struct("ai_propertie", 
-    Bool32("flags", 
+weap_ai_propertie = Struct("ai_propertie",
+    Bool32("flags",
         "destroyable_cover",
         "pathfinding_ignore_when_dead",
         "dynamic_cover",
@@ -143,8 +152,8 @@ weap_ai_propertie = Struct("ai_propertie",
     )
 
 
-weap_function = Struct("function", 
-    Bool32("flags", 
+weap_function = Struct("function",
+    Bool32("flags",
         "invert",
         "mapping_does_not_controls_active",
         "always_active",
@@ -160,7 +169,7 @@ weap_function = Struct("function",
     )
 
 
-weap_attachment = Struct("attachment", 
+weap_attachment = Struct("attachment",
     h3_dependency("attachment"),
     h3_string_id("marker"),
     SEnum16("change_color", *bloc_attachment_change_color),
@@ -171,13 +180,13 @@ weap_attachment = Struct("attachment",
     )
 
 
-weap_widget = Struct("widget", 
+weap_widget = Struct("widget",
     h3_dependency("type"),
     ENDIAN=">", SIZE=16
     )
 
 
-weap_change_color_initial_permutation = Struct("initial_permutation", 
+weap_change_color_initial_permutation = Struct("initial_permutation",
     Pad(4),
     color_rgb_float("color_lower_bound"),
     color_rgb_float("color_upper_bound"),
@@ -186,8 +195,8 @@ weap_change_color_initial_permutation = Struct("initial_permutation",
     )
 
 
-weap_change_color_function = Struct("function", 
-    Bool32("scale_flags", 
+weap_change_color_function = Struct("function",
+    Bool32("scale_flags",
         "blend_in_hsv",
         "more_colors",
         ),
@@ -199,14 +208,14 @@ weap_change_color_function = Struct("function",
     )
 
 
-weap_change_color = Struct("change_color", 
+weap_change_color = Struct("change_color",
     h3_reflexive("initial_permutations", weap_change_color_initial_permutation),
     h3_reflexive("functions", weap_change_color_function),
     ENDIAN=">", SIZE=24
     )
 
 
-weap_predicted_resources_0 = Struct("predicted_resources_0", 
+weap_predicted_resources_0 = Struct("predicted_resources_0",
     SInt16("type"),
     SInt16("resource_index"),
     dependency_uint32("tag_index", VISIBLE=False),
@@ -215,8 +224,8 @@ weap_predicted_resources_0 = Struct("predicted_resources_0",
     )
 
 
-weap_multiplayer_object_propertie = Struct("multiplayer_object_propertie", 
-    Bool16("engine_flags", 
+weap_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
+    Bool16("engine_flags",
         "capture_the_flag",
         "slayer",
         "oddball",
@@ -228,14 +237,14 @@ weap_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
         "infection",
         ),
     SEnum8("object_type", *bloc_multiplayer_object_propertie_object_type),
-    Bool8("teleporter_flags", 
+    Bool8("teleporter_flags",
         "disallows_players",
         "allows_land_vehicles",
         "allows_heavy_vehicles",
         "allows_flying_vehicles",
         "allows_projectiles",
         ),
-    Bool16("flags", 
+    Bool16("flags",
         "editor_only",
         ),
     SEnum8("shape", *bloc_multiplayer_object_propertie_shape),
@@ -265,21 +274,21 @@ weap_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
     )
 
 
-weap_predicted_bitmap = Struct("predicted_bitmap", 
+weap_predicted_bitmap = Struct("predicted_bitmap",
     h3_dependency("bitmap", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-weap_first_person = Struct("first_person", 
+weap_first_person = Struct("first_person",
     h3_dependency("first_person_model"),
     h3_dependency("first_person_animations"),
     ENDIAN=">", SIZE=32
     )
 
 
-weap_predicted_resources_1 = Struct("predicted_resources_1", 
+weap_predicted_resources_1 = Struct("predicted_resources_1",
     SInt16("type"),
     SInt16("resource_index"),
     dependency_uint32("tag_index", VISIBLE=False),
@@ -288,7 +297,7 @@ weap_predicted_resources_1 = Struct("predicted_resources_1",
     )
 
 
-weap_magazine_magazine_equipment = Struct("magazine_equipment", 
+weap_magazine_magazine_equipment = Struct("magazine_equipment",
     SInt16("rounds_0_for_max"),
     SInt16("unknown", VISIBLE=False),
     h3_dependency("equipment"),
@@ -296,8 +305,8 @@ weap_magazine_magazine_equipment = Struct("magazine_equipment",
     )
 
 
-weap_magazine = Struct("magazine", 
-    Bool32("flags", 
+weap_magazine = Struct("magazine",
+    Bool32("flags",
         "wastes_rounds_when_reloaded",
         "every_round_must_be_chambered",
         ),
@@ -321,8 +330,8 @@ weap_magazine = Struct("magazine",
     )
 
 
-weap_new_trigger = Struct("new_trigger", 
-    Bool32("flags", 
+weap_new_trigger = Struct("new_trigger",
+    Bool32("flags",
         "autofire_single_action_only",
         ),
     SEnum16("button_used", *weap_new_trigger_button_used),
@@ -354,13 +363,13 @@ weap_new_trigger = Struct("new_trigger",
     )
 
 
-weap_barrel_first_person_offset = Struct("first_person_offset", 
+weap_barrel_first_person_offset = Struct("first_person_offset",
     QStruct("first_person_offset", INCLUDE=xyz_float),
     ENDIAN=">", SIZE=12
     )
 
 
-weap_barrel_firing_effect = Struct("firing_effect", 
+weap_barrel_firing_effect = Struct("firing_effect",
     SInt16("shot_count_lower_bound"),
     SInt16("shot_count_upper_bound"),
     h3_dependency("firing_effect"),
@@ -379,8 +388,8 @@ weap_barrel_firing_effect = Struct("firing_effect",
     )
 
 
-weap_barrel = Struct("barrel", 
-    Bool32("flags", 
+weap_barrel = Struct("barrel",
+    Bool32("flags",
         "tracks_fired_projectile",
         "random_firing_effects",
         "can_fire_with_partial_ammo",
@@ -460,9 +469,9 @@ weap_barrel = Struct("barrel",
     )
 
 
-weap_body = Struct("tagdata", 
+weap_body = Struct("tagdata",
     SEnum16("object_type", *bloc_object_type),
-    Bool16("flags_0", 
+    Bool16("flags_0",
         "does_not_cast_shadow",
         "search_cardinal_direction_lightmaps",
         ("not_a_pathfinding_obstacle", 1 << 3),
@@ -503,7 +512,7 @@ weap_body = Struct("tagdata",
     h3_reflexive("change_colors", weap_change_color),
     h3_reflexive("predicted_resources_0", weap_predicted_resources_0),
     h3_reflexive("multiplayer_object_properties", weap_multiplayer_object_propertie),
-    Bool32("flags_1", 
+    Bool32("flags_1",
         "always_maintains_z_up",
         "destroyed_by_explosions",
         "unaffected_by_gravity",
@@ -538,7 +547,7 @@ weap_body = Struct("tagdata",
     Float("huge_holster_scale"),
     Float("grounded_friction_length"),
     Float("grounded_friction_unknown"),
-    Bool32("flags_2", 
+    Bool32("flags_2",
         "vertical_heat_display",
         "mutually_exclusive_triggers",
         "attacks_automatically_on_bump",

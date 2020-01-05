@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -72,12 +81,12 @@ jmad_object_overlay_function_controls = (
     )
 
 
-jmad_skeleton_node = Struct("skeleton_node", 
+jmad_skeleton_node = Struct("skeleton_node",
     h3_string_id("name"),
     SInt16("next_sibling_node_index"),
     SInt16("first_child_node_index"),
     SInt16("parent_node_index"),
-    Bool8("model_flags", 
+    Bool8("model_flags",
         "primary_model",
         "secondary_model",
         "local_root",
@@ -85,7 +94,7 @@ jmad_skeleton_node = Struct("skeleton_node",
         "right_hand",
         "left_arm_member",
         ),
-    Bool8("node_joint_flags", 
+    Bool8("node_joint_flags",
         "ball_socket",
         "hinge",
         "no_movement",
@@ -97,9 +106,9 @@ jmad_skeleton_node = Struct("skeleton_node",
     )
 
 
-jmad_sound_reference = Struct("sound_reference", 
+jmad_sound_reference = Struct("sound_reference",
     h3_dependency("sound"),
-    Bool16("flags", 
+    Bool16("flags",
         "allow_on_player",
         "left_arm_only",
         "right_arm_only",
@@ -112,9 +121,9 @@ jmad_sound_reference = Struct("sound_reference",
     )
 
 
-jmad_effect_reference = Struct("effect_reference", 
+jmad_effect_reference = Struct("effect_reference",
     h3_dependency("effect"),
-    Bool16("flags", 
+    Bool16("flags",
         "allow_on_player",
         "left_arm_only",
         "right_arm_only",
@@ -127,7 +136,7 @@ jmad_effect_reference = Struct("effect_reference",
     )
 
 
-jmad_blend_screen = Struct("blend_screen", 
+jmad_blend_screen = Struct("blend_screen",
     h3_string_id("label"),
     float_rad("right_yaw_per_frame"),
     float_rad("left_yaw_per_frame"),
@@ -141,7 +150,7 @@ jmad_blend_screen = Struct("blend_screen",
     )
 
 
-jmad_leg = Struct("leg", 
+jmad_leg = Struct("leg",
     h3_string_id("foot_marker"),
     QStruct("foot", INCLUDE=from_to),
     h3_string_id("ankle_marker"),
@@ -152,14 +161,14 @@ jmad_leg = Struct("leg",
     )
 
 
-jmad_animation_frame_event = Struct("frame_event", 
+jmad_animation_frame_event = Struct("frame_event",
     SEnum16("type", *jmad_animation_frame_event_type),
     SInt16("frame"),
     ENDIAN=">", SIZE=4
     )
 
 
-jmad_animation_sound_event = Struct("sound_event", 
+jmad_animation_sound_event = Struct("sound_event",
     SInt16("sound"),
     SInt16("frame"),
     h3_string_id("marker_name"),
@@ -167,7 +176,7 @@ jmad_animation_sound_event = Struct("sound_event",
     )
 
 
-jmad_animation_effect_event = Struct("effect_event", 
+jmad_animation_effect_event = Struct("effect_event",
     SInt16("effect"),
     SInt16("frame"),
     h3_string_id("marker_name"),
@@ -175,7 +184,7 @@ jmad_animation_effect_event = Struct("effect_event",
     )
 
 
-jmad_animation_unknown_2 = Struct("unknown_2", 
+jmad_animation_unknown_2 = Struct("unknown_2",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -183,9 +192,9 @@ jmad_animation_unknown_2 = Struct("unknown_2",
     )
 
 
-jmad_animation_object_space_parent_node = Struct("object_space_parent_node", 
+jmad_animation_object_space_parent_node = Struct("object_space_parent_node",
     SInt16("node_index"),
-    Bool16("component_flags", 
+    Bool16("component_flags",
         "rotation",
         "translation",
         "scale",
@@ -197,7 +206,7 @@ jmad_animation_object_space_parent_node = Struct("object_space_parent_node",
     )
 
 
-jmad_animation_leg_anchoring_unknown_1 = Struct("unknown_1", 
+jmad_animation_leg_anchoring_unknown_1 = Struct("unknown_1",
     SInt16("frame_1a"),
     SInt16("frame_2a"),
     SInt16("frame_1b"),
@@ -207,7 +216,7 @@ jmad_animation_leg_anchoring_unknown_1 = Struct("unknown_1",
     )
 
 
-jmad_animation_leg_anchoring = Struct("leg_anchoring", 
+jmad_animation_leg_anchoring = Struct("leg_anchoring",
     SInt16("leg_index"),
     SInt16("unknown_0", VISIBLE=False),
     h3_reflexive("unknown_1", jmad_animation_leg_anchoring_unknown_1),
@@ -215,11 +224,11 @@ jmad_animation_leg_anchoring = Struct("leg_anchoring",
     )
 
 
-jmad_animation = Struct("animation", 
+jmad_animation = Struct("animation",
     h3_string_id("name"),
     Float("weight"),
     SInt16("loop_frame_index"),
-    Bool16("playback_flags", 
+    Bool16("playback_flags",
         "disable_interpolation_in",
         "disable_interpolation_out",
         "disable_mode_ik",
@@ -235,12 +244,12 @@ jmad_animation = Struct("animation",
     SInt16("frame_count"),
     SEnum8("type", *jmad_animation_type),
     SEnum8("frame_info_type", *jmad_animation_frame_info_type),
-    Bool16("production_flags", 
+    Bool16("production_flags",
         "do_not_monitor_changes",
         "verify_sound_events",
         "do_not_inherit_for_player_graphs",
         ),
-    Bool16("internal_flags", 
+    Bool16("internal_flags",
         ("world_relative", 1 << 1),
         ("compression_disabled", 1 << 5),
         "old_production_checksum",
@@ -265,7 +274,7 @@ jmad_animation = Struct("animation",
     )
 
 
-jmad_mode_weapon_clas_weapon_type_action = Struct("action", 
+jmad_mode_weapon_clas_weapon_type_action = Struct("action",
     h3_string_id("label"),
     SInt16("graph_index"),
     SInt16("animation"),
@@ -273,7 +282,7 @@ jmad_mode_weapon_clas_weapon_type_action = Struct("action",
     )
 
 
-jmad_mode_weapon_clas_weapon_type_overlay = Struct("overlay", 
+jmad_mode_weapon_clas_weapon_type_overlay = Struct("overlay",
     h3_string_id("label"),
     SInt16("graph_index"),
     SInt16("animation"),
@@ -281,27 +290,27 @@ jmad_mode_weapon_clas_weapon_type_overlay = Struct("overlay",
     )
 
 
-jmad_mode_weapon_clas_weapon_type_death_and_damage_direction_region = Struct("region", 
+jmad_mode_weapon_clas_weapon_type_death_and_damage_direction_region = Struct("region",
     SInt16("graph_index"),
     SInt16("animation"),
     ENDIAN=">", SIZE=4
     )
 
 
-jmad_mode_weapon_clas_weapon_type_death_and_damage_direction = Struct("direction", 
+jmad_mode_weapon_clas_weapon_type_death_and_damage_direction = Struct("direction",
     h3_reflexive("regions", jmad_mode_weapon_clas_weapon_type_death_and_damage_direction_region),
     ENDIAN=">", SIZE=12
     )
 
 
-jmad_mode_weapon_clas_weapon_type_death_and_damage = Struct("death_and_damage", 
+jmad_mode_weapon_clas_weapon_type_death_and_damage = Struct("death_and_damage",
     h3_string_id("label"),
     h3_reflexive("directions", jmad_mode_weapon_clas_weapon_type_death_and_damage_direction),
     ENDIAN=">", SIZE=16
     )
 
 
-jmad_mode_weapon_clas_weapon_type_transition_destination = Struct("destination", 
+jmad_mode_weapon_clas_weapon_type_transition_destination = Struct("destination",
     h3_string_id("full_name"),
     h3_string_id("mode_name"),
     h3_string_id("state_name"),
@@ -315,7 +324,7 @@ jmad_mode_weapon_clas_weapon_type_transition_destination = Struct("destination",
     )
 
 
-jmad_mode_weapon_clas_weapon_type_transition = Struct("transition", 
+jmad_mode_weapon_clas_weapon_type_transition = Struct("transition",
     h3_string_id("full_name"),
     h3_string_id("state_name"),
     SInt16("unknown", VISIBLE=False),
@@ -326,7 +335,7 @@ jmad_mode_weapon_clas_weapon_type_transition = Struct("transition",
     )
 
 
-jmad_mode_weapon_clas_weapon_type = Struct("weapon_type", 
+jmad_mode_weapon_clas_weapon_type = Struct("weapon_type",
     h3_string_id("label"),
     h3_reflexive("actions", jmad_mode_weapon_clas_weapon_type_action),
     h3_reflexive("overlays", jmad_mode_weapon_clas_weapon_type_overlay),
@@ -336,14 +345,14 @@ jmad_mode_weapon_clas_weapon_type = Struct("weapon_type",
     )
 
 
-jmad_mode_weapon_clas_weapon_ik = Struct("weapon_ik", 
+jmad_mode_weapon_clas_weapon_ik = Struct("weapon_ik",
     h3_string_id("marker"),
     h3_string_id("attach_to_marker"),
     ENDIAN=">", SIZE=8
     )
 
 
-jmad_mode_weapon_clas = Struct("weapon_clas", 
+jmad_mode_weapon_clas = Struct("weapon_clas",
     h3_string_id("label"),
     h3_reflexive("weapon_type", jmad_mode_weapon_clas_weapon_type),
     h3_reflexive("weapon_ik", jmad_mode_weapon_clas_weapon_ik),
@@ -351,14 +360,14 @@ jmad_mode_weapon_clas = Struct("weapon_clas",
     )
 
 
-jmad_mode_mode_ik = Struct("mode_ik", 
+jmad_mode_mode_ik = Struct("mode_ik",
     h3_string_id("marker"),
     h3_string_id("attach_to_marker"),
     ENDIAN=">", SIZE=8
     )
 
 
-jmad_mode = Struct("mode", 
+jmad_mode = Struct("mode",
     h3_string_id("label"),
     h3_reflexive("weapon_class", jmad_mode_weapon_clas),
     h3_reflexive("mode_ik", jmad_mode_mode_ik),
@@ -367,7 +376,7 @@ jmad_mode = Struct("mode",
     )
 
 
-jmad_vehicle_suspension = Struct("vehicle_suspension", 
+jmad_vehicle_suspension = Struct("vehicle_suspension",
     h3_string_id("label"),
     SInt16("graph_index"),
     SInt16("animation"),
@@ -383,7 +392,7 @@ jmad_vehicle_suspension = Struct("vehicle_suspension",
     )
 
 
-jmad_object_overlay = Struct("object_overlay", 
+jmad_object_overlay = Struct("object_overlay",
     h3_string_id("label"),
     SInt16("graph_index"),
     SInt16("animation"),
@@ -395,14 +404,14 @@ jmad_object_overlay = Struct("object_overlay",
     )
 
 
-jmad_inheritance_list_node_map = Struct("node_map", 
+jmad_inheritance_list_node_map = Struct("node_map",
     SInt16("local_node"),
     ENDIAN=">", SIZE=2
     )
 
 
-jmad_inheritance_list_node_map_flag = Struct("node_map_flag", 
-    Bool32("local_node_flags", 
+jmad_inheritance_list_node_map_flag = Struct("node_map_flag",
+    Bool32("local_node_flags",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -440,39 +449,39 @@ jmad_inheritance_list_node_map_flag = Struct("node_map_flag",
     )
 
 
-jmad_inheritance_list = Struct("inheritance_list", 
+jmad_inheritance_list = Struct("inheritance_list",
     h3_dependency("inherited_graph"),
     h3_reflexive("node_map", jmad_inheritance_list_node_map),
     h3_reflexive("node_map_flags", jmad_inheritance_list_node_map_flag),
     Float("root_z_offset"),
-    Bool32("inheritance_flags", 
+    Bool32("inheritance_flags",
         "tighten_nodes",
         ),
     ENDIAN=">", SIZE=48
     )
 
 
-jmad_weapon_list = Struct("weapon_list", 
+jmad_weapon_list = Struct("weapon_list",
     h3_string_id("weapon_name"),
     h3_string_id("weapon_class"),
     ENDIAN=">", SIZE=8
     )
 
 
-jmad_raw_information_group = Struct("raw_information_group", 
+jmad_raw_information_group = Struct("raw_information_group",
     SInt32("member_count"),
     zone_asset("asset_data"),
     ENDIAN=">", SIZE=12
     )
 
 
-jmad_body = Struct("tagdata", 
+jmad_body = Struct("tagdata",
     h3_dependency("parent_animation_graph"),
-    Bool8("inheritance_flags", 
+    Bool8("inheritance_flags",
         "inherit_root_trans_scale_only",
         "inherit_for_use_on_player",
         ),
-    Bool8("private_flags", 
+    Bool8("private_flags",
         "prepared_for_cache",
         ("imported_with_codec_compressors", 1 << 2),
         ("written_to_cache", 1 << 4),

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import math
 import re
 import traceback
@@ -14,7 +23,7 @@ from reclaimer.util.matrices import clip_angle_to_bounds, are_vectors_equal,\
 
 
 JMA_ANIMATION_EXTENSIONS = (
-    ".jma", ".jmm", ".jmo", ".jmr", ".jmt", ".jmw", ".jmz", 
+    ".jma", ".jmm", ".jmo", ".jmr", ".jmt", ".jmw", ".jmz",
     )
 
 

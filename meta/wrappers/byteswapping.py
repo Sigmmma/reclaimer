@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 '''
 Most byteswapping is handeled by supyr_struct by changing the endianness,
 but certain chunks of raw data are significantly faster to just write
@@ -301,7 +310,7 @@ def byteswap_animation(anim):
     anim.default_data.STEPTREE = new_default_data
     anim.frame_data.STEPTREE   = new_uncomp_frame_data
     anim.offset_to_compressed_data = 0
-    
+
     if anim.flags.compressed_data:
         anim.offset_to_compressed_data = len(new_uncomp_frame_data)
         anim.frame_data.STEPTREE += frame_data[comp_data_offset:]

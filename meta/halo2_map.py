@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import zlib
 
 from reclaimer.h2.common_descs import *
@@ -101,7 +110,7 @@ h2x_map_header = Struct("map header",
     )
 
 h2x_map_header_full = Struct("map header",
-    INCLUDE=h2x_map_header, 
+    INCLUDE=h2x_map_header,
     STEPTREE=Container("strings",
         string_id_table,
         tag_name_table,
@@ -168,7 +177,7 @@ h2v_map_header = Struct("map header",
     )
 
 h2v_map_header_full = Struct("map header",
-    INCLUDE=h2v_map_header, 
+    INCLUDE=h2v_map_header,
     STEPTREE=Container("strings",
         string_id_table,
         tag_name_table,

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -14,14 +23,14 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-pixl_unknown_1 = Struct("unknown_1", 
+pixl_unknown_1 = Struct("unknown_1",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-pixl_pixel_shader_unknown_2 = Struct("unknown_2", 
+pixl_pixel_shader_unknown_2 = Struct("unknown_2",
     h3_string_id("unknown_0", VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     VISIBLE=False,
@@ -29,7 +38,7 @@ pixl_pixel_shader_unknown_2 = Struct("unknown_2",
     )
 
 
-pixl_pixel_shader = Struct("pixel_shader", 
+pixl_pixel_shader = Struct("pixel_shader",
     h3_rawdata_ref("unknown_0", VISIBLE=False),
     h3_rawdata_ref("unknown_1", VISIBLE=False),
     h3_reflexive("unknown_2", pixl_pixel_shader_unknown_2),
@@ -40,7 +49,7 @@ pixl_pixel_shader = Struct("pixel_shader",
     )
 
 
-pixl_body = Struct("tagdata", 
+pixl_body = Struct("tagdata",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     h3_reflexive("unknown_1", pixl_unknown_1),
     BytesRaw("unknown_2", SIZE=4, VISIBLE=False),

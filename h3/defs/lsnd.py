@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -21,9 +30,9 @@ lsnd_track_output_effect = (
     )
 
 
-lsnd_track = Struct("track", 
+lsnd_track = Struct("track",
     h3_string_id("name"),
-    Bool32("flags", 
+    Bool32("flags",
         "fade_in_at_start",
         "fade_out_at_stop",
         ),
@@ -45,12 +54,12 @@ lsnd_track = Struct("track",
     )
 
 
-lsnd_detail_sound = Struct("detail_sound", 
+lsnd_detail_sound = Struct("detail_sound",
     h3_string_id("name"),
     h3_dependency("sound"),
     QStruct("random_period_bounds", INCLUDE=from_to),
     Float("unknown", VISIBLE=False),
-    Bool32("flags", 
+    Bool32("flags",
         "dont_play_with_alternate",
         "dont_play_without_alternate",
         "start_immediately_with_loop",
@@ -62,8 +71,8 @@ lsnd_detail_sound = Struct("detail_sound",
     )
 
 
-lsnd_body = Struct("tagdata", 
-    Bool32("flags", 
+lsnd_body = Struct("tagdata",
+    Bool32("flags",
         "deafening_to_ais",
         "not_a_loop",
         "stops_music",

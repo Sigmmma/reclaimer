@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import os
 
 from reclaimer.hek.defs.objs.tag import HekTag
@@ -11,7 +20,7 @@ class ObjeTag(HekTag):
 
         self.ext = '.' + full_class_name
         self.filepath = os.path.splitext(str(self.filepath))[0] + self.ext
-        
+
         object_type = self.data.tagdata.obje_attrs.object_type
         if full_class_name == "object":
             object_type.data = -1

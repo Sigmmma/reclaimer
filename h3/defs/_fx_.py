@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,7 +27,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-_fx__additional_sound_input = Struct("additional_sound_input", 
+_fx__additional_sound_input = Struct("additional_sound_input",
     h3_string_id("dsp_effect"),
     h3_rawdata_ref("low_frequency_sound_function"),
     Float("time_period"),
@@ -26,7 +35,7 @@ _fx__additional_sound_input = Struct("additional_sound_input",
     )
 
 
-_fx__body = Struct("tagdata", 
+_fx__body = Struct("tagdata",
     BytesRaw("template_collection_block", SIZE=12, VISIBLE=False),
     SInt32("input_effect_name"),
     h3_reflexive("additional_sound_inputs", _fx__additional_sound_input),

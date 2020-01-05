@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from copy import copy, deepcopy
 
 try:
@@ -50,7 +59,7 @@ def h3_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc)
         for i in range(len(names)):
             e_name = BlockDef.str_to_name(None, names[i])
             name_map[e_name] = i
-            
+
         desc[STEPTREE][NAME_MAP] = name_map
 
     return H3Reflexive(name, **desc)
@@ -151,7 +160,7 @@ h3_reflexive_struct = H3Reflexive('reflexive',
     UInt32("id", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     )
 
-h3_rawdata_ref_struct = H3RawdataRef('rawdata ref', 
+h3_rawdata_ref_struct = H3RawdataRef('rawdata ref',
     SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
     Bool32("flags", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     UInt32("raw pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
@@ -173,4 +182,3 @@ def h3_string_id(name, **kwargs):
 
 def h3_page_offset_info(name):
     return BitStruct(name, INCLUDE=h3_page_offset_info_struct)
-

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -22,8 +31,8 @@ chgd_hud_global_biped = (
     )
 
 
-chgd_hud_global_hud_attribute = Struct("hud_attribute", 
-    Bool32("resolution_flags", 
+chgd_hud_global_hud_attribute = Struct("hud_attribute",
+    Bool32("resolution_flags",
         "wide_full",
         "wide_half",
         ("standard_full", 1 << 3),
@@ -58,9 +67,9 @@ chgd_hud_global_hud_attribute = Struct("hud_attribute",
     )
 
 
-chgd_hud_global_hud_sound = Struct("hud_sound", 
+chgd_hud_global_hud_sound = Struct("hud_sound",
     h3_dependency("spartan_sound"),
-    Bool32("latched_to", 
+    Bool32("latched_to",
         "shield_recharging",
         "shield_damaged",
         "shield_low",
@@ -80,13 +89,13 @@ chgd_hud_global_hud_sound = Struct("hud_sound",
     )
 
 
-chgd_hud_global_multiplayer_medal = Struct("multiplayer_medal", 
+chgd_hud_global_multiplayer_medal = Struct("multiplayer_medal",
     h3_string_id("medal"),
     ENDIAN=">", SIZE=4
     )
 
 
-chgd_hud_global = Struct("hud_global", 
+chgd_hud_global = Struct("hud_global",
     SEnum32("biped", *chgd_hud_global_biped),
     color_argb_uint32("_0_hud_disabled"),
     color_argb_uint32("_1_hud_primary"),
@@ -152,21 +161,21 @@ chgd_hud_global = Struct("hud_global",
     )
 
 
-chgd_hud_shader = Struct("hud_shader", 
+chgd_hud_shader = Struct("hud_shader",
     h3_dependency("vertex_shader"),
     h3_dependency("pixel_shader"),
     ENDIAN=">", SIZE=32
     )
 
 
-chgd_unknown_0 = Struct("unknown_0", 
+chgd_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=64, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=64
     )
 
 
-chgd_unknown_1_unknown_1 = Struct("unknown_1", 
+chgd_unknown_1_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown_0", SIZE=100, VISIBLE=False),
     h3_dependency("sound_0"),
     BytesRaw("unknown_1", SIZE=96, VISIBLE=False),
@@ -176,7 +185,7 @@ chgd_unknown_1_unknown_1 = Struct("unknown_1",
     )
 
 
-chgd_unknown_1 = Struct("unknown_1", 
+chgd_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     h3_reflexive("unknown_1", chgd_unknown_1_unknown_1),
     VISIBLE=False,
@@ -184,14 +193,14 @@ chgd_unknown_1 = Struct("unknown_1",
     )
 
 
-chgd_player_training_data = Struct("player_training_data", 
+chgd_player_training_data = Struct("player_training_data",
     h3_string_id("display_string"),
     SInt16("max_display_time"),
     SInt16("display_count"),
     SInt16("disappear_delay"),
     SInt16("redisplay_delay"),
     Float("display_delay"),
-    Bool16("flags", 
+    Bool16("flags",
         "not_in_multiplayer",
         ),
     SInt16("unknown", VISIBLE=False),
@@ -199,7 +208,7 @@ chgd_player_training_data = Struct("player_training_data",
     )
 
 
-chgd_body = Struct("tagdata", 
+chgd_body = Struct("tagdata",
     h3_reflexive("hud_globals", chgd_hud_global),
     h3_reflexive("hud_shaders", chgd_hud_shader),
     h3_reflexive("unknown_0", chgd_unknown_0),

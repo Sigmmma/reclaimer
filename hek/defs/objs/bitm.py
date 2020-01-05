@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from array import array
 from reclaimer.constants import TYPE_CUBEMAP, CUBEMAP_PADDING, BITMAP_PADDING,\
      FORMAT_NAME_MAP, TYPE_NAME_MAP, FORMAT_P8_BUMP

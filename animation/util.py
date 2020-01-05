@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import traceback
 
 from math import pi
@@ -10,8 +19,8 @@ from reclaimer.hek.defs.mod2 import TagDef, Pad, marker as mod2_marker_desc,\
      node as mod2_node_desc, reflexive, Struct
 
 __all__ = (
-    'SHARED_UNIT_ANIMATION_NAMES', 'SHARED_UNIT_WEAPON_ANIMATION_NAMES', 
-    'split_anim_name_into_type_strings', 'split_permutation_number', 
+    'SHARED_UNIT_ANIMATION_NAMES', 'SHARED_UNIT_WEAPON_ANIMATION_NAMES',
+    'split_anim_name_into_type_strings', 'split_permutation_number',
     'set_animation_enum_index', 'set_animation_index',
     'get_default_animation_enums', 'set_default_animation_enums',
     'partial_mod2_def', 'calculate_node_vectors'
@@ -116,7 +125,7 @@ def split_anim_name_into_type_strings(anim_name):
                     type_strings = part1, part2_sani, perm_num
                 else:
                     remainder = True
-    
+
     # nothing should have a remainder. if it does, it doesnt fit the criteria,
     # and we should just return it split at the permutation character
     if remainder:
@@ -126,7 +135,7 @@ def split_anim_name_into_type_strings(anim_name):
             perm_num  = name_pieces[-1]
 
         return False, (anim_name, perm_num)
-    
+
     return True, type_strings
 
 

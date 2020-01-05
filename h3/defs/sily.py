@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -642,8 +651,8 @@ sily_parameter = (
     )
 
 
-sily_text_value_pair = Struct("text_value_pair", 
-    Bool8("flags", 
+sily_text_value_pair = Struct("text_value_pair",
+    Bool8("flags",
         "default_setting",
         "unchanged_setting",
         ),
@@ -657,7 +666,7 @@ sily_text_value_pair = Struct("text_value_pair",
     )
 
 
-sily_body = Struct("tagdata", 
+sily_body = Struct("tagdata",
     SEnum32("parameter", *sily_parameter),
     h3_string_id("name"),
     h3_string_id("description"),
