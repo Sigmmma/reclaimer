@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -399,7 +408,7 @@ scnr_squad_base_squad_starting_location_seat_type = (
 unknown_flags_1 = tuple("bit_%s" % i for i in range(1))
 
 
-scnr_structure_bsp = Struct("structure_bsp", 
+scnr_structure_bsp = Struct("structure_bsp",
     h3_dependency("structure_bsp"),
     h3_dependency("design"),
     h3_dependency("lighting"),
@@ -414,7 +423,7 @@ scnr_structure_bsp = Struct("structure_bsp",
     )
 
 
-scnr_sky_reference = Struct("sky_reference", 
+scnr_sky_reference = Struct("sky_reference",
     h3_dependency("sky_object"),
     SInt16("name_index"),
     Bool16("active_bsps", *("bsp_%s" % i for i in range(16))),
@@ -422,14 +431,14 @@ scnr_sky_reference = Struct("sky_reference",
     )
 
 
-scnr_bsp_group_bsp_checksum = Struct("bsp_checksum", 
+scnr_bsp_group_bsp_checksum = Struct("bsp_checksum",
     SInt32("structure_checksum"),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_bsp_group_bsps_0_clusters_0_bsp_unknown = Struct("unknown", 
-    Bool32("allow", 
+scnr_bsp_group_bsps_0_clusters_0_bsp_unknown = Struct("unknown",
+    Bool32("allow",
         ("effects", 1 << 5),
         ("firing_effects", 1 << 16),
         ("decals", 1 << 24),
@@ -438,20 +447,20 @@ scnr_bsp_group_bsps_0_clusters_0_bsp_unknown = Struct("unknown",
     )
 
 
-scnr_bsp_group_bsps_0_clusters_0_bsp = Struct("bsp", 
+scnr_bsp_group_bsps_0_clusters_0_bsp = Struct("bsp",
     h3_reflexive("unknown", scnr_bsp_group_bsps_0_clusters_0_bsp_unknown),
     ENDIAN=">", SIZE=12
     )
 
 
-scnr_bsp_group_bsps_0_clusters_0 = Struct("clusters_0", 
+scnr_bsp_group_bsps_0_clusters_0 = Struct("clusters_0",
     h3_reflexive("bsps", scnr_bsp_group_bsps_0_clusters_0_bsp),
     ENDIAN=">", SIZE=12
     )
 
 
-scnr_bsp_group_bsps_0_clusters_1_bsp_unknown = Struct("unknown", 
-    Bool32("allow", 
+scnr_bsp_group_bsps_0_clusters_1_bsp_unknown = Struct("unknown",
+    Bool32("allow",
         ("effects", 1 << 5),
         ("firing_effects", 1 << 16),
         ("decals", 1 << 24),
@@ -460,52 +469,52 @@ scnr_bsp_group_bsps_0_clusters_1_bsp_unknown = Struct("unknown",
     )
 
 
-scnr_bsp_group_bsps_0_clusters_1_bsp = Struct("bsp", 
+scnr_bsp_group_bsps_0_clusters_1_bsp = Struct("bsp",
     h3_reflexive("unknown", scnr_bsp_group_bsps_0_clusters_1_bsp_unknown),
     ENDIAN=">", SIZE=12
     )
 
 
-scnr_bsp_group_bsps_0_clusters_1 = Struct("clusters_1", 
+scnr_bsp_group_bsps_0_clusters_1 = Struct("clusters_1",
     h3_reflexive("bsps", scnr_bsp_group_bsps_0_clusters_1_bsp),
     ENDIAN=">", SIZE=12
     )
 
 
-scnr_bsp_group_bsps_0_cluster_skie = Struct("cluster_skie", 
+scnr_bsp_group_bsps_0_cluster_skie = Struct("cluster_skie",
     SInt8("sky_index"),
     ENDIAN=">", SIZE=1
     )
 
 
-scnr_bsp_group_bsps_0_cluster_visible_skie = Struct("cluster_visible_skie", 
+scnr_bsp_group_bsps_0_cluster_visible_skie = Struct("cluster_visible_skie",
     SInt8("sky_index"),
     ENDIAN=">", SIZE=1
     )
 
 
-scnr_bsp_group_bsps_0_unknown_1 = Struct("unknown_1", 
+scnr_bsp_group_bsps_0_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_bsp_group_bsps_0_clusters_2_unknown = Struct("unknown", 
+scnr_bsp_group_bsps_0_clusters_2_unknown = Struct("unknown",
     SInt8("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=1
     )
 
 
-scnr_bsp_group_bsps_0_clusters_2 = Struct("clusters_2", 
+scnr_bsp_group_bsps_0_clusters_2 = Struct("clusters_2",
     h3_reflexive("unknown", scnr_bsp_group_bsps_0_clusters_2_unknown),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-scnr_bsp_group_bsps_0 = Struct("bsps_0", 
+scnr_bsp_group_bsps_0 = Struct("bsps_0",
     h3_reflexive("clusters_0", scnr_bsp_group_bsps_0_clusters_0),
     h3_reflexive("clusters_1", scnr_bsp_group_bsps_0_clusters_1),
     h3_reflexive("cluster_skies", scnr_bsp_group_bsps_0_cluster_skie),
@@ -517,7 +526,7 @@ scnr_bsp_group_bsps_0 = Struct("bsps_0",
     )
 
 
-scnr_bsp_group_bsps_1_unknown_0 = Struct("unknown_0", 
+scnr_bsp_group_bsps_1_unknown_0 = Struct("unknown_0",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     SInt32("unknown_2", VISIBLE=False),
@@ -528,14 +537,14 @@ scnr_bsp_group_bsps_1_unknown_0 = Struct("unknown_0",
     )
 
 
-scnr_bsp_group_bsps_1_unknown_1 = Struct("unknown_1", 
+scnr_bsp_group_bsps_1_unknown_1 = Struct("unknown_1",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_bsp_group_bsps_1 = Struct("bsps_1", 
+scnr_bsp_group_bsps_1 = Struct("bsps_1",
     h3_reflexive("unknown_0", scnr_bsp_group_bsps_1_unknown_0),
     h3_reflexive("unknown_1", scnr_bsp_group_bsps_1_unknown_1),
     VISIBLE=False,
@@ -543,7 +552,7 @@ scnr_bsp_group_bsps_1 = Struct("bsps_1",
     )
 
 
-scnr_bsp_group = Struct("bsp_group", 
+scnr_bsp_group = Struct("bsp_group",
     Bool32("included_bsps", *("bsp_%s" % i for i in range(32))),
     SInt32("unknown", VISIBLE=False),
     h3_reflexive("bsp_checksums", scnr_bsp_group_bsp_checksum),
@@ -553,51 +562,51 @@ scnr_bsp_group = Struct("bsp_group",
     )
 
 
-scnr_scenario_bsp_audibility_encoded_door_pa = Struct("encoded_door_pa", 
+scnr_scenario_bsp_audibility_encoded_door_pa = Struct("encoded_door_pa",
     SInt32("unknown"),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_scenario_bsp_audibility_cluster_door_portal_encoded_pa = Struct("cluster_door_portal_encoded_pa", 
+scnr_scenario_bsp_audibility_cluster_door_portal_encoded_pa = Struct("cluster_door_portal_encoded_pa",
     SInt32("unknown"),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_scenario_bsp_audibility_ai_deafening_pa = Struct("ai_deafening_pa", 
+scnr_scenario_bsp_audibility_ai_deafening_pa = Struct("ai_deafening_pa",
     SInt32("unknown"),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_scenario_bsp_audibility_cluster_distance = Struct("cluster_distance", 
+scnr_scenario_bsp_audibility_cluster_distance = Struct("cluster_distance",
     SInt8("unknown"),
     ENDIAN=">", SIZE=1
     )
 
 
-scnr_scenario_bsp_audibility_bsp = Struct("bsp", 
+scnr_scenario_bsp_audibility_bsp = Struct("bsp",
     SInt32("start"),
     SInt32("size"),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_scenario_bsp_audibility_bsp_cluster_list = Struct("bsp_cluster_list", 
+scnr_scenario_bsp_audibility_bsp_cluster_list = Struct("bsp_cluster_list",
     SInt32("start_index"),
     SInt32("cluster_count"),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_scenario_bsp_audibility_cluster_mapping = Struct("cluster_mapping", 
+scnr_scenario_bsp_audibility_cluster_mapping = Struct("cluster_mapping",
     SInt16("idx"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_scenario_bsp_audibility = Struct("scenario_bsp_audibility", 
+scnr_scenario_bsp_audibility = Struct("scenario_bsp_audibility",
     SInt32("door_portal_count"),
     SInt32("unique_cluster_count"),
     QStruct("cluster_distance_bounds", INCLUDE=from_to),
@@ -612,7 +621,7 @@ scnr_scenario_bsp_audibility = Struct("scenario_bsp_audibility",
     )
 
 
-scnr_scenario_zoneset_group = Struct("scenario_zoneset_group", 
+scnr_scenario_zoneset_group = Struct("scenario_zoneset_group",
     h3_string_id("name"),
     SInt32("bsp_group_index"),
     SInt32("import_loaded_bsps"),
@@ -626,7 +635,7 @@ scnr_scenario_zoneset_group = Struct("scenario_zoneset_group",
     )
 
 
-scnr_bsp_atla = Struct("bsp_atla", 
+scnr_bsp_atla = Struct("bsp_atla",
     h3_string_id("name"),
     Bool32("bsp", *("bsp_%s" % i for i in range(32))),
     Bool32("connected_bsps", *("bsp_%s" % i for i in range(32))),
@@ -634,7 +643,7 @@ scnr_bsp_atla = Struct("bsp_atla",
     )
 
 
-scnr_object_name = Struct("object_name", 
+scnr_object_name = Struct("object_name",
     ascii_str32("name"),
     SEnum16("type", *scnr_object_name_type),
     SInt16("placement_index"),
@@ -642,8 +651,8 @@ scnr_object_name = Struct("object_name",
     )
 
 
-scnr_scenery_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_scenery_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -653,7 +662,7 @@ scnr_scenery_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -663,7 +672,7 @@ scnr_scenery_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -673,7 +682,7 @@ scnr_scenery_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -687,13 +696,13 @@ scnr_scenery_node_positioning_node_flags_readable = Struct("node_flags_readable"
     )
 
 
-scnr_scenery_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_scenery_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_scenery_node_positioning = Struct("node_positioning", 
+scnr_scenery_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_scenery_node_positioning_node_flags_readable),
@@ -702,17 +711,17 @@ scnr_scenery_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_scenery_pathfinding_reference = Struct("pathfinding_reference", 
+scnr_scenery_pathfinding_reference = Struct("pathfinding_reference",
     SInt16("bsp_index"),
     SInt16("pathfinding_object_index"),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_scenery = Struct("scenery", 
+scnr_scenery = Struct("scenery",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -745,7 +754,7 @@ scnr_scenery = Struct("scenery",
     Bool16("allowed_zonesets", *("set_%s" % i for i in range(16))),
     SInt16("unknown_4", VISIBLE=False),
     h3_string_id("variant"),
-    Bool8("active_change_colors", 
+    Bool8("active_change_colors",
         "primary",
         "secondary",
         "tertiary",
@@ -764,7 +773,7 @@ scnr_scenery = Struct("scenery",
     SInt16("unknown_8"),
     SInt16("unknown_9"),
     SEnum32("symmetry", *scnr_scenery_symmetry),
-    Bool16("engine_flags", 
+    Bool16("engine_flags",
         "capture_the_flag",
         "slayer",
         "oddball",
@@ -778,7 +787,7 @@ scnr_scenery = Struct("scenery",
     SEnum16("team", *scnr_scenery_team),
     SInt8("spawn_sequence"),
     QStruct("runtime", INCLUDE=from_to_sint8),
-    Bool8("multiplayer_flags", 
+    Bool8("multiplayer_flags",
         "is_unique_object",
         "not_placed_at_start",
         ),
@@ -800,15 +809,15 @@ scnr_scenery = Struct("scenery",
     )
 
 
-scnr_scenery_palette = Struct("scenery_palette", 
+scnr_scenery_palette = Struct("scenery_palette",
     h3_dependency("scenery"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_biped_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_biped_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -818,7 +827,7 @@ scnr_biped_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -828,7 +837,7 @@ scnr_biped_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -838,7 +847,7 @@ scnr_biped_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -852,13 +861,13 @@ scnr_biped_node_positioning_node_flags_readable = Struct("node_flags_readable",
     )
 
 
-scnr_biped_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_biped_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_biped_node_positioning = Struct("node_positioning", 
+scnr_biped_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_biped_node_positioning_node_flags_readable),
@@ -867,10 +876,10 @@ scnr_biped_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_biped = Struct("biped", 
+scnr_biped = Struct("biped",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -903,7 +912,7 @@ scnr_biped = Struct("biped",
     Bool16("allowed_zonesets", *("set_%s" % i for i in range(16))),
     SInt16("unknown_4", VISIBLE=False),
     h3_string_id("variant"),
-    Bool8("active_change_colors", 
+    Bool8("active_change_colors",
         "primary",
         "secondary",
         "tertiary",
@@ -917,7 +926,7 @@ scnr_biped = Struct("biped",
     color_argb_uint32("tertiary_color"),
     color_argb_uint32("quaternary_color"),
     Float("body_vitality_percentage"),
-    Bool32("flags", 
+    Bool32("flags",
         "dead",
         "closed",
         "not_enterable_by_player",
@@ -926,15 +935,15 @@ scnr_biped = Struct("biped",
     )
 
 
-scnr_biped_palette = Struct("biped_palette", 
+scnr_biped_palette = Struct("biped_palette",
     h3_dependency("biped"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_vehicle_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_vehicle_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -944,7 +953,7 @@ scnr_vehicle_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -954,7 +963,7 @@ scnr_vehicle_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -964,7 +973,7 @@ scnr_vehicle_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -978,13 +987,13 @@ scnr_vehicle_node_positioning_node_flags_readable = Struct("node_flags_readable"
     )
 
 
-scnr_vehicle_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_vehicle_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_vehicle_node_positioning = Struct("node_positioning", 
+scnr_vehicle_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_vehicle_node_positioning_node_flags_readable),
@@ -993,10 +1002,10 @@ scnr_vehicle_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_vehicle = Struct("vehicle", 
+scnr_vehicle = Struct("vehicle",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -1029,7 +1038,7 @@ scnr_vehicle = Struct("vehicle",
     Bool16("allowed_zonesets", *("set_%s" % i for i in range(16))),
     SInt16("unknown_4", VISIBLE=False),
     h3_string_id("variant"),
-    Bool8("active_change_colors", 
+    Bool8("active_change_colors",
         "primary",
         "secondary",
         "tertiary",
@@ -1043,13 +1052,13 @@ scnr_vehicle = Struct("vehicle",
     color_argb_uint32("tertiary_color"),
     color_argb_uint32("quaternary_color"),
     Float("body_vitality_percentage"),
-    Bool32("flags", 
+    Bool32("flags",
         "dead",
         "closed",
         "not_enterable_by_player",
         ),
     SEnum32("symmetry", *scnr_scenery_symmetry),
-    Bool16("engine_flags", 
+    Bool16("engine_flags",
         "capture_the_flag",
         "slayer",
         "oddball",
@@ -1063,7 +1072,7 @@ scnr_vehicle = Struct("vehicle",
     SEnum16("team", *scnr_scenery_team),
     SInt8("spawn_sequence"),
     QStruct("runtime", INCLUDE=from_to_sint8),
-    Bool8("multiplayer_flags", 
+    Bool8("multiplayer_flags",
         "is_unique_object",
         "not_placed_at_start",
         ),
@@ -1085,15 +1094,15 @@ scnr_vehicle = Struct("vehicle",
     )
 
 
-scnr_vehicle_palette = Struct("vehicle_palette", 
+scnr_vehicle_palette = Struct("vehicle_palette",
     h3_dependency("vehicle"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_equipment_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_equipment_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -1103,7 +1112,7 @@ scnr_equipment_node_positioning_node_flags_readable = Struct("node_flags_readabl
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -1113,7 +1122,7 @@ scnr_equipment_node_positioning_node_flags_readable = Struct("node_flags_readabl
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -1123,7 +1132,7 @@ scnr_equipment_node_positioning_node_flags_readable = Struct("node_flags_readabl
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -1137,13 +1146,13 @@ scnr_equipment_node_positioning_node_flags_readable = Struct("node_flags_readabl
     )
 
 
-scnr_equipment_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_equipment_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_equipment_node_positioning = Struct("node_positioning", 
+scnr_equipment_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_equipment_node_positioning_node_flags_readable),
@@ -1152,10 +1161,10 @@ scnr_equipment_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_equipment = Struct("equipment", 
+scnr_equipment = Struct("equipment",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -1187,12 +1196,12 @@ scnr_equipment = Struct("equipment",
     h3_string_id("unknown_3"),
     Bool16("allowed_zonesets", *("set_%s" % i for i in range(16))),
     SInt16("unknown_4", VISIBLE=False),
-    Bool32("equipment_flags", 
+    Bool32("equipment_flags",
         "initially_at_rest_does_not_fall",
         ("does_accelerate_moves_due_to_explosions", 1 << 2),
         ),
     SEnum32("symmetry", *scnr_scenery_symmetry),
-    Bool16("engine_flags", 
+    Bool16("engine_flags",
         "capture_the_flag",
         "slayer",
         "oddball",
@@ -1206,7 +1215,7 @@ scnr_equipment = Struct("equipment",
     SEnum16("team", *scnr_scenery_team),
     SInt8("spawn_sequence"),
     QStruct("runtime", INCLUDE=from_to_sint8),
-    Bool8("multiplayer_flags", 
+    Bool8("multiplayer_flags",
         "is_unique_object",
         "not_placed_at_start",
         ),
@@ -1228,15 +1237,15 @@ scnr_equipment = Struct("equipment",
     )
 
 
-scnr_equipment_palette = Struct("equipment_palette", 
+scnr_equipment_palette = Struct("equipment_palette",
     h3_dependency("equipment"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_weapon_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_weapon_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -1246,7 +1255,7 @@ scnr_weapon_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -1256,7 +1265,7 @@ scnr_weapon_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -1266,7 +1275,7 @@ scnr_weapon_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -1280,13 +1289,13 @@ scnr_weapon_node_positioning_node_flags_readable = Struct("node_flags_readable",
     )
 
 
-scnr_weapon_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_weapon_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_weapon_node_positioning = Struct("node_positioning", 
+scnr_weapon_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_weapon_node_positioning_node_flags_readable),
@@ -1295,10 +1304,10 @@ scnr_weapon_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_weapon = Struct("weapon", 
+scnr_weapon = Struct("weapon",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -1331,7 +1340,7 @@ scnr_weapon = Struct("weapon",
     Bool16("allowed_zonesets", *("set_%s" % i for i in range(16))),
     SInt16("unknown_4", VISIBLE=False),
     h3_string_id("variant"),
-    Bool8("active_change_colors", 
+    Bool8("active_change_colors",
         "primary",
         "secondary",
         "tertiary",
@@ -1346,12 +1355,12 @@ scnr_weapon = Struct("weapon",
     color_argb_uint32("quaternary_color"),
     SInt16("rounds_left"),
     SInt16("rounds_loaded"),
-    Bool32("weapon_flags", 
+    Bool32("weapon_flags",
         "initially_at_rest_does_not_fall",
         ("does_accelerate_moves_due_to_explosions", 1 << 2),
         ),
     SEnum32("symmetry", *scnr_scenery_symmetry),
-    Bool16("engine_flags", 
+    Bool16("engine_flags",
         "capture_the_flag",
         "slayer",
         "oddball",
@@ -1365,7 +1374,7 @@ scnr_weapon = Struct("weapon",
     SEnum16("team", *scnr_scenery_team),
     SInt8("spawn_sequence"),
     QStruct("runtime", INCLUDE=from_to_sint8),
-    Bool8("multiplayer_flags", 
+    Bool8("multiplayer_flags",
         "is_unique_object",
         "not_placed_at_start",
         ),
@@ -1387,25 +1396,25 @@ scnr_weapon = Struct("weapon",
     )
 
 
-scnr_weapon_palette = Struct("weapon_palette", 
+scnr_weapon_palette = Struct("weapon_palette",
     h3_dependency("weapon"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_device_group = Struct("device_group", 
+scnr_device_group = Struct("device_group",
     ascii_str32("name"),
     Float("initial_value"),
-    Bool32("flags", 
+    Bool32("flags",
         "only_use_once",
         ),
     ENDIAN=">", SIZE=40
     )
 
 
-scnr_machine_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_machine_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -1415,7 +1424,7 @@ scnr_machine_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -1425,7 +1434,7 @@ scnr_machine_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -1435,7 +1444,7 @@ scnr_machine_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -1449,13 +1458,13 @@ scnr_machine_node_positioning_node_flags_readable = Struct("node_flags_readable"
     )
 
 
-scnr_machine_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_machine_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_machine_node_positioning = Struct("node_positioning", 
+scnr_machine_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_machine_node_positioning_node_flags_readable),
@@ -1464,17 +1473,17 @@ scnr_machine_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_machine_pathfinding_reference = Struct("pathfinding_reference", 
+scnr_machine_pathfinding_reference = Struct("pathfinding_reference",
     SInt16("bsp_index"),
     SInt16("pathfinding_object_index"),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_machine = Struct("machine", 
+scnr_machine = Struct("machine",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -1508,14 +1517,14 @@ scnr_machine = Struct("machine",
     SInt16("unknown_4", VISIBLE=False),
     SInt16("power_group"),
     SInt16("position_group"),
-    Bool32("device_flags", 
+    Bool32("device_flags",
         "initially_open",
         "initially_closed",
         "can_only_change_once",
         "position_reversed",
         "usable_from_both_sides",
         ),
-    Bool32("machine_flags", 
+    Bool32("machine_flags",
         "does_not_operate_automatically",
         "one_sided",
         "never_appears_locked",
@@ -1530,15 +1539,15 @@ scnr_machine = Struct("machine",
     )
 
 
-scnr_machine_palette = Struct("machine_palette", 
+scnr_machine_palette = Struct("machine_palette",
     h3_dependency("machine"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_terminal_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_terminal_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -1548,7 +1557,7 @@ scnr_terminal_node_positioning_node_flags_readable = Struct("node_flags_readable
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -1558,7 +1567,7 @@ scnr_terminal_node_positioning_node_flags_readable = Struct("node_flags_readable
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -1568,7 +1577,7 @@ scnr_terminal_node_positioning_node_flags_readable = Struct("node_flags_readable
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -1582,13 +1591,13 @@ scnr_terminal_node_positioning_node_flags_readable = Struct("node_flags_readable
     )
 
 
-scnr_terminal_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_terminal_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_terminal_node_positioning = Struct("node_positioning", 
+scnr_terminal_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_terminal_node_positioning_node_flags_readable),
@@ -1597,10 +1606,10 @@ scnr_terminal_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_terminal = Struct("terminal", 
+scnr_terminal = Struct("terminal",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -1634,7 +1643,7 @@ scnr_terminal = Struct("terminal",
     SInt16("unknown_4", VISIBLE=False),
     SInt16("power_group"),
     SInt16("position_group"),
-    Bool32("device_flags", 
+    Bool32("device_flags",
         "initially_open",
         "initially_closed",
         "can_only_change_once",
@@ -1646,15 +1655,15 @@ scnr_terminal = Struct("terminal",
     )
 
 
-scnr_terminal_palette = Struct("terminal_palette", 
+scnr_terminal_palette = Struct("terminal_palette",
     h3_dependency("terminal"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_control_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_control_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -1664,7 +1673,7 @@ scnr_control_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -1674,7 +1683,7 @@ scnr_control_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -1684,7 +1693,7 @@ scnr_control_node_positioning_node_flags_readable = Struct("node_flags_readable"
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -1698,13 +1707,13 @@ scnr_control_node_positioning_node_flags_readable = Struct("node_flags_readable"
     )
 
 
-scnr_control_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_control_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_control_node_positioning = Struct("node_positioning", 
+scnr_control_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_control_node_positioning_node_flags_readable),
@@ -1713,10 +1722,10 @@ scnr_control_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_control = Struct("control", 
+scnr_control = Struct("control",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -1750,14 +1759,14 @@ scnr_control = Struct("control",
     SInt16("unknown_4", VISIBLE=False),
     SInt16("power_group"),
     SInt16("position_group"),
-    Bool32("device_flags", 
+    Bool32("device_flags",
         "initially_open",
         "initially_closed",
         "can_only_change_once",
         "position_reversed",
         "usable_from_both_sides",
         ),
-    Bool32("control_flags", 
+    Bool32("control_flags",
         "usable_from_both_sides",
         ),
     SInt16("unknown_5"),
@@ -1766,15 +1775,15 @@ scnr_control = Struct("control",
     )
 
 
-scnr_control_palette = Struct("control_palette", 
+scnr_control_palette = Struct("control_palette",
     h3_dependency("control"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_sound_scenery_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_sound_scenery_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -1784,7 +1793,7 @@ scnr_sound_scenery_node_positioning_node_flags_readable = Struct("node_flags_rea
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -1794,7 +1803,7 @@ scnr_sound_scenery_node_positioning_node_flags_readable = Struct("node_flags_rea
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -1804,7 +1813,7 @@ scnr_sound_scenery_node_positioning_node_flags_readable = Struct("node_flags_rea
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -1818,13 +1827,13 @@ scnr_sound_scenery_node_positioning_node_flags_readable = Struct("node_flags_rea
     )
 
 
-scnr_sound_scenery_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_sound_scenery_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_sound_scenery_node_positioning = Struct("node_positioning", 
+scnr_sound_scenery_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_sound_scenery_node_positioning_node_flags_readable),
@@ -1833,10 +1842,10 @@ scnr_sound_scenery_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_sound_scenery = Struct("sound_scenery", 
+scnr_sound_scenery = Struct("sound_scenery",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -1877,15 +1886,15 @@ scnr_sound_scenery = Struct("sound_scenery",
     )
 
 
-scnr_sound_scenery_palette = Struct("sound_scenery_palette", 
+scnr_sound_scenery_palette = Struct("sound_scenery_palette",
     h3_dependency("sound_scenery"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_giant_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_giant_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -1895,7 +1904,7 @@ scnr_giant_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -1905,7 +1914,7 @@ scnr_giant_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -1915,7 +1924,7 @@ scnr_giant_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -1929,13 +1938,13 @@ scnr_giant_node_positioning_node_flags_readable = Struct("node_flags_readable",
     )
 
 
-scnr_giant_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_giant_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_giant_node_positioning = Struct("node_positioning", 
+scnr_giant_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_giant_node_positioning_node_flags_readable),
@@ -1944,17 +1953,17 @@ scnr_giant_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_giant_pathfinding_reference = Struct("pathfinding_reference", 
+scnr_giant_pathfinding_reference = Struct("pathfinding_reference",
     SInt16("bsp_index"),
     SInt16("pathfinding_object_index"),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_giant = Struct("giant", 
+scnr_giant = Struct("giant",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -1987,7 +1996,7 @@ scnr_giant = Struct("giant",
     Bool16("allowed_zonesets", *("set_%s" % i for i in range(16))),
     SInt16("unknown_4", VISIBLE=False),
     h3_string_id("variant"),
-    Bool8("active_change_colors", 
+    Bool8("active_change_colors",
         "primary",
         "secondary",
         "tertiary",
@@ -2001,7 +2010,7 @@ scnr_giant = Struct("giant",
     color_argb_uint32("tertiary_color"),
     color_argb_uint32("quaternary_color"),
     Float("body_vitality_percentage"),
-    Bool32("flags", 
+    Bool32("flags",
         "dead",
         "closed",
         "not_enterable_by_player",
@@ -2013,15 +2022,15 @@ scnr_giant = Struct("giant",
     )
 
 
-scnr_giant_palette = Struct("giant_palette", 
+scnr_giant_palette = Struct("giant_palette",
     h3_dependency("giant"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_effect_scenery_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_effect_scenery_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -2031,7 +2040,7 @@ scnr_effect_scenery_node_positioning_node_flags_readable = Struct("node_flags_re
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -2041,7 +2050,7 @@ scnr_effect_scenery_node_positioning_node_flags_readable = Struct("node_flags_re
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -2051,7 +2060,7 @@ scnr_effect_scenery_node_positioning_node_flags_readable = Struct("node_flags_re
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -2065,13 +2074,13 @@ scnr_effect_scenery_node_positioning_node_flags_readable = Struct("node_flags_re
     )
 
 
-scnr_effect_scenery_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_effect_scenery_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_effect_scenery_node_positioning = Struct("node_positioning", 
+scnr_effect_scenery_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_effect_scenery_node_positioning_node_flags_readable),
@@ -2080,10 +2089,10 @@ scnr_effect_scenery_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_effect_scenery = Struct("effect_scenery", 
+scnr_effect_scenery = Struct("effect_scenery",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -2119,15 +2128,15 @@ scnr_effect_scenery = Struct("effect_scenery",
     )
 
 
-scnr_effect_scenery_palette = Struct("effect_scenery_palette", 
+scnr_effect_scenery_palette = Struct("effect_scenery_palette",
     h3_dependency("effect_scenery"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_light_volume_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_light_volume_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -2137,7 +2146,7 @@ scnr_light_volume_node_positioning_node_flags_readable = Struct("node_flags_read
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -2147,7 +2156,7 @@ scnr_light_volume_node_positioning_node_flags_readable = Struct("node_flags_read
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -2157,7 +2166,7 @@ scnr_light_volume_node_positioning_node_flags_readable = Struct("node_flags_read
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -2171,13 +2180,13 @@ scnr_light_volume_node_positioning_node_flags_readable = Struct("node_flags_read
     )
 
 
-scnr_light_volume_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_light_volume_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_light_volume_node_positioning = Struct("node_positioning", 
+scnr_light_volume_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_light_volume_node_positioning_node_flags_readable),
@@ -2186,10 +2195,10 @@ scnr_light_volume_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_light_volume = Struct("light_volume", 
+scnr_light_volume = Struct("light_volume",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -2223,7 +2232,7 @@ scnr_light_volume = Struct("light_volume",
     SInt16("unknown_4", VISIBLE=False),
     SInt16("power_group"),
     SInt16("position_group"),
-    Bool32("device_flags", 
+    Bool32("device_flags",
         "initially_open",
         "initially_closed",
         "can_only_change_once",
@@ -2231,7 +2240,7 @@ scnr_light_volume = Struct("light_volume",
         "usable_from_both_sides",
         ),
     SEnum16("type_1", *scnr_light_volume_type_1),
-    Bool16("flags", 
+    Bool16("flags",
         "custom_geometry",
         ("cinematic_only", 1 << 2),
         ),
@@ -2249,14 +2258,14 @@ scnr_light_volume = Struct("light_volume",
     )
 
 
-scnr_light_volumes_palette = Struct("light_volumes_palette", 
+scnr_light_volumes_palette = Struct("light_volumes_palette",
     h3_dependency("light_volume"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_sandbox_vehicle = Struct("sandbox_vehicle", 
+scnr_sandbox_vehicle = Struct("sandbox_vehicle",
     h3_dependency("object"),
     h3_string_id("name"),
     SInt32("max_allowed"),
@@ -2266,7 +2275,7 @@ scnr_sandbox_vehicle = Struct("sandbox_vehicle",
     )
 
 
-scnr_sandbox_weapon = Struct("sandbox_weapon", 
+scnr_sandbox_weapon = Struct("sandbox_weapon",
     h3_dependency("object"),
     h3_string_id("name"),
     SInt32("max_allowed"),
@@ -2276,7 +2285,7 @@ scnr_sandbox_weapon = Struct("sandbox_weapon",
     )
 
 
-scnr_sandbox_equipment = Struct("sandbox_equipment", 
+scnr_sandbox_equipment = Struct("sandbox_equipment",
     h3_dependency("object"),
     h3_string_id("name"),
     SInt32("max_allowed"),
@@ -2286,7 +2295,7 @@ scnr_sandbox_equipment = Struct("sandbox_equipment",
     )
 
 
-scnr_sandbox_scenery = Struct("sandbox_scenery", 
+scnr_sandbox_scenery = Struct("sandbox_scenery",
     h3_dependency("object"),
     h3_string_id("name"),
     SInt32("max_allowed"),
@@ -2296,7 +2305,7 @@ scnr_sandbox_scenery = Struct("sandbox_scenery",
     )
 
 
-scnr_sandbox_teleporter = Struct("sandbox_teleporter", 
+scnr_sandbox_teleporter = Struct("sandbox_teleporter",
     h3_dependency("object"),
     h3_string_id("name"),
     SInt32("max_allowed"),
@@ -2306,7 +2315,7 @@ scnr_sandbox_teleporter = Struct("sandbox_teleporter",
     )
 
 
-scnr_sandbox_goal_object = Struct("sandbox_goal_object", 
+scnr_sandbox_goal_object = Struct("sandbox_goal_object",
     h3_dependency("object"),
     h3_string_id("name"),
     SInt32("max_allowed"),
@@ -2316,7 +2325,7 @@ scnr_sandbox_goal_object = Struct("sandbox_goal_object",
     )
 
 
-scnr_sandbox_spawning = Struct("sandbox_spawning", 
+scnr_sandbox_spawning = Struct("sandbox_spawning",
     h3_dependency("object"),
     h3_string_id("name"),
     SInt32("max_allowed"),
@@ -2326,7 +2335,7 @@ scnr_sandbox_spawning = Struct("sandbox_spawning",
     )
 
 
-scnr_soft_ceiling = Struct("soft_ceiling", 
+scnr_soft_ceiling = Struct("soft_ceiling",
     SInt16("type"),
     SInt16("unknown_0"),
     h3_string_id("name"),
@@ -2336,7 +2345,7 @@ scnr_soft_ceiling = Struct("soft_ceiling",
     )
 
 
-scnr_player_starting_profile = Struct("player_starting_profile", 
+scnr_player_starting_profile = Struct("player_starting_profile",
     ascii_str32("name"),
     Float("starting_health_damage"),
     Float("starting_shield_damage"),
@@ -2354,7 +2363,7 @@ scnr_player_starting_profile = Struct("player_starting_profile",
     )
 
 
-scnr_player_starting_location = Struct("player_starting_location", 
+scnr_player_starting_location = Struct("player_starting_location",
     QStruct("position", INCLUDE=xyz_float),
     yp_float_rad("facing"),
     SInt16("unknown", VISIBLE=False),
@@ -2363,7 +2372,7 @@ scnr_player_starting_location = Struct("player_starting_location",
     )
 
 
-scnr_trigger_volume = Struct("trigger_volume", 
+scnr_trigger_volume = Struct("trigger_volume",
     h3_string_id("name"),
     SInt16("object_name"),
     SInt16("unknown_0", VISIBLE=False),
@@ -2378,7 +2387,7 @@ scnr_trigger_volume = Struct("trigger_volume",
     )
 
 
-scnr_zoneset_switch_trigger_volume = Struct("zoneset_switch_trigger_volume", 
+scnr_zoneset_switch_trigger_volume = Struct("zoneset_switch_trigger_volume",
     SInt16("unknown"),
     SInt16("included_zoneset_index"),
     SInt16("trigger_volume"),
@@ -2387,41 +2396,41 @@ scnr_zoneset_switch_trigger_volume = Struct("zoneset_switch_trigger_volume",
     )
 
 
-scnr_multiplayer_constants_override = Struct("multiplayer_constants_override", 
+scnr_multiplayer_constants_override = Struct("multiplayer_constants_override",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=5),
     ENDIAN=">", SIZE=20
     )
 
 
-scnr_unknown_4 = Struct("unknown_4", 
+scnr_unknown_4 = Struct("unknown_4",
     BytesRaw("unknown", SIZE=20, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
 
 
-scnr_unknown_5 = Struct("unknown_5", 
+scnr_unknown_5 = Struct("unknown_5",
     BytesRaw("unknown", SIZE=20, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
 
 
-scnr_unknown_6 = Struct("unknown_6", 
+scnr_unknown_6 = Struct("unknown_6",
     BytesRaw("unknown", SIZE=20, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
 
 
-scnr_unknown_7 = Struct("unknown_7", 
+scnr_unknown_7 = Struct("unknown_7",
     BytesRaw("unknown", SIZE=20, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
 
 
-scnr_decal = Struct("decal", 
+scnr_decal = Struct("decal",
     SInt16("palette_index"),
     SInt8("yaw"),
     SInt8("pitch"),
@@ -2432,19 +2441,19 @@ scnr_decal = Struct("decal",
     )
 
 
-scnr_decal_palette = Struct("decal_palette", 
+scnr_decal_palette = Struct("decal_palette",
     h3_dependency("decal"),
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_style_palette = Struct("style_palette", 
+scnr_style_palette = Struct("style_palette",
     h3_dependency("style"),
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_squad_group = Struct("squad_group", 
+scnr_squad_group = Struct("squad_group",
     ascii_str32("name"),
     SInt16("parent_index"),
     SInt16("objective_index"),
@@ -2454,7 +2463,7 @@ scnr_squad_group = Struct("squad_group",
     )
 
 
-scnr_squad_base_squad_multi_state = Struct("multi_state", 
+scnr_squad_base_squad_multi_state = Struct("multi_state",
     SInt16("unknown_0"),
     SInt16("unknown_1"),
     Float("unknown_2"),
@@ -2468,7 +2477,7 @@ scnr_squad_base_squad_multi_state = Struct("multi_state",
     )
 
 
-scnr_squad_base_squad_starting_location_multi_state = Struct("multi_state", 
+scnr_squad_base_squad_starting_location_multi_state = Struct("multi_state",
     SInt16("unknown_0"),
     SInt16("unknown_1"),
     Float("unknown_2"),
@@ -2482,7 +2491,7 @@ scnr_squad_base_squad_starting_location_multi_state = Struct("multi_state",
     )
 
 
-scnr_squad_base_squad_starting_location = Struct("starting_location", 
+scnr_squad_base_squad_starting_location = Struct("starting_location",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     h3_string_id("name"),
@@ -2490,7 +2499,7 @@ scnr_squad_base_squad_starting_location = Struct("starting_location",
     SInt16("reference_frame"),
     SInt16("unknown_2", VISIBLE=False),
     ypr_float_rad("facing"),
-    Bool32("flags", 
+    Bool32("flags",
         ("always_place", 1 << 2),
         "initially_hidden",
         "kill_vehicle_if_no_driver",
@@ -2520,7 +2529,7 @@ scnr_squad_base_squad_starting_location = Struct("starting_location",
     )
 
 
-scnr_squad_base_squad = Struct("base_squad", 
+scnr_squad_base_squad = Struct("base_squad",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     SInt16("size"),
@@ -2543,9 +2552,9 @@ scnr_squad_base_squad = Struct("base_squad",
     )
 
 
-scnr_squad = Struct("squad", 
+scnr_squad = Struct("squad",
     ascii_str32("name"),
-    Bool32("flags", 
+    Bool32("flags",
         ("blind", 1 << 1),
         "deaf",
         "braindead",
@@ -2565,11 +2574,11 @@ scnr_squad = Struct("squad",
     )
 
 
-scnr_zone_firing_position = Struct("firing_position", 
+scnr_zone_firing_position = Struct("firing_position",
     QStruct("position", INCLUDE=xyz_float),
     SInt16("reference_frame"),
     SInt16("unknown_0", VISIBLE=False),
-    Bool16("flags", 
+    Bool16("flags",
         "open",
         "partial",
         "closed",
@@ -2589,7 +2598,7 @@ scnr_zone_firing_position = Struct("firing_position",
     )
 
 
-scnr_zone_area_flight_hint = Struct("flight_hint", 
+scnr_zone_area_flight_hint = Struct("flight_hint",
     SInt16("flight_hint_index"),
     SInt16("poit_index"),
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
@@ -2597,9 +2606,9 @@ scnr_zone_area_flight_hint = Struct("flight_hint",
     )
 
 
-scnr_zone_area = Struct("area", 
+scnr_zone_area = Struct("area",
     ascii_str32("name"),
-    Bool32("area_flags", 
+    Bool32("area_flags",
         "vehicle_area",
         "perch",
         "manual_reference_frame",
@@ -2620,9 +2629,9 @@ scnr_zone_area = Struct("area",
     )
 
 
-scnr_zone = Struct("zone", 
+scnr_zone = Struct("zone",
     ascii_str32("name"),
-    Bool32("flags", 
+    Bool32("flags",
         "uses_manual_bsp_index",
         ),
     SInt16("manual_bsp_index"),
@@ -2633,13 +2642,13 @@ scnr_zone = Struct("zone",
     )
 
 
-scnr_character_palette = Struct("character_palette", 
+scnr_character_palette = Struct("character_palette",
     h3_dependency("character"),
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_ai_pathfinding_data_unknown_0 = Struct("unknown_0", 
+scnr_ai_pathfinding_data_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -2656,7 +2665,7 @@ scnr_ai_pathfinding_data_unknown_0 = Struct("unknown_0",
     )
 
 
-scnr_ai_pathfinding_data_unknown_1 = Struct("unknown_1", 
+scnr_ai_pathfinding_data_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -2684,14 +2693,14 @@ scnr_ai_pathfinding_data_unknown_1 = Struct("unknown_1",
     )
 
 
-scnr_ai_pathfinding_data_unknown_2 = Struct("unknown_2", 
+scnr_ai_pathfinding_data_unknown_2 = Struct("unknown_2",
     Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_ai_pathfinding_data_unknown_3 = Struct("unknown_3", 
+scnr_ai_pathfinding_data_unknown_3 = Struct("unknown_3",
     SInt32("unknown_0", VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     VISIBLE=False,
@@ -2699,14 +2708,14 @@ scnr_ai_pathfinding_data_unknown_3 = Struct("unknown_3",
     )
 
 
-scnr_ai_pathfinding_data_unknown_4_unknown_1 = Struct("unknown_1", 
+scnr_ai_pathfinding_data_unknown_4_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown", SIZE=28, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=28
     )
 
 
-scnr_ai_pathfinding_data_unknown_4 = Struct("unknown_4", 
+scnr_ai_pathfinding_data_unknown_4 = Struct("unknown_4",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     h3_reflexive("unknown_1", scnr_ai_pathfinding_data_unknown_4_unknown_1),
     VISIBLE=False,
@@ -2714,7 +2723,7 @@ scnr_ai_pathfinding_data_unknown_4 = Struct("unknown_4",
     )
 
 
-scnr_ai_pathfinding_data_unknown_5_unknown = Struct("unknown", 
+scnr_ai_pathfinding_data_unknown_5_unknown = Struct("unknown",
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -2723,14 +2732,14 @@ scnr_ai_pathfinding_data_unknown_5_unknown = Struct("unknown",
     )
 
 
-scnr_ai_pathfinding_data_unknown_5 = Struct("unknown_5", 
+scnr_ai_pathfinding_data_unknown_5 = Struct("unknown_5",
     h3_reflexive("unknown", scnr_ai_pathfinding_data_unknown_5_unknown),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-scnr_ai_pathfinding_data_unknown_6 = Struct("unknown_6", 
+scnr_ai_pathfinding_data_unknown_6 = Struct("unknown_6",
     h3_string_id("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     SInt16("unknown_2", VISIBLE=False),
@@ -2741,7 +2750,7 @@ scnr_ai_pathfinding_data_unknown_6 = Struct("unknown_6",
     )
 
 
-scnr_ai_pathfinding_data_unknown_7_unknown_unknown = Struct("unknown", 
+scnr_ai_pathfinding_data_unknown_7_unknown_unknown = Struct("unknown",
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -2754,28 +2763,28 @@ scnr_ai_pathfinding_data_unknown_7_unknown_unknown = Struct("unknown",
     )
 
 
-scnr_ai_pathfinding_data_unknown_7_unknown = Struct("unknown", 
+scnr_ai_pathfinding_data_unknown_7_unknown = Struct("unknown",
     h3_reflexive("unknown", scnr_ai_pathfinding_data_unknown_7_unknown_unknown),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-scnr_ai_pathfinding_data_unknown_7 = Struct("unknown_7", 
+scnr_ai_pathfinding_data_unknown_7 = Struct("unknown_7",
     h3_reflexive("unknown", scnr_ai_pathfinding_data_unknown_7_unknown),
     VISIBLE=False,
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_ai_pathfinding_data_unknown_8 = Struct("unknown_8", 
+scnr_ai_pathfinding_data_unknown_8 = Struct("unknown_8",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_ai_pathfinding_data = Struct("ai_pathfinding_data", 
+scnr_ai_pathfinding_data = Struct("ai_pathfinding_data",
     h3_reflexive("unknown_0", scnr_ai_pathfinding_data_unknown_0),
     h3_reflexive("unknown_1", scnr_ai_pathfinding_data_unknown_1),
     h3_reflexive("unknown_2", scnr_ai_pathfinding_data_unknown_2),
@@ -2790,7 +2799,7 @@ scnr_ai_pathfinding_data = Struct("ai_pathfinding_data",
     )
 
 
-scnr_script_parameter = Struct("parameter", 
+scnr_script_parameter = Struct("parameter",
     ascii_str32("name"),
     SEnum16("type", *scnr_script_return_type),
     SInt16("unknown"),
@@ -2798,7 +2807,7 @@ scnr_script_parameter = Struct("parameter",
     )
 
 
-scnr_script = Struct("script", 
+scnr_script = Struct("script",
     ascii_str32("script_name"),
     SEnum16("script_type", *scnr_script_script_type),
     SEnum16("return_type", *scnr_script_return_type),
@@ -2809,7 +2818,7 @@ scnr_script = Struct("script",
     )
 
 
-scnr_global = Struct("global", 
+scnr_global = Struct("global",
     ascii_str32("name"),
     SEnum16("type", *scnr_script_return_type),
     SInt16("unknown"),
@@ -2819,13 +2828,13 @@ scnr_global = Struct("global",
     )
 
 
-scnr_script_reference = Struct("script_reference", 
+scnr_script_reference = Struct("script_reference",
     h3_dependency("reference"),
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_scripting_data_point_set_point = Struct("point", 
+scnr_scripting_data_point_set_point = Struct("point",
     ascii_str32("name"),
     QStruct("position", INCLUDE=xyz_float),
     SInt16("reference_frame"),
@@ -2836,7 +2845,7 @@ scnr_scripting_data_point_set_point = Struct("point",
     )
 
 
-scnr_scripting_data_point_set = Struct("point_set", 
+scnr_scripting_data_point_set = Struct("point_set",
     ascii_str32("name"),
     h3_reflexive("points", scnr_scripting_data_point_set_point),
     SInt16("bsp_index"),
@@ -2846,14 +2855,14 @@ scnr_scripting_data_point_set = Struct("point_set",
     )
 
 
-scnr_scripting_data = Struct("scripting_data", 
+scnr_scripting_data = Struct("scripting_data",
     h3_reflexive("point_sets", scnr_scripting_data_point_set),
     BytesRaw("unknown", SIZE=120, VISIBLE=False),
     ENDIAN=">", SIZE=132
     )
 
 
-scnr_cutscene_flag = Struct("cutscene_flag", 
+scnr_cutscene_flag = Struct("cutscene_flag",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     h3_string_id("name"),
     QStruct("position", INCLUDE=xyz_float),
@@ -2862,7 +2871,7 @@ scnr_cutscene_flag = Struct("cutscene_flag",
     )
 
 
-scnr_cutscene_camera_point = Struct("cutscene_camera_point", 
+scnr_cutscene_camera_point = Struct("cutscene_camera_point",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *scnr_cutscene_camera_point_type),
     ascii_str32("name"),
@@ -2873,7 +2882,7 @@ scnr_cutscene_camera_point = Struct("cutscene_camera_point",
     )
 
 
-scnr_cutscene_title = Struct("cutscene_title", 
+scnr_cutscene_title = Struct("cutscene_title",
     h3_string_id("name"),
     SInt16("text_bounds_top"),
     SInt16("text_bounds_left"),
@@ -2892,21 +2901,21 @@ scnr_cutscene_title = Struct("cutscene_title",
     )
 
 
-scnr_scenario_resource_script_source = Struct("script_source", 
+scnr_scenario_resource_script_source = Struct("script_source",
     h3_dependency("hs_source_file", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_scenario_resource_ai_resource = Struct("ai_resource", 
+scnr_scenario_resource_ai_resource = Struct("ai_resource",
     h3_dependency("ai_resource", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_scenario_resource_reference = Struct("reference", 
+scnr_scenario_resource_reference = Struct("reference",
     h3_dependency("scenery_resource", VISIBLE=False),
     h3_dependency("bipeds_resource", VISIBLE=False),
     h3_dependency("vehicles_resource", VISIBLE=False),
@@ -2931,7 +2940,7 @@ scnr_scenario_resource_reference = Struct("reference",
     )
 
 
-scnr_scenario_resource = Struct("scenario_resource", 
+scnr_scenario_resource = Struct("scenario_resource",
     SInt32("unknown", VISIBLE=False),
     h3_reflexive("script_source", scnr_scenario_resource_script_source),
     h3_reflexive("ai_resources", scnr_scenario_resource_ai_resource),
@@ -2941,7 +2950,7 @@ scnr_scenario_resource = Struct("scenario_resource",
     )
 
 
-scnr_unit_seats_mapping = Struct("unit_seats_mapping", 
+scnr_unit_seats_mapping = Struct("unit_seats_mapping",
     dependency_uint32("unit", VISIBLE=False),
     Bool32("seats", *("seat_%s" % i for i in range(32))),
     Bool32("seats_2", *("seat_%s" % i for i in range(32, 64))),
@@ -2949,19 +2958,19 @@ scnr_unit_seats_mapping = Struct("unit_seats_mapping",
     )
 
 
-scnr_scenario_kill_trigger = Struct("scenario_kill_trigger", 
+scnr_scenario_kill_trigger = Struct("scenario_kill_trigger",
     SInt16("trigger_volume"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_scenario_safe_trigger = Struct("scenario_safe_trigger", 
+scnr_scenario_safe_trigger = Struct("scenario_safe_trigger",
     SInt16("trigger_volume"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_script_expression = Struct("script_expression", 
+scnr_script_expression = Struct("script_expression",
     UInt16("salt"),
     UInt16("opcode"),
     SEnum16("value_type", *scnr_script_expression_value_type),
@@ -2979,7 +2988,7 @@ scnr_script_expression = Struct("script_expression",
     )
 
 
-scnr_ai_trigger_condition = Struct("condition", 
+scnr_ai_trigger_condition = Struct("condition",
     SEnum16("rule_type", *scnr_ai_trigger_condition_rule_type),
     SInt16("squad"),
     SInt16("squad_group"),
@@ -2990,16 +2999,16 @@ scnr_ai_trigger_condition = Struct("condition",
     ascii_str32("exit_condition_script"),
     SInt16("exit_condition_script_index"),
     SInt16("unknown_1", VISIBLE=False),
-    Bool32("flags", 
+    Bool32("flags",
         "not",
         ),
     ENDIAN=">", SIZE=56
     )
 
 
-scnr_ai_trigger = Struct("ai_trigger", 
+scnr_ai_trigger = Struct("ai_trigger",
     ascii_str32("name"),
-    Bool32("trigger_flags", 
+    Bool32("trigger_flags",
         "latch_on_when_triggered",
         ),
     SEnum16("combination_rule", *scnr_ai_trigger_combination_rule),
@@ -3009,7 +3018,7 @@ scnr_ai_trigger = Struct("ai_trigger",
     )
 
 
-scnr_background_sound_environment_palette = Struct("background_sound_environment_palette", 
+scnr_background_sound_environment_palette = Struct("background_sound_environment_palette",
     h3_string_id("name"),
     h3_dependency("sound_environment"),
     Float("cutoff_distance_0"),
@@ -3026,14 +3035,14 @@ scnr_background_sound_environment_palette = Struct("background_sound_environment
     )
 
 
-scnr_unknown_16 = Struct("unknown_16", 
+scnr_unknown_16 = Struct("unknown_16",
     BytesRaw("unknown", SIZE=120, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=120
     )
 
 
-scnr_fog = Struct("fog", 
+scnr_fog = Struct("fog",
     h3_string_id("name"),
     SInt16("unknown_0"),
     SInt16("unknown_1", VISIBLE=False),
@@ -3041,7 +3050,7 @@ scnr_fog = Struct("fog",
     )
 
 
-scnr_camera_effect = Struct("camera_effect", 
+scnr_camera_effect = Struct("camera_effect",
     h3_string_id("name"),
     h3_dependency("effect"),
     Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
@@ -3054,14 +3063,14 @@ scnr_camera_effect = Struct("camera_effect",
     )
 
 
-scnr_scenario_cluster_data_background_sound_environment = Struct("background_sound_environment", 
+scnr_scenario_cluster_data_background_sound_environment = Struct("background_sound_environment",
     SInt16("background_sound_environment_index"),
     SInt16("unknown", VISIBLE=False),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_scenario_cluster_data_unknown_0 = Struct("unknown_0", 
+scnr_scenario_cluster_data_unknown_0 = Struct("unknown_0",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -3069,7 +3078,7 @@ scnr_scenario_cluster_data_unknown_0 = Struct("unknown_0",
     )
 
 
-scnr_scenario_cluster_data_unknown_1 = Struct("unknown_1", 
+scnr_scenario_cluster_data_unknown_1 = Struct("unknown_1",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -3077,13 +3086,13 @@ scnr_scenario_cluster_data_unknown_1 = Struct("unknown_1",
     )
 
 
-scnr_scenario_cluster_data_cluster_centroid = Struct("cluster_centroid", 
+scnr_scenario_cluster_data_cluster_centroid = Struct("cluster_centroid",
     QStruct("centroid", INCLUDE=xyz_float),
     ENDIAN=">", SIZE=12
     )
 
 
-scnr_scenario_cluster_data_unknown_2 = Struct("unknown_2", 
+scnr_scenario_cluster_data_unknown_2 = Struct("unknown_2",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -3091,21 +3100,21 @@ scnr_scenario_cluster_data_unknown_2 = Struct("unknown_2",
     )
 
 
-scnr_scenario_cluster_data_fog = Struct("fog", 
+scnr_scenario_cluster_data_fog = Struct("fog",
     SInt16("fog_index"),
     SInt16("unknown", VISIBLE=False),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_scenario_cluster_data_camera_effect = Struct("camera_effect", 
+scnr_scenario_cluster_data_camera_effect = Struct("camera_effect",
     SInt16("camera_effect_index"),
     SInt16("unknown", VISIBLE=False),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_scenario_cluster_data = Struct("scenario_cluster_data", 
+scnr_scenario_cluster_data = Struct("scenario_cluster_data",
     h3_dependency("bsp"),
     h3_reflexive("background_sound_environments", scnr_scenario_cluster_data_background_sound_environment),
     h3_reflexive("unknown_0", scnr_scenario_cluster_data_unknown_0),
@@ -3119,7 +3128,7 @@ scnr_scenario_cluster_data = Struct("scenario_cluster_data",
     )
 
 
-scnr_spawn_data_dynamic_spawn_overload = Struct("dynamic_spawn_overload", 
+scnr_spawn_data_dynamic_spawn_overload = Struct("dynamic_spawn_overload",
     SInt16("overload_type"),
     SInt16("unknown"),
     Float("inner_radius"),
@@ -3129,9 +3138,9 @@ scnr_spawn_data_dynamic_spawn_overload = Struct("dynamic_spawn_overload",
     )
 
 
-scnr_spawn_data_static_respawn_zone = Struct("static_respawn_zone", 
+scnr_spawn_data_static_respawn_zone = Struct("static_respawn_zone",
     h3_string_id("name"),
-    Bool32("relevant_teams", 
+    Bool32("relevant_teams",
         "red",
         "blue",
         "green",
@@ -3154,9 +3163,9 @@ scnr_spawn_data_static_respawn_zone = Struct("static_respawn_zone",
     )
 
 
-scnr_spawn_data_static_initial_spawn_zone = Struct("static_initial_spawn_zone", 
+scnr_spawn_data_static_initial_spawn_zone = Struct("static_initial_spawn_zone",
     h3_string_id("name"),
-    Bool32("relevant_teams", 
+    Bool32("relevant_teams",
         "red",
         "blue",
         "green",
@@ -3179,7 +3188,7 @@ scnr_spawn_data_static_initial_spawn_zone = Struct("static_initial_spawn_zone",
     )
 
 
-scnr_spawn_data = Struct("spawn_data", 
+scnr_spawn_data = Struct("spawn_data",
     Float("dynamic_spawn_lower_height"),
     Float("dynamic_spawn_upper_height"),
     Float("game_object_reset_height"),
@@ -3191,8 +3200,8 @@ scnr_spawn_data = Struct("spawn_data",
     )
 
 
-scnr_crate_node_positioning_node_flags_readable = Struct("node_flags_readable", 
-    Bool8("flags_0", 
+scnr_crate_node_positioning_node_flags_readable = Struct("node_flags_readable",
+    Bool8("flags_0",
         "node_0_32_64_96_128_160_192_224",
         "node_1_33_65_97_129_161_193_225",
         "node_2_34_66_98_130_162_194_226",
@@ -3202,7 +3211,7 @@ scnr_crate_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_6_38_70_102_134_166_198_230",
         "node_7_39_71_103_135_167_199_231",
         ),
-    Bool8("flags_1", 
+    Bool8("flags_1",
         "node_8_40_72_104_136_168_200_232",
         "node_9_41_73_105_137_169_201_233",
         "node_10_42_74_106_138_170_202_234",
@@ -3212,7 +3221,7 @@ scnr_crate_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_14_46_78_110_142_174_206_238",
         "node_15_47_79_111_143_175_207_239",
         ),
-    Bool8("flags_2", 
+    Bool8("flags_2",
         "node_16_48_80_112_144_176_208_240",
         "node_17_49_81_113_145_177_209_241",
         "node_18_50_82_114_146_178_210_242",
@@ -3222,7 +3231,7 @@ scnr_crate_node_positioning_node_flags_readable = Struct("node_flags_readable",
         "node_22_54_86_118_150_182_214_246",
         "node_23_55_87_119_151_183_215_247",
         ),
-    Bool8("flags_3", 
+    Bool8("flags_3",
         "node_24_56_88_120_152_184_216_248",
         "node_25_57_89_121_153_185_217_249",
         "node_26_58_90_122_154_186_218_250",
@@ -3236,13 +3245,13 @@ scnr_crate_node_positioning_node_flags_readable = Struct("node_flags_readable",
     )
 
 
-scnr_crate_node_positioning_orientations_readable = Struct("orientations_readable", 
+scnr_crate_node_positioning_orientations_readable = Struct("orientations_readable",
     QStruct("rotation", INCLUDE=ijkw_sint16),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_crate_node_positioning = Struct("node_positioning", 
+scnr_crate_node_positioning = Struct("node_positioning",
     SInt16("node_count"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("node_flags_readable", scnr_crate_node_positioning_node_flags_readable),
@@ -3251,16 +3260,16 @@ scnr_crate_node_positioning = Struct("node_positioning",
     )
 
 
-scnr_crate_unknown_9 = Struct("unknown_9", 
+scnr_crate_unknown_9 = Struct("unknown_9",
     Pad(4),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_crate = Struct("crate", 
+scnr_crate = Struct("crate",
     SInt16("palette_index"),
     SInt16("name_index"),
-    Bool32("placement_flags", 
+    Bool32("placement_flags",
         "not_automatically",
         "not_on_easy",
         "not_on_normal",
@@ -3293,7 +3302,7 @@ scnr_crate = Struct("crate",
     Bool16("allowed_zonesets", *("set_%s" % i for i in range(16))),
     SInt16("unknown_4", VISIBLE=False),
     h3_string_id("variant"),
-    Bool8("active_change_colors", 
+    Bool8("active_change_colors",
         "primary",
         "secondary",
         "tertiary",
@@ -3309,7 +3318,7 @@ scnr_crate = Struct("crate",
     Pad(4),
     h3_reflexive("unknown_9", scnr_crate_unknown_9),
     SEnum32("symmetry", *scnr_scenery_symmetry),
-    Bool16("engine_flags", 
+    Bool16("engine_flags",
         "capture_the_flag",
         "slayer",
         "oddball",
@@ -3323,7 +3332,7 @@ scnr_crate = Struct("crate",
     SEnum16("team", *scnr_scenery_team),
     SInt8("spawn_sequence"),
     QStruct("runtime", INCLUDE=from_to_sint8),
-    Bool8("multiplayer_flags", 
+    Bool8("multiplayer_flags",
         "is_unique_object",
         "not_placed_at_start",
         ),
@@ -3345,20 +3354,20 @@ scnr_crate = Struct("crate",
     )
 
 
-scnr_crate_palette = Struct("crate_palette", 
+scnr_crate_palette = Struct("crate_palette",
     h3_dependency("crate"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_flock_palette = Struct("flock_palette", 
+scnr_flock_palette = Struct("flock_palette",
     h3_dependency("flock"),
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_flock_source = Struct("source", 
+scnr_flock_source = Struct("source",
     SInt32("unknown", VISIBLE=False),
     QStruct("position", INCLUDE=xyz_float),
     yp_float_rad("starting"),
@@ -3369,7 +3378,7 @@ scnr_flock_source = Struct("source",
     )
 
 
-scnr_flock_sink = Struct("sink", 
+scnr_flock_sink = Struct("sink",
     QStruct("position", INCLUDE=xyz_float),
     Float("radius"),
     VISIBLE=False,
@@ -3377,7 +3386,7 @@ scnr_flock_sink = Struct("sink",
     )
 
 
-scnr_flock = Struct("flock", 
+scnr_flock = Struct("flock",
     h3_string_id("name"),
     SInt16("flock_palette_index"),
     SInt16("bsp_index"),
@@ -3397,27 +3406,27 @@ scnr_flock = Struct("flock",
     )
 
 
-scnr_creature_palette = Struct("creature_palette", 
+scnr_creature_palette = Struct("creature_palette",
     h3_dependency("creature"),
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     ENDIAN=">", SIZE=48
     )
 
 
-scnr_editor_folder = Struct("editor_folder", 
+scnr_editor_folder = Struct("editor_folder",
     SInt32("parent_folder"),
     StrLatin1("name", SIZE=256),
     ENDIAN=">", SIZE=260
     )
 
 
-scnr_mission_dialogue = Struct("mission_dialogue", 
+scnr_mission_dialogue = Struct("mission_dialogue",
     h3_dependency("mission_dialogue"),
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_interpolator = Struct("interpolator", 
+scnr_interpolator = Struct("interpolator",
     h3_string_id("name"),
     h3_string_id("accelerator_name"),
     h3_string_id("multiplier_name"),
@@ -3428,27 +3437,27 @@ scnr_interpolator = Struct("interpolator",
     )
 
 
-scnr_simulation_definition_table = Struct("simulation_definition_table", 
+scnr_simulation_definition_table = Struct("simulation_definition_table",
     dependency_uint32("tag", VISIBLE=False),
     ENDIAN=">", SIZE=4
     )
 
 
-scnr_unknown_22 = Struct("unknown_22", 
+scnr_unknown_22 = Struct("unknown_22",
     Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=8, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_ai_objective_role_unknown_84 = Struct("unknown_84", 
+scnr_ai_objective_role_unknown_84 = Struct("unknown_84",
     BytesRaw("unknown", SIZE=8, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_ai_objective_role_condition = Struct("condition", 
+scnr_ai_objective_role_condition = Struct("condition",
     ascii_str32("name"),
     StrLatin1("condition", SIZE=256),
     SInt16("unknown_0", VISIBLE=False),
@@ -3457,14 +3466,14 @@ scnr_ai_objective_role_condition = Struct("condition",
     )
 
 
-scnr_ai_objective_role_unknown_8 = Struct("unknown_8", 
+scnr_ai_objective_role_unknown_8 = Struct("unknown_8",
     Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=5, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=10
     )
 
 
-scnr_ai_objective_role_point_geometry = Struct("point_geometry", 
+scnr_ai_objective_role_point_geometry = Struct("point_geometry",
     QStruct("point_0", INCLUDE=xyz_float),
     SInt16("reference_frame_0"),
     SInt16("unknown_0", VISIBLE=False),
@@ -3475,7 +3484,7 @@ scnr_ai_objective_role_point_geometry = Struct("point_geometry",
     )
 
 
-scnr_ai_objective_role = Struct("role", 
+scnr_ai_objective_role = Struct("role",
     Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=6, VISIBLE=False),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     ascii_str32("command_script_name_1"),
@@ -3509,7 +3518,7 @@ scnr_ai_objective_role = Struct("role",
     )
 
 
-scnr_ai_objective = Struct("ai_objective", 
+scnr_ai_objective = Struct("ai_objective",
     h3_string_id("name"),
     SInt16("zone"),
     SInt16("unknown", VISIBLE=False),
@@ -3518,93 +3527,93 @@ scnr_ai_objective = Struct("ai_objective",
     )
 
 
-scnr_designer_zoneset_biped = Struct("biped", 
+scnr_designer_zoneset_biped = Struct("biped",
     SInt16("palette_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_designer_zoneset_vehicle = Struct("vehicle", 
+scnr_designer_zoneset_vehicle = Struct("vehicle",
     SInt16("palette_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_designer_zoneset_weapon = Struct("weapon", 
+scnr_designer_zoneset_weapon = Struct("weapon",
     SInt16("palette_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_designer_zoneset_equipment = Struct("equipment", 
+scnr_designer_zoneset_equipment = Struct("equipment",
     SInt16("palette_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_designer_zoneset_scenery = Struct("scenery", 
+scnr_designer_zoneset_scenery = Struct("scenery",
     SInt16("palette_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_designer_zoneset_machine = Struct("machine", 
+scnr_designer_zoneset_machine = Struct("machine",
     SInt16("palette_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_designer_zoneset_terminal = Struct("terminal", 
+scnr_designer_zoneset_terminal = Struct("terminal",
     SInt16("palette_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_designer_zoneset_control = Struct("control", 
+scnr_designer_zoneset_control = Struct("control",
     SInt16("palette_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_designer_zoneset_unknown_1 = Struct("unknown_1", 
-    SInt16("palette_index"),
-    VISIBLE=False,
-    ENDIAN=">", SIZE=2
-    )
-
-
-scnr_designer_zoneset_crate = Struct("crate", 
-    SInt16("palette_index"),
-    ENDIAN=">", SIZE=2
-    )
-
-
-scnr_designer_zoneset_creature = Struct("creature", 
-    SInt16("palette_index"),
-    ENDIAN=">", SIZE=2
-    )
-
-
-scnr_designer_zoneset_giant = Struct("giant", 
-    SInt16("palette_index"),
-    ENDIAN=">", SIZE=2
-    )
-
-
-scnr_designer_zoneset_unknown_2 = Struct("unknown_2", 
+scnr_designer_zoneset_unknown_1 = Struct("unknown_1",
     SInt16("palette_index"),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_designer_zoneset_character = Struct("character", 
+scnr_designer_zoneset_crate = Struct("crate",
     SInt16("palette_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-scnr_designer_zoneset = Struct("designer_zoneset", 
+scnr_designer_zoneset_creature = Struct("creature",
+    SInt16("palette_index"),
+    ENDIAN=">", SIZE=2
+    )
+
+
+scnr_designer_zoneset_giant = Struct("giant",
+    SInt16("palette_index"),
+    ENDIAN=">", SIZE=2
+    )
+
+
+scnr_designer_zoneset_unknown_2 = Struct("unknown_2",
+    SInt16("palette_index"),
+    VISIBLE=False,
+    ENDIAN=">", SIZE=2
+    )
+
+
+scnr_designer_zoneset_character = Struct("character",
+    SInt16("palette_index"),
+    ENDIAN=">", SIZE=2
+    )
+
+
+scnr_designer_zoneset = Struct("designer_zoneset",
     h3_string_id("name"),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     h3_reflexive("bipeds", scnr_designer_zoneset_biped),
@@ -3626,7 +3635,7 @@ scnr_designer_zoneset = Struct("designer_zoneset",
     )
 
 
-scnr_unknown_23 = Struct("unknown_23", 
+scnr_unknown_23 = Struct("unknown_23",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -3634,41 +3643,41 @@ scnr_unknown_23 = Struct("unknown_23",
     )
 
 
-scnr_cinematic = Struct("cinematic", 
+scnr_cinematic = Struct("cinematic",
     h3_dependency("cinematic"),
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_cinematic_lighting = Struct("cinematic_lighting", 
+scnr_cinematic_lighting = Struct("cinematic_lighting",
     h3_string_id("name"),
     h3_dependency("cinematic_light"),
     ENDIAN=">", SIZE=20
     )
 
 
-scnr_scenario_metagame_time_multiplier = Struct("time_multiplier", 
+scnr_scenario_metagame_time_multiplier = Struct("time_multiplier",
     Float("time"),
     Float("multiplier"),
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_scenario_metagame = Struct("scenario_metagame", 
+scnr_scenario_metagame = Struct("scenario_metagame",
     h3_reflexive("time_multipliers", scnr_scenario_metagame_time_multiplier),
     Float("par_score"),
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_unknown_26 = Struct("unknown_26", 
+scnr_unknown_26 = Struct("unknown_26",
     BytesRaw("unknown", SIZE=8, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=8
     )
 
 
-scnr_unknown_27 = Struct("unknown_27", 
+scnr_unknown_27 = Struct("unknown_27",
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     SInt16("unknown_2", VISIBLE=False),
@@ -3677,13 +3686,13 @@ scnr_unknown_27 = Struct("unknown_27",
     )
 
 
-scnr_cortana_effect = Struct("cortana_effect", 
+scnr_cortana_effect = Struct("cortana_effect",
     h3_dependency("unknown"),
     ENDIAN=">", SIZE=16
     )
 
 
-scnr_lightmap_airprobe = Struct("lightmap_airprobe", 
+scnr_lightmap_airprobe = Struct("lightmap_airprobe",
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
     h3_string_id("unknown_1", VISIBLE=False),
     Bool16("unknown_2", *unknown_flags_16),
@@ -3693,9 +3702,9 @@ scnr_lightmap_airprobe = Struct("lightmap_airprobe",
     )
 
 
-scnr_body = Struct("tagdata", 
+scnr_body = Struct("tagdata",
     SEnum16("map_type", *zone_map_type),
-    Bool16("flags", 
+    Bool16("flags",
         ("characters_use_previous_mission_weapons", 1 << 5),
         ),
     SInt32("campaign_id"),

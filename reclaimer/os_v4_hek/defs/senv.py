@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...os_hek.defs.senv import *
 
 dlm_comment = """DIRECTIONAL LIGHTMAP PROPERTIES
@@ -5,7 +14,7 @@ Special shader settings for when your map has directional lightmaps rendered for
 
 dlm_specular_map_comment = """DLM SPECULAR (COLOR) MAP
 *RGB holds the specular color.
-*ALPHA can be used as an exponent mask to provide finer control 
+*ALPHA can be used as an exponent mask to provide finer control
 over the size of the specular highlights."""
 
 dlm_tint_comment = """DLM SPECULAR TINT AND BRIGHTNESS"""

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -14,19 +23,19 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-cine_scene_unknown = Struct("scene_unknown", 
+cine_scene_unknown = Struct("scene_unknown",
     SInt32("unknown"),
     ENDIAN=">", SIZE=4
     )
 
 
-cine_cinematic_scene = Struct("cinematic_scene", 
+cine_cinematic_scene = Struct("cinematic_scene",
     h3_dependency("scene"),
     ENDIAN=">", SIZE=16
     )
 
 
-cine_body = Struct("tagdata", 
+cine_body = Struct("tagdata",
     SInt32("unknown_0"),
     h3_reflexive("scene_unknown", cine_scene_unknown),
     h3_dependency("import_scenario"),

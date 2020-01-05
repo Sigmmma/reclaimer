@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,7 +27,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-sefc_screen_effect = Struct("screen_effect", 
+sefc_screen_effect = Struct("screen_effect",
     h3_string_id("name"),
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
@@ -40,7 +49,7 @@ sefc_screen_effect = Struct("screen_effect",
     )
 
 
-sefc_body = Struct("tagdata", 
+sefc_body = Struct("tagdata",
     h3_reflexive("screen_effect", sefc_screen_effect),
     ENDIAN=">", SIZE=12
     )

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,21 +27,21 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-mdl3_camera_refinement_zoom_data_1 = Struct("zoom_data_1", 
+mdl3_camera_refinement_zoom_data_1 = Struct("zoom_data_1",
     h3_rawdata_ref("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
 
 
-mdl3_camera_refinement_zoom_data_2 = Struct("zoom_data_2", 
+mdl3_camera_refinement_zoom_data_2 = Struct("zoom_data_2",
     h3_rawdata_ref("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
 
 
-mdl3_camera_refinement = Struct("camera_refinement", 
+mdl3_camera_refinement = Struct("camera_refinement",
     h3_string_id("biped", VISIBLE=False),
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     h3_reflexive("zoom_data_1", mdl3_camera_refinement_zoom_data_1),
@@ -42,7 +51,7 @@ mdl3_camera_refinement = Struct("camera_refinement",
     )
 
 
-mdl3_body = Struct("tagdata", 
+mdl3_body = Struct("tagdata",
     Bool32("flags", *unknown_flags_32),
     h3_string_id("name"),
     SInt16("unknown", VISIBLE=False),

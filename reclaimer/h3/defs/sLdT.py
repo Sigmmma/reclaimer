@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,14 +27,14 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-sLdT_lightmap_instanced_meshe = Struct("instanced_meshe", 
+sLdT_lightmap_instanced_meshe = Struct("instanced_meshe",
     BytesRaw("unknown", SIZE=12, VISIBLE=False),
     SInt32("unknown_index"),
     ENDIAN=">", SIZE=16
     )
 
 
-sLdT_lightmap_unknown_1 = Struct("unknown_1", 
+sLdT_lightmap_unknown_1 = Struct("unknown_1",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -33,7 +42,7 @@ sLdT_lightmap_unknown_1 = Struct("unknown_1",
     )
 
 
-sLdT_lightmap_instanced_geometry = Struct("instanced_geometry", 
+sLdT_lightmap_instanced_geometry = Struct("instanced_geometry",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("instanced_mesh_index"),
     SInt16("unknown_b_index", VISIBLE=False),
@@ -42,14 +51,14 @@ sLdT_lightmap_instanced_geometry = Struct("instanced_geometry",
     )
 
 
-sLdT_lightmap_unknown_b = Struct("unknown_b", 
+sLdT_lightmap_unknown_b = Struct("unknown_b",
     BytesRaw("unknown", SIZE=72, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=72
     )
 
 
-sLdT_lightmap_meshe_part = Struct("part", 
+sLdT_lightmap_meshe_part = Struct("part",
     SInt16("material_index"),
     SInt16("unknown_nodey_index", VISIBLE=False),
     SInt16("index_buffer_start"),
@@ -57,7 +66,7 @@ sLdT_lightmap_meshe_part = Struct("part",
     SInt16("subpart_index"),
     SInt16("subpart_count"),
     SInt8("unknown_enum", VISIBLE=False),
-    Bool8("flags", 
+    Bool8("flags",
         ("water", 1 << 3),
         ),
     SInt16("vertex_count"),
@@ -65,7 +74,7 @@ sLdT_lightmap_meshe_part = Struct("part",
     )
 
 
-sLdT_lightmap_meshe_subpart = Struct("subpart", 
+sLdT_lightmap_meshe_subpart = Struct("subpart",
     SInt16("index_buffer_start"),
     SInt16("index_buffer_count"),
     SInt16("part_index"),
@@ -74,13 +83,13 @@ sLdT_lightmap_meshe_subpart = Struct("subpart",
     )
 
 
-sLdT_lightmap_meshe_instanced_geometry_indice_instanced_geometry_mesh_content = Struct("instanced_geometry_mesh_content", 
+sLdT_lightmap_meshe_instanced_geometry_indice_instanced_geometry_mesh_content = Struct("instanced_geometry_mesh_content",
     SInt16("instanced_geometry_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-sLdT_lightmap_meshe_instanced_geometry_indice = Struct("instanced_geometry_indice", 
+sLdT_lightmap_meshe_instanced_geometry_indice = Struct("instanced_geometry_indice",
     SInt16("instanced_geometry_mesh_index_1"),
     SInt16("instanced_geometry_mesh_index_2"),
     h3_reflexive("instanced_geometry_mesh_contents", sLdT_lightmap_meshe_instanced_geometry_indice_instanced_geometry_mesh_content),
@@ -88,20 +97,20 @@ sLdT_lightmap_meshe_instanced_geometry_indice = Struct("instanced_geometry_indic
     )
 
 
-sLdT_lightmap_meshe_unknown_water = Struct("unknown_water", 
+sLdT_lightmap_meshe_unknown_water = Struct("unknown_water",
     SInt16("unknown"),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-sLdT_lightmap_meshe = Struct("meshe", 
+sLdT_lightmap_meshe = Struct("meshe",
     h3_reflexive("parts", sLdT_lightmap_meshe_part),
     h3_reflexive("subparts", sLdT_lightmap_meshe_subpart),
     Array("vertex_buffer_index_array", SUB_STRUCT=SInt16("vertex_buffer_index"), SIZE=8),
     SInt16("index_buffer_index_1"),
     SInt16("index_buffer_index_2"),
-    Bool8("flags", 
+    Bool8("flags",
         "has_vertex_colors",
         ),
     SInt8("rigid_node"),
@@ -117,7 +126,7 @@ sLdT_lightmap_meshe = Struct("meshe",
     )
 
 
-sLdT_lightmap_compression_info = Struct("compression_info", 
+sLdT_lightmap_compression_info = Struct("compression_info",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     QStruct("position_bounds_x", INCLUDE=from_to),
@@ -129,7 +138,7 @@ sLdT_lightmap_compression_info = Struct("compression_info",
     )
 
 
-sLdT_lightmap_unknown_nodey = Struct("unknown_nodey", 
+sLdT_lightmap_unknown_nodey = Struct("unknown_nodey",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     Array("node_index_array", SUB_STRUCT=SInt8("node_index"), SIZE=4, VISIBLE=False),
     Float("unknown_0", VISIBLE=False),
@@ -140,7 +149,7 @@ sLdT_lightmap_unknown_nodey = Struct("unknown_nodey",
     )
 
 
-sLdT_lightmap_unknown_3 = Struct("unknown_3", 
+sLdT_lightmap_unknown_3 = Struct("unknown_3",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     h3_rawdata_ref("unknown_2", VISIBLE=False),
@@ -149,14 +158,14 @@ sLdT_lightmap_unknown_3 = Struct("unknown_3",
     )
 
 
-sLdT_lightmap_unknown_meshe_unknown_1 = Struct("unknown_1", 
+sLdT_lightmap_unknown_meshe_unknown_1 = Struct("unknown_1",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-sLdT_lightmap_unknown_meshe = Struct("unknown_meshe", 
+sLdT_lightmap_unknown_meshe = Struct("unknown_meshe",
     h3_rawdata_ref("unknown_0", VISIBLE=False),
     h3_reflexive("unknown_1", sLdT_lightmap_unknown_meshe_unknown_1),
     VISIBLE=False,
@@ -164,33 +173,33 @@ sLdT_lightmap_unknown_meshe = Struct("unknown_meshe",
     )
 
 
-sLdT_lightmap_node_map_unknown = Struct("unknown", 
+sLdT_lightmap_node_map_unknown = Struct("unknown",
     UInt8("node_index"),
     ENDIAN=">", SIZE=1
     )
 
 
-sLdT_lightmap_node_map = Struct("node_map", 
+sLdT_lightmap_node_map = Struct("node_map",
     h3_reflexive("unknown", sLdT_lightmap_node_map_unknown),
     ENDIAN=">", SIZE=12
     )
 
 
-sLdT_lightmap_unknown_5_unknown = Struct("unknown", 
+sLdT_lightmap_unknown_5_unknown = Struct("unknown",
     BytesRaw("unknown", SIZE=48, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=48
     )
 
 
-sLdT_lightmap_unknown_5 = Struct("unknown_5", 
+sLdT_lightmap_unknown_5 = Struct("unknown_5",
     h3_reflexive("unknown", sLdT_lightmap_unknown_5_unknown),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-sLdT_lightmap_unknown_yo = Struct("unknown_yo", 
+sLdT_lightmap_unknown_yo = Struct("unknown_yo",
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
     SInt16("unknown_index"),
     SInt16("unknown_1", VISIBLE=False),
@@ -198,7 +207,7 @@ sLdT_lightmap_unknown_yo = Struct("unknown_yo",
     )
 
 
-sLdT_lightmap = Struct("lightmap", 
+sLdT_lightmap = Struct("lightmap",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("bsp_index"),
     SInt32("structure_checksum"),
@@ -225,7 +234,7 @@ sLdT_lightmap = Struct("lightmap",
     )
 
 
-sLdT_airprobe = Struct("airprobe", 
+sLdT_airprobe = Struct("airprobe",
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -238,7 +247,7 @@ sLdT_airprobe = Struct("airprobe",
     )
 
 
-sLdT_unknown_2 = Struct("unknown_2", 
+sLdT_unknown_2 = Struct("unknown_2",
     Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown", SIZE=72, VISIBLE=False),
     VISIBLE=False,
@@ -246,14 +255,14 @@ sLdT_unknown_2 = Struct("unknown_2",
     )
 
 
-sLdT_unknown_3_unknown_1 = Struct("unknown_1", 
+sLdT_unknown_3_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown", SIZE=84, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=84
     )
 
 
-sLdT_unknown_3 = Struct("unknown_3", 
+sLdT_unknown_3 = Struct("unknown_3",
     BytesRaw("unknown_0", SIZE=32, VISIBLE=False),
     h3_reflexive("unknown_1", sLdT_unknown_3_unknown_1),
     VISIBLE=False,
@@ -261,7 +270,7 @@ sLdT_unknown_3 = Struct("unknown_3",
     )
 
 
-sLdT_body = Struct("tagdata", 
+sLdT_body = Struct("tagdata",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     h3_reflexive("lightmap", sLdT_lightmap),
     BytesRaw("unknown_1", SIZE=24, VISIBLE=False),

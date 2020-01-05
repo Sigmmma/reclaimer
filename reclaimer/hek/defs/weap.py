@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from .obje import *
 from .item import *
 from .objs.weap import WeapTag
@@ -291,7 +300,7 @@ weap_attrs = Struct("weap_attrs",
         "primary", "secondary"),
     reflexive("triggers", trigger, 2,
         "primary", "secondary"),
-    
+
     SIZE=512
     )
 

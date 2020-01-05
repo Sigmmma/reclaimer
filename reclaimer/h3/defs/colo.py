@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -14,14 +23,14 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-colo_color_table = Struct("color_table", 
+colo_color_table = Struct("color_table",
     ascii_str32("string"),
     color_argb_float("color"),
     ENDIAN=">", SIZE=48
     )
 
 
-colo_body = Struct("tagdata", 
+colo_body = Struct("tagdata",
     h3_reflexive("color_table", colo_color_table),
     ENDIAN=">", SIZE=12
     )

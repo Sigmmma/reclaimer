@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from pathlib import Path
 from traceback import format_exc
 
@@ -13,7 +22,7 @@ def compile_bitmap_from_dds_files(bitm_tag, dds_filepaths=()):
     for fp in dds_filepaths:
         fp = Path(fp)
         try:
-            print("    %s" % fp)
+            print("    " + fp)
             w, h, d, typ, fmt, mips, pixels = parse_dds_file(fp)
         except Exception:
             print(format_exc())

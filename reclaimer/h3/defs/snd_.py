@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -7,7 +16,7 @@
 # revision: 2		author: -DeToX-
 # 	Labelled Raw Identifier
 # revision: 3		author: Xerax
-# 	
+#
 # revision: 4		author: Lord Zedd
 # 	Standardized
 # revision: 5		author: Moses_of_Egypt
@@ -20,8 +29,8 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-snd__body = Struct("tagdata", 
-    Bool16("flags", 
+snd__body = Struct("tagdata",
+    Bool16("flags",
         "fit_to_adpcm_blocksize",
         "split_long_sound_into_permutations",
         "always spatialize",

@@ -10,7 +10,7 @@ curr_dir = dirname(__file__)
 import reclaimer
 
 try:
-    long_desc = open(join(curr_dir, "readme.md")).read()
+    long_desc = open(join(curr_dir, "README.md")).read()
 except Exception:
     long_desc = 'Could not read long description from readme.'
 
@@ -20,6 +20,7 @@ setup(
     description='A libray of SupyrStruct structures and objects for '
                 'games built with the Blam engine',
     long_description=long_desc,
+    long_description_content_type='text/markdown',
     version='%s.%s.%s' % reclaimer.__version__,
     url=reclaimer.__website__,
     author=reclaimer.__author__,

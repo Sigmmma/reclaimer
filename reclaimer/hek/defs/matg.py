@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
@@ -86,7 +95,7 @@ difficulty = Struct("difficulty",
             GUI_NAME="melee delay base(not a scale)", INCLUDE=difficulty_base
             ),
         QStruct("melee_delay", INCLUDE=difficulty_base),
-           
+
         Pad(16),
         # Grenades
         QStruct("grenade_chance", INCLUDE=difficulty_base),

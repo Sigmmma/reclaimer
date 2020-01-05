@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...common_descs import *
 from .objs.antr import AntrTag
 from supyr_struct.defs.tag_def import TagDef
@@ -38,7 +47,7 @@ default_node = Struct("default_node",
 
 dyn_anim_path = "tagdata.animations.STEPTREE[DYN_I].name"
 
-object_desc = Struct("object", 
+object_desc = Struct("object",
     dyn_senum16("animation", DYN_NAME_PATH=dyn_anim_path),
     SEnum16("function",
         "A_out",
@@ -57,7 +66,7 @@ anim_enum_desc = QStruct("animation",
     dyn_senum16("animation", DYN_NAME_PATH=dyn_anim_path)
     )
 
-ik_point_desc = Struct("ik_point", 
+ik_point_desc = Struct("ik_point",
     ascii_str32("marker"),
     ascii_str32("attach_to_marker"),
     SIZE=64,
@@ -98,10 +107,10 @@ unit_weapon_desc = Struct("weapon",
     SIZE=188,
     )
 
-unit_desc = Struct("unit", 
+unit_desc = Struct("unit",
     ascii_str32("label"),
     #pitch and yaw are saved in radians.
-                   
+
     #Looking screen bounds
     float_rad("right_yaw_per_frame"),
     float_rad("left_yaw_per_frame"),
@@ -122,7 +131,7 @@ unit_desc = Struct("unit",
     SIZE=100,
     )
 
-weapon_desc = Struct("weapon", 
+weapon_desc = Struct("weapon",
     Pad(16),
     reflexive("animations", anim_enum_desc, 11,
         *weapon_animation_names
@@ -130,7 +139,7 @@ weapon_desc = Struct("weapon",
     SIZE=28,
     )
 
-suspension_desc = QStruct("suspension_animation", 
+suspension_desc = QStruct("suspension_animation",
     SInt16("mass_point_index"),
     dyn_senum16("animation", DYN_NAME_PATH=dyn_anim_path),
     Float("full_extension_ground_depth"),
@@ -140,7 +149,7 @@ suspension_desc = QStruct("suspension_animation",
 
 vehicle_desc = Struct("vehicle",
     #pitch and yaw are saved in radians.
-                      
+
     #Steering screen bounds
     float_rad("right_yaw_per_frame"),
     float_rad("left_yaw_per_frame"),
@@ -160,7 +169,7 @@ vehicle_desc = Struct("vehicle",
     SIZE=116,
     )
 
-device_desc = Struct("device", 
+device_desc = Struct("device",
     Pad(84),
     reflexive("animations", anim_enum_desc, 2,
         *device_animation_names
@@ -168,7 +177,7 @@ device_desc = Struct("device",
     SIZE=96,
     )
 
-fp_animation_desc = Struct("fp_animation", 
+fp_animation_desc = Struct("fp_animation",
     Pad(16),
     reflexive("animations", anim_enum_desc, 28,
         *fp_animation_names
@@ -176,12 +185,12 @@ fp_animation_desc = Struct("fp_animation",
     SIZE=28,
     )
 
-sound_reference_desc = Struct("sound_reference", 
+sound_reference_desc = Struct("sound_reference",
     dependency('sound', "snd!"),
     SIZE=20,
     )
 
-nodes_desc = Struct("node", 
+nodes_desc = Struct("node",
     ascii_str32("name"),
     dyn_senum16("next_sibling_node_index", DYN_NAME_PATH="..[DYN_I].name"),
     dyn_senum16("first_child_node_index", DYN_NAME_PATH="..[DYN_I].name"),
@@ -198,13 +207,13 @@ nodes_desc = Struct("node",
     SIZE=64,
     )
 
-animation_desc = Struct("animation", 
+animation_desc = Struct("animation",
     ascii_str32("name"),
     SEnum16("type", *anim_types),
     SInt16("frame_count"),
     SInt16("frame_size"),
     SEnum16("frame_info_type", *anim_frame_info_types),
-    SInt32("node_list_checksum"),                       
+    SInt32("node_list_checksum"),
     SInt16("node_count"),
     SInt16("loop_frame_index"),
 
