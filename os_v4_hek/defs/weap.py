@@ -7,7 +7,7 @@
 # See LICENSE for more information.
 #
 
-from .weap import *
+from ...os_v3_hek.defs.weap import *
 from .obje import *
 from .item import *
 
