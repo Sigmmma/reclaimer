@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -44,15 +53,15 @@ vehi_vehicle_size = (
     )
 
 
-vehi_early_mover_propertie = Struct("early_mover_propertie", 
+vehi_early_mover_propertie = Struct("early_mover_propertie",
     h3_string_id("name"),
     Pad(36),
     ENDIAN=">", SIZE=40
     )
 
 
-vehi_ai_propertie = Struct("ai_propertie", 
-    Bool32("flags", 
+vehi_ai_propertie = Struct("ai_propertie",
+    Bool32("flags",
         "destroyable_cover",
         "pathfinding_ignore_when_dead",
         "dynamic_cover",
@@ -65,8 +74,8 @@ vehi_ai_propertie = Struct("ai_propertie",
     )
 
 
-vehi_function = Struct("function", 
-    Bool32("flags", 
+vehi_function = Struct("function",
+    Bool32("flags",
         "invert",
         "mapping_does_not_controls_active",
         "always_active",
@@ -82,7 +91,7 @@ vehi_function = Struct("function",
     )
 
 
-vehi_attachment = Struct("attachment", 
+vehi_attachment = Struct("attachment",
     h3_dependency("attachment"),
     h3_string_id("marker"),
     SEnum16("change_color", *bloc_attachment_change_color),
@@ -93,13 +102,13 @@ vehi_attachment = Struct("attachment",
     )
 
 
-vehi_widget = Struct("widget", 
+vehi_widget = Struct("widget",
     h3_dependency("type"),
     ENDIAN=">", SIZE=16
     )
 
 
-vehi_change_color_initial_permutation = Struct("initial_permutation", 
+vehi_change_color_initial_permutation = Struct("initial_permutation",
     Pad(4),
     color_rgb_float("color_lower_bound"),
     color_rgb_float("color_upper_bound"),
@@ -108,8 +117,8 @@ vehi_change_color_initial_permutation = Struct("initial_permutation",
     )
 
 
-vehi_change_color_function = Struct("function", 
-    Bool32("scale_flags", 
+vehi_change_color_function = Struct("function",
+    Bool32("scale_flags",
         "blend_in_hsv",
         "more_colors",
         ),
@@ -121,14 +130,14 @@ vehi_change_color_function = Struct("function",
     )
 
 
-vehi_change_color = Struct("change_color", 
+vehi_change_color = Struct("change_color",
     h3_reflexive("initial_permutations", vehi_change_color_initial_permutation),
     h3_reflexive("functions", vehi_change_color_function),
     ENDIAN=">", SIZE=24
     )
 
 
-vehi_predicted_resource = Struct("predicted_resource", 
+vehi_predicted_resource = Struct("predicted_resource",
     SInt16("type"),
     SInt16("resource_index"),
     dependency_uint32("tag_index", VISIBLE=False),
@@ -137,8 +146,8 @@ vehi_predicted_resource = Struct("predicted_resource",
     )
 
 
-vehi_multiplayer_object_propertie = Struct("multiplayer_object_propertie", 
-    Bool16("engine_flags", 
+vehi_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
+    Bool16("engine_flags",
         "capture_the_flag",
         "slayer",
         "oddball",
@@ -150,14 +159,14 @@ vehi_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
         "infection",
         ),
     SEnum8("object_type", *bloc_multiplayer_object_propertie_object_type),
-    Bool8("teleporter_flags", 
+    Bool8("teleporter_flags",
         "disallows_players",
         "allows_land_vehicles",
         "allows_heavy_vehicles",
         "allows_flying_vehicles",
         "allows_projectiles",
         ),
-    Bool16("flags", 
+    Bool16("flags",
         "editor_only",
         ),
     SEnum8("shape", *bloc_multiplayer_object_propertie_shape),
@@ -187,8 +196,8 @@ vehi_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
     )
 
 
-vehi_metagame_propertie = Struct("metagame_propertie", 
-    Bool8("flags", 
+vehi_metagame_propertie = Struct("metagame_propertie",
+    Bool8("flags",
         "must_have_active_seats",
         ),
     SEnum8("unit", *bloc_metagame_propertie_unit),
@@ -200,33 +209,33 @@ vehi_metagame_propertie = Struct("metagame_propertie",
     )
 
 
-vehi_camera_track = Struct("camera_track", 
+vehi_camera_track = Struct("camera_track",
     h3_dependency("track"),
     ENDIAN=">", SIZE=16
     )
 
 
-vehi_unknown_7 = Struct("unknown_7", 
+vehi_unknown_7 = Struct("unknown_7",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
 
 
-vehi_posture = Struct("posture", 
+vehi_posture = Struct("posture",
     h3_string_id("name"),
     QStruct("pill_offset", INCLUDE=ijk_float),
     ENDIAN=">", SIZE=16
     )
 
 
-vehi_hud_interface = Struct("hud_interface", 
+vehi_hud_interface = Struct("hud_interface",
     h3_dependency("unit_hud_interface"),
     ENDIAN=">", SIZE=16
     )
 
 
-vehi_dialogue_variant = Struct("dialogue_variant", 
+vehi_dialogue_variant = Struct("dialogue_variant",
     SInt16("variant_number"),
     SInt16("unknown", VISIBLE=False),
     h3_dependency("dialogue"),
@@ -234,40 +243,40 @@ vehi_dialogue_variant = Struct("dialogue_variant",
     )
 
 
-vehi_powered_seat = Struct("powered_seat", 
+vehi_powered_seat = Struct("powered_seat",
     Float("driver_powerup_time"),
     Float("driver_powerdown_time"),
     ENDIAN=">", SIZE=8
     )
 
 
-vehi_weapon = Struct("weapon", 
+vehi_weapon = Struct("weapon",
     h3_dependency("weapon"),
     ENDIAN=">", SIZE=16
     )
 
 
-vehi_seat_camera_track = Struct("camera_track", 
+vehi_seat_camera_track = Struct("camera_track",
     h3_dependency("track"),
     ENDIAN=">", SIZE=16
     )
 
 
-vehi_seat_unknown_6 = Struct("unknown_6", 
+vehi_seat_unknown_6 = Struct("unknown_6",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
 
 
-vehi_seat_unit_hud_interface = Struct("unit_hud_interface", 
+vehi_seat_unit_hud_interface = Struct("unit_hud_interface",
     h3_dependency("unit_hud_interface"),
     ENDIAN=">", SIZE=16
     )
 
 
-vehi_seat = Struct("seat", 
-    Bool32("flags", 
+vehi_seat = Struct("seat",
+    Bool32("flags",
         "invisible",
         "locked",
         "driver",
@@ -336,7 +345,7 @@ vehi_seat = Struct("seat",
     )
 
 
-vehi_tank_engine_motion_propertie_gear = Struct("gear", 
+vehi_tank_engine_motion_propertie_gear = Struct("gear",
     QStruct("torque_0", INCLUDE=from_to),
     Float("peak_torque_scale_0"),
     Float("past_peak_torque_exponent_0"),
@@ -356,7 +365,7 @@ vehi_tank_engine_motion_propertie_gear = Struct("gear",
     )
 
 
-vehi_tank_engine_motion_propertie = Struct("tank_engine_motion_propertie", 
+vehi_tank_engine_motion_propertie = Struct("tank_engine_motion_propertie",
     float_rad("steering_overdampen_cusp_angle"),
     Float("steering_overdamen_exponent"),
     Float("unknown_0"),
@@ -378,7 +387,7 @@ vehi_tank_engine_motion_propertie = Struct("tank_engine_motion_propertie",
     )
 
 
-vehi_engine_motion_propertie_gear = Struct("gear", 
+vehi_engine_motion_propertie_gear = Struct("gear",
     QStruct("torque_0", INCLUDE=from_to),
     Float("peak_torque_scale_0"),
     Float("past_peak_torque_exponent_0"),
@@ -398,7 +407,7 @@ vehi_engine_motion_propertie_gear = Struct("gear",
     )
 
 
-vehi_engine_motion_propertie = Struct("engine_motion_propertie", 
+vehi_engine_motion_propertie = Struct("engine_motion_propertie",
     float_rad("steering_overdampen_cusp_angle"),
     Float("steering_overdamen_exponent"),
     float_rad("maximum_left_turn"),
@@ -414,7 +423,7 @@ vehi_engine_motion_propertie = Struct("engine_motion_propertie",
     )
 
 
-vehi_dropship_motion_propertie = Struct("dropship_motion_propertie", 
+vehi_dropship_motion_propertie = Struct("dropship_motion_propertie",
     Float("forward_acceleration"),
     Float("backward_acceleration"),
     Float("unknown_0"),
@@ -433,7 +442,7 @@ vehi_dropship_motion_propertie = Struct("dropship_motion_propertie",
     )
 
 
-vehi_antigravity_motion_propertie = Struct("antigravity_motion_propertie", 
+vehi_antigravity_motion_propertie = Struct("antigravity_motion_propertie",
     float_rad("steering_overdampen_cusp_angle"),
     Float("steering_overdamen_exponent"),
     Float("maximum_forward_speed"),
@@ -457,7 +466,7 @@ vehi_antigravity_motion_propertie = Struct("antigravity_motion_propertie",
     )
 
 
-vehi_jet_engine_motion_propertie = Struct("jet_engine_motion_propertie", 
+vehi_jet_engine_motion_propertie = Struct("jet_engine_motion_propertie",
     float_rad("steering_overdampen_cusp_angle"),
     Float("steering_overdamen_exponent"),
     float_rad("maximum_left_turn"),
@@ -487,13 +496,13 @@ vehi_jet_engine_motion_propertie = Struct("jet_engine_motion_propertie",
     )
 
 
-vehi_turret_propertie = Struct("turret_propertie", 
+vehi_turret_propertie = Struct("turret_propertie",
     Pad(4),
     ENDIAN=">", SIZE=4
     )
 
 
-vehi_helicopter_motion_propertie = Struct("helicopter_motion_propertie", 
+vehi_helicopter_motion_propertie = Struct("helicopter_motion_propertie",
     float_rad("maximum_left_turn"),
     float_rad("maximum_right_turn_negative"),
     float_rad("unknown_0"),
@@ -510,7 +519,7 @@ vehi_helicopter_motion_propertie = Struct("helicopter_motion_propertie",
     )
 
 
-vehi_antigravity_engine_motion_propertie_gear = Struct("gear", 
+vehi_antigravity_engine_motion_propertie_gear = Struct("gear",
     QStruct("torque_0", INCLUDE=from_to),
     Float("peak_torque_scale_0"),
     Float("past_peak_torque_exponent_0"),
@@ -530,7 +539,7 @@ vehi_antigravity_engine_motion_propertie_gear = Struct("gear",
     )
 
 
-vehi_antigravity_engine_motion_propertie = Struct("antigravity_engine_motion_propertie", 
+vehi_antigravity_engine_motion_propertie = Struct("antigravity_engine_motion_propertie",
     float_rad("steering_overdampen_cusp_angle"),
     Float("steering_overdamen_exponent"),
     float_rad("maximum_left_turn"),
@@ -549,7 +558,7 @@ vehi_antigravity_engine_motion_propertie = Struct("antigravity_engine_motion_pro
     )
 
 
-vehi_autoturret_equipment = Struct("autoturret_equipment", 
+vehi_autoturret_equipment = Struct("autoturret_equipment",
     float_rad("unknown_0"),
     Float("unknown_1"),
     Pad(12),
@@ -562,9 +571,9 @@ vehi_autoturret_equipment = Struct("autoturret_equipment",
     )
 
 
-vehi_anti_gravity_point = Struct("anti_gravity_point", 
+vehi_anti_gravity_point = Struct("anti_gravity_point",
     h3_string_id("marker_name"),
-    Bool32("flags", 
+    Bool32("flags",
         "gets_damage_from_region",
         ),
     Float("antigrav_strength"),
@@ -587,9 +596,9 @@ vehi_anti_gravity_point = Struct("anti_gravity_point",
     )
 
 
-vehi_friction_point = Struct("friction_point", 
+vehi_friction_point = Struct("friction_point",
     h3_string_id("marker_name"),
-    Bool32("flags", 
+    Bool32("flags",
         "gets_damage_from_region",
         "powered",
         "front_turning",
@@ -616,7 +625,7 @@ vehi_friction_point = Struct("friction_point",
     )
 
 
-vehi_phantom_shape = Struct("phantom_shape", 
+vehi_phantom_shape = Struct("phantom_shape",
     SInt32("unknown_0", VISIBLE=False),
     SInt16("size_0"),
     SInt16("size_1"),
@@ -628,7 +637,7 @@ vehi_phantom_shape = Struct("phantom_shape",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=7),
     BytesRaw("unknown_4", SIZE=4, VISIBLE=False),
     SInt32("multisphere_count"),
-    Bool32("flags", 
+    Bool32("flags",
         "has_aabb_phantom",
         ),
     Float("x0"),
@@ -669,9 +678,9 @@ vehi_phantom_shape = Struct("phantom_shape",
     )
 
 
-vehi_body = Struct("tagdata", 
+vehi_body = Struct("tagdata",
     SEnum16("object_type", *bloc_object_type),
-    Bool16("flags_0", 
+    Bool16("flags_0",
         "does_not_cast_shadow",
         "search_cardinal_direction_lightmaps",
         ("not_a_pathfinding_obstacle", 1 << 3),
@@ -712,7 +721,7 @@ vehi_body = Struct("tagdata",
     h3_reflexive("change_colors", vehi_change_color),
     h3_reflexive("predicted_resources", vehi_predicted_resource),
     h3_reflexive("multiplayer_object_properties", vehi_multiplayer_object_propertie),
-    Bool32("flags_1", 
+    Bool32("flags_1",
         "circular_aiming",
         "destroyed_after_dying",
         "half_speed_interpolation",
@@ -815,7 +824,7 @@ vehi_body = Struct("tagdata",
     Float("lipsync_decay_weight"),
     h3_dependency("detach_damage"),
     h3_dependency("detached_weapon"),
-    Bool32("flags_2", 
+    Bool32("flags_2",
         "no_friction_with_driver",
         "can_trigger_automatic_opening_doors",
         "autoaim_when_teamless",

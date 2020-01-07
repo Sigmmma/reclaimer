@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -23,7 +32,7 @@ pmov_movement_type = (
     )
 
 
-pmov_movement_parameter = Struct("parameter", 
+pmov_movement_parameter = Struct("parameter",
     SInt32("parameter_id"),
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
@@ -37,7 +46,7 @@ pmov_movement_parameter = Struct("parameter",
     )
 
 
-pmov_movement = Struct("movement", 
+pmov_movement = Struct("movement",
     SEnum16("type", *pmov_movement_type),
     SInt16("unknown_0", VISIBLE=False),
     h3_reflexive("parameters", pmov_movement_parameter),
@@ -48,9 +57,9 @@ pmov_movement = Struct("movement",
     )
 
 
-pmov_body = Struct("tagdata", 
+pmov_body = Struct("tagdata",
     h3_dependency("template"),
-    Bool32("flags", 
+    Bool32("flags",
         "physics",
         "collide_with_structure",
         "collide_with_media",

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -16,20 +25,20 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-sbsp_structure_seam_unknown = Struct("unknown", 
+sbsp_structure_seam_unknown = Struct("unknown",
     SInt32("unknown"),
     ENDIAN=">", SIZE=4
     )
 
 
-sbsp_structure_seam_seam_cluster = Struct("seam_cluster", 
+sbsp_structure_seam_seam_cluster = Struct("seam_cluster",
     SInt32("cluster_index"),
     QStruct("centroid", INCLUDE=xyz_float),
     ENDIAN=">", SIZE=16
     )
 
 
-sbsp_structure_seam = Struct("structure_seam", 
+sbsp_structure_seam = Struct("structure_seam",
     Array("unknown_array", SUB_STRUCT=UInt32("unknown"), SIZE=4, VISIBLE=False),
     h3_reflexive("unknown", sbsp_structure_seam_unknown),
     h3_reflexive("seam_clusters", sbsp_structure_seam_seam_cluster),
@@ -37,7 +46,7 @@ sbsp_structure_seam = Struct("structure_seam",
     )
 
 
-sbsp_unknown_raw_7th = Struct("unknown_raw_7th", 
+sbsp_unknown_raw_7th = Struct("unknown_raw_7th",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -45,7 +54,7 @@ sbsp_unknown_raw_7th = Struct("unknown_raw_7th",
     )
 
 
-sbsp_collision_material = Struct("collision_material", 
+sbsp_collision_material = Struct("collision_material",
     h3_dependency("shader"),
     SInt16("global_material_index"),
     SInt16("conveyor_surface_index"),
@@ -55,14 +64,14 @@ sbsp_collision_material = Struct("collision_material",
     )
 
 
-sbsp_unknown_raw_3rd = Struct("unknown_raw_3rd", 
+sbsp_unknown_raw_3rd = Struct("unknown_raw_3rd",
     SInt8("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=1
     )
 
 
-sbsp_unknown_raw_6th = Struct("unknown_raw_6th", 
+sbsp_unknown_raw_6th = Struct("unknown_raw_6th",
     SInt16("unknown_1_start_index", VISIBLE=False),
     SInt16("unknown_1_entry_count", VISIBLE=False),
     VISIBLE=False,
@@ -70,7 +79,7 @@ sbsp_unknown_raw_6th = Struct("unknown_raw_6th",
     )
 
 
-sbsp_unknown_1 = Struct("unknown_1", 
+sbsp_unknown_1 = Struct("unknown_1",
     UInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -78,26 +87,26 @@ sbsp_unknown_1 = Struct("unknown_1",
     )
 
 
-sbsp_cluster_portal_vertice = Struct("vertice", 
+sbsp_cluster_portal_vertice = Struct("vertice",
     QStruct("position", INCLUDE=xyz_float),
     ENDIAN=">", SIZE=12
     )
 
 
-sbsp_cluster_portal = Struct("portal", 
+sbsp_cluster_portal = Struct("portal",
     SInt16("portal_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_unknown_2 = Struct("unknown_2", 
+sbsp_unknown_2 = Struct("unknown_2",
     BytesRaw("unknown", SIZE=120, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=120
     )
 
 
-sbsp_fog = Struct("fog", 
+sbsp_fog = Struct("fog",
     h3_string_id("name"),
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
@@ -105,7 +114,7 @@ sbsp_fog = Struct("fog",
     )
 
 
-sbsp_camera_effect = Struct("camera_effect", 
+sbsp_camera_effect = Struct("camera_effect",
     h3_string_id("name"),
     h3_dependency("effect"),
     Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
@@ -118,14 +127,14 @@ sbsp_camera_effect = Struct("camera_effect",
     )
 
 
-sbsp_detail_object_unknown_1_unknown_0 = Struct("unknown_0", 
+sbsp_detail_object_unknown_1_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-sbsp_detail_object_unknown_1 = Struct("unknown_1", 
+sbsp_detail_object_unknown_1 = Struct("unknown_1",
     h3_reflexive("unknown_0", sbsp_detail_object_unknown_1_unknown_0),
     h3_rawdata_ref("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -133,7 +142,7 @@ sbsp_detail_object_unknown_1 = Struct("unknown_1",
     )
 
 
-sbsp_detail_object = Struct("detail_object", 
+sbsp_detail_object = Struct("detail_object",
     BytesRaw("unknown_0", SIZE=28, VISIBLE=False),
     h3_reflexive("unknown_1", sbsp_detail_object_unknown_1),
     BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
@@ -142,13 +151,13 @@ sbsp_detail_object = Struct("detail_object",
     )
 
 
-sbsp_cluster_collision_mopp_code_data = Struct("data", 
+sbsp_cluster_collision_mopp_code_data = Struct("data",
     UInt8("data_byte"),
     ENDIAN=">", SIZE=1
     )
 
 
-sbsp_cluster_collision_mopp_code = Struct("collision_mopp_code", 
+sbsp_cluster_collision_mopp_code = Struct("collision_mopp_code",
     SInt32("unknown_0", VISIBLE=False),
     SInt16("size_0"),
     SInt16("size_1"),
@@ -166,13 +175,13 @@ sbsp_cluster_collision_mopp_code = Struct("collision_mopp_code",
     )
 
 
-sbsp_cluster_seam = Struct("seam", 
+sbsp_cluster_seam = Struct("seam",
     SInt8("seam_index"),
     ENDIAN=">", SIZE=1
     )
 
 
-sbsp_cluster_decorator_grid = Struct("decorator_grid", 
+sbsp_cluster_decorator_grid = Struct("decorator_grid",
     SInt16("amount"),
     SInt8("decorator_index"),
     SInt8("decorator_index_scattering"),
@@ -185,7 +194,7 @@ sbsp_cluster_decorator_grid = Struct("decorator_grid",
     )
 
 
-sbsp_cluster_unknown_11 = Struct("unknown_11", 
+sbsp_cluster_unknown_11 = Struct("unknown_11",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -193,7 +202,7 @@ sbsp_cluster_unknown_11 = Struct("unknown_11",
     )
 
 
-sbsp_cluster_unknown_12 = Struct("unknown_12", 
+sbsp_cluster_unknown_12 = Struct("unknown_12",
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -204,7 +213,7 @@ sbsp_cluster_unknown_12 = Struct("unknown_12",
     )
 
 
-sbsp_cluster = Struct("cluster", 
+sbsp_cluster = Struct("cluster",
     QStruct("bounds_x", INCLUDE=from_to),
     QStruct("bounds_y", INCLUDE=from_to),
     QStruct("bounds_z", INCLUDE=from_to),
@@ -246,7 +255,7 @@ sbsp_cluster = Struct("cluster",
     )
 
 
-sbsp_material_propertie = Struct("propertie", 
+sbsp_material_propertie = Struct("propertie",
     SInt16("type"),
     SInt16("int_value"),
     Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
@@ -255,7 +264,7 @@ sbsp_material_propertie = Struct("propertie",
     )
 
 
-sbsp_material = Struct("material", 
+sbsp_material = Struct("material",
     h3_dependency("shader"),
     h3_reflexive("properties", sbsp_material_propertie),
     SInt32("unknown_0", VISIBLE=False),
@@ -267,28 +276,28 @@ sbsp_material = Struct("material",
     )
 
 
-sbsp_sky_owner_cluster = Struct("sky_owner_cluster", 
+sbsp_sky_owner_cluster = Struct("sky_owner_cluster",
     SInt16("cluster_owner"),
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_conveyor_surface = Struct("conveyor_surface", 
+sbsp_conveyor_surface = Struct("conveyor_surface",
     BytesRaw("u_i", SIZE=24, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=24
     )
 
 
-sbsp_breakable_surface = Struct("breakable_surface", 
+sbsp_breakable_surface = Struct("breakable_surface",
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=32
     )
 
 
-sbsp_pathfinding_data_sector = Struct("sector", 
-    Bool16("pathfinding_sector_flags", 
+sbsp_pathfinding_data_sector = Struct("sector",
+    Bool16("pathfinding_sector_flags",
         "sector_walkable",
         ("sector_bsp_source", 1 << 3),
         "floor",
@@ -299,7 +308,7 @@ sbsp_pathfinding_data_sector = Struct("sector",
     )
 
 
-sbsp_pathfinding_data_link = Struct("link", 
+sbsp_pathfinding_data_link = Struct("link",
     SInt16("vertex_1"),
     SInt16("vertex_2"),
     Bool16("link_flags", *unknown_flags_16),
@@ -312,13 +321,13 @@ sbsp_pathfinding_data_link = Struct("link",
     )
 
 
-sbsp_pathfinding_data_ref = Struct("ref", 
+sbsp_pathfinding_data_ref = Struct("ref",
     SInt32("node_or_sector_ref"),
     ENDIAN=">", SIZE=4
     )
 
 
-sbsp_pathfinding_data_bsp_2d_node = Struct("bsp_2d_node", 
+sbsp_pathfinding_data_bsp_2d_node = Struct("bsp_2d_node",
     Pad(12),
     SInt32("left_child"),
     SInt32("right_child"),
@@ -326,20 +335,20 @@ sbsp_pathfinding_data_bsp_2d_node = Struct("bsp_2d_node",
     )
 
 
-sbsp_pathfinding_data_vertice = Struct("vertice", 
+sbsp_pathfinding_data_vertice = Struct("vertice",
     Pad(12),
     ENDIAN=">", SIZE=12
     )
 
 
-sbsp_pathfinding_data_object_ref_unknown_1_unknown_1 = Struct("unknown_1", 
+sbsp_pathfinding_data_object_ref_unknown_1_unknown_1 = Struct("unknown_1",
     SInt32("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=4
     )
 
 
-sbsp_pathfinding_data_object_ref_unknown_1 = Struct("unknown_1", 
+sbsp_pathfinding_data_object_ref_unknown_1 = Struct("unknown_1",
     Pad(8),
     h3_reflexive("unknown_1", sbsp_pathfinding_data_object_ref_unknown_1_unknown_1),
     SInt32("unknown_2", VISIBLE=False),
@@ -348,7 +357,7 @@ sbsp_pathfinding_data_object_ref_unknown_1 = Struct("unknown_1",
     )
 
 
-sbsp_pathfinding_data_object_ref = Struct("object_ref", 
+sbsp_pathfinding_data_object_ref = Struct("object_ref",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     h3_reflexive("unknown_1", sbsp_pathfinding_data_object_ref_unknown_1),
     SInt32("unknown_2", VISIBLE=False),
@@ -359,7 +368,7 @@ sbsp_pathfinding_data_object_ref = Struct("object_ref",
     )
 
 
-sbsp_pathfinding_data_pathfinding_hint = Struct("pathfinding_hint", 
+sbsp_pathfinding_data_pathfinding_hint = Struct("pathfinding_hint",
     SInt16("next_hint_index"),
     Pad(2),
     Array("hint_data_array", SUB_STRUCT=SInt16("hint_data"), SIZE=8),
@@ -367,35 +376,35 @@ sbsp_pathfinding_data_pathfinding_hint = Struct("pathfinding_hint",
     )
 
 
-sbsp_pathfinding_data_instanced_geometry_ref = Struct("instanced_geometry_ref", 
+sbsp_pathfinding_data_instanced_geometry_ref = Struct("instanced_geometry_ref",
     SInt16("pathfinding_object_index"),
     SInt16("unknown", VISIBLE=False),
     ENDIAN=">", SIZE=4
     )
 
 
-sbsp_pathfinding_data_unknown_1 = Struct("unknown_1", 
+sbsp_pathfinding_data_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=4
     )
 
 
-sbsp_pathfinding_data_unknown_2_unknown = Struct("unknown", 
+sbsp_pathfinding_data_unknown_2_unknown = Struct("unknown",
     SInt32("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=4
     )
 
 
-sbsp_pathfinding_data_unknown_2 = Struct("unknown_2", 
+sbsp_pathfinding_data_unknown_2 = Struct("unknown_2",
     h3_reflexive("unknown", sbsp_pathfinding_data_unknown_2_unknown),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-sbsp_pathfinding_data_unknown_3_unknown_3 = Struct("unknown_3", 
+sbsp_pathfinding_data_unknown_3_unknown_3 = Struct("unknown_3",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -403,7 +412,7 @@ sbsp_pathfinding_data_unknown_3_unknown_3 = Struct("unknown_3",
     )
 
 
-sbsp_pathfinding_data_unknown_3 = Struct("unknown_3", 
+sbsp_pathfinding_data_unknown_3 = Struct("unknown_3",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -413,7 +422,7 @@ sbsp_pathfinding_data_unknown_3 = Struct("unknown_3",
     )
 
 
-sbsp_pathfinding_data_unknown_4 = Struct("unknown_4", 
+sbsp_pathfinding_data_unknown_4 = Struct("unknown_4",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -421,7 +430,7 @@ sbsp_pathfinding_data_unknown_4 = Struct("unknown_4",
     )
 
 
-sbsp_pathfinding_data = Struct("pathfinding_data", 
+sbsp_pathfinding_data = Struct("pathfinding_data",
     h3_reflexive("sectors", sbsp_pathfinding_data_sector),
     h3_reflexive("links", sbsp_pathfinding_data_link),
     h3_reflexive("refs", sbsp_pathfinding_data_ref),
@@ -440,7 +449,7 @@ sbsp_pathfinding_data = Struct("pathfinding_data",
     )
 
 
-sbsp_background_sound_environment_palette = Struct("background_sound_environment_palette", 
+sbsp_background_sound_environment_palette = Struct("background_sound_environment_palette",
     h3_string_id("name"),
     h3_dependency("sound_environment"),
     Float("cutoff_distance_0"),
@@ -457,7 +466,7 @@ sbsp_background_sound_environment_palette = Struct("background_sound_environment
     )
 
 
-sbsp_marker = Struct("marker", 
+sbsp_marker = Struct("marker",
     ascii_str32("name"),
     QStruct("rotation", INCLUDE=ijkw_float),
     QStruct("position", INCLUDE=xyz_float),
@@ -465,20 +474,20 @@ sbsp_marker = Struct("marker",
     )
 
 
-sbsp_light = Struct("light", 
+sbsp_light = Struct("light",
     h3_dependency("light"),
     ENDIAN=">", SIZE=16
     )
 
 
-sbsp_unknown_6 = Struct("unknown_6", 
+sbsp_unknown_6 = Struct("unknown_6",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_runtime_decal = Struct("runtime_decal", 
+sbsp_runtime_decal = Struct("runtime_decal",
     SInt16("palette_index"),
     SInt8("yaw"),
     SInt8("pitch"),
@@ -489,10 +498,10 @@ sbsp_runtime_decal = Struct("runtime_decal",
     )
 
 
-sbsp_environment_object_palette = Struct("environment_object_palette", 
+sbsp_environment_object_palette = Struct("environment_object_palette",
     h3_dependency("definition"),
     h3_dependency("model"),
-    Bool32("object_type", 
+    Bool32("object_type",
         "biped",
         "vehicle",
         "weapon",
@@ -512,7 +521,7 @@ sbsp_environment_object_palette = Struct("environment_object_palette",
     )
 
 
-sbsp_environment_object = Struct("environment_object", 
+sbsp_environment_object = Struct("environment_object",
     ascii_str32("name"),
     QStruct("rotation", INCLUDE=ijkw_float),
     QStruct("position", INCLUDE=xyz_float),
@@ -526,7 +535,7 @@ sbsp_environment_object = Struct("environment_object",
     )
 
 
-sbsp_instanced_geometry_instance_collision_definition = Struct("collision_definition", 
+sbsp_instanced_geometry_instance_collision_definition = Struct("collision_definition",
     SInt32("unknown_0", VISIBLE=False),
     SInt16("size_0"),
     SInt16("size_1"),
@@ -558,14 +567,14 @@ sbsp_instanced_geometry_instance_collision_definition = Struct("collision_defini
     )
 
 
-sbsp_instanced_geometry_instance = Struct("instanced_geometry_instance", 
+sbsp_instanced_geometry_instance = Struct("instanced_geometry_instance",
     Float("scale"),
     QStruct("forward", INCLUDE=ijk_float),
     QStruct("left", INCLUDE=ijk_float),
     QStruct("up", INCLUDE=ijk_float),
     QStruct("position", INCLUDE=xyz_float),
     SInt16("mesh_index"),
-    Bool16("flags", 
+    Bool16("flags",
         ("no_projectile_collision", 1 << 1),
         ),
     SInt16("unknown_yo_index", VISIBLE=False),
@@ -585,13 +594,13 @@ sbsp_instanced_geometry_instance = Struct("instanced_geometry_instance",
     )
 
 
-sbsp_decorator = Struct("decorator", 
+sbsp_decorator = Struct("decorator",
     h3_dependency("decorator"),
     ENDIAN=">", SIZE=16
     )
 
 
-sbsp_meshes_0_part = Struct("part", 
+sbsp_meshes_0_part = Struct("part",
     SInt16("material_index"),
     SInt16("unknown_nodey_index", VISIBLE=False),
     SInt16("index_buffer_start"),
@@ -599,7 +608,7 @@ sbsp_meshes_0_part = Struct("part",
     SInt16("subpart_index"),
     SInt16("subpart_count"),
     SInt8("unknown_enum", VISIBLE=False),
-    Bool8("flags", 
+    Bool8("flags",
         ("water", 1 << 3),
         ),
     SInt16("vertex_count"),
@@ -607,7 +616,7 @@ sbsp_meshes_0_part = Struct("part",
     )
 
 
-sbsp_meshes_0_subpart = Struct("subpart", 
+sbsp_meshes_0_subpart = Struct("subpart",
     SInt16("index_buffer_start"),
     SInt16("index_buffer_count"),
     SInt16("part_index"),
@@ -616,13 +625,13 @@ sbsp_meshes_0_subpart = Struct("subpart",
     )
 
 
-sbsp_meshes_0_instanced_geometry_indice_instanced_geometry_mesh_content = Struct("instanced_geometry_mesh_content", 
+sbsp_meshes_0_instanced_geometry_indice_instanced_geometry_mesh_content = Struct("instanced_geometry_mesh_content",
     SInt16("instanced_geometry_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_meshes_0_instanced_geometry_indice = Struct("instanced_geometry_indice", 
+sbsp_meshes_0_instanced_geometry_indice = Struct("instanced_geometry_indice",
     SInt16("instanced_geometry_mesh_index_1"),
     SInt16("instanced_geometry_mesh_index_2"),
     h3_reflexive("instanced_geometry_mesh_contents", sbsp_meshes_0_instanced_geometry_indice_instanced_geometry_mesh_content),
@@ -630,20 +639,20 @@ sbsp_meshes_0_instanced_geometry_indice = Struct("instanced_geometry_indice",
     )
 
 
-sbsp_meshes_0_unknown_water = Struct("unknown_water", 
+sbsp_meshes_0_unknown_water = Struct("unknown_water",
     SInt16("unknown"),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_meshes_0 = Struct("meshes_0", 
+sbsp_meshes_0 = Struct("meshes_0",
     h3_reflexive("parts", sbsp_meshes_0_part),
     h3_reflexive("subparts", sbsp_meshes_0_subpart),
     Array("vertex_buffer_index_array", SUB_STRUCT=SInt16("vertex_buffer_index"), SIZE=8),
     SInt16("index_buffer_index_1"),
     SInt16("index_buffer_index_2"),
-    Bool8("flags", 
+    Bool8("flags",
         "has_vertex_colors",
         ),
     SInt8("rigid_node"),
@@ -659,7 +668,7 @@ sbsp_meshes_0 = Struct("meshes_0",
     )
 
 
-sbsp_compression_info_0 = Struct("compression_info_0", 
+sbsp_compression_info_0 = Struct("compression_info_0",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     QStruct("position_bounds_x", INCLUDE=from_to),
@@ -671,7 +680,7 @@ sbsp_compression_info_0 = Struct("compression_info_0",
     )
 
 
-sbsp_unknown_nodey_0 = Struct("unknown_nodey_0", 
+sbsp_unknown_nodey_0 = Struct("unknown_nodey_0",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     Array("node_index_array", SUB_STRUCT=SInt8("node_index"), SIZE=4, VISIBLE=False),
     Float("unknown_0", VISIBLE=False),
@@ -682,7 +691,7 @@ sbsp_unknown_nodey_0 = Struct("unknown_nodey_0",
     )
 
 
-sbsp_unknown_9 = Struct("unknown_9", 
+sbsp_unknown_9 = Struct("unknown_9",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     h3_rawdata_ref("unknown_2", VISIBLE=False),
@@ -691,14 +700,14 @@ sbsp_unknown_9 = Struct("unknown_9",
     )
 
 
-sbsp_unknown_meshes_0_unknown_1 = Struct("unknown_1", 
+sbsp_unknown_meshes_0_unknown_1 = Struct("unknown_1",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_unknown_meshes_0 = Struct("unknown_meshes_0", 
+sbsp_unknown_meshes_0 = Struct("unknown_meshes_0",
     h3_rawdata_ref("unknown_0", VISIBLE=False),
     h3_reflexive("unknown_1", sbsp_unknown_meshes_0_unknown_1),
     VISIBLE=False,
@@ -706,33 +715,33 @@ sbsp_unknown_meshes_0 = Struct("unknown_meshes_0",
     )
 
 
-sbsp_node_maps_0_unknown = Struct("unknown", 
+sbsp_node_maps_0_unknown = Struct("unknown",
     UInt8("node_index"),
     ENDIAN=">", SIZE=1
     )
 
 
-sbsp_node_maps_0 = Struct("node_maps_0", 
+sbsp_node_maps_0 = Struct("node_maps_0",
     h3_reflexive("unknown", sbsp_node_maps_0_unknown),
     ENDIAN=">", SIZE=12
     )
 
 
-sbsp_unknown_11_unknown = Struct("unknown", 
+sbsp_unknown_11_unknown = Struct("unknown",
     BytesRaw("unknown", SIZE=48, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=48
     )
 
 
-sbsp_unknown_11 = Struct("unknown_11", 
+sbsp_unknown_11 = Struct("unknown_11",
     h3_reflexive("unknown", sbsp_unknown_11_unknown),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-sbsp_unknown_yo_0 = Struct("unknown_yo_0", 
+sbsp_unknown_yo_0 = Struct("unknown_yo_0",
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
     SInt16("unknown_index"),
     SInt16("unknown_1", VISIBLE=False),
@@ -740,19 +749,19 @@ sbsp_unknown_yo_0 = Struct("unknown_yo_0",
     )
 
 
-sbsp_unknown_sound_clusters_a_portal_designator = Struct("portal_designator", 
+sbsp_unknown_sound_clusters_a_portal_designator = Struct("portal_designator",
     SInt16("portal_designator"),
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_unknown_sound_clusters_a_interior_cluster_indice = Struct("interior_cluster_indice", 
+sbsp_unknown_sound_clusters_a_interior_cluster_indice = Struct("interior_cluster_indice",
     SInt16("interior_cluster_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_unknown_sound_clusters_a = Struct("unknown_sound_clusters_a", 
+sbsp_unknown_sound_clusters_a = Struct("unknown_sound_clusters_a",
     SInt16("background_sound_environment_index"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("portal_designators", sbsp_unknown_sound_clusters_a_portal_designator),
@@ -761,19 +770,19 @@ sbsp_unknown_sound_clusters_a = Struct("unknown_sound_clusters_a",
     )
 
 
-sbsp_unknown_sound_clusters_b_portal_designator = Struct("portal_designator", 
+sbsp_unknown_sound_clusters_b_portal_designator = Struct("portal_designator",
     SInt16("portal_designator"),
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_unknown_sound_clusters_b_interior_cluster_indice = Struct("interior_cluster_indice", 
+sbsp_unknown_sound_clusters_b_interior_cluster_indice = Struct("interior_cluster_indice",
     SInt16("interior_cluster_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_unknown_sound_clusters_b = Struct("unknown_sound_clusters_b", 
+sbsp_unknown_sound_clusters_b = Struct("unknown_sound_clusters_b",
     SInt16("background_sound_environment_index"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("portal_designators", sbsp_unknown_sound_clusters_b_portal_designator),
@@ -782,19 +791,19 @@ sbsp_unknown_sound_clusters_b = Struct("unknown_sound_clusters_b",
     )
 
 
-sbsp_unknown_sound_clusters_c_portal_designator = Struct("portal_designator", 
+sbsp_unknown_sound_clusters_c_portal_designator = Struct("portal_designator",
     SInt16("portal_designator"),
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_unknown_sound_clusters_c_interior_cluster_indice = Struct("interior_cluster_indice", 
+sbsp_unknown_sound_clusters_c_interior_cluster_indice = Struct("interior_cluster_indice",
     SInt16("interior_cluster_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_unknown_sound_clusters_c = Struct("unknown_sound_clusters_c", 
+sbsp_unknown_sound_clusters_c = Struct("unknown_sound_clusters_c",
     SInt16("background_sound_environment_index"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("portal_designators", sbsp_unknown_sound_clusters_c_portal_designator),
@@ -803,7 +812,7 @@ sbsp_unknown_sound_clusters_c = Struct("unknown_sound_clusters_c",
     )
 
 
-sbsp_transparent_plane = Struct("transparent_plane", 
+sbsp_transparent_plane = Struct("transparent_plane",
     SInt16("mesh_index"),
     SInt16("part_index"),
     QStruct("plane", INCLUDE=ijk_float),
@@ -812,13 +821,13 @@ sbsp_transparent_plane = Struct("transparent_plane",
     )
 
 
-sbsp_collision_mopp_code_data = Struct("data", 
+sbsp_collision_mopp_code_data = Struct("data",
     UInt8("data_byte"),
     ENDIAN=">", SIZE=1
     )
 
 
-sbsp_collision_mopp_code = Struct("collision_mopp_code", 
+sbsp_collision_mopp_code = Struct("collision_mopp_code",
     SInt32("unknown_0", VISIBLE=False),
     SInt16("size_0"),
     SInt16("size_1"),
@@ -836,13 +845,13 @@ sbsp_collision_mopp_code = Struct("collision_mopp_code",
     )
 
 
-sbsp_breakable_surface_mopp_code_data = Struct("data", 
+sbsp_breakable_surface_mopp_code_data = Struct("data",
     UInt8("data_byte"),
     ENDIAN=">", SIZE=1
     )
 
 
-sbsp_breakable_surface_mopp_code = Struct("breakable_surface_mopp_code", 
+sbsp_breakable_surface_mopp_code = Struct("breakable_surface_mopp_code",
     SInt32("unknown_0", VISIBLE=False),
     SInt16("size_0"),
     SInt16("size_1"),
@@ -860,7 +869,7 @@ sbsp_breakable_surface_mopp_code = Struct("breakable_surface_mopp_code",
     )
 
 
-sbsp_breakable_surface_key_table = Struct("breakable_surface_key_table", 
+sbsp_breakable_surface_key_table = Struct("breakable_surface_key_table",
     SInt16("instanced_geometry_index"),
     SInt8("breakable_surface_index"),
     UInt8("breakable_surface_sub_index"),
@@ -875,7 +884,7 @@ sbsp_breakable_surface_key_table = Struct("breakable_surface_key_table",
     )
 
 
-sbsp_meshes_1_part = Struct("part", 
+sbsp_meshes_1_part = Struct("part",
     SInt16("material_index"),
     SInt16("unknown_nodey_index", VISIBLE=False),
     SInt16("index_buffer_start"),
@@ -883,7 +892,7 @@ sbsp_meshes_1_part = Struct("part",
     SInt16("subpart_index"),
     SInt16("subpart_count"),
     SInt8("unknown_enum", VISIBLE=False),
-    Bool8("flags", 
+    Bool8("flags",
         ("water", 1 << 3),
         ),
     SInt16("vertex_count"),
@@ -891,7 +900,7 @@ sbsp_meshes_1_part = Struct("part",
     )
 
 
-sbsp_meshes_1_subpart = Struct("subpart", 
+sbsp_meshes_1_subpart = Struct("subpart",
     SInt16("index_buffer_start"),
     SInt16("index_buffer_count"),
     SInt16("part_index"),
@@ -900,13 +909,13 @@ sbsp_meshes_1_subpart = Struct("subpart",
     )
 
 
-sbsp_meshes_1_instanced_geometry_indice_instanced_geometry_mesh_content = Struct("instanced_geometry_mesh_content", 
+sbsp_meshes_1_instanced_geometry_indice_instanced_geometry_mesh_content = Struct("instanced_geometry_mesh_content",
     SInt16("instanced_geometry_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_meshes_1_instanced_geometry_indice = Struct("instanced_geometry_indice", 
+sbsp_meshes_1_instanced_geometry_indice = Struct("instanced_geometry_indice",
     SInt16("instanced_geometry_mesh_index_1"),
     SInt16("instanced_geometry_mesh_index_2"),
     h3_reflexive("instanced_geometry_mesh_contents", sbsp_meshes_1_instanced_geometry_indice_instanced_geometry_mesh_content),
@@ -914,20 +923,20 @@ sbsp_meshes_1_instanced_geometry_indice = Struct("instanced_geometry_indice",
     )
 
 
-sbsp_meshes_1_unknown_water = Struct("unknown_water", 
+sbsp_meshes_1_unknown_water = Struct("unknown_water",
     SInt16("unknown"),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_meshes_1 = Struct("meshes_1", 
+sbsp_meshes_1 = Struct("meshes_1",
     h3_reflexive("parts", sbsp_meshes_1_part),
     h3_reflexive("subparts", sbsp_meshes_1_subpart),
     Array("vertex_buffer_index_array", SUB_STRUCT=SInt16("vertex_buffer_index"), SIZE=8),
     SInt16("index_buffer_index_1"),
     SInt16("index_buffer_index_2"),
-    Bool8("flags", 
+    Bool8("flags",
         "has_vertex_colors",
         ),
     SInt8("rigid_node"),
@@ -943,7 +952,7 @@ sbsp_meshes_1 = Struct("meshes_1",
     )
 
 
-sbsp_compression_info_1 = Struct("compression_info_1", 
+sbsp_compression_info_1 = Struct("compression_info_1",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     QStruct("position_bounds_x", INCLUDE=from_to),
@@ -955,7 +964,7 @@ sbsp_compression_info_1 = Struct("compression_info_1",
     )
 
 
-sbsp_unknown_nodey_1 = Struct("unknown_nodey_1", 
+sbsp_unknown_nodey_1 = Struct("unknown_nodey_1",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     Array("node_index_array", SUB_STRUCT=SInt8("node_index"), SIZE=4, VISIBLE=False),
     Float("unknown_0", VISIBLE=False),
@@ -966,7 +975,7 @@ sbsp_unknown_nodey_1 = Struct("unknown_nodey_1",
     )
 
 
-sbsp_unknown_17 = Struct("unknown_17", 
+sbsp_unknown_17 = Struct("unknown_17",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     h3_rawdata_ref("unknown_2", VISIBLE=False),
@@ -975,14 +984,14 @@ sbsp_unknown_17 = Struct("unknown_17",
     )
 
 
-sbsp_unknown_meshes_1_unknown_1 = Struct("unknown_1", 
+sbsp_unknown_meshes_1_unknown_1 = Struct("unknown_1",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-sbsp_unknown_meshes_1 = Struct("unknown_meshes_1", 
+sbsp_unknown_meshes_1 = Struct("unknown_meshes_1",
     h3_rawdata_ref("unknown_0", VISIBLE=False),
     h3_reflexive("unknown_1", sbsp_unknown_meshes_1_unknown_1),
     VISIBLE=False,
@@ -990,33 +999,33 @@ sbsp_unknown_meshes_1 = Struct("unknown_meshes_1",
     )
 
 
-sbsp_node_maps_1_unknown = Struct("unknown", 
+sbsp_node_maps_1_unknown = Struct("unknown",
     UInt8("node_index"),
     ENDIAN=">", SIZE=1
     )
 
 
-sbsp_node_maps_1 = Struct("node_maps_1", 
+sbsp_node_maps_1 = Struct("node_maps_1",
     h3_reflexive("unknown", sbsp_node_maps_1_unknown),
     ENDIAN=">", SIZE=12
     )
 
 
-sbsp_unknown_19_unknown = Struct("unknown", 
+sbsp_unknown_19_unknown = Struct("unknown",
     BytesRaw("unknown", SIZE=48, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=48
     )
 
 
-sbsp_unknown_19 = Struct("unknown_19", 
+sbsp_unknown_19 = Struct("unknown_19",
     h3_reflexive("unknown", sbsp_unknown_19_unknown),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-sbsp_unknown_yo_1 = Struct("unknown_yo_1", 
+sbsp_unknown_yo_1 = Struct("unknown_yo_1",
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
     SInt16("unknown_index"),
     SInt16("unknown_1", VISIBLE=False),
@@ -1024,7 +1033,7 @@ sbsp_unknown_yo_1 = Struct("unknown_yo_1",
     )
 
 
-sbsp_leaf_system = Struct("leaf_system", 
+sbsp_leaf_system = Struct("leaf_system",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     h3_dependency("leaf_system"),
@@ -1032,7 +1041,7 @@ sbsp_leaf_system = Struct("leaf_system",
     )
 
 
-sbsp_body = Struct("tagdata", 
+sbsp_body = Struct("tagdata",
     SInt32("bsp_checksum"),
     SInt32("unknown_0", VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),

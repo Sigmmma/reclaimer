@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,15 +27,15 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-gint_early_mover_propertie = Struct("early_mover_propertie", 
+gint_early_mover_propertie = Struct("early_mover_propertie",
     h3_string_id("name"),
     Pad(36),
     ENDIAN=">", SIZE=40
     )
 
 
-gint_ai_propertie = Struct("ai_propertie", 
-    Bool32("flags", 
+gint_ai_propertie = Struct("ai_propertie",
+    Bool32("flags",
         "destroyable_cover",
         "pathfinding_ignore_when_dead",
         "dynamic_cover",
@@ -39,8 +48,8 @@ gint_ai_propertie = Struct("ai_propertie",
     )
 
 
-gint_function = Struct("function", 
-    Bool32("flags", 
+gint_function = Struct("function",
+    Bool32("flags",
         "invert",
         "mapping_does_not_controls_active",
         "always_active",
@@ -56,7 +65,7 @@ gint_function = Struct("function",
     )
 
 
-gint_attachment = Struct("attachment", 
+gint_attachment = Struct("attachment",
     h3_dependency("attachment"),
     h3_string_id("marker"),
     SEnum16("change_color", *bloc_attachment_change_color),
@@ -67,13 +76,13 @@ gint_attachment = Struct("attachment",
     )
 
 
-gint_widget = Struct("widget", 
+gint_widget = Struct("widget",
     h3_dependency("type"),
     ENDIAN=">", SIZE=16
     )
 
 
-gint_change_color_initial_permutation = Struct("initial_permutation", 
+gint_change_color_initial_permutation = Struct("initial_permutation",
     Pad(4),
     color_rgb_float("color_lower_bound"),
     color_rgb_float("color_upper_bound"),
@@ -82,8 +91,8 @@ gint_change_color_initial_permutation = Struct("initial_permutation",
     )
 
 
-gint_change_color_function = Struct("function", 
-    Bool32("scale_flags", 
+gint_change_color_function = Struct("function",
+    Bool32("scale_flags",
         "blend_in_hsv",
         "more_colors",
         ),
@@ -95,14 +104,14 @@ gint_change_color_function = Struct("function",
     )
 
 
-gint_change_color = Struct("change_color", 
+gint_change_color = Struct("change_color",
     h3_reflexive("initial_permutations", gint_change_color_initial_permutation),
     h3_reflexive("functions", gint_change_color_function),
     ENDIAN=">", SIZE=24
     )
 
 
-gint_predicted_resource = Struct("predicted_resource", 
+gint_predicted_resource = Struct("predicted_resource",
     SInt16("type"),
     SInt16("resource_index"),
     dependency_uint32("tag_index", VISIBLE=False),
@@ -111,8 +120,8 @@ gint_predicted_resource = Struct("predicted_resource",
     )
 
 
-gint_multiplayer_object_propertie = Struct("multiplayer_object_propertie", 
-    Bool16("engine_flags", 
+gint_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
+    Bool16("engine_flags",
         "capture_the_flag",
         "slayer",
         "oddball",
@@ -124,14 +133,14 @@ gint_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
         "infection",
         ),
     SEnum8("object_type", *bloc_multiplayer_object_propertie_object_type),
-    Bool8("teleporter_flags", 
+    Bool8("teleporter_flags",
         "disallows_players",
         "allows_land_vehicles",
         "allows_heavy_vehicles",
         "allows_flying_vehicles",
         "allows_projectiles",
         ),
-    Bool16("flags", 
+    Bool16("flags",
         "editor_only",
         ),
     SEnum8("shape", *bloc_multiplayer_object_propertie_shape),
@@ -161,8 +170,8 @@ gint_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
     )
 
 
-gint_metagame_propertie = Struct("metagame_propertie", 
-    Bool8("flags", 
+gint_metagame_propertie = Struct("metagame_propertie",
+    Bool8("flags",
         "must_have_active_seats",
         ),
     SEnum8("unit", *bloc_metagame_propertie_unit),
@@ -174,33 +183,33 @@ gint_metagame_propertie = Struct("metagame_propertie",
     )
 
 
-gint_camera_track = Struct("camera_track", 
+gint_camera_track = Struct("camera_track",
     h3_dependency("track"),
     ENDIAN=">", SIZE=16
     )
 
 
-gint_unknown_7 = Struct("unknown_7", 
+gint_unknown_7 = Struct("unknown_7",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
 
 
-gint_posture = Struct("posture", 
+gint_posture = Struct("posture",
     h3_string_id("name"),
     QStruct("pill_offset", INCLUDE=ijk_float),
     ENDIAN=">", SIZE=16
     )
 
 
-gint_hud_interface = Struct("hud_interface", 
+gint_hud_interface = Struct("hud_interface",
     h3_dependency("unit_hud_interface"),
     ENDIAN=">", SIZE=16
     )
 
 
-gint_dialogue_variant = Struct("dialogue_variant", 
+gint_dialogue_variant = Struct("dialogue_variant",
     SInt16("variant_number"),
     SInt16("unknown", VISIBLE=False),
     h3_dependency("dialogue"),
@@ -208,40 +217,40 @@ gint_dialogue_variant = Struct("dialogue_variant",
     )
 
 
-gint_powered_seat = Struct("powered_seat", 
+gint_powered_seat = Struct("powered_seat",
     Float("driver_powerup_time"),
     Float("driver_powerdown_time"),
     ENDIAN=">", SIZE=8
     )
 
 
-gint_weapon = Struct("weapon", 
+gint_weapon = Struct("weapon",
     h3_dependency("weapon"),
     ENDIAN=">", SIZE=16
     )
 
 
-gint_seat_camera_track = Struct("camera_track", 
+gint_seat_camera_track = Struct("camera_track",
     h3_dependency("track"),
     ENDIAN=">", SIZE=16
     )
 
 
-gint_seat_unknown_6 = Struct("unknown_6", 
+gint_seat_unknown_6 = Struct("unknown_6",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
 
 
-gint_seat_unit_hud_interface = Struct("unit_hud_interface", 
+gint_seat_unit_hud_interface = Struct("unit_hud_interface",
     h3_dependency("unit_hud_interface"),
     ENDIAN=">", SIZE=16
     )
 
 
-gint_seat = Struct("seat", 
-    Bool32("flags", 
+gint_seat = Struct("seat",
+    Bool32("flags",
         "invisible",
         "locked",
         "driver",
@@ -310,7 +319,7 @@ gint_seat = Struct("seat",
     )
 
 
-gint_buckling_parameter = Struct("buckling_parameter", 
+gint_buckling_parameter = Struct("buckling_parameter",
     Float("unknown_0"),
     SInt32("unknown_1"),
     Float("unknown_2"),
@@ -334,9 +343,9 @@ gint_buckling_parameter = Struct("buckling_parameter",
     )
 
 
-gint_body = Struct("tagdata", 
+gint_body = Struct("tagdata",
     SEnum16("object_type", *bloc_object_type),
-    Bool16("flags_0", 
+    Bool16("flags_0",
         "does_not_cast_shadow",
         "search_cardinal_direction_lightmaps",
         ("not_a_pathfinding_obstacle", 1 << 3),
@@ -377,7 +386,7 @@ gint_body = Struct("tagdata",
     h3_reflexive("change_colors", gint_change_color),
     h3_reflexive("predicted_resources", gint_predicted_resource),
     h3_reflexive("multiplayer_object_properties", gint_multiplayer_object_propertie),
-    Bool32("flags_1", 
+    Bool32("flags_1",
         "circular_aiming",
         "destroyed_after_dying",
         "half_speed_interpolation",

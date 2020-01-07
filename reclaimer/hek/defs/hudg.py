@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
@@ -203,7 +212,7 @@ hudg_body = Struct("tagdata",
     SIZE=1104
     )
 
-    
+
 def get():
     return hudg_def
 

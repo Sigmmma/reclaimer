@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -22,13 +31,13 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-matg_havok_cleanup_resource = Struct("havok_cleanup_resource", 
+matg_havok_cleanup_resource = Struct("havok_cleanup_resource",
     h3_dependency("object_cleanup_effect"),
     ENDIAN=">", SIZE=16
     )
 
 
-matg_sound_global = Struct("sound_global", 
+matg_sound_global = Struct("sound_global",
     h3_dependency("sound_classes"),
     h3_dependency("sound_effects"),
     h3_dependency("sound_mix"),
@@ -38,7 +47,7 @@ matg_sound_global = Struct("sound_global",
     )
 
 
-matg_ai_global_gravemind_propertie = QStruct("gravemind_propertie", 
+matg_ai_global_gravemind_propertie = QStruct("gravemind_propertie",
     Float("minimum_retreat_time"),
     Float("ideal_retreat_time"),
     Float("maximum_retreat_time"),
@@ -46,13 +55,13 @@ matg_ai_global_gravemind_propertie = QStruct("gravemind_propertie",
     )
 
 
-matg_ai_global_style = Struct("style", 
+matg_ai_global_style = Struct("style",
     h3_dependency("style"),
     ENDIAN=">", SIZE=16
     )
 
 
-matg_ai_global = Struct("ai_global", 
+matg_ai_global = Struct("ai_global",
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
     Float("danger_broadly_facing"),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
@@ -99,33 +108,33 @@ matg_ai_global = Struct("ai_global",
     )
 
 
-matg_damage_table_damage_group_armor_modifier = Struct("armor_modifier", 
+matg_damage_table_damage_group_armor_modifier = Struct("armor_modifier",
     h3_string_id("name"),
     Float("damage_multiplier"),
     ENDIAN=">", SIZE=8
     )
 
 
-matg_damage_table_damage_group = Struct("damage_group", 
+matg_damage_table_damage_group = Struct("damage_group",
     h3_string_id("name"),
     h3_reflexive("armor_modifiers", matg_damage_table_damage_group_armor_modifier),
     ENDIAN=">", SIZE=16
     )
 
 
-matg_damage_table = Struct("damage_table", 
+matg_damage_table = Struct("damage_table",
     h3_reflexive("damage_groups", matg_damage_table_damage_group),
     ENDIAN=">", SIZE=12
     )
 
 
-matg_sound = Struct("sound", 
+matg_sound = Struct("sound",
     h3_dependency("sound_obsolete"),
     ENDIAN=">", SIZE=16
     )
 
 
-matg_camera = Struct("camera", 
+matg_camera = Struct("camera",
     h3_dependency("default_unit_camera_track"),
     Array("unknown_array_0", SUB_STRUCT=Float("unknown"), SIZE=24, VISIBLE=False),
     SInt16("unknown_0", VISIBLE=False),
@@ -135,14 +144,14 @@ matg_camera = Struct("camera",
     )
 
 
-matg_player_control_look_function = QStruct("look_function", 
+matg_player_control_look_function = QStruct("look_function",
     Float("scale"),
     VISIBLE=False,
     ENDIAN=">", SIZE=4
     )
 
 
-matg_player_control = Struct("player_control", 
+matg_player_control = Struct("player_control",
     Float("magnetism_friction"),
     Float("magnetism_adhesion"),
     Float("inconsequential_target_scale"),
@@ -174,7 +183,7 @@ matg_player_control = Struct("player_control",
     )
 
 
-matg_difficulty = QStruct("difficulty", 
+matg_difficulty = QStruct("difficulty",
     Float("easy_enemy_damage"),
     Float("normal_enemy_damage"),
     Float("hard_enemy_damage"),
@@ -308,7 +317,7 @@ matg_difficulty = QStruct("difficulty",
     )
 
 
-matg_grenade = Struct("grenade", 
+matg_grenade = Struct("grenade",
     SInt16("maximum_count"),
     SInt16("unknown_0", VISIBLE=False),
     h3_dependency("throwing_effect"),
@@ -319,7 +328,7 @@ matg_grenade = Struct("grenade",
     )
 
 
-matg_interface_tag = Struct("interface_tag", 
+matg_interface_tag = Struct("interface_tag",
     h3_dependency("spinner"),
     h3_dependency("obsolete"),
     h3_dependency("screen_color_table"),
@@ -342,7 +351,7 @@ matg_interface_tag = Struct("interface_tag",
     )
 
 
-matg_player_information = Struct("player_information", 
+matg_player_information = Struct("player_information",
     Float("walking_speed"),
     Float("run_forward"),
     Float("run_backward"),
@@ -372,7 +381,7 @@ matg_player_information = Struct("player_information",
     )
 
 
-matg_player_representation = Struct("player_representation", 
+matg_player_representation = Struct("player_representation",
     h3_dependency("first_person_hands"),
     h3_dependency("first_person_body"),
     h3_dependency("third_person_unit"),
@@ -383,7 +392,7 @@ matg_player_representation = Struct("player_representation",
     )
 
 
-matg_falling_damage = Struct("falling_damage", 
+matg_falling_damage = Struct("falling_damage",
     QStruct("harmful_falling_distance", INCLUDE=from_to),
     h3_dependency("falling_damage"),
     h3_dependency("unknown_0", VISIBLE=False),
@@ -400,7 +409,7 @@ matg_falling_damage = Struct("falling_damage",
     )
 
 
-matg_material_water_drag_propertie = Struct("water_drag_propertie", 
+matg_material_water_drag_propertie = Struct("water_drag_propertie",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=9),
     Pad(4),
     VISIBLE=False,
@@ -408,7 +417,7 @@ matg_material_water_drag_propertie = Struct("water_drag_propertie",
     )
 
 
-matg_material_water_interaction = Struct("water_interaction", 
+matg_material_water_interaction = Struct("water_interaction",
     h3_string_id("surface_name"),
     h3_string_id("submerged_name"),
     SInt16("surface_index"),
@@ -417,7 +426,7 @@ matg_material_water_interaction = Struct("water_interaction",
     )
 
 
-matg_material = Struct("material", 
+matg_material = Struct("material",
     h3_string_id("name"),
     h3_string_id("parent_name"),
     SInt16("parent_index"),
@@ -447,7 +456,7 @@ matg_material = Struct("material",
     h3_dependency("water_ripple_small"),
     h3_dependency("water_ripple_medium"),
     h3_dependency("water_ripple_large"),
-    Bool32("sweetener_inheritance_flags", 
+    Bool32("sweetener_inheritance_flags",
         "sound_small",
         "sound_medium",
         "sound_large",
@@ -472,44 +481,44 @@ matg_material = Struct("material",
     )
 
 
-matg_player_color = Struct("player_color", 
+matg_player_color = Struct("player_color",
     color_rgb_float("color"),
     ENDIAN=">", SIZE=12
     )
 
 
-matg_cinematic_anchor = Struct("cinematic_anchor", 
+matg_cinematic_anchor = Struct("cinematic_anchor",
     h3_dependency("cinematic_anchor"),
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     ENDIAN=">", SIZE=20
     )
 
 
-matg_metagame_global_medal = QStruct("medal", 
+matg_metagame_global_medal = QStruct("medal",
     Float("multiplier"),
     ENDIAN=">", SIZE=4
     )
 
 
-matg_metagame_global_difficulty = QStruct("difficulty", 
+matg_metagame_global_difficulty = QStruct("difficulty",
     Float("multiplier"),
     ENDIAN=">", SIZE=4
     )
 
 
-matg_metagame_global_primary_skull = QStruct("primary_skull", 
+matg_metagame_global_primary_skull = QStruct("primary_skull",
     Float("multiplier"),
     ENDIAN=">", SIZE=4
     )
 
 
-matg_metagame_global_secondary_skull = QStruct("secondary_skull", 
+matg_metagame_global_secondary_skull = QStruct("secondary_skull",
     Float("multiplier"),
     ENDIAN=">", SIZE=4
     )
 
 
-matg_metagame_global = Struct("metagame_global", 
+matg_metagame_global = Struct("metagame_global",
     h3_reflexive("medals", matg_metagame_global_medal),
     h3_reflexive("difficulty", matg_metagame_global_difficulty),
     h3_reflexive("primary_skulls", matg_metagame_global_primary_skull),
@@ -524,7 +533,7 @@ matg_metagame_global = Struct("metagame_global",
     )
 
 
-matg_body = Struct("tagdata", 
+matg_body = Struct("tagdata",
     BytesRaw("unknown_0", SIZE=172, VISIBLE=False),
     SEnum32("language", *ugh__language_language),
     h3_reflexive("havok_cleanup_resources", matg_havok_cleanup_resource),

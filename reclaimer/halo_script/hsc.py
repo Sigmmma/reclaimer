@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from struct import Struct as PyStruct
 
 from reclaimer.field_types import *
@@ -145,7 +154,7 @@ def get_hsc_node_string(string_data, node, hsc_node_strings_by_type=()):
 
         # "ai" script object types(17) use 32 bits of the
         # data field to specify index instead of just 16.
-        mask = 0xFFffFFff if node.type == 17 else 0xFFff            
+        mask = 0xFFffFFff if node.type == 17 else 0xFFff
         if node.data & mask in hsc_node_strings:
             return hsc_node_strings[node.data & mask]
 
@@ -263,7 +272,7 @@ def get_first_significant_node(node, nodes, string_data, parent=None,
     elif parent is not None:
         return parent
     return node
-        
+
 
 def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
                             object_types, indent=1, indent_size=4, **kwargs):

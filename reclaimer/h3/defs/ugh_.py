@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -29,7 +38,7 @@ ugh__platform_codec_sample_rate = (
     )
 
 
-ugh__platform_codec = Struct("platform_codec", 
+ugh__platform_codec = Struct("platform_codec",
     SEnum8("sample_rate", *ugh__platform_codec_sample_rate),
     SEnum8("encoding", *ugh__platform_codec_encoding),
     SInt8("unknown", VISIBLE=False),
@@ -37,8 +46,8 @@ ugh__platform_codec = Struct("platform_codec",
     )
 
 
-ugh__playback_parameter = Struct("playback_parameter", 
-    Bool32("field_disable_flags", 
+ugh__playback_parameter = Struct("playback_parameter",
+    Bool32("field_disable_flags",
         "distance_a",
         "distance_b",
         "distance_c",
@@ -56,7 +65,7 @@ ugh__playback_parameter = Struct("playback_parameter",
     float_rad("inner_cone_angle"),
     float_rad("outer_cone_angle"),
     Float("outer_cone_gain"),
-    Bool32("flags", 
+    Bool32("flags",
         "override_azimuth",
         "override_3d_gain",
         "override_speaker_gain",
@@ -68,7 +77,7 @@ ugh__playback_parameter = Struct("playback_parameter",
     )
 
 
-ugh__scale = Struct("scale", 
+ugh__scale = Struct("scale",
     QStruct("gain_modifier", INCLUDE=from_to),
     QStruct("pitch_modifier", INCLUDE=from_to_sint16),
     QStruct("skip_fraction_modifier", INCLUDE=from_to),
@@ -76,13 +85,13 @@ ugh__scale = Struct("scale",
     )
 
 
-ugh__import_name = Struct("import_name", 
+ugh__import_name = Struct("import_name",
     h3_string_id("name"),
     ENDIAN=">", SIZE=4
     )
 
 
-ugh__pitch_range_parameter = Struct("pitch_range_parameter", 
+ugh__pitch_range_parameter = Struct("pitch_range_parameter",
     SInt16("natural_pitch"),
     QStruct("bend_bounds", INCLUDE=from_to_sint16),
     QStruct("max_gain_pitch_bounds", INCLUDE=from_to_sint16),
@@ -91,7 +100,7 @@ ugh__pitch_range_parameter = Struct("pitch_range_parameter",
     )
 
 
-ugh__pitch_range = Struct("pitch_range", 
+ugh__pitch_range = Struct("pitch_range",
     SInt16("import_name_index"),
     SInt16("pitch_range_parameter_index"),
     SInt16("encoded_permutation_data_index"),
@@ -102,7 +111,7 @@ ugh__pitch_range = Struct("pitch_range",
     )
 
 
-ugh__permutation = Struct("permutation", 
+ugh__permutation = Struct("permutation",
     SInt16("import_name_index"),
     SInt16("encoded_skip_fraction"),
     UInt32("sample_size"),
@@ -114,7 +123,7 @@ ugh__permutation = Struct("permutation",
     )
 
 
-ugh__custom_playback_filter = Struct("filter", 
+ugh__custom_playback_filter = Struct("filter",
     SInt32("filter_type"),
     SInt32("filter_width"),
     QStruct("scale_bounds_0", INCLUDE=from_to),
@@ -133,9 +142,9 @@ ugh__custom_playback_filter = Struct("filter",
     )
 
 
-ugh__custom_playback = Struct("custom_playback", 
+ugh__custom_playback = Struct("custom_playback",
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
-    Bool32("flags", 
+    Bool32("flags",
         "use_3d_radio_hack",
         ),
     BytesRaw("unknown_1", SIZE=8, VISIBLE=False),
@@ -145,20 +154,20 @@ ugh__custom_playback = Struct("custom_playback",
     )
 
 
-ugh__language_unknown_a = Struct("unknown_a", 
+ugh__language_unknown_a = Struct("unknown_a",
     SInt16("unknown"),
     ENDIAN=">", SIZE=2
     )
 
 
-ugh__language_unknown_b = Struct("unknown_b", 
+ugh__language_unknown_b = Struct("unknown_b",
     SInt16("unknown_a_start_index"),
     SInt16("unknown_a_count"),
     ENDIAN=">", SIZE=4
     )
 
 
-ugh__language = Struct("language", 
+ugh__language = Struct("language",
     SEnum32("language", *ugh__language_language),
     h3_reflexive("unknown_a", ugh__language_unknown_a),
     h3_reflexive("unknown_b", ugh__language_unknown_b),
@@ -166,15 +175,15 @@ ugh__language = Struct("language",
     )
 
 
-ugh__runtime_permutation_flag = Struct("runtime_permutation_flag", 
+ugh__runtime_permutation_flag = Struct("runtime_permutation_flag",
     SInt8("unknown"),
     ENDIAN=">", SIZE=1
     )
 
 
-ugh__permutation_chunk = Struct("permutation_chunk", 
+ugh__permutation_chunk = Struct("permutation_chunk",
     UInt32("file_offset"),
-    Bool8("flags", 
+    Bool8("flags",
         ("has_unknown_a_value", 1 << 5),
         ),
     UInt8("chunk_size_leftmost_byte"),
@@ -186,7 +195,7 @@ ugh__permutation_chunk = Struct("permutation_chunk",
     )
 
 
-ugh__promotion_rule = Struct("rule", 
+ugh__promotion_rule = Struct("rule",
     SInt16("pitch_range_index"),
     SInt16("maximum_playing_count"),
     Float("suppression_time"),
@@ -196,13 +205,13 @@ ugh__promotion_rule = Struct("rule",
     )
 
 
-ugh__promotion_runtime_timer = Struct("runtime_timer", 
+ugh__promotion_runtime_timer = Struct("runtime_timer",
     SInt32("unknown"),
     ENDIAN=">", SIZE=4
     )
 
 
-ugh__promotion = Struct("promotion", 
+ugh__promotion = Struct("promotion",
     h3_reflexive("rules", ugh__promotion_rule),
     h3_reflexive("runtime_timers", ugh__promotion_runtime_timer),
     SInt32("unknown_0", VISIBLE=False),
@@ -211,7 +220,7 @@ ugh__promotion = Struct("promotion",
     )
 
 
-ugh__extra_info_encoded_permutation_section_sound_dialogue_info = Struct("sound_dialogue_info", 
+ugh__extra_info_encoded_permutation_section_sound_dialogue_info = Struct("sound_dialogue_info",
     UInt32("mouth_data_offset"),
     UInt32("mouth_data_length"),
     UInt32("lipsync_data_offset"),
@@ -220,19 +229,19 @@ ugh__extra_info_encoded_permutation_section_sound_dialogue_info = Struct("sound_
     )
 
 
-ugh__extra_info_encoded_permutation_section_unknown_unknown_unknown_1 = Struct("unknown_1", 
+ugh__extra_info_encoded_permutation_section_unknown_unknown_unknown_1 = Struct("unknown_1",
     Pad(8),
     ENDIAN=">", SIZE=8
     )
 
 
-ugh__extra_info_encoded_permutation_section_unknown_unknown_unknown_2 = Struct("unknown_2", 
+ugh__extra_info_encoded_permutation_section_unknown_unknown_unknown_2 = Struct("unknown_2",
     Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4),
     ENDIAN=">", SIZE=8
     )
 
 
-ugh__extra_info_encoded_permutation_section_unknown_unknown = Struct("unknown", 
+ugh__extra_info_encoded_permutation_section_unknown_unknown = Struct("unknown",
     Pad(16),
     h3_reflexive("unknown_1", ugh__extra_info_encoded_permutation_section_unknown_unknown_unknown_1),
     h3_reflexive("unknown_2", ugh__extra_info_encoded_permutation_section_unknown_unknown_unknown_2),
@@ -240,13 +249,13 @@ ugh__extra_info_encoded_permutation_section_unknown_unknown = Struct("unknown",
     )
 
 
-ugh__extra_info_encoded_permutation_section_unknown = Struct("unknown", 
+ugh__extra_info_encoded_permutation_section_unknown = Struct("unknown",
     h3_reflexive("unknown", ugh__extra_info_encoded_permutation_section_unknown_unknown),
     ENDIAN=">", SIZE=12
     )
 
 
-ugh__extra_info_encoded_permutation_section = Struct("encoded_permutation_section", 
+ugh__extra_info_encoded_permutation_section = Struct("encoded_permutation_section",
     h3_rawdata_ref("encoded_data"),
     h3_reflexive("sound_dialogue_info", ugh__extra_info_encoded_permutation_section_sound_dialogue_info),
     h3_reflexive("unknown", ugh__extra_info_encoded_permutation_section_unknown),
@@ -254,13 +263,13 @@ ugh__extra_info_encoded_permutation_section = Struct("encoded_permutation_sectio
     )
 
 
-ugh__extra_info = Struct("extra_info", 
+ugh__extra_info = Struct("extra_info",
     h3_reflexive("encoded_permutation_sections", ugh__extra_info_encoded_permutation_section),
     ENDIAN=">", SIZE=12
     )
 
 
-ugh__body = Struct("tagdata", 
+ugh__body = Struct("tagdata",
     h3_reflexive("platform_codec", ugh__platform_codec),
     h3_reflexive("playback_parameters", ugh__playback_parameter),
     h3_reflexive("scales", ugh__scale),

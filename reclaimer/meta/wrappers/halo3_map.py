@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import os
 
 from math import ceil, log
@@ -16,6 +25,8 @@ from reclaimer.meta.wrappers.string_id_manager import StringIdManager
 from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
 from reclaimer.meta.wrappers.rawdata_manager import RawdataManager
 from reclaimer.meta.wrappers.tag_index_converters import h3_to_h1_tag_index
+
+from supyr_struct.util import is_path_empty
 
 from arbytmap.format_defs import VALID_FORMATS
 
@@ -139,7 +150,7 @@ class Halo3Map(HaloMap):
         (0x4B7, 0xC11), (0x0, 0x4B7), (0x0, 0xA7D),
         (0x0, 0xB0F),   (0x0, 0xBAF), (0x0, 0xB63),
         (0x0, 0xBBF),   (0x0, 0xBF0), (0x0, 0xC04))
-    
+
     data_extractors = data_extraction.h3_data_extractors
 
     def __init__(self, maps=None):
@@ -241,12 +252,14 @@ class Halo3Map(HaloMap):
             return {}
 
         map_paths = {name.split(".")[0]: None for name in self.shared_map_names}
-        if not maps_dir:
-            maps_dir = os.path.dirname(self.filepath)
+        if not is_path_empty(maps_dir):
+            maps_dir = Path(maps_dir)
+        else:
+            maps_dir = self.filepath.parent
 
         # detect/ask for the map paths for the resource maps
         for map_name in sorted(map_paths):
-            map_path = os.path.join(maps_dir, "%s.map" % map_name)
+            map_path = str(maps_dir.joinpath("%s.map" % map_name))
             if self.maps.get(map_name) is not None:
                 map_paths[map_name] = self.maps[map_name].filepath
             elif os.path.exists(map_path):

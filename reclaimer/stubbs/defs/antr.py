@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...hek.defs.antr import *
 from ..common_descs import *
 
@@ -50,7 +59,7 @@ unknown_unit_desc = Struct("unknown_unit_desc",
 unit_desc = Struct("unit",
     ascii_str32("label"),
     #pitch and yaw are saved in radians.
-                   
+
     #Looking screen bounds
     float_rad("right_yaw_per_frame"),
     float_rad("left_yaw_per_frame"),
@@ -79,7 +88,7 @@ seat_desc = Struct("seat",
 
 vehicle_desc = Struct("vehicle",
     #pitch and yaw are saved in radians.
-                      
+
     #Steering screen bounds
     float_rad("right_yaw_per_frame"),
     float_rad("left_yaw_per_frame"),
@@ -100,18 +109,18 @@ vehicle_desc = Struct("vehicle",
     SIZE=116,
     )
 
-effect_reference_desc = Struct("effect_reference", 
+effect_reference_desc = Struct("effect_reference",
     dependency_stubbs('effect', ("snd!", "effe")),
     SIZE=20,
     )
 
-animation_desc = Struct("animation", 
+animation_desc = Struct("animation",
     ascii_str32("name"),
     SEnum16("type", *anim_types),
     SInt16("frame_count"),
     SInt16("frame_size"),
     SEnum16("frame_info_type", *anim_frame_info_types),
-    SInt32("node_list_checksum"),                       
+    SInt32("node_list_checksum"),
     SInt16("node_count"),
     SInt16("loop_frame_index"),
 

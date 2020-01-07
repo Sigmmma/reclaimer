@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -14,7 +23,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-mffn_location = Struct("location", 
+mffn_location = Struct("location",
     h3_string_id("name"),
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
@@ -22,7 +31,7 @@ mffn_location = Struct("location",
     )
 
 
-mffn_unknown_2 = Struct("unknown_2", 
+mffn_unknown_2 = Struct("unknown_2",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     BytesRaw("unknown_2", SIZE=4, VISIBLE=False),
@@ -38,7 +47,7 @@ mffn_unknown_2 = Struct("unknown_2",
     )
 
 
-mffn_body = Struct("tagdata", 
+mffn_body = Struct("tagdata",
     h3_dependency("render_model"),
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
     SInt32("unknown_1", VISIBLE=False),

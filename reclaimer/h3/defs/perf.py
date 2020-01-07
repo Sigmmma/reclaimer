@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -16,8 +25,8 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-perf_performance = Struct("performance", 
-    Bool32("flags", 
+perf_performance = Struct("performance",
+    Bool32("flags",
         ("disable_self_shadowing", 1 << 1),
         "disable_player_shadows",
         ),
@@ -38,7 +47,7 @@ perf_performance = Struct("performance",
     )
 
 
-perf_body = Struct("tagdata", 
+perf_body = Struct("tagdata",
     h3_reflexive("performance", perf_performance),
     ENDIAN=">", SIZE=12
     )

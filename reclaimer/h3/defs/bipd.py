@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -24,15 +33,15 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-bipd_early_mover_propertie = Struct("early_mover_propertie", 
+bipd_early_mover_propertie = Struct("early_mover_propertie",
     h3_string_id("name"),
     Pad(36),
     ENDIAN=">", SIZE=40
     )
 
 
-bipd_ai_propertie = Struct("ai_propertie", 
-    Bool32("flags", 
+bipd_ai_propertie = Struct("ai_propertie",
+    Bool32("flags",
         "destroyable_cover",
         "pathfinding_ignore_when_dead",
         "dynamic_cover",
@@ -45,8 +54,8 @@ bipd_ai_propertie = Struct("ai_propertie",
     )
 
 
-bipd_function = Struct("function", 
-    Bool32("flags", 
+bipd_function = Struct("function",
+    Bool32("flags",
         "invert",
         "mapping_does_not_controls_active",
         "always_active",
@@ -62,7 +71,7 @@ bipd_function = Struct("function",
     )
 
 
-bipd_attachment = Struct("attachment", 
+bipd_attachment = Struct("attachment",
     h3_dependency("attachment"),
     h3_string_id("marker"),
     SEnum16("change_color", *bloc_attachment_change_color),
@@ -73,13 +82,13 @@ bipd_attachment = Struct("attachment",
     )
 
 
-bipd_widget = Struct("widget", 
+bipd_widget = Struct("widget",
     h3_dependency("type"),
     ENDIAN=">", SIZE=16
     )
 
 
-bipd_change_color_initial_permutation = Struct("initial_permutation", 
+bipd_change_color_initial_permutation = Struct("initial_permutation",
     Pad(4),
     color_rgb_float("color_lower_bound"),
     color_rgb_float("color_upper_bound"),
@@ -88,8 +97,8 @@ bipd_change_color_initial_permutation = Struct("initial_permutation",
     )
 
 
-bipd_change_color_function = Struct("function", 
-    Bool32("scale_flags", 
+bipd_change_color_function = Struct("function",
+    Bool32("scale_flags",
         "blend_in_hsv",
         "more_colors",
         ),
@@ -101,14 +110,14 @@ bipd_change_color_function = Struct("function",
     )
 
 
-bipd_change_color = Struct("change_color", 
+bipd_change_color = Struct("change_color",
     h3_reflexive("initial_permutations", bipd_change_color_initial_permutation),
     h3_reflexive("functions", bipd_change_color_function),
     ENDIAN=">", SIZE=24
     )
 
 
-bipd_predicted_resource = Struct("predicted_resource", 
+bipd_predicted_resource = Struct("predicted_resource",
     SInt16("type"),
     SInt16("resource_index"),
     dependency_uint32("tag_index", VISIBLE=False),
@@ -117,8 +126,8 @@ bipd_predicted_resource = Struct("predicted_resource",
     )
 
 
-bipd_multiplayer_object_propertie = Struct("multiplayer_object_propertie", 
-    Bool16("engine_flags", 
+bipd_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
+    Bool16("engine_flags",
         "capture_the_flag",
         "slayer",
         "oddball",
@@ -130,14 +139,14 @@ bipd_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
         "infection",
         ),
     SEnum8("object_type", *bloc_multiplayer_object_propertie_object_type),
-    Bool8("teleporter_flags", 
+    Bool8("teleporter_flags",
         "disallows_players",
         "allows_land_vehicles",
         "allows_heavy_vehicles",
         "allows_flying_vehicles",
         "allows_projectiles",
         ),
-    Bool16("flags", 
+    Bool16("flags",
         "editor_only",
         ),
     SEnum8("shape", *bloc_multiplayer_object_propertie_shape),
@@ -167,8 +176,8 @@ bipd_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
     )
 
 
-bipd_metagame_propertie = Struct("metagame_propertie", 
-    Bool8("flags", 
+bipd_metagame_propertie = Struct("metagame_propertie",
+    Bool8("flags",
         "must_have_active_seats",
         ),
     SEnum8("unit", *bloc_metagame_propertie_unit),
@@ -180,33 +189,33 @@ bipd_metagame_propertie = Struct("metagame_propertie",
     )
 
 
-bipd_camera_track = Struct("camera_track", 
+bipd_camera_track = Struct("camera_track",
     h3_dependency("track"),
     ENDIAN=">", SIZE=16
     )
 
 
-bipd_unknown_7 = Struct("unknown_7", 
+bipd_unknown_7 = Struct("unknown_7",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
 
 
-bipd_posture = Struct("posture", 
+bipd_posture = Struct("posture",
     h3_string_id("name"),
     QStruct("pill_offset", INCLUDE=ijk_float),
     ENDIAN=">", SIZE=16
     )
 
 
-bipd_hud_interface = Struct("hud_interface", 
+bipd_hud_interface = Struct("hud_interface",
     h3_dependency("unit_hud_interface"),
     ENDIAN=">", SIZE=16
     )
 
 
-bipd_dialogue_variant = Struct("dialogue_variant", 
+bipd_dialogue_variant = Struct("dialogue_variant",
     SInt16("variant_number"),
     SInt16("unknown", VISIBLE=False),
     h3_dependency("dialogue"),
@@ -214,40 +223,40 @@ bipd_dialogue_variant = Struct("dialogue_variant",
     )
 
 
-bipd_powered_seat = Struct("powered_seat", 
+bipd_powered_seat = Struct("powered_seat",
     Float("driver_powerup_time"),
     Float("driver_powerdown_time"),
     ENDIAN=">", SIZE=8
     )
 
 
-bipd_weapon = Struct("weapon", 
+bipd_weapon = Struct("weapon",
     h3_dependency("weapon"),
     ENDIAN=">", SIZE=16
     )
 
 
-bipd_seat_camera_track = Struct("camera_track", 
+bipd_seat_camera_track = Struct("camera_track",
     h3_dependency("track"),
     ENDIAN=">", SIZE=16
     )
 
 
-bipd_seat_unknown_6 = Struct("unknown_6", 
+bipd_seat_unknown_6 = Struct("unknown_6",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=19, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=76
     )
 
 
-bipd_seat_unit_hud_interface = Struct("unit_hud_interface", 
+bipd_seat_unit_hud_interface = Struct("unit_hud_interface",
     h3_dependency("unit_hud_interface"),
     ENDIAN=">", SIZE=16
     )
 
 
-bipd_seat = Struct("seat", 
-    Bool32("flags", 
+bipd_seat = Struct("seat",
+    Bool32("flags",
         "invisible",
         "locked",
         "driver",
@@ -316,7 +325,7 @@ bipd_seat = Struct("seat",
     )
 
 
-bipd_dead_sphere_shape = Struct("dead_sphere_shape", 
+bipd_dead_sphere_shape = Struct("dead_sphere_shape",
     h3_string_id("name"),
     SInt8("material_index"),
     SInt8("unknown_0", VISIBLE=False),
@@ -349,7 +358,7 @@ bipd_dead_sphere_shape = Struct("dead_sphere_shape",
     )
 
 
-bipd_pill_shape = Struct("pill_shape", 
+bipd_pill_shape = Struct("pill_shape",
     h3_string_id("name"),
     SInt8("material_index"),
     SInt8("unknown_0", VISIBLE=False),
@@ -377,7 +386,7 @@ bipd_pill_shape = Struct("pill_shape",
     )
 
 
-bipd_sphere_shape = Struct("sphere_shape", 
+bipd_sphere_shape = Struct("sphere_shape",
     h3_string_id("name"),
     SInt8("material_index"),
     SInt8("unknown_0", VISIBLE=False),
@@ -410,15 +419,15 @@ bipd_sphere_shape = Struct("sphere_shape",
     )
 
 
-bipd_contact_point = Struct("contact_point", 
+bipd_contact_point = Struct("contact_point",
     h3_string_id("marker_name"),
     ENDIAN=">", SIZE=4
     )
 
 
-bipd_body = Struct("tagdata", 
+bipd_body = Struct("tagdata",
     SEnum16("object_type", *bloc_object_type),
-    Bool16("flags_0", 
+    Bool16("flags_0",
         "does_not_cast_shadow",
         "search_cardinal_direction_lightmaps",
         ("not_a_pathfinding_obstacle", 1 << 3),
@@ -459,7 +468,7 @@ bipd_body = Struct("tagdata",
     h3_reflexive("change_colors", bipd_change_color),
     h3_reflexive("predicted_resources", bipd_predicted_resource),
     h3_reflexive("multiplayer_object_properties", bipd_multiplayer_object_propertie),
-    Bool32("flags_1", 
+    Bool32("flags_1",
         "circular_aiming",
         "destroyed_after_dying",
         "half_speed_interpolation",
@@ -563,7 +572,7 @@ bipd_body = Struct("tagdata",
     h3_dependency("detach_damage"),
     h3_dependency("detached_weapon"),
     float_rad("moving_turning_speed"),
-    Bool32("flags_2", 
+    Bool32("flags_2",
         "turns_without_animating",
         "passes_through_other_bipeds",
         "immune_to_falling_damage",
@@ -594,7 +603,7 @@ bipd_body = Struct("tagdata",
     Float("camera_vertical_movement_scale"),
     Float("camera_exclusion_distance"),
     Float("autoaim_width"),
-    Bool32("lock_on_flags", 
+    Bool32("lock_on_flags",
         "locked_by_human_targeting",
         "locked_by_plasma_targeting",
         "always_locked_by_human_targeting",
@@ -608,7 +617,7 @@ bipd_body = Struct("tagdata",
     SInt16("head_node_index"),
     Float("headshot_acceleration_scale"),
     h3_dependency("area_damage_effect"),
-    Bool32("flags_3", 
+    Bool32("flags_3",
         "centered_at_origin",
         "shape_spherical",
         "use_player_physics",

@@ -1,7 +1,11 @@
-from reclaimer.common_descs import *
-
-from supyr_struct.defs.block_def import BlockDef
-from supyr_struct.util import desc_variant
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
 
 '''
 The formula for calculating the magic for ANY map is as follows:
@@ -18,18 +22,29 @@ To convert a magic relative pointer to an absolute pointer,
 simply do:    abs_pointer = magic_pointer - magic
 '''
 
-def tag_path_pointer(parent=None, new_value=None, **kwargs):
+from reclaimer.common_descs import *
+
+from supyr_struct.defs.block_def import BlockDef
+from supyr_struct.util import desc_variant
+
+def tag_path_pointer(parent=None, new_value=None, magic=0, **kwargs):
+    '''
+    Calculates the pointer value for a tag_path based on the file offset.
+    '''
     if parent is None:
         raise KeyError()
     if new_value is None:
-        return parent.path_offset - kwargs.get('magic', 0)
-    parent.path_offset = new_value + kwargs.get('magic', 0)
+        return parent.path_offset - magic
+    parent.path_offset = new_value + magic
 
 
-def tag_index_array_pointer(parent=None, new_value=None, **kwargs):
+def tag_index_array_pointer(parent=None, new_value=None, magic=0, **kwargs):
+    '''
+    Calculates the pointer value for a tag_index array based on file offset.
+    '''
     if new_value is None:
-        return parent.tag_index_offset - kwargs.get("magic", 0)
-    parent.tag_index_offset = new_value + kwargs.get("magic", 0)
+        return parent.tag_index_offset - magic
+    parent.tag_index_offset = new_value + magic
 
 
 yelo_header = Struct("yelo header",
@@ -109,7 +124,7 @@ yelo_header = Struct("yelo header",
     )
 
 vap_block = Struct("vap_block",
-    # File offset of the compressed block 
+    # File offset of the compressed block
     UInt32("file_offset"),
 
     # File size of the compressed block
