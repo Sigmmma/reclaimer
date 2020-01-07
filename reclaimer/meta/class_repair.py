@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from reclaimer.meta.halo1_map_fast_functions import shader_class_bytes,\
      object_class_bytes, read_reflexive, read_rawdata_ref, iter_reflexive_offs,\
      repair_dependency, repair_dependency_array
@@ -881,7 +890,7 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
                 continue
 
             tag_cls = object_class_bytes[object_type]
-        
+
         repair[sub_tag_id] = tag_cls
 
 

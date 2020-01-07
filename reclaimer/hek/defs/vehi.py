@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from .obje import *
 from .unit import *
 from .objs.obje import ObjeTag
@@ -73,7 +82,7 @@ vehi_attrs = Struct("vehi_attrs",
     dependency('crash_sound', "snd!"),
     dependency('material_effect', "foot"),
     dependency('effect', "effe"),
-    
+
     SIZE=256
     )
 

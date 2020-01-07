@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -14,7 +23,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-cisc_puppet_unknown_2 = Struct("unknown_2", 
+cisc_puppet_unknown_2 = Struct("unknown_2",
     BytesRaw("unknown_0", SIZE=40, VISIBLE=False),
     h3_dependency("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -22,7 +31,7 @@ cisc_puppet_unknown_2 = Struct("unknown_2",
     )
 
 
-cisc_puppet = Struct("puppet", 
+cisc_puppet = Struct("puppet",
     ascii_str32("import_name"),
     h3_string_id("name"),
     h3_string_id("variant"),
@@ -37,7 +46,7 @@ cisc_puppet = Struct("puppet",
     )
 
 
-cisc_shot_lighting = Struct("lighting", 
+cisc_shot_lighting = Struct("lighting",
     h3_dependency("cinematic_light"),
     SInt32("owner_puppet_index"),
     h3_string_id("marker"),
@@ -45,14 +54,14 @@ cisc_shot_lighting = Struct("lighting",
     )
 
 
-cisc_shot_unknown_3_unknown_1 = Struct("unknown_1", 
+cisc_shot_unknown_3_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=4
     )
 
 
-cisc_shot_unknown_3 = Struct("unknown_3", 
+cisc_shot_unknown_3 = Struct("unknown_3",
     BytesRaw("unknown_0", SIZE=32, VISIBLE=False),
     h3_reflexive("unknown_1", cisc_shot_unknown_3_unknown_1),
     VISIBLE=False,
@@ -60,7 +69,7 @@ cisc_shot_unknown_3 = Struct("unknown_3",
     )
 
 
-cisc_shot_sound = Struct("sound", 
+cisc_shot_sound = Struct("sound",
     h3_dependency("sound"),
     SInt32("frame"),
     Float("unknown_0", VISIBLE=False),
@@ -71,7 +80,7 @@ cisc_shot_sound = Struct("sound",
     )
 
 
-cisc_shot_background_sound = Struct("background_sound", 
+cisc_shot_background_sound = Struct("background_sound",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     h3_dependency("sound"),
     SInt32("frame"),
@@ -79,7 +88,7 @@ cisc_shot_background_sound = Struct("background_sound",
     )
 
 
-cisc_shot_effect = Struct("effect", 
+cisc_shot_effect = Struct("effect",
     h3_dependency("effect"),
     SInt32("frame"),
     h3_string_id("marker"),
@@ -88,7 +97,7 @@ cisc_shot_effect = Struct("effect",
     )
 
 
-cisc_shot_function_value = Struct("value", 
+cisc_shot_function_value = Struct("value",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     SInt32("unknown_1", VISIBLE=False),
     Float("unknown_2", VISIBLE=False),
@@ -98,7 +107,7 @@ cisc_shot_function_value = Struct("value",
     )
 
 
-cisc_shot_function = Struct("function", 
+cisc_shot_function = Struct("function",
     SInt32("owner_puppet_index"),
     h3_string_id("target_function_name"),
     h3_reflexive("values", cisc_shot_function_value),
@@ -106,25 +115,25 @@ cisc_shot_function = Struct("function",
     )
 
 
-cisc_shot_cortana_effect = Struct("cortana_effect", 
+cisc_shot_cortana_effect = Struct("cortana_effect",
     h3_dependency("effect"),
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     ENDIAN=">", SIZE=20
     )
 
 
-cisc_shot_import_script = Struct("import_script", 
+cisc_shot_import_script = Struct("import_script",
     SInt32("frame"),
     h3_rawdata_ref("import_script"),
     ENDIAN=">", SIZE=24
     )
 
 
-cisc_shot_frame = Struct("frame", 
+cisc_shot_frame = Struct("frame",
     QStruct("position", INCLUDE=xyz_float),
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     Float("fov"),
-    Bool32("flags", 
+    Bool32("flags",
         "enable_depth_of_field",
         ),
     Float("near_plane"),
@@ -135,7 +144,7 @@ cisc_shot_frame = Struct("frame",
     )
 
 
-cisc_shot = Struct("shot", 
+cisc_shot = Struct("shot",
     h3_rawdata_ref("opening_import_script"),
     SInt32("unknown_0", VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
@@ -155,12 +164,12 @@ cisc_shot = Struct("shot",
     )
 
 
-cisc_texture_camera_shot_frame = Struct("frame", 
+cisc_texture_camera_shot_frame = Struct("frame",
     SInt32("unknown", VISIBLE=False),
     QStruct("position", INCLUDE=xyz_float),
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     Float("fov"),
-    Bool32("flags", 
+    Bool32("flags",
         "enable_depth_of_field",
         ),
     Float("near_plane"),
@@ -171,13 +180,13 @@ cisc_texture_camera_shot_frame = Struct("frame",
     )
 
 
-cisc_texture_camera_shot = Struct("shot", 
+cisc_texture_camera_shot = Struct("shot",
     h3_reflexive("frames", cisc_texture_camera_shot_frame),
     ENDIAN=">", SIZE=12
     )
 
 
-cisc_texture_camera = Struct("texture_camera", 
+cisc_texture_camera = Struct("texture_camera",
     h3_string_id("name"),
     h3_string_id("unknown"),
     h3_reflexive("shots", cisc_texture_camera_shot),
@@ -185,7 +194,7 @@ cisc_texture_camera = Struct("texture_camera",
     )
 
 
-cisc_body = Struct("tagdata", 
+cisc_body = Struct("tagdata",
     h3_string_id("name"),
     ascii_str32("anchor_name"),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -22,20 +31,20 @@ clwd_integration_type = (
     )
 
 
-clwd_vertice = Struct("vertice", 
+clwd_vertice = Struct("vertice",
     QStruct("initial_position", INCLUDE=xyz_float),
     QStruct("uv", INCLUDE=ij_float),
     ENDIAN=">", SIZE=20
     )
 
 
-clwd_indice = Struct("indice", 
+clwd_indice = Struct("indice",
     SInt16("idx"),
     ENDIAN=">", SIZE=2
     )
 
 
-clwd_link = Struct("link", 
+clwd_link = Struct("link",
     SInt16("index_1"),
     SInt16("index_2"),
     Float("default_distance"),
@@ -43,8 +52,8 @@ clwd_link = Struct("link",
     )
 
 
-clwd_body = Struct("tagdata", 
-    Bool32("flags", 
+clwd_body = Struct("tagdata",
+    Bool32("flags",
         "doesn_t_use_wind",
         "uses_grid_attach_top",
         ),

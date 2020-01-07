@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -14,21 +23,21 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-crte_unknown_6_unknown_0 = Struct("unknown_0", 
+crte_unknown_6_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=32, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=32
     )
 
 
-crte_unknown_6_unknown_1_unknown_1_unknown_0 = Struct("unknown_0", 
+crte_unknown_6_unknown_1_unknown_1_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-crte_unknown_6_unknown_1_unknown_1 = Struct("unknown_1", 
+crte_unknown_6_unknown_1_unknown_1 = Struct("unknown_1",
     h3_reflexive("unknown_0", crte_unknown_6_unknown_1_unknown_1_unknown_0),
     h3_rawdata_ref("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -36,7 +45,7 @@ crte_unknown_6_unknown_1_unknown_1 = Struct("unknown_1",
     )
 
 
-crte_unknown_6_unknown_1 = Struct("unknown_1", 
+crte_unknown_6_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown_0", SIZE=28, VISIBLE=False),
     h3_reflexive("unknown_1", crte_unknown_6_unknown_1_unknown_1),
     VISIBLE=False,
@@ -44,7 +53,7 @@ crte_unknown_6_unknown_1 = Struct("unknown_1",
     )
 
 
-crte_unknown_6 = Struct("unknown_6", 
+crte_unknown_6 = Struct("unknown_6",
     h3_reflexive("unknown_0", crte_unknown_6_unknown_0),
     h3_reflexive("unknown_1", crte_unknown_6_unknown_1),
     VISIBLE=False,
@@ -52,14 +61,14 @@ crte_unknown_6 = Struct("unknown_6",
     )
 
 
-crte_unknown_7_unknown_0_unknown_1_unknown_0 = Struct("unknown_0", 
+crte_unknown_7_unknown_0_unknown_1_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-crte_unknown_7_unknown_0_unknown_1 = Struct("unknown_1", 
+crte_unknown_7_unknown_0_unknown_1 = Struct("unknown_1",
     h3_reflexive("unknown_0", crte_unknown_7_unknown_0_unknown_1_unknown_0),
     h3_rawdata_ref("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -67,7 +76,7 @@ crte_unknown_7_unknown_0_unknown_1 = Struct("unknown_1",
     )
 
 
-crte_unknown_7_unknown_0 = Struct("unknown_0", 
+crte_unknown_7_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown_0", SIZE=28, VISIBLE=False),
     h3_reflexive("unknown_1", crte_unknown_7_unknown_0_unknown_1),
     BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
@@ -76,21 +85,21 @@ crte_unknown_7_unknown_0 = Struct("unknown_0",
     )
 
 
-crte_unknown_7_unknown_1 = Struct("unknown_1", 
+crte_unknown_7_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown", SIZE=52, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=52
     )
 
 
-crte_unknown_7_unknown_2_unknown_1_unknown_0 = Struct("unknown_0", 
+crte_unknown_7_unknown_2_unknown_1_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=12, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-crte_unknown_7_unknown_2_unknown_1 = Struct("unknown_1", 
+crte_unknown_7_unknown_2_unknown_1 = Struct("unknown_1",
     h3_reflexive("unknown_0", crte_unknown_7_unknown_2_unknown_1_unknown_0),
     h3_rawdata_ref("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -98,7 +107,7 @@ crte_unknown_7_unknown_2_unknown_1 = Struct("unknown_1",
     )
 
 
-crte_unknown_7_unknown_2 = Struct("unknown_2", 
+crte_unknown_7_unknown_2 = Struct("unknown_2",
     BytesRaw("unknown_0", SIZE=24, VISIBLE=False),
     h3_reflexive("unknown_1", crte_unknown_7_unknown_2_unknown_1),
     BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
@@ -107,14 +116,14 @@ crte_unknown_7_unknown_2 = Struct("unknown_2",
     )
 
 
-crte_unknown_7_unknown_3_unknown_1_unknown_0 = Struct("unknown_0", 
+crte_unknown_7_unknown_3_unknown_1_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-crte_unknown_7_unknown_3_unknown_1 = Struct("unknown_1", 
+crte_unknown_7_unknown_3_unknown_1 = Struct("unknown_1",
     h3_reflexive("unknown_0", crte_unknown_7_unknown_3_unknown_1_unknown_0),
     h3_rawdata_ref("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -122,7 +131,7 @@ crte_unknown_7_unknown_3_unknown_1 = Struct("unknown_1",
     )
 
 
-crte_unknown_7_unknown_3 = Struct("unknown_3", 
+crte_unknown_7_unknown_3 = Struct("unknown_3",
     BytesRaw("unknown_0", SIZE=28, VISIBLE=False),
     h3_reflexive("unknown_1", crte_unknown_7_unknown_3_unknown_1),
     BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
@@ -131,7 +140,7 @@ crte_unknown_7_unknown_3 = Struct("unknown_3",
     )
 
 
-crte_unknown_7 = Struct("unknown_7", 
+crte_unknown_7 = Struct("unknown_7",
     h3_reflexive("unknown_0", crte_unknown_7_unknown_0),
     h3_reflexive("unknown_1", crte_unknown_7_unknown_1),
     h3_reflexive("unknown_2", crte_unknown_7_unknown_2),
@@ -141,21 +150,21 @@ crte_unknown_7 = Struct("unknown_7",
     )
 
 
-crte_unknown_9_unknown_0 = Struct("unknown_0", 
+crte_unknown_9_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=48, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=48
     )
 
 
-crte_unknown_9_unknown_1_unknown_1_unknown_0 = Struct("unknown_0", 
+crte_unknown_9_unknown_1_unknown_1_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-crte_unknown_9_unknown_1_unknown_1 = Struct("unknown_1", 
+crte_unknown_9_unknown_1_unknown_1 = Struct("unknown_1",
     h3_reflexive("unknown_0", crte_unknown_9_unknown_1_unknown_1_unknown_0),
     h3_rawdata_ref("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -163,7 +172,7 @@ crte_unknown_9_unknown_1_unknown_1 = Struct("unknown_1",
     )
 
 
-crte_unknown_9_unknown_1 = Struct("unknown_1", 
+crte_unknown_9_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown_0", SIZE=28, VISIBLE=False),
     h3_reflexive("unknown_1", crte_unknown_9_unknown_1_unknown_1),
     BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
@@ -172,14 +181,14 @@ crte_unknown_9_unknown_1 = Struct("unknown_1",
     )
 
 
-crte_unknown_9_unknown_2 = Struct("unknown_2", 
+crte_unknown_9_unknown_2 = Struct("unknown_2",
     BytesRaw("unknown", SIZE=12, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-crte_unknown_9 = Struct("unknown_9", 
+crte_unknown_9 = Struct("unknown_9",
     h3_reflexive("unknown_0", crte_unknown_9_unknown_0),
     h3_reflexive("unknown_1", crte_unknown_9_unknown_1),
     h3_reflexive("unknown_2", crte_unknown_9_unknown_2),
@@ -188,7 +197,7 @@ crte_unknown_9 = Struct("unknown_9",
     )
 
 
-crte_body = Struct("tagdata", 
+crte_body = Struct("tagdata",
     h3_string_id("unknown_0", VISIBLE=False),
     BytesRaw("unknown_1", SIZE=16, VISIBLE=False),
     h3_rawdata_ref("unknown_2", VISIBLE=False),

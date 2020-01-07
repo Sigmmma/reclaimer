@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from supyr_struct.defs.block_def import BlockDef
 from supyr_struct.field_types import QStruct, Struct, Container, Void,\
      UBitInt, BitStruct, Float, UInt16, UInt32,\

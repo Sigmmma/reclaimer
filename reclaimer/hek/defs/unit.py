@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
@@ -143,7 +152,7 @@ unit_attrs = Struct("unit_attrs",
     QStruct("spawned_actor_count",
         SInt16("from", GUI_NAME=""), SInt16("to"), ORIENT='h',
         ),
-    float_wu_sec('spawned_velocity'),  
+    float_wu_sec('spawned_velocity'),
     float_rad_sec('aiming_velocity_maximum',
                   UNIT_SCALE=irad_per_sec_unit_scale),  # radians/sec
     float_rad_sec_sq('aiming_acceleration_maximum',

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...hek.defs.pctl import *
 
 particle_state = dict(particle_state)
@@ -13,7 +22,7 @@ particle_type[12] = reflexive(
 pctl_body[5] = reflexive(
     "particle_types", particle_type, 4, DYN_NAME_PATH='.name')
 
-    
+
 def get():
     return pctl_def
 

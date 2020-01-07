@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import math
 import re
 import traceback
@@ -288,7 +297,7 @@ class JmsVertex:
 
         norm_len = self.norm_i**2 + self.norm_j**2 + self.norm_k**2
         if norm_len > 0.0:
-            norm_len = math.sqrt(norm_len)
+            norm_len = norm_len**0.5
             self.norm_i /= norm_len
             self.norm_j /= norm_len
             self.norm_k /= norm_len

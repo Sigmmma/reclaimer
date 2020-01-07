@@ -1,16 +1,25 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 scale_comment = """DETAIL SOUND PERIOD SCALING
-As the sound's input scale changes from zero to one, these modifiers move between 
+As the sound's input scale changes from zero to one, these modifiers move between
 the two values specified here. The sound will play using the current scale modifier
 multiplied by the value specified below. (0 values are ignored.)"""
 
 random_spatialisation_comment = """RANDOM SPATIALIZATION
-If the sound specified above is not stereo it will be randomly spatialized according 
-to the following contraints. If both lower and upper bounds are zero for any of 
-the following fields, the sound's position will be randomly selected from 
+If the sound specified above is not stereo it will be randomly spatialized according
+to the following contraints. If both lower and upper bounds are zero for any of
+the following fields, the sound's position will be randomly selected from
 all the possible directions or distances."""
 
 detail_sound = Struct("detail_sound",
@@ -77,7 +86,7 @@ lsnd_body = Struct("tagdata",
     SIZE=84,
     )
 
-    
+
 def get():
     return lsnd_def
 

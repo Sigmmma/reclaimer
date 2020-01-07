@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -16,8 +25,8 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-lens_reflection = Struct("reflection", 
-    Bool16("flags", 
+lens_reflection = Struct("reflection",
+    Bool16("flags",
         "align_rotation_with_screen_center",
         "radius_not_scaled_by_distance",
         "radius_scaled_by_occlusion_factor",
@@ -37,33 +46,33 @@ lens_reflection = Struct("reflection",
     )
 
 
-lens_brightnes = Struct("brightnes", 
+lens_brightnes = Struct("brightnes",
     h3_rawdata_ref("function"),
     ENDIAN=">", SIZE=20
     )
 
 
-lens_color = Struct("color", 
+lens_color = Struct("color",
     h3_rawdata_ref("function"),
     ENDIAN=">", SIZE=20
     )
 
 
-lens_unknown_5 = Struct("unknown_5", 
+lens_unknown_5 = Struct("unknown_5",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     h3_rawdata_ref("function"),
     ENDIAN=">", SIZE=36
     )
 
 
-lens_rotation = Struct("rotation", 
+lens_rotation = Struct("rotation",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     h3_rawdata_ref("function"),
     ENDIAN=">", SIZE=36
     )
 
 
-lens_body = Struct("tagdata", 
+lens_body = Struct("tagdata",
     float_rad("falloff_angle"),
     float_rad("cutoff_angle"),
     Float("occlusion_radius"),

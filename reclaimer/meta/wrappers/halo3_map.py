@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import os
 
 from math import ceil, log
@@ -141,7 +150,7 @@ class Halo3Map(HaloMap):
         (0x4B7, 0xC11), (0x0, 0x4B7), (0x0, 0xA7D),
         (0x0, 0xB0F),   (0x0, 0xBAF), (0x0, 0xB63),
         (0x0, 0xBBF),   (0x0, 0xBF0), (0x0, 0xC04))
-    
+
     data_extractors = data_extraction.h3_data_extractors
 
     def __init__(self, maps=None):

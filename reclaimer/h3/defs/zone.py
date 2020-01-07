@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -19,7 +28,7 @@ from .play import play_body
 from supyr_struct.defs.tag_def import TagDef
 
 
-zone_resource_type = Struct("resource_type", 
+zone_resource_type = Struct("resource_type",
     BytesRaw("guid", SIZE=16),
     Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=4),
     h3_string_id("name"),
@@ -27,14 +36,14 @@ zone_resource_type = Struct("resource_type",
     )
 
 
-zone_resource_structure_type = Struct("resource_structure_type", 
+zone_resource_structure_type = Struct("resource_structure_type",
     BytesRaw("guid", SIZE=16),
     h3_string_id("name"),
     ENDIAN=">", SIZE=20
     )
 
 
-zone_tag_resource_resource_fixup = Struct("resource_fixup", 
+zone_tag_resource_resource_fixup = Struct("resource_fixup",
     SInt32("block_offset"),
     h3_page_offset_info("address_info"),
     ENDIAN=">", SIZE=8,
@@ -44,7 +53,7 @@ Address: Fix-up address(either in the data sub-buffer, or a cache-resource offse
     )
 
 
-zone_tag_resource_resource_definition_fixup = Struct("resource_definition_fixup", 
+zone_tag_resource_resource_definition_fixup = Struct("resource_definition_fixup",
     h3_page_offset_info("offset_info"),
     dyn_senum32("resource_structure_type",
         DYN_NAME_PATH="........resource_structure_types.STEPTREE[DYN_I].name.string",
@@ -54,7 +63,7 @@ zone_tag_resource_resource_definition_fixup = Struct("resource_definition_fixup"
     )
 
 
-zone_tag_resource = Struct("tag_resource", 
+zone_tag_resource = Struct("tag_resource",
     h3_dependency("parent_tag"),
     UInt16("salt"),
     dyn_senum8("resource_type",
@@ -77,7 +86,7 @@ zone_tag_resource = Struct("tag_resource",
     )
 
 
-zone_zoneset_raw_pool = Struct("raw_pool", 
+zone_zoneset_raw_pool = Struct("raw_pool",
     Bool32("active_members", *("active_member_%s" % i for i in range(32))),
     ENDIAN=">", SIZE=4
     )
@@ -100,7 +109,7 @@ zone_zoneset_resource_type = QStruct("resource_type",
     )
 
 
-zone_zoneset = Struct("zoneset", 
+zone_zoneset = Struct("zoneset",
     h3_reflexive("required_raw_pool", zone_zoneset_raw_pool),
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
     h3_reflexive("optional_raw_pool", zone_zoneset_raw_pool),
@@ -115,7 +124,7 @@ zone_zoneset = Struct("zoneset",
     )
 
 
-zone_scenario_zoneset_group = Struct("scenario_zoneset_group", 
+zone_scenario_zoneset_group = Struct("scenario_zoneset_group",
     h3_string_id("name"),
     SInt32("bsp_group_index"),
     Bool32("import_loaded_bsps", *("bsp_%s" % i for i in range(32))),
@@ -129,13 +138,13 @@ zone_scenario_zoneset_group = Struct("scenario_zoneset_group",
     )
 
 
-zone_scenario_bsp = Struct("scenario_bsp", 
+zone_scenario_bsp = Struct("scenario_bsp",
     h3_dependency("bsp"),
     ENDIAN=">", SIZE=16
     )
 
 
-zone_unknown_4 = QStruct("unknown_4", 
+zone_unknown_4 = QStruct("unknown_4",
     UInt32("unknown0"),
     UInt32("unknown1"),
     UInt32("unknown2"),
@@ -147,13 +156,13 @@ zone_unknown_4 = QStruct("unknown_4",
     )
 
 
-zone_prediction_a = QStruct("prediction_a", 
+zone_prediction_a = QStruct("prediction_a",
     UInt32("key"),
     ENDIAN=">", SIZE=4
     )
 
 
-zone_prediction_b = QStruct("prediction_b", 
+zone_prediction_b = QStruct("prediction_b",
     SInt16("overall_index"),
     SInt16("a_count"),
     SInt32("a_index"),
@@ -161,14 +170,14 @@ zone_prediction_b = QStruct("prediction_b",
     )
 
 
-zone_prediction_c = QStruct("prediction_c", 
+zone_prediction_c = QStruct("prediction_c",
     SInt16("overall_index"),
     SInt16("b_index"),
     ENDIAN=">", SIZE=4
     )
 
 
-zone_prediction_d_tag = QStruct("prediction_d_tag", 
+zone_prediction_d_tag = QStruct("prediction_d_tag",
     SInt16("c_count"),
     SInt16("c_index"),
     SInt16("a_count"),
@@ -177,7 +186,7 @@ zone_prediction_d_tag = QStruct("prediction_d_tag",
     )
 
 
-zone_prediction_d2_tag = Struct("prediction_d2_tag", 
+zone_prediction_d2_tag = Struct("prediction_d2_tag",
     dependency_uint32("tag", VISIBLE=False),
     SInt32("first_value"),
     SInt32("second_value"),
@@ -185,7 +194,7 @@ zone_prediction_d2_tag = Struct("prediction_d2_tag",
     )
 
 
-zone_body = Struct("tagdata", 
+zone_body = Struct("tagdata",
     SEnum16("map_type", *zone_map_type),
     SInt16("flags"),
     h3_reflexive("resource_types", zone_resource_type,

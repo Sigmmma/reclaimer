@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...hek.defs.cdmg import *
 from ..common_descs import *
 
@@ -22,7 +31,7 @@ cdmg_body[5][2] = Bool32("flags",
      GUI_NAME: "causes multiplayer headshots"},
     "infection_form_pop",
     )
-    
+
 def get():
     return cdmg_def
 

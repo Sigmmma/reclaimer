@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -308,23 +317,23 @@ mulg_runtime_vip_event_event = (
     )
 
 
-mulg_universal_team_color = Struct("team_color", 
+mulg_universal_team_color = Struct("team_color",
     color_rgb_float("color"),
     ENDIAN=">", SIZE=12
     )
 
 
-mulg_universal_armor_customization_region_permuation_variant = Struct("variant", 
+mulg_universal_armor_customization_region_permuation_variant = Struct("variant",
     h3_string_id("region"),
     h3_string_id("permutation"),
     ENDIAN=">", SIZE=8
     )
 
 
-mulg_universal_armor_customization_region_permuation = Struct("permuation", 
+mulg_universal_armor_customization_region_permuation = Struct("permuation",
     h3_string_id("name"),
     h3_string_id("description"),
-    Bool16("flags", 
+    Bool16("flags",
         "has_requirement",
         "has_special_requirement",
         ),
@@ -335,21 +344,21 @@ mulg_universal_armor_customization_region_permuation = Struct("permuation",
     )
 
 
-mulg_universal_armor_customization_region = Struct("region", 
+mulg_universal_armor_customization_region = Struct("region",
     h3_string_id("name"),
     h3_reflexive("permuations", mulg_universal_armor_customization_region_permuation),
     ENDIAN=">", SIZE=16
     )
 
 
-mulg_universal_armor_customization = Struct("armor_customization", 
+mulg_universal_armor_customization = Struct("armor_customization",
     h3_string_id("character_name"),
     h3_reflexive("regions", mulg_universal_armor_customization_region),
     ENDIAN=">", SIZE=16
     )
 
 
-mulg_universal_game_variant_weapon = Struct("game_variant_weapon", 
+mulg_universal_game_variant_weapon = Struct("game_variant_weapon",
     h3_string_id("name"),
     Float("random_chance"),
     h3_dependency("weapon"),
@@ -357,49 +366,49 @@ mulg_universal_game_variant_weapon = Struct("game_variant_weapon",
     )
 
 
-mulg_universal_game_variant_vehicle = Struct("game_variant_vehicle", 
+mulg_universal_game_variant_vehicle = Struct("game_variant_vehicle",
     h3_string_id("name"),
     h3_dependency("vehicle"),
     ENDIAN=">", SIZE=20
     )
 
 
-mulg_universal_game_variant_equipment = Struct("game_variant_equipment", 
+mulg_universal_game_variant_equipment = Struct("game_variant_equipment",
     h3_string_id("name"),
     h3_dependency("grenade"),
     ENDIAN=">", SIZE=20
     )
 
 
-mulg_universal_weapon_set_substitution = Struct("substitution", 
+mulg_universal_weapon_set_substitution = Struct("substitution",
     h3_string_id("original_weapon"),
     h3_string_id("substituted_weapon"),
     ENDIAN=">", SIZE=8
     )
 
 
-mulg_universal_weapon_set = Struct("weapon_set", 
+mulg_universal_weapon_set = Struct("weapon_set",
     h3_string_id("name"),
     h3_reflexive("substitutions", mulg_universal_weapon_set_substitution),
     ENDIAN=">", SIZE=16
     )
 
 
-mulg_universal_vehicle_set_substitution = Struct("substitution", 
+mulg_universal_vehicle_set_substitution = Struct("substitution",
     h3_string_id("original_vehicle"),
     h3_string_id("substituted_vehicle"),
     ENDIAN=">", SIZE=8
     )
 
 
-mulg_universal_vehicle_set = Struct("vehicle_set", 
+mulg_universal_vehicle_set = Struct("vehicle_set",
     h3_string_id("name"),
     h3_reflexive("substitutions", mulg_universal_vehicle_set_substitution),
     ENDIAN=">", SIZE=16
     )
 
 
-mulg_universal = Struct("universal", 
+mulg_universal = Struct("universal",
     h3_dependency("random_player_name_strings"),
     h3_dependency("team_name_strings"),
     h3_reflexive("team_colors", mulg_universal_team_color),
@@ -417,19 +426,19 @@ mulg_universal = Struct("universal",
     )
 
 
-mulg_runtime_sound = Struct("sound", 
+mulg_runtime_sound = Struct("sound",
     h3_dependency("sound"),
     ENDIAN=">", SIZE=16
     )
 
 
-mulg_runtime_looping_sound = Struct("looping_sound", 
+mulg_runtime_looping_sound = Struct("looping_sound",
     h3_dependency("looping_sound"),
     ENDIAN=">", SIZE=16
     )
 
 
-mulg_runtime_general_event = Struct("general_event", 
+mulg_runtime_general_event = Struct("general_event",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *mulg_runtime_general_event_type),
     SEnum16("event", *mulg_runtime_general_event_event),
@@ -448,7 +457,7 @@ mulg_runtime_general_event = Struct("general_event",
     SInt32("primary_string_duration"),
     h3_string_id("plural_display_string"),
     Float("sound_delay_announcer_only"),
-    Bool16("sound_flags", 
+    Bool16("sound_flags",
         "announcer_sound",
         ),
     SInt16("unknown_3", VISIBLE=False),
@@ -469,7 +478,7 @@ mulg_runtime_general_event = Struct("general_event",
     )
 
 
-mulg_runtime_flavor_event = Struct("flavor_event", 
+mulg_runtime_flavor_event = Struct("flavor_event",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *mulg_runtime_general_event_type),
     SEnum16("event", *mulg_runtime_flavor_event_event),
@@ -488,7 +497,7 @@ mulg_runtime_flavor_event = Struct("flavor_event",
     SInt32("primary_string_duration"),
     h3_string_id("plural_display_string"),
     Float("sound_delay_announcer_only"),
-    Bool16("sound_flags", 
+    Bool16("sound_flags",
         "announcer_sound",
         ),
     SInt16("unknown_3", VISIBLE=False),
@@ -509,7 +518,7 @@ mulg_runtime_flavor_event = Struct("flavor_event",
     )
 
 
-mulg_runtime_slayer_event = Struct("slayer_event", 
+mulg_runtime_slayer_event = Struct("slayer_event",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *mulg_runtime_general_event_type),
     SEnum16("event", *mulg_runtime_slayer_event_event),
@@ -528,7 +537,7 @@ mulg_runtime_slayer_event = Struct("slayer_event",
     SInt32("primary_string_duration"),
     h3_string_id("plural_display_string"),
     Float("sound_delay_announcer_only"),
-    Bool16("sound_flags", 
+    Bool16("sound_flags",
         "announcer_sound",
         ),
     SInt16("unknown_3", VISIBLE=False),
@@ -549,7 +558,7 @@ mulg_runtime_slayer_event = Struct("slayer_event",
     )
 
 
-mulg_runtime_ctf_event = Struct("ctf_event", 
+mulg_runtime_ctf_event = Struct("ctf_event",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *mulg_runtime_general_event_type),
     SEnum16("event", *mulg_runtime_ctf_event_event),
@@ -568,7 +577,7 @@ mulg_runtime_ctf_event = Struct("ctf_event",
     SInt32("primary_string_duration"),
     h3_string_id("plural_display_string"),
     Float("sound_delay_announcer_only"),
-    Bool16("sound_flags", 
+    Bool16("sound_flags",
         "announcer_sound",
         ),
     SInt16("unknown_3", VISIBLE=False),
@@ -589,7 +598,7 @@ mulg_runtime_ctf_event = Struct("ctf_event",
     )
 
 
-mulg_runtime_oddball_event = Struct("oddball_event", 
+mulg_runtime_oddball_event = Struct("oddball_event",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *mulg_runtime_general_event_type),
     SEnum16("event", *mulg_runtime_oddball_event_event),
@@ -608,7 +617,7 @@ mulg_runtime_oddball_event = Struct("oddball_event",
     SInt32("primary_string_duration"),
     h3_string_id("plural_display_string"),
     Float("sound_delay_announcer_only"),
-    Bool16("sound_flags", 
+    Bool16("sound_flags",
         "announcer_sound",
         ),
     SInt16("unknown_3", VISIBLE=False),
@@ -629,7 +638,7 @@ mulg_runtime_oddball_event = Struct("oddball_event",
     )
 
 
-mulg_runtime_king_of_the_hill_event = Struct("king_of_the_hill_event", 
+mulg_runtime_king_of_the_hill_event = Struct("king_of_the_hill_event",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *mulg_runtime_general_event_type),
     SEnum16("event", *mulg_runtime_king_of_the_hill_event_event),
@@ -648,7 +657,7 @@ mulg_runtime_king_of_the_hill_event = Struct("king_of_the_hill_event",
     SInt32("primary_string_duration"),
     h3_string_id("plural_display_string"),
     Float("sound_delay_announcer_only"),
-    Bool16("sound_flags", 
+    Bool16("sound_flags",
         "announcer_sound",
         ),
     SInt16("unknown_3", VISIBLE=False),
@@ -669,7 +678,7 @@ mulg_runtime_king_of_the_hill_event = Struct("king_of_the_hill_event",
     )
 
 
-mulg_runtime_vip_event = Struct("vip_event", 
+mulg_runtime_vip_event = Struct("vip_event",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *mulg_runtime_general_event_type),
     SEnum16("event", *mulg_runtime_vip_event_event),
@@ -688,7 +697,7 @@ mulg_runtime_vip_event = Struct("vip_event",
     SInt32("primary_string_duration"),
     h3_string_id("plural_display_string"),
     Float("sound_delay_announcer_only"),
-    Bool16("sound_flags", 
+    Bool16("sound_flags",
         "announcer_sound",
         ),
     SInt16("unknown_3", VISIBLE=False),
@@ -709,7 +718,7 @@ mulg_runtime_vip_event = Struct("vip_event",
     )
 
 
-mulg_runtime_juggernaut_event = Struct("juggernaut_event", 
+mulg_runtime_juggernaut_event = Struct("juggernaut_event",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *mulg_runtime_general_event_type),
     SEnum16("event", *mulg_runtime_juggernaut_event_event),
@@ -728,7 +737,7 @@ mulg_runtime_juggernaut_event = Struct("juggernaut_event",
     SInt32("primary_string_duration"),
     h3_string_id("plural_display_string"),
     Float("sound_delay_announcer_only"),
-    Bool16("sound_flags", 
+    Bool16("sound_flags",
         "announcer_sound",
         ),
     SInt16("unknown_3", VISIBLE=False),
@@ -749,7 +758,7 @@ mulg_runtime_juggernaut_event = Struct("juggernaut_event",
     )
 
 
-mulg_runtime_territories_event = Struct("territories_event", 
+mulg_runtime_territories_event = Struct("territories_event",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *mulg_runtime_general_event_type),
     SEnum16("event", *mulg_runtime_territories_event_event),
@@ -768,7 +777,7 @@ mulg_runtime_territories_event = Struct("territories_event",
     SInt32("primary_string_duration"),
     h3_string_id("plural_display_string"),
     Float("sound_delay_announcer_only"),
-    Bool16("sound_flags", 
+    Bool16("sound_flags",
         "announcer_sound",
         ),
     SInt16("unknown_3", VISIBLE=False),
@@ -789,7 +798,7 @@ mulg_runtime_territories_event = Struct("territories_event",
     )
 
 
-mulg_runtime_assault_event = Struct("assault_event", 
+mulg_runtime_assault_event = Struct("assault_event",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *mulg_runtime_general_event_type),
     SEnum16("event", *mulg_runtime_assault_event_event),
@@ -808,7 +817,7 @@ mulg_runtime_assault_event = Struct("assault_event",
     SInt32("primary_string_duration"),
     h3_string_id("plural_display_string"),
     Float("sound_delay_announcer_only"),
-    Bool16("sound_flags", 
+    Bool16("sound_flags",
         "announcer_sound",
         ),
     SInt16("unknown_3", VISIBLE=False),
@@ -829,7 +838,7 @@ mulg_runtime_assault_event = Struct("assault_event",
     )
 
 
-mulg_runtime_infection_event = Struct("infection_event", 
+mulg_runtime_infection_event = Struct("infection_event",
     Bool16("flags", *unknown_flags_16),
     SEnum16("type", *mulg_runtime_general_event_type),
     SEnum16("event", *mulg_runtime_infection_event_event),
@@ -848,7 +857,7 @@ mulg_runtime_infection_event = Struct("infection_event",
     SInt32("primary_string_duration"),
     h3_string_id("plural_display_string"),
     Float("sound_delay_announcer_only"),
-    Bool16("sound_flags", 
+    Bool16("sound_flags",
         "announcer_sound",
         ),
     SInt16("unknown_3", VISIBLE=False),
@@ -869,7 +878,7 @@ mulg_runtime_infection_event = Struct("infection_event",
     )
 
 
-mulg_runtime_multiplayer_constant_weapon = Struct("weapon", 
+mulg_runtime_multiplayer_constant_weapon = Struct("weapon",
     h3_dependency("weapon", VISIBLE=False),
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     VISIBLE=False,
@@ -877,7 +886,7 @@ mulg_runtime_multiplayer_constant_weapon = Struct("weapon",
     )
 
 
-mulg_runtime_multiplayer_constant_vehicle = Struct("vehicle", 
+mulg_runtime_multiplayer_constant_vehicle = Struct("vehicle",
     h3_dependency("vehicle", VISIBLE=False),
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     VISIBLE=False,
@@ -885,7 +894,7 @@ mulg_runtime_multiplayer_constant_vehicle = Struct("vehicle",
     )
 
 
-mulg_runtime_multiplayer_constant_projectile = Struct("projectile", 
+mulg_runtime_multiplayer_constant_projectile = Struct("projectile",
     h3_dependency("projectile", VISIBLE=False),
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
@@ -895,7 +904,7 @@ mulg_runtime_multiplayer_constant_projectile = Struct("projectile",
     )
 
 
-mulg_runtime_multiplayer_constant_equipment = Struct("equipment", 
+mulg_runtime_multiplayer_constant_equipment = Struct("equipment",
     h3_dependency("equipment", VISIBLE=False),
     Float("unknown", VISIBLE=False),
     VISIBLE=False,
@@ -903,7 +912,7 @@ mulg_runtime_multiplayer_constant_equipment = Struct("equipment",
     )
 
 
-mulg_runtime_multiplayer_constant = Struct("multiplayer_constant", 
+mulg_runtime_multiplayer_constant = Struct("multiplayer_constant",
     Array("unknown_array_0", SUB_STRUCT=Float("unknown"), SIZE=26, VISIBLE=False),
     h3_reflexive("weapons", mulg_runtime_multiplayer_constant_weapon),
     h3_reflexive("vehicles", mulg_runtime_multiplayer_constant_vehicle),
@@ -950,7 +959,7 @@ mulg_runtime_multiplayer_constant = Struct("multiplayer_constant",
     )
 
 
-mulg_runtime_state_response = Struct("state_response", 
+mulg_runtime_state_response = Struct("state_response",
     Bool16("flags", *unknown_flags_16),
     SInt16("unknown_0", VISIBLE=False),
     SEnum16("state", *mulg_runtime_state_response_state),
@@ -963,7 +972,7 @@ mulg_runtime_state_response = Struct("state_response",
     )
 
 
-mulg_runtime = Struct("runtime", 
+mulg_runtime = Struct("runtime",
     h3_dependency("sandbox_editor_unit"),
     h3_dependency("sandbox_editor_object"),
     h3_dependency("flag"),
@@ -1006,7 +1015,7 @@ mulg_runtime = Struct("runtime",
     )
 
 
-mulg_body = Struct("tagdata", 
+mulg_body = Struct("tagdata",
     h3_reflexive("universal", mulg_universal),
     h3_reflexive("runtime", mulg_runtime),
     ENDIAN=">", SIZE=24

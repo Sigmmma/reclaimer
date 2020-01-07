@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -84,7 +93,7 @@ char_weapons_propertie_special_fire_situation = (
     )
 
 
-char_variant_dialogue_variation = Struct("dialogue_variation", 
+char_variant_dialogue_variation = Struct("dialogue_variation",
     h3_dependency("dialogue"),
     h3_string_id("name"),
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
@@ -92,7 +101,7 @@ char_variant_dialogue_variation = Struct("dialogue_variation",
     )
 
 
-char_variant = Struct("variant", 
+char_variant = Struct("variant",
     h3_string_id("variant_name"),
     SInt16("variant_index"),
     SInt16("unknown", VISIBLE=False),
@@ -101,7 +110,7 @@ char_variant = Struct("variant",
     )
 
 
-char_unit_dialogue_dialogue_variation = Struct("dialogue_variation", 
+char_unit_dialogue_dialogue_variation = Struct("dialogue_variation",
     h3_dependency("dialogue"),
     h3_string_id("name"),
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
@@ -109,14 +118,14 @@ char_unit_dialogue_dialogue_variation = Struct("dialogue_variation",
     )
 
 
-char_unit_dialogue = Struct("unit_dialogue", 
+char_unit_dialogue = Struct("unit_dialogue",
     h3_reflexive("dialogue_variations", char_unit_dialogue_dialogue_variation),
     ENDIAN=">", SIZE=12
     )
 
 
-char_general_propertie = Struct("general_propertie", 
-    Bool32("flags", 
+char_general_propertie = Struct("general_propertie",
+    Bool32("flags",
         "swarm",
         "flying",
         "dual_wields",
@@ -137,8 +146,8 @@ char_general_propertie = Struct("general_propertie",
     )
 
 
-char_vitality_propertie = Struct("vitality_propertie", 
-    Bool32("vitality_flags", 
+char_vitality_propertie = Struct("vitality_propertie",
+    Bool32("vitality_flags",
         "can_revive_on_death",
         ),
     Float("normal_body_vitality"),
@@ -172,7 +181,7 @@ char_vitality_propertie = Struct("vitality_propertie",
     )
 
 
-char_placement_propertie = Struct("placement_propertie", 
+char_placement_propertie = Struct("placement_propertie",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     Float("few_upgrade_chance_easy"),
     Float("few_upgrade_chance_normal"),
@@ -190,7 +199,7 @@ char_placement_propertie = Struct("placement_propertie",
     )
 
 
-char_perception_propertie = Struct("perception_propertie", 
+char_perception_propertie = Struct("perception_propertie",
     SInt32("perception_flags"),
     Float("max_vision_distance"),
     float_rad("central_vision_angle"),
@@ -206,7 +215,7 @@ char_perception_propertie = Struct("perception_propertie",
     )
 
 
-char_look_propertie = Struct("look_propertie", 
+char_look_propertie = Struct("look_propertie",
     yp_float_rad("maximum_aiming_deviation"),
     yp_float_rad("maximum_looking_deviation"),
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
@@ -222,8 +231,8 @@ char_look_propertie = Struct("look_propertie",
     )
 
 
-char_movement_propertie = Struct("movement_propertie", 
-    Bool32("movement_flags", 
+char_movement_propertie = Struct("movement_propertie",
+    Bool32("movement_flags",
         ("prefer_to_combat_near_friends", 1 << 2),
         ),
     Float("pathfinding_radius"),
@@ -240,14 +249,14 @@ char_movement_propertie = Struct("movement_propertie",
     )
 
 
-char_unknown_0 = Struct("unknown_0", 
+char_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=24, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=24
     )
 
 
-char_swarm_propertie = Struct("swarm_propertie", 
+char_swarm_propertie = Struct("swarm_propertie",
     SInt16("scatter_killed_count"),
     SInt16("unknown_0", VISIBLE=False),
     BytesRaw("unknown_1", SIZE=8, VISIBLE=False),
@@ -264,13 +273,13 @@ char_swarm_propertie = Struct("swarm_propertie",
     )
 
 
-char_ready_propertie = Struct("ready_propertie", 
+char_ready_propertie = Struct("ready_propertie",
     QStruct("ready_time_bounds", INCLUDE=from_to),
     ENDIAN=">", SIZE=8
     )
 
 
-char_engage_propertie = Struct("engage_propertie", 
+char_engage_propertie = Struct("engage_propertie",
     Bool32("engage_flags", *unknown_flags_32),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     Float("crouch_danger_threshold"),
@@ -282,7 +291,7 @@ char_engage_propertie = Struct("engage_propertie",
     )
 
 
-char_charge_propertie_unknown_2 = Struct("unknown_2", 
+char_charge_propertie_unknown_2 = Struct("unknown_2",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     SInt16("unknown_2", VISIBLE=False),
@@ -291,8 +300,8 @@ char_charge_propertie_unknown_2 = Struct("unknown_2",
     )
 
 
-char_charge_propertie = Struct("charge_propertie", 
-    Bool32("charge_flags", 
+char_charge_propertie = Struct("charge_propertie",
+    Bool32("charge_flags",
         "offhand_melee_allowed",
         ),
     Float("melee_consider_range"),
@@ -315,7 +324,7 @@ char_charge_propertie = Struct("charge_propertie",
     )
 
 
-char_evasion_propertie = Struct("evasion_propertie", 
+char_evasion_propertie = Struct("evasion_propertie",
     Float("evasion_danger_threshold"),
     Float("evasion_delay_timer"),
     Float("evasion_chance"),
@@ -325,7 +334,7 @@ char_evasion_propertie = Struct("evasion_propertie",
     )
 
 
-char_cover_propertie = Struct("cover_propertie", 
+char_cover_propertie = Struct("cover_propertie",
     Bool32("cover_flags", *unknown_flags_32),
     QStruct("hide_behind_cover_time", INCLUDE=from_to),
     Float("cover_vitality_threshold"),
@@ -345,8 +354,8 @@ char_cover_propertie = Struct("cover_propertie",
     )
 
 
-char_retreat_propertie = Struct("retreat_propertie", 
-    Bool32("retreat_flags", 
+char_retreat_propertie = Struct("retreat_propertie",
+    Bool32("retreat_flags",
         "zig_zag_when_fleeing",
         ),
     Float("shield_threshold"),
@@ -365,7 +374,7 @@ char_retreat_propertie = Struct("retreat_propertie",
     )
 
 
-char_search_propertie = Struct("search_propertie", 
+char_search_propertie = Struct("search_propertie",
     Bool32("search_flags", *unknown_flags_32),
     QStruct("search_time", INCLUDE=from_to),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
@@ -375,7 +384,7 @@ char_search_propertie = Struct("search_propertie",
     )
 
 
-char_pre_search_propertie = Struct("pre_search_propertie", 
+char_pre_search_propertie = Struct("pre_search_propertie",
     Bool32("pre_search_flags", *unknown_flags_32),
     QStruct("minimum_presearch_time", INCLUDE=from_to),
     QStruct("maximum_presearch_time", INCLUDE=from_to),
@@ -388,14 +397,14 @@ char_pre_search_propertie = Struct("pre_search_propertie",
     )
 
 
-char_idle_propertie = Struct("idle_propertie", 
+char_idle_propertie = Struct("idle_propertie",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     QStruct("idle_pose_delay_time", INCLUDE=from_to),
     ENDIAN=">", SIZE=12
     )
 
 
-char_vocalization_propertie = Struct("vocalization_propertie", 
+char_vocalization_propertie = Struct("vocalization_propertie",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     Float("look_comment_time"),
     Float("look_long_comment_time"),
@@ -403,8 +412,8 @@ char_vocalization_propertie = Struct("vocalization_propertie",
     )
 
 
-char_boarding_propertie = Struct("boarding_propertie", 
-    Bool32("flags", 
+char_boarding_propertie = Struct("boarding_propertie",
+    Bool32("flags",
         "airborne_boarding",
         ),
     Float("max_distance"),
@@ -415,21 +424,21 @@ char_boarding_propertie = Struct("boarding_propertie",
     )
 
 
-char_unknown_2 = Struct("unknown_2", 
+char_unknown_2 = Struct("unknown_2",
     BytesRaw("unknown", SIZE=8, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=8
     )
 
 
-char_unknown_3 = Struct("unknown_3", 
+char_unknown_3 = Struct("unknown_3",
     BytesRaw("unknown", SIZE=24, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=24
     )
 
 
-char_weapons_propertie_firing_pattern = Struct("firing_pattern", 
+char_weapons_propertie_firing_pattern = Struct("firing_pattern",
     Float("rate_of_fire"),
     Float("target_tracking"),
     Float("target_leading"),
@@ -447,8 +456,8 @@ char_weapons_propertie_firing_pattern = Struct("firing_pattern",
     )
 
 
-char_weapons_propertie = Struct("weapons_propertie", 
-    Bool32("weapon_flags", 
+char_weapons_propertie = Struct("weapons_propertie",
+    Bool32("weapon_flags",
         ("must_crouch_to_shoot", 1 << 1),
         ),
     h3_dependency("weapon"),
@@ -489,7 +498,7 @@ char_weapons_propertie = Struct("weapons_propertie",
     )
 
 
-char_firing_pattern_propertie_firing_pattern = Struct("firing_pattern", 
+char_firing_pattern_propertie_firing_pattern = Struct("firing_pattern",
     Float("rate_of_fire"),
     Float("target_tracking"),
     Float("target_leading"),
@@ -507,14 +516,14 @@ char_firing_pattern_propertie_firing_pattern = Struct("firing_pattern",
     )
 
 
-char_firing_pattern_propertie = Struct("firing_pattern_propertie", 
+char_firing_pattern_propertie = Struct("firing_pattern_propertie",
     h3_dependency("weapon"),
     h3_reflexive("firing_patterns", char_firing_pattern_propertie_firing_pattern),
     ENDIAN=">", SIZE=28
     )
 
 
-char_grenades_propertie = Struct("grenades_propertie", 
+char_grenades_propertie = Struct("grenades_propertie",
     SInt32("grenades_flags"),
     SEnum16("grenade_type", *char_grenades_propertie_grenade_type),
     SEnum16("trajectory_type", *char_grenades_propertie_trajectory_type),
@@ -534,10 +543,10 @@ char_grenades_propertie = Struct("grenades_propertie",
     )
 
 
-char_vehicle_propertie = Struct("vehicle_propertie", 
+char_vehicle_propertie = Struct("vehicle_propertie",
     h3_dependency("unit"),
     h3_dependency("style"),
-    Bool32("vehicle_flags", 
+    Bool32("vehicle_flags",
         "passengers_adopt_original_squad",
         ),
     Float("ai_pathfinding_radius"),
@@ -588,7 +597,7 @@ char_vehicle_propertie = Struct("vehicle_propertie",
     )
 
 
-char_morph_propertie = Struct("morph_propertie", 
+char_morph_propertie = Struct("morph_propertie",
     h3_dependency("morph_character_1"),
     h3_dependency("morph_character_2"),
     h3_dependency("morph_character_3"),
@@ -605,7 +614,7 @@ char_morph_propertie = Struct("morph_propertie",
     )
 
 
-char_equipment_propertie_usage_condition = Struct("usage_condition", 
+char_equipment_propertie_usage_condition = Struct("usage_condition",
     SInt16("unknown_0"),
     SInt16("unknown_1"),
     Float("unknown_2"),
@@ -614,7 +623,7 @@ char_equipment_propertie_usage_condition = Struct("usage_condition",
     )
 
 
-char_equipment_propertie = Struct("equipment_propertie", 
+char_equipment_propertie = Struct("equipment_propertie",
     h3_dependency("equipment"),
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     Float("usage_chance"),
@@ -623,8 +632,8 @@ char_equipment_propertie = Struct("equipment_propertie",
     )
 
 
-char_metagame_propertie = Struct("metagame_propertie", 
-    Bool8("flags", 
+char_metagame_propertie = Struct("metagame_propertie",
+    Bool8("flags",
         "must_have_active_seats",
         ),
     SEnum8("unit", *bloc_metagame_propertie_unit),
@@ -636,7 +645,7 @@ char_metagame_propertie = Struct("metagame_propertie",
     )
 
 
-char_act_attachment = Struct("act_attachment", 
+char_act_attachment = Struct("act_attachment",
     h3_string_id("name"),
     h3_dependency("child_object"),
     h3_string_id("child_marker"),
@@ -645,7 +654,7 @@ char_act_attachment = Struct("act_attachment",
     )
 
 
-char_body = Struct("tagdata", 
+char_body = Struct("tagdata",
     Bool32("character_flags", *unknown_flags_32),
     h3_dependency("parent_character"),
     h3_dependency("unit"),
