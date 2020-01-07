@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from .coll import *
 from .objs.sbsp import SbspTag
 from supyr_struct.defs.block_def import BlockDef
@@ -9,7 +18,7 @@ cluster_fog_tooltip = (
 
 
 # the order is an array of vertices first, then an array of lightmap vertices.
-# 
+#
 uncompressed_vertex = QStruct("uncompressed_vertex",
     Float('position_x'), Float('position_y'), Float('position_z'),
     Float('normal_i'),   Float('normal_j'),   Float('normal_k'),

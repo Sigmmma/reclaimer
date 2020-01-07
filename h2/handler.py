@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from reclaimer.h2.defs import __all__ as all_def_names
 from reclaimer.hek.handler import HaloHandler
 from reclaimer.data_extraction import h2_data_extractors

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,13 +27,13 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-sddt_design_mopp_code_data = Struct("data", 
+sddt_design_mopp_code_data = Struct("data",
     UInt8("data_byte"),
     ENDIAN=">", SIZE=1
     )
 
 
-sddt_design_mopp_code = Struct("design_mopp_code", 
+sddt_design_mopp_code = Struct("design_mopp_code",
     SInt32("unknown_0", VISIBLE=False),
     SInt16("size_0"),
     SInt16("size_1"),
@@ -42,14 +51,14 @@ sddt_design_mopp_code = Struct("design_mopp_code",
     )
 
 
-sddt_design_shapes_2_unknown_2 = Struct("unknown_2", 
+sddt_design_shapes_2_unknown_2 = Struct("unknown_2",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=17),
     VISIBLE=False,
     ENDIAN=">", SIZE=68
     )
 
 
-sddt_design_shapes_2 = Struct("design_shapes_2", 
+sddt_design_shapes_2 = Struct("design_shapes_2",
     h3_string_id("name"),
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
@@ -58,13 +67,13 @@ sddt_design_shapes_2 = Struct("design_shapes_2",
     )
 
 
-sddt_water_mopp_code_data = Struct("data", 
+sddt_water_mopp_code_data = Struct("data",
     UInt8("data_byte"),
     ENDIAN=">", SIZE=1
     )
 
 
-sddt_water_mopp_code = Struct("water_mopp_code", 
+sddt_water_mopp_code = Struct("water_mopp_code",
     SInt32("unknown_0", VISIBLE=False),
     SInt16("size_0"),
     SInt16("size_1"),
@@ -82,26 +91,26 @@ sddt_water_mopp_code = Struct("water_mopp_code",
     )
 
 
-sddt_water_name = Struct("water_name", 
+sddt_water_name = Struct("water_name",
     h3_string_id("name"),
     ENDIAN=">", SIZE=4
     )
 
 
-sddt_underwater_definition_unknown_1 = Struct("unknown_1", 
+sddt_underwater_definition_unknown_1 = Struct("unknown_1",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=4),
     ENDIAN=">", SIZE=16
     )
 
 
-sddt_underwater_definition_triangle = Struct("triangle", 
+sddt_underwater_definition_triangle = Struct("triangle",
     BytesRaw("_1_x", SIZE=36, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=36
     )
 
 
-sddt_underwater_definition = Struct("underwater_definition", 
+sddt_underwater_definition = Struct("underwater_definition",
     SInt16("water_name_index"),
     SInt16("unknown_0", VISIBLE=False),
     QStruct("flow_force", INCLUDE=xyz_float),
@@ -112,7 +121,7 @@ sddt_underwater_definition = Struct("underwater_definition",
     )
 
 
-sddt_body = Struct("tagdata", 
+sddt_body = Struct("tagdata",
     SInt32("unknown", VISIBLE=False),
     h3_reflexive("design_mopp_codes", sddt_design_mopp_code),
     h3_reflexive("design_shapes_2", sddt_design_shapes_2),

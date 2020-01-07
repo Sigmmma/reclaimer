@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import math
 
 from reclaimer.model.jms import JmsNode, JmsMaterial, JmsVertex,\
@@ -161,7 +170,7 @@ def jms_model_from_obj(obj_string, model_name=None):
             vax = v1.pos_x - v0.pos_x
             vay = v1.pos_y - v0.pos_y
             vaz = v1.pos_z - v0.pos_z
-            
+
             vbx = v2.pos_x - v0.pos_x
             vby = v2.pos_y - v0.pos_y
             vbz = v2.pos_z - v0.pos_z

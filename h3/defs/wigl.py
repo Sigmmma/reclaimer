@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -35,38 +44,38 @@ wigl_dialog_default_option = (
     )
 
 
-wigl_text_color = Struct("text_color", 
+wigl_text_color = Struct("text_color",
     h3_string_id("name"),
     color_argb_float("color"),
     ENDIAN=">", SIZE=20
     )
 
 
-wigl_player_color_player_text_color = Struct("player_text_color", 
+wigl_player_color_player_text_color = Struct("player_text_color",
     color_argb_float("color"),
     ENDIAN=">", SIZE=16
     )
 
 
-wigl_player_color_team_text_color = Struct("team_text_color", 
+wigl_player_color_team_text_color = Struct("team_text_color",
     color_argb_float("color"),
     ENDIAN=">", SIZE=16
     )
 
 
-wigl_player_color_player_ui_color = Struct("player_ui_color", 
+wigl_player_color_player_ui_color = Struct("player_ui_color",
     color_argb_float("color"),
     ENDIAN=">", SIZE=16
     )
 
 
-wigl_player_color_team_ui_color = Struct("team_ui_color", 
+wigl_player_color_team_ui_color = Struct("team_ui_color",
     color_argb_float("color"),
     ENDIAN=">", SIZE=16
     )
 
 
-wigl_player_color = Struct("player_color", 
+wigl_player_color = Struct("player_color",
     h3_reflexive("player_text_color", wigl_player_color_player_text_color),
     h3_reflexive("team_text_color", wigl_player_color_team_text_color),
     h3_reflexive("player_ui_color", wigl_player_color_player_ui_color),
@@ -75,7 +84,7 @@ wigl_player_color = Struct("player_color",
     )
 
 
-wigl_alert = Struct("alert", 
+wigl_alert = Struct("alert",
     h3_string_id("name"),
     Bool8("flags", *unknown_flags_8),
     SInt8("unknown_0"),
@@ -87,7 +96,7 @@ wigl_alert = Struct("alert",
     )
 
 
-wigl_dialog = Struct("dialog", 
+wigl_dialog = Struct("dialog",
     h3_string_id("name"),
     SInt16("unknown_0"),
     SInt16("unknown_1", VISIBLE=False),
@@ -101,13 +110,13 @@ wigl_dialog = Struct("dialog",
     )
 
 
-wigl_global_data_source = Struct("global_data_source", 
+wigl_global_data_source = Struct("global_data_source",
     h3_dependency("data_source"),
     ENDIAN=">", SIZE=16
     )
 
 
-wigl_body = Struct("tagdata", 
+wigl_body = Struct("tagdata",
     SInt16("inc_text_update_period"),
     SInt16("inc_text_block_character"),
     Float("near_clip_plane_distance"),

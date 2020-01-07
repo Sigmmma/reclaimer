@@ -1,9 +1,18 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 light_volume_comment = """LIGHT VOLUME
-Draws a sequence of glow bitmaps along a line. Can be used for contrail-type effects 
+Draws a sequence of glow bitmaps along a line. Can be used for contrail-type effects
 as well as volumetric lights."""
 
 brightness_scale_comment = """BRIGHTNESS SCALE
@@ -15,8 +24,8 @@ Bitmap tag used to draw the light volume, repeated <count> times. Default is
 Note: Sprite plates are not valid for light volumes."""
 
 frame_animation_comment = """FRAME ANIMATION
-Frames are descriptions of the light volume at a particular point in time, 
-interpolated by an external source. For example: A bolt of energy can be made 
+Frames are descriptions of the light volume at a particular point in time,
+interpolated by an external source. For example: A bolt of energy can be made
 to stretch out and grow thinner as it is fired from a weapon."""
 
 frame = Struct("frame",
@@ -67,7 +76,7 @@ mgs2_body = Struct("tagdata",
     SIZE=332,
     )
 
-    
+
 def get():
     return mgs2_def
 

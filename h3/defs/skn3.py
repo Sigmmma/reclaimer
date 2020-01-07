@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -20,9 +29,9 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-skn3_text_widget = Struct("text_widget", 
+skn3_text_widget = Struct("text_widget",
     h3_dependency("ancestor"),
-    Bool32("flags", 
+    Bool32("flags",
         ("left_alignment", 1 << 3),
         "right_alignment",
         ("all_caps", 1 << 6),
@@ -49,9 +58,9 @@ skn3_text_widget = Struct("text_widget",
     )
 
 
-skn3_bitmap_widget = Struct("bitmap_widget", 
+skn3_bitmap_widget = Struct("bitmap_widget",
     h3_dependency("ancestor"),
-    Bool32("flags", 
+    Bool32("flags",
         ("scale_to_bounds", 1 << 3),
         "replace_with_blur",
         ("replace_with_white", 1 << 10),
@@ -81,7 +90,7 @@ skn3_bitmap_widget = Struct("bitmap_widget",
     )
 
 
-skn3_body = Struct("tagdata", 
+skn3_body = Struct("tagdata",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     h3_reflexive("text_widgets", skn3_text_widget),
     h3_reflexive("bitmap_widgets", skn3_bitmap_widget),

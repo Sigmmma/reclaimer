@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -20,13 +29,13 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-scn3_data_source = Struct("data_source", 
+scn3_data_source = Struct("data_source",
     h3_dependency("data_source"),
     ENDIAN=">", SIZE=16
     )
 
 
-scn3_group_widget_list_widget_list_widget_item = Struct("list_widget_item", 
+scn3_group_widget_list_widget_list_widget_item = Struct("list_widget_item",
     Bool32("flags", *unknown_flags_32),
     h3_string_id("name"),
     SInt16("unknown", VISIBLE=False),
@@ -45,9 +54,9 @@ scn3_group_widget_list_widget_list_widget_item = Struct("list_widget_item",
     )
 
 
-scn3_group_widget_list_widget = Struct("list_widget", 
+scn3_group_widget_list_widget = Struct("list_widget",
     h3_dependency("ancestor"),
-    Bool32("flags", 
+    Bool32("flags",
         ("horizontal", 1 << 4),
         "loops",
         ),
@@ -73,9 +82,9 @@ scn3_group_widget_list_widget = Struct("list_widget",
     )
 
 
-scn3_group_widget_text_widget = Struct("text_widget", 
+scn3_group_widget_text_widget = Struct("text_widget",
     h3_dependency("ancestor"),
-    Bool32("flags", 
+    Bool32("flags",
         ("left_alignment", 1 << 3),
         "right_alignment",
         ("all_caps", 1 << 6),
@@ -102,9 +111,9 @@ scn3_group_widget_text_widget = Struct("text_widget",
     )
 
 
-scn3_group_widget_bitmap_widget = Struct("bitmap_widget", 
+scn3_group_widget_bitmap_widget = Struct("bitmap_widget",
     h3_dependency("ancestor"),
-    Bool32("flags", 
+    Bool32("flags",
         ("scale_to_bounds", 1 << 3),
         "replace_with_blur",
         ("replace_with_white", 1 << 10),
@@ -134,21 +143,21 @@ scn3_group_widget_bitmap_widget = Struct("bitmap_widget",
     )
 
 
-scn3_group_widget_model_widget_camera_refinement_zoom_data_1 = Struct("zoom_data_1", 
+scn3_group_widget_model_widget_camera_refinement_zoom_data_1 = Struct("zoom_data_1",
     h3_rawdata_ref("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
 
 
-scn3_group_widget_model_widget_camera_refinement_zoom_data_2 = Struct("zoom_data_2", 
+scn3_group_widget_model_widget_camera_refinement_zoom_data_2 = Struct("zoom_data_2",
     h3_rawdata_ref("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
 
 
-scn3_group_widget_model_widget_camera_refinement = Struct("camera_refinement", 
+scn3_group_widget_model_widget_camera_refinement = Struct("camera_refinement",
     h3_string_id("biped", VISIBLE=False),
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     h3_reflexive("zoom_data_1", scn3_group_widget_model_widget_camera_refinement_zoom_data_1),
@@ -158,7 +167,7 @@ scn3_group_widget_model_widget_camera_refinement = Struct("camera_refinement",
     )
 
 
-scn3_group_widget_model_widget = Struct("model_widget", 
+scn3_group_widget_model_widget = Struct("model_widget",
     h3_dependency("ancestor"),
     Bool32("flags", *unknown_flags_32),
     h3_string_id("name"),
@@ -178,9 +187,9 @@ scn3_group_widget_model_widget = Struct("model_widget",
     )
 
 
-scn3_group_widget = Struct("group_widget", 
+scn3_group_widget = Struct("group_widget",
     h3_dependency("ancestor"),
-    Bool32("flags", 
+    Bool32("flags",
         ("initially_hidden", 1 << 3),
         ),
     h3_string_id("name"),
@@ -203,13 +212,13 @@ scn3_group_widget = Struct("group_widget",
     )
 
 
-scn3_button_key_legend = Struct("button_key_legend", 
+scn3_button_key_legend = Struct("button_key_legend",
     h3_dependency("legend"),
     ENDIAN=">", SIZE=16
     )
 
 
-scn3_body = Struct("tagdata", 
+scn3_body = Struct("tagdata",
     Bool32("flags", *unknown_flags_32),
     h3_string_id("name"),
     SInt16("unknown_0", VISIBLE=False),

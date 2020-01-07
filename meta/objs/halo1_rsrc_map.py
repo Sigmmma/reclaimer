@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import os
 
 from collections import OrderedDict
@@ -359,7 +368,7 @@ class Halo1RsrcMapTag(Tag):
 
         rsrc_type = self.data.resource_type.enum_name
         raw_head = meta_head = None
-        
+
         if rsrc_type == "bitmaps":
             raw_head, meta_head = self._add_bitmap(tag_path, new_tag,
                                                    base_pointer, depreciate)

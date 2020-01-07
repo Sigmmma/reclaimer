@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 '''
 Names for the "physics" struct in the biped tag are courtesy of Sparky.
 The source files where the information was taken from are here:
@@ -132,7 +141,7 @@ bipd_attrs = Struct("bipd_attrs",
 
     reflexive("contact_points", contact_point, 2,
         DYN_NAME_PATH='.marker_name'),
-    
+
     SIZE=516
     )
 

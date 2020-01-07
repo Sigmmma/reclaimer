@@ -1,4 +1,15 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...hek.defs.actv import *
+
+# TODO use some supyr trickery to make this nicer.
 
 # grenades descriptor index in actv_body is 10
 # grenade_type descriptor index in grenades_desc is 1

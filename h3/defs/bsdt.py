@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -16,7 +25,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-bsdt_unknown0 = Struct("unknown0", 
+bsdt_unknown0 = Struct("unknown0",
     BytesRaw("unknown_0", SIZE=8, VISIBLE=False),
     h3_rawdata_ref("unknown_1", VISIBLE=False),
     BytesRaw("unknown_2", SIZE=8, VISIBLE=False),
@@ -25,7 +34,7 @@ bsdt_unknown0 = Struct("unknown0",
     )
 
 
-bsdt_unknown1 = Struct("unknown1", 
+bsdt_unknown1 = Struct("unknown1",
     BytesRaw("unknown_0", SIZE=8, VISIBLE=False),
     h3_rawdata_ref("unknown_1", VISIBLE=False),
     BytesRaw("unknown_2", SIZE=8, VISIBLE=False),
@@ -34,7 +43,7 @@ bsdt_unknown1 = Struct("unknown1",
     )
 
 
-bsdt_body = Struct("tagdata", 
+bsdt_body = Struct("tagdata",
     Float("maximum_vitality"),
     h3_dependency("effect"),
     h3_dependency("sound"),

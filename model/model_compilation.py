@@ -1,10 +1,19 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from math import sqrt
 from struct import Struct as PyStruct
 
 from reclaimer.model.jms import GeometryMesh
 from reclaimer.model.stripify import Stripifier
 from reclaimer.model import util
-        
+
 
 def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
     tagdata = mod2_tag.data.tagdata
@@ -20,7 +29,7 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
     tagdata.base_map_v_scale = merged_jms.v_scale = v_scale
 
     tagdata.node_list_checksum = merged_jms.node_list_checksum
-    
+
 
     errors = []
     if len(merged_jms.materials) > 256:
@@ -207,7 +216,7 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
         lod_nodes = all_lod_nodes[lod]
         adding = True
         node_ct = len(mod2_nodes)
-        
+
         for i in range(node_ct - 1, -1, -1):
             if i in lod_nodes:
                 break
