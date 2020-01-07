@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
@@ -53,7 +62,7 @@ stance_flags = FlBool16("stance",
     )
 
 unit_control_packet = Struct("unit_control_packet",
-    
+
     )
 
 r_a_stream_header = Struct("r_a_stream_header",
@@ -762,7 +771,7 @@ encounter = Struct("encounter",
     reflexive("platoons", platoon, 32, DYN_NAME_PATH='.name'),
     reflexive("firing_positions", firing_position, 512),
     reflexive("player_starting_locations", player_starting_location2, 256),
-    
+
     SIZE=176
     )
 

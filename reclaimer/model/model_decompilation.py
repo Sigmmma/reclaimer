@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from pathlib import Path
 from struct import Struct as PyStruct
 from traceback import format_exc
@@ -130,7 +139,7 @@ def extract_model(tagdata, tag_path="", **kw):
     for perm_name in sorted(geoms_by_perm_lod_region):
         geoms_by_lod_region = geoms_by_perm_lod_region[perm_name]
         perm_markers = markers_by_perm.get(perm_name)
-        
+
         for lod in sorted(geoms_by_lod_region):
             if lod == -1:
                 continue

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from copy import copy, deepcopy
 from math import pi
 try:
@@ -65,7 +74,7 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
         for i in range(len(names)):
             e_name = BlockDef.str_to_name(None, names[i])
             name_map[e_name] = i
-            
+
         desc[STEPTREE][NAME_MAP] = name_map
 
     return Reflexive(name, **desc)
@@ -605,7 +614,7 @@ anim_src_func_per_pha_sca_rot = Struct('',
 
 
 # This is the descriptor used wherever a tag references a rawdata chunk
-rawdata_ref_struct = RawdataRef('rawdata_ref', 
+rawdata_ref_struct = RawdataRef('rawdata_ref',
     SInt32("size", GUI_NAME="", SIDETIP="bytes", EDITABLE=False),
     Bool32("flags",
         "data_in_resource_map",
@@ -664,7 +673,7 @@ compressed_normal_32 = BitStruct('compressed_norm32',
 
 # coordinates
 xyz_float = QStruct('xyz_float',
-    Float("x"), Float("y"), Float("z"), ORIENT='h' 
+    Float("x"), Float("y"), Float("z"), ORIENT='h'
     )
 xy_float = QStruct('xy_float',
     Float("x"), Float("y"), ORIENT='h'
@@ -804,7 +813,7 @@ tag_header_os = Struct("blam_header",
     UEnum32("tag_class",
         GUI_NAME="tag_class", INCLUDE=valid_tags_os, EDITABLE=False
         ),
-    UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False), 
+    UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
     UInt32("header_size", DEFAULT=64, EDITABLE=False),
     Bool64("flags",
         "edited_with_mozz",

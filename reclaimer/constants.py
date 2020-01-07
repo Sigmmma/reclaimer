@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from struct import unpack
 
 from supyr_struct.defs.constants import *
@@ -376,4 +385,3 @@ for tag_cls in tag_class_fcc_to_ext_stubbs:
     tag_class_be_int_to_fcc_stubbs[fourcc_to_int(tag_cls, 'big')] = tag_cls
     tag_class_fcc_to_le_int_stubbs[tag_cls] = fourcc_to_int(tag_cls)
     tag_class_le_int_to_fcc_stubbs[fourcc_to_int(tag_cls)] = tag_cls
-

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -26,7 +35,7 @@ adlg_vocalization_perception_type = (
     )
 
 
-adlg_vocalization_response = Struct("response", 
+adlg_vocalization_response = Struct("response",
     h3_string_id("vocalization_name"),
     Bool16("flags", *unknown_flags_16),
     SInt16("vocalization_index"),
@@ -36,7 +45,7 @@ adlg_vocalization_response = Struct("response",
     )
 
 
-adlg_vocalization = Struct("vocalization", 
+adlg_vocalization = Struct("vocalization",
     h3_string_id("vocalization"),
     SInt16("parent_index"),
     SInt16("priority"),
@@ -67,7 +76,7 @@ adlg_vocalization = Struct("vocalization",
     )
 
 
-adlg_pattern = Struct("pattern", 
+adlg_pattern = Struct("pattern",
     SInt16("dialogue_type"),
     SInt16("vocalizations_index"),
     h3_string_id("vocalization_name"),
@@ -93,21 +102,21 @@ adlg_pattern = Struct("pattern",
     )
 
 
-adlg_dialog_data = Struct("dialog_data", 
+adlg_dialog_data = Struct("dialog_data",
     SInt16("start_index"),
     SInt16("length"),
     ENDIAN=">", SIZE=4
     )
 
 
-adlg_involuntary_data = Struct("involuntary_data", 
+adlg_involuntary_data = Struct("involuntary_data",
     SInt16("involuntary_vocalization_index"),
     SInt16("unknown", VISIBLE=False),
     ENDIAN=">", SIZE=4
     )
 
 
-adlg_body = Struct("tagdata", 
+adlg_body = Struct("tagdata",
     BytesRaw("unknown_0", SIZE=16, VISIBLE=False),
     h3_reflexive("vocalizations", adlg_vocalization),
     h3_reflexive("patterns", adlg_pattern),

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
@@ -116,7 +125,7 @@ event_functions = (
     'controls_screen_defaults', 'profile_set_edit_begin',
     'profile_manager_delete', 'profile_manager_select',
     'gamespy_dismiiss_error', 'server_settings_init',
-    'server_set_edit_server_name', 'server_set_edit_server_password', 
+    'server_set_edit_server_name', 'server_set_edit_server_password',
     'server_set_start_game', 'video_test_dialog_init',
     'video_test_dialog_dispose', 'video_test_dialog_accept',
     'gamespy_dismiss_filters', 'gamespy_update_filter_settings',

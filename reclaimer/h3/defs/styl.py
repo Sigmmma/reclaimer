@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -22,8 +31,8 @@ styl_combat_status_decay_options = (
     )
 
 
-styl_special_movement = Struct("special_movement", 
-    Bool32("special_movement_1", 
+styl_special_movement = Struct("special_movement",
+    Bool32("special_movement_1",
         "jump",
         "climb",
         "vault",
@@ -36,20 +45,20 @@ styl_special_movement = Struct("special_movement",
     )
 
 
-styl_behavior_list = Struct("behavior_list", 
+styl_behavior_list = Struct("behavior_list",
     ascii_str32("behavior_name"),
     ENDIAN=">", SIZE=32
     )
 
 
-styl_body = Struct("tagdata", 
+styl_body = Struct("tagdata",
     ascii_str32("name"),
     SEnum16("combat_status_decay_options", *styl_combat_status_decay_options),
     SInt16("unknown", VISIBLE=False),
-    Bool32("style_control", 
+    Bool32("style_control",
         "new_behaviors_default_to_on",
         ),
-    Bool32("behaviors1", 
+    Bool32("behaviors1",
         "general",
         "root",
         "null",
@@ -83,7 +92,7 @@ styl_body = Struct("tagdata",
         "grenade_impulse",
         "anti_vehicle_grenade",
         ),
-    Bool32("behaviors2", 
+    Bool32("behaviors2",
         "stalk",
         "flank",
         "berserk_wander_impulse",
@@ -117,7 +126,7 @@ styl_body = Struct("tagdata",
         "sense_target",
         "postsearch",
         ),
-    Bool32("behaviors3", 
+    Bool32("behaviors3",
         "coverme_investigate",
         "self_defense",
         "self_preservation",
@@ -151,7 +160,7 @@ styl_body = Struct("tagdata",
         "overheated_weapon_retreat",
         "ambush",
         ),
-    Bool32("behaviors4", 
+    Bool32("behaviors4",
         "ambush",
         "coordinated_ambush",
         "proximity_ambush",
@@ -185,7 +194,7 @@ styl_body = Struct("tagdata",
         "postcombat_1",
         "post_postcombat",
         ),
-    Bool32("behaviors5", 
+    Bool32("behaviors5",
         "check_friend",
         "shoot_corpse",
         "postcombat_approach",
@@ -219,7 +228,7 @@ styl_body = Struct("tagdata",
         "pureforms",
         "group_morph_impulse",
         ),
-    Bool32("behaviors6", 
+    Bool32("behaviors6",
         "arrival_morph_impulse",
         "pureform_default_impulse",
         "search_morph",
@@ -253,7 +262,7 @@ styl_body = Struct("tagdata",
         "activity_default",
         "special",
         ),
-    Bool32("behaviors7", 
+    Bool32("behaviors7",
         "formation",
         "grunt_scared_by_elite",
         "stunned",

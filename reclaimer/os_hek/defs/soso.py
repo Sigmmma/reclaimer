@@ -1,11 +1,20 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...hek.defs.soso import *
 
 specular_map_comment = """SPECULAR (COLOR) MAP
-The specular color map is multiplied by the stock specular 
+The specular color map is multiplied by the stock specular
 to provide finer control over specular color.
 
 *RGB holds the specular color.
-*ALPHA can be used as an exponent mask to provide finer control 
+*ALPHA can be used as an exponent mask to provide finer control
 over the size of the specular highlights."""
 
 normal_maps_comment = """NORMAL MAPS
@@ -39,7 +48,7 @@ Exponent controls the highlight size, the bigger the exponent, the smaller the h
 Coefficient controls the brightness of the highlights."""
 
 os_reflection_prop_comment = """REFLECTION PROPERIES
-When the opensauce extension is used the tint values in here are overwritten 
+When the opensauce extension is used the tint values in here are overwritten
 by the ones in the os extension when the map is loaded."""
 
 reflection = Struct("reflection",

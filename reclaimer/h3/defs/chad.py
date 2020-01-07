@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -20,91 +29,91 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-chad_position_animation = Struct("animation", 
+chad_position_animation = Struct("animation",
     SInt32("frame_number"),
     QStruct("position", INCLUDE=xyz_float),
     ENDIAN=">", SIZE=16
     )
 
 
-chad_position = Struct("position", 
+chad_position = Struct("position",
     h3_reflexive("animation", chad_position_animation),
     h3_rawdata_ref("function"),
     ENDIAN=">", SIZE=32
     )
 
 
-chad_rotation_animation = Struct("animation", 
+chad_rotation_animation = Struct("animation",
     SInt32("frame_number"),
     ypr_float_rad("angle"),
     ENDIAN=">", SIZE=16
     )
 
 
-chad_rotation = Struct("rotation", 
+chad_rotation = Struct("rotation",
     h3_reflexive("animation", chad_rotation_animation),
     h3_rawdata_ref("function"),
     ENDIAN=">", SIZE=32
     )
 
 
-chad_size_animation = Struct("animation", 
+chad_size_animation = Struct("animation",
     SInt32("frame_number"),
     QStruct("stretch", INCLUDE=xy_float),
     ENDIAN=">", SIZE=12
     )
 
 
-chad_size = Struct("size", 
+chad_size = Struct("size",
     h3_reflexive("animation", chad_size_animation),
     h3_rawdata_ref("unknown", VISIBLE=False),
     ENDIAN=">", SIZE=32
     )
 
 
-chad_color_animation = Struct("animation", 
+chad_color_animation = Struct("animation",
     SInt32("frame_number"),
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     ENDIAN=">", SIZE=8
     )
 
 
-chad_color = Struct("color", 
+chad_color = Struct("color",
     h3_reflexive("animation", chad_color_animation),
     h3_rawdata_ref("function"),
     ENDIAN=">", SIZE=32
     )
 
 
-chad_alpha_animation = Struct("animation", 
+chad_alpha_animation = Struct("animation",
     SInt32("frame_number"),
     Float("alpha"),
     ENDIAN=">", SIZE=8
     )
 
 
-chad_alpha = Struct("alpha", 
+chad_alpha = Struct("alpha",
     h3_reflexive("animation", chad_alpha_animation),
     h3_rawdata_ref("function"),
     ENDIAN=">", SIZE=32
     )
 
 
-chad_alpha_unknown_animation = Struct("animation", 
+chad_alpha_unknown_animation = Struct("animation",
     SInt32("frame_number"),
     Float("alpha"),
     ENDIAN=">", SIZE=8
     )
 
 
-chad_alpha_unknown = Struct("alpha_unknown", 
+chad_alpha_unknown = Struct("alpha_unknown",
     h3_reflexive("animation", chad_alpha_unknown_animation),
     h3_rawdata_ref("function"),
     ENDIAN=">", SIZE=32
     )
 
 
-chad_bitmap_animation = Struct("animation", 
+chad_bitmap_animation = Struct("animation",
     SInt32("frame_number"),
     QStruct("movement_1", INCLUDE=xy_float),
     QStruct("movement_2", INCLUDE=xy_float),
@@ -112,15 +121,15 @@ chad_bitmap_animation = Struct("animation",
     )
 
 
-chad_bitmap = Struct("bitmap", 
+chad_bitmap = Struct("bitmap",
     h3_reflexive("animation", chad_bitmap_animation),
     h3_rawdata_ref("function"),
     ENDIAN=">", SIZE=32
     )
 
 
-chad_body = Struct("tagdata", 
-    Bool16("flags", 
+chad_body = Struct("tagdata",
+    Bool16("flags",
         ("loops", 1 << 1),
         ),
     SInt16("unknown", VISIBLE=False),

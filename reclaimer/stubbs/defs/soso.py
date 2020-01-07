@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from ...hek.defs.soso import *
 from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
@@ -10,15 +19,15 @@ bump_properties = Struct("bump_properties",
 soso_attrs = Struct("soso_attrs",
     #Model Shader Properties
     model_shader,
-        
+
     Pad(16),
     #Color-Change
     SEnum16("color_change_source", *function_names),
-        
+
     Pad(30),
     #Self-Illumination
     self_illumination,
-        
+
     Pad(12),
     #Diffuse, Multipurpose, and Detail Maps
     maps,
@@ -28,7 +37,7 @@ soso_attrs = Struct("soso_attrs",
 
     #Texture Scrolling Animation
     texture_scrolling,
-                   
+
     Pad(8),
     #Reflection Properties
     reflection,

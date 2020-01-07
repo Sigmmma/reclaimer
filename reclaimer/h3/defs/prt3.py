@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -16,7 +25,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-prt3_unknown_1 = Struct("unknown_1", 
+prt3_unknown_1 = Struct("unknown_1",
     h3_dependency("unknown_0", VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     VISIBLE=False,
@@ -24,14 +33,14 @@ prt3_unknown_1 = Struct("unknown_1",
     )
 
 
-prt3_unknown_3 = Struct("unknown_3", 
+prt3_unknown_3 = Struct("unknown_3",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-prt3_import_data_function = Struct("function", 
+prt3_import_data_function = Struct("function",
     SInt32("unknown_0", VISIBLE=False),
     h3_string_id("name"),
     BytesRaw("unknown_1", SIZE=8, VISIBLE=False),
@@ -40,7 +49,7 @@ prt3_import_data_function = Struct("function",
     )
 
 
-prt3_import_data = Struct("import_data", 
+prt3_import_data = Struct("import_data",
     h3_string_id("material_type"),
     SInt32("unknown_0", VISIBLE=False),
     h3_dependency("bitmap"),
@@ -53,7 +62,7 @@ prt3_import_data = Struct("import_data",
     )
 
 
-prt3_shader_propertie_shader_map = Struct("shader_map", 
+prt3_shader_propertie_shader_map = Struct("shader_map",
     h3_dependency("bitmap"),
     SInt8("unknown_0", VISIBLE=False),
     SInt8("bitmap_index"),
@@ -67,27 +76,27 @@ prt3_shader_propertie_shader_map = Struct("shader_map",
     )
 
 
-prt3_shader_propertie_argument = Struct("argument", 
+prt3_shader_propertie_argument = Struct("argument",
     Array("arg_array", SUB_STRUCT=Float("arg"), SIZE=4),
     ENDIAN=">", SIZE=16
     )
 
 
-prt3_shader_propertie_unknown_0 = Struct("unknown_0", 
+prt3_shader_propertie_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=4
     )
 
 
-prt3_shader_propertie_unknown_2 = Struct("unknown_2", 
+prt3_shader_propertie_unknown_2 = Struct("unknown_2",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-prt3_shader_propertie_unknown_3 = Struct("unknown_3", 
+prt3_shader_propertie_unknown_3 = Struct("unknown_3",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     SInt8("unknown_1", VISIBLE=False),
     SInt8("unknown_2", VISIBLE=False),
@@ -96,7 +105,7 @@ prt3_shader_propertie_unknown_3 = Struct("unknown_3",
     )
 
 
-prt3_shader_propertie_unknown_4 = Struct("unknown_4", 
+prt3_shader_propertie_unknown_4 = Struct("unknown_4",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -104,7 +113,7 @@ prt3_shader_propertie_unknown_4 = Struct("unknown_4",
     )
 
 
-prt3_shader_propertie_function = Struct("function", 
+prt3_shader_propertie_function = Struct("function",
     SInt32("unknown_0", VISIBLE=False),
     h3_string_id("name"),
     BytesRaw("unknown_1", SIZE=8, VISIBLE=False),
@@ -113,7 +122,7 @@ prt3_shader_propertie_function = Struct("function",
     )
 
 
-prt3_shader_propertie = Struct("shader_propertie", 
+prt3_shader_propertie = Struct("shader_propertie",
     h3_dependency("template"),
     h3_reflexive("shader_maps", prt3_shader_propertie_shader_map),
     h3_reflexive("arguments", prt3_shader_propertie_argument),
@@ -131,21 +140,21 @@ prt3_shader_propertie = Struct("shader_propertie",
     )
 
 
-prt3_unknown_21 = Struct("unknown_21", 
+prt3_unknown_21 = Struct("unknown_21",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-prt3_unknown_22 = Struct("unknown_22", 
+prt3_unknown_22 = Struct("unknown_22",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-prt3_body = Struct("tagdata", 
+prt3_body = Struct("tagdata",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     h3_reflexive("unknown_1", prt3_unknown_1),
     BytesRaw("unknown_2", SIZE=44, VISIBLE=False),

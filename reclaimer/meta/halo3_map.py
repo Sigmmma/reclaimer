@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from reclaimer.h3.common_descs import *
 from supyr_struct.defs.tag_def import BlockDef
 
@@ -147,7 +156,7 @@ partition = Struct("partition",
     UInt32("load address"),
     UInt32("size"),
     STEPTREE=Computed("file offset",
-        COMPUTE_READ=compute_partition_offset, WIDGET_WIDTH=10 
+        COMPUTE_READ=compute_partition_offset, WIDGET_WIDTH=10
         ),
     SIZE=8
     )

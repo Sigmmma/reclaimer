@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,7 +27,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-mode_region_permutation = Struct("permutation", 
+mode_region_permutation = Struct("permutation",
     h3_string_id("name"),
     SInt16("mesh_index"),
     SInt16("mesh_count"),
@@ -28,14 +37,14 @@ mode_region_permutation = Struct("permutation",
     )
 
 
-mode_region = Struct("region", 
+mode_region = Struct("region",
     h3_string_id("name"),
     h3_reflexive("permutations", mode_region_permutation),
     ENDIAN=">", SIZE=16
     )
 
 
-mode_instance = Struct("instance", 
+mode_instance = Struct("instance",
     h3_string_id("name"),
     SInt32("node_index"),
     Float("default_scale"),
@@ -47,7 +56,7 @@ mode_instance = Struct("instance",
     )
 
 
-mode_node = Struct("node", 
+mode_node = Struct("node",
     h3_string_id("name"),
     SInt16("parent_node"),
     SInt16("first_child_node"),
@@ -65,7 +74,7 @@ mode_node = Struct("node",
     )
 
 
-mode_marker_group_marker = Struct("marker", 
+mode_marker_group_marker = Struct("marker",
     SInt8("region_index"),
     SInt8("permutation_index"),
     SInt8("node_index"),
@@ -77,14 +86,14 @@ mode_marker_group_marker = Struct("marker",
     )
 
 
-mode_marker_group = Struct("marker_group", 
+mode_marker_group = Struct("marker_group",
     h3_string_id("name"),
     h3_reflexive("markers", mode_marker_group_marker),
     ENDIAN=">", SIZE=16
     )
 
 
-mode_material_propertie = Struct("propertie", 
+mode_material_propertie = Struct("propertie",
     SInt16("type"),
     SInt16("int_value"),
     Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
@@ -93,7 +102,7 @@ mode_material_propertie = Struct("propertie",
     )
 
 
-mode_material = Struct("material", 
+mode_material = Struct("material",
     h3_dependency("shader"),
     h3_reflexive("properties", mode_material_propertie),
     SInt32("unknown_0", VISIBLE=False),
@@ -105,7 +114,7 @@ mode_material = Struct("material",
     )
 
 
-mode_meshe_part = Struct("part", 
+mode_meshe_part = Struct("part",
     SInt16("material_index"),
     SInt16("unknown_nodey_index", VISIBLE=False),
     SInt16("index_buffer_start"),
@@ -113,7 +122,7 @@ mode_meshe_part = Struct("part",
     SInt16("subpart_index"),
     SInt16("subpart_count"),
     SInt8("unknown_enum", VISIBLE=False),
-    Bool8("flags", 
+    Bool8("flags",
         ("water", 1 << 3),
         ),
     SInt16("vertex_count"),
@@ -121,7 +130,7 @@ mode_meshe_part = Struct("part",
     )
 
 
-mode_meshe_subpart = Struct("subpart", 
+mode_meshe_subpart = Struct("subpart",
     SInt16("index_buffer_start"),
     SInt16("index_buffer_count"),
     SInt16("part_index"),
@@ -130,13 +139,13 @@ mode_meshe_subpart = Struct("subpart",
     )
 
 
-mode_meshe_instanced_geometry_indice_instanced_geometry_mesh_content = Struct("instanced_geometry_mesh_content", 
+mode_meshe_instanced_geometry_indice_instanced_geometry_mesh_content = Struct("instanced_geometry_mesh_content",
     SInt16("instanced_geometry_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-mode_meshe_instanced_geometry_indice = Struct("instanced_geometry_indice", 
+mode_meshe_instanced_geometry_indice = Struct("instanced_geometry_indice",
     SInt16("instanced_geometry_mesh_index_1"),
     SInt16("instanced_geometry_mesh_index_2"),
     h3_reflexive("instanced_geometry_mesh_contents", mode_meshe_instanced_geometry_indice_instanced_geometry_mesh_content),
@@ -144,20 +153,20 @@ mode_meshe_instanced_geometry_indice = Struct("instanced_geometry_indice",
     )
 
 
-mode_meshe_unknown_water = Struct("unknown_water", 
+mode_meshe_unknown_water = Struct("unknown_water",
     SInt16("unknown"),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-mode_meshe = Struct("meshe", 
+mode_meshe = Struct("meshe",
     h3_reflexive("parts", mode_meshe_part),
     h3_reflexive("subparts", mode_meshe_subpart),
     Array("vertex_buffer_index_array", SUB_STRUCT=SInt16("vertex_buffer_index"), SIZE=8),
     SInt16("index_buffer_index_1"),
     SInt16("index_buffer_index_2"),
-    Bool8("flags", 
+    Bool8("flags",
         "has_vertex_colors",
         ),
     SInt8("rigid_node"),
@@ -173,7 +182,7 @@ mode_meshe = Struct("meshe",
     )
 
 
-mode_compression_info = Struct("compression_info", 
+mode_compression_info = Struct("compression_info",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     QStruct("position_bounds_x", INCLUDE=from_to),
@@ -185,7 +194,7 @@ mode_compression_info = Struct("compression_info",
     )
 
 
-mode_unknown_nodey = Struct("unknown_nodey", 
+mode_unknown_nodey = Struct("unknown_nodey",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     Array("node_index_array", SUB_STRUCT=SInt8("node_index"), SIZE=4, VISIBLE=False),
     Float("unknown_0", VISIBLE=False),
@@ -196,7 +205,7 @@ mode_unknown_nodey = Struct("unknown_nodey",
     )
 
 
-mode_unknown_5 = Struct("unknown_5", 
+mode_unknown_5 = Struct("unknown_5",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     h3_rawdata_ref("unknown_2", VISIBLE=False),
@@ -205,14 +214,14 @@ mode_unknown_5 = Struct("unknown_5",
     )
 
 
-mode_unknown_meshe_unknown_1 = Struct("unknown_1", 
+mode_unknown_meshe_unknown_1 = Struct("unknown_1",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-mode_unknown_meshe = Struct("unknown_meshe", 
+mode_unknown_meshe = Struct("unknown_meshe",
     h3_rawdata_ref("unknown_0", VISIBLE=False),
     h3_reflexive("unknown_1", mode_unknown_meshe_unknown_1),
     VISIBLE=False,
@@ -220,33 +229,33 @@ mode_unknown_meshe = Struct("unknown_meshe",
     )
 
 
-mode_node_map_unknown = Struct("unknown", 
+mode_node_map_unknown = Struct("unknown",
     UInt8("node_index"),
     ENDIAN=">", SIZE=1
     )
 
 
-mode_node_map = Struct("node_map", 
+mode_node_map = Struct("node_map",
     h3_reflexive("unknown", mode_node_map_unknown),
     ENDIAN=">", SIZE=12
     )
 
 
-mode_unknown_7_unknown = Struct("unknown", 
+mode_unknown_7_unknown = Struct("unknown",
     BytesRaw("unknown", SIZE=48, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=48
     )
 
 
-mode_unknown_7 = Struct("unknown_7", 
+mode_unknown_7 = Struct("unknown_7",
     h3_reflexive("unknown", mode_unknown_7_unknown),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-mode_unknown_yo = Struct("unknown_yo", 
+mode_unknown_yo = Struct("unknown_yo",
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
     SInt16("unknown_index"),
     SInt16("unknown_1", VISIBLE=False),
@@ -254,21 +263,21 @@ mode_unknown_yo = Struct("unknown_yo",
     )
 
 
-mode_unknown_9 = Struct("unknown_9", 
+mode_unknown_9 = Struct("unknown_9",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=7, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=28
     )
 
 
-mode_unknown_10 = Struct("unknown_10", 
+mode_unknown_10 = Struct("unknown_10",
     BytesRaw("unknown", SIZE=336, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=336
     )
 
 
-mode_runtime_node = Struct("runtime_node", 
+mode_runtime_node = Struct("runtime_node",
     QStruct("default_rotation", INCLUDE=ijkw_float),
     QStruct("default_translation", INCLUDE=xyz_float),
     Float("default_scale"),
@@ -276,9 +285,9 @@ mode_runtime_node = Struct("runtime_node",
     )
 
 
-mode_body = Struct("tagdata", 
+mode_body = Struct("tagdata",
     h3_string_id("name"),
-    Bool16("flags", 
+    Bool16("flags",
         ("force_node_maps", 1 << 2),
         ),
     SInt16("unknown_0", VISIBLE=False),
