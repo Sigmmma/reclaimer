@@ -21,7 +21,7 @@ from reclaimer.sounds.adpcm import decode_adpcm_samples, ADPCM_BLOCKSIZE, PCM_BL
 from supyr_struct.buffer import BytearrayBuffer
 
 
-BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]{1, }')
+BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]+')
 
 
 __all__ = ("extract_h1_sounds", "extract_h2_sounds", )
