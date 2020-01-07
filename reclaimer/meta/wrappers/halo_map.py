@@ -219,7 +219,7 @@ class HaloMap:
         found_counts = {}
         for b in self.tag_index.tag_index:
             tag_path = backslash_fix.sub(
-                r'\\', b.path.replace("/", "\\")).strip().lower()
+                r'\\', b.path.replace("/", "\\")).strip().strip("\\").lower()
 
             name_id = (tag_path, b.class_1.enum_name)
             if is_protected_tag(tag_path):
