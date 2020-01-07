@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from reclaimer.meta.halo1_map import tag_path_pointer, tag_index_array_pointer
 from reclaimer.shadowrun_prototype.common_descs import *
 

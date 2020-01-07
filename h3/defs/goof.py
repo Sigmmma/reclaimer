@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -238,7 +247,7 @@ goof_game_engine_setting_setting_category = (
     )
 
 
-goof_game_engine_setting_option = Struct("option", 
+goof_game_engine_setting_option = Struct("option",
     h3_dependency("explicit_submenu"),
     h3_dependency("template_based_submenu"),
     SEnum32("submenu_setting_category", *goof_game_engine_setting_setting_category),
@@ -249,7 +258,7 @@ goof_game_engine_setting_option = Struct("option",
     )
 
 
-goof_game_engine_setting = Struct("game_engine_setting", 
+goof_game_engine_setting = Struct("game_engine_setting",
     h3_string_id("name"),
     SEnum32("setting_category", *goof_game_engine_setting_setting_category),
     h3_reflexive("options", goof_game_engine_setting_option),
@@ -257,7 +266,7 @@ goof_game_engine_setting = Struct("game_engine_setting",
     )
 
 
-goof_body = Struct("tagdata", 
+goof_body = Struct("tagdata",
     SInt32("unknown", VISIBLE=False),
     h3_reflexive("game_engine_settings", goof_game_engine_setting),
     ENDIAN=">", SIZE=16

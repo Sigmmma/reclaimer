@@ -1,0 +1,9 @@
+This file contains all the authors who directly worked on this library.
+If you have worked directly on this and are not in here,
+contact us and show us where.
+
+This project is licensed under GNU General Public License v3.0.
+No earlier version, no later version. Check LICENSE for details.
+
+Copyright (c) 2014-2020 Devin Bobadilla
+Copyright (c) 2017-2020 Michelle van der Graaf

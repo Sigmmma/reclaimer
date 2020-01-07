@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -26,15 +35,15 @@ eqip_powerup_powerup_trait_set = (
     )
 
 
-eqip_early_mover_propertie = Struct("early_mover_propertie", 
+eqip_early_mover_propertie = Struct("early_mover_propertie",
     h3_string_id("name"),
     Pad(36),
     ENDIAN=">", SIZE=40
     )
 
 
-eqip_ai_propertie = Struct("ai_propertie", 
-    Bool32("flags", 
+eqip_ai_propertie = Struct("ai_propertie",
+    Bool32("flags",
         "destroyable_cover",
         "pathfinding_ignore_when_dead",
         "dynamic_cover",
@@ -47,8 +56,8 @@ eqip_ai_propertie = Struct("ai_propertie",
     )
 
 
-eqip_function = Struct("function", 
-    Bool32("flags", 
+eqip_function = Struct("function",
+    Bool32("flags",
         "invert",
         "mapping_does_not_controls_active",
         "always_active",
@@ -64,7 +73,7 @@ eqip_function = Struct("function",
     )
 
 
-eqip_attachment = Struct("attachment", 
+eqip_attachment = Struct("attachment",
     h3_dependency("attachment"),
     h3_string_id("marker"),
     SEnum16("change_color", *bloc_attachment_change_color),
@@ -75,13 +84,13 @@ eqip_attachment = Struct("attachment",
     )
 
 
-eqip_widget = Struct("widget", 
+eqip_widget = Struct("widget",
     h3_dependency("type"),
     ENDIAN=">", SIZE=16
     )
 
 
-eqip_change_color_initial_permutation = Struct("initial_permutation", 
+eqip_change_color_initial_permutation = Struct("initial_permutation",
     Pad(4),
     color_rgb_float("color_lower_bound"),
     color_rgb_float("color_upper_bound"),
@@ -90,8 +99,8 @@ eqip_change_color_initial_permutation = Struct("initial_permutation",
     )
 
 
-eqip_change_color_function = Struct("function", 
-    Bool32("scale_flags", 
+eqip_change_color_function = Struct("function",
+    Bool32("scale_flags",
         "blend_in_hsv",
         "more_colors",
         ),
@@ -103,14 +112,14 @@ eqip_change_color_function = Struct("function",
     )
 
 
-eqip_change_color = Struct("change_color", 
+eqip_change_color = Struct("change_color",
     h3_reflexive("initial_permutations", eqip_change_color_initial_permutation),
     h3_reflexive("functions", eqip_change_color_function),
     ENDIAN=">", SIZE=24
     )
 
 
-eqip_predicted_resource = Struct("predicted_resource", 
+eqip_predicted_resource = Struct("predicted_resource",
     SInt16("type"),
     SInt16("resource_index"),
     dependency_uint32("tag_index", VISIBLE=False),
@@ -119,8 +128,8 @@ eqip_predicted_resource = Struct("predicted_resource",
     )
 
 
-eqip_multiplayer_object_propertie = Struct("multiplayer_object_propertie", 
-    Bool16("engine_flags", 
+eqip_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
+    Bool16("engine_flags",
         "capture_the_flag",
         "slayer",
         "oddball",
@@ -132,14 +141,14 @@ eqip_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
         "infection",
         ),
     SEnum8("object_type", *bloc_multiplayer_object_propertie_object_type),
-    Bool8("teleporter_flags", 
+    Bool8("teleporter_flags",
         "disallows_players",
         "allows_land_vehicles",
         "allows_heavy_vehicles",
         "allows_flying_vehicles",
         "allows_projectiles",
         ),
-    Bool16("flags", 
+    Bool16("flags",
         "editor_only",
         ),
     SEnum8("shape", *bloc_multiplayer_object_propertie_shape),
@@ -169,14 +178,14 @@ eqip_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
     )
 
 
-eqip_predicted_bitmap = Struct("predicted_bitmap", 
+eqip_predicted_bitmap = Struct("predicted_bitmap",
     h3_dependency("bitmap", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-eqip_health_pack = Struct("health_pack", 
+eqip_health_pack = Struct("health_pack",
     Float("unknown_0", VISIBLE=False),
     Float("unknown_1", VISIBLE=False),
     Float("shields_given"),
@@ -187,13 +196,13 @@ eqip_health_pack = Struct("health_pack",
     )
 
 
-eqip_powerup = Struct("powerup", 
+eqip_powerup = Struct("powerup",
     SEnum32("powerup_trait_set", *eqip_powerup_powerup_trait_set),
     ENDIAN=">", SIZE=4
     )
 
 
-eqip_object_creation = Struct("object_creation", 
+eqip_object_creation = Struct("object_creation",
     h3_dependency("object"),
     h3_dependency("unknown_0"),
     Float("unknown_1", VISIBLE=False),
@@ -205,7 +214,7 @@ eqip_object_creation = Struct("object_creation",
     )
 
 
-eqip_destruction = Struct("destruction", 
+eqip_destruction = Struct("destruction",
     h3_dependency("destroy_effect"),
     h3_dependency("destroy_damage_effect"),
     Float("unknown_0", VISIBLE=False),
@@ -216,7 +225,7 @@ eqip_destruction = Struct("destruction",
     )
 
 
-eqip_radar_manipulation = Struct("radar_manipulation", 
+eqip_radar_manipulation = Struct("radar_manipulation",
     Float("unknown_0", VISIBLE=False),
     Float("fake_blip_radius"),
     SInt32("fake_blip_count"),
@@ -225,14 +234,14 @@ eqip_radar_manipulation = Struct("radar_manipulation",
     )
 
 
-eqip_invisibility = Struct("invisibility", 
+eqip_invisibility = Struct("invisibility",
     Float("unknown_0"),
     Float("unknown_1"),
     ENDIAN=">", SIZE=8
     )
 
 
-eqip_invincibility = Struct("invincibility", 
+eqip_invincibility = Struct("invincibility",
     h3_string_id("material_name"),
     SInt16("global_material_index"),
     SInt16("unknown_0", VISIBLE=False),
@@ -244,15 +253,15 @@ eqip_invincibility = Struct("invincibility",
     )
 
 
-eqip_regenerator = Struct("regenerator", 
+eqip_regenerator = Struct("regenerator",
     Float("unknown"),
     ENDIAN=">", SIZE=4
     )
 
 
-eqip_body = Struct("tagdata", 
+eqip_body = Struct("tagdata",
     SEnum16("object_type", *bloc_object_type),
-    Bool16("flags_0", 
+    Bool16("flags_0",
         "does_not_cast_shadow",
         "search_cardinal_direction_lightmaps",
         ("not_a_pathfinding_obstacle", 1 << 3),
@@ -293,7 +302,7 @@ eqip_body = Struct("tagdata",
     h3_reflexive("change_colors", eqip_change_color),
     h3_reflexive("predicted_resources", eqip_predicted_resource),
     h3_reflexive("multiplayer_object_properties", eqip_multiplayer_object_propertie),
-    Bool32("flags_1", 
+    Bool32("flags_1",
         "always_maintains_z_up",
         "destroyed_by_explosions",
         "unaffected_by_gravity",

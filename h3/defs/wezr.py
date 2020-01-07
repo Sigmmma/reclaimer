@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -311,7 +320,7 @@ wezr_vip_variant_next_vip = (
     )
 
 
-wezr_trait_profile_shields_and_health = Struct("shields_and_health", 
+wezr_trait_profile_shields_and_health = Struct("shields_and_health",
     SEnum8("damage_resistance", *wezr_trait_profile_shields_and_health_damage_resistance),
     SEnum8("shield_multiplier", *wezr_trait_profile_shields_and_health_shield_multiplier),
     SEnum8("shield_recharge_rate", *wezr_trait_profile_shields_and_health_shield_recharge_rate),
@@ -324,7 +333,7 @@ wezr_trait_profile_shields_and_health = Struct("shields_and_health",
     )
 
 
-wezr_trait_profile_weapons_and_damage = Struct("weapons_and_damage", 
+wezr_trait_profile_weapons_and_damage = Struct("weapons_and_damage",
     SEnum8("damage_modifier", *wezr_trait_profile_weapons_and_damage_damage_modifier),
     SEnum8("grenade_regeneration", *wezr_trait_profile_shields_and_health_headshot_immunity),
     SEnum8("weapon_pickup", *wezr_trait_profile_shields_and_health_headshot_immunity),
@@ -338,7 +347,7 @@ wezr_trait_profile_weapons_and_damage = Struct("weapons_and_damage",
     )
 
 
-wezr_trait_profile_movement = Struct("movement", 
+wezr_trait_profile_movement = Struct("movement",
     SEnum8("player_speed", *wezr_trait_profile_movement_player_speed),
     SEnum8("player_gravity", *wezr_trait_profile_movement_player_gravity),
     SEnum8("vehicle_use", *wezr_trait_profile_movement_vehicle_use),
@@ -347,7 +356,7 @@ wezr_trait_profile_movement = Struct("movement",
     )
 
 
-wezr_trait_profile_appearance = Struct("appearance", 
+wezr_trait_profile_appearance = Struct("appearance",
     SEnum8("active_camo", *wezr_trait_profile_appearance_active_camo),
     SEnum8("waypoint", *wezr_trait_profile_appearance_waypoint),
     SEnum8("aura", *wezr_trait_profile_appearance_aura),
@@ -356,14 +365,14 @@ wezr_trait_profile_appearance = Struct("appearance",
     )
 
 
-wezr_trait_profile_sensor = Struct("sensor", 
+wezr_trait_profile_sensor = Struct("sensor",
     SEnum32("motion_tracker_mode", *wezr_trait_profile_sensor_motion_tracker_mode),
     SEnum32("motion_tracker_range", *wezr_trait_profile_sensor_motion_tracker_range),
     ENDIAN=">", SIZE=8
     )
 
 
-wezr_trait_profile = Struct("trait_profile", 
+wezr_trait_profile = Struct("trait_profile",
     h3_string_id("name"),
     h3_reflexive("shields_and_health", wezr_trait_profile_shields_and_health),
     h3_reflexive("weapons_and_damage", wezr_trait_profile_weapons_and_damage),
@@ -374,8 +383,8 @@ wezr_trait_profile = Struct("trait_profile",
     )
 
 
-wezr_slayer_variant_general_setting = Struct("general_setting", 
-    Bool32("flags", 
+wezr_slayer_variant_general_setting = Struct("general_setting",
+    Bool32("flags",
         "teams_enabled",
         ),
     SInt8("time_limit"),
@@ -386,8 +395,8 @@ wezr_slayer_variant_general_setting = Struct("general_setting",
     )
 
 
-wezr_slayer_variant_respawn_setting = Struct("respawn_setting", 
-    Bool16("flags", 
+wezr_slayer_variant_respawn_setting = Struct("respawn_setting",
+    Bool16("flags",
         "inherit_respawn_time",
         "respawn_with_team",
         "respawn_at_location",
@@ -408,8 +417,8 @@ wezr_slayer_variant_respawn_setting = Struct("respawn_setting",
     )
 
 
-wezr_slayer_variant_social_setting = Struct("social_setting", 
-    Bool32("flags", 
+wezr_slayer_variant_social_setting = Struct("social_setting",
+    Bool32("flags",
         "observers_enabled",
         "team_changing_enabled",
         "balanced_team_changing",
@@ -423,8 +432,8 @@ wezr_slayer_variant_social_setting = Struct("social_setting",
     )
 
 
-wezr_slayer_variant_map_override = Struct("map_override", 
-    Bool32("flags", 
+wezr_slayer_variant_map_override = Struct("map_override",
+    Bool32("flags",
         "grenades_on_map",
         "indestructable_vehicles",
         ),
@@ -442,7 +451,7 @@ wezr_slayer_variant_map_override = Struct("map_override",
     )
 
 
-wezr_slayer_variant = Struct("slayer_variant", 
+wezr_slayer_variant = Struct("slayer_variant",
     h3_string_id("name"),
     h3_string_id("description"),
     h3_reflexive("general_settings", wezr_slayer_variant_general_setting),
@@ -472,8 +481,8 @@ wezr_slayer_variant = Struct("slayer_variant",
     )
 
 
-wezr_oddball_variant_general_setting = Struct("general_setting", 
-    Bool32("flags", 
+wezr_oddball_variant_general_setting = Struct("general_setting",
+    Bool32("flags",
         "teams_enabled",
         ),
     SInt8("time_limit"),
@@ -484,8 +493,8 @@ wezr_oddball_variant_general_setting = Struct("general_setting",
     )
 
 
-wezr_oddball_variant_respawn_setting = Struct("respawn_setting", 
-    Bool16("flags", 
+wezr_oddball_variant_respawn_setting = Struct("respawn_setting",
+    Bool16("flags",
         "inherit_respawn_time",
         "respawn_with_team",
         "respawn_at_location",
@@ -506,8 +515,8 @@ wezr_oddball_variant_respawn_setting = Struct("respawn_setting",
     )
 
 
-wezr_oddball_variant_social_setting = Struct("social_setting", 
-    Bool32("flags", 
+wezr_oddball_variant_social_setting = Struct("social_setting",
+    Bool32("flags",
         "observers_enabled",
         "team_changing_enabled",
         "balanced_team_changing",
@@ -521,8 +530,8 @@ wezr_oddball_variant_social_setting = Struct("social_setting",
     )
 
 
-wezr_oddball_variant_map_override = Struct("map_override", 
-    Bool32("flags", 
+wezr_oddball_variant_map_override = Struct("map_override",
+    Bool32("flags",
         "grenades_on_map",
         "indestructable_vehicles",
         ),
@@ -540,14 +549,14 @@ wezr_oddball_variant_map_override = Struct("map_override",
     )
 
 
-wezr_oddball_variant = Struct("oddball_variant", 
+wezr_oddball_variant = Struct("oddball_variant",
     h3_string_id("name"),
     h3_string_id("description"),
     h3_reflexive("general_settings", wezr_oddball_variant_general_setting),
     h3_reflexive("respawn_settings", wezr_oddball_variant_respawn_setting),
     h3_reflexive("social_settings", wezr_oddball_variant_social_setting),
     h3_reflexive("map_overrides", wezr_oddball_variant_map_override),
-    Bool32("flags", 
+    Bool32("flags",
         "autopickup_enabled",
         "ball_effect_enabled",
         ),
@@ -568,8 +577,8 @@ wezr_oddball_variant = Struct("oddball_variant",
     )
 
 
-wezr_capture_the_flag_variant_general_setting = Struct("general_setting", 
-    Bool32("flags", 
+wezr_capture_the_flag_variant_general_setting = Struct("general_setting",
+    Bool32("flags",
         "teams_enabled",
         ),
     SInt8("time_limit"),
@@ -580,8 +589,8 @@ wezr_capture_the_flag_variant_general_setting = Struct("general_setting",
     )
 
 
-wezr_capture_the_flag_variant_respawn_setting = Struct("respawn_setting", 
-    Bool16("flags", 
+wezr_capture_the_flag_variant_respawn_setting = Struct("respawn_setting",
+    Bool16("flags",
         "inherit_respawn_time",
         "respawn_with_team",
         "respawn_at_location",
@@ -602,8 +611,8 @@ wezr_capture_the_flag_variant_respawn_setting = Struct("respawn_setting",
     )
 
 
-wezr_capture_the_flag_variant_social_setting = Struct("social_setting", 
-    Bool32("flags", 
+wezr_capture_the_flag_variant_social_setting = Struct("social_setting",
+    Bool32("flags",
         "observers_enabled",
         "team_changing_enabled",
         "balanced_team_changing",
@@ -617,8 +626,8 @@ wezr_capture_the_flag_variant_social_setting = Struct("social_setting",
     )
 
 
-wezr_capture_the_flag_variant_map_override = Struct("map_override", 
-    Bool32("flags", 
+wezr_capture_the_flag_variant_map_override = Struct("map_override",
+    Bool32("flags",
         "grenades_on_map",
         "indestructable_vehicles",
         ),
@@ -636,14 +645,14 @@ wezr_capture_the_flag_variant_map_override = Struct("map_override",
     )
 
 
-wezr_capture_the_flag_variant = Struct("capture_the_flag_variant", 
+wezr_capture_the_flag_variant = Struct("capture_the_flag_variant",
     h3_string_id("name"),
     h3_string_id("description"),
     h3_reflexive("general_settings", wezr_capture_the_flag_variant_general_setting),
     h3_reflexive("respawn_settings", wezr_capture_the_flag_variant_respawn_setting),
     h3_reflexive("social_settings", wezr_capture_the_flag_variant_social_setting),
     h3_reflexive("map_overrides", wezr_capture_the_flag_variant_map_override),
-    Bool32("flags", 
+    Bool32("flags",
         "flag_at_home_to_score",
         ),
     SEnum16("home_flag_waypoint", *wezr_capture_the_flag_variant_home_flag_waypoint),
@@ -660,8 +669,8 @@ wezr_capture_the_flag_variant = Struct("capture_the_flag_variant",
     )
 
 
-wezr_assault_variant_general_setting = Struct("general_setting", 
-    Bool32("flags", 
+wezr_assault_variant_general_setting = Struct("general_setting",
+    Bool32("flags",
         "teams_enabled",
         ),
     SInt8("time_limit"),
@@ -672,8 +681,8 @@ wezr_assault_variant_general_setting = Struct("general_setting",
     )
 
 
-wezr_assault_variant_respawn_setting = Struct("respawn_setting", 
-    Bool16("flags", 
+wezr_assault_variant_respawn_setting = Struct("respawn_setting",
+    Bool16("flags",
         "inherit_respawn_time",
         "respawn_with_team",
         "respawn_at_location",
@@ -694,8 +703,8 @@ wezr_assault_variant_respawn_setting = Struct("respawn_setting",
     )
 
 
-wezr_assault_variant_social_setting = Struct("social_setting", 
-    Bool32("flags", 
+wezr_assault_variant_social_setting = Struct("social_setting",
+    Bool32("flags",
         "observers_enabled",
         "team_changing_enabled",
         "balanced_team_changing",
@@ -709,8 +718,8 @@ wezr_assault_variant_social_setting = Struct("social_setting",
     )
 
 
-wezr_assault_variant_map_override = Struct("map_override", 
-    Bool32("flags", 
+wezr_assault_variant_map_override = Struct("map_override",
+    Bool32("flags",
         "grenades_on_map",
         "indestructable_vehicles",
         ),
@@ -728,14 +737,14 @@ wezr_assault_variant_map_override = Struct("map_override",
     )
 
 
-wezr_assault_variant = Struct("assault_variant", 
+wezr_assault_variant = Struct("assault_variant",
     h3_string_id("name"),
     h3_string_id("description"),
     h3_reflexive("general_settings", wezr_assault_variant_general_setting),
     h3_reflexive("respawn_settings", wezr_assault_variant_respawn_setting),
     h3_reflexive("social_settings", wezr_assault_variant_social_setting),
     h3_reflexive("map_overrides", wezr_assault_variant_map_override),
-    Bool32("flags", 
+    Bool32("flags",
         "reset_on_disarm",
         ),
     SEnum16("respawn_on_capture", *wezr_capture_the_flag_variant_respawn_on_capture),
@@ -754,8 +763,8 @@ wezr_assault_variant = Struct("assault_variant",
     )
 
 
-wezr_infection_variant_general_setting = Struct("general_setting", 
-    Bool32("flags", 
+wezr_infection_variant_general_setting = Struct("general_setting",
+    Bool32("flags",
         "teams_enabled",
         ),
     SInt8("time_limit"),
@@ -766,8 +775,8 @@ wezr_infection_variant_general_setting = Struct("general_setting",
     )
 
 
-wezr_infection_variant_respawn_setting = Struct("respawn_setting", 
-    Bool16("flags", 
+wezr_infection_variant_respawn_setting = Struct("respawn_setting",
+    Bool16("flags",
         "inherit_respawn_time",
         "respawn_with_team",
         "respawn_at_location",
@@ -788,8 +797,8 @@ wezr_infection_variant_respawn_setting = Struct("respawn_setting",
     )
 
 
-wezr_infection_variant_social_setting = Struct("social_setting", 
-    Bool32("flags", 
+wezr_infection_variant_social_setting = Struct("social_setting",
+    Bool32("flags",
         "observers_enabled",
         "team_changing_enabled",
         "balanced_team_changing",
@@ -803,8 +812,8 @@ wezr_infection_variant_social_setting = Struct("social_setting",
     )
 
 
-wezr_infection_variant_map_override = Struct("map_override", 
-    Bool32("flags", 
+wezr_infection_variant_map_override = Struct("map_override",
+    Bool32("flags",
         "grenades_on_map",
         "indestructable_vehicles",
         ),
@@ -822,14 +831,14 @@ wezr_infection_variant_map_override = Struct("map_override",
     )
 
 
-wezr_infection_variant = Struct("infection_variant", 
+wezr_infection_variant = Struct("infection_variant",
     h3_string_id("name"),
     h3_string_id("description"),
     h3_reflexive("general_settings", wezr_infection_variant_general_setting),
     h3_reflexive("respawn_settings", wezr_infection_variant_respawn_setting),
     h3_reflexive("social_settings", wezr_infection_variant_social_setting),
     h3_reflexive("map_overrides", wezr_infection_variant_map_override),
-    Bool32("flags", 
+    Bool32("flags",
         "respawn_on_haven_move",
         ),
     SEnum16("safe_havens", *wezr_infection_variant_safe_havens),
@@ -852,8 +861,8 @@ wezr_infection_variant = Struct("infection_variant",
     )
 
 
-wezr_king_of_the_hill_variant_general_setting = Struct("general_setting", 
-    Bool32("flags", 
+wezr_king_of_the_hill_variant_general_setting = Struct("general_setting",
+    Bool32("flags",
         "teams_enabled",
         ),
     SInt8("time_limit"),
@@ -864,8 +873,8 @@ wezr_king_of_the_hill_variant_general_setting = Struct("general_setting",
     )
 
 
-wezr_king_of_the_hill_variant_respawn_setting = Struct("respawn_setting", 
-    Bool16("flags", 
+wezr_king_of_the_hill_variant_respawn_setting = Struct("respawn_setting",
+    Bool16("flags",
         "inherit_respawn_time",
         "respawn_with_team",
         "respawn_at_location",
@@ -886,8 +895,8 @@ wezr_king_of_the_hill_variant_respawn_setting = Struct("respawn_setting",
     )
 
 
-wezr_king_of_the_hill_variant_social_setting = Struct("social_setting", 
-    Bool32("flags", 
+wezr_king_of_the_hill_variant_social_setting = Struct("social_setting",
+    Bool32("flags",
         "observers_enabled",
         "team_changing_enabled",
         "balanced_team_changing",
@@ -901,8 +910,8 @@ wezr_king_of_the_hill_variant_social_setting = Struct("social_setting",
     )
 
 
-wezr_king_of_the_hill_variant_map_override = Struct("map_override", 
-    Bool32("flags", 
+wezr_king_of_the_hill_variant_map_override = Struct("map_override",
+    Bool32("flags",
         "grenades_on_map",
         "indestructable_vehicles",
         ),
@@ -920,14 +929,14 @@ wezr_king_of_the_hill_variant_map_override = Struct("map_override",
     )
 
 
-wezr_king_of_the_hill_variant = Struct("king_of_the_hill_variant", 
+wezr_king_of_the_hill_variant = Struct("king_of_the_hill_variant",
     h3_string_id("name"),
     h3_string_id("description"),
     h3_reflexive("general_settings", wezr_king_of_the_hill_variant_general_setting),
     h3_reflexive("respawn_settings", wezr_king_of_the_hill_variant_respawn_setting),
     h3_reflexive("social_settings", wezr_king_of_the_hill_variant_social_setting),
     h3_reflexive("map_overrides", wezr_king_of_the_hill_variant_map_override),
-    Bool32("flags", 
+    Bool32("flags",
         "opaque_hill",
         ),
     SInt16("score_to_win"),
@@ -943,8 +952,8 @@ wezr_king_of_the_hill_variant = Struct("king_of_the_hill_variant",
     )
 
 
-wezr_territories_variant_general_setting = Struct("general_setting", 
-    Bool32("flags", 
+wezr_territories_variant_general_setting = Struct("general_setting",
+    Bool32("flags",
         "teams_enabled",
         ),
     SInt8("time_limit"),
@@ -955,8 +964,8 @@ wezr_territories_variant_general_setting = Struct("general_setting",
     )
 
 
-wezr_territories_variant_respawn_setting = Struct("respawn_setting", 
-    Bool16("flags", 
+wezr_territories_variant_respawn_setting = Struct("respawn_setting",
+    Bool16("flags",
         "inherit_respawn_time",
         "respawn_with_team",
         "respawn_at_location",
@@ -977,8 +986,8 @@ wezr_territories_variant_respawn_setting = Struct("respawn_setting",
     )
 
 
-wezr_territories_variant_social_setting = Struct("social_setting", 
-    Bool32("flags", 
+wezr_territories_variant_social_setting = Struct("social_setting",
+    Bool32("flags",
         "observers_enabled",
         "team_changing_enabled",
         "balanced_team_changing",
@@ -992,8 +1001,8 @@ wezr_territories_variant_social_setting = Struct("social_setting",
     )
 
 
-wezr_territories_variant_map_override = Struct("map_override", 
-    Bool32("flags", 
+wezr_territories_variant_map_override = Struct("map_override",
+    Bool32("flags",
         "grenades_on_map",
         "indestructable_vehicles",
         ),
@@ -1011,14 +1020,14 @@ wezr_territories_variant_map_override = Struct("map_override",
     )
 
 
-wezr_territories_variant = Struct("territories_variant", 
+wezr_territories_variant = Struct("territories_variant",
     h3_string_id("name"),
     h3_string_id("description"),
     h3_reflexive("general_settings", wezr_territories_variant_general_setting),
     h3_reflexive("respawn_settings", wezr_territories_variant_respawn_setting),
     h3_reflexive("social_settings", wezr_territories_variant_social_setting),
     h3_reflexive("map_overrides", wezr_territories_variant_map_override),
-    Bool32("flags", 
+    Bool32("flags",
         "one_sided",
         "lock_after_first_capture",
         ),
@@ -1032,8 +1041,8 @@ wezr_territories_variant = Struct("territories_variant",
     )
 
 
-wezr_juggernaut_variant_general_setting = Struct("general_setting", 
-    Bool32("flags", 
+wezr_juggernaut_variant_general_setting = Struct("general_setting",
+    Bool32("flags",
         "teams_enabled",
         ),
     SInt8("time_limit"),
@@ -1044,8 +1053,8 @@ wezr_juggernaut_variant_general_setting = Struct("general_setting",
     )
 
 
-wezr_juggernaut_variant_respawn_setting = Struct("respawn_setting", 
-    Bool16("flags", 
+wezr_juggernaut_variant_respawn_setting = Struct("respawn_setting",
+    Bool16("flags",
         "inherit_respawn_time",
         "respawn_with_team",
         "respawn_at_location",
@@ -1066,8 +1075,8 @@ wezr_juggernaut_variant_respawn_setting = Struct("respawn_setting",
     )
 
 
-wezr_juggernaut_variant_social_setting = Struct("social_setting", 
-    Bool32("flags", 
+wezr_juggernaut_variant_social_setting = Struct("social_setting",
+    Bool32("flags",
         "observers_enabled",
         "team_changing_enabled",
         "balanced_team_changing",
@@ -1081,8 +1090,8 @@ wezr_juggernaut_variant_social_setting = Struct("social_setting",
     )
 
 
-wezr_juggernaut_variant_map_override = Struct("map_override", 
-    Bool32("flags", 
+wezr_juggernaut_variant_map_override = Struct("map_override",
+    Bool32("flags",
         "grenades_on_map",
         "indestructable_vehicles",
         ),
@@ -1100,14 +1109,14 @@ wezr_juggernaut_variant_map_override = Struct("map_override",
     )
 
 
-wezr_juggernaut_variant = Struct("juggernaut_variant", 
+wezr_juggernaut_variant = Struct("juggernaut_variant",
     h3_string_id("name"),
     h3_string_id("description"),
     h3_reflexive("general_settings", wezr_juggernaut_variant_general_setting),
     h3_reflexive("respawn_settings", wezr_juggernaut_variant_respawn_setting),
     h3_reflexive("social_settings", wezr_juggernaut_variant_social_setting),
     h3_reflexive("map_overrides", wezr_juggernaut_variant_map_override),
-    Bool32("flags", 
+    Bool32("flags",
         "allied_against_juggernaut",
         "respawn_on_lone_juggernaut",
         "goal_zones_enabled",
@@ -1132,8 +1141,8 @@ wezr_juggernaut_variant = Struct("juggernaut_variant",
     )
 
 
-wezr_vip_variant_general_setting = Struct("general_setting", 
-    Bool32("flags", 
+wezr_vip_variant_general_setting = Struct("general_setting",
+    Bool32("flags",
         "teams_enabled",
         ),
     SInt8("time_limit"),
@@ -1144,8 +1153,8 @@ wezr_vip_variant_general_setting = Struct("general_setting",
     )
 
 
-wezr_vip_variant_respawn_setting = Struct("respawn_setting", 
-    Bool16("flags", 
+wezr_vip_variant_respawn_setting = Struct("respawn_setting",
+    Bool16("flags",
         "inherit_respawn_time",
         "respawn_with_team",
         "respawn_at_location",
@@ -1166,8 +1175,8 @@ wezr_vip_variant_respawn_setting = Struct("respawn_setting",
     )
 
 
-wezr_vip_variant_social_setting = Struct("social_setting", 
-    Bool32("flags", 
+wezr_vip_variant_social_setting = Struct("social_setting",
+    Bool32("flags",
         "observers_enabled",
         "team_changing_enabled",
         "balanced_team_changing",
@@ -1181,8 +1190,8 @@ wezr_vip_variant_social_setting = Struct("social_setting",
     )
 
 
-wezr_vip_variant_map_override = Struct("map_override", 
-    Bool32("flags", 
+wezr_vip_variant_map_override = Struct("map_override",
+    Bool32("flags",
         "grenades_on_map",
         "indestructable_vehicles",
         ),
@@ -1200,14 +1209,14 @@ wezr_vip_variant_map_override = Struct("map_override",
     )
 
 
-wezr_vip_variant = Struct("vip_variant", 
+wezr_vip_variant = Struct("vip_variant",
     h3_string_id("name"),
     h3_string_id("description"),
     h3_reflexive("general_settings", wezr_vip_variant_general_setting),
     h3_reflexive("respawn_settings", wezr_vip_variant_respawn_setting),
     h3_reflexive("social_settings", wezr_vip_variant_social_setting),
     h3_reflexive("map_overrides", wezr_vip_variant_map_override),
-    Bool32("flags", 
+    Bool32("flags",
         "single_vip",
         "goal_zones_enabled",
         "end_round_on_vip_death",
@@ -1235,8 +1244,8 @@ wezr_vip_variant = Struct("vip_variant",
     )
 
 
-wezr_sandbox_editor_variant_general_setting = Struct("general_setting", 
-    Bool32("flags", 
+wezr_sandbox_editor_variant_general_setting = Struct("general_setting",
+    Bool32("flags",
         "teams_enabled",
         ),
     SInt8("time_limit"),
@@ -1247,8 +1256,8 @@ wezr_sandbox_editor_variant_general_setting = Struct("general_setting",
     )
 
 
-wezr_sandbox_editor_variant_respawn_setting = Struct("respawn_setting", 
-    Bool16("flags", 
+wezr_sandbox_editor_variant_respawn_setting = Struct("respawn_setting",
+    Bool16("flags",
         "inherit_respawn_time",
         "respawn_with_team",
         "respawn_at_location",
@@ -1269,8 +1278,8 @@ wezr_sandbox_editor_variant_respawn_setting = Struct("respawn_setting",
     )
 
 
-wezr_sandbox_editor_variant_social_setting = Struct("social_setting", 
-    Bool32("flags", 
+wezr_sandbox_editor_variant_social_setting = Struct("social_setting",
+    Bool32("flags",
         "observers_enabled",
         "team_changing_enabled",
         "balanced_team_changing",
@@ -1284,8 +1293,8 @@ wezr_sandbox_editor_variant_social_setting = Struct("social_setting",
     )
 
 
-wezr_sandbox_editor_variant_map_override = Struct("map_override", 
-    Bool32("flags", 
+wezr_sandbox_editor_variant_map_override = Struct("map_override",
+    Bool32("flags",
         "grenades_on_map",
         "indestructable_vehicles",
         ),
@@ -1303,14 +1312,14 @@ wezr_sandbox_editor_variant_map_override = Struct("map_override",
     )
 
 
-wezr_sandbox_editor_variant = Struct("sandbox_editor_variant", 
+wezr_sandbox_editor_variant = Struct("sandbox_editor_variant",
     h3_string_id("name"),
     h3_string_id("description"),
     h3_reflexive("general_settings", wezr_sandbox_editor_variant_general_setting),
     h3_reflexive("respawn_settings", wezr_sandbox_editor_variant_respawn_setting),
     h3_reflexive("social_settings", wezr_sandbox_editor_variant_social_setting),
     h3_reflexive("map_overrides", wezr_sandbox_editor_variant_map_override),
-    Bool32("flags", 
+    Bool32("flags",
         "open_channel_voice_enabled",
         ),
     SEnum16("edit_mode", *wezr_sandbox_editor_variant_edit_mode),
@@ -1320,7 +1329,7 @@ wezr_sandbox_editor_variant = Struct("sandbox_editor_variant",
     )
 
 
-wezr_body = Struct("tagdata", 
+wezr_body = Struct("tagdata",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     h3_reflexive("trait_profiles", wezr_trait_profile),
     h3_reflexive("slayer_variants", wezr_slayer_variant),

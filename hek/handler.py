@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import os
 
 from datetime import datetime
@@ -162,10 +171,8 @@ class HaloHandler(Handler):
         if self.tagsdir_relative and not filepath.is_absolute():
             filepath = self.tagsdir.joinpath(filepath)
 
-        ext = filepath.suffix.lower()
-
-        '''It is more reliable to determine a Halo tag
-        based on its 4CC def_id than by file extension'''
+        # It is more reliable to determine a Halo tag
+        # based on its 4CC def_id than by file extension
         try:
             with filepath.open('rb') as f:
                 f.seek(36)
@@ -177,7 +184,7 @@ class HaloHandler(Handler):
         except Exception:
             pass
 
-        return self.ext_id_map.get(ext)
+        return self.ext_id_map.get(filepath.suffix.lower())
 
     def get_tagref_invalid(self, parent, attr_index):
         '''

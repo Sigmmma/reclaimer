@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -16,14 +25,14 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-rmhg_unknown_0 = Struct("unknown_0", 
+rmhg_unknown_0 = Struct("unknown_0",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-rmhg_import_data_function = Struct("function", 
+rmhg_import_data_function = Struct("function",
     SInt32("unknown_0", VISIBLE=False),
     h3_string_id("name"),
     BytesRaw("unknown_1", SIZE=8, VISIBLE=False),
@@ -32,7 +41,7 @@ rmhg_import_data_function = Struct("function",
     )
 
 
-rmhg_import_data = Struct("import_data", 
+rmhg_import_data = Struct("import_data",
     h3_string_id("material_type"),
     SInt32("unknown_0", VISIBLE=False),
     h3_dependency("bitmap"),
@@ -45,7 +54,7 @@ rmhg_import_data = Struct("import_data",
     )
 
 
-rmhg_shader_propertie_shader_map = Struct("shader_map", 
+rmhg_shader_propertie_shader_map = Struct("shader_map",
     h3_dependency("bitmap"),
     SInt8("unknown_0", VISIBLE=False),
     SInt8("bitmap_index"),
@@ -59,27 +68,27 @@ rmhg_shader_propertie_shader_map = Struct("shader_map",
     )
 
 
-rmhg_shader_propertie_argument = Struct("argument", 
+rmhg_shader_propertie_argument = Struct("argument",
     Array("arg_array", SUB_STRUCT=Float("arg"), SIZE=4),
     ENDIAN=">", SIZE=16
     )
 
 
-rmhg_shader_propertie_unknown_0 = Struct("unknown_0", 
+rmhg_shader_propertie_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=4
     )
 
 
-rmhg_shader_propertie_unknown_2 = Struct("unknown_2", 
+rmhg_shader_propertie_unknown_2 = Struct("unknown_2",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-rmhg_shader_propertie_unknown_3 = Struct("unknown_3", 
+rmhg_shader_propertie_unknown_3 = Struct("unknown_3",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     SInt8("unknown_1", VISIBLE=False),
     SInt8("unknown_2", VISIBLE=False),
@@ -88,7 +97,7 @@ rmhg_shader_propertie_unknown_3 = Struct("unknown_3",
     )
 
 
-rmhg_shader_propertie_unknown_4 = Struct("unknown_4", 
+rmhg_shader_propertie_unknown_4 = Struct("unknown_4",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -96,7 +105,7 @@ rmhg_shader_propertie_unknown_4 = Struct("unknown_4",
     )
 
 
-rmhg_shader_propertie_function = Struct("function", 
+rmhg_shader_propertie_function = Struct("function",
     SInt32("unknown_0", VISIBLE=False),
     h3_string_id("name"),
     BytesRaw("unknown_1", SIZE=8, VISIBLE=False),
@@ -105,7 +114,7 @@ rmhg_shader_propertie_function = Struct("function",
     )
 
 
-rmhg_shader_propertie = Struct("shader_propertie", 
+rmhg_shader_propertie = Struct("shader_propertie",
     h3_dependency("template"),
     h3_reflexive("shader_maps", rmhg_shader_propertie_shader_map),
     h3_reflexive("arguments", rmhg_shader_propertie_argument),
@@ -123,7 +132,7 @@ rmhg_shader_propertie = Struct("shader_propertie",
     )
 
 
-rmhg_body = Struct("tagdata", 
+rmhg_body = Struct("tagdata",
     h3_dependency("base_render_method"),
     h3_reflexive("unknown_0", rmhg_unknown_0),
     h3_reflexive("import_data", rmhg_import_data),

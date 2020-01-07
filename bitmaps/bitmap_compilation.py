@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from pathlib import Path
 from traceback import format_exc
 
@@ -111,7 +120,7 @@ def parse_dds_file(filepath):
         raise ValueError(
             "    DDS image is malformed and does not " +
             "    contain all six necessary cubemap faces.")
-        
+
     elif not dds_head.flags.pixelformat:
         raise TypeError(
             "    DDS image is malformed and does not " +

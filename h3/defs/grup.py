@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,7 +27,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-grup_list_widget_list_widget_item = Struct("list_widget_item", 
+grup_list_widget_list_widget_item = Struct("list_widget_item",
     Bool32("flags", *unknown_flags_32),
     h3_string_id("name"),
     SInt16("unknown", VISIBLE=False),
@@ -37,9 +46,9 @@ grup_list_widget_list_widget_item = Struct("list_widget_item",
     )
 
 
-grup_list_widget = Struct("list_widget", 
+grup_list_widget = Struct("list_widget",
     h3_dependency("ancestor"),
-    Bool32("flags", 
+    Bool32("flags",
         ("horizontal", 1 << 4),
         "loops",
         ),
@@ -65,9 +74,9 @@ grup_list_widget = Struct("list_widget",
     )
 
 
-grup_text_widget = Struct("text_widget", 
+grup_text_widget = Struct("text_widget",
     h3_dependency("ancestor"),
-    Bool32("flags", 
+    Bool32("flags",
         ("left_alignment", 1 << 3),
         "right_alignment",
         ("all_caps", 1 << 6),
@@ -94,9 +103,9 @@ grup_text_widget = Struct("text_widget",
     )
 
 
-grup_bitmap_widget = Struct("bitmap_widget", 
+grup_bitmap_widget = Struct("bitmap_widget",
     h3_dependency("ancestor"),
-    Bool32("flags", 
+    Bool32("flags",
         ("scale_to_bounds", 1 << 3),
         "replace_with_blur",
         ("replace_with_white", 1 << 10),
@@ -126,21 +135,21 @@ grup_bitmap_widget = Struct("bitmap_widget",
     )
 
 
-grup_model_widget_camera_refinement_zoom_data_1 = Struct("zoom_data_1", 
+grup_model_widget_camera_refinement_zoom_data_1 = Struct("zoom_data_1",
     h3_rawdata_ref("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
 
 
-grup_model_widget_camera_refinement_zoom_data_2 = Struct("zoom_data_2", 
+grup_model_widget_camera_refinement_zoom_data_2 = Struct("zoom_data_2",
     h3_rawdata_ref("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=20
     )
 
 
-grup_model_widget_camera_refinement = Struct("camera_refinement", 
+grup_model_widget_camera_refinement = Struct("camera_refinement",
     h3_string_id("biped", VISIBLE=False),
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     h3_reflexive("zoom_data_1", grup_model_widget_camera_refinement_zoom_data_1),
@@ -150,7 +159,7 @@ grup_model_widget_camera_refinement = Struct("camera_refinement",
     )
 
 
-grup_model_widget = Struct("model_widget", 
+grup_model_widget = Struct("model_widget",
     h3_dependency("ancestor"),
     Bool32("flags", *unknown_flags_32),
     h3_string_id("name"),
@@ -170,8 +179,8 @@ grup_model_widget = Struct("model_widget",
     )
 
 
-grup_body = Struct("tagdata", 
-    Bool32("flags", 
+grup_body = Struct("tagdata",
+    Bool32("flags",
         ("initially_hidden", 1 << 3),
         ),
     h3_string_id("name"),

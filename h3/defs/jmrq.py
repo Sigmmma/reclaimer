@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -16,8 +25,8 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-jmrq_sandbox_text_value_pair_text_value_pair = Struct("text_value_pair", 
-    Bool8("flags", 
+jmrq_sandbox_text_value_pair_text_value_pair = Struct("text_value_pair",
+    Bool8("flags",
         "default",
         "unchanged",
         "_2",
@@ -33,14 +42,14 @@ jmrq_sandbox_text_value_pair_text_value_pair = Struct("text_value_pair",
     )
 
 
-jmrq_sandbox_text_value_pair = Struct("sandbox_text_value_pair", 
+jmrq_sandbox_text_value_pair = Struct("sandbox_text_value_pair",
     h3_string_id("parameter_name"),
     h3_reflexive("text_value_pairs", jmrq_sandbox_text_value_pair_text_value_pair),
     ENDIAN=">", SIZE=16
     )
 
 
-jmrq_body = Struct("tagdata", 
+jmrq_body = Struct("tagdata",
     h3_reflexive("sandbox_text_value_pairs", jmrq_sandbox_text_value_pair),
     ENDIAN=">", SIZE=12
     )

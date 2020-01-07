@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -16,14 +25,14 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-cntl_contrail_system_unknown_14 = Struct("unknown_14", 
+cntl_contrail_system_unknown_14 = Struct("unknown_14",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-cntl_contrail_system_import_data_function = Struct("function", 
+cntl_contrail_system_import_data_function = Struct("function",
     SInt32("unknown_0", VISIBLE=False),
     h3_string_id("name"),
     BytesRaw("unknown_1", SIZE=8, VISIBLE=False),
@@ -32,7 +41,7 @@ cntl_contrail_system_import_data_function = Struct("function",
     )
 
 
-cntl_contrail_system_import_data = Struct("import_data", 
+cntl_contrail_system_import_data = Struct("import_data",
     h3_string_id("material_type"),
     SInt32("unknown_0", VISIBLE=False),
     h3_dependency("bitmap"),
@@ -45,7 +54,7 @@ cntl_contrail_system_import_data = Struct("import_data",
     )
 
 
-cntl_contrail_system_shader_propertie_shader_map = Struct("shader_map", 
+cntl_contrail_system_shader_propertie_shader_map = Struct("shader_map",
     h3_dependency("bitmap"),
     SInt8("unknown_0", VISIBLE=False),
     SInt8("bitmap_index"),
@@ -59,27 +68,27 @@ cntl_contrail_system_shader_propertie_shader_map = Struct("shader_map",
     )
 
 
-cntl_contrail_system_shader_propertie_argument = Struct("argument", 
+cntl_contrail_system_shader_propertie_argument = Struct("argument",
     Array("arg_array", SUB_STRUCT=Float("arg"), SIZE=4),
     ENDIAN=">", SIZE=16
     )
 
 
-cntl_contrail_system_shader_propertie_unknown_0 = Struct("unknown_0", 
+cntl_contrail_system_shader_propertie_unknown_0 = Struct("unknown_0",
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=4
     )
 
 
-cntl_contrail_system_shader_propertie_unknown_2 = Struct("unknown_2", 
+cntl_contrail_system_shader_propertie_unknown_2 = Struct("unknown_2",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-cntl_contrail_system_shader_propertie_unknown_3 = Struct("unknown_3", 
+cntl_contrail_system_shader_propertie_unknown_3 = Struct("unknown_3",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     SInt8("unknown_1", VISIBLE=False),
     SInt8("unknown_2", VISIBLE=False),
@@ -88,7 +97,7 @@ cntl_contrail_system_shader_propertie_unknown_3 = Struct("unknown_3",
     )
 
 
-cntl_contrail_system_shader_propertie_unknown_4 = Struct("unknown_4", 
+cntl_contrail_system_shader_propertie_unknown_4 = Struct("unknown_4",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -96,7 +105,7 @@ cntl_contrail_system_shader_propertie_unknown_4 = Struct("unknown_4",
     )
 
 
-cntl_contrail_system_shader_propertie_function = Struct("function", 
+cntl_contrail_system_shader_propertie_function = Struct("function",
     SInt32("unknown_0", VISIBLE=False),
     h3_string_id("name"),
     BytesRaw("unknown_1", SIZE=8, VISIBLE=False),
@@ -105,7 +114,7 @@ cntl_contrail_system_shader_propertie_function = Struct("function",
     )
 
 
-cntl_contrail_system_shader_propertie = Struct("shader_propertie", 
+cntl_contrail_system_shader_propertie = Struct("shader_propertie",
     h3_dependency("template"),
     h3_reflexive("shader_maps", cntl_contrail_system_shader_propertie_shader_map),
     h3_reflexive("arguments", cntl_contrail_system_shader_propertie_argument),
@@ -123,28 +132,28 @@ cntl_contrail_system_shader_propertie = Struct("shader_propertie",
     )
 
 
-cntl_contrail_system_unknown_29 = Struct("unknown_29", 
+cntl_contrail_system_unknown_29 = Struct("unknown_29",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-cntl_contrail_system_compiled_function = Struct("compiled_function", 
+cntl_contrail_system_compiled_function = Struct("compiled_function",
     BytesRaw("unknown", SIZE=64, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=64
     )
 
 
-cntl_contrail_system_compiled_color_function = Struct("compiled_color_function", 
+cntl_contrail_system_compiled_color_function = Struct("compiled_color_function",
     color_rgb_float("color"),
     Float("magnitude"),
     ENDIAN=">", SIZE=16
     )
 
 
-cntl_contrail_system = Struct("contrail_system", 
+cntl_contrail_system = Struct("contrail_system",
     h3_string_id("name"),
     BytesRaw("unknown_0", SIZE=32, VISIBLE=False),
     SInt8("input_0"),
@@ -240,7 +249,7 @@ cntl_contrail_system = Struct("contrail_system",
     )
 
 
-cntl_body = Struct("tagdata", 
+cntl_body = Struct("tagdata",
     h3_reflexive("contrail_system", cntl_contrail_system),
     ENDIAN=">", SIZE=12
     )

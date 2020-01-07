@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -26,18 +35,18 @@ sncl_sound_classe_stereo_playback_type = (
     )
 
 
-sncl_sound_classe = Struct("sound_classe", 
+sncl_sound_classe = Struct("sound_classe",
     SInt16("max_sounds_per_tag"),
     SInt16("max_sounds_per_object"),
     SInt32("preemption_time"),
-    Bool16("internal_flags", 
+    Bool16("internal_flags",
         "valid",
         "is_speech",
         "scripted",
         "stops_with_object",
         ("multilingual", 1 << 7),
         ),
-    Bool16("flags", 
+    Bool16("flags",
         "plays_during_pause",
         "dry_stereo_mix",
         "no_object_obstruction",
@@ -87,7 +96,7 @@ sncl_sound_classe = Struct("sound_classe",
     )
 
 
-sncl_body = Struct("tagdata", 
+sncl_body = Struct("tagdata",
     h3_reflexive("sound_classes", sncl_sound_classe),
     ENDIAN=">", SIZE=12
     )

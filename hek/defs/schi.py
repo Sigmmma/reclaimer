@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from .shdr import *
 from supyr_struct.defs.tag_def import TagDef
 from .objs.shdr import ShdrTag
@@ -68,7 +77,7 @@ schi_body = Struct("tagdata",
     SIZE=108
     )
 
-    
+
 def get():
     return schi_def
 
