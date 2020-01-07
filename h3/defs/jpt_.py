@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -59,7 +68,7 @@ jpt__side_effect = (
     )
 
 
-jpt__player_response = Struct("player_response", 
+jpt__player_response = Struct("player_response",
     SEnum16("response_type", *jpt__player_response_response_type),
     SInt16("unknown_0", VISIBLE=False),
     SEnum16("type", *jpt__player_response_type),
@@ -80,16 +89,16 @@ jpt__player_response = Struct("player_response",
     )
 
 
-jpt__body = Struct("tagdata", 
+jpt__body = Struct("tagdata",
     QStruct("radius", INCLUDE=from_to),
     Float("cutoff_scale"),
-    Bool32("flags_0", 
+    Bool32("flags_0",
         "dont_scale_damage_by_distance",
         "area_damage_players_only",
         ),
     SEnum16("side_effect", *jpt__side_effect),
     SEnum16("category", *jpt__category),
-    Bool32("flags_1", 
+    Bool32("flags_1",
         "does_not_hurt_owner",
         "can_cause_headshots",
         "pings_resistant_units",

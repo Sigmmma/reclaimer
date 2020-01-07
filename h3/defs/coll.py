@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,13 +27,13 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-coll_material = Struct("material", 
+coll_material = Struct("material",
     h3_string_id("name"),
     ENDIAN=">", SIZE=4
     )
 
 
-coll_region_permutation_bsp_bsp_3d_node = Struct("bsp_3d_node", 
+coll_region_permutation_bsp_bsp_3d_node = Struct("bsp_3d_node",
     UInt8("unknown_0", VISIBLE=False),
     SInt16("second_child"),
     UInt8("unknown_1", VISIBLE=False),
@@ -34,14 +43,14 @@ coll_region_permutation_bsp_bsp_3d_node = Struct("bsp_3d_node",
     )
 
 
-coll_region_permutation_bsp_plane = Struct("plane", 
+coll_region_permutation_bsp_plane = Struct("plane",
     QStruct("plane", INCLUDE=ijk_float),
     Float("plane_d"),
     ENDIAN=">", SIZE=16
     )
 
 
-coll_region_permutation_bsp_leave = Struct("leave", 
+coll_region_permutation_bsp_leave = Struct("leave",
     SInt16("flags"),
     SInt16("bsp_2d_reference_count"),
     SInt16("unknown", VISIBLE=False),
@@ -50,14 +59,14 @@ coll_region_permutation_bsp_leave = Struct("leave",
     )
 
 
-coll_region_permutation_bsp_bsp_2d_reference = Struct("bsp_2d_reference", 
+coll_region_permutation_bsp_bsp_2d_reference = Struct("bsp_2d_reference",
     SInt16("plane"),
     SInt16("bsp_2d_node"),
     ENDIAN=">", SIZE=4
     )
 
 
-coll_region_permutation_bsp_bsp_2d_node = Struct("bsp_2d_node", 
+coll_region_permutation_bsp_bsp_2d_node = Struct("bsp_2d_node",
     QStruct("plane", INCLUDE=ij_float),
     Float("plane_d"),
     SInt16("left_child"),
@@ -66,7 +75,7 @@ coll_region_permutation_bsp_bsp_2d_node = Struct("bsp_2d_node",
     )
 
 
-coll_region_permutation_bsp_surface = Struct("surface", 
+coll_region_permutation_bsp_surface = Struct("surface",
     SInt16("plane"),
     SInt16("first_edge"),
     SInt16("material"),
@@ -77,7 +86,7 @@ coll_region_permutation_bsp_surface = Struct("surface",
     )
 
 
-coll_region_permutation_bsp_edge = Struct("edge", 
+coll_region_permutation_bsp_edge = Struct("edge",
     SInt16("start_vertex"),
     SInt16("end_vertex"),
     SInt16("forward_edge"),
@@ -88,7 +97,7 @@ coll_region_permutation_bsp_edge = Struct("edge",
     )
 
 
-coll_region_permutation_bsp_vertice = Struct("vertice", 
+coll_region_permutation_bsp_vertice = Struct("vertice",
     Pad(12),
     SInt16("first_edge"),
     SInt16("unknown", VISIBLE=False),
@@ -96,7 +105,7 @@ coll_region_permutation_bsp_vertice = Struct("vertice",
     )
 
 
-coll_region_permutation_bsp = Struct("bsp", 
+coll_region_permutation_bsp = Struct("bsp",
     SInt16("node_index"),
     SInt16("unknown", VISIBLE=False),
     h3_reflexive("bsp_3d_nodes", coll_region_permutation_bsp_bsp_3d_node),
@@ -111,7 +120,7 @@ coll_region_permutation_bsp = Struct("bsp",
     )
 
 
-coll_region_permutation_bsp_physic = Struct("bsp_physic", 
+coll_region_permutation_bsp_physic = Struct("bsp_physic",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     SInt16("size_0"),
     SInt16("size_1"),
@@ -141,13 +150,13 @@ coll_region_permutation_bsp_physic = Struct("bsp_physic",
     )
 
 
-coll_region_permutation_bsp_mopp_code_data = Struct("data", 
+coll_region_permutation_bsp_mopp_code_data = Struct("data",
     UInt8("data_byte"),
     ENDIAN=">", SIZE=1
     )
 
 
-coll_region_permutation_bsp_mopp_code = Struct("bsp_mopp_code", 
+coll_region_permutation_bsp_mopp_code = Struct("bsp_mopp_code",
     SInt32("size_0"),
     SInt32("size_1"),
     SInt32("offset_0"),
@@ -164,7 +173,7 @@ coll_region_permutation_bsp_mopp_code = Struct("bsp_mopp_code",
     )
 
 
-coll_region_permutation = Struct("permutation", 
+coll_region_permutation = Struct("permutation",
     h3_string_id("name"),
     h3_reflexive("bsps", coll_region_permutation_bsp),
     h3_reflexive("bsp_physics", coll_region_permutation_bsp_physic),
@@ -173,16 +182,16 @@ coll_region_permutation = Struct("permutation",
     )
 
 
-coll_region = Struct("region", 
+coll_region = Struct("region",
     h3_string_id("name"),
     h3_reflexive("permutations", coll_region_permutation),
     ENDIAN=">", SIZE=16
     )
 
 
-coll_pathfinding_sphere = Struct("pathfinding_sphere", 
+coll_pathfinding_sphere = Struct("pathfinding_sphere",
     SInt16("node"),
-    Bool16("flags", 
+    Bool16("flags",
         "remains_when_open",
         "vehicle_only",
         "with_sectors",
@@ -193,7 +202,7 @@ coll_pathfinding_sphere = Struct("pathfinding_sphere",
     )
 
 
-coll_node = Struct("node", 
+coll_node = Struct("node",
     h3_string_id("name"),
     SInt16("unknown"),
     SInt16("parent_node"),
@@ -203,10 +212,10 @@ coll_node = Struct("node",
     )
 
 
-coll_body = Struct("tagdata", 
+coll_body = Struct("tagdata",
     SInt32("collision_model_checksum"),
     BytesRaw("unknown", SIZE=12, VISIBLE=False),
-    Bool32("flags", 
+    Bool32("flags",
         "contains_open_edges",
         ),
     h3_reflexive("materials", coll_material),

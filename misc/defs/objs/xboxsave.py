@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import hashlib, hmac
 
 from supyr_struct.buffer import BytearrayBuffer
@@ -13,7 +22,7 @@ class XboxSaveTag(Tag):
 
     data_start = 20
     data_end   = 0
-    
+
     def __init__(self, **kwargs):
         self.sigkey  = kwargs.get('sigkey',  self.sigkey)
         self.authkey = kwargs.get('authkey', self.authkey)
@@ -21,7 +30,7 @@ class XboxSaveTag(Tag):
         self.data_start = kwargs.get('data_start', self.data_start)
         self.data_end = kwargs.get('data_end', self.data_end)
         self.sigkey   = kwargs.get('sigkey',   self.sigkey)
-            
+
         Tag.__init__(self, **kwargs)
 
     def calc_authkey(self, sigkey=None):

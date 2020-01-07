@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -75,7 +84,7 @@ phmo_rigid_bodie_shape_type = (
     )
 
 
-phmo_unknown_2 = Struct("unknown_2", 
+phmo_unknown_2 = Struct("unknown_2",
     h3_string_id("unknown_0"),
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
@@ -83,7 +92,7 @@ phmo_unknown_2 = Struct("unknown_2",
     )
 
 
-phmo_unknown_3 = Struct("unknown_3", 
+phmo_unknown_3 = Struct("unknown_3",
     h3_string_id("name"),
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=5),
     Pad(8),
@@ -91,8 +100,8 @@ phmo_unknown_3 = Struct("unknown_3",
     )
 
 
-phmo_phantom_type = Struct("phantom_type", 
-    Bool32("flags", 
+phmo_phantom_type = Struct("phantom_type",
+    Bool32("flags",
         "generates_effects",
         "use_acceleration_as_force",
         "negates_gravity",
@@ -136,21 +145,21 @@ phmo_phantom_type = Struct("phantom_type",
     )
 
 
-phmo_unknown_4_unknown_0 = Struct("unknown_0", 
+phmo_unknown_4_unknown_0 = Struct("unknown_0",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-phmo_unknown_4_unknown_1 = Struct("unknown_1", 
+phmo_unknown_4_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-phmo_unknown_4 = Struct("unknown_4", 
+phmo_unknown_4 = Struct("unknown_4",
     h3_reflexive("unknown_0", phmo_unknown_4_unknown_0),
     h3_reflexive("unknown_1", phmo_unknown_4_unknown_1),
     VISIBLE=False,
@@ -158,14 +167,14 @@ phmo_unknown_4 = Struct("unknown_4",
     )
 
 
-phmo_node_edge_constraint_unknown_0 = Struct("unknown_0", 
+phmo_node_edge_constraint_unknown_0 = Struct("unknown_0",
     Array("unknown_array", SUB_STRUCT=SInt16("unknown"), SIZE=6, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-phmo_node_edge_constraint_unknown_1 = Struct("unknown_1", 
+phmo_node_edge_constraint_unknown_1 = Struct("unknown_1",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     VISIBLE=False,
@@ -173,7 +182,7 @@ phmo_node_edge_constraint_unknown_1 = Struct("unknown_1",
     )
 
 
-phmo_node_edge_constraint = Struct("constraint", 
+phmo_node_edge_constraint = Struct("constraint",
     SEnum16("type", *phmo_node_edge_constraint_type),
     SInt16("idx"),
     Bool32("flags", *unknown_flags_32),
@@ -184,7 +193,7 @@ phmo_node_edge_constraint = Struct("constraint",
     )
 
 
-phmo_node_edge = Struct("node_edge", 
+phmo_node_edge = Struct("node_edge",
     SInt16("node_a_global_material_index"),
     SInt16("node_b_global_material_index"),
     SInt16("node_a"),
@@ -196,14 +205,14 @@ phmo_node_edge = Struct("node_edge",
     )
 
 
-phmo_rigid_bodie = Struct("rigid_bodie", 
+phmo_rigid_bodie = Struct("rigid_bodie",
     SInt16("node"),
     SInt16("region"),
     SInt16("permutations"),
     SInt16("unknown"),
     QStruct("bounding_sphere_offset", INCLUDE=xyz_float),
     Float("bounding_sphere_radius"),
-    Bool16("flags", 
+    Bool16("flags",
         "no_collisions_with_self",
         "only_collide_with_environment",
         "disable_effects",
@@ -223,7 +232,7 @@ phmo_rigid_bodie = Struct("rigid_bodie",
     )
 
 
-phmo_material = Struct("material", 
+phmo_material = Struct("material",
     h3_string_id("name"),
     h3_string_id("material_name"),
     SInt16("phantom_type_index"),
@@ -233,7 +242,7 @@ phmo_material = Struct("material",
     )
 
 
-phmo_sphere = Struct("sphere", 
+phmo_sphere = Struct("sphere",
     h3_string_id("name"),
     SInt8("material_index"),
     SInt8("unknown_0", VISIBLE=False),
@@ -266,7 +275,7 @@ phmo_sphere = Struct("sphere",
     )
 
 
-phmo_pill = Struct("pill", 
+phmo_pill = Struct("pill",
     h3_string_id("name"),
     SInt8("material_index"),
     SInt8("unknown_0", VISIBLE=False),
@@ -294,7 +303,7 @@ phmo_pill = Struct("pill",
     )
 
 
-phmo_boxe = Struct("boxe", 
+phmo_boxe = Struct("boxe",
     h3_string_id("name"),
     SInt8("material_index"),
     SInt8("unknown_0", VISIBLE=False),
@@ -335,7 +344,7 @@ phmo_boxe = Struct("boxe",
     )
 
 
-phmo_triangle = Struct("triangle", 
+phmo_triangle = Struct("triangle",
     h3_string_id("name"),
     SInt8("material_index"),
     SInt8("unknown_0", VISIBLE=False),
@@ -358,7 +367,7 @@ phmo_triangle = Struct("triangle",
     )
 
 
-phmo_polyhedra = Struct("polyhedra", 
+phmo_polyhedra = Struct("polyhedra",
     h3_string_id("name"),
     SInt8("material_index"),
     SInt8("unknown_0", VISIBLE=False),
@@ -394,7 +403,7 @@ phmo_polyhedra = Struct("polyhedra",
     )
 
 
-phmo_polyhedron_four_vector = Struct("polyhedron_four_vector", 
+phmo_polyhedron_four_vector = Struct("polyhedron_four_vector",
     QStruct("four_vectors_x", INCLUDE=ijk_float),
     Float("four_vectors_x_radius"),
     QStruct("four_vectors_y", INCLUDE=ijk_float),
@@ -405,13 +414,13 @@ phmo_polyhedron_four_vector = Struct("polyhedron_four_vector",
     )
 
 
-phmo_polyhedron_plane_equation = Struct("polyhedron_plane_equation", 
+phmo_polyhedron_plane_equation = Struct("polyhedron_plane_equation",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=4),
     ENDIAN=">", SIZE=16
     )
 
 
-phmo_list = Struct("list", 
+phmo_list = Struct("list",
     SInt32("unknown_0", VISIBLE=False),
     SInt16("size_0"),
     SInt16("size_1"),
@@ -426,7 +435,7 @@ phmo_list = Struct("list",
     )
 
 
-phmo_list_shape = Struct("list_shape", 
+phmo_list_shape = Struct("list_shape",
     SEnum16("shape_type", *phmo_list_shape_shape_type),
     SInt16("shape_index"),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
@@ -436,7 +445,7 @@ phmo_list_shape = Struct("list_shape",
     )
 
 
-phmo_mopp = Struct("mopp", 
+phmo_mopp = Struct("mopp",
     SInt32("unknown_0", VISIBLE=False),
     SInt16("size_0"),
     SInt16("size_1"),
@@ -450,7 +459,7 @@ phmo_mopp = Struct("mopp",
     )
 
 
-phmo_hinge_constraint = Struct("hinge_constraint", 
+phmo_hinge_constraint = Struct("hinge_constraint",
     h3_string_id("name"),
     SInt16("node_a"),
     SInt16("node_b"),
@@ -471,7 +480,7 @@ phmo_hinge_constraint = Struct("hinge_constraint",
     )
 
 
-phmo_ragdoll_constraint = Struct("ragdoll_constraint", 
+phmo_ragdoll_constraint = Struct("ragdoll_constraint",
     h3_string_id("name"),
     SInt16("node_a"),
     SInt16("node_b"),
@@ -496,27 +505,27 @@ phmo_ragdoll_constraint = Struct("ragdoll_constraint",
     )
 
 
-phmo_region_permutation_rigid_bodie = Struct("rigid_bodie", 
+phmo_region_permutation_rigid_bodie = Struct("rigid_bodie",
     SInt16("rigid_body_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-phmo_region_permutation = Struct("permutation", 
+phmo_region_permutation = Struct("permutation",
     h3_string_id("name"),
     h3_reflexive("rigid_bodies", phmo_region_permutation_rigid_bodie),
     ENDIAN=">", SIZE=16
     )
 
 
-phmo_region = Struct("region", 
+phmo_region = Struct("region",
     h3_string_id("name"),
     h3_reflexive("permutations", phmo_region_permutation),
     ENDIAN=">", SIZE=16
     )
 
 
-phmo_node = Struct("node", 
+phmo_node = Struct("node",
     h3_string_id("name"),
     Bool16("flags", *unknown_flags_16),
     SInt16("ancestor"),
@@ -526,7 +535,7 @@ phmo_node = Struct("node",
     )
 
 
-phmo_limited_hinge_constraint = Struct("limited_hinge_constraint", 
+phmo_limited_hinge_constraint = Struct("limited_hinge_constraint",
     h3_string_id("name"),
     SInt16("node_a"),
     SInt16("node_b"),
@@ -550,7 +559,7 @@ phmo_limited_hinge_constraint = Struct("limited_hinge_constraint",
     )
 
 
-phmo_phantom = Struct("phantom", 
+phmo_phantom = Struct("phantom",
     SInt32("unknown_0", VISIBLE=False),
     SInt16("size_0"),
     SInt16("size_1"),
@@ -568,7 +577,7 @@ phmo_phantom = Struct("phantom",
     )
 
 
-phmo_body = Struct("tagdata", 
+phmo_body = Struct("tagdata",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     Float("mass"),
     Float("low_frequency_decativation_scale"),

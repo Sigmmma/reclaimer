@@ -1,15 +1,24 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
+from pathlib import Path
 import os
 
 from binilla.handler import Handler
 from reclaimer.misc.defs import __all__ as all_def_names
-from supyr_struct.defs.constants import PATHDIV
 
 
 class MiscHaloLoader(Handler):
     frozen_imp_paths = all_def_names
     default_defs_path = "reclaimer.misc.defs"
 
-    tagsdir = "%s%stags%s" % (os.path.abspath(os.curdir), PATHDIV, PATHDIV)
+    tagsdir = tagsdir = str(Path.cwd().joinpath("tags"))
 
     def get_def_id(self, filepath):
         '''docstring'''

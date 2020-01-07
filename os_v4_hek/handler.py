@@ -1,12 +1,18 @@
-import os
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
+from pathlib import Path
 
 from reclaimer.hek.handler import HaloHandler
 from reclaimer.os_v4_hek.defs import __all__ as all_def_names
-from supyr_struct.defs.constants import PATHDIV
 
 
 class OsV4HaloHandler(HaloHandler):
     frozen_imp_paths = all_def_names
     default_defs_path = "reclaimer.os_v4_hek.defs"
-
-    tagsdir = "%s%stags%s" % (os.path.abspath(os.curdir), PATHDIV, PATHDIV)

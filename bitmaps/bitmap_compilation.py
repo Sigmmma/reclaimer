@@ -1,10 +1,17 @@
-import os
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
 
+from pathlib import Path
 from traceback import format_exc
 
 from arbytmap.bitmap_io import get_channel_order_by_masks,\
      get_channel_swap_mapping, swap_array_items
-from supyr_struct.util import sanitize_path
 from supyr_struct.defs.bitmaps.dds import dds_def
 
 __all__ = ("compile_bitmap_from_dds_files", "add_bitmap_to_bitmap_tag",
@@ -13,8 +20,8 @@ __all__ = ("compile_bitmap_from_dds_files", "add_bitmap_to_bitmap_tag",
 
 def compile_bitmap_from_dds_files(bitm_tag, dds_filepaths=()):
     for fp in dds_filepaths:
+        fp = Path(fp)
         try:
-            fp = sanitize_path(fp)
             print("    %s" % fp)
             w, h, d, typ, fmt, mips, pixels = parse_dds_file(fp)
         except Exception:
@@ -23,7 +30,7 @@ def compile_bitmap_from_dds_files(bitm_tag, dds_filepaths=()):
             continue
 
         try:
-            seq_name = os.path.basename(os.path.splitext(fp)[0].lower())
+            seq_name = fp.stem
             if "#" in seq_name:
                 seq_name, _ = seq_name.split("#", 1)
 
@@ -100,8 +107,7 @@ def add_bitmap_to_bitmap_tag(bitm_tag, width, height, depth, typ, fmt,
 
 
 def parse_dds_file(filepath):
-    filepath = sanitize_path(filepath)
-    dds_tag = dds_def.build(filepath=filepath)
+    dds_tag = dds_def.build(filepath=Path(filepath))
     dds_head = dds_tag.data.header
     caps  = dds_head.caps
     caps2 = dds_head.caps2
@@ -114,7 +120,7 @@ def parse_dds_file(filepath):
         raise ValueError(
             "    DDS image is malformed and does not " +
             "    contain all six necessary cubemap faces.")
-        
+
     elif not dds_head.flags.pixelformat:
         raise TypeError(
             "    DDS image is malformed and does not " +

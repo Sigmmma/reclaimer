@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -16,15 +25,15 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-efsc_early_mover_propertie = Struct("early_mover_propertie", 
+efsc_early_mover_propertie = Struct("early_mover_propertie",
     h3_string_id("name"),
     Pad(36),
     ENDIAN=">", SIZE=40
     )
 
 
-efsc_ai_propertie = Struct("ai_propertie", 
-    Bool32("flags", 
+efsc_ai_propertie = Struct("ai_propertie",
+    Bool32("flags",
         "destroyable_cover",
         "pathfinding_ignore_when_dead",
         "dynamic_cover",
@@ -37,8 +46,8 @@ efsc_ai_propertie = Struct("ai_propertie",
     )
 
 
-efsc_function = Struct("function", 
-    Bool32("flags", 
+efsc_function = Struct("function",
+    Bool32("flags",
         "invert",
         "mapping_does_not_controls_active",
         "always_active",
@@ -54,7 +63,7 @@ efsc_function = Struct("function",
     )
 
 
-efsc_attachment = Struct("attachment", 
+efsc_attachment = Struct("attachment",
     h3_dependency("attachment"),
     h3_string_id("marker"),
     SEnum16("change_color", *bloc_attachment_change_color),
@@ -65,13 +74,13 @@ efsc_attachment = Struct("attachment",
     )
 
 
-efsc_widget = Struct("widget", 
+efsc_widget = Struct("widget",
     h3_dependency("type"),
     ENDIAN=">", SIZE=16
     )
 
 
-efsc_change_color_initial_permutation = Struct("initial_permutation", 
+efsc_change_color_initial_permutation = Struct("initial_permutation",
     Pad(4),
     color_rgb_float("color_lower_bound"),
     color_rgb_float("color_upper_bound"),
@@ -80,8 +89,8 @@ efsc_change_color_initial_permutation = Struct("initial_permutation",
     )
 
 
-efsc_change_color_function = Struct("function", 
-    Bool32("scale_flags", 
+efsc_change_color_function = Struct("function",
+    Bool32("scale_flags",
         "blend_in_hsv",
         "more_colors",
         ),
@@ -93,14 +102,14 @@ efsc_change_color_function = Struct("function",
     )
 
 
-efsc_change_color = Struct("change_color", 
+efsc_change_color = Struct("change_color",
     h3_reflexive("initial_permutations", efsc_change_color_initial_permutation),
     h3_reflexive("functions", efsc_change_color_function),
     ENDIAN=">", SIZE=24
     )
 
 
-efsc_predicted_resource = Struct("predicted_resource", 
+efsc_predicted_resource = Struct("predicted_resource",
     SInt16("type"),
     SInt16("resource_index"),
     dependency_uint32("tag_index", VISIBLE=False),
@@ -109,8 +118,8 @@ efsc_predicted_resource = Struct("predicted_resource",
     )
 
 
-efsc_multiplayer_object_propertie = Struct("multiplayer_object_propertie", 
-    Bool16("engine_flags", 
+efsc_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
+    Bool16("engine_flags",
         "capture_the_flag",
         "slayer",
         "oddball",
@@ -122,14 +131,14 @@ efsc_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
         "infection",
         ),
     SEnum8("object_type", *bloc_multiplayer_object_propertie_object_type),
-    Bool8("teleporter_flags", 
+    Bool8("teleporter_flags",
         "disallows_players",
         "allows_land_vehicles",
         "allows_heavy_vehicles",
         "allows_flying_vehicles",
         "allows_projectiles",
         ),
-    Bool16("flags", 
+    Bool16("flags",
         "editor_only",
         ),
     SEnum8("shape", *bloc_multiplayer_object_propertie_shape),
@@ -159,9 +168,9 @@ efsc_multiplayer_object_propertie = Struct("multiplayer_object_propertie",
     )
 
 
-efsc_body = Struct("tagdata", 
+efsc_body = Struct("tagdata",
     SEnum16("object_type", *bloc_object_type),
-    Bool16("flags", 
+    Bool16("flags",
         "does_not_cast_shadow",
         "search_cardinal_direction_lightmaps",
         ("not_a_pathfinding_obstacle", 1 << 3),

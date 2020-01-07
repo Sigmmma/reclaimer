@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import os
 
 from reclaimer.hek.defs.objs.tag import HekTag
@@ -10,8 +19,8 @@ class ShdrTag(HekTag):
         full_class_name = self.data.blam_header.tag_class.enum_name
 
         self.ext = '.' + full_class_name
-        self.filepath = os.path.splitext(self.filepath)[0] + self.ext
-        
+        self.filepath = os.path.splitext(str(self.filepath))[0] + self.ext
+
         shader_type = self.data.tagdata.shdr_attrs.shader_type
         if full_class_name == "shader":
             shader_type.data = -1

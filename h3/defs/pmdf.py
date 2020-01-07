@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,7 +27,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-pmdf_meshe_part = Struct("part", 
+pmdf_meshe_part = Struct("part",
     SInt16("material_index"),
     SInt16("unknown_nodey_index", VISIBLE=False),
     SInt16("index_buffer_start"),
@@ -26,7 +35,7 @@ pmdf_meshe_part = Struct("part",
     SInt16("subpart_index"),
     SInt16("subpart_count"),
     SInt8("unknown_enum", VISIBLE=False),
-    Bool8("flags", 
+    Bool8("flags",
         ("water", 1 << 3),
         ),
     SInt16("vertex_count"),
@@ -34,7 +43,7 @@ pmdf_meshe_part = Struct("part",
     )
 
 
-pmdf_meshe_subpart = Struct("subpart", 
+pmdf_meshe_subpart = Struct("subpart",
     SInt16("index_buffer_start"),
     SInt16("index_buffer_count"),
     SInt16("part_index"),
@@ -43,13 +52,13 @@ pmdf_meshe_subpart = Struct("subpart",
     )
 
 
-pmdf_meshe_instanced_geometry_indice_instanced_geometry_mesh_content = Struct("instanced_geometry_mesh_content", 
+pmdf_meshe_instanced_geometry_indice_instanced_geometry_mesh_content = Struct("instanced_geometry_mesh_content",
     SInt16("instanced_geometry_index"),
     ENDIAN=">", SIZE=2
     )
 
 
-pmdf_meshe_instanced_geometry_indice = Struct("instanced_geometry_indice", 
+pmdf_meshe_instanced_geometry_indice = Struct("instanced_geometry_indice",
     SInt16("instanced_geometry_mesh_index_1"),
     SInt16("instanced_geometry_mesh_index_2"),
     h3_reflexive("instanced_geometry_mesh_contents", pmdf_meshe_instanced_geometry_indice_instanced_geometry_mesh_content),
@@ -57,20 +66,20 @@ pmdf_meshe_instanced_geometry_indice = Struct("instanced_geometry_indice",
     )
 
 
-pmdf_meshe_unknown_water = Struct("unknown_water", 
+pmdf_meshe_unknown_water = Struct("unknown_water",
     SInt16("unknown"),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-pmdf_meshe = Struct("meshe", 
+pmdf_meshe = Struct("meshe",
     h3_reflexive("parts", pmdf_meshe_part),
     h3_reflexive("subparts", pmdf_meshe_subpart),
     Array("vertex_buffer_index_array", SUB_STRUCT=SInt16("vertex_buffer_index"), SIZE=8),
     SInt16("index_buffer_index_1"),
     SInt16("index_buffer_index_2"),
-    Bool8("flags", 
+    Bool8("flags",
         "has_vertex_colors",
         ),
     SInt8("rigid_node"),
@@ -86,7 +95,7 @@ pmdf_meshe = Struct("meshe",
     )
 
 
-pmdf_compression_info = Struct("compression_info", 
+pmdf_compression_info = Struct("compression_info",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     QStruct("position_bounds_x", INCLUDE=from_to),
@@ -98,7 +107,7 @@ pmdf_compression_info = Struct("compression_info",
     )
 
 
-pmdf_unknown_nodey = Struct("unknown_nodey", 
+pmdf_unknown_nodey = Struct("unknown_nodey",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=8, VISIBLE=False),
     Array("node_index_array", SUB_STRUCT=SInt8("node_index"), SIZE=4, VISIBLE=False),
     Float("unknown_0", VISIBLE=False),
@@ -109,7 +118,7 @@ pmdf_unknown_nodey = Struct("unknown_nodey",
     )
 
 
-pmdf_unknown_1 = Struct("unknown_1", 
+pmdf_unknown_1 = Struct("unknown_1",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     h3_rawdata_ref("unknown_2", VISIBLE=False),
@@ -118,14 +127,14 @@ pmdf_unknown_1 = Struct("unknown_1",
     )
 
 
-pmdf_unknown_meshe_unknown_1 = Struct("unknown_1", 
+pmdf_unknown_meshe_unknown_1 = Struct("unknown_1",
     SInt16("unknown", VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=2
     )
 
 
-pmdf_unknown_meshe = Struct("unknown_meshe", 
+pmdf_unknown_meshe = Struct("unknown_meshe",
     h3_rawdata_ref("unknown_0", VISIBLE=False),
     h3_reflexive("unknown_1", pmdf_unknown_meshe_unknown_1),
     VISIBLE=False,
@@ -133,33 +142,33 @@ pmdf_unknown_meshe = Struct("unknown_meshe",
     )
 
 
-pmdf_node_map_unknown = Struct("unknown", 
+pmdf_node_map_unknown = Struct("unknown",
     UInt8("node_index"),
     ENDIAN=">", SIZE=1
     )
 
 
-pmdf_node_map = Struct("node_map", 
+pmdf_node_map = Struct("node_map",
     h3_reflexive("unknown", pmdf_node_map_unknown),
     ENDIAN=">", SIZE=12
     )
 
 
-pmdf_unknown_3_unknown = Struct("unknown", 
+pmdf_unknown_3_unknown = Struct("unknown",
     BytesRaw("unknown", SIZE=48, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=48
     )
 
 
-pmdf_unknown_3 = Struct("unknown_3", 
+pmdf_unknown_3 = Struct("unknown_3",
     h3_reflexive("unknown", pmdf_unknown_3_unknown),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-pmdf_unknown_yo = Struct("unknown_yo", 
+pmdf_unknown_yo = Struct("unknown_yo",
     BytesRaw("unknown_0", SIZE=12, VISIBLE=False),
     SInt16("unknown_index"),
     SInt16("unknown_1", VISIBLE=False),
@@ -167,14 +176,14 @@ pmdf_unknown_yo = Struct("unknown_yo",
     )
 
 
-pmdf_unknown_5 = Struct("unknown_5", 
+pmdf_unknown_5 = Struct("unknown_5",
     BytesRaw("unknown", SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-pmdf_body = Struct("tagdata", 
+pmdf_body = Struct("tagdata",
     SInt32("unknown_0", VISIBLE=False),
     h3_reflexive("meshes", pmdf_meshe),
     h3_reflexive("compression_info", pmdf_compression_info),

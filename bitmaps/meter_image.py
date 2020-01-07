@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 from supyr_struct.defs.tag_def import BlockDef
 from reclaimer.field_types import Container, FlUInt16, BytesRaw, WhileArray
 
@@ -7,7 +16,7 @@ def linesize(parent=None, new_value=None, *args, **kwargs):
         raise KeyError
     if new_value is None:
         return 4*parent.width
-    
+
     parent.width = new_value//4
 
 

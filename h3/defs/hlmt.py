@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -62,10 +71,10 @@ hlmt_variant_region_sort_order = (
     )
 
 
-hlmt_variant_region_permutation_state = Struct("state", 
+hlmt_variant_region_permutation_state = Struct("state",
     h3_string_id("name"),
     SInt8("model_permutation_index"),
-    Bool8("property_flags", 
+    Bool8("property_flags",
         "blurred",
         "hella_blurred",
         "shielded",
@@ -78,10 +87,10 @@ hlmt_variant_region_permutation_state = Struct("state",
     )
 
 
-hlmt_variant_region_permutation = Struct("permutation", 
+hlmt_variant_region_permutation = Struct("permutation",
     h3_string_id("name"),
     SInt8("model_permutation_index"),
-    Bool8("flags", 
+    Bool8("flags",
         "copy_states_to_all_permutations",
         ),
     SInt8("unknown_0", VISIBLE=False),
@@ -93,7 +102,7 @@ hlmt_variant_region_permutation = Struct("permutation",
     )
 
 
-hlmt_variant_region = Struct("region", 
+hlmt_variant_region = Struct("region",
     h3_string_id("name"),
     SInt8("model_region_index"),
     SInt8("unknown", VISIBLE=False),
@@ -104,7 +113,7 @@ hlmt_variant_region = Struct("region",
     )
 
 
-hlmt_variant_object = Struct("object", 
+hlmt_variant_object = Struct("object",
     h3_string_id("parent_marker"),
     h3_string_id("child_marker"),
     h3_string_id("child_variant"),
@@ -113,7 +122,7 @@ hlmt_variant_object = Struct("object",
     )
 
 
-hlmt_variant = Struct("variant", 
+hlmt_variant = Struct("variant",
     h3_string_id("name"),
     Array("model_region_index_array", SUB_STRUCT=SInt8("model_region_index"), SIZE=16),
     h3_reflexive("regions", hlmt_variant_region),
@@ -124,7 +133,7 @@ hlmt_variant = Struct("variant",
     )
 
 
-hlmt_instance_group_instance_member = Struct("instance_member", 
+hlmt_instance_group_instance_member = Struct("instance_member",
     SInt32("unknown", VISIBLE=False),
     h3_string_id("instance_name"),
     Float("probability"),
@@ -134,7 +143,7 @@ hlmt_instance_group_instance_member = Struct("instance_member",
     )
 
 
-hlmt_instance_group = Struct("instance_group", 
+hlmt_instance_group = Struct("instance_group",
     h3_string_id("name"),
     SInt32("unknown", VISIBLE=False),
     h3_reflexive("instance_members", hlmt_instance_group_instance_member),
@@ -143,7 +152,7 @@ hlmt_instance_group = Struct("instance_group",
     )
 
 
-hlmt_material = Struct("material", 
+hlmt_material = Struct("material",
     h3_string_id("name"),
     SInt16("unknown_0", VISIBLE=False),
     SInt16("damage_section_index"),
@@ -156,11 +165,11 @@ hlmt_material = Struct("material",
     )
 
 
-hlmt_new_damage_info_damage_section_instant_response = Struct("instant_response", 
+hlmt_new_damage_info_damage_section_instant_response = Struct("instant_response",
     SEnum16("response_type", *hlmt_new_damage_info_damage_section_instant_response_response_type),
     SEnum16("constraint_damage_type", *hlmt_new_damage_info_damage_section_instant_response_constraint_damage_type),
     h3_string_id("trigger"),
-    Bool32("flags", 
+    Bool32("flags",
         "kills_object",
         "inhibits_melee_attack",
         "inhibits_weapon_attack",
@@ -214,9 +223,9 @@ hlmt_new_damage_info_damage_section_instant_response = Struct("instant_response"
     )
 
 
-hlmt_new_damage_info_damage_section = Struct("damage_section", 
+hlmt_new_damage_info_damage_section = Struct("damage_section",
     h3_string_id("name"),
-    Bool32("flags", 
+    Bool32("flags",
         "absorbs_body_damage",
         "takes_full_damage_when_object_dies",
         "cannot_die_with_riders",
@@ -238,7 +247,7 @@ hlmt_new_damage_info_damage_section = Struct("damage_section",
     )
 
 
-hlmt_new_damage_info_node = Struct("node", 
+hlmt_new_damage_info_node = Struct("node",
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
     BytesRaw("unknown_2", SIZE=12, VISIBLE=False),
@@ -247,7 +256,7 @@ hlmt_new_damage_info_node = Struct("node",
     )
 
 
-hlmt_new_damage_info_damage_seat_unknown = Struct("unknown", 
+hlmt_new_damage_info_damage_seat_unknown = Struct("unknown",
     h3_string_id("node"),
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
@@ -257,7 +266,7 @@ hlmt_new_damage_info_damage_seat_unknown = Struct("unknown",
     )
 
 
-hlmt_new_damage_info_damage_seat = Struct("damage_seat", 
+hlmt_new_damage_info_damage_seat = Struct("damage_seat",
     h3_string_id("seat_label"),
     Float("direct_damage_scale"),
     Float("damage_transfer_fall_off_radius"),
@@ -268,7 +277,7 @@ hlmt_new_damage_info_damage_seat = Struct("damage_seat",
     )
 
 
-hlmt_new_damage_info_damage_constraint = Struct("damage_constraint", 
+hlmt_new_damage_info_damage_constraint = Struct("damage_constraint",
     h3_string_id("physics_model_constraint_name"),
     h3_string_id("damage_constraint_name"),
     h3_string_id("damage_constraint_group_name"),
@@ -279,8 +288,8 @@ hlmt_new_damage_info_damage_constraint = Struct("damage_constraint",
     )
 
 
-hlmt_new_damage_info = Struct("new_damage_info", 
-    Bool32("flags", 
+hlmt_new_damage_info = Struct("new_damage_info",
+    Bool32("flags",
         "takes_shield_damage_for_children",
         "takes_body_damage_for_children",
         "always_shields_friendly_damage",
@@ -327,7 +336,7 @@ hlmt_new_damage_info = Struct("new_damage_info",
     )
 
 
-hlmt_target = Struct("target", 
+hlmt_target = Struct("target",
     h3_string_id("marker_name"),
     Float("size"),
     float_rad("cone_angle", VISIBLE=False),
@@ -335,7 +344,7 @@ hlmt_target = Struct("target",
     SInt16("variant"),
     Float("targeting_relevance"),
     BytesRaw("unknown", SIZE=4, VISIBLE=False),
-    Bool32("flags", 
+    Bool32("flags",
         "locked_by_human_tracking",
         "locked_by_plasma_tracking",
         "headshot",
@@ -348,9 +357,9 @@ hlmt_target = Struct("target",
     )
 
 
-hlmt_collision_region_permutation = Struct("permutation", 
+hlmt_collision_region_permutation = Struct("permutation",
     h3_string_id("name"),
-    Bool8("flags", 
+    Bool8("flags",
         "cannot_be_chosen_randomly",
         ),
     SInt8("collision_permutation_index"),
@@ -360,7 +369,7 @@ hlmt_collision_region_permutation = Struct("permutation",
     )
 
 
-hlmt_collision_region = Struct("collision_region", 
+hlmt_collision_region = Struct("collision_region",
     h3_string_id("name"),
     SInt8("collision_region_index"),
     SInt8("physics_region_index"),
@@ -371,7 +380,7 @@ hlmt_collision_region = Struct("collision_region",
     )
 
 
-hlmt_node = Struct("node", 
+hlmt_node = Struct("node",
     h3_string_id("name"),
     SInt16("parent_node"),
     SInt16("first_child_node"),
@@ -388,7 +397,7 @@ hlmt_node = Struct("node",
     )
 
 
-hlmt_model_object_data = Struct("model_object_data", 
+hlmt_model_object_data = Struct("model_object_data",
     SEnum16("type", *hlmt_model_object_data_type),
     SInt16("unknown", VISIBLE=False),
     QStruct("offset", INCLUDE=xyz_float),
@@ -397,7 +406,7 @@ hlmt_model_object_data = Struct("model_object_data",
     )
 
 
-hlmt_unknown_3 = Struct("unknown_3", 
+hlmt_unknown_3 = Struct("unknown_3",
     h3_string_id("region"),
     h3_string_id("permutation"),
     VISIBLE=False,
@@ -405,7 +414,7 @@ hlmt_unknown_3 = Struct("unknown_3",
     )
 
 
-hlmt_unknown_4 = Struct("unknown_4", 
+hlmt_unknown_4 = Struct("unknown_4",
     h3_string_id("unknown_0", VISIBLE=False),
     BytesRaw("unknown_1", SIZE=4, VISIBLE=False),
     VISIBLE=False,
@@ -413,7 +422,7 @@ hlmt_unknown_4 = Struct("unknown_4",
     )
 
 
-hlmt_unknown_5 = Struct("unknown_5", 
+hlmt_unknown_5 = Struct("unknown_5",
     h3_string_id("marker_0", VISIBLE=False),
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     h3_string_id("marker_1", VISIBLE=False),
@@ -423,7 +432,7 @@ hlmt_unknown_5 = Struct("unknown_5",
     )
 
 
-hlmt_body = Struct("tagdata", 
+hlmt_body = Struct("tagdata",
     h3_dependency("model"),
     h3_dependency("collision_model"),
     h3_dependency("animation"),
@@ -445,7 +454,7 @@ hlmt_body = Struct("tagdata",
     h3_reflexive("model_object_data", hlmt_model_object_data),
     h3_dependency("primary_dialog"),
     h3_dependency("secondary_dialog"),
-    Bool32("flags", 
+    Bool32("flags",
         "active_camo_always_on",
         "active_camo_always_merge",
         "active_camo_never_merge",
@@ -467,7 +476,7 @@ hlmt_body = Struct("tagdata",
     Bool32("render_only_section_flags_6", *("section_%s" % i for i in range(160, 192)), VISIBLE=False),
     Bool32("render_only_section_flags_7", *("section_%s" % i for i in range(192, 224)), VISIBLE=False),
     Bool32("render_only_section_flags_8", *("section_%s" % i for i in range(224, 256)), VISIBLE=False),
-    Bool32("runtime_flags", 
+    Bool32("runtime_flags",
         "contains_runtime_nodes",
         VISIBLE=False,
         ),

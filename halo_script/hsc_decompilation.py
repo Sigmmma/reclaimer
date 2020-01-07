@@ -1,5 +1,13 @@
-import os
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
 
+from pathlib import Path
 from traceback import format_exc
 
 from reclaimer.halo_script.hsc import get_hsc_data_block,\
@@ -12,12 +20,13 @@ MAX_SCRIPT_SOURCE_SIZE = 1 << 18
 
 
 def extract_h1_scripts(tagdata, tag_path, **kw):
-    filepath_base = os.path.join(kw['out_dir'], os.path.dirname(tag_path), "scripts")
+    dirpath = Path(kw.get("out_dir", "")).joinpath(
+        Path(tag_path).parent, "scripts")
+
     overwrite = kw.get('overwrite', True)
     hsc_node_strings_by_type = kw.get("hsc_node_strings_by_type", ())
-    # If the path doesnt exist, create it
-    if not os.path.exists(filepath_base):
-        os.makedirs(filepath_base)
+
+    dirpath.mkdir(exist_ok=True, parents=True)
 
     engine = kw.get('engine')
     if not engine and 'halo_map' in kw:
@@ -31,7 +40,7 @@ def extract_h1_scripts(tagdata, tag_path, **kw):
     already_sorted = set()
     for typ, arr in (("global", tagdata.globals.STEPTREE),
                      ("script", tagdata.scripts.STEPTREE)):
-        filepath = os.path.join(filepath_base, "%ss" % typ)
+        filename_base = "%ss" % typ
 
         header = "; Extracted with Reclaimer\n\n"
         comments = ""
@@ -130,15 +139,16 @@ def extract_h1_scripts(tagdata, tag_path, **kw):
             for out_data in merged_sources:
                 # write sources to hsc files
                 if len(merged_sources) > 1:
-                    fp = "%s_%s.hsc" % (filepath, i)
+                    filename = "%s_%s.hsc" % (filename_base, i)
                 else:
-                    fp = "%s.hsc" % filepath
+                    filename = "%s.hsc" % filename_base
 
-                if not overwrite and os.path.isfile(fp):
+                filepath = dirpath.joinpath(filename)
+                if not overwrite and filepath.is_file():
                     continue
 
                 # apparently the scripts use latin1 encoding, who knew....
-                with open(fp, "w", encoding='latin1', newline="\r\n") as f:
+                with filepath.open("w", encoding='latin1', newline="\r\n") as f:
                     f.write(header)
                     f.write(out_data)
                     f.write(comments)

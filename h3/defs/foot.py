@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -24,7 +33,7 @@ foot_effect_old_material_sweetener_mode = (
     )
 
 
-foot_effect_old_material = Struct("old_material", 
+foot_effect_old_material = Struct("old_material",
     h3_dependency("effect"),
     h3_dependency("sound"),
     h3_string_id("material_name"),
@@ -35,7 +44,7 @@ foot_effect_old_material = Struct("old_material",
     )
 
 
-foot_effect_sound = Struct("sound", 
+foot_effect_sound = Struct("sound",
     h3_dependency("tag"),
     h3_dependency("secondary_tag"),
     h3_string_id("material_name"),
@@ -46,7 +55,7 @@ foot_effect_sound = Struct("sound",
     )
 
 
-foot_effect_effect = Struct("effect", 
+foot_effect_effect = Struct("effect",
     h3_dependency("tag"),
     h3_dependency("secondary_tag"),
     h3_string_id("material_name"),
@@ -57,7 +66,7 @@ foot_effect_effect = Struct("effect",
     )
 
 
-foot_effect = Struct("effect", 
+foot_effect = Struct("effect",
     h3_reflexive("old_materials", foot_effect_old_material),
     h3_reflexive("sounds", foot_effect_sound),
     h3_reflexive("effects", foot_effect_effect),
@@ -65,7 +74,7 @@ foot_effect = Struct("effect",
     )
 
 
-foot_body = Struct("tagdata", 
+foot_body = Struct("tagdata",
     h3_reflexive("effects", foot_effect),
     ENDIAN=">", SIZE=12
     )

@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -20,13 +29,13 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-play_compression_codec = Struct("compression_codec", 
+play_compression_codec = Struct("compression_codec",
     BytesRaw("guid", SIZE=16, EDITABLE=False),
     ENDIAN=">", SIZE=16
     )
 
 
-play_external_cache_reference = Struct("external_cache_reference", 
+play_external_cache_reference = Struct("external_cache_reference",
     StrLatin1("map_path", SIZE=256),
     SInt16("unknown_0", VISIBLE=False),
     SInt16("unknown_1", VISIBLE=False),
@@ -35,7 +44,7 @@ play_external_cache_reference = Struct("external_cache_reference",
     )
 
 
-play_raw_page = Struct("raw_page", 
+play_raw_page = Struct("raw_page",
     SInt16("salt"),
     SInt8("flags"),
     SEnum8("compression_codec", *play_raw_page_compression_codec),
@@ -81,7 +90,7 @@ play_segment = Struct("segment",
     )
 
 
-play_body = Struct("tagdata", 
+play_body = Struct("tagdata",
     h3_reflexive("compression_codecs", play_compression_codec),
     h3_reflexive("external_cache_references", play_external_cache_reference),
     h3_reflexive("raw_pages", play_raw_page),

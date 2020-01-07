@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import os
 
 from reclaimer.model.jms import JmsVertex
@@ -83,6 +92,7 @@ def generate_shader(jms_material, tags_dir, data_dir=""):
     bitmap_path = ""
     if jms_material.tiff_path not in ('', '<none>') and data_dir:
         try:
+            # TODO: Make this posix compat
             bitmap_path = os.path.relpath(
                 jms_material.tiff_path.replace("/", "\\"),
                 data_dir.replace("/", "\\")).strip(" ")

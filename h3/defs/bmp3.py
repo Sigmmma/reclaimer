@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,8 +27,8 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-bmp3_body = Struct("tagdata", 
-    Bool32("flags", 
+bmp3_body = Struct("tagdata",
+    Bool32("flags",
         ("scale_to_bounds", 1 << 3),
         "replace_with_blur",
         ("replace_with_white", 1 << 10),

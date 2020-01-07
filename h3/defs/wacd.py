@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -14,7 +23,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-wacd_body = Struct("tagdata", 
+wacd_body = Struct("tagdata",
     h3_dependency("focus"),
     h3_dependency("unfocus"),
     h3_dependency("unknown_0"),

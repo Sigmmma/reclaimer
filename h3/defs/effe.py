@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -46,7 +55,7 @@ effe_event_particle_system_coordinate_system = (
     )
 
 
-effe_location = Struct("location", 
+effe_location = Struct("location",
     h3_string_id("marker_name"),
     SInt32("unknown", VISIBLE=False),
     Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
@@ -54,7 +63,7 @@ effe_location = Struct("location",
     )
 
 
-effe_event_part = Struct("part", 
+effe_event_part = Struct("part",
     SEnum16("create_in_environment", *effe_event_part_create_in_environment),
     SEnum16("create_in_disposition", *effe_event_part_create_in_disposition),
     SInt16("location_index"),
@@ -77,7 +86,7 @@ effe_event_part = Struct("part",
     )
 
 
-effe_event_acceleration = Struct("acceleration", 
+effe_event_acceleration = Struct("acceleration",
     SEnum16("create_in_environment", *effe_event_part_create_in_environment),
     SEnum16("create_in_disposition", *effe_event_part_create_in_disposition),
     SInt16("location_index"),
@@ -89,7 +98,7 @@ effe_event_acceleration = Struct("acceleration",
     )
 
 
-effe_event_particle_system_emitter_unknown_21_unknown_1 = Struct("unknown_1", 
+effe_event_particle_system_emitter_unknown_21_unknown_1 = Struct("unknown_1",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     SInt8("input"),
     SInt8("input_range"),
@@ -102,7 +111,7 @@ effe_event_particle_system_emitter_unknown_21_unknown_1 = Struct("unknown_1",
     )
 
 
-effe_event_particle_system_emitter_unknown_21 = Struct("unknown_21", 
+effe_event_particle_system_emitter_unknown_21 = Struct("unknown_21",
     BytesRaw("unknown_0", SIZE=4, VISIBLE=False),
     h3_reflexive("unknown_1", effe_event_particle_system_emitter_unknown_21_unknown_1),
     BytesRaw("unknown_2", SIZE=8, VISIBLE=False),
@@ -111,28 +120,28 @@ effe_event_particle_system_emitter_unknown_21 = Struct("unknown_21",
     )
 
 
-effe_event_particle_system_emitter_unknown_39 = Struct("unknown_39", 
+effe_event_particle_system_emitter_unknown_39 = Struct("unknown_39",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=4, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=16
     )
 
 
-effe_event_particle_system_emitter_compiled_function = Struct("compiled_function", 
+effe_event_particle_system_emitter_compiled_function = Struct("compiled_function",
     Array("unknown_array", SUB_STRUCT=Float("unknown"), SIZE=16, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=64
     )
 
 
-effe_event_particle_system_emitter_compiled_color_function = Struct("compiled_color_function", 
+effe_event_particle_system_emitter_compiled_color_function = Struct("compiled_color_function",
     color_rgb_float("color"),
     Float("magnitude"),
     ENDIAN=">", SIZE=16
     )
 
 
-effe_event_particle_system_emitter = Struct("emitter", 
+effe_event_particle_system_emitter = Struct("emitter",
     h3_string_id("name"),
     Bool16("unknown_0", *unknown_flags_32),
     SInt16("unknown_1", VISIBLE=False),
@@ -258,7 +267,7 @@ effe_event_particle_system_emitter = Struct("emitter",
     )
 
 
-effe_event_particle_system = Struct("particle_system", 
+effe_event_particle_system = Struct("particle_system",
     Array("unknown_array_0", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
     h3_dependency("particle"),
     SInt16("unknown_0", VISIBLE=False),
@@ -282,7 +291,7 @@ effe_event_particle_system = Struct("particle_system",
     )
 
 
-effe_event = Struct("event", 
+effe_event = Struct("event",
     h3_string_id("name"),
     SInt32("unknown", VISIBLE=False),
     Array("unknown_array", SUB_STRUCT=SInt8("unknown"), SIZE=4, VISIBLE=False),
@@ -296,15 +305,15 @@ effe_event = Struct("event",
     )
 
 
-effe_unknown_9 = Struct("unknown_9", 
+effe_unknown_9 = Struct("unknown_9",
     BytesRaw("unknown", SIZE=12, VISIBLE=False),
     VISIBLE=False,
     ENDIAN=">", SIZE=12
     )
 
 
-effe_body = Struct("tagdata", 
-    Bool32("flags", 
+effe_body = Struct("tagdata",
+    Bool32("flags",
         ("dark_casings", 1 << 10),
         ),
     SInt32("unknown_0", VISIBLE=False),

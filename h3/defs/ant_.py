@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 ############# Credits and version info #############
 # Definition generated from Assembly XML tag def
 #	 Date generated: 2018/12/03  04:56
@@ -18,7 +27,7 @@ from .objs.tag import *
 from supyr_struct.defs.tag_def import TagDef
 
 
-ant__vertice = Struct("vertice", 
+ant__vertice = Struct("vertice",
     yp_float_rad("angle"),
     Float("length"),
     SInt16("sequence_index"),
@@ -30,7 +39,7 @@ ant__vertice = Struct("vertice",
     )
 
 
-ant__body = Struct("tagdata", 
+ant__body = Struct("tagdata",
     h3_string_id("attachment_marker_name"),
     h3_dependency("bitmaps"),
     h3_dependency("physics"),

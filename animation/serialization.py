@@ -1,3 +1,12 @@
+#
+# This file is part of Reclaimer.
+#
+# For authors and copyright check AUTHORS.TXT
+#
+# Reclaimer is free software under the GNU General Public License v3.0.
+# See LICENSE for more information.
+#
+
 import math
 
 from array import array
@@ -274,7 +283,7 @@ def _deserialize_frame_data(anim, get_default_data, def_node_states, endian):
 
     all_node_states = [[JmaNodeState() for n in range(anim.node_count)]
                        for f in range(stored_frame_count)]
-    
+
     if get_default_data:
         def_node_states = all_node_states[0]
 
@@ -475,9 +484,9 @@ def serialize_compressed_frame_data(jma_anim):
             rot_keyframe_data[3*ri] = w0
             rot_keyframe_data[3*ri + 1] = w1
             rot_keyframe_data[3*ri + 2] = w2
-            
+
             ri += 1
-            
+
         for kfi in curr_trans_kfs:
             node_state = jma_anim.frames[kfi][ni]
             trans_keyframe_data[3*ti] = node_state.pos_x / 100
@@ -637,7 +646,7 @@ def deserialize_compressed_frame_data(anim):
                 kf0 = rot_keyframes[kf_i]
                 q0 = decomp_quat(
                     *rot_keyframe_data[kf_i * 3: (kf_i + 1) * 3])
-                
+
                 if fi == kf0:
                     # this keyframe is the frame we want.
                     # no blending required
@@ -669,7 +678,7 @@ def deserialize_compressed_frame_data(anim):
                     fi, trans_keyframes, trans_kf_ct, trans_kf_off)
                 kf0 = trans_keyframes[kf_i]
                 p0 = trans_keyframe_data[kf_i * 3: (kf_i + 1) * 3]
-                
+
                 if fi == kf0:
                     # this keyframe is the frame we want.
                     # no blending required
