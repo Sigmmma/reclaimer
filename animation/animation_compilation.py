@@ -220,7 +220,7 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
         anim_index = antr_indices_by_type_strings.get(
             name_pieces, len(antr_anims))
 
-        if anim_index > animation_count_limit:
+        if anim_index >= animation_count_limit:
             errors.append(
                 "Too many animations. Cannot add '%s'" % jma_anim_name)
             continue
