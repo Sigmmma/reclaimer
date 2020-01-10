@@ -42,7 +42,7 @@ class SbspTag(HekTag):
         # Go through the tree until we get a negative number (leaf or null)
         while node_index >= 0:
             node = bsp3d_nodes[node_index]
-            if point_in_front_of_plane(bsp_planes[node.plane], x, y, z):
+            if self.point_in_front_of_plane(bsp_planes[node.plane], x, y, z):
                 node_index = node.front_child
             else:
                 node_index = node.back_child
