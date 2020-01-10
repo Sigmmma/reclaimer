@@ -7,7 +7,6 @@
 # See LICENSE for more information.
 #
 
-from reclaimer.util.geometry import is_point_on_front_side_of_plane
 from reclaimer.hek.defs.objs.tag import HekTag
 
 
@@ -43,8 +42,7 @@ class SbspTag(HekTag):
         # Go through the tree until we get a negative number (leaf or null)
         while node_index >= 0:
             node = bsp3d_nodes[node_index]
-            if is_point_on_front_side_of_plane(
-                    (x, y, z), bsp_planes[node.plane], 1):
+            if point_in_front_of_plane(bsp_planes[node.plane], x, y, z):
                 node_index = node.front_child
             else:
                 node_index = node.back_child
