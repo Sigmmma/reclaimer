@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
  - Fix animation count limit being too low because of incorrect comparison.
- - Fix edgecase where basic_deprotection does not remove trailing or leading backslashes.
+ - Fix edge case where basic_deprotection does not remove trailing or leading backslashes.
  - Fix halo 2 definitions not properly importing their field widgets due to a change in module location.
  - Fix lens_flare corona_rotation not extracting correctly. They were incorrectly converted to degrees from radians but should have stayed radians.
  - Fix pcm data being extracted with wrong size.
@@ -27,7 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - h2's snd_'s flags had "split long sounds into permutations" renamed to "split long sound into permutations".
  - HekHandler's get_def_id now supports Path objects.
  - Remove cases where try-except blocks caught control-c.
- - Update setup.py to reference the github git instead of bitbucket.
+ - Update setup.py to reference the Github git instead of bitbucket.
 
 ### Removed
  - Remove bytes_to_hex from hek_handler.
