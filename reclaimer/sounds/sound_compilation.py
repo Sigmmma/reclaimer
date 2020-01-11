@@ -97,7 +97,7 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
                 )
         except Exception:
             errors.append(traceback.format_exc())
-            errors.append("Could not compile permutation '%s'" % blam_perm.name)
+            errors.append("Could not compile permutation %r" % blam_perm.name)
 
     return errors
 
@@ -335,6 +335,7 @@ def get_unique_name_31char(name, names):
 
 
 def get_permutation_chain(start_index, pitch_range):
+
     seen = set()
     chain = []
     perms = pitch_range.permutations.STEPTREE
@@ -358,7 +359,8 @@ def merge_permutation_chain(perm_chain, pitch_range, ignore_size_limits=False):
     perms = pitch_range.permutations.STEPTREE
     perm_count = max(0, min(len(perms), pitch_range.actual_permutation_count))
     if ignore_size_limits:
-        if perm_count + 1 >= 0x8000:
+        # signed integer max is because the next_permutation_index value is a SInt16
+        if perm_count + len(perm_chain) >= 0x8000:
             errors.append("Too many permutations. Cannot add '%s'" %
                           perm_chain[0].name)
     elif len(perms) + len(perm_chain) > perms.MAX:
