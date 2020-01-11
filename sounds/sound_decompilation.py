@@ -20,12 +20,14 @@ from reclaimer.sounds.blam_sound_samples import BlamSoundSamples
 __all__ = ("extract_h1_sounds", "extract_h2_sounds", )
 
 
-def extract_h1_sounds(tagdata, tag_path, **kw):
-    do_write_wav = kw.get('write_wav', True)
-    overwrite = kw.get('overwrite', True)
-    decompress = kw.get('decode_adpcm', True)
-    pcm_is_big_endian = kw.get('byteswap_pcm_samples', False)
-    tagpath_base = os.path.join(kw.get('out_dir', ''), os.path.splitext(tag_path)[0])
+def extract_h1_sounds(tagdata, tag_path,
+        out_dir="", write_wav=True, overwrite=True, decode_adpcm=True,
+        byteswap_pcm_samples=False, **kw):
+    do_write_wav = write_wav
+    overwrite = overwrite
+    decompress = decode_adpcm
+    pcm_is_big_endian = byteswap_pcm_samples
+    tagpath_base = os.path.join(out_dir, os.path.splitext(tag_path)[0])
 
     encoding = tagdata.encoding.data
     channels = constants.channel_counts.get(encoding, 1)
