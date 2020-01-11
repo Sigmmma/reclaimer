@@ -105,6 +105,9 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
 def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
                   update_mode=constants.SOUND_COMPILE_MODE_PRESERVE,
                   force_sample_rate=False):
+    '''
+    Compiles the given blam_sound_bank into the given (Halo 1 snd!) snd__tag.
+    '''
     assert update_mode in (constants.SOUND_COMPILE_MODE_NEW,
                            constants.SOUND_COMPILE_MODE_PRESERVE,
                            constants.SOUND_COMPILE_MODE_ADDITIVE)
@@ -345,6 +348,9 @@ def get_permutation_chain(start_index, pitch_range):
 
 
 def merge_permutation_chain(perm_chain, pitch_range, ignore_size_limits=False):
+    '''
+    What?
+    '''
     errors = []
     if not perm_chain:
         return errors
