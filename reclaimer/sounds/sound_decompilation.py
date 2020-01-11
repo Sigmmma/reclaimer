@@ -20,7 +20,7 @@ from reclaimer.sounds.blam_sound_samples import BlamSoundSamples
 __all__ = ("extract_h1_sounds", "extract_h2_sounds", )
 
 
-def extract_h1_sounds(tagdata, tag_path,
+def extract_h1_sounds(tagdata, tag_path, *,
         out_dir="", write_wav=True, overwrite=True, decode_adpcm=True,
         byteswap_pcm_samples=False, **kw):
     do_write_wav = write_wav
