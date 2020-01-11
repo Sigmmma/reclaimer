@@ -11,6 +11,19 @@ class VorbisBitrateInfo:
     '''
     Intermediary class for storing bitrate info to pass to vorbis compression
     functions.
+
+    Combinations of nominal, lower, upper values carry the following
+    implications:
+      all three set to the same value:
+        implies a fixed rate bitstream
+      only nominal set:
+        implies a VBR stream that nominals the nominal bitrate. No hard
+        upper/lower limit
+      upper and or lower set:
+        implies a VBR bitstream that obeys the bitrate limits. nominal
+        may also be set to give a nominal rate.
+      none set:
+        the coder does not care to speculate.
     '''
     lower = -1
     upper = -1
@@ -23,18 +36,7 @@ class VorbisBitrateInfo:
 
     def __init__(self, nominal=-1, lower=-1, upper=-1, quality=0.5):
         '''
-        Combinations of nominal, lower, upper values carry the following
-        implications:
-          all three set to the same value:
-            implies a fixed rate bitstream
-          only nominal set:
-            implies a VBR stream that nominals the nominal bitrate.  No hard
-            upper/lower limit
-          upper and or lower set:
-            implies a VBR bitstream that obeys the bitrate limits. nominal
-            may also be set to give a nominal rate.
-          none set:
-            the coder does not care to speculate.
+        See class documentation for variable descriptions.
         '''
         if quality is not None:
             self.set_bitrate_quality(quality)
@@ -45,14 +47,14 @@ class VorbisBitrateInfo:
         '''
         Sets a fixed bitrate to the requested number.
         '''
-        self.upper = self.nominal = self.lower = nominal
+        self.upper = self.nominal = self.lower = bitrate
         self.use_quality = False
 
     def set_bitrate_variable(self, nominal, upper=-1, lower=-1):
         '''
         Sets a variable bitrate based on the nominal and
         optionally upper and lower numbers.
-        Check class initializer for further detail.
+        Check class docstring for further detail.
         '''
         self.nominal = nominal
         self.upper = upper
