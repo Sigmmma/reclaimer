@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [2.6.0] Into the GPLv3
+Something that is very important to us is collaboration and the ability to share knowledge. Since this library is just to help mod some games, we've decided that switching to GPLv3 is the right thing to do for us to avoid any future loss of knowledge.
+
 ### Added
  - A sound compilation pipeline for turning wave files into Halo 1 sound tags. (Not ready for use by dependants of this library yet.)
  - Add get_node_depths member to JmaAnimation. Fixes a bug with animation compilation.
@@ -29,8 +31,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  - HekHandler's get_def_id now supports Path objects.
  - Remove cases where try-except blocks caught control-c.
  - Update setup.py to reference the Github git instead of bitbucket.
+ - **THIS PROJECT IS NOW LICENSED UNDER THE GNU General Public License version 3**
 
 ### Removed
  - Remove bytes_to_hex from hek_handler.
  - Remove fps_60_related() as it is deprecated and nothing references it.
  - Remove various member functions from HekHandler: get_tag_hash, make_write_log.
+ - **REMOVED SUPPORT FOR VERSIONS OF PYTHON BELOW 3.5**
