@@ -57,7 +57,7 @@ setup_kwargs = dict(
     url=reclaimer.__website__,
     author=reclaimer.__author__,
     author_email='MosesBobadilla@gmail.com',
-    license='MIT',
+    license='GPLv3',
     packages=[
         'reclaimer',
         'reclaimer.animation',
