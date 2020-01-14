@@ -14,117 +14,123 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 # IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
+import array
 import audioop
-from array import array
+import sys
+
 from struct import Struct as PyStruct
 
-__all__ = ("decode_adpcm_samples", "ADPCM_BLOCKSIZE", "PCM_BLOCKSIZE", )
+from . import constants
 
-STEP_TABLE = (
-    7, 8, 9, 10, 11, 12, 13, 14, 16, 17,
-    19, 21, 23, 25, 28, 31, 34, 37, 41, 45,
-    50, 55, 60, 66, 73, 80, 88, 97, 107, 118,
-    130, 143, 157, 173, 190, 209, 230, 253, 279, 307,
-    337, 371, 408, 449, 494, 544, 598, 658, 724, 796,
-    876, 963, 1060, 1166, 1282, 1411, 1552, 1707, 1878, 2066,
-    2272, 2499, 2749, 3024, 3327, 3660, 4026, 4428, 4871, 5358,
-    5894, 6484, 7132, 7845, 8630, 9493, 10442, 11487, 12635, 13899,
-    15289, 16818, 18500, 20350, 22385, 24623, 27086, 29794, 32767
-    )
-INDEX_TABLE = (
-    -1, -1, -1, -1, 2, 4, 6, 8,
-    -1, -1, -1, -1, 2, 4, 6, 8
+try:
+    from .ext import adpcm_ext
+    fast_adpcm = True
+except:
+    fast_adpcm = False
+
+__all__ = (
+    "decode_adpcm_samples",
+    "encode_adpcm_samples",
+    "NOISE_SHAPING_OFF", "NOISE_SHAPING_STATIC", "NOISE_SHAPING_DYNAMIC",
     )
 
-ADPCM_BLOCKSIZE = 36
-PCM_BLOCKSIZE   = 130
+NIBBLE_SWAP_MAPPING = tuple(((val&15)<<4) | (val>>4) for val in range(256))
 
 
-def _fast_decode_mono_adpcm_samples(samples, endian="<"):
+NOISE_SHAPING_OFF     = 0  # flat noise (no shaping)
+NOISE_SHAPING_STATIC  = 1  # first-order highpass shaping
+NOISE_SHAPING_DYNAMIC = 2  # dynamically tilted noise based on signal
+
+
+def _slow_decode_xbadpcm_samples(in_data, out_data, channel_ct):
+    # divide by 2 since we're treating out_data as a sint16 iterable
+    pcm_blocksize   = channel_ct * constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE // 2
+    adpcm_blocksize = channel_ct * constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE
+
     adpcm2lin = audioop.adpcm2lin
+    all_codes = memoryview(in_data)
 
-    pcm_size   = PCM_BLOCKSIZE
-    adpcm_size = ADPCM_BLOCKSIZE
-    state_size = 4
+    state_unpacker = PyStruct("<" + "hBx" * channel_ct).unpack_from
+    code_block_size = 4 * channel_ct
 
-    block_ct = len(samples) // adpcm_size
-    out_data = bytearray(block_ct * pcm_size)
+    k = 0
+    interleaved = channel_ct > 1
+    for i in range(0, len(in_data), adpcm_blocksize):
+        state_vals = state_unpacker(in_data, i)
+        all_states = tuple(zip(state_vals[::2], state_vals[1::2]))
+        all_swapped_codes = bytes(map(
+            NIBBLE_SWAP_MAPPING.__getitem__,
+            all_codes[i + code_block_size: i + adpcm_blocksize]))
 
-    pcm_i = 0
-    unpacker = PyStruct(endian + "hh").unpack_from
-    for i in range(0, len(samples), adpcm_size):
-        # why couldn't it be nice and just follow the same
-        # step packing pattern where the first step is the
-        # first 4 bits and the second is the last 4 bits.
-        steps = bytes(((b<<4) + (b>>4))&0xFF for b in
-                      samples[i + state_size: i + adpcm_size])
-        predictor = samples[i: i+2]
-        if endian == ">":
-            predictor = predictor[::-1]
+        for c in range(channel_ct):
+            # join all 4 bytes codes for this channel
+            swapped_codes = all_swapped_codes
+            if interleaved:
+                swapped_codes = b''.join(
+                    # join the 4 byte codes
+                    swapped_codes[j: j + 4]
+                    for j in range(c * 4, len(swapped_codes), code_block_size)
+                    )
+            decoded_samples = memoryview(
+                adpcm2lin(swapped_codes, 2, all_states[c])[0]).cast("h")
 
-        out_data[pcm_i: pcm_i + pcm_size] = (
-            predictor + adpcm2lin(steps, 2, unpacker(samples, i))[0]
-            )
+            # interleave the samples for each channel
+            out_data[k + c] = all_states[c][0]
+            out_data[k + c + channel_ct: k + pcm_blocksize: channel_ct] = array.array(
+                "h", decoded_samples)[: -1]
 
-        pcm_i += pcm_size
-
-    return array("h", out_data)
+        k += pcm_blocksize
 
 
-def decode_adpcm_samples(samples, channel_ct, endian="<"):
-    if channel_ct <= 0:
-        return
-    elif channel_ct == 1:
-        return _fast_decode_mono_adpcm_samples(samples, endian)
+def decode_adpcm_samples(in_data, channel_ct, output_big_endian=False):
+    if channel_ct < 1:
+        return b''
 
-    pcm_mask  = 1 << 16
-    code_shifts = tuple(range(0, 8*4, 4))
-    step_table  = STEP_TABLE
-    index_table = INDEX_TABLE
-    adpcm_size  = channel_ct * ADPCM_BLOCKSIZE // 2
-    skip_size   = channel_ct * 2
-    code_skip_size = skip_size * 8
+    # divide by 2 since we're treating out_data as a sint16 iterable
+    out_data = array.array("h", (0,)) * (
+        (len(in_data) // constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE) *
+        (constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE // 2))
 
-    block_ct = len(samples) // (channel_ct * ADPCM_BLOCKSIZE)
-    in_data  = array("H", samples)
-    out_data = array("h", bytes(block_ct * channel_ct * PCM_BLOCKSIZE))
+    if fast_adpcm:
+        adpcm_ext.decode_xbadpcm_samples(in_data, out_data, channel_ct)
+    else:
+        _slow_decode_xbadpcm_samples(in_data, out_data, channel_ct)
 
-    for c in range(channel_ct):
-        pcm_i = c
+    if (sys.byteorder == "big") != output_big_endian:
+        out_data.byteswap()
 
-        for i in range(c * 2, block_ct * adpcm_size, adpcm_size):
-            predictor = in_data[i]
-            index     = in_data[i + 1]
-            i += skip_size
-            if endian == ">":
-                predictor = (predictor >> 8) + ((predictor << 8) & 0xFF)
-                index = (index >> 8) + ((index << 8) & 0xFF)
+    return bytes(out_data)
 
-            if predictor & 32768:
-                predictor -= pcm_mask
 
-            out_data[pcm_i] = predictor
-            pcm_i += channel_ct
+def encode_adpcm_samples(in_data, channel_ct, input_big_endian=False,
+                         noise_shaping=NOISE_SHAPING_OFF, lookahead=3):
+    assert noise_shaping in (NOISE_SHAPING_OFF, NOISE_SHAPING_STATIC, NOISE_SHAPING_DYNAMIC)
+    assert lookahead in range(6)
 
-            for j in range(i, i + code_skip_size, skip_size):
-                codes = (in_data[j + 1] << 16) + in_data[j]
+    if channel_ct < 1:
+        return b''
+    elif not fast_adpcm:
+        raise NotImplementedError(
+            "Accelerator module not detected. Cannot compress to ADPCM.")
 
-                for shift in code_shifts:
-                    if   index > 88: index = 88
-                    elif index < 0:  index = 0
+    if (sys.byteorder == "big") != input_big_endian:
+        out_data = audioop.byteswap(out_data, 2)
 
-                    code = codes >> shift
-                    step = step_table[index]
-                    index += index_table[code & 15]
+    adpcm_blocksize = constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE * channel_ct
+    pcm_blocksize = constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE * channel_ct
 
-                    if code & 8:
-                        predictor -= ((step >> 1) + (code & 7) * step) >> 2
-                        if predictor < -32768: predictor = -32768
-                    else:
-                        predictor += ((step >> 1) + (code & 15) * step) >> 2
-                        if predictor >  32767: predictor =  32767
+    pad_size = len(in_data) % pcm_blocksize
+    if pad_size:
+        pad_size = pcm_blocksize - pad_size
+        # repeat the last sample to the end to pad to a multiple of blocksize
+        pad_piece_size = (channel_ct * 2)
+        in_data += in_data[-pad_piece_size: ] * (pad_size // pad_piece_size)
 
-                    out_data[pcm_i] = predictor
-                    pcm_i += channel_ct
+    out_data = bytearray(
+        (len(in_data) // pcm_blocksize) * adpcm_blocksize
+        )
 
-    return out_data
+    adpcm_ext.encode_xbadpcm_samples(
+        in_data, out_data, channel_ct, noise_shaping, lookahead)
+
+    return bytes(out_data)

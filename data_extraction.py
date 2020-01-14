@@ -12,7 +12,7 @@ from reclaimer.bitmaps import bitmap_decompilation
 from reclaimer.halo_script import hsc_decompilation
 from reclaimer.model import model_decompilation
 from reclaimer.physics import physics_decompilation
-from reclaimer.sounds import sounds_decompilation
+from reclaimer.sounds import sound_decompilation
 from reclaimer.strings import strings_decompilation
 
 
@@ -28,7 +28,7 @@ h1_data_extractors = {
     'ustr': strings_decompilation.extract_unicode_string_list,
     "hmt ": strings_decompilation.extract_hud_message_text,
     "bitm": bitmap_decompilation.extract_bitmaps,
-    "snd!": sounds_decompilation.extract_h1_sounds,
+    "snd!": sound_decompilation.extract_h1_sounds,
     'scnr': hsc_decompilation.extract_h1_scripts,
     }
 
@@ -38,7 +38,7 @@ h2_data_extractors = {
 
     #'unic',
     "bitm": bitmap_decompilation.extract_bitmaps,
-    "snd!": sounds_decompilation.extract_h2_sounds,
+    "snd!": sound_decompilation.extract_h2_sounds,
     }
 
 h3_data_extractors = {
