@@ -99,13 +99,17 @@ setup_kwargs = dict(
         'reclaimer.util',
         ],
     ext_modules = [
-        Extension("reclaimer.sounds.ext.adpcm_ext", ["reclaimer/sounds/src/adpcm_ext.c"]),
+        Extension("reclaimer.sounds.ext.adpcm_ext",
+            # Explicitly including all these because I can't figure out this damn setup script
+            sources=["reclaimer/sounds/src/adpcm_ext.c", "reclaimer/sounds/src/shared.h",
+                     "reclaimer/sounds/src/adpcm-xq/adpcm-lib.c",
+                     "reclaimer/sounds/src/adpcm-xq/adpcm-lib.h",
+                     "reclaimer/sounds/src/adpcm-xq/license.txt",]),
         ],
     package_data={
         '': ['*.txt', '*.md', '*.rst',
              '**/p8_palette_halo',   '**/p8_palette_halo_diff_map',
-             '**/p8_palette_stubbs', '**/p8_palette_stubbs_diff_map',
-             '**/sounds/src/*'],
+             '**/p8_palette_stubbs', '**/p8_palette_stubbs_diff_map']
         },
     platforms=["POSIX", "Windows"],
     keywords=["reclaimer", "halo"],
