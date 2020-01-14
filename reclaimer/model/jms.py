@@ -14,6 +14,7 @@ import traceback
 from copy import deepcopy
 from pathlib import Path
 
+from reclaimer.model.constants import ( JMS_VERSION_HALO_1, JMS_VERSION_HALO_2 )
 from reclaimer.util import float_to_str, float_to_str_truncate,\
      parse_jm_float, parse_jm_int
 
@@ -81,8 +82,8 @@ class JmsNode:
         return True
 
     @classmethod
-    def setup_node_hierarchy(cls, nodes, jms_version="8200"):
-        if jms_version == "8200":
+    def setup_node_hierarchy(cls, nodes, jms_version=JMS_VERSION_HALO_1):
+        if jms_version == JMS_VERSION_HALO_1:
             # Halo 1
             parented_nodes = set()
             # setup the parent node hierarchy
@@ -100,7 +101,7 @@ class JmsNode:
                         sib_node = nodes[sib_idx]
                         sib_node.parent_index = parent_idx
                         sib_idx = sib_node.sibling_index
-        elif jms_version == "8210":
+        elif jms_version == JMS_VERSION_HALO_2:
             # Halo 2
             pass
 
@@ -1041,21 +1042,21 @@ def read_jms(jms_string, stop_at="", perm_name=None):
 
     jms_model.version = str(parse_jm_int(jms_data[0]))
 
-    if jms_model.version == "8200":
+    if jms_model.version == JMS_VERSION_HALO_1:
         # Halo 1
         return _read_jms_8200(jms_model, jms_data, stop_at)
 
     # after 8200, comments are allowed. the comment character
     # is a semicolon, and the line must start with it.
     # filter out any lines that start with a semicolon.
-    
+
     jms_string = jms_string.lstrip("\ufeff")
     jms_data = tuple(d.lstrip() for d in jms_string.split("\n"))
     jms_data = tuple(d for d in jms_data if d and d[0] != ";")
     jms_data = "\t".join(jms_data).split("\t")
 
     version = str(parse_jm_int(jms_data[0]))
-    if version == "8210":
+    if version == JMS_VERSION_HALO_2:
         # Halo 2
         return _read_jms_8210(jms_data, stop_at)
     else:
@@ -1418,7 +1419,7 @@ def _read_jms_8210(jms_data, stop_at=""):
     #       point-to-points, prismatics, and bounding spheres
 
     # TODO: make several jms_models from the parsed data
-    
+
     '''
     version
     nodes
