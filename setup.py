@@ -100,22 +100,20 @@ setup_kwargs = dict(
         ],
     ext_modules = [
         Extension("reclaimer.sounds.ext.adpcm_ext",
-            # Explicitly including all these because I can't figure out this damn setup script
-            sources=["reclaimer/sounds/src/adpcm_ext.c", "reclaimer/sounds/src/shared.h",
-                     "reclaimer/sounds/src/adpcm-xq/adpcm-lib.c",
-                     "reclaimer/sounds/src/adpcm-xq/adpcm-lib.h",
-                     "reclaimer/sounds/src/adpcm-xq/license.txt",]),
+            sources=["reclaimer/sounds/src/adpcm_ext.c",
+                     "reclaimer/sounds/src/adpcm-xq/adpcm-lib.c",]),
         ],
     package_data={
-        '': ['*.txt', '*.md', '*.rst',
+        '': ['*.txt', '*.md', '*.rst', '*.h',
              '**/p8_palette_halo',   '**/p8_palette_halo_diff_map',
-             '**/p8_palette_stubbs', '**/p8_palette_stubbs_diff_map']
+             '**/p8_palette_stubbs', '**/p8_palette_stubbs_diff_map'],
+        'reclaimer': ["sounds/src/*", "sounds/src/adpcm-xq/*",]
         },
     platforms=["POSIX", "Windows"],
     keywords=["reclaimer", "halo"],
     # arbytmap can be removed from the dependencies if you cannot install
     # it for some reason, though it will prevent certain things from working.
-    install_requires=['supyr_struct>=1.4.0', 'binilla>=1.2.0', 'arbytmap'],
+    install_requires=['supyr_struct', 'binilla', 'arbytmap'],
     requires=['supyr_struct', 'binilla', 'arbytmap'],
     provides=['reclaimer'],
     classifiers=[
