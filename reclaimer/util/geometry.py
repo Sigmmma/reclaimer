@@ -60,6 +60,11 @@ def is_point_on_line(point, line, use_double_rounding=False,
 def is_point_on_front_side_of_plane(point, plane, on_plane_ok=False,
                                     use_double_rounding=False,
                                     round_adjust=0):
+    '''
+    Returns if point iterable(x,y,z) is on the front side of
+    plane iterable(x,y,z,delta).
+    Either with single or double rounding.
+    '''
     rounded_dist = point_distance_to_plane(
         point, plane, use_double_rounding, round_adjust)
     if on_plane_ok:

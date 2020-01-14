@@ -28,8 +28,8 @@ part_body = Struct("tagdata",
         ),
     dependency("bitmap", "bitm"),
     dependency("physics", "pphy"),
-    # apparently marty traded his kids for this >:3
-    dependency("impact_effect", "foot"),
+    dependency("impact_effect", "foot",
+        TOOLTIP="Marty traded his kids for this"),
 
     Pad(4),
     from_to_sec("lifespan"),

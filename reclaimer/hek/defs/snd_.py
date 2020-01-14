@@ -58,19 +58,28 @@ compression = SEnum16("compression",
     'none',
     'xbox_adpcm',
     'ima_adpcm',
-    'ogg'
+    'ogg',
+    TOOLTIP="""
+IMA ADPCM is unsupported on pc, and is actually treated as
+MS ADPCM, with an additional header on the data stream.
+For all intents and purposes, "ima adpcm" is useless.
+"""
     )
 
 
 permutation = Struct('permutation',
     ascii_str32("name"),
     Float("skip_fraction"),
-    Float("gain"),
+    Float("gain", DEFAULT=1.0),
     compression,
-    SInt16("next_permutation_index"),
+    SInt16("next_permutation_index", DEFAULT=-1),
     FlSInt32("unknown0", VISIBLE=False),
     FlUInt32("unknown1", VISIBLE=False),  # always zero?
     FlUInt32("unknown2", VISIBLE=False),
+    # this is actually the required length of the ogg
+    # decompression buffer. For "none" compression, this
+    # mirrors samples.size, so a more appropriate name
+    # for this field should be pcm_buffer_size
     FlUInt32("ogg_sample_count", EDITABLE=False),
     FlUInt32("unknown3", VISIBLE=False),  # seems to always be == unknown2
     rawdata_ref("samples", max_size=4194304, widget=SoundSampleFrame),
