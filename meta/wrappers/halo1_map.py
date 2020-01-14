@@ -366,7 +366,7 @@ class Halo1Map(HaloMap):
 
         self.clear_map_cache()
 
-    def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, **kw):
+    def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=True, **kw):
         '''
         Takes a tag reference id as the sole argument.
         Returns that tags meta data as a parsed block.
