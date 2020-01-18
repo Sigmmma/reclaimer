@@ -14,8 +14,12 @@ HALO_1_MAX_REGIONS = 8
 HALO_1_NAME_MAX_LEN = 31
 # These two numbers are the same because there shouldn't be more materials than
 # geometries. A geometry can only have one material after all.
-HALO_1_MAX_MATERIALS = 256
 HALO_1_MAX_GEOMETRIES_PER_MODEL = 256
+HALO_1_MAX_MATERIALS = HALO_1_MAX_GEOMETRIES_PER_MODEL
+
+HALO_1_MAX_NODES = 64
+HALO_1_MAX_MARKERS = 256
+
 
 # If a jms file is prefixed with this token it
 # cannot be randomly chosen as a permutation
