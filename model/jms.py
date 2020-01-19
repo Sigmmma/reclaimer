@@ -14,7 +14,7 @@ import traceback
 from copy import deepcopy
 from pathlib import Path
 
-from reclaimer.model.constants import ( JMS_VERSION_HALO_1, JMS_VERSION_HALO_2 )
+from reclaimer.model.constants import ( JMS_VERSION_HALO_1, JMS_VERSION_HALO_2_8210 )
 from reclaimer.util import float_to_str, float_to_str_truncate,\
      parse_jm_float, parse_jm_int
 
@@ -101,7 +101,7 @@ class JmsNode:
                         sib_node = nodes[sib_idx]
                         sib_node.parent_index = parent_idx
                         sib_idx = sib_node.sibling_index
-        elif jms_version == JMS_VERSION_HALO_2:
+        elif jms_version == JMS_VERSION_HALO_2_8210:
             # Halo 2
             pass
 
@@ -1056,7 +1056,7 @@ def read_jms(jms_string, stop_at="", perm_name=None):
     jms_data = "\t".join(jms_data).split("\t")
 
     version = str(parse_jm_int(jms_data[0]))
-    if version == JMS_VERSION_HALO_2:
+    if version == JMS_VERSION_HALO_2_8210:
         # Halo 2
         return _read_jms_8210(jms_data, stop_at)
     else:
