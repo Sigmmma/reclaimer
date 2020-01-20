@@ -1032,19 +1032,13 @@ class MergedJmsModel:
 
 
 def read_jms(jms_string, stop_at="", perm_name=None):
-    if perm_name is None:
-        perm_name = "__unnamed"
-
-    jms_model = JmsModel(perm_name)
-
     jms_data = tuple(d for d in jms_string.\
                      replace("\n", "\t").split("\t") if d)
 
-    jms_model.version = str(parse_jm_int(jms_data[0]))
-
-    if jms_model.version == JMS_VERSION_HALO_1:
+    version = jms_data[0].strip()
+    if version == JMS_VERSION_HALO_1:
         # Halo 1
-        return _read_jms_8200(jms_model, jms_data, stop_at)
+        return _read_jms_8200(jms_data, stop_at, perm_name)
 
     # after 8200, comments are allowed. the comment character
     # is a semicolon, and the line must start with it.
@@ -1055,7 +1049,7 @@ def read_jms(jms_string, stop_at="", perm_name=None):
     jms_data = tuple(d for d in jms_data if d and d[0] != ";")
     jms_data = "\t".join(jms_data).split("\t")
 
-    version = str(parse_jm_int(jms_data[0]))
+    version = jms_data[0].strip()
     if version == JMS_VERSION_HALO_2_8210:
         # Halo 2
         return _read_jms_8210(jms_data, stop_at)
@@ -1064,16 +1058,29 @@ def read_jms(jms_string, stop_at="", perm_name=None):
         return None
 
 
-def _read_jms_8200(jms_model, jms_data, stop_at=""):
+def _read_jms_8200(jms_data, stop_at="", perm_name=None):
+    jms_model = JmsModel(perm_name)
+    if perm_name is None:
+        perm_name = "__unnamed"
+
     # Halo 1
+    dat_i = 0
+
     try:
-        jms_model.node_list_checksum = parse_jm_int(jms_data[1])
+        jms_model.version = str(parse_jm_int(jms_data[dat_i]))
+        dat_i += 1
+    except Exception:
+        print(traceback.format_exc())
+        print("Could not read version number.")
+        return jms_model
+
+    try:
+        jms_model.node_list_checksum = parse_jm_int(jms_data[dat_i])
+        dat_i += 1
     except Exception:
         print(traceback.format_exc())
         print("Could not read node list checksum.")
         return jms_model
-
-    dat_i = 2
 
     stop = (stop_at == "nodes")
     if not stop:
