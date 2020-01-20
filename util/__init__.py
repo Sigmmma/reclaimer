@@ -1,3 +1,5 @@
+import re
+
 from math import log
 
 from supyr_struct.util import *
@@ -80,18 +82,14 @@ def float_to_str_truncate(f, sig_figs=7):
 
     return "%s.%s" % (float_pieces[0], remainder[: sig_figs])
 
+JM_INT_PARSE_REGEX = re.compile(r'^\s*([-+]?\d+)')
 
 def parse_jm_int(string):
-    try:
-        i = 1 if string[0] == "-" else 0
-        check = VALID_NUMERIC_CHARS
-        while i < len(string):
-            if string[i] not in check:
-                break
-            i += 1
-        return int(string[: i])
-    except Exception:
-        return 0
+    '''
+    convert jm integer to a proper integer. Based on description of C atoi spec
+    '''
+    result = JM_INT_PARSE_REGEX.search(string)
+    return int(result.group()) if result else 0
 
 
 def parse_jm_float(string):
