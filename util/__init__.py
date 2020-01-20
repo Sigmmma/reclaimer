@@ -86,27 +86,21 @@ JM_INT_PARSE_REGEX = re.compile(r'^\s*([-+]?\d+)')
 
 def parse_jm_int(string):
     '''
-    convert jm integer to a proper integer. Based on description of C atoi spec
+    convert jm integer to a proper integer. Based on description of C atoi spec.
+    Returns 0 when it can't find anything or is interupted.
     '''
     result = JM_INT_PARSE_REGEX.search(string)
     return int(result.group()) if result else 0
 
+JM_FLOAT_PARSE_REGEX = re.compile(r'^\s*([-+]?\d+\.?\d*)')
 
 def parse_jm_float(string):
-    try:
-        i = 1 if string[0] == "-" else 0
-        check = VALID_NUMERIC_CHARS
-        found_period = False
-        while i < len(string):
-            c = string[i]
-            if c == "." and not found_period:
-                found_period = True
-            elif c not in check:
-                break
-            i += 1
-        return float(string[: i])
-    except Exception:
-        return 0.0
+    '''
+    convert jm integer to a proper integer. Based on description of C atof spec.
+    Returns 0.0 for NaN or when it can't find anything or is interupted.
+    '''
+    result = JM_FLOAT_PARSE_REGEX.search(string)
+    return float(result.group()) if result else 0.0
 
 
 def is_valid_ascii_name_str(string):
@@ -125,3 +119,5 @@ def is_valid_ascii_name_str(string):
         if i in string_bytes:
             return False
     return True
+
+del re
