@@ -1200,6 +1200,7 @@ def _read_jms_8200(jms_data, stop_at="", perm_name=None):
             del jms_model.tris[i: ]
             stop = True
 
+    # return (jms_models[name], )
     return jms_model
 
 
@@ -1421,6 +1422,43 @@ def _read_jms_8210(jms_data, stop_at=""):
             print("Failed to read triangles.")
             stop = True
 
+
+    for perm_name in material_perm_names:
+        jms_model = JmsModel()
+
+        jms_model.name = perm_name
+        jms_model.perm_name = perm_name
+        jms_model.version = version
+
+        jms_model.node_list_checksum = 0
+        jms_model.nodes = deepcopy(nodes)
+        jms_model.regions = deepcopy(regions)
+        jms_model.markers = deepcopy(markers)
+        jms_model.tris    = all_tris[perm_name]
+
+        jms_model.materials = materials = []
+
+        if len(material_perm_names) > 1:
+            # more than one perm. need to split into multiple and rebase
+            vert_rebase_map = {}
+            for tri in all_tris[perm_name]:
+                tri.v0 = vert_rebase_map.setdefault(tri.v0, len(vert_rebase_map))
+                tri.v1 = vert_rebase_map.setdefault(tri.v1, len(vert_rebase_map))
+                tri.v2 = vert_rebase_map.setdefault(tri.v2, len(vert_rebase_map))
+
+            jms_model.verts = [
+                all_verts[vert_rebase_map[i]] for i in range(len(vert_rebase_map))
+                ]
+        else:
+            # only one perm. no need to split and rebase
+            jms_model.verts = all_verts
+
+
+        JmsMaterial(shader_name)
+
+        jms_models[perm_name] = jms_model
+
+
     # TODO: Make this able to read spheres, boxes, capsules,
     #       convex shapes, ragdolls, hinges, car wheels,
     #       point-to-points, prismatics, and bounding spheres
@@ -1440,7 +1478,10 @@ def _read_jms_8210(jms_data, stop_at=""):
     perm_regions_and_shaders
     '''
 
-    return [jms_models[name] for name in sorted(jms_models)]
+    jms_models = tuple(jms_models[name] for name in sorted(jms_models))
+    # uncomment when pipeline is changed to handle read_jms returning a tuple of JmsModels
+    # return jms_models
+    return jms_models[0] if jms_models else None
 
 
 def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
