@@ -96,7 +96,7 @@ JM_FLOAT_PARSE_REGEX = re.compile(r'^\s*([-+]?\d+\.?\d*)')
 
 def parse_jm_float(string):
     '''
-    convert jm integer to a proper integer. Based on description of C atof spec.
+    convert jm float to a proper float. Based on description of C atof spec.
     Returns 0.0 for NaN or when it can't find anything or is interupted.
     '''
     result = JM_FLOAT_PARSE_REGEX.search(string)
