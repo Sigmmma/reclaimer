@@ -981,16 +981,11 @@ class Halo1Map(HaloMap):
                     # need to swap the lod cutoff and nodes values around
                     cutoffs = (meta.superlow_lod_cutoff, meta.low_lod_cutoff,
                                meta.high_lod_cutoff, meta.superhigh_lod_cutoff)
-                    nodes = (meta.superlow_lod_nodes, meta.low_lod_nodes,
-                             meta.high_lod_nodes, meta.superhigh_lod_nodes)
                     meta.superlow_lod_cutoff  = cutoffs[3]
                     meta.low_lod_cutoff       = cutoffs[2]
                     meta.high_lod_cutoff      = cutoffs[1]
                     meta.superhigh_lod_cutoff = cutoffs[0]
-                    meta.superlow_lod_nodes  = nodes[3]
-                    meta.low_lod_nodes       = nodes[2]
-                    meta.high_lod_nodes      = nodes[1]
-                    meta.superhigh_lod_nodes = nodes[0]
+
             else:
                 verts_attr_name = "compressed_vertices"
                 byteswap_verts = byteswap_comp_verts
