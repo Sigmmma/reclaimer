@@ -1,0 +1,28 @@
+*.[mM][dD] text eol=lf
+
+
+# Declare files that will always have CRLF line endings on checkout.
+*.sln text eol=crlf
+*.bat text eol=crlf
+*.ms  text eol=crlf
+*.mse text eol=crlf
+
+# Source files
+*.py     text diff=python eol=lf
+*.py3    text diff=python eol=lf
+*.pyw    text diff=python eol=lf
+*.pyx    text diff=python eol=lf
+*.pyz    text diff=python eol=lf
+*.[ch]   text             eol=lf
+
+# Binary files
+*.db     binary
+*.p      binary
+*.pkl    binary
+*.pickle binary
+*.pyc    binary
+*.pyd    binary
+*.pyo    binary
+
+# Jupyter notebook
+*.ipynb  text
