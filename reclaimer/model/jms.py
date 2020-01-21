@@ -1033,10 +1033,11 @@ class MergedJmsModel:
 
         return all_errors
 
+JMS_V1_SPLIT_REGEX = re.compile(r'\n+\s*|\t+')
+JMS_V2_SPLIT_REGEX = re.compile(r'\n+(;.*)*\s*|\t+')
 
 def read_jms(jms_string, stop_at="", perm_name=None):
-    jms_data = tuple(d for d in jms_string.\
-                     replace("\n", "\t").split("\t") if d)
+    jms_data = tuple(JMS_V1_SPLIT_REGEX.split(jms_string))
 
     version = jms_data[0].strip()
     if version == JMS_VERSION_HALO_1:
@@ -1048,9 +1049,7 @@ def read_jms(jms_string, stop_at="", perm_name=None):
     # filter out any lines that start with a semicolon.
 
     jms_string = jms_string.lstrip("\ufeff")
-    jms_data = tuple(d.lstrip() for d in jms_string.split("\n"))
-    jms_data = tuple(d for d in jms_data if d and d[0] != ";")
-    jms_data = "\t".join(jms_data).split("\t")
+    jms_data = tuple(JMS_V2_SPLIT_REGEX.split(jms_string))
 
     version = jms_data[0].strip()
     if version == JMS_VERSION_HALO_2_8210:
