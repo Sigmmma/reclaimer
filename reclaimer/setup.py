@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 import sys
-from os.path import dirname, join
 from traceback import format_exc
 try:
     from setuptools import setup, Extension, Command
@@ -9,8 +8,6 @@ except ImportError:
 from distutils.command.build_ext import build_ext
 from distutils.errors import CCompilerError, DistutilsExecError, \
      DistutilsPlatformError
-
-curr_dir = dirname(__file__)
 
 import reclaimer
 
@@ -41,10 +38,7 @@ class ve_build_ext(build_ext):
         else:
             build_ext.build_extension(self, ext)
 
-try:
-    long_desc = open(join(curr_dir, "README.md")).read()
-except Exception:
-    long_desc = 'Could not read long description from readme.'
+long_desc = open("README.MD").read()
 
 
 setup_kwargs = dict(
@@ -55,6 +49,11 @@ setup_kwargs = dict(
     long_description_content_type='text/markdown',
     version='%s.%s.%s' % reclaimer.__version__,
     url=reclaimer.__website__,
+    project_urls={
+        #"Documentation": <Need a string entry here>,
+        "Source": reclaimer.__website__,
+        "Funding": "https://liberapay.com/MEK/",
+    },
     author=reclaimer.__author__,
     author_email='MosesBobadilla@gmail.com',
     license='GPLv3',
@@ -104,24 +103,30 @@ setup_kwargs = dict(
                      "reclaimer/sounds/src/adpcm-xq/adpcm-lib.c",]),
         ],
     package_data={
-        '': ['*.txt', '*.md', '*.rst', '*.h',
-             '**/p8_palette_halo',   '**/p8_palette_halo_diff_map',
-             '**/p8_palette_stubbs', '**/p8_palette_stubbs_diff_map'],
-        'reclaimer': ["sounds/src/*", "sounds/src/adpcm-xq/*",]
+        'reclaimer': ["sounds/src/*", "sounds/src/adpcm-xq/*",
+            '*.[Tt][Xx][Tt]', '*.MD', '*.h',
+            '**/p8_palette_halo',   '**/p8_palette_halo_diff_map',
+            '**/p8_palette_stubbs', '**/p8_palette_stubbs_diff_map',
+            ]
         },
     platforms=["POSIX", "Windows"],
     keywords=["reclaimer", "halo"],
-    # arbytmap can be removed from the dependencies if you cannot install
-    # it for some reason, though it will prevent certain things from working.
     install_requires=['supyr_struct', 'binilla', 'arbytmap'],
     requires=['supyr_struct', 'binilla', 'arbytmap'],
     provides=['reclaimer'],
+    python_requires=">=3.5",
     classifiers=[
         "Development Status :: 4 - Beta",
-        "Intended Audience :: Developers",
-        "License :: OSI Approved :: MIT License",
+        "Intended Audience :: End Users/Desktop",
+        "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Programming Language :: Python",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.5",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3.8",
+        "Programming Language :: Python :: 3 :: Only",
+        "Programming Language :: C",
         ],
     zip_safe=False,
     cmdclass=dict(build_ext=ve_build_ext)
@@ -130,19 +135,18 @@ setup_kwargs = dict(
 
 success = False
 kwargs = dict(setup_kwargs)
-if not is_pypy:
-    try:
-        setup(**kwargs)
-        success = True
-    except BuildFailed:
-        print(format_exc())
-        print('*' * 80)
-        print("WARNING: The C accelerator modules could not be compiled.\n" +
-              "Attempting to install without accelerators now.\n" +
-              "Any errors that occurred are printed above.")
-        print('*' * 80)
+try:
+    setup(**kwargs)
+    success = True
+except BuildFailed:
+    print(format_exc())
+    print('*' * 80)
+    print("WARNING: The C accelerator modules could not be compiled.\n"
+          "Attempting to install without accelerators now.\n"
+          "Any errors that occurred are printed above.")
+    print('*' * 80)
 
 if not success:
     kwargs.pop('ext_modules')
     setup(**kwargs)
-    print("Installation successful.")
+    print("Installation successful, but skipped C modules.")
