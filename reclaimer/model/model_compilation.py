@@ -10,6 +10,10 @@
 from math import sqrt
 from struct import Struct as PyStruct
 
+from reclaimer.model.constants import (
+    HALO_1_MAX_MATERIALS, HALO_1_MAX_REGIONS, HALO_1_MAX_GEOMETRIES_PER_MODEL,
+    SCALE_INTERNAL_TO_JMS, HALO_1_NAME_MAX_LEN
+    )
 from reclaimer.model.jms import GeometryMesh
 from reclaimer.model.stripify import Stripifier
 from reclaimer.model import util
@@ -32,11 +36,11 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
 
 
     errors = []
-    if len(merged_jms.materials) > 256:
-        errors.append("Too many materials. Max count is 256.")
+    if len(merged_jms.materials) > HALO_1_MAX_MATERIALS:
+        errors.append("Too many materials. Max count is %s." % (HALO_1_MAX_MATERIALS))
 
-    if len(merged_jms.regions) > 32:
-        errors.append("Too many regions. Max count is 32.")
+    if len(merged_jms.regions) > HALO_1_MAX_REGIONS:
+        errors.append("Too many regions. Max count is %s." % (HALO_1_MAX_REGIONS))
 
     if errors and not ignore_errors:
         return errors
@@ -48,19 +52,19 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
         mod2_nodes.append()
         mod2_node = mod2_nodes[-1]
 
-        mod2_node.name = node.name[: 31]
+        mod2_node.name = node.name[: HALO_1_NAME_MAX_LEN]
         mod2_node.next_sibling_node = node.sibling_index
         mod2_node.first_child_node = node.first_child
         mod2_node.parent_node = node.parent_index
-        mod2_node.translation[:] = node.pos_x / 100,\
-                                   node.pos_y / 100,\
-                                   node.pos_z / 100
+        mod2_node.translation[:] = node.pos_x / SCALE_INTERNAL_TO_JMS,\
+                                   node.pos_y / SCALE_INTERNAL_TO_JMS,\
+                                   node.pos_z / SCALE_INTERNAL_TO_JMS
         mod2_node.rotation[:] = node.rot_i, node.rot_j,\
                                 node.rot_k, node.rot_w
 
         if node.parent_index >= 0:
             mod2_node.distance_from_parent = sqrt(
-                node.pos_x**2 + node.pos_y**2 + node.pos_z**2) / 100
+                node.pos_x**2 + node.pos_y**2 + node.pos_z**2) / SCALE_INTERNAL_TO_JMS
 
 
     # record shader ordering and permutation indices
@@ -100,7 +104,7 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
 
         mod2_regions.append()
         mod2_region = mod2_regions[-1]
-        mod2_region.name = region_name[: 31]
+        mod2_region.name = region_name[: HALO_1_NAME_MAX_LEN]
 
         mod2_perms = mod2_region.permutations.STEPTREE
         for perm_name in sorted(region.perm_meshes):
@@ -108,7 +112,7 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
 
             mod2_perms.append()
             mod2_perm = mod2_perms[-1]
-            mod2_perm.name = perm_name[: 31]
+            mod2_perm.name = perm_name[: HALO_1_NAME_MAX_LEN]
 
             mod2_perm.flags.cannot_be_chosen_randomly = not perm.is_random_perm
 
@@ -148,10 +152,11 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
 
                 perm_added = True
 
+            # What are we doing here?
             if len(perm.markers) > 32:
                 for marker in perm.markers:
                     global_markers.setdefault(
-                        marker.name[: 31], []).append(marker)
+                        marker.name[: HALO_1_NAME_MAX_LEN], []).append(marker)
             else:
                 perm_added |= bool(perm.markers)
                 mod2_markers = mod2_perm.local_markers.STEPTREE
@@ -159,11 +164,11 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                     mod2_markers.append()
                     mod2_marker = mod2_markers[-1]
 
-                    mod2_marker.name = marker.name[: 31]
+                    mod2_marker.name = marker.name[: HALO_1_NAME_MAX_LEN]
                     mod2_marker.node_index = marker.parent
-                    mod2_marker.translation[:] = marker.pos_x / 100,\
-                                                 marker.pos_y / 100,\
-                                                 marker.pos_z / 100
+                    mod2_marker.translation[:] = marker.pos_x / SCALE_INTERNAL_TO_JMS,\
+                                                 marker.pos_y / SCALE_INTERNAL_TO_JMS,\
+                                                 marker.pos_z / SCALE_INTERNAL_TO_JMS
                     mod2_marker.rotation[:] = marker.rot_i, marker.rot_j,\
                                               marker.rot_k, marker.rot_w
 
@@ -172,11 +177,12 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                 del mod2_perms[-1]
                 continue
 
-    if len(geom_meshes) > 256 and not ignore_errors:
-        return ("Cannot add more than 256 geometries to a model. "
+    if len(geom_meshes) > HALO_1_MAX_GEOMETRIES_PER_MODEL and not ignore_errors:
+        return ("Cannot add more than %s geometries to a model. "
                 "Each material in each region in each permutation "
                 "in each LOD is counted as a single geometry.\n"
-                "This model would contain %s geometries." % len(geom_meshes), )
+                "This model would contain %s geometries." % (
+                    HALO_1_MAX_GEOMETRIES_PER_MODEL, len(geom_meshes)), )
 
     # make the markers
     mod2_marker_headers = tagdata.markers.STEPTREE
@@ -186,7 +192,7 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
         mod2_marker_headers.append()
         mod2_marker_header = mod2_marker_headers[-1]
 
-        mod2_marker_header.name = marker_name[: 31]
+        mod2_marker_header.name = marker_name[: HALO_1_NAME_MAX_LEN]
         mod2_marker_list = mod2_marker_header.marker_instances.STEPTREE
 
         for marker in marker_list:
@@ -205,9 +211,9 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
             mod2_marker.region_index = marker.region
             mod2_marker.permutation_index = perm_index
             mod2_marker.node_index = marker.parent
-            mod2_marker.translation[:] = marker.pos_x / 100,\
-                                         marker.pos_y / 100,\
-                                         marker.pos_z / 100
+            mod2_marker.translation[:] = marker.pos_x / SCALE_INTERNAL_TO_JMS,\
+                                         marker.pos_y / SCALE_INTERNAL_TO_JMS,\
+                                         marker.pos_z / SCALE_INTERNAL_TO_JMS
             mod2_marker.rotation[:] = marker.rot_i, marker.rot_j,\
                                       marker.rot_k, marker.rot_w
 
@@ -289,17 +295,19 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                 for vert in verts:
                     vert_packer(
                         mod2_verts, i,
-                        vert.pos_x / 100,  vert.pos_y / 100,  vert.pos_z / 100,
+                        vert.pos_x / SCALE_INTERNAL_TO_JMS,
+                        vert.pos_y / SCALE_INTERNAL_TO_JMS,
+                        vert.pos_z / SCALE_INTERNAL_TO_JMS,
                         vert.norm_i, vert.norm_j, vert.norm_k,
                         vert.binorm_i, vert.binorm_j, vert.binorm_k,
                         vert.tangent_i, vert.tangent_j, vert.tangent_k,
-                        vert.tex_u / u_scale, (1 - vert.tex_v) / v_scale,
+                        vert.tex_u / u_scale, (1.0 - vert.tex_v) / v_scale,
                         vert.node_0, vert.node_1,
                         1 - vert.node_1_weight, vert.node_1_weight)
                     i += 68
-                    cent_x += vert.pos_x / (vert_ct * 100)
-                    cent_y += vert.pos_y / (vert_ct * 100)
-                    cent_z += vert.pos_z / (vert_ct * 100)
+                    cent_x += vert.pos_x / (vert_ct * SCALE_INTERNAL_TO_JMS)
+                    cent_y += vert.pos_y / (vert_ct * SCALE_INTERNAL_TO_JMS)
+                    cent_z += vert.pos_z / (vert_ct * SCALE_INTERNAL_TO_JMS)
 
                 mod2_part.centroid_translation[:] = [cent_x, cent_y, cent_z]
 
