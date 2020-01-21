@@ -10,8 +10,10 @@
 from math import sqrt
 from struct import Struct as PyStruct
 
-from reclaimer.model.constants import ( HALO_1_MAX_MATERIALS,
-    HALO_1_MAX_REGIONS, SCALE_INTERNAL_TO_JMS, HALO_1_NAME_MAX_LEN )
+from reclaimer.model.constants import (
+    HALO_1_MAX_MATERIALS, HALO_1_MAX_REGIONS, HALO_1_MAX_GEOMETRIES_PER_MODEL,
+    SCALE_INTERNAL_TO_JMS, HALO_1_NAME_MAX_LEN
+    )
 from reclaimer.model.jms import GeometryMesh
 from reclaimer.model.stripify import Stripifier
 from reclaimer.model import util
