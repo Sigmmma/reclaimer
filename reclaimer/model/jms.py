@@ -14,9 +14,12 @@ import traceback
 from copy import deepcopy
 from pathlib import Path
 
-from reclaimer.model.constants import ( JMS_VERSION_HALO_1, JMS_VERSION_HALO_2_8210 )
-from reclaimer.util import float_to_str, float_to_str_truncate,\
-     parse_jm_float, parse_jm_int
+from reclaimer.model.constants import (
+    JMS_VERSION_HALO_1, JMS_VERSION_HALO_2_8210, JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN
+    )
+from reclaimer.util import (
+    float_to_str, float_to_str_truncate, parse_jm_float, parse_jm_int
+    )
 
 
 class JmsNode:
@@ -386,9 +389,9 @@ class JmsModel:
 
         name = name.strip(" ")
         perm_name = name
-        if name.startswith("~"):
+        if name.startswith(JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN):
             self.is_random_perm = False
-            perm_name = perm_name.lstrip("~")
+            perm_name = perm_name.lstrip(JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN)
 
         self.lod_level = "superhigh"
         for lod_level in ("superhigh", "high", "medium", "superlow", "low"):
@@ -1231,6 +1234,8 @@ def _read_jms_8210(jms_data, stop_at=""):
             nodes[:] = (None, ) * parse_jm_int(jms_data[dat_i])
             dat_i += 1
             for i in range(len(nodes)):
+                # TODO: make the marker positions relative. according to
+                #       General_101, the h2 nodes use absolute transforms
                 nodes[i] = JmsNode(
                     jms_data[dat_i], -1, -1,  # these will need to be calculated
                     parse_jm_float(jms_data[dat_i+1]), parse_jm_float(jms_data[dat_i+2]),
@@ -1293,8 +1298,6 @@ def _read_jms_8210(jms_data, stop_at=""):
             markers[:] = (None, ) * parse_jm_int(jms_data[dat_i])
             dat_i += 1
             for i in range(len(markers)):
-                # TODO: do something about the permutation name for each marker.
-                # maybe make one copy of the markers for each permutation
                 markers[i] = JmsMarker(
                     jms_data[dat_i], "", -1, parse_jm_int(jms_data[dat_i+1]),
                     parse_jm_float(jms_data[dat_i+2]), parse_jm_float(jms_data[dat_i+3]),
@@ -1422,23 +1425,29 @@ def _read_jms_8210(jms_data, stop_at=""):
             print("Failed to read triangles.")
             stop = True
 
-
     for perm_name in material_perm_names:
         jms_model = JmsModel()
 
         jms_model.name = perm_name
         jms_model.perm_name = perm_name
         jms_model.version = version
+        jms_model.is_random_perm = False
 
         jms_model.node_list_checksum = 0
         jms_model.nodes = deepcopy(nodes)
-        jms_model.regions = deepcopy(regions)
         jms_model.markers = deepcopy(markers)
         jms_model.tris    = all_tris[perm_name]
+        jms_model.regions = perm_regions_and_shaders[perm_name]["regions"]
+        jms_model.materials = list(
+            JmsMaterial(name) for name in
+            perm_regions_and_shaders[perm_name]["shaders"]
+            )
 
-        jms_model.materials = materials = []
+        for marker in jms_model.markers:
+            # set the permutation name for each marker
+            marker.permutation = perm_name
 
-        if len(material_perm_names) > 1:
+        if True or len(material_perm_names) > 1:
             # more than one perm. need to split into multiple and rebase
             vert_rebase_map = {}
             for tri in all_tris[perm_name]:
@@ -1446,15 +1455,12 @@ def _read_jms_8210(jms_data, stop_at=""):
                 tri.v1 = vert_rebase_map.setdefault(tri.v1, len(vert_rebase_map))
                 tri.v2 = vert_rebase_map.setdefault(tri.v2, len(vert_rebase_map))
 
-            jms_model.verts = [
+            jms_model.verts = list(
                 all_verts[vert_rebase_map[i]] for i in range(len(vert_rebase_map))
-                ]
+                )
         else:
             # only one perm. no need to split and rebase
             jms_model.verts = all_verts
-
-
-        JmsMaterial(shader_name)
 
         jms_models[perm_name] = jms_model
 
@@ -1464,19 +1470,6 @@ def _read_jms_8210(jms_data, stop_at=""):
     #       point-to-points, prismatics, and bounding spheres
 
     # TODO: make several jms_models from the parsed data
-
-    '''
-    version
-    nodes
-    markers
-    regions
-    all_verts
-    all_tris
-
-    material_perm_names
-
-    perm_regions_and_shaders
-    '''
 
     jms_models = tuple(jms_models[name] for name in sorted(jms_models))
     # uncomment when pipeline is changed to handle read_jms returning a tuple of JmsModels
