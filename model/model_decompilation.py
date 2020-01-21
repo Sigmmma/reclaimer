@@ -11,6 +11,8 @@ from pathlib import Path
 from struct import Struct as PyStruct
 from traceback import format_exc
 
+from reclaimer.model.constants import (
+    JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN, SCALE_INTERNAL_TO_JMS )
 from reclaimer.model.jms import write_jms, JmsModel, JmsNode,\
      JmsMaterial, JmsMarker, JmsVertex, JmsTriangle
 
@@ -47,8 +49,8 @@ def extract_model(tagdata, tag_path="", **kw):
                 perm = region.permutations.STEPTREE[inst.permutation_index]
                 perm_name = perm.name
                 if (perm.flags.cannot_be_chosen_randomly and
-                    not perm_name.startswith("~")):
-                    perm_name += "~"
+                    not perm_name.startswith(JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN)):
+                    perm_name = JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN + perm_name
             except Exception:
                 print("Invalid permutation index in marker '%s'" % marker_name)
                 continue
@@ -60,7 +62,9 @@ def extract_model(tagdata, tag_path="", **kw):
             perm_markers.append(JmsMarker(
                 marker_name, perm_name, inst.region_index, inst.node_index,
                 rot.i, rot.j, rot.k, rot.w,
-                trans.x * 100, trans.y * 100, trans.z * 100,
+                trans.x * SCALE_INTERNAL_TO_JMS,
+                trans.y * SCALE_INTERNAL_TO_JMS,
+                trans.z * SCALE_INTERNAL_TO_JMS,
                 1.0
                 ))
 
@@ -70,7 +74,9 @@ def extract_model(tagdata, tag_path="", **kw):
         nodes.append(JmsNode(
             b.name, b.first_child_node, b.next_sibling_node,
             rot.i, rot.j, rot.k, rot.w,
-            trans.x * 100, trans.y * 100, trans.z * 100,
+            trans.x * SCALE_INTERNAL_TO_JMS,
+            trans.y * SCALE_INTERNAL_TO_JMS,
+            trans.z * SCALE_INTERNAL_TO_JMS,
             b.parent_node
             ))
 
@@ -91,8 +97,8 @@ def extract_model(tagdata, tag_path="", **kw):
         for perm in region.permutations.STEPTREE:
             perm_name = perm.name
             if (perm.flags.cannot_be_chosen_randomly and
-                not perm_name.startswith("~")):
-                perm_name += "~"
+                not perm_name.startswith(JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN)):
+                perm_name = JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN + perm_name
 
             geoms_by_lod_region = geoms_by_perm_lod_region.setdefault(perm_name, {})
 
@@ -104,7 +110,9 @@ def extract_model(tagdata, tag_path="", **kw):
                     perm_markers.append(JmsMarker(
                         m.name, perm_name, region_index, m.node_index,
                         rot.i, rot.j, rot.k, rot.w,
-                        trans.x * 100, trans.y * 100, trans.z * 100,
+                        trans.x * SCALE_INTERNAL_TO_JMS,
+                        trans.y * SCALE_INTERNAL_TO_JMS,
+                        trans.z * SCALE_INTERNAL_TO_JMS,
                         1.0
                         ))
 
