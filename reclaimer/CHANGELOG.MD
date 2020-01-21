@@ -5,9 +5,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+ - Add large part of the support for Halo 2 .jms files (.ass)
 
 ### Changed
  - Fix extraction of node order for Halo 1 model/gbxmodel tags.
+ - Sped up JMS parsing using regex magic!
+ - The model pipeline has a lot of repeated values moved into constants.
 
 ## [2.6.0] Into the GPLv3
 Something that is very important to us is collaboration and the ability to share knowledge. Since this library is just to help mod some games, we've decided that switching to GPLv3 is the right thing to do for us to avoid any future loss of knowledge.
