@@ -1033,7 +1033,10 @@ class MergedJmsModel:
 
         return all_errors
 
+# Test showing off the regex can be seen here:
+# https://regex101.com/r/7PKpWi/1
 JMS_V1_SPLIT_REGEX = re.compile(r'\n+\s*|\t+')
+# https://regex101.com/r/ySgI1Z/1
 JMS_V2_SPLIT_REGEX = re.compile(r'\n+(;.*)*\s*|\t+')
 
 def read_jms(jms_string, stop_at="", perm_name=None):
