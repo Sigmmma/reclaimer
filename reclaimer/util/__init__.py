@@ -82,7 +82,13 @@ def float_to_str_truncate(f, sig_figs=7):
 
     return "%s.%s" % (float_pieces[0], remainder[: sig_figs])
 
+# Test showing off the regex can be seen here:
+# https://regex101.com/r/Fpd23n/1
 JM_INT_PARSE_REGEX = re.compile(r'^\s*([-+]?\d+)')
+# https://regex101.com/r/rKvo0t/1
+# TODO: Should this match numbers that start with a . and are just commas?
+# Check atof description.
+JM_FLOAT_PARSE_REGEX = re.compile(r'^\s*([-+]?\d+\.?\d*)')
 
 def parse_jm_int(string):
     '''
@@ -91,8 +97,6 @@ def parse_jm_int(string):
     '''
     result = JM_INT_PARSE_REGEX.search(string)
     return int(result.group()) if result else 0
-
-JM_FLOAT_PARSE_REGEX = re.compile(r'^\s*([-+]?\d+\.?\d*)')
 
 def parse_jm_float(string):
     '''
