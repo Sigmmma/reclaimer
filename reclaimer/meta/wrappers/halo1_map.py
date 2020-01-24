@@ -838,6 +838,12 @@ class Halo1Map(HaloMap):
         if hasattr(meta, "obje_attrs"):
             predicted_resources.append(meta.obje_attrs.predicted_resources)
 
+            # fix the change colors permutations
+            for change_color in meta.obje_attrs.change_colors.STEPTREE:
+                cutoff = 0
+                for perm in change_color.permutations.STEPTREE:
+                    perm.weight, cutoff = perm.weight - cutoff, perm.weight
+
 
         if tag_cls == "actv":
             # multiply grenade velocity by 30
