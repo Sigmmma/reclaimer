@@ -1064,9 +1064,10 @@ def read_jms(jms_string, stop_at="", perm_name=None):
 
 
 def _read_jms_8200(jms_data, stop_at="", perm_name=None):
-    jms_model = JmsModel(perm_name)
     if perm_name is None:
         perm_name = "__unnamed"
+
+    jms_model = JmsModel(perm_name)
 
     # Halo 1
     dat_i = 0
