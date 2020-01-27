@@ -26,7 +26,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{1E53A95D-AE4A-46EF-AAC8-491E63D30325}</ProjectGuid>
+    <ProjectGuid>{9A61D4CE-208C-4567-B5A6-64AC1C48A30F}</ProjectGuid>
     <RootNamespace>byteswapping_ext</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>

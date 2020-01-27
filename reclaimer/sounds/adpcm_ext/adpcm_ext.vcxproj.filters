@@ -23,10 +23,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\shared.h">
+    <ClInclude Include="..\src\adpcm-xq\adpcm-lib.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\adpcm-xq\adpcm-lib.h">
+    <ClInclude Include="..\..\src\shared.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
