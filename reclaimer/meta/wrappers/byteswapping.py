@@ -28,6 +28,45 @@ raw_block_def = BlockDef("raw_block",
         SIZE=lambda node, *a, **kw: 0 if node is None else len(node))
     )
 
+def make_mutable_struct_array_copy(data, struct_size):
+    valid_length = struct_size*(len(data)//struct_size)
+    if valid_length == len(data):
+        return bytearray(data)
+    return bytearray(data[:valid_length])
+
+
+def byteswap_struct_array(original, swapped, size, count=None, start=0,
+                          two_byte_offs=(), four_byte_offs=()):
+    assert start >= 0
+
+    for off in two_byte_offs:
+        assert (off + 2) <= size
+
+    for off in four_byte_offs:
+        assert (off + 4) <= size
+
+    if count is None:
+        count = (min(len(original), len(swapped)) - start) // size
+
+    end = start + count * size
+    if fast_byteswapping:
+        byteswapping_ext.byteswap_struct_array(
+            original, swapped, start, end, size,
+            two_byte_offs, four_byte_offs)
+        return
+
+    for field_off in two_byte_offs:
+        for off in range(field_off + start, end, size):
+            swapped[off]     = original[off + 1]
+            swapped[off + 1] = original[off]
+
+    for field_off in four_byte_offs:
+        for off in range(field_off + start, end, size):
+            swapped[off]     = original[off + 3]
+            swapped[off + 1] = original[off + 2]
+            swapped[off + 2] = original[off + 1]
+            swapped[off + 3] = original[off]
+
 
 def byteswap_raw_reflexive(refl):
     desc = refl.desc
@@ -36,21 +75,11 @@ def byteswap_raw_reflexive(refl):
     if not two_byte_offs and not four_byte_offs:
         return
 
-    data = refl.STEPTREE
-    refl.STEPTREE = swapped = bytearray(data)
-
-    for refl_off in range(0, refl.size*struct_size, struct_size):
-        for tmp_off in two_byte_offs:
-            tmp_off += refl_off
-            swapped[tmp_off]   = data[tmp_off+1]
-            swapped[tmp_off+1] = data[tmp_off]
-
-        for tmp_off in four_byte_offs:
-            tmp_off += refl_off
-            swapped[tmp_off]   = data[tmp_off+3]
-            swapped[tmp_off+1] = data[tmp_off+2]
-            swapped[tmp_off+2] = data[tmp_off+1]
-            swapped[tmp_off+3] = data[tmp_off]
+    original = refl.STEPTREE
+    swapped = make_mutable_struct_array_copy(original, struct_size)
+    byteswap_struct_array(original, swapped, struct_size, refl.size, 0,
+                          two_byte_offs, four_byte_offs)
+    refl.STEPTREE = swapped
 
 
 def byteswap_coll_bsp(bsp):
@@ -76,121 +105,65 @@ def byteswap_sbsp_meta(meta):
 
 
 def byteswap_scnr_script_syntax_data(meta):
-    syntax_data = meta.script_syntax_data.data
-    swapped = bytearray(syntax_data)
+    original = meta.script_syntax_data.data
+    swapped = bytearray(((len(original)-56)//20) * 20 + 56)
     # swap the 56 byte header
     # first 32 bytes are a string
-    for i in (32, 34, 38, 44, 46, 48, 50):
-        # swap the Int16's
-        swapped[i]   = syntax_data[i+1]
-        swapped[i+1] = syntax_data[i]
-
-    for i in (40, 52):
-        # swap the Int32's
-        swapped[i]   = syntax_data[i+3]
-        swapped[i+1] = syntax_data[i+2]
-        swapped[i+2] = syntax_data[i+1]
-        swapped[i+3] = syntax_data[i]
+    byteswap_struct_array(
+        original, swapped, 56, 1, 0,
+        two_byte_offs=(32, 34, 38, 44, 46, 48, 50),
+        four_byte_offs=(40, 52))
 
     # swap the 20 byte blocks
-    for i in range(56, len(swapped), 20):
-        # swap the Int16's
-        swapped[i]   = syntax_data[i+1]; swapped[i+1] = syntax_data[i]
-        swapped[i+2] = syntax_data[i+3]; swapped[i+3] = syntax_data[i+2]
-        swapped[i+4] = syntax_data[i+5]; swapped[i+5] = syntax_data[i+4]
-        swapped[i+6] = syntax_data[i+7]; swapped[i+7] = syntax_data[i+6]
-
-        # swap the Int32's
-        swapped[i+8]  = syntax_data[i+11]
-        swapped[i+9]  = syntax_data[i+10]
-        swapped[i+10] = syntax_data[i+9]
-        swapped[i+11] = syntax_data[i+8]
-
-        swapped[i+12] = syntax_data[i+15]
-        swapped[i+13] = syntax_data[i+14]
-        swapped[i+14] = syntax_data[i+13]
-        swapped[i+15] = syntax_data[i+12]
-
-        swapped[i+16] = syntax_data[i+19]
-        swapped[i+17] = syntax_data[i+18]
-        swapped[i+18] = syntax_data[i+17]
-        swapped[i+19] = syntax_data[i+16]
+    byteswap_struct_array(
+        original, swapped, 20, None, 56,
+        two_byte_offs=(0, 2, 4, 6),
+        four_byte_offs=(8, 12, 16)
+        )
 
     meta.script_syntax_data.data = swapped
 
 
 def byteswap_uncomp_verts(verts_block):
-    raw_block = verts_block.STEPTREE
-    raw_data  = raw_block.data
+    original = verts_block.STEPTREE.data
+    swapped = make_mutable_struct_array_copy(original, 68)
 
-    # replace the verts with the byteswapped and trimmed ones
-    raw_block.data = new_raw = bytearray(68*(len(raw_data)//68))
-    four_byte_field_offs = (0, 4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44,
-                            48, 52, 60, 64)
-    # byteswap each of the floats, ints, and shorts
-    for i in range(0, len(new_raw), 68):
-        # byteswap the position floats and lighting vectors
-        for j in four_byte_field_offs:
-            j += i
-            new_raw[j] = raw_data[j+3]
-            new_raw[j+1] = raw_data[j+2]
-            new_raw[j+2] = raw_data[j+1]
-            new_raw[j+3] = raw_data[j]
-        # byteswap the node indices
-        new_raw[i+56] = raw_data[i+57]
-        new_raw[i+57] = raw_data[i+56]
-        new_raw[i+58] = raw_data[i+59]
-        new_raw[i+59] = raw_data[i+58]
+    byteswap_struct_array(
+        original, swapped, 68, None, 0,
+        two_byte_offs=(56, 58),
+        four_byte_offs=(0, 4, 8, 12, 16, 20, 24, 28, 32,
+                       36, 40, 44, 48, 52, 60, 64)
+        )
 
-    # set the size of the reflexive
-    verts_block.size = len(new_raw)//68
+    verts_block.STEPTREE.data = swapped
+    verts_block.size = len(swapped)//68
 
 
 def byteswap_comp_verts(verts_block):
-    raw_block = verts_block.STEPTREE
-    raw_data  = raw_block.data
+    original = verts_block.STEPTREE.data
+    swapped = make_mutable_struct_array_copy(original, 32)
 
-    # replace the verts with the byteswapped and trimmed ones
-    raw_block.data = new_raw = bytearray(32*(len(raw_data)//32))
-    four_byte_field_offs = (0, 4, 8, 12, 16, 20)
-    # byteswap each of the floats, ints, and shorts
-    for i in range(0, len(new_raw), 32):
-        # byteswap the position floats and lighting vectors
-        for j in four_byte_field_offs:
-            j += i
-            new_raw[j] = raw_data[j+3]
-            new_raw[j+1] = raw_data[j+2]
-            new_raw[j+2] = raw_data[j+1]
-            new_raw[j+3] = raw_data[j]
-        # byteswap the texture coordinates
-        new_raw[i+24] = raw_data[i+25]
-        new_raw[i+25] = raw_data[i+24]
-        new_raw[i+26] = raw_data[i+27]
-        new_raw[i+27] = raw_data[i+26]
-        # copy over the node indices
-        new_raw[i+28] = raw_data[i+28]
-        new_raw[i+29] = raw_data[i+29]
-        # byteswap the node weight
-        new_raw[i+30] = raw_data[i+31]
-        new_raw[i+31] = raw_data[i+30]
+    byteswap_struct_array(
+        original, swapped, 32, None, 0,
+        two_byte_offs=(24, 26, 28, 30),
+        four_byte_offs=(0, 4, 8, 12, 16, 20)
+        )
 
-    # set the size of the reflexive
-    verts_block.size = len(new_raw)//32
+    verts_block.STEPTREE.data = swapped
+    verts_block.size = len(swapped)//32
 
 
 def byteswap_tris(tris_block):
-    raw_block = tris_block.STEPTREE
-    raw_data  = raw_block.data
+    original = tris_block.STEPTREE.data
+    swapped = make_mutable_struct_array_copy(original, 32)
 
-    # replace the verts with the byteswapped and trimmed ones
-    raw_block.data = new_raw = bytearray(6*(len(raw_data)//6))
-    # byteswap each of the shorts
-    for i in range(0, len(new_raw), 2):
-        new_raw[i] = raw_data[i+1]
-        new_raw[i+1] = raw_data[i]
+    byteswap_struct_array(
+        original, swapped, 6, None, 0,
+        two_byte_offs=(0, 2, 4)
+        )
 
-    # set the size of the reflexive
-    tris_block.size = len(new_raw)//6
+    tris_block.STEPTREE.data = swapped
+    tris_block.size = len(swapped)//32
 
 
 def byteswap_animation(anim):
@@ -238,11 +211,10 @@ def byteswap_animation(anim):
 
     # byteswap the frame info
     try:
-        for i in range(0, frame_info_size, 4):
-            new_frame_info[i]   = frame_info[i+3]
-            new_frame_info[i+1] = frame_info[i+2]
-            new_frame_info[i+2] = frame_info[i+1]
-            new_frame_info[i+3] = frame_info[i]
+        byteswap_struct_array(
+            frame_info, new_frame_info, 4, None, 0,
+            four_byte_offs=(0, )
+            )
     except IndexError:
         pass
 
@@ -254,21 +226,21 @@ def byteswap_animation(anim):
             # byteswap the default_data
             for n in range(node_count):
                 if not rot_flags[n]:
-                    for j in range(0, 8, 2):
-                        swap[i] = raw[i+1]
-                        swap[i+1] = raw[i]
-                        i += 2
+                    for j in range(i, i + 8, 2):
+                        swap[j]   = raw[j+1]
+                        swap[j+1] = raw[j]
+                    i += 8
 
                 if not trans_flags[n]:
-                    for j in range(0, 12, 4):
-                        swap[i] = raw[i+3]
-                        swap[i+1] = raw[i+2]
-                        swap[i+2] = raw[i+1]
-                        swap[i+3] = raw[i]
-                        i += 4
+                    for j in range(i, i + 12, 4):
+                        swap[j]   = raw[j+3]
+                        swap[j+1] = raw[j+2]
+                        swap[j+2] = raw[j+1]
+                        swap[j+3] = raw[j]
+                    i += 12
 
                 if not scale_flags[n]:
-                    swap[i] = raw[i+3]
+                    swap[i]   = raw[i+3]
                     swap[i+1] = raw[i+2]
                     swap[i+2] = raw[i+1]
                     swap[i+3] = raw[i]
@@ -285,21 +257,21 @@ def byteswap_animation(anim):
             for f in range(frame_count):
                 for n in range(node_count):
                     if rot_flags[n]:
-                        for j in range(0, 8, 2):
-                            swap[i] = raw[i+1]
-                            swap[i+1] = raw[i]
-                            i += 2
+                        for j in range(i, i + 8, 2):
+                            swap[j]   = raw[j+1]
+                            swap[j+1] = raw[j]
+                        i += 8
 
                     if trans_flags[n]:
-                        for j in range(0, 12, 4):
-                            swap[i] = raw[i+3]
-                            swap[i+1] = raw[i+2]
-                            swap[i+2] = raw[i+1]
-                            swap[i+3] = raw[i]
-                            i += 4
+                        for j in range(i, i + 12, 4):
+                            swap[j]   = raw[j+3]
+                            swap[j+1] = raw[j+2]
+                            swap[j+2] = raw[j+1]
+                            swap[j+3] = raw[j]
+                        i += 12
 
                     if scale_flags[n]:
-                        swap[i] = raw[i+3]
+                        swap[i]   = raw[i+3]
                         swap[i+1] = raw[i+2]
                         swap[i+2] = raw[i+1]
                         swap[i+3] = raw[i]
