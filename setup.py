@@ -75,6 +75,7 @@ setup_kwargs = dict(
         'reclaimer.meta.gen3_resources',
         'reclaimer.meta.objs',
         'reclaimer.meta.wrappers',
+        'reclaimer.meta.wrappers.ext',
         'reclaimer.model',
         'reclaimer.misc',
         'reclaimer.misc.defs',
@@ -101,9 +102,13 @@ setup_kwargs = dict(
         Extension("reclaimer.sounds.ext.adpcm_ext",
             sources=["reclaimer/sounds/src/adpcm_ext.c",
                      "reclaimer/sounds/src/adpcm-xq/adpcm-lib.c",]),
+        Extension("reclaimer.meta.wrappers.ext.byteswapping_ext",
+            sources=["reclaimer/meta/wrappers/src/byteswapping_ext.c"]),
         ],
     package_data={
-        'reclaimer': ["sounds/src/*", "sounds/src/adpcm-xq/*",
+        'reclaimer': [
+            "src/*", "meta/wrappers/src/*",
+            "sounds/src/*", "sounds/src/adpcm-xq/*",
             '*.[Tt][Xx][Tt]', '*.MD', '*.h',
             '**/p8_palette_halo',   '**/p8_palette_halo_diff_map',
             '**/p8_palette_stubbs', '**/p8_palette_stubbs_diff_map',

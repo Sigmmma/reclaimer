@@ -16,6 +16,13 @@ from reclaimer.sounds.util import byteswap_pcm16_sample_data
 from supyr_struct.field_types import BytearrayRaw
 from supyr_struct.defs.block_def import BlockDef
 
+try:
+    from .ext import byteswapping_ext
+    fast_byteswapping = True
+except:
+    fast_byteswapping = False
+
+
 raw_block_def = BlockDef("raw_block",
     BytearrayRaw('data',
         SIZE=lambda node, *a, **kw: 0 if node is None else len(node))

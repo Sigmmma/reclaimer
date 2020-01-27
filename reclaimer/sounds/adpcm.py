@@ -18,7 +18,8 @@ import array
 import audioop
 import sys
 
-from struct import Struct as PyStruct
+from struct import unpack_from
+from types import MethodType
 
 from . import constants
 
@@ -50,7 +51,7 @@ def _slow_decode_xbadpcm_samples(in_data, out_data, channel_ct):
     adpcm2lin = audioop.adpcm2lin
     all_codes = memoryview(in_data)
 
-    state_unpacker = PyStruct("<" + "hBx" * channel_ct).unpack_from
+    state_unpacker = MethodType(unpack_from, "<" + "hBx" * channel_ct)
     code_block_size = 4 * channel_ct
 
     k = 0

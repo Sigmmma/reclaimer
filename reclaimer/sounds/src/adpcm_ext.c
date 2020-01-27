@@ -1,4 +1,4 @@
-#include "shared.h"
+#include "..\..\src\shared.h"
 #include "adpcm-xq/adpcm-lib.h"
 
 const static int ADPCM_STEP_TABLE_MAX_INDEX = sizeof(step_table) / sizeof(step_table[0]) - 1;
