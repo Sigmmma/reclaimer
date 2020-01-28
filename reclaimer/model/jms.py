@@ -281,9 +281,9 @@ class JmsVertex:
         self.pos_x = pos_x
         self.pos_y = pos_y
         self.pos_z = pos_z
-        self.norm_i = norm_i
-        self.norm_j = norm_j
-        self.norm_k = norm_k
+        self.norm_i = min(1.0, max(-1.0, norm_i))
+        self.norm_j = min(1.0, max(-1.0, norm_j))
+        self.norm_k = min(1.0, max(-1.0, norm_k))
         self.binorm_i = binorm_i
         self.binorm_j = binorm_j
         self.binorm_k = binorm_k
@@ -298,13 +298,6 @@ class JmsVertex:
         self.other_nodes = other_nodes
         self.other_weights = other_weights
         self.other_uvws = other_uvws
-
-        norm_len = self.norm_i**2 + self.norm_j**2 + self.norm_k**2
-        if norm_len > 0.0:
-            norm_len = norm_len**0.5
-            self.norm_i /= norm_len
-            self.norm_j /= norm_len
-            self.norm_k /= norm_len
 
     def __repr__(self):
         return """JmsVertex(node_0=%s,
