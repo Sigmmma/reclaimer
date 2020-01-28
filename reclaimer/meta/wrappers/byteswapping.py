@@ -38,7 +38,7 @@ def make_mutable_struct_array_copy(data, struct_size):
 
 
 def byteswap_struct_array(original, swapped, size, count=None, start=0,
-                          two_byte_offs=(), four_byte_offs=()):
+                          two_byte_offs=(), four_byte_offs=(), eight_byte_offs=()):
     assert start >= 0
 
     for off in two_byte_offs:
@@ -47,8 +47,20 @@ def byteswap_struct_array(original, swapped, size, count=None, start=0,
     for off in four_byte_offs:
         assert (off + 4) <= size
 
+    for off in eight_byte_offs:
+        assert (off + 8) <= size
+
+    if size <= 0:
+        return
+
+    max_count = (min(len(original), len(swapped)) - start) // size
     if count is None:
-        count = (min(len(original), len(swapped)) - start) // size
+        count = max_count
+    else:
+        count = min(max_count, count)
+
+    if count <= 0:
+        return
 
     end = start + count * size
     if fast_byteswapping:
@@ -56,6 +68,7 @@ def byteswap_struct_array(original, swapped, size, count=None, start=0,
             original, swapped, start, end, size,
             array.array("I", two_byte_offs),
             array.array("I", four_byte_offs),
+            array.array("I", eight_byte_offs),
             )
         return
 
@@ -70,6 +83,17 @@ def byteswap_struct_array(original, swapped, size, count=None, start=0,
             swapped[off + 1] = original[off + 2]
             swapped[off + 2] = original[off + 1]
             swapped[off + 3] = original[off]
+
+    for field_off in eight_byte_offs:
+        for off in range(field_off + start, end, size):
+            swapped[off]     = original[off + 7]
+            swapped[off + 1] = original[off + 6]
+            swapped[off + 2] = original[off + 5]
+            swapped[off + 3] = original[off + 4]
+            swapped[off + 4] = original[off + 3]
+            swapped[off + 5] = original[off + 2]
+            swapped[off + 6] = original[off + 1]
+            swapped[off + 7] = original[off]
 
 
 def byteswap_raw_reflexive(refl):
@@ -136,7 +160,7 @@ def byteswap_uncomp_verts(verts_block):
         original, swapped, 68, None, 0,
         two_byte_offs=(56, 58),
         four_byte_offs=(0, 4, 8, 12, 16, 20, 24, 28, 32,
-                       36, 40, 44, 48, 52, 60, 64)
+                        36, 40, 44, 48, 52, 60, 64)
         )
 
     verts_block.STEPTREE.data = swapped
@@ -214,74 +238,53 @@ def byteswap_animation(anim):
     new_uncomp_frame_data = bytearray(uncomp_frame_data_size)
 
     # byteswap the frame info
-    try:
+    byteswap_struct_array(
+        frame_info, new_frame_info, 4, None, 0,
+        four_byte_offs=(0, )
+        )
+
+    default_data_two_byte_offsets = ()
+    default_data_four_byte_offsets = ()
+    frame_data_two_byte_offsets = ()
+    frame_data_four_byte_offsets = ()
+    i = j = 0
+    for n in range(node_count):
+        if rot_flags[n]:
+            frame_data_two_byte_offsets += tuple(range(i, i + 8, 2))
+            i += 8
+        else:
+            default_data_two_byte_offsets += tuple(range(j, j + 8, 2))
+            j += 8
+
+        if trans_flags[n]:
+            frame_data_four_byte_offsets += tuple(range(i, i + 12, 4))
+            i += 12
+        else:
+            default_data_four_byte_offsets += tuple(range(j, j + 12, 4))
+            j += 12
+
+        if scale_flags[n]:
+            frame_data_four_byte_offsets += (i, )
+            i += 4
+        else:
+            default_data_four_byte_offsets += (j, )
+            j += 4
+
+    if default_data and default_data_size:
+        # byteswap the default_data
         byteswap_struct_array(
-            frame_info, new_frame_info, 4, None, 0,
-            four_byte_offs=(0, )
+            default_data, new_default_data, default_data_size, 1, 0,
+            two_byte_offs=default_data_two_byte_offsets,
+            four_byte_offs=default_data_four_byte_offsets,
             )
-    except IndexError:
-        pass
 
-    if default_data:
-        i = 0
-        swap = new_default_data
-        raw = default_data
-        try:
-            # byteswap the default_data
-            for n in range(node_count):
-                if not rot_flags[n]:
-                    for j in range(i, i + 8, 2):
-                        swap[j]   = raw[j+1]
-                        swap[j+1] = raw[j]
-                    i += 8
-
-                if not trans_flags[n]:
-                    for j in range(i, i + 12, 4):
-                        swap[j]   = raw[j+3]
-                        swap[j+1] = raw[j+2]
-                        swap[j+2] = raw[j+1]
-                        swap[j+3] = raw[j]
-                    i += 12
-
-                if not scale_flags[n]:
-                    swap[i]   = raw[i+3]
-                    swap[i+1] = raw[i+2]
-                    swap[i+2] = raw[i+1]
-                    swap[i+3] = raw[i]
-                    i += 4
-        except IndexError:
-            pass
-
-    if not anim.flags.compressed_data or comp_data_offset:
-        i = 0
-        swap = new_uncomp_frame_data
-        raw = frame_data
-        try:
-            # byteswap the frame_data
-            for f in range(frame_count):
-                for n in range(node_count):
-                    if rot_flags[n]:
-                        for j in range(i, i + 8, 2):
-                            swap[j]   = raw[j+1]
-                            swap[j+1] = raw[j]
-                        i += 8
-
-                    if trans_flags[n]:
-                        for j in range(i, i + 12, 4):
-                            swap[j]   = raw[j+3]
-                            swap[j+1] = raw[j+2]
-                            swap[j+2] = raw[j+1]
-                            swap[j+3] = raw[j]
-                        i += 12
-
-                    if scale_flags[n]:
-                        swap[i]   = raw[i+3]
-                        swap[i+1] = raw[i+2]
-                        swap[i+2] = raw[i+1]
-                        swap[i+3] = raw[i]
-                        i += 4
-        except IndexError:
-            pass
+    if not anim.flags.compressed_data or comp_data_offset and frame_size:
+        # byteswap the frame_data
+        byteswap_struct_array(
+            frame_data, new_uncomp_frame_data, frame_size, frame_count, 0,
+            two_byte_offs=frame_data_two_byte_offsets,
+            four_byte_offs=frame_data_four_byte_offsets,
+            )
 
     anim.frame_info.STEPTREE   = new_frame_info
     anim.default_data.STEPTREE = new_default_data
