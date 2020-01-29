@@ -299,13 +299,6 @@ class JmsVertex:
         self.other_weights = other_weights
         self.other_uvws = other_uvws
 
-        norm_len = self.norm_i**2 + self.norm_j**2 + self.norm_k**2
-        if norm_len > 0.0:
-            norm_len = norm_len**0.5
-            self.norm_i /= norm_len
-            self.norm_j /= norm_len
-            self.norm_k /= norm_len
-
     def __repr__(self):
         return """JmsVertex(node_0=%s,
     x=%s, y=%s, z=%s,
