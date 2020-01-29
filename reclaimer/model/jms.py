@@ -299,13 +299,6 @@ class JmsVertex:
         self.other_weights = other_weights
         self.other_uvws = other_uvws
 
-        norm_len = self.norm_i**2 + self.norm_j**2 + self.norm_k**2
-        if norm_len > 0.0:
-            norm_len = norm_len**0.5
-            self.norm_i /= norm_len
-            self.norm_j /= norm_len
-            self.norm_k /= norm_len
-
     def __repr__(self):
         return """JmsVertex(node_0=%s,
     x=%s, y=%s, z=%s,
@@ -1176,7 +1169,10 @@ def _read_jms_8200(jms_data, stop_at="", perm_name=None):
                 jms_model.verts[i] = JmsVertex(
                     parse_jm_int(jms_data[dat_i]),
                     parse_jm_float(jms_data[dat_i+1]), parse_jm_float(jms_data[dat_i+2]), parse_jm_float(jms_data[dat_i+3]),
-                    parse_jm_float(jms_data[dat_i+4]), parse_jm_float(jms_data[dat_i+5]), parse_jm_float(jms_data[dat_i+6]),
+                    # tool normalizes imported jms normals by clamping, so we have to clamp as well
+                    min(1.0, max(-1.0, parse_jm_float(jms_data[dat_i+4]))),
+                    min(1.0, max(-1.0, parse_jm_float(jms_data[dat_i+5]))),
+                    min(1.0, max(-1.0, parse_jm_float(jms_data[dat_i+6]))),
                     parse_jm_int(jms_data[dat_i+7]), parse_jm_float(jms_data[dat_i+8]),
                     parse_jm_float(jms_data[dat_i+9]), parse_jm_float(jms_data[dat_i+10]), parse_jm_float(jms_data[dat_i+11])
                     )
@@ -1362,8 +1358,13 @@ def _read_jms_8210(jms_data, stop_at=""):
             all_verts[:] = (None, ) * parse_jm_int(jms_data[dat_i])
             dat_i += 1
             for i in range(len(all_verts)):
-                x, y, z = parse_jm_float(jms_data[dat_i]),   parse_jm_float(jms_data[dat_i+1]),  parse_jm_float(jms_data[dat_i+2])
-                a, b, c = parse_jm_float(jms_data[dat_i+3]), parse_jm_float(jms_data[dat_i+4]),  parse_jm_float(jms_data[dat_i+5])
+                x, y, z = parse_jm_float(jms_data[dat_i]),   parse_jm_float(jms_data[dat_i+1]), parse_jm_float(jms_data[dat_i+2])
+                #a, b, c = parse_jm_float(jms_data[dat_i+3]), parse_jm_float(jms_data[dat_i+4]), parse_jm_float(jms_data[dat_i+5])
+
+                # tool normalizes imported jms normals in halo 1 by clamping, so I'm going to assume halo 2 does as well
+                a = min(1.0, max(-1.0, parse_jm_float(jms_data[dat_i+3])))
+                b = min(1.0, max(-1.0, parse_jm_float(jms_data[dat_i+4])))
+                c = min(1.0, max(-1.0, parse_jm_float(jms_data[dat_i+5])))
                 dat_i += 6
 
                 node_influences = [(-1, 0)] * parse_jm_int(jms_data[dat_i])
