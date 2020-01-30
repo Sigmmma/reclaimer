@@ -11,7 +11,8 @@ import math
 
 from array import array
 from copy import deepcopy
-from struct import Struct as PyStruct
+from struct import pack_into, unpack_from
+from types import MethodType
 
 from reclaimer.animation.jma import JmaRootNodeState, JmaNodeState
 from reclaimer.animation.structs import compressed_frames_def
@@ -30,9 +31,9 @@ def serialize_frame_info(jma_anim, endian=">"):
     frame_ct = jma_anim.frame_count - 1
     data = bytearray(jma_anim.root_node_info_frame_size * frame_ct)
 
-    pack_2_float_into = PyStruct(endian + "2f").pack_into
-    pack_3_float_into = PyStruct(endian + "3f").pack_into
-    pack_4_float_into = PyStruct(endian + "4f").pack_into
+    pack_2_float_into = MethodType(pack_into, endian + "2f")
+    pack_3_float_into = MethodType(pack_into, endian + "3f")
+    pack_4_float_into = MethodType(pack_into, endian + "4f")
     frame_info_node_size = jma_anim.root_node_info_frame_size
 
     i = 0
@@ -67,7 +68,7 @@ def deserialize_frame_info(anim, include_extra_base_frame=False, endian=">"):
 
     # write to the data
     if "dz" in anim.frame_info_type.enum_name:
-        unpack = PyStruct(endian + "4f").unpack_from
+        unpack = MethodType(unpack_from, endian + "4f")
         for f in range(anim.frame_count):
             dx, dy, dz, dyaw = unpack(frame_info, i)
             dx *= 100; dy *= 100; dz *= 100
@@ -80,7 +81,7 @@ def deserialize_frame_info(anim, include_extra_base_frame=False, endian=">"):
             i += 16
 
     elif "dyaw" in anim.frame_info_type.enum_name:
-        unpack = PyStruct(endian + "3f").unpack_from
+        unpack = MethodType(unpack_from, endian + "3f")
         for f in range(anim.frame_count):
             dx, dy, dyaw = unpack(frame_info, i)
             dx *= 100; dy *= 100
@@ -93,7 +94,7 @@ def deserialize_frame_info(anim, include_extra_base_frame=False, endian=">"):
             i += 12
 
     elif "dx" in anim.frame_info_type.enum_name:
-        unpack = PyStruct(endian + "2f").unpack_from
+        unpack = MethodType(unpack_from, endian + "2f")
         for f in range(anim.frame_count):
             dx, dy = unpack(frame_info, i)
             dx *= 100; dy *= 100
@@ -132,9 +133,9 @@ def serialize_default_data(jma_anim, endian=">"):
     trans_flags = jma_anim.trans_flags
     scale_flags = jma_anim.scale_flags
 
-    pack_1_float_into = PyStruct(endian +  "f").pack_into
-    pack_3_float_into = PyStruct(endian + "3f").pack_into
-    pack_4_int16_into = PyStruct(endian + "4h").pack_into
+    pack_1_float_into = MethodType(pack_into, endian +  "f")
+    pack_3_float_into = MethodType(pack_into, endian + "3f")
+    pack_4_int16_into = MethodType(pack_into, endian + "4h")
 
     sqrt = math.sqrt
 
@@ -189,9 +190,9 @@ def serialize_frame_data(jma_anim, endian=">"):
     trans_flags = jma_anim.trans_flags
     scale_flags = jma_anim.scale_flags
 
-    pack_1_float_into  = PyStruct(endian +  "f").pack_into
-    pack_3_float_into  = PyStruct(endian + "3f").pack_into
-    pack_4_int16_into = PyStruct(endian + "4h").pack_into
+    pack_1_float_into = MethodType(pack_into, endian +  "f")
+    pack_3_float_into = MethodType(pack_into, endian + "3f")
+    pack_4_int16_into = MethodType(pack_into, endian + "4h")
 
     is_overlay = jma_anim.anim_type == "overlay"
 
@@ -265,9 +266,9 @@ def deserialize_frame_data(anim, def_node_states=None,
 
 
 def _deserialize_frame_data(anim, get_default_data, def_node_states, endian):
-    unpack_trans = PyStruct(endian + "3f").unpack_from
-    unpack_ijkw  = PyStruct(endian + "4h").unpack_from
-    unpack_float = PyStruct(endian +  "f").unpack_from
+    unpack_trans = MethodType(unpack_from, endian + "3f")
+    unpack_ijkw  = MethodType(unpack_from, endian + "4h")
+    unpack_float = MethodType(unpack_from, endian +  "f")
     sqrt = math.sqrt
 
     rot_flags, trans_flags, scale_flags = get_anim_flags(anim)

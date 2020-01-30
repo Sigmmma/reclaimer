@@ -8,7 +8,8 @@
 #
 
 from math import sqrt
-from struct import Struct as PyStruct
+from struct import unpack, pack_into
+from types import MethodType
 
 from reclaimer.hek.defs.objs.tag import HekTag
 from reclaimer.util.compression import compress_normal32_normalize,\
@@ -65,8 +66,8 @@ class ModeTag(HekTag):
         comp_verts_reflexive = part.compressed_vertices
 
         comp_norm = compress_normal32_normalize
-        unpack = PyStruct(">11f2hf").unpack
-        pack_into = PyStruct(">12s3I2h2bh").pack_into
+        unpack = MethodType(unpack, ">11f2hf")
+        pack_into = MethodType(pack_into, ">12s3I2h2bh")
 
         comp_verts = bytearray(b'\x00' * 32 * uncomp_verts_reflexive.size)
         uncomp_verts = uncomp_verts_reflexive.STEPTREE
@@ -99,8 +100,8 @@ class ModeTag(HekTag):
         comp_verts_reflexive = part.compressed_vertices
 
         decomp_norm = decompress_normal32
-        unpack = PyStruct(">3I2h2bh").unpack
-        pack_into = PyStruct(">12s11f2h2f").pack_into
+        unpack = MethodType(unpack, ">3I2h2bh")
+        pack_into = MethodType(pack_into, ">12s11f2h2f")
 
         uncomp_verts = bytearray(b'\x00' * 68 * comp_verts_reflexive.size)
         comp_verts = comp_verts_reflexive.STEPTREE
@@ -110,14 +111,11 @@ class ModeTag(HekTag):
         for i in range(comp_verts_reflexive.size):
             n, b, t, u, v, ni_0, ni_1, nw = unpack(comp_verts[in_off + 12:
                                                               in_off + 32])
-            ni, nj, nk = decomp_norm(n)
-            bi, bj, bk = decomp_norm(b)
-            ti, tj, tk = decomp_norm(t)
 
             # write the uncompressed data
             pack_into(uncomp_verts, out_off,
                       comp_verts[in_off: in_off + 12],
-                      ni, nj, nk, bi, bj, bk, ti, tj, tk,
+                      *decomp_norm(n), *decomp_norm(b), *decomp_norm(t),
                       u/32767.5, v/32767.5, ni_0 // 3, ni_1 // 3,
                       nw/32767.5, 1.0 - nw/32767.5)
             in_off  += 32

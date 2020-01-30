@@ -12,8 +12,9 @@ import os
 from copy import deepcopy
 from math import pi, sqrt, log
 from pathlib import Path
-from struct import unpack, Struct as PyStruct
+from struct import unpack, pack_into
 from traceback import format_exc
+from types import MethodType
 
 from supyr_struct.buffer import BytearrayBuffer
 from supyr_struct.field_types import FieldType
@@ -1103,17 +1104,17 @@ class Halo1Map(HaloMap):
             comp_norm   = compress_normal32
             decomp_norm = decompress_normal32
 
-            comp_vert_nbt_unpacker = PyStruct(endian + "3I").unpack
-            uncomp_vert_nbt_packer = PyStruct(endian + "12s9f8s").pack_into
+            comp_vert_nbt_unpacker = MethodType(unpack, endian + "3I")
+            uncomp_vert_nbt_packer = MethodType(pack_into, endian + "12s9f8s")
 
-            comp_vert_nuv_unpacker = PyStruct(endian + "I2h").unpack
-            uncomp_vert_nuv_packer = PyStruct(endian + "5f").pack_into
+            comp_vert_nuv_unpacker = MethodType(unpack, endian + "I2h")
+            uncomp_vert_nuv_packer = MethodType(pack_into, endian + "5f")
 
-            uncomp_vert_nbt_unpacker = PyStruct(endian + "9f").unpack
-            comp_vert_nbt_packer = PyStruct(endian + "12s3I8s").pack_into
+            uncomp_vert_nbt_unpacker = MethodType(unpack, endian + "9f")
+            comp_vert_nbt_packer = MethodType(pack_into, endian + "12s3I8s")
 
-            uncomp_vert_nuv_unpacker = PyStruct(endian + "5f").unpack
-            comp_vert_nuv_packer = PyStruct(endian + "I2h").pack_into
+            uncomp_vert_nuv_unpacker = MethodType(unpack, endian + "5f")
+            comp_vert_nuv_packer = MethodType(pack_into, endian + "I2h")
 
             for lightmap in meta.lightmaps.STEPTREE:
                 for b in lightmap.materials.STEPTREE:

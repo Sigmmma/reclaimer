@@ -12,7 +12,6 @@ import traceback
 from copy import deepcopy
 from math import sqrt
 from pathlib import Path
-from struct import Struct as PyStruct
 
 from reclaimer.util.matrices import axis_angle_to_quat, multiply_quaternions
 from reclaimer.animation.jma import JmsNode, JmaAnimation, JmaRootNodeState,\
