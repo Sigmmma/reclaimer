@@ -7,6 +7,9 @@
 # See LICENSE for more information.
 #
 
+__all__ = ( 'GeometryMesh', 'PermutationMesh', )
+
+
 class GeometryMesh:
     verts = ()
     tris  = ()
@@ -24,5 +27,3 @@ class PermutationMesh:
     def __init__(self):
         self.markers = []
         self.lod_meshes = {}
-
-__all__ = ( 'GeometryMesh', 'PermutationMesh', )

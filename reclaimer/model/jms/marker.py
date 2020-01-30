@@ -7,6 +7,9 @@
 # See LICENSE for more information.
 #
 
+__all__ = ( 'JmsMarker', )
+
+
 class JmsMarker:
     __slots__ = (
         "name", "permutation",
@@ -63,5 +66,3 @@ class JmsMarker:
               abs(self.pos_z - other.pos_z) > 0.000001):
             return False
         return True
-
-__all__ = ( 'JmsMarker', )

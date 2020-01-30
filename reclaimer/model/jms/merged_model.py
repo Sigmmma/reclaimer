@@ -7,6 +7,9 @@
 # See LICENSE for more information.
 #
 
+__all__ = ( 'MergedJmsModel', )
+
+
 from .model import JmsModel
 
 class MergedJmsModel:
@@ -108,5 +111,3 @@ class MergedJmsModel:
             i += 1
 
         return all_errors
-
-__all__ = ( 'MergedJmsModel', )

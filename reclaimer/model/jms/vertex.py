@@ -7,6 +7,9 @@
 # See LICENSE for more information.
 #
 
+__all__ = ( 'JmsVertex', )
+
+
 class JmsVertex:
     __slots__ = (
         "node_0",
@@ -83,5 +86,3 @@ class JmsVertex:
 
         return (abs(self.tex_u - other.tex_u) <= 0.0001 and
                 abs(self.tex_v - other.tex_v) <= 0.0001)
-
-__all__ = ( 'JmsVertex', )

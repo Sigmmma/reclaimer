@@ -7,6 +7,9 @@
 # See LICENSE for more information.
 #
 
+__all__ = ( 'JmsModel', )
+
+
 import math
 
 from ..constants import JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN
@@ -428,5 +431,3 @@ class JmsModel:
                 break
 
         return errors
-
-__all__ = ( 'JmsModel', )

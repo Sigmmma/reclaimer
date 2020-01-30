@@ -7,6 +7,9 @@
 # See LICENSE for more information.
 #
 
+__all__ = ( 'MergedJmsRegion', )
+
+
 from .mesh import ( PermutationMesh, GeometryMesh, )
 
 class MergedJmsRegion:
@@ -136,5 +139,3 @@ class MergedJmsRegion:
                 if tri.shader == mat_num:
                     mat_tris[i] = tri
                     i += 1
-
-__all__ = ( 'MergedJmsRegion', )

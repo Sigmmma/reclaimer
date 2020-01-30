@@ -7,6 +7,8 @@
 # See LICENSE for more information.
 #
 
+__all__ = ( 'JmsNode', )
+
 from ..constants import ( JMS_VERSION_HALO_1, JMS_VERSION_HALO_2_8210, )
 
 class JmsNode:
@@ -94,5 +96,3 @@ class JmsNode:
         elif jms_version == JMS_VERSION_HALO_2_8210:
             # Halo 2
             pass
-
-__all__ = ( 'JmsNode', )

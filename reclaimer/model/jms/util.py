@@ -7,6 +7,13 @@
 # See LICENSE for more information.
 #
 
+__all__ = (
+    'generate_fake_nodes',
+    'edge_loop_to_strippable_tris',
+    'edge_loop_to_fannable_tris',
+    'edge_loop_to_tris',
+    )
+
 def generate_fake_nodes(node_count):
     nodes = []
     if node_count <= 0:
@@ -70,10 +77,3 @@ def edge_loop_to_tris(edge_loop_or_vert_index_count, region=0, mat_id=0,
         return edge_loop_to_fannable_tris(edge_loop, region, mat_id)
 
     return edge_loop_to_strippable_tris(edge_loop, region, mat_id)
-
-__all__ = (
-    'generate_fake_nodes',
-    'edge_loop_to_strippable_tris',
-    'edge_loop_to_fannable_tris',
-    'edge_loop_to_tris',
-    )

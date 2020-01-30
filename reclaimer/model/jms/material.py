@@ -7,6 +7,9 @@
 # See LICENSE for more information.
 #
 
+__all__ = ( 'JmsMaterial', )
+
+
 class JmsMaterial:
     __slots__ = (
         "name", "tiff_path",
@@ -92,5 +95,3 @@ class JmsMaterial:
         return """JmsMaterial(name=%s,
     tiff_path=%s
 )""" % (self.name, self.tiff_path)
-
-__all__ = ( 'JmsMaterial', )

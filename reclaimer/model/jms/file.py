@@ -7,6 +7,9 @@
 # See LICENSE for more information.
 #
 
+__all__ = ( 'read_jms', 'write_jms', )
+
+
 import re
 import traceback
 
@@ -560,5 +563,3 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
                 tri.v0, tri.v1, tri.v2
                 )
             )
-
-__all__ = ( 'read_jms', 'write_jms', )

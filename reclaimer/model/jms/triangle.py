@@ -7,6 +7,9 @@
 # See LICENSE for more information.
 #
 
+__all__ = ( 'JmsTriangle', )
+
+
 class JmsTriangle:
     __slots__ = (
         "region", "shader",
@@ -32,5 +35,3 @@ class JmsTriangle:
     v0=%s, v1=%s, v2=%s
 )""" % (self.region, self.shader,
         self.v0, self.v1, self.v2)
-
-__all__ = ( 'JmsTriangle', )
