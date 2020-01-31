@@ -10,6 +10,7 @@
 import os
 import zlib
 
+from pathlib import Path
 from traceback import format_exc
 
 from reclaimer.meta.wrappers.halo_map import HaloMap

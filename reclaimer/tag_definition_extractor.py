@@ -177,6 +177,7 @@ while not tag_defs:
                     "Type **** if you want to write every available tag class.\n"
                     ">>> ")
     if "****" in classes:
+        all_classes = () 
         exec("from reclaimer.%s.defs import __all__ as all_classes" % engine)
         classes = ",".join(all_classes)
 
@@ -190,6 +191,7 @@ while not tag_defs:
     for cls in fixed_classes:
         try:
             def_name = cls
+            tag_def = None
             if "_meta" in cls:
                 def_name = cls.replace("_meta", "")
             exec("from reclaimer.%s.defs.%s import %s_def as tag_def" %

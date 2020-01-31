@@ -120,7 +120,7 @@ def change_pcm_width(compression, new_width):
     elif new_width == 2:
         new_compression = constants.COMPRESSION_PCM_16_LE
     elif new_width == 1:
-        new_compression = COMPRESSION_PCM_8_SIGNED
+        new_compression = constants.COMPRESSION_PCM_8_SIGNED
         is_big_endian = False
 
     return new_compression | int(is_big_endian)

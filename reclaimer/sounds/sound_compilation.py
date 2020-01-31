@@ -97,7 +97,7 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
                 )
         except Exception:
             errors.append(traceback.format_exc())
-            errors.append("Could not compile permutation %r" % blam_perm.name)
+            errors.append("Could not compile permutation %r" % blam_perm_name)
 
     return errors
 
