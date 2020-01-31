@@ -672,7 +672,7 @@ class Halo1Map(HaloMap):
                         self.map_data, self.tag_index_manager)
                 except Exception:
                     print(format_exc())
-                    print("Couldn't re-parse %s data." % shaders_block)
+                    print("Couldn't re-parse %s data." % meta.shaders)
 
             new_i = 0
             rebase_map = {}

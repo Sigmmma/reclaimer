@@ -14,6 +14,7 @@ import math
 
 from ..constants import JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN
 
+
 class JmsModel:
     name = ""
 
@@ -374,10 +375,10 @@ class JmsModel:
         markers = self.markers
         regions = self.regions
 
-        if isinstance(self, MergedJmsModel):
-            perm_meshes = self.perm_meshes
-        else:
+        if isinstance(self, JmsModel):
             perm_meshes = {self.name: self}
+        else:
+            perm_meshes = self.perm_meshes
 
         node_error = False
 

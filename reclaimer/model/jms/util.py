@@ -14,6 +14,10 @@ __all__ = (
     'edge_loop_to_tris',
     )
 
+from .node import JmsNode
+from .triangle import JmsTriangle
+
+
 def generate_fake_nodes(node_count):
     nodes = []
     if node_count <= 0:

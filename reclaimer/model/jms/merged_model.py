@@ -11,6 +11,10 @@ __all__ = ( 'MergedJmsModel', )
 
 
 from .model import JmsModel
+from .node import JmsNode
+from .material import JmsMaterial
+from .merged_region import MergedJmsRegion
+
 
 class MergedJmsModel:
     node_list_checksum = 0

@@ -11,6 +11,10 @@ __all__ = ( 'MergedJmsRegion', )
 
 
 from .mesh import ( PermutationMesh, GeometryMesh, )
+from .model import JmsModel
+from .triangle import JmsTriangle
+from .vertex import JmsVertex
+
 
 class MergedJmsRegion:
     name = ""
