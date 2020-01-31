@@ -58,11 +58,10 @@ def decompress_normal32(n):
 
 
 def compress_normal32(i, j, k):
+    i = min(max(i, -1.0), 1.0)
+    j = min(max(j, -1.0), 1.0)
+    k = min(max(k, -1.0), 1.0)
     # original algorithm before shelly's optimization, kept for clarity
-
-    #i = min(max(int(i*1023.5), -1023), 1023)
-    #j = min(max(int(j*1023.5), -1023), 1023)
-    #k = min(max(int(k*511.5),  -511),  511)
     #if i < 0: i += 2047
     #if j < 0: j += 2047
     #if k < 0: k += 1023
@@ -70,13 +69,6 @@ def compress_normal32(i, j, k):
     return ((int(round(i*1023)) % 2047) |
             ((int(round(j*1023)) % 2047) << 11) |
             ((int(round(k*511)) % 1023) << 22))
-
-
-def compress_normal32_normalize(i, j, k):
-    nmag = 1023 / max(sqrt(i**2 + j**2 + k**2), 0.00000000001)
-    return ((int(round(i*nmag)) % 2047) |
-            ((int(round(j*nmag)) % 2047) << 11) |
-            (((int(round(k*nmag / 2))) % 1023) << 22))
 
 
 #uncomp_norm = [.333, -.75, 1]
