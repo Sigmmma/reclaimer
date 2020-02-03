@@ -652,7 +652,7 @@ class Halo1Map(HaloMap):
 
                 if highest_used_vert * 16 < len(vert_data):
                     del vert_data[(highest_used_vert + 1) * 16: ]
-                    bsp.vertices.size = highest_used_vert
+                    bsp.vertices.size = highest_used_vert + 1
 
         elif tag_cls in ("mode", "mod2"):
             used_shaders = set()
