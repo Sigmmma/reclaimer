@@ -7,7 +7,7 @@
 # See LICENSE for more information.
 #
 
-import os
+from pathlib import Path
 
 from reclaimer.h2.util import split_raw_pointer
 from reclaimer.sounds import constants
@@ -20,14 +20,12 @@ from reclaimer.sounds.blam_sound_samples import BlamSoundSamples
 __all__ = ("extract_h1_sounds", "extract_h2_sounds", )
 
 
-def extract_h1_sounds(tagdata, tag_path, *,
-        out_dir="", write_wav=True, overwrite=True, decode_adpcm=True,
-        byteswap_pcm_samples=False, **kw):
-    do_write_wav = write_wav
-    overwrite = overwrite
-    decompress = decode_adpcm
-    pcm_is_big_endian = byteswap_pcm_samples
-    tagpath_base = os.path.join(out_dir, os.path.splitext(tag_path)[0])
+def extract_h1_sounds(tagdata, tag_path, **kw):
+    do_write_wav = kw.get('write_wav', True)
+    overwrite = kw.get('overwrite', True)
+    decompress = kw.get('decode_adpcm', True)
+    pcm_is_big_endian = kw.get('byteswap_pcm_samples', False)
+    tagpath_base = Path(kw['out_dir']).joinpath(Path(tag_path).stem)
 
     encoding = tagdata.encoding.data
     channels = constants.channel_counts.get(encoding, 1)
@@ -155,7 +153,7 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
     do_write_wav = kw.get('write_wav', True)
     overwrite = kw.get('overwrite', True)
     decompress = kw.get('decode_adpcm', True)
-    tagpath_base = os.path.join(kw['out_dir'], os.path.splitext(tag_path)[0])
+    tagpath_base = Path(kw['out_dir']).joinpath(Path(tag_path).stem)
 
     ugh__meta = halo_map.ugh__meta
     if ugh__meta is None:
