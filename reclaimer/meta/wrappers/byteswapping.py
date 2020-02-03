@@ -134,7 +134,8 @@ def byteswap_sbsp_meta(meta):
 
 def byteswap_scnr_script_syntax_data(meta):
     original = meta.script_syntax_data.data
-    swapped = bytearray(((len(original)-56)//20) * 20 + 56)
+    swapped = original[: ((len(original)-56)//20) * 20 + 56]
+
     # swap the 56 byte header
     # first 32 bytes are a string
     byteswap_struct_array(
@@ -183,7 +184,7 @@ def byteswap_comp_verts(verts_block):
 
 def byteswap_tris(tris_block):
     original = tris_block.STEPTREE.data
-    swapped = make_mutable_struct_array_copy(original, 32)
+    swapped = make_mutable_struct_array_copy(original, 6)
 
     byteswap_struct_array(
         original, swapped, 6, None, 0,
@@ -191,7 +192,7 @@ def byteswap_tris(tris_block):
         )
 
     tris_block.STEPTREE.data = swapped
-    tris_block.size = len(swapped)//32
+    tris_block.size = len(swapped)//6
 
 
 def byteswap_animation(anim):
