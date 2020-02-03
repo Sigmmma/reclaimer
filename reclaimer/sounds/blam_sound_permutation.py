@@ -281,7 +281,7 @@ class BlamSoundPermutation:
                 filepath = Path("unnamed")
 
             if len(perm_chunks) > 1:
-                filepath += "__%s" % i
+                filepath = filepath.parent.joinpath(filepath.stem + "__%s" % i)
 
             # figure out if the sample data is already encapsulated in a
             # container, or if it'll need to be encapsulated in a wav file.
