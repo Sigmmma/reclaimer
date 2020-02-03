@@ -9,9 +9,10 @@
 
 from struct import unpack
 
+from supyr_struct.defs import sanitizers
 from supyr_struct.field_types import *
 from supyr_struct.blocks import EnumBlock
-from reclaimer.field_type_methods import encode_tag_ref_str, enum_sanitizer,\
+from reclaimer.field_type_methods import encode_tag_ref_str,\
      tag_ref_str_sizecalc, tag_ref_str_parser, tag_ref_str_serializer,\
      decode_raw_string, decode_string, decoder_wrapper, encoder_wrapper,\
      tag_cstring_parser, rawdata_ref_parser, reflexive_parser, encode_string,\
@@ -80,11 +81,10 @@ StrLatin1Enum = FieldType(
     sizecalc=sizecalc_wrapper(len_sizecalc), data_cls=str,
     decoder=decoder_wrapper(decode_string),
     encoder=encoder_wrapper(encode_string),
-    node_cls=EnumBlock, sanitizer=enum_sanitizer)
+    node_cls=EnumBlock, sanitizer=sanitizers.enum_sanitizer)
 
 del EnumBlock
 del encode_tag_ref_str
-del enum_sanitizer
 del tag_ref_str_sizecalc
 del tag_ref_str_parser
 del tag_ref_str_serializer
