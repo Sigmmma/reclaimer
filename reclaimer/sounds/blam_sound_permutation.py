@@ -12,6 +12,7 @@ from traceback import format_exc
 
 from reclaimer.sounds import constants, util, blam_sound_samples
 from supyr_struct.defs.audio.wav import wav_def
+from supyr_struct.util import is_path_empty
 
 
 class BlamSoundPermutation:
@@ -276,6 +277,9 @@ class BlamSoundPermutation:
             i += 1
             filepath = Path(util.BAD_PATH_CHAR_REMOVAL.sub("_", str(filepath_base)))
 
+            if is_path_empty(filepath):
+                filepath = Path("unnamed")
+
             if len(perm_chunks) > 1:
                 filepath += "__%s" % i
 
@@ -293,7 +297,7 @@ class BlamSoundPermutation:
                 ext = ".wav"
 
             if filepath.suffix.lower() != ext:
-                filepath += ext
+                filepath = filepath.with_suffix(ext)
 
             if not sample_data or (not overwrite and filepath.is_file()):
                 continue
