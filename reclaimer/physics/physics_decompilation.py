@@ -9,8 +9,7 @@
 
 from pathlib import Path
 from reclaimer.util.matrices import Matrix, matrix_to_quaternion
-from reclaimer.model.jms import write_jms, JmsModel, JmsNode, JmsMarker
-from reclaimer.model.jms.util import generate_fake_nodes
+from reclaimer.model.jms import write_jms, JmsModel, JmsNode, JmsMarker, util
 
 __all__ = ("extract_physics", )
 
@@ -49,7 +48,7 @@ def extract_physics(tagdata, tag_path="", **kw):
                 mp.radius * 100,
                 ))
 
-    jms_model.nodes = generate_fake_nodes(child_node_ct)
+    jms_model.nodes = util.generate_fake_nodes(child_node_ct)
 
     if do_write_jms:
         write_jms(filepath, jms_model)
