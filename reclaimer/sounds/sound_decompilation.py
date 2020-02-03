@@ -25,7 +25,7 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
     overwrite = kw.get('overwrite', True)
     decompress = kw.get('decode_adpcm', True)
     pcm_is_big_endian = kw.get('byteswap_pcm_samples', False)
-    tagpath_base = Path(kw['out_dir']).joinpath(Path(tag_path).stem)
+    tagpath_base = Path(kw['out_dir']).joinpath(Path(tag_path).with_suffix(""))
 
     encoding = tagdata.encoding.data
     channels = constants.channel_counts.get(encoding, 1)
@@ -153,7 +153,7 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
     do_write_wav = kw.get('write_wav', True)
     overwrite = kw.get('overwrite', True)
     decompress = kw.get('decode_adpcm', True)
-    tagpath_base = Path(kw['out_dir']).joinpath(Path(tag_path).stem)
+    tagpath_base = Path(kw['out_dir']).joinpath(Path(tag_path).with_suffix(""))
 
     ugh__meta = halo_map.ugh__meta
     if ugh__meta is None:
