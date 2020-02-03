@@ -9,6 +9,7 @@
 
 import os
 
+from pathlib import Path
 from traceback import format_exc
 
 from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation
@@ -57,7 +58,7 @@ class BlamSoundPitchRange:
                             export_source=True, decompress=True):
         for name, perm in self.permutations.items():
             perm.export_to_file(
-                os.path.join(directory, name), overwrite,
+                Path(directory, name), overwrite,
                 export_source, decompress)
 
     def import_from_directory(self, directory, clear_existing=True,
@@ -65,19 +66,18 @@ class BlamSoundPitchRange:
         if clear_existing:
             self.permutations.clear()
 
-        for root, _, files in os.walk(directory):
+        for root, _, files in os.walk(str(directory)):
             # import each sound file to a new sound permutation
             for filename in files:
-                name, ext = os.path.splitext(filename)
-                if ext.lower() != ".wav":
+                filepath = Path(root, filename)
+                if filepath.suffix.lower() != ".wav":
                     # only import wav files
                     continue
 
-                name_key = name.lower().strip()
-                perm = BlamSoundPermutation.create_from_file(
-                    os.path.join(root, filename))
+                name_key = filepath.stem.lower().strip()
+                perm = BlamSoundPermutation.create_from_file(filepath)
+                perm.name = filepath.stem.strip()
 
-                perm.name = name.strip()
                 if (perm and perm.source_sample_data) and (
                     replace_existing or name_key not in self.permutations):
                     self.permutations[name_key] = perm
@@ -154,9 +154,9 @@ class BlamSoundBank:
                             export_source=True, decompress=True):
         for name, pitch_range in self.pitch_ranges.items():
             if len(self.pitch_ranges) > 1:
-                pitch_directory = os.path.join(directory, name)
+                pitch_directory = Path(directory, name)
             else:
-                pitch_directory = directory
+                pitch_directory = Path(directory)
 
             pitch_range.export_to_directory(
                 pitch_directory, overwrite, export_source, decompress)
@@ -172,7 +172,7 @@ class BlamSoundBank:
 
         # try to load default from a directory named default as well
         default_dir_pitch_range = BlamSoundPitchRange.create_from_directory(
-            os.path.join(directory, constants.DEFAULT_PITCH_RANGE_NAME))
+            Path(directory, constants.DEFAULT_PITCH_RANGE_NAME))
 
         # either update the root default pitch ranges with the
         # other, or replace it with the directory one
@@ -204,7 +204,7 @@ class BlamSoundBank:
                     continue
 
                 pitch_range = BlamSoundPitchRange.create_from_directory(
-                    os.path.join(root, dirname))
+                    Path(root, dirname))
                 pitch_range.name = dirname.strip()
 
                 # merge the pitch range into this sound bank

@@ -7,8 +7,7 @@
 # See LICENSE for more information.
 #
 
-import os
-
+from pathlib import Path
 from traceback import format_exc
 
 from reclaimer.sounds import constants, util, blam_sound_samples
@@ -275,7 +274,7 @@ class BlamSoundPermutation:
         wav_file = wav_def.build()
         for compression, encoding, sample_data in perm_chunks:
             i += 1
-            filepath = util.BAD_PATH_CHAR_REMOVAL.sub("_", filepath_base)
+            filepath = Path(util.BAD_PATH_CHAR_REMOVAL.sub("_", str(filepath_base)))
 
             if len(perm_chunks) > 1:
                 filepath += "__%s" % i
@@ -293,20 +292,16 @@ class BlamSoundPermutation:
                 is_container_format = False
                 ext = ".wav"
 
-            if os.path.splitext(filepath)[1].lower() != ext:
+            if filepath.suffix.lower() != ext:
                 filepath += ext
 
-            if not sample_data or (not overwrite and os.path.isfile(filepath)):
+            if not sample_data or (not overwrite and filepath.is_file()):
                 continue
 
             if is_container_format:
                 try:
-                    folderpath = os.path.dirname(filepath)
-                    # If the path doesnt exist, create it
-                    if not os.path.exists(folderpath):
-                        os.makedirs(folderpath)
-
-                    with open(filepath, "wb") as f:
+                    filepath.parent.mkdir(exist_ok=True, parents=True)
+                    with filepath.open("wb") as f:
                         f.write(sample_data)
                 except Exception:
                     print(format_exc())
@@ -364,7 +359,8 @@ class BlamSoundPermutation:
             wav_file.serialize(temp=False, backup=False)
 
     def import_from_file(self, filepath):
-        if not os.path.isfile(filepath):
+        filepath = Path(filepath)
+        if not filepath.is_file():
             raise OSError('File "%s" does not exist. Cannot import.' % filepath)
 
         wav_file = wav_def.build(filepath=filepath)
