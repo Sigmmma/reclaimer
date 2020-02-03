@@ -15,6 +15,7 @@ from reclaimer.model.constants import (
     JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN, SCALE_INTERNAL_TO_JMS )
 from reclaimer.model.jms import write_jms, JmsModel, JmsNode,\
      JmsMaterial, JmsMarker, JmsVertex, JmsTriangle
+from reclaimer.util.compression import decompress_normal32
 
 
 __all__ = ("extract_model", )
@@ -200,34 +201,18 @@ def extract_model(tagdata, tag_path="", **kw):
                                 vert_data = part.compressed_vertices.STEPTREE.data
                                 for off in range(0, len(vert_data), 32):
                                     v = comp_vert_unpacker(vert_data, off)
-                                    n = v[3]
-                                    ni = (n&1023) / 1023
-                                    nj = ((n>>11)&1023) / 1023
-                                    nk = ((n>>22)&511) / 511
-                                    if (n>>10)&1: ni = ni - 1.0
-                                    if (n>>21)&1: nj = nj - 1.0
-                                    if (n>>31)&1: nk = nk - 1.0
-
                                     verts.append(JmsVertex(
                                         v[8]//3,
                                         v[0] * 100, v[1] * 100, v[2] * 100,
-                                        ni, nj, nk,
+                                        *decompress_normal32(v[3]),
                                         v[9]//3, 1.0 - (v[10]/32767),
                                         u_scale * v[6]/32767, 1.0 - v_scale * v[7]/32767))
                             elif compressed:
                                 for v in part.compressed_vertices.STEPTREE:
-                                    n = v[3]
-                                    ni = (n&1023) / 1023
-                                    nj = ((n>>11)&1023) / 1023
-                                    nk = ((n>>22)&511) / 511
-                                    if (n>>10)&1: ni = ni - 1.0
-                                    if (n>>21)&1: nj = nj - 1.0
-                                    if (n>>31)&1: nk = nk - 1.0
-
                                     verts.append(JmsVertex(
                                         v[8]//3,
                                         v[0] * 100, v[1] * 100, v[2] * 100,
-                                        ni, nj, nk,
+                                        *decompress_normal32(v[3]),
                                         v[9]//3, 1.0 - (v[10]/32767),
                                         u_scale * v[6]/32767, 1.0 - v_scale * v[7]/32767))
                             elif not compressed and unparsed:

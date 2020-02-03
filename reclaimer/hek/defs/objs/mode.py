@@ -12,8 +12,7 @@ from struct import unpack, pack_into
 from types import MethodType
 
 from reclaimer.hek.defs.objs.tag import HekTag
-from reclaimer.util.compression import compress_normal32_normalize,\
-     decompress_normal32
+from reclaimer.util.compression import compress_normal32, decompress_normal32
 from reclaimer.util.matrices import quaternion_to_matrix, Matrix
 
 # TODO: Make calc_internal_data recalculate the lod nodes, and remove that
@@ -65,7 +64,7 @@ class ModeTag(HekTag):
         uncomp_verts_reflexive = part.uncompressed_vertices
         comp_verts_reflexive = part.compressed_vertices
 
-        comp_norm = compress_normal32_normalize
+        comp_norm = compress_normal32
         unpack = MethodType(unpack, ">11f2hf")
         pack_into = MethodType(pack_into, ">12s3I2h2bh")
 
@@ -111,7 +110,6 @@ class ModeTag(HekTag):
         for i in range(comp_verts_reflexive.size):
             n, b, t, u, v, ni_0, ni_1, nw = unpack(comp_verts[in_off + 12:
                                                               in_off + 32])
-
             # write the uncompressed data
             pack_into(uncomp_verts, out_off,
                       comp_verts[in_off: in_off + 12],

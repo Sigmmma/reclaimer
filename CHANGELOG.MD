@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
  - Fix extraction of node order for Halo 1 model/gbxmodel tags.
+ - Fix incorrect vertex normalization on the loading of JMS files.
  - Sped up JMS parsing using regex magic!
  - The model pipeline has a lot of repeated values moved into constants.
 

@@ -10,7 +10,7 @@
 import os
 
 from copy import deepcopy
-from math import pi, sqrt, log
+from math import pi, log
 from pathlib import Path
 from struct import unpack, pack_into
 from traceback import format_exc
@@ -673,7 +673,7 @@ class Halo1Map(HaloMap):
                         self.map_data, self.tag_index_manager)
                 except Exception:
                     print(format_exc())
-                    print("Couldn't re-parse %s data." % shaders_block)
+                    print("Couldn't re-parse %s data." % meta.shaders)
 
             new_i = 0
             rebase_map = {}
@@ -1143,21 +1143,14 @@ class Halo1Map(HaloMap):
                         for i in range(vert_count):
                             n, b, t = comp_vert_nbt_unpacker(
                                 comp_buffer[in_off + 12: in_off + 24])
-                            ni, nj, nk = decomp_norm(n)
-                            bi, bj, bk = decomp_norm(b)
-                            ti, tj, tk = decomp_norm(t)
-
-                            nmag = max(sqrt(ni**2 + nj**2 + nk**2), 0.00000000001)
-                            bmag = max(sqrt(bi**2 + bj**2 + bk**2), 0.00000000001)
-                            tmag = max(sqrt(ti**2 + tj**2 + tk**2), 0.00000000001)
 
                             # write the uncompressed data
                             uncomp_vert_nbt_packer(
                                 uncomp_buffer, out_off,
                                 comp_buffer[in_off: in_off + 12],
-                                ni/nmag, nj/nmag, nk/nmag,
-                                bi/bmag, bj/bmag, bk/bmag,
-                                ti/tmag, tj/tmag, tk/tmag,
+                                *decomp_norm(n),
+                                *decomp_norm(b),
+                                *decomp_norm(t),
                                 comp_buffer[in_off + 24: in_off + 32])
 
                             in_off  += 32
@@ -1166,13 +1159,10 @@ class Halo1Map(HaloMap):
                         for i in range(lightmap_vert_count):
                             n, u, v = comp_vert_nuv_unpacker(
                                 comp_buffer[in_off: in_off + 8])
-                            ni, nj, nk = decomp_norm(n)
-                            mag = max(sqrt(ni**2 + nj**2 + nk**2), 0.00000000001)
-
                             # write the uncompressed data
                             uncomp_vert_nuv_packer(
                                 uncomp_buffer, out_off,
-                                ni/mag, nj/mag, nk/mag, u/32767, v/32767)
+                                *decomp_norm(n), u/32767, v/32767)
 
                             in_off  += 8
                             out_off += 20
