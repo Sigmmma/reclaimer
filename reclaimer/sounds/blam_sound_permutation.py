@@ -96,7 +96,7 @@ class BlamSoundPermutation:
               target_compression != constants.COMPRESSION_IMA_ADPCM and
               target_compression != constants.COMPRESSION_XBOX_ADPCM and
               target_compression != constants.COMPRESSION_OGG):
-            raise ValueError('Unknown compression type "%s"' % compression)
+            raise ValueError('Unknown compression type "%s"' % target_compression)
         elif target_encoding not in (constants.ENCODING_MONO,
                                      constants.ENCODING_STEREO):
             raise ValueError("Compression encoding must be mono or stereo.")
