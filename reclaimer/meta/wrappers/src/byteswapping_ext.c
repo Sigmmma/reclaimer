@@ -1,7 +1,7 @@
 #include "..\..\..\src\shared.h"
 
 
-static void byteswap_eight_byte_array(
+static inline void byteswap_eight_byte_array(
     char *orig, char *swap, uint64 start, uint64 end, uint64 struct_size,
     int *offs, int off_count)
 {
@@ -20,7 +20,7 @@ static void byteswap_eight_byte_array(
 }
 
 
-static void byteswap_four_byte_array(
+static inline void byteswap_four_byte_array(
     char *orig, char *swap, uint64 start, uint64 end, uint64 struct_size,
     int *offs, int off_count)
 {
@@ -35,7 +35,7 @@ static void byteswap_four_byte_array(
 }
 
 
-static void byteswap_two_byte_array(
+static inline void byteswap_two_byte_array(
     char *orig, char *swap, uint64 start, uint64 end, uint64 struct_size,
     int *offs, int off_count)
 {
@@ -69,10 +69,10 @@ static PyObject *py_byteswap_struct_array(PyObject *self, PyObject *args) {
         PySys_FormatStdout("eight_byte_offs array format must be 'I'.\n");
     } else if (end > bufs[0].len) {
         PySys_FormatStdout("end must within bounds of input buffer.\n");
+    } else if (end > bufs[1].len) {
+        PySys_FormatStdout("end must within bounds of output buffer.\n");
     } else if (bufs[0].buf == bufs[1].buf) {
         PySys_FormatStdout("src and dst cannot be the same.\n");
-    } else if (field_offset_bufs[2].itemsize != 4) {
-        PySys_FormatStdout("eight_byte_offs array format must be 'I'.\n");
     } else if (struct_size == 0) {
         PySys_FormatStdout("struct size must be greater than zero.\n");
     } else if (start > end) {
@@ -84,29 +84,30 @@ static PyObject *py_byteswap_struct_array(PyObject *self, PyObject *args) {
                 continue;
 
             item_count = field_offset_bufs[i].len / field_offset_bufs[i].itemsize;
-            for (int j = 0; j < item_count; j++)
+            for (int j = 0; j < item_count; j++) {
                 if (((int *)field_offset_bufs[i].buf)[j] + field_offset_sizes[i] > struct_size) {
-                    PySys_FormatStdout("offets must be within the struct size.\n");
+                    PySys_FormatStdout("offsets must be within the struct size.\n");
                     goto exit;
                 }
+            }
         }
         // everything looks good. lets process!
         item_count = field_offset_bufs[0].len / field_offset_bufs[0].itemsize;
-        if (field_offset_bufs[0].buf != NULL && item_count > 0)
+        if (field_offset_bufs[0].buf && item_count > 0)
             byteswap_two_byte_array(
                 bufs[0].buf, bufs[1].buf, start, end, struct_size,
                 field_offset_bufs[0].buf, item_count
             );
 
         item_count = field_offset_bufs[1].len / field_offset_bufs[1].itemsize;
-        if (field_offset_bufs[1].buf != NULL && item_count > 0)
+        if (field_offset_bufs[1].buf && item_count > 0)
             byteswap_four_byte_array(
                 bufs[0].buf, bufs[1].buf, start, end, struct_size,
                 field_offset_bufs[1].buf, item_count
             );
 
         item_count = field_offset_bufs[2].len / field_offset_bufs[2].itemsize;
-        if (field_offset_bufs[2].buf != NULL && item_count > 0)
+        if (field_offset_bufs[2].buf && item_count > 0)
             byteswap_eight_byte_array(
                 bufs[0].buf, bufs[1].buf, start, end, struct_size,
                 field_offset_bufs[2].buf, item_count
