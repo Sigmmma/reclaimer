@@ -19,17 +19,15 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\adpcm-xq\adpcm-lib.c" />
-    <ClCompile Include="..\src\adpcm_ext.c" />
+    <ClCompile Include="..\src\byteswapping_ext.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\src\shared.h" />
-    <ClInclude Include="..\src\adpcm-xq\adpcm-lib.h" />
+    <ClInclude Include="..\src\shared.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{1E53A95D-AE4A-46EF-AAC8-491E63D30325}</ProjectGuid>
-    <RootNamespace>adpcm_ext</RootNamespace>
+    <ProjectGuid>{9A61D4CE-208C-4567-B5A6-64AC1C48A30F}</ProjectGuid>
+    <RootNamespace>byteswapping_ext</RootNamespace>
     <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -78,7 +76,7 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
-    <TargetName>adpcm_ext</TargetName>
+    <TargetName>byteswapping_ext</TargetName>
     <TargetExt>.pyd</TargetExt>
     <IncludePath>C:\Python35\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Python35\libs;$(LibraryPath)</LibraryPath>
@@ -87,7 +85,7 @@
     <TargetExt>.pyd</TargetExt>
     <IncludePath>C:\Python35\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Python35\libs;$(LibraryPath)</LibraryPath>
-    <TargetName>adpcm_ext</TargetName>
+    <TargetName>byteswapping_ext</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>

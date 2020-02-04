@@ -198,34 +198,33 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
 
         # If there is rawdata to build the structure from
         if rawdata is not None:
-            offsets = desc[ATTR_OFFS]
             struct_off = root_offset + offset
 
             if self.f_endian == '=':
-                for i in range(len(node)):
-                    off = struct_off + offsets[i]
+                for i, off in enumerate(desc[ATTR_OFFS]):
+                    off += struct_off
                     typ = desc[i][TYPE]
-                    __lsi__(node, i,
-                            unpack(typ.enc, rawdata[off:off + typ.size])[0])
+                    __lsi__(node, i, typ.struct_unpacker(
+                        rawdata[off:off + typ.size])[0])
             elif self.f_endian == '<':
-                for i in range(len(node)):
-                    off = struct_off + offsets[i]
-                    typ = desc[i][TYPE]
-                    __lsi__(node, i, unpack(typ.little.enc,
-                                            rawdata[off:off + typ.size])[0])
+                for i, off in enumerate(desc[ATTR_OFFS]):
+                    off += struct_off
+                    typ = desc[i][TYPE].little
+                    __lsi__(node, i, typ.struct_unpacker(
+                        rawdata[off:off + typ.size])[0])
             else:
-                for i in range(len(node)):
-                    off = struct_off + offsets[i]
-                    typ = desc[i][TYPE]
-                    __lsi__(node, i, unpack(typ.big.enc,
-                                            rawdata[off:off + typ.size])[0])
+                for i, off in enumerate(desc[ATTR_OFFS]):
+                    off += struct_off
+                    typ = desc[i][TYPE].big
+                    __lsi__(node, i, typ.struct_unpacker(
+                        rawdata[off:off + typ.size])[0])
 
             # increment offset by the size of the struct
             offset += desc[SIZE]
         else:
             for i in range(len(node)):
-                __lsi__(node, i,
-                        desc[i].get(DEFAULT, desc[i][TYPE].default()))
+                __lsi__(node, i, desc[i].get(
+                    DEFAULT, desc[i][TYPE].default()))
 
         s_desc = desc.get(STEPTREE)
         if s_desc:
@@ -287,12 +286,10 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
 
         # If there is rawdata to build the structure from
         if rawdata is not None:
-            offsets = desc[ATTR_OFFS]
             # loop once for each field in the node
-            for i in range(len(node)):
+            for i, off in enumerate(desc['ATTR_OFFS']):
                 desc[i][TYPE].parser(desc[i], None, node, i, rawdata,
-                                       root_offset, offset + offsets[i],
-                                       **kwargs)
+                                     root_offset, offset + off, **kwargs)
 
             # increment offset by the size of the struct
             offset += desc[SIZE]

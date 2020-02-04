@@ -31,7 +31,7 @@ def decompress_animation(anim, keep_compressed=True, endian=">"):
     _, jma_anim.frames = serialization.deserialize_compressed_frame_data(anim)
 
     # make some fake nodes so the serialization functions work
-    jma_anim.nodes = jms.generate_fake_nodes(anim.node_count)
+    jma_anim.nodes = jms.util.generate_fake_nodes(anim.node_count)
 
     # serialize the animation data
     def_data   = serialization.serialize_default_data(jma_anim, endian)
@@ -66,7 +66,7 @@ def compress_animation(anim, endian=">", **kw):
             anim, None, True, endian)
 
         # make some fake nodes so the serialization functions work
-        jma_anim.nodes = jms.generate_fake_nodes(anim.node_count)
+        jma_anim.nodes = jms.util.generate_fake_nodes(anim.node_count)
 
         keyframes = kw.pop("keyframes", None)
         # either use provided keyframes, or generate them

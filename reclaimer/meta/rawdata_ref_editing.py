@@ -7,7 +7,8 @@
 # See LICENSE for more information.
 #
 
-from struct import Struct as PyStruct
+from struct import pack, unpack
+from types import MethodType
 
 from reclaimer.meta.halo1_map_fast_functions import iter_reflexive_offs,\
      move_rawdata_ref
@@ -27,8 +28,8 @@ def rawdata_ref_move_antr(tag_id, index_array, map_data, magic, engine,
 
 def rawdata_ref_move_bitm(tag_id, index_array, map_data, magic, engine,
                           diffs_by_offsets):
-    packer   = PyStruct("<L").pack
-    unpacker = PyStruct("<H8xL").unpack
+    packer   = MethodType(pack, "<L")
+    unpacker = MethodType(unpack, "<H8xL")
     tag_offset = index_array[tag_id].meta_offset
     for moff in iter_reflexive_offs(map_data, tag_offset + 96 - magic, 48):
         ptr_off = moff - magic

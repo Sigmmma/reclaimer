@@ -13,7 +13,8 @@ This is very unstructured as it needs to be as fast as possible, so
 raw offsets and map magic must be provided explicitely.
 '''
 
-from struct import Struct as PyStruct
+from types import MethodType
+from struct import pack, unpack
 
 from reclaimer.constants import \
      tag_class_be_int_to_fcc_os,     tag_class_fcc_to_ext_os,\
@@ -67,14 +68,14 @@ object_class_bytes = (
     b'ejbo'
     )
 
-_3_uint32_struct = PyStruct("<LLL")
-_4_uint32_struct = PyStruct("<LLLL")
-_5_uint32_struct = PyStruct("<LLLLL")
+pack_4_uint32 = MethodType(pack, "<LLLL")
+unpack_3_uint32 = MethodType(unpack, "<LLL")
+unpack_4_uint32 = MethodType(unpack, "<LLLL")
+unpack_5_uint32 = MethodType(unpack, "<LLLLL")
 
 
 def read_reflexive(map_data, refl_offset, max_count=0xFFffFFff,
-                   struct_size=1, tag_magic=None,
-                   unpacker=_3_uint32_struct.unpack):
+                   struct_size=1, tag_magic=None, unpacker=unpack_3_uint32):
     '''
     Reads a reflexive from the given map_data at the given offset.
     Returns the reflexive's offset and pointer.
@@ -89,7 +90,7 @@ def read_reflexive(map_data, refl_offset, max_count=0xFFffFFff,
 
 
 def read_rawdata_ref(map_data, ref_offset, tag_magic=None,
-                     unpacker=_5_uint32_struct.unpack):
+                     unpacker=unpack_5_uint32):
     map_data.seek(ref_offset)
     size, flags, raw_pointer, pointer, id = unpacker(map_data.read(20))
     if tag_magic is not None:
@@ -99,8 +100,7 @@ def read_rawdata_ref(map_data, ref_offset, tag_magic=None,
 
 
 def move_rawdata_ref(map_data, raw_ref_offset, magic, engine, diffs_by_offsets,
-                     unpacker=_4_uint32_struct.unpack,
-                     packer=_4_uint32_struct.pack):
+                     unpacker=unpack_4_uint32, packer=pack_4_uint32):
     map_data.seek(raw_ref_offset - magic)
     size, flags, raw_ptr, ptr = unpacker(map_data.read(16))
     if not size or ((flags & 1) and "xbox" not in engine):

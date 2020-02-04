@@ -12,7 +12,6 @@ import traceback
 from copy import deepcopy
 from math import sqrt
 from pathlib import Path
-from struct import Struct as PyStruct
 
 from reclaimer.util.matrices import axis_angle_to_quat, multiply_quaternions
 from reclaimer.animation.jma import JmsNode, JmaAnimation, JmaRootNodeState,\
@@ -76,7 +75,7 @@ def extract_animation(anim_index, tagdata, tag_path="", **kw):
               "\tFake nodes will be created to allow compiling the animations.\n"
               "\tAnimation tags compiled from these files won't import onto\n"
               "\ttheir gbxmodel in 3DS Max, as their node names won't match.")
-        anim_nodes = jms.generate_fake_nodes(anim.node_count)
+        anim_nodes = jms.util.generate_fake_nodes(anim.node_count)
 
     if len(anim_nodes) != anim.node_count:
         print("Skipping animation with different number of nodes "

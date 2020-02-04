@@ -18,4 +18,5 @@ typedef uint64_t uint64;
 #define RELEASE_PY_BUFFER_ARRAY(bufs)\
     for (int py_buffer_release_index = 0; py_buffer_release_index < (sizeof(bufs) / sizeof(bufs[0])); py_buffer_release_index++) {\
         PyBuffer_Release(&bufs[py_buffer_release_index]);\
-    }
+    }\
+
