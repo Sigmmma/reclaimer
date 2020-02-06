@@ -12,9 +12,9 @@
 # ##############
 __author__ = "Devin Bobadilla, Michelle van der Graaf"
 #           YYYY.MM.DD
-__date__ = "2020.01.11"
-__version__ = (2, 6, 1)
-__website__ = "https://github.com/MosesofEgypt/reclaimer"
+__date__ = "2020.02.10"
+__version__ = (2, 7, 0)
+__website__ = "https://github.com/Sigmmma/reclaimer"
 __all__ = (
     "animation", "bitmaps", "h2", "h3", "halo_script", "hek", "meta", "misc",
     "model", "os_hek", "os_v3_hek", "os_v4_hek", "physics",

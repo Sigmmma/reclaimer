@@ -116,7 +116,7 @@ setup_kwargs = dict(
         },
     platforms=["POSIX", "Windows"],
     keywords=["reclaimer", "halo"],
-    install_requires=['supyr_struct', 'binilla', 'arbytmap'],
+    install_requires=['supyr_struct>=1.5.0', 'binilla', 'arbytmap'],
     requires=['supyr_struct', 'binilla', 'arbytmap'],
     provides=['reclaimer'],
     python_requires=">=3.5",
