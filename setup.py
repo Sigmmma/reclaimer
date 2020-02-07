@@ -1,47 +1,14 @@
-#!/usr/bin/env python
-import sys
-from traceback import format_exc
 try:
-    from setuptools import setup, Extension, Command
+    from setuptools import setup, Extension
 except ImportError:
-    from distutils.core import setup, Extension, Command
-from distutils.command.build_ext import build_ext
-from distutils.errors import CCompilerError, DistutilsExecError, \
-     DistutilsPlatformError
+    from distutils.core import setup, Extension
 
 import reclaimer
-
-is_pypy = hasattr(sys, 'pypy_translation_info')
-ext_errors = None
-if sys.platform == 'win32':
-   ext_errors = (CCompilerError, DistutilsExecError, DistutilsPlatformError,
-                 IOError, ValueError)
-
-class BuildFailed(Exception):
-    pass
-
-class ve_build_ext(build_ext):
-    # This class allows C extension building to fail.
-
-    def run(self):
-        try:
-            build_ext.run(self)
-        except DistutilsPlatformError:
-            raise BuildFailed()
-
-    def build_extension(self, ext):
-        if ext_errors:
-            try:
-                build_ext.build_extension(self, ext)
-            except ext_errors:
-                raise BuildFailed()
-        else:
-            build_ext.build_extension(self, ext)
 
 long_desc = open("README.MD").read()
 
 
-setup_kwargs = dict(
+setup(
     name='reclaimer',
     description='A libray of SupyrStruct structures and objects for '
                 'games built with the Blam engine',
@@ -136,22 +103,3 @@ setup_kwargs = dict(
     zip_safe=False,
     cmdclass=dict(build_ext=ve_build_ext)
     )
-
-
-success = False
-kwargs = dict(setup_kwargs)
-try:
-    setup(**kwargs)
-    success = True
-except BuildFailed:
-    print(format_exc())
-    print('*' * 80)
-    print("WARNING: The C accelerator modules could not be compiled.\n"
-          "Attempting to install without accelerators now.\n"
-          "Any errors that occurred are printed above.")
-    print('*' * 80)
-
-if not success:
-    kwargs.pop('ext_modules')
-    setup(**kwargs)
-    print("Installation successful, but skipped C modules.")
