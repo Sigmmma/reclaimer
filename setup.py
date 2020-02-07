@@ -101,5 +101,4 @@ setup(
         "Programming Language :: C",
         ],
     zip_safe=False,
-    cmdclass=dict(build_ext=ve_build_ext)
     )
