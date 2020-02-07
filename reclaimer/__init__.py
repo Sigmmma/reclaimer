@@ -13,7 +13,7 @@
 __author__ = "Devin Bobadilla, Michelle van der Graaf"
 #           YYYY.MM.DD
 __date__ = "2020.02.10"
-__version__ = (2, 7, 0)
+__version__ = (2, 7, 1)
 __website__ = "https://github.com/Sigmmma/reclaimer"
 __all__ = (
     "animation", "bitmaps", "h2", "h3", "halo_script", "hek", "meta", "misc",

@@ -44,6 +44,7 @@ setup(
         'reclaimer.meta.wrappers',
         'reclaimer.meta.wrappers.ext',
         'reclaimer.model',
+        'reclaimer.model.jms',
         'reclaimer.misc',
         'reclaimer.misc.defs',
         'reclaimer.misc.defs.objs',
