@@ -8,6 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
  - Add large part of the support for Halo 2 .jms files (.ass)
  - Now calculates change color random roll cutoffs into permutation weights.
+ - Windows now has prebuilt wheels for the C extensions.
 
 ### Changed
  - Fix extraction of node order for Halo 1 model/gbxmodel tags.
