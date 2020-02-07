@@ -1,0 +1,43 @@
+# Configuration for builder found at https://github.com/gbMichelle/wheelman
+
+# Name of distribution, needed for file copying.
+name: reclaimer
+
+#These get copied into the distribution
+include_files:
+    - "README.MD"
+    - "LICENSE"
+    - "CHANGELOG.MD"
+
+pypi:
+    # Only uploads on a github release tag.
+    only_upload_tags: true
+    # NOTE THE TEST.PYPI
+    # pypi url to upload to
+    #target_url: https://test.pypi.org/legacy/
+    target_url: https://pypi.org/legacy/
+
+
+targets:
+    windows:
+        # For Python versions available on Appveyor, see
+        # https://www.appveyor.com/docs/windows-images-software/#python
+
+        - python: "C:\\Python36\\python.exe"
+          wheel: True
+
+        - python: "C:\\Python36-x64\\python.exe"
+          wheel: True
+
+        - python: "C:\\Python37\\python.exe"
+          wheel: True
+
+        - python: "C:\\Python37-x64\\python.exe"
+          wheel: True
+
+        - python: "C:\\Python38\\python.exe"
+          wheel: True
+
+        - python: "C:\\Python38-x64\\python.exe"
+          wheel: True
+          sdist: True
