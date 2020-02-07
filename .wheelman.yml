@@ -8,6 +8,7 @@ include_files:
     - "README.MD"
     - "LICENSE"
     - "CHANGELOG.MD"
+    - "AUTHORS.TXT"
 
 pypi:
     # Only uploads on a github release tag.
