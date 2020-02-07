@@ -1,0 +1,75 @@
+image:
+    - Visual Studio 2019
+
+environment:
+  matrix:
+    # Environment vars to send to the build VM
+    - PYTHON: "C:\\Python38-x64\\python.exe"
+      WHEELMAN_TARGET: windows
+      WHEELMAN_REPO: "https://github.com/gbMichelle/wheelman.git"
+      TWINE_USERNAME:
+          secure: EnVF0Efkdy2CMUFOw91AOg==
+      TWINE_PASSWORD:
+          secure: vRDWpHszD6qeJkqhcs/sJA==
+
+install:
+  # Windows install prep.
+  - cmd: |
+        git clone %WHEELMAN_REPO% wheelman
+        %PYTHON% -m pip install wheel pyyaml twine
+
+# Turn off MSBuild mode.
+build: off
+
+#test_script:
+  # No tests, how horrible D:<
+
+after_test:
+  - cmd: "%PYTHON% wheelman\\wheelman.py --target %WHEELMAN_TARGET%"
+
+artifacts:
+  # bdist_wheel puts the built wheel in the dist directory
+  - path: dist\*
+
+# The build identifier shown in our webhook
+version: '{branch}.{build}'
+
+# Our Discord webhook
+notifications:
+- provider: Webhook
+  url:
+    secure: HPXukd4+SRk2k/1Lf7KxUSB4zVjwaGTepjGvpywQR8ZviI1/C5ABpAYfLYgup81E6p/bbHVgkno4cUf0SkcJqUTUFlFoKdTFQAstp7n/fHF7VvFj+C14R4EUcM2EINgwIGAI1pjse+a5bAJtNvFnllPOn/JqO7hxdV/jqFlh4Bs=
+  method: POST
+  body: >-
+    {
+      "embeds": [
+        {
+          "title": "Build {{buildId}} for {{repositoryName}} - {{#passed}}Success{{/passed}}{{^passed}}Failure{{/passed}}",
+          "url": "{{buildUrl}}",
+          "color": {{#passed}}40973{{/passed}}{{^passed}}11672839{{/passed}},
+          "fields": [
+            {
+              "name": "Commit",
+              "value": "[{{commitMessage}}](https://github.com/{{repositoryName}}/commit/{{commitId}})"
+            },
+            {
+              "name": "Duration",
+              "value": "{{duration}}",
+              "inline": true
+            },
+            {
+              "name": "Build version",
+              "value": "{{buildVersion}}",
+              "inline": true
+            }
+          ]
+        }
+      ]
+    }
+  on_build_success: true
+  on_build_failure: true
+  on_build_status_changed: true
+
+branches:
+  only:
+  - master
