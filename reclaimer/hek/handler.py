@@ -73,13 +73,6 @@ class HaloHandler(Handler):
         for key in self.id_ext_map.keys():
             self.ext_id_map[self.id_ext_map[key]] = key
 
-        if "default_conversion_flags" in kwargs:
-            self.default_conversion_flags = kwargs["default_conversion_flags"]
-        else:
-            self.default_conversion_flags = {}
-            for def_id in self.tags:
-                self.default_conversion_flags[def_id] = {}
-
         self.datadir = Path(
             kwargs.get("datadir", self.tagsdir.parent.joinpath("data")))
 
