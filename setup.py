@@ -5,7 +5,11 @@ except ImportError:
 
 import reclaimer
 
-long_desc = open("README.MD").read()
+long_desc = ""
+try:
+    long_desc = open("README.MD").read()
+except Exception:
+    print("Couldn't read readme.")
 
 
 setup(
