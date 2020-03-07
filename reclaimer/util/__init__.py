@@ -1,4 +1,5 @@
 import re
+import zlib
 
 from math import log
 
@@ -123,5 +124,11 @@ def is_valid_ascii_name_str(string):
         if i in string_bytes:
             return False
     return True
+
+def calc_halo_crc32(buffer, offset=None, size=None, crc=0xFFffFFff):
+    if offset is not None:
+        buffer.seek(offset)
+
+    return zlib.crc32(buffer.read(size), crc ^ 0xFFffFFff) ^ 0xFFffFFff
 
 del re

@@ -6,18 +6,12 @@
 # Reclaimer is free software under the GNU General Public License v3.0.
 # See LICENSE for more information.
 #
-import zlib
-
 from pathlib import Path
 
 from supyr_struct.defs.constants import DEFAULT
 from supyr_struct.tag import Tag
 
-def calc_halo_crc32(buffer, offset=None, size=None, crc=0xFFffFFff):
-    if offset is not None:
-        buffer.seek(offset)
-
-    return zlib.crc32(buffer.read(size), crc ^ 0xFFffFFff) ^ 0xFFffFFff
+from reclaimer.util import calc_halo_crc32
 
 class HekTag(Tag):
     def __init__(self, **kwargs):
