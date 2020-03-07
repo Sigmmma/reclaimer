@@ -100,7 +100,7 @@ pitch_range = Struct('pitch_range',
     SInt32("unknown2", VISIBLE=False, DEFAULT=-1),
 
     reflexive("permutations", permutation, 256,
-        DYN_NAME_PATH='.name'),
+        DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True),
     SIZE=72,
     )
 
