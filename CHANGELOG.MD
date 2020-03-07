@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.7.4]
+### Changed
+ - safe_mode: Fix IGNORE_SAFE_MODE flag being retrieved from an incorrect location.
+     - safe_mode: Fix bitmaps with permutation counts over 2048 getting pruned.
+     - safe_mode: Fix scenario.bipeds getting pruned at counts over 128.
+     - safe_mode: Fix scenario.controls getting pruned at counts over 100.
+     - safe_mode: Fix scenario.equipments getting pruned at counts over 256.
+     - safe_mode: Fix scenario.light_fixtures getting pruned at counts over 500.
+     - safe_mode: Fix scenario.machines getting pruned at counts over 400.
+     - safe_mode: Fix scenario.object_names getting pruned at counts over 512.
+     - safe_mode: Fix scenario.sceneries getting pruned at counts over 2000.
+     - safe_mode: Fix scenario.script_string_data getting pruned at sizes over 262144.
+     - safe_mode: Fix scenario.script_syntax_data getting pruned at sizes over 380076.
+     - safe_mode: Fix scenario.sound_sceneries getting pruned at counts over 256.
+     - safe_mode: Fix scenario.vehicles getting pruned at counts over 80.
+     - safe_mode: Fix scenario.weapons getting pruned at counts over 128.
+     - safe_mode: Fix sound tags with permutation counts over 256 getting pruned.
+
 ## [2.7.3]
 ### Changed
  - (Linux) Fix wrong path separators used in C extensions.
