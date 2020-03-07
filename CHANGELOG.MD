@@ -21,7 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
      - safe_mode: Fix scenario.vehicles getting pruned at counts over 80.
      - safe_mode: Fix scenario.weapons getting pruned at counts over 128.
      - safe_mode: Fix sound tags with permutation counts over 256 getting pruned.
-  - Fix missing license in distrubutions.
+ - Fix missing license in distrubutions.
 
 ## [2.7.3]
 ### Changed
