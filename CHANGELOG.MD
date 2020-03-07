@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.8.0]
 ### Added
- - CRCs of tags are now properly calculated on save.
+ - CRCs of tags are now properly calculated on save. Use the first bit on offset 48 to determine if a tag is edited by reclaimer. (If not using this library.)
 
 ## [2.7.3]
 ### Changed
