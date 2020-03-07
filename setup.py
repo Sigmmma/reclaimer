@@ -84,6 +84,7 @@ setup(
             '*.[Tt][Xx][Tt]', '*.MD', '*.h',
             '**/p8_palette_halo',   '**/p8_palette_halo_diff_map',
             '**/p8_palette_stubbs', '**/p8_palette_stubbs_diff_map',
+            'LICENSE',
             ]
         },
     platforms=["POSIX", "Windows"],
