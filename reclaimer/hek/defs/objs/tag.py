@@ -29,6 +29,7 @@ class HekTag(Tag):
         Overload of the supyr serialization function that retroactively adds
         a CRC to the tag.
         '''
+        head = self.data.blam_header
         filepath = kwargs.get('filepath', self.filepath)
         buffer = kwargs.get('buffer', None)
 
@@ -44,12 +45,12 @@ class HekTag(Tag):
         if buffer is None:
             f = Path(filepath).open('rb+')
 
-        # Calculate the crc from the offset 64 to the end. 64 is the size of
-        # the header which is skipped in this calculation.
-        crc = calc_halo_crc32(f, 64)
-        # Write the crc to offset 40 in the buffer.
-        # Matches up with self.data.blam_header.checksum.
-        f.seek(40)
+        # Calculate the crc from after the header to the end.
+        crc = calc_halo_crc32(f, offset=head.get_desc('SIZE'))
+        # Write the crc to the offset of the checksum value in the header.
+        # The way we retrieve this offset from supyr is insane.
+        attr_index = head.get_desc('NAME_MAP')['checksum']
+        f.seek(head.get_desc('ATTR_OFFS')[attr_index])
         f.write(crc.to_bytes(4, byteorder='big', signed=False))
         # Flush the stream.
         f.flush()
@@ -59,7 +60,7 @@ class HekTag(Tag):
             f.close()
 
         # Update the tag object so it won't have to be deserialized again.
-        self.data.blam_header.checksum = crc
+        head.checksum = crc
         return result
 
     def calc_internal_data(self):
