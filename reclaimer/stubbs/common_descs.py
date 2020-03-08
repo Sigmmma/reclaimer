@@ -172,7 +172,7 @@ tag_header_stubbs = Struct("blam_header",
     UEnum32("tag_class",
         GUI_NAME="tag_class", INCLUDE=stubbs_valid_tags, EDITABLE=False
         ),
-    UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
+    UInt32("checksum", DEFAULT=0, EDITABLE=False),
     UInt32("header_size",  DEFAULT=64, EDITABLE=False),
     BBool64("flags",
         "edited_with_mozz",

@@ -132,7 +132,7 @@ h3_tag_header = Struct("blam_header",
     UEnum32("tag class",
         GUI_NAME="tag class", INCLUDE=valid_h3_tags, EDITABLE=False
         ),
-    UInt32("checksum", DEFAULT=0x4D6F7A7A, EDITABLE=False),
+    UInt32("checksum", DEFAULT=0, EDITABLE=False),
     UInt32("header size", DEFAULT=64, EDITABLE=False),
     Bool64("flags",
         "edited with mozz",

@@ -4,7 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [2.7.4]
+## [2.8.0]
+### Added
+ - CRCs of tags are now properly calculated on save. Use the first bit on offset 48 to determine if a tag is edited by reclaimer. (If not using this library.)
+
 ### Changed
  - safe_mode: Fix IGNORE_SAFE_MODE flag being retrieved from an incorrect location.
      - safe_mode: Fix bitmaps with permutation counts over 2048 getting pruned.
