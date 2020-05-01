@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.0]
+### Added
+ - util.convert_newlines_to_windows & util.convert_newlines_to_unix.
+
+### Changed
+ - Fix some newline conversions breaking.
+
 ## [2.8.0]
 ### Added
  - CRCs of tags are now properly calculated on save. Use the first bit on offset 48 to determine if a tag is edited by reclaimer. (If not using this library.)

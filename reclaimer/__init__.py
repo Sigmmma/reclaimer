@@ -10,10 +10,10 @@
 # ##############
 #   metadata   #
 # ##############
-__author__ = "Devin Bobadilla, Michelle van der Graaf"
+__author__ = "Sigmmma"
 #           YYYY.MM.DD
-__date__ = "2020.03.07"
-__version__ = (2, 8, 0)
+__date__ = "2020.05.01"
+__version__ = (2, 9, 0)
 __website__ = "https://github.com/Sigmmma/reclaimer"
 __all__ = (
     "animation", "bitmaps", "h2", "h3", "halo_script", "hek", "meta", "misc",
