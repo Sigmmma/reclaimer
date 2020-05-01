@@ -18,6 +18,4 @@ class Str_Tag(HekTag):
 
         for i in range(len(strings)):
             # Replace all newlines with \r\n.
-            # Keeping in mind that some other editor might have dropped
-            # little poops in here.
             strings[i].data = convert_newlines_to_windows(strings[i].data)
