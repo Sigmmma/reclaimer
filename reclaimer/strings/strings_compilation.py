@@ -24,6 +24,7 @@ def compile_hud_message_text(hmt_tag, hmt_string_data):
 
     line_num = 0
     for line in hmt_string_data.lstrip('\ufeff').split("\n"):
+        line = line.rstrip()
         line_num += 1
         if not line:
             continue
