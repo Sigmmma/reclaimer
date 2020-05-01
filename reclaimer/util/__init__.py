@@ -131,4 +131,12 @@ def calc_halo_crc32(buffer, offset=None, size=None, crc=0xFFffFFff):
 
     return zlib.crc32(buffer.read(size), crc ^ 0xFFffFFff) ^ 0xFFffFFff
 
+NEWLINE_MATCHER = re.compile(r'\r\n|\n\r|\r|\n')
+
+def convert_newlines_to_windows(input):
+    return NEWLINE_MATCHER.sub('\r\n', input)
+
+def convert_newlines_to_unix(input):
+    return NEWLINE_MATCHER.sub('\n', input)
+
 del re
