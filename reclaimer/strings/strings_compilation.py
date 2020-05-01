@@ -9,6 +9,7 @@
 
 from traceback import format_exc
 from reclaimer.enums import hmt_icon_types
+from reclaimer.util import convert_newlines_to_unix
 
 __all__ = ("compile_hud_message_text",
            "compile_unicode_string_list", "compile_string_list")
@@ -168,8 +169,7 @@ def compile_strings(tag, string_data, unicode=False):
         tag_cls = "str#"
         max_str_len = 4096
 
-    string_data = string_data.replace("\r\n", "\n").\
-                  replace("\n\r", "\n").replace("\r", "\n")
+    string_data = convert_newlines_to_unix(string_data)
 
     strings = string_data.split("\n###END-STRING###\n")
     if len(strings) > 32767:
