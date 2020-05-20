@@ -8,6 +8,7 @@
 #
 
 from reclaimer.hek.defs.objs.tag import HekTag
+from reclaimer.util import convert_newlines_to_windows
 
 class Str_Tag(HekTag):
 
@@ -16,10 +17,5 @@ class Str_Tag(HekTag):
         strings = self.data.tagdata.strings.STEPTREE
 
         for i in range(len(strings)):
-            # replace all instances of \r and \n with \r\n
-            split_strings = []
-            for s in strings[i].data.split("\r\n"):
-                for sub_s in s.split('\r'):
-                    split_strings.extend(sub_s.split('\n'))
-
-            strings[i].data = "\r\n".join(split_strings)
+            # Replace all newlines with \r\n.
+            strings[i].data = convert_newlines_to_windows(strings[i].data)

@@ -585,8 +585,8 @@ def deserialize_compressed_frame_data(anim):
 
         if scale_flags[ni]:
             scale_kf_ct, scale_kf_off = scale_keyframe_headers[si]
+            scale_def = scale_def_data[si]
             si += 1
-            scale_def = scale_def_data[ni]
 
         # add this nodes keyframes to the keyframe lists in the jma_anim
         for kf_ct, kf_off, all_kfs, kfs_by_nodes in (
