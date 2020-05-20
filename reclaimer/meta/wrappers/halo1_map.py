@@ -998,6 +998,43 @@ class Halo1Map(HaloMap):
                 byteswap_verts = byteswap_comp_verts
                 vert_size = 32
 
+            # If this is a gbxmodel localize the markers.
+            # We skip this for xbox models for arsenic.
+
+            if tag_cls == "mod2":
+                # ensure all local marker arrays are empty
+                for region in meta.regions.STEPTREE:
+                    for perm in region.permutations.STEPTREE:
+                        del perm.local_markers.STEPTREE[:]
+
+                # localize the global markers
+                for g_marker in meta.markers.STEPTREE:
+                    for g_marker_inst in g_marker.marker_instances.STEPTREE:
+                        try:
+                            region = meta.regions.STEPTREE[g_marker_inst.region_index]
+                        except IndexError:
+                            # invalid region index
+                            continue
+
+                        try:
+                            perm = region.permutations.STEPTREE[g_marker_inst.permutation_index]
+                        except IndexError:
+                            # invalid permutation index
+                            continue
+
+                        # make a new local marker
+                        perm.local_markers.STEPTREE.append()
+                        l_marker = perm.local_markers.STEPTREE[-1]
+
+                        # copy the global marker into the local
+                        l_marker.name           = g_marker.name
+                        l_marker.node_index     = g_marker_inst.node_index
+                        l_marker.translation[:] = g_marker_inst.translation[:]
+                        l_marker.rotation[:]    = g_marker_inst.rotation[:]
+
+                # clear the global markers
+                del meta.markers.STEPTREE[:]
+
             # grab vertices and indices from the map
             for geom in meta.geometries.STEPTREE:
                 for part in geom.parts.STEPTREE:
