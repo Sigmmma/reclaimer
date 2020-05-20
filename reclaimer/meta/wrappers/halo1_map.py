@@ -1013,13 +1013,13 @@ class Halo1Map(HaloMap):
                         try:
                             region = meta.regions.STEPTREE[g_marker_inst.region_index]
                         except IndexError:
-                            # invalid region index
+                            print("Model marker instance for", g_marker.name, "has invalid region index", g_marker_inst.region_index, "and is skipped.")
                             continue
 
                         try:
                             perm = region.permutations.STEPTREE[g_marker_inst.permutation_index]
                         except IndexError:
-                            # invalid permutation index
+                            print("Model marker instance for", g_marker.name, "has invalid permutation index", g_marker_inst.permutation_index, "and is skipped.")
                             continue
 
                         # make a new local marker
