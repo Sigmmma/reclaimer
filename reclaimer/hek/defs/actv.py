@@ -31,10 +31,12 @@ actv_body = Struct("tagdata",
     dependency("actor_definition", "actr"),
     dependency("unit", valid_units),
     dependency("major_variant", "actv"),
+    SEnum16("mcc_actor_type", TOOLTIP="Used to determine score in MCC", *mcc_actor_types),
+
 
     #Movement switching
     Struct("movement_switching",
-        Pad(24),
+        Pad(22),
         SEnum16("movement_type",
             "always_run",
             "always_crouch",
