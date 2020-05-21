@@ -1227,6 +1227,53 @@ fp_animation_names = (
     'throw-overheated', 'overheating', 'overheating-again',
     'enter', 'exit-empty', 'exit-full', 'o-h-exit', 'o-h-s-enter'
     )
+mcc_actor_types = ( # Used to determine score for killing different actor types.
+    "brute",
+    "grunt",
+    "jackal",
+    "skirmisher",
+    "marine",
+    "spartan",
+    "drone",
+    "hunter",
+    "flood infection",
+    "flood carrier",
+    "flood combat",
+    "flood pure",
+    "sentinel",
+    "elite",
+    "huragok",
+    "mule",
+    "turret",
+    "mongoose",
+    "warthog",
+    "scorpion",
+    "hornet",
+    "pelican",
+    "revenant",
+    "seraph",
+    "shade",
+    "watchtower",
+    "ghost",
+    "chopper",
+    "prowler",
+    "wraith",
+    "banshee",
+    "phantom",
+    "scarab",
+    "guntower",
+    "spirit",
+    "broadsword",
+    "mammoth",
+    "lich",
+    "mantis",
+    "wasp",
+    "phaeton",
+    "watcher",
+    "knight",
+    "crawler"
+    )
+
 unit_damage_animation_names = []
 for typ in ("s-ping", "h-ping", "s-kill", "h-kill"):
     for side in ("front", "left", "right", "back"):
