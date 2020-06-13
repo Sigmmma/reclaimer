@@ -6,7 +6,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.9.4]
 ### Changed
- - Fix actor_variant struct being incorrect for open sauce tag types.
+ - Fix actor_variant struct being incorrect for open sauce tag set.
+ - Remove magic numbers from os\_hek actor\_variant definition to avoid it breaking in the future.
 
 ## [2.9.3]
 ### Changed
