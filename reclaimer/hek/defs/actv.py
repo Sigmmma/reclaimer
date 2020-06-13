@@ -17,6 +17,31 @@ change_color = Struct("change_color",
     SIZE=32
     )
 
+actv_grenades = Struct("grenades",
+    Pad(8),
+    SEnum16("grenade_type", *grenade_types),
+    SEnum16("trajectory_type",
+        "toss",
+        "lob",
+        "bounce",
+        ),
+    SEnum16("grenade_stimulus",
+        "never",
+        "visible_target",
+        "seek_cover",
+        ),
+    SInt16("minimum_enemy_count"),
+    float_wu("enemy_radius"),
+
+    Pad(4),
+    float_wu_sec("grenade_velocity", UNIT_SCALE=per_sec_unit_scale),
+    from_to_wu("grenade_ranges"),
+    float_wu("collateral_damage_radius"),
+    float_zero_to_one("grenade_chance"),
+    float_sec("grenade_check_time", UNIT_SCALE=sec_unit_scale),
+    float_sec("encounter_grenade_timeout", UNIT_SCALE=sec_unit_scale)
+    )
+
 actv_body = Struct("tagdata",
     Bool32('flags',
         "can_shoot_while_flying",
@@ -139,30 +164,7 @@ actv_body = Struct("tagdata",
         ),
 
     #Grenades
-    Struct("grenades",
-        Pad(8),
-        SEnum16("grenade_type", *grenade_types),
-        SEnum16("trajectory_type",
-            "toss",
-            "lob",
-            "bounce",
-            ),
-        SEnum16("grenade_stimulus",
-            "never",
-            "visible_target",
-            "seek_cover",
-            ),
-        SInt16("minimum_enemy_count"),
-        float_wu("enemy_radius"),
-
-        Pad(4),
-        float_wu_sec("grenade_velocity", UNIT_SCALE=per_sec_unit_scale),
-        from_to_wu("grenade_ranges"),
-        float_wu("collateral_damage_radius"),
-        float_zero_to_one("grenade_chance"),
-        float_sec("grenade_check_time", UNIT_SCALE=sec_unit_scale),
-        float_sec("encounter_grenade_timeout", UNIT_SCALE=sec_unit_scale)
-        ),
+    actv_grenades,
 
     #Items
     Struct("items",

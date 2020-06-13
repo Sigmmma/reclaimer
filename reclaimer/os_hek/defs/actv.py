@@ -7,18 +7,21 @@
 # See LICENSE for more information.
 #
 
+from supyr_struct.util import desc_variant
+
 from ...hek.defs.actv import *
 
-# TODO use some supyr trickery to make this nicer.
+# Create opensauce variant of grenade descriptor.
 
-# grenades descriptor index in actv_body is 10
-# grenade_type descriptor index in grenades_desc is 1
+os_actv_grenades = desc_variant(actv_grenades,
+    ("grenade_type", SEnum16("grenade_type", *grenade_types_os)),
+)
 
-# replace the grenade_type descriptor with one
-# that uses open sauce's extra grenade slots
-actv_body = dict(actv_body)
-grenades_desc = actv_body[10] = dict(actv_body[10])
-grenades_desc[1] = SEnum16("grenade_type", *grenade_types_os)
+# Create os variant of actv descriptor using the new grenade descriptor.
+
+actv_body = desc_variant(actv_body,
+    ("grenades", os_actv_grenades),
+)
 
 def get():
     return actv_def
