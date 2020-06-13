@@ -17,7 +17,7 @@ os_actv_grenades = desc_variant(actv_grenades,
     ("grenade_type", SEnum16("grenade_type", *grenade_types_os)),
 )
 
-# Create os variant of actv descritor using the new grenade descriptor.
+# Create os variant of actv descriptor using the new grenade descriptor.
 
 actv_body = desc_variant(actv_body,
     ("grenades", os_actv_grenades),
