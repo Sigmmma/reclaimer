@@ -193,10 +193,8 @@ reflection = Struct("reflection",
     )
 
 senv_attrs = Struct("senv_attrs",
-    #Environment Shader Properties
     environment_shader,
 
-    #Lens Flare
     float_wu("lens_flare_spacing"),  # world units
     dependency("lens_flare", "lens"),
 
@@ -204,27 +202,21 @@ senv_attrs = Struct("senv_attrs",
     Pad(12),
 
     Pad(32),
-    #Diffuse Properties
     diffuse,
 
     Pad(12),
-    #Bump Properties
     bump_properties,
 
     Pad(16),
-    #Texture Animation
     texture_scrolling,
 
     Pad(24),
-    #Self Illumination
     self_illumination,
 
     Pad(24),
-    #Specular Properties
     specular,
 
     Pad(16),
-    #Reflection Properties
     reflection,
     SIZE=796
     )

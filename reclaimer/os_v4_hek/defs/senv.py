@@ -8,6 +8,7 @@
 #
 
 from ...os_hek.defs.senv import *
+from supyr_struct.util import desc_variant
 
 dlm_comment = """DIRECTIONAL LIGHTMAP PROPERTIES
 Special shader settings for when your map has directional lightmaps rendered for it."""
@@ -50,9 +51,33 @@ os_senv_ext = Struct("shader_environment_extension",
     SIZE=100,
     )
 
-# replace the padding with an open sauce shader environment extension reflexive
-senv_attrs = dict(senv_attrs)
-senv_attrs[3] = reflexive("os_shader_environment_ext", os_senv_ext, 1)
+senv_attrs = Struct("senv_attrs",
+    environment_shader,
+
+    float_wu("lens_flare_spacing"),  # world units
+    dependency("lens_flare", "lens"),
+
+    reflexive("os_shader_environment_ext", os_senv_ext, 1),
+
+    Pad(32),
+    diffuse,
+
+    Pad(12),
+    bump_properties,
+
+    Pad(16),
+    texture_scrolling,
+
+    Pad(24),
+    self_illumination,
+
+    Pad(24),
+    specular,
+
+    Pad(16),
+    reflection,
+    SIZE=796
+    )
 
 senv_body = Struct("tagdata",
     shdr_attrs,

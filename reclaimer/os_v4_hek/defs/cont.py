@@ -9,12 +9,22 @@
 
 from ...os_v3_hek.defs.cont import *
 
-cont_body = dict(cont_body)
-cont_body[4] = reflexive(
-    "shader_extensions",
-    Struct("shader_extension", INCLUDE=os_shader_extension),
-    1)
+cont_body = Struct("tagdata",
+    flags,
+    scale_flags,
 
+    point_creation,
+
+    rendering,
+    reflexive("shader_extensions",
+        Struct("shader_extension", INCLUDE=os_shader_extension), 1
+        ),
+    Pad(16),
+
+    secondary_map,
+    reflexive("point_states", point_state, 16),
+    SIZE=324,
+    )
 
 def get():
     return cont_def

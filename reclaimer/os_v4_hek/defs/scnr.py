@@ -45,9 +45,15 @@ bsp_modifier = Struct("bsp_modifier",
     SIZE=64
     )
 
-
-scnr_body = dict(scnr_body)
-scnr_body[64] = reflexive("bsp_modifiers", bsp_modifier, 32)
+# NOTE: This will break if fields before the padding are shifted around,
+#       but it will break in a way that will ensure we know it's broken.
+#       Due to how desc_variant works, padding is named `"pad_%s" % i`
+#       where `i` is the index of the field. This technically uses magic
+#       numbers, but it is still cleaner and easier to maintain than a
+#       copy of the scnr_body
+scnr_body = desc_variant(scnr_body,
+    ("pad_64", reflexive("bsp_modifiers", bsp_modifier, 32)),
+    )
 
 def get():
     return scnr_def

@@ -8,17 +8,19 @@
 #
 
 from ...os_v3_hek.defs.bitm import *
+from supyr_struct.util import desc_variant
 
 def get(): return bitm_def
 
-# replace the model animations dependency with an open sauce one
-bitm_body = dict(bitm_body)
-bitm_body[3] = Bool16("flags",
-    "enable_diffusion_dithering",
-    "disable_height_map_compression",
-    "uniform_sprite_sequences",
-    "sprite_bug_fix",
-    ("never_share_resources", 1<<13)
+bitm_body = desc_variant(bitm_body,
+    ("flags", Bool16("flags",
+        "enable_diffusion_dithering",
+        "disable_height_map_compression",
+        "uniform_sprite_sequences",
+        "sprite_bug_fix",
+        ("never_share_resources", 1<<13)
+        )
+     ),
     )
 
 def get():

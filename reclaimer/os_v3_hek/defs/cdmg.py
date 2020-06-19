@@ -8,6 +8,7 @@
 #
 
 from ...hek.defs.cdmg import *
+from supyr_struct.util import desc_variant
 
 damage = Struct("damage",
     SEnum16("priority",
@@ -52,8 +53,9 @@ damage = Struct("damage",
         ),
     )
 
-cdmg_body = dict(cdmg_body)
-cdmg_body[5] = damage
+cdmg_body = desc_variant(cdmg_body,
+    ("damage", damage),
+    )
 
 def get():
     return cdmg_def

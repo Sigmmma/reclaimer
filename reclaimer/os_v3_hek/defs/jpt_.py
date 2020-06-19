@@ -8,6 +8,7 @@
 #
 
 from ...hek.defs.jpt_ import *
+from supyr_struct.util import desc_variant
 
 damage = Struct("damage",
     SEnum16("priority",
@@ -52,8 +53,9 @@ damage = Struct("damage",
         ),
     )
 
-jpt__body = dict(jpt__body)
-jpt__body[16] = damage
+jpt__body = desc_variant(jpt__body,
+    ("damage", damage),
+    )
 
 def get():
     return jpt__def
