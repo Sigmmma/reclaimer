@@ -1,0 +1,13 @@
+from reclaimer.audio.OGG import OGG
+
+* note r argument does not work currently *
+
+with OGG("/location/to/save.ogg", "w") as file:
+    (file.Log = True to output progress for debugging)
+    file.loadwave("/location/to/wave/file.wav")
+    file.write()
+
+profit
+
+
+It should be able to load most wav types; however, there may be some bugs to iron out.
