@@ -21,6 +21,7 @@ from reclaimer.h2.common_descs import script_types as h2_script_types,\
 
 from supyr_struct.defs.block_def import BlockDef
 from supyr_struct.field_types import FieldType
+from supyr_struct.util import desc_variant
 
 try:
     from reclaimer.enums import _script_built_in_functions_test
@@ -126,8 +127,9 @@ h1_script_syntax_data = Struct("script syntax data header",
     STEPTREE=WhileArray("nodes", SUB_STRUCT=fast_script_node)
     )
 
-h1_script_syntax_data_os = dict(h1_script_syntax_data)
-h1_script_syntax_data_os[1] = UInt16("max_nodes", DEFAULT=28501)
+h1_script_syntax_data_os = desc_variant(h1_script_syntax_data,
+    ("max_nodes", UInt16("max_nodes", DEFAULT=28501))
+    )
 
 h1_script_syntax_data_def    = BlockDef(h1_script_syntax_data)
 h1_script_syntax_data_os_def = BlockDef(h1_script_syntax_data_os)

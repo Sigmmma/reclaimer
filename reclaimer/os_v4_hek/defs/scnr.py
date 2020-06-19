@@ -46,7 +46,7 @@ bsp_modifier = Struct("bsp_modifier",
     )
 
 # NOTE: This will break if fields before the padding are shifted around,
-#       but it will break in a way that will ensure we know it's broken.
+#       but it will break in a way that will raise a KeyError.
 #       Due to how desc_variant works, padding is named `"pad_%s" % i`
 #       where `i` is the index of the field. This technically uses magic
 #       numbers, but it is still cleaner and easier to maintain than a

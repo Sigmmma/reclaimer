@@ -9,9 +9,11 @@
 
 from ...hek.defs.coll import *
 from ..common_descs import *
+from supyr_struct.util import desc_variant
 
-shield = dict(shield)
-shield[2] = SEnum16("shield_material_type", *materials_list)
+shield = desc_variant(shield,
+    ("shield_material_type", SEnum16('shield_material_type', *materials_list))
+    )
 
 permutation = Struct("permutation",
     ascii_str32("name"),
@@ -95,8 +97,9 @@ coll_body = Struct("tagdata",
     SIZE=664,
     )
 
-fast_coll_body = dict(coll_body)
-fast_coll_body[12] = reflexive("nodes", fast_node, 64, DYN_NAME_PATH='.name')
+fast_coll_body = desc_variant(coll_body,
+    ("nodes", reflexive("nodes", fast_node, 64, DYN_NAME_PATH='.name'))
+    )
 
 
 def get():

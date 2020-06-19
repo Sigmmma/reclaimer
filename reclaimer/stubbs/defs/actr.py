@@ -9,19 +9,59 @@
 
 from ...hek.defs.actr import *
 from ..common_descs import *
+from supyr_struct.util import desc_variant
 
-actr_body = dict(actr_body)
-actr_body[3] = SEnum16("type", *actor_types)
-actr_body[12] = dict(actr_body[12])
-actr_body[12][2] = SEnum16("leader_type", *actor_types)
+panic = desc_variant(panic,
+    ("leader_type", SEnum16("leader_type", *actor_types))
+    )
 
-actr_body[14] = dict(actr_body[14])
-actr_body[14][6] = SEnum16("defensive_crouch_type",
-    "never",
-    "danger",
-    "low_shields",
-    "hide_behind_shield",
-    "any_target",
+defensive = desc_variant(defensive,
+    ("defensive_crouch_type", SEnum16('defensive_crouch_type',
+        "never",
+        "danger",
+        "low_shields",
+        "hide_behind_shield",
+        "any_target",
+        )
+     )
+    )
+
+actr_body = Struct("tagdata",
+    flags,
+    more_flags,
+
+    Pad(12),
+    SEnum16("type", *actor_types),  # NOTE: Stubbs actor types
+
+    Pad(2),
+    perception,
+
+    Pad(8),
+    movement,
+
+    Pad(4),
+    looking,
+
+    unopposable,
+
+    Pad(8),
+    panic,
+
+    Pad(28),
+    defensive,
+
+    Pad(4),
+    pursuit,
+
+    Pad(32),
+    berserk,
+
+    Pad(12),
+    firing_positions,
+
+    Pad(40),
+    communication,
+    SIZE=1272
     )
 
 

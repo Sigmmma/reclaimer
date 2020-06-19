@@ -9,6 +9,7 @@
 
 from ...hek.defs.sbsp import *
 from ..common_descs import *
+from supyr_struct.util import desc_variant
 
 
 cluster = Struct("cluster",
@@ -47,12 +48,13 @@ cluster = Struct("cluster",
     SIZE=104
     )
 
+sbsp_body = desc_variant(sbsp_body,
+    ("clusters", reflexive("clusters", cluster, 8192))
+    )
 
-sbsp_body = dict(sbsp_body)
-sbsp_body[28] = reflexive("clusters", cluster, 8192)
-
-fast_sbsp_body = dict(fast_sbsp_body)
-fast_sbsp_body[28] = reflexive("clusters", cluster, 8192)
+fast_sbsp_body = desc_variant(fast_sbsp_body,
+    ("clusters", reflexive("clusters", cluster, 8192))
+    )
 
 
 def get():

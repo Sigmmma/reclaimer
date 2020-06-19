@@ -18,8 +18,9 @@ obje_attrs = desc_variant(obje_attrs,
     ("object_type", object_type(3))
     )
 
-eqip_attrs = dict(eqip_attrs)
-eqip_attrs[1] = SEnum16('grenade_type', *grenade_types)
+eqip_attrs = desc_variant(eqip_attrs,
+    ("grenade_type", SEnum16('grenade_type', *grenade_types))
+    )
 
 eqip_body = Struct("tagdata",
     obje_attrs,

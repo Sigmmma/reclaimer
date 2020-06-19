@@ -8,6 +8,7 @@
 #
 
 from ...os_v3_hek.defs.unit import *
+from supyr_struct.util import desc_variant
 
 region_targeting_comment="""
 When a target region is defined, melee damage is directed at it until it is destroyed.
@@ -220,26 +221,62 @@ seat_extension = Struct("seat_extension",
     SIZE=100
     )
 
-seat = dict(seat)
-unit_attrs = dict(unit_attrs)
+seat = Struct('seat',
+    Bool32("flags",
+        "invisible",
+        "locked",
+        "driver",
+        "gunner",
+        "third_person_camera",
+        "allows_weapons",
+        "third_person_on_enter",
+        "first_person_slaved_to_gun",
+        "allow_vehicle_communcation_animation",
+        "not_valid_without_driver",
+        "allow_ai_noncombatants",
+        ("allows_melee", 1<<20)
+        ),
+    ascii_str32('label'),
+    ascii_str32('marker_name'),
 
-seat[0] = Bool32("flags",
-    "invisible",
-    "locked",
-    "driver",
-    "gunner",
-    "third_person_camera",
-    "allows_weapons",
-    "third_person_on_enter",
-    "first_person_slaved_to_gun",
-    "allow_vehicle_communcation_animation",
-    "not_valid_without_driver",
-    "allow_ai_noncombatants",
-    ("allows_melee", 1<<20)
+    Pad(32),
+    QStruct("acceleration_scale", INCLUDE=ijk_float),
+
+    Pad(12),
+    float_deg_sec('yaw_rate',   UNIT_SCALE=per_sec_unit_scale),  # degrees/sec
+    float_deg_sec('pitch_rate', UNIT_SCALE=per_sec_unit_scale),  # degrees/sec
+    ascii_str32('camera_marker_name'),
+    ascii_str32('camera_submerged_marker_name'),
+    float_rad('pitch_auto_level'),  # radians
+    from_to_rad('pitch_range'),  # radians
+
+    reflexive("camera_tracks", camera_track, 2, 'loose', 'tight'),
+    reflexive("new_hud_interfaces", new_hud_interface, 2,
+              'default/solo', 'multiplayer'),
+
+    Pad(4),
+    SInt16("hud_text_message_index"),
+
+    Pad(2),
+    float_rad('yaw_minimum'),  # radians
+    float_rad('yaw_maximum'),  # radians
+    dependency('built_in_gunner', "actv"),
+
+    reflexive("seat_extensions", seat_extension, 1),
+    SIZE=284
     )
-seat[20] = reflexive("seat_extensions", seat_extension, 1)
-unit_attrs[45] = reflexive("unit_extensions", unit_extension, 1)
-unit_attrs[54] = reflexive("seats", seat, 16, DYN_NAME_PATH='.label')
+
+
+# NOTE: This will break if fields before the padding are shifted around,
+#       but it will break in a way that will raise a KeyError.
+#       Due to how desc_variant works, padding is named `"pad_%s" % i`
+#       where `i` is the index of the field. This technically uses magic
+#       numbers, but it is still cleaner and easier to maintain than a
+#       copy of the unit_attrs
+unit_attrs = desc_variant(unit_attrs,
+    ("pad_45", reflexive("unit_extensions", unit_extension, 1)),
+    ("seats", reflexive("seats", seat, 16, DYN_NAME_PATH='.label')),
+    )
 
 unit_body = Struct('tagdata', unit_attrs)
 

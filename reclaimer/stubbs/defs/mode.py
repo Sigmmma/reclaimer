@@ -9,6 +9,7 @@
 
 from ...hek.defs.mode import *
 from ..common_descs import *
+from supyr_struct.util import desc_variant
 
 def get():
     return mode_def
@@ -80,10 +81,11 @@ pc_part = Struct('part',
     SIZE=104
     )
 
-fast_part = dict(part)
-fast_part[9]  = raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex)
-fast_part[10] = raw_reflexive("compressed_vertices", fast_compressed_vertex)
-fast_part[11] = raw_reflexive("triangles", triangle)
+fast_part = desc_variant(part,
+    ("uncompressed_vertices", raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex)),
+    ("compressed_vertices",   raw_reflexive("compressed_vertices", fast_compressed_vertex)),
+    ("triangles",             raw_reflexive("triangles", triangle, 65535)),
+    )
 
 pc_geometry = Struct('geometry',
     Pad(36),
@@ -132,11 +134,13 @@ mode_body = Struct('tagdata',
     SIZE=232
     )
 
-pc_mode_body = dict(mode_body)
-pc_mode_body[20] = reflexive("geometries", pc_geometry, 256)
+pc_mode_body = desc_variant(mode_body,
+    ("geometries", reflexive("geometries", pc_geometry, 256)),
+    )
 
-fast_mode_body = dict(mode_body)
-fast_mode_body[20] = reflexive("geometries", fast_geometry, 256)
+fast_mode_body = desc_variant(mode_body,
+    ("geometries", reflexive("geometries", fast_geometry, 256)),
+    )
 
 mode_def = TagDef("mode",
     blam_header_stubbs('mode', 6),  # increment to differentiate it from mode and mod2
