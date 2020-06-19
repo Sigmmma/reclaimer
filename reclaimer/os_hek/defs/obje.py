@@ -8,13 +8,14 @@
 #
 
 from ...hek.defs.obje import *
+from supyr_struct.util import desc_variant
 
 def get():
     return obje_def
 
-# replace the model animations dependency with an open sauce one
-obje_attrs = dict(obje_attrs)
-obje_attrs[8] = dependency('animation_graph', valid_model_animations_yelo)
+obje_attrs = desc_variant(obje_attrs,
+    ("animation_graph", dependency('animation_graph', valid_model_animations_yelo))
+    )
 
 obje_body = Struct('tagdata',
     obje_attrs

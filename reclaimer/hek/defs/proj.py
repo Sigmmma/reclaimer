@@ -9,11 +9,20 @@
 
 from .obje import *
 from .objs.obje import ObjeTag
+from supyr_struct.util import desc_variant
 
 # replace the object_type enum one that uses
 # the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=5)
+obje_attrs = desc_variant(
+    obje_attrs, (
+        "object_type", FlSEnum16(
+            "object_type",
+            *((object_types[i], i - 1) for i in
+              range(len(object_types))),
+            VISIBLE=False, DEFAULT=5
+            )
+        )
+    )
 
 responses = (
     "disappear",

@@ -8,10 +8,11 @@
 #
 
 from ...hek.defs.unit import *
+from supyr_struct.util import desc_variant
 
-# replace the grenade types enumerator with an open sauce one
-unit_attrs = dict(unit_attrs)
-unit_attrs[49] = SEnum16('grenade_type', *grenade_types_os)
+unit_attrs = desc_variant(unit_attrs,
+    ("grenade_type", SEnum16('grenade_type', *grenade_types_os))
+    )
 
 unit_body = Struct('tagdata', unit_attrs)
 

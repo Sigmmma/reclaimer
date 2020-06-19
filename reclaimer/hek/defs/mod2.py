@@ -10,6 +10,7 @@
 from ...common_descs import *
 from .objs.mod2 import Mod2Tag
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.util import desc_variant
 
 def get():
     return mod2_def
@@ -208,10 +209,11 @@ part = Struct('part',
     SIZE=132
     )
 
-fast_part = dict(part)
-fast_part[9]  = raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex, 65535)
-fast_part[10] = raw_reflexive("compressed_vertices", fast_compressed_vertex, 65535)
-fast_part[11] = raw_reflexive("triangles", triangle, 65535)
+fast_part = desc_variant(part,
+    ("uncompressed_vertices", raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex, 65535)),
+    ("compressed_vertices",   raw_reflexive("compressed_vertices", fast_compressed_vertex, 65535)),
+    ("triangles",             raw_reflexive("triangles", triangle, 65535)),
+    )
 
 marker = Struct('marker',
     ascii_str32("name"),
@@ -309,8 +311,9 @@ mod2_body = Struct('tagdata',
     SIZE=232
     )
 
-fast_mod2_body = dict(mod2_body)
-fast_mod2_body[19] = reflexive("geometries", fast_geometry, 256)
+fast_mod2_body = desc_variant(mod2_body,
+    ("geometries", reflexive("geometries", fast_geometry, 256)),
+    )
 
 mod2_def = TagDef("mod2",
     blam_header('mod2', 5),

@@ -10,6 +10,7 @@
 from ...common_descs import *
 from .objs.snd_ import Snd_Tag
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.util import desc_variant
 
 sound_classes = (
     ("projectile_impact", 0),
@@ -168,7 +169,7 @@ snd__def = TagDef("snd!",
     ext=".sound", endian=">", tag_cls=Snd_Tag,
     )
 
-
-snd__meta_stub = dict(snd__body)
-snd__meta_stub[23] = Pad(12)
+snd__meta_stub = desc_variant(
+    snd__body, ("pitch_ranges", Pad(12))
+    )
 snd__meta_stub_blockdef = BlockDef(snd__meta_stub)

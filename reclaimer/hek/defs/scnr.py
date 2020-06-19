@@ -10,6 +10,8 @@
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.util import desc_variant
+
 
 def object_reference(name, *args, **kwargs):
     "Macro to cut down on a lot of code"
@@ -392,11 +394,13 @@ player_starting_location = Struct("player_starting_location",
     SIZE=52
     )
 
-player_starting_location2 = dict(player_starting_location)
-player_starting_location2[3] = dyn_senum16("bsp_index",
-        DYN_NAME_PATH=("........structure_bsps.STEPTREE"
-                       "[DYN_I].structure_bsp.filepath")
+player_starting_location2 = desc_variant(player_starting_location,
+    ("bsp_index", dyn_senum16("bsp_index",
+        DYN_NAME_PATH="........structure_bsps.STEPTREE[DYN_I].structure_bsp.filepath"
         )
+     )
+    )
+
 
 trigger_volume = Struct("trigger_volume",
     # if this unknown != 1, the trigger volume is disabled

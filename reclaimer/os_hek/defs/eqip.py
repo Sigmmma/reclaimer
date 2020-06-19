@@ -11,18 +11,29 @@ from ...hek.defs.eqip import *
 
 #import and use the open saucified obje attrs
 from .obje import *
+from supyr_struct.util import desc_variant
 
 # replace the object_type enum one that uses
 # the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=3)
+obje_attrs = desc_variant(
+    obje_attrs, (
+        "object_type", FlSEnum16(
+            "object_type",
+            *((object_types[i], i - 1) for i in
+              range(len(object_types))),
+            VISIBLE=False, DEFAULT=3
+            )
+        )
+    )
 
-eqip_attrs = dict(eqip_attrs)
-eqip_attrs[1] = SEnum16("grenade_type", *grenade_types_os)
+eqip_attrs = desc_variant(eqip_attrs,
+    ("grenade_type", SEnum16("grenade_type", *grenade_types_os))
+    )
 
-eqip_body = dict(eqip_body)
-eqip_body[0] = obje_attrs
-eqip_body[2] = eqip_attrs
+eqip_body = desc_variant(eqip_body,
+    ("obje_attrs", obje_attrs),
+    ("eqip_attrs", eqip_attrs)
+    )
 
 def get():
     return eqip_def
