@@ -27,6 +27,7 @@ except Exception:
 
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
+from supyr_struct.util import desc_variant
 
 from reclaimer.field_types import *
 from reclaimer.field_type_methods import tag_ref_str_size,\
@@ -140,6 +141,7 @@ def rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
     ref_struct = dict(rawdata_ref_struct)
     if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
     if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
+    # TODO
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = kwargs[MAX] = max_size
@@ -157,6 +159,7 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
     '''This function serves to macro the creation of a rawdata reference'''
     ref_struct = dict(rawdata_ref_struct)
     kwargs.update(WIDGET=widget)
+    # TODO
     ref_struct[0] = dict(ref_struct[0])
     ref_struct[0][VISIBLE] = VISIBILITY_METADATA
     if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
@@ -247,6 +250,7 @@ def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
 
 def blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
+    # TODO
     header_desc = dict(tag_header)
     header_desc[1] = dict(header_desc[1])
     header_desc[5] = dict(header_desc[5])
@@ -793,6 +797,7 @@ def dependency_os(name='tag_ref', valid_ids=None, **kwargs):
 
 def blam_header_os(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
+    # TODO
     header_desc = dict(tag_header_os)
     header_desc[1] = dict(header_desc[1])
     header_desc[5] = dict(header_desc[5])

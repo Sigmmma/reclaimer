@@ -10,6 +10,7 @@
 from reclaimer.common_descs import *
 from reclaimer.meta.objs.halo1_rsrc_map import Halo1RsrcMapTag
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.util import desc_variant
 
 
 def get():
@@ -61,10 +62,13 @@ lite_rsrc_tag = Container("tag",
 lite_tag_header = Struct("tag header",
     INCLUDE=tag_header, STEPTREE=lite_rsrc_tag
     )
-lite_halo1_rsrc_map_desc = dict(halo1_rsrc_map_def.descriptor)
-lite_halo1_rsrc_map_desc[4] = Array("tags",
-    SIZE='.tag_count', SUB_STRUCT=lite_tag_header,
-    POINTER='.tag_headers_pointer',
+
+lite_halo1_rsrc_map_desc = desc_variant(halo1_rsrc_map_def.descriptor,
+    ("tags", Array("tags",
+        SIZE='.tag_count', SUB_STRUCT=lite_tag_header,
+        POINTER='.tag_headers_pointer',
+        )
+     )
     )
 lite_halo1_rsrc_map_def = TagDef("lite_halo1_rsrc_map",
     descriptor=lite_halo1_rsrc_map_desc,

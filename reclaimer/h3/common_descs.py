@@ -25,6 +25,7 @@ from reclaimer.h3.constants import DYN_NAME_PATH, STEPTREE, NAME_MAP, WIDGET,\
 from reclaimer.h3.enums import *
 
 from supyr_struct.defs.block_def import BlockDef
+from supyr_struct.util import desc_variant
 
 
 def h3_tag_class(*args, **kwargs):
@@ -68,6 +69,7 @@ def h3_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc)
 def h3_rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
                    widget=HaloRawdataFrame, **kwargs):
     '''This function serves to macro the creation of a rawdata reference'''
+    # TODO
     ref_struct = dict(h3_rawdata_ref_struct)
     if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
     if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
@@ -103,6 +105,7 @@ def h3_dependency(name='tag ref', valid_ids=None, **kwargs):
 
 def h3_blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
+    # TODO
     header_desc = dict(h3_tag_header)
     header_desc[1] = dict(header_desc[1])
     header_desc[5] = dict(header_desc[5])

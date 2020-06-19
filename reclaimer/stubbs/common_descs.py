@@ -8,6 +8,7 @@
 #
 
 from reclaimer.common_descs import *
+from supyr_struct.util import desc_variant
 
 # ###########################################################################
 # The order of element in all the enumerators is important(DONT SHUFFLE THEM)
@@ -155,6 +156,7 @@ def dependency_stubbs(name='tag_ref', valid_ids=None, **kwargs):
 
 def blam_header_stubbs(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
+    # TODO
     header_desc= dict(tag_header_stubbs)
     header_desc[1] = dict(header_desc[1])
     header_desc[5] = dict(header_desc[5])

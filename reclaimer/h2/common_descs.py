@@ -25,6 +25,7 @@ from reclaimer.h2.field_types import *
 from reclaimer.h2.enums import *
 
 from supyr_struct.defs.block_def import BlockDef
+from supyr_struct.util import desc_variant
 
 
 resource = Struct("resource",
@@ -86,6 +87,7 @@ def h2_rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
     if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
     if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
     kwargs.update(WIDGET=widget)
+    # TODO
     ref_struct[0] = dict(ref_struct[0])
     ref_struct[0][VISIBLE] = VISIBILITY_METADATA
     if max_size is not None:
@@ -104,6 +106,7 @@ def h2_rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
     ref_struct = dict(h2_rawdata_ref_struct)
     if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
     if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
+    # TODO
     if max_size is not None:
         ref_struct[0] = dict(ref_struct[0])
         ref_struct[0][MAX] = max_size
@@ -142,6 +145,7 @@ def h2_dependency(name='tag ref', valid_ids=None, **kwargs):
 
 def h2_blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
+    # TODO
     header_desc = dict(h2_tag_header)
     header_desc[1] = dict(header_desc[1])
     header_desc[5] = dict(header_desc[5])

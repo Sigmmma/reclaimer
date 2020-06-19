@@ -9,6 +9,7 @@
 
 from reclaimer.common_descs import *
 from reclaimer.shadowrun_prototype.constants import *
+from supyr_struct.util import desc_variant
 
 
 def sr_tag_class(*args, **kwargs):
@@ -40,6 +41,7 @@ def dependency(name='tag_ref', valid_ids=None, **kwargs):
 
 def blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
+    # TODO
     header_desc = dict(tag_header)
     header_desc[1] = dict(header_desc[1])
     header_desc[5] = dict(header_desc[5])
