@@ -1,6 +1,5 @@
 import struct
 from Encoder import OGGEncoder
-from Decoder import OGGDecoder
 from supyr_struct.defs.audio.wav import wav_def
 
 """
@@ -20,9 +19,6 @@ class OGG():
     def __enter__(self):
         if self.mode == "w":
             return Encoder(self.filepath)
-
-        if self.mode == "r":
-            return Decoder(self.filepath)
 
     def __exit__(self, type, value, traceback):
         return
