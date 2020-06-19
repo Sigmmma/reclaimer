@@ -15,15 +15,8 @@ from supyr_struct.util import desc_variant
 
 # replace the object_type enum one that uses
 # the correct default value for this object
-obje_attrs = desc_variant(
-    obje_attrs, (
-        "object_type", FlSEnum16(
-            "object_type",
-            *((object_types[i], i - 1) for i in
-              range(len(object_types))),
-            VISIBLE=False, DEFAULT=11
-            )
-        )
+obje_attrs = desc_variant(obje_attrs,
+    ("object_type", object_type(11))
     )
 
 ssce_body = desc_variant(ssce_body,

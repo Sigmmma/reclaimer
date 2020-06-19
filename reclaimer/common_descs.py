@@ -210,6 +210,16 @@ def dependency(name='tag_ref', valid_ids=None, **kwargs):
         )
 
 
+def object_type(default=-1):
+    assert default + 1 in range(len(object_types)), (
+        "Invalid default object type '%s'." % default
+        )
+    return FlSEnum16("object_type",
+        *((object_types[i], i - 1) for i in range(len(object_types))),
+        VISIBLE=False, DEFAULT=default
+        )
+
+
 def zone_asset(name, **kwargs):
     return ZoneAsset(name, INCLUDE=zone_asset_struct, **kwargs)
 
