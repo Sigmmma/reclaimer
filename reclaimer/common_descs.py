@@ -138,40 +138,57 @@ def raw_reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc
 def rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
                 widget=HaloRawdataFrame, **kwargs):
     '''This function serves to macro the creation of a rawdata reference'''
-    ref_struct = dict(rawdata_ref_struct)
-    if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
-    if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
-    # TODO
+    ref_struct = rawdata_ref_struct
+    replacements = []
+    ref_struct_kwargs = {}
+    for keyword in (COMMENT, TOOLTIP):
+        if keyword in kwargs:
+            ref_struct_kwargs[keyword] = kwargs.pop(keyword)
+
     if max_size is not None:
-        ref_struct[0] = dict(ref_struct[0])
-        ref_struct[0][MAX] = kwargs[MAX] = max_size
+        ref_struct_kwargs[MAX] = max_size
+        ref_struct = desc_variant(ref_struct,
+            ("size", SInt32("size",
+                GUI_NAME="", SIDETIP="bytes", EDITABLE=False, MAX=max_size, )
+             )
+            )
 
     if widget is not None:
         kwargs[WIDGET] = widget
 
     return RawdataRef(name,
         INCLUDE=ref_struct,
-        STEPTREE=f_type("data", GUI_NAME="", SIZE=".size", **kwargs))
+        STEPTREE=f_type("data", GUI_NAME="", SIZE=".size", **kwargs),
+        **ref_struct_kwargs
+        )
 
 
 def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
                 widget=TextFrame, **kwargs):
     '''This function serves to macro the creation of a rawdata reference'''
-    ref_struct = dict(rawdata_ref_struct)
-    kwargs.update(WIDGET=widget)
-    # TODO
-    ref_struct[0] = dict(ref_struct[0])
-    ref_struct[0][VISIBLE] = VISIBILITY_METADATA
-    if COMMENT in kwargs: ref_struct[COMMENT] = kwargs.pop(COMMENT)
-    if TOOLTIP in kwargs: ref_struct[TOOLTIP] = kwargs.pop(TOOLTIP)
+    ref_struct = rawdata_ref_struct
+    replacements = []
+    ref_struct_kwargs = {}
+    for keyword in (COMMENT, TOOLTIP):
+        if keyword in kwargs:
+            ref_struct_kwargs[keyword] = kwargs.pop(keyword)
+
     if max_size is not None:
-        ref_struct[0][MAX] = kwargs[MAX] = max_size
+        ref_struct_kwargs[MAX] = max_size
+        ref_struct = desc_variant(ref_struct,
+            ("size", SInt32("size",
+                GUI_NAME="", SIDETIP="bytes", EDITABLE=False,
+                MAX=max_size, VISIBLE=VISIBILITY_METADATA, )
+             )
+            )
 
     return RawdataRef(name,
         INCLUDE=ref_struct, ORIENT="v",
         STEPTREE=f_type("data",
-            SIZE=".size", GUI_NAME=name.replace('_', ' '), **kwargs)
-            )
+            SIZE=".size", GUI_NAME=name.replace('_', ' '),
+            WIDGET=widget, **kwargs),
+        **ref_struct_kwargs
+        )
 
 
 def get_meta_dependency_filepath(parent=None, tag_index_manager=None, **kwargs):
@@ -250,13 +267,14 @@ def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
 
 def blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
-    # TODO
-    header_desc = dict(tag_header)
-    header_desc[1] = dict(header_desc[1])
-    header_desc[5] = dict(header_desc[5])
-    header_desc[1][DEFAULT] = tagid
-    header_desc[5][DEFAULT] = version
-    return header_desc
+    return desc_variant(tag_header,
+        ("tag_class", UEnum32("tag_class",
+            GUI_NAME="tag_class", INCLUDE=valid_tags,
+            EDITABLE=False, DEFAULT=tagid
+            )
+         ),
+        ("version", UInt16("version", DEFAULT=version, EDITABLE=False)),
+        )
 
 
 _func_unit_scales = {}  # holds created unit_scales for reuse
@@ -797,13 +815,14 @@ def dependency_os(name='tag_ref', valid_ids=None, **kwargs):
 
 def blam_header_os(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
-    # TODO
-    header_desc = dict(tag_header_os)
-    header_desc[1] = dict(header_desc[1])
-    header_desc[5] = dict(header_desc[5])
-    header_desc[1][DEFAULT] = tagid
-    header_desc[5][DEFAULT] = version
-    return header_desc
+    return desc_variant(tag_header_os,
+        ("tag_class", UEnum32("tag_class",
+            GUI_NAME="tag_class", INCLUDE=valid_tags_os,
+            EDITABLE=False, DEFAULT=tagid
+            )
+         ),
+        ("version", UInt16("version", DEFAULT=version, EDITABLE=False)),
+        )
 
 
 valid_tags_os = tag_class_os(*sorted(tag_class_fcc_to_ext_os.keys()))

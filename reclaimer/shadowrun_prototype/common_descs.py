@@ -41,13 +41,14 @@ def dependency(name='tag_ref', valid_ids=None, **kwargs):
 
 def blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
-    # TODO
-    header_desc = dict(tag_header)
-    header_desc[1] = dict(header_desc[1])
-    header_desc[5] = dict(header_desc[5])
-    header_desc[1][DEFAULT] = tagid
-    header_desc[5][DEFAULT] = version
-    return header_desc
+    return desc_variant(tag_header,
+        ("tag_class", UEnum32("tag_class",
+            GUI_NAME="tag_class", INCLUDE=sr_valid_tags,
+            EDITABLE=False, DEFAULT=tagid
+            )
+         ),
+        ("version", UInt16("version", DEFAULT=version, EDITABLE=False)),
+        )
 
 
 sr_valid_tags = sr_tag_class(*sr_tag_class_fcc_to_ext.keys())

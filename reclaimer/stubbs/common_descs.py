@@ -156,13 +156,14 @@ def dependency_stubbs(name='tag_ref', valid_ids=None, **kwargs):
 
 def blam_header_stubbs(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
-    # TODO
-    header_desc= dict(tag_header_stubbs)
-    header_desc[1] = dict(header_desc[1])
-    header_desc[5] = dict(header_desc[5])
-    header_desc[1][DEFAULT] = tagid
-    header_desc[5][DEFAULT] = version
-    return header_desc
+    return desc_variant(tag_header_stubbs,
+        ("tag_class", UEnum32("tag_class",
+            GUI_NAME="tag_class", INCLUDE=stubbs_valid_tags,
+            EDITABLE=False, DEFAULT=tagid
+            )
+         ),
+        ("version", UInt16("version", DEFAULT=version, EDITABLE=False)),
+        )
 
 
 stubbs_valid_tags = tag_class_stubbs(*tag_class_fcc_to_ext_stubbs.keys())
