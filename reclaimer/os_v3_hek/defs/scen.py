@@ -11,14 +11,17 @@ from ...hek.defs.scen import *
 
 #import and use the open saucified obje attrs
 from .obje import *
+from supyr_struct.util import desc_variant
 
 # replace the object_type enum one that uses
 # the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=6)
+obje_attrs = desc_variant(obje_attrs,
+    ("object_type", object_type(6))
+    )
 
-scen_body = dict(scen_body)
-scen_body[0] = obje_attrs
+scen_body = desc_variant(scen_body,
+    ("obje_attrs", obje_attrs)
+    )
 
 def get():
     return scen_def

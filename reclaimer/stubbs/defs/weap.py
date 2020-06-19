@@ -10,16 +10,17 @@
 from ...hek.defs.weap import *
 from .obje import *
 from .item import *
+from supyr_struct.util import desc_variant
 
 # replace the object_type enum one that uses
 # the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=2)
+obje_attrs = desc_variant(obje_attrs,
+    ("object_type", object_type(2))
+    )
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-weap_attrs = dict(weap_attrs)
-weap_attrs[24] = SEnum16('weapon_type', *weapon_types)
+weap_attrs = desc_variant(weap_attrs,
+    ("weapon_type", SEnum16('weapon_type', *weapon_types))
+    )
 
 weap_body = Struct("tagdata",
     obje_attrs,

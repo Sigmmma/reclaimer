@@ -13,14 +13,17 @@ THIS DEFINITION IS INCORRECT BECAUSE THE UNIT STRUCTURE IS DIFFERENT THAN HALO'S
 from ...hek.defs.vehi import *
 from .obje import *
 from .unit import *
+from supyr_struct.util import desc_variant
 
 # replace the object_type enum one that uses
 # the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=1)
+obje_attrs = desc_variant(obje_attrs,
+    ("object_type", object_type(1))
+    )
 
-vehi_attrs = dict(vehi_attrs)
-vehi_attrs[1] = SEnum16('type', *vehicle_types)
+vehi_attrs = desc_variant(vehi_attrs,
+    ("type", SEnum16('type', *vehicle_types))
+    )
 
 vehi_body = Struct("tagdata",
     obje_attrs,
