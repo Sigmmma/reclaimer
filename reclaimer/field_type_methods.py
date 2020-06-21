@@ -284,6 +284,27 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
         raise e
 
 
+def reflexive_array_parser(self, desc, node=None, parent=None, attr_index=None,
+                           rawdata=None, root_offset=0, offset=0, **kwargs):
+    '''
+    Variant of array_parser which ensures there is enough rawdata to parse the array.
+    '''
+    try:
+        if parent is not None and rawdata is not None:
+            if root_offset + offset + parent.size * desc['SUB_STRUCT'][SIZE] > len(rawdata):
+                raise ValueError("Reflexive size is out of bounds of input stream.")
+            
+        return array_parser(
+            self, desc, node, parent, attr_index, rawdata, root_offset, offset, **kwargs
+            )
+    except Exception as e:
+        e = format_parse_error(e, field_type=self, desc=desc,
+                               parent=parent, attr_index=attr_index,
+                               offset=offset, root_offset=root_offset,
+                               buffer=rawdata, **kwargs)
+        raise e
+
+
 def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                        rawdata=None, root_offset=0, offset=0, **kwargs):
     try:

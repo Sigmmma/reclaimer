@@ -12,11 +12,14 @@ from struct import unpack
 from supyr_struct.defs import sanitizers
 from supyr_struct.field_types import *
 from supyr_struct.blocks import EnumBlock
-from reclaimer.field_type_methods import encode_tag_ref_str,\
-     tag_ref_str_sizecalc, tag_ref_str_parser, tag_ref_str_serializer,\
-     decode_raw_string, decode_string, decoder_wrapper, encoder_wrapper,\
-     tag_cstring_parser, rawdata_ref_parser, reflexive_parser, encode_string,\
-     utf_sizecalc, delim_utf_sizecalc, sizecalc_wrapper, len_sizecalc
+from reclaimer.field_type_methods import (
+    encode_tag_ref_str, tag_ref_str_sizecalc, tag_ref_str_parser,
+    tag_ref_str_serializer, decode_raw_string, decode_string,
+    decoder_wrapper, encoder_wrapper, tag_cstring_parser,
+    rawdata_ref_parser, reflexive_parser, encode_string,
+    utf_sizecalc, delim_utf_sizecalc, sizecalc_wrapper, len_sizecalc,
+    reflexive_array_parser,
+    )
 
 
 '''These are varients of the standard FieldTypes that have been
@@ -71,6 +74,10 @@ RawdataRef   = FieldType(base=Struct,  name="RawdataRef", parser=rawdata_ref_par
 Reflexive    = FieldType(base=QStruct, name="Reflexive", parser=reflexive_parser)
 RawReflexive = FieldType(base=Reflexive, name="RawReflexive")
 TagRef       = FieldType(base=Struct, name="TagRef")
+
+ReflexiveArray = FieldType(
+    base=Array, name="ReflexiveArray", parser=reflexive_array_parser
+    )
 
 ZoneAsset = FieldType(base=QStruct, name="ZoneAsset")
 StringID  = FieldType(base=QStruct, name="StringID")
