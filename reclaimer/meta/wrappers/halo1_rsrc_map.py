@@ -244,6 +244,7 @@ class Halo1RsrcMap(HaloMap):
                 desc, parent=block, attr_index=0, rawdata=self.map_data,
                 tag_index_manager=self.snd_rsrc_tag_index_manager,
                 tag_cls=tag_cls, root_offset=tag_index_ref.meta_offset,
+                safe_mode=not kw.get("disable_safe_mode"),
                 indexed=True, **kwargs)
             FieldType.force_normal()
 

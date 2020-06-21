@@ -229,7 +229,7 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
         s_desc = desc.get(STEPTREE)
         if s_desc:
             pointer_converter = kwargs.get('map_pointer_converter')
-            safe_mode = kwargs.get("safe_mode") and not desc.get(IGNORE_SAFE_MODE)
+            safe_mode = kwargs.get("safe_mode", True) and not desc.get(IGNORE_SAFE_MODE)
 
             if pointer_converter is not None:
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[1])
@@ -305,7 +305,7 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         s_desc = desc.get(STEPTREE)
         if s_desc:
             pointer_converter = kwargs.get("map_pointer_converter")
-            safe_mode = kwargs.get("safe_mode") and not s_desc.get(IGNORE_SAFE_MODE)
+            safe_mode = kwargs.get("safe_mode", True) and not s_desc.get(IGNORE_SAFE_MODE)
 
             if safe_mode:
                 if pointer_converter is not None:
