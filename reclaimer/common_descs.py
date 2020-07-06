@@ -60,7 +60,7 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
     '''This function serves to macro the creation of a reflexive'''
     desc.update(
         INCLUDE=reflexive_struct,
-        STEPTREE=Array(name + "_array",
+        STEPTREE=ReflexiveArray(name + "_array",
             SIZE=".size", MAX=max_count,
             SUB_STRUCT=substruct, WIDGET=ReflexiveFrame
             ),

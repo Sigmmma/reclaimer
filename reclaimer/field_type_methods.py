@@ -229,19 +229,26 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
         s_desc = desc.get(STEPTREE)
         if s_desc:
             pointer_converter = kwargs.get('map_pointer_converter')
+            safe_mode = kwargs.get("safe_mode", True) and not desc.get(IGNORE_SAFE_MODE)
+
             if pointer_converter is not None:
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[1])
-                if kwargs.get("safe_mode") and not (
-                        desc.get(IGNORE_SAFE_MODE) or s_desc.get(IGNORE_SAFE_MODE)):
+                if safe_mode:
                     # make sure the reflexive sizes are less than or equal to
                     # the max number of entries allowed in the reflexive
-                    node[0] = max(0, min(node[0], s_desc.get(MAX, node[0])))
+                    node[0] = max(0, min(node[0], s_desc.get(
+                        MAX, SANE_MAX_REFLEXIVE_COUNT)))
 
                 if (file_ptr < 0 or file_ptr +
                     node[0]*s_desc[SUB_STRUCT].get(SIZE, 0) > len(rawdata)):
                     # the reflexive is corrupt for some reason
                     #    (ex: bad hek+ extraction)
                     node[0] = node[1] = 0
+
+            elif node[0] > SANE_MAX_REFLEXIVE_COUNT or (
+                    safe_mode and node[0] > s_desc.get(MAX, node[0])
+                    ):
+                raise ValueError("Reflexive size is above highest allowed value.")
 
             if not node[0]:
                 # reflexive is empty. no need to provide rawdata
@@ -277,6 +284,27 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
         raise e
 
 
+def reflexive_array_parser(self, desc, node=None, parent=None, attr_index=None,
+                           rawdata=None, root_offset=0, offset=0, **kwargs):
+    '''
+    Variant of array_parser which ensures there is enough rawdata to parse the array.
+    '''
+    try:
+        if parent is not None and rawdata is not None:
+            if root_offset + offset + parent.size * desc['SUB_STRUCT'][SIZE] > len(rawdata):
+                raise ValueError("Reflexive size is out of bounds of input stream.")
+            
+        return array_parser(
+            self, desc, node, parent, attr_index, rawdata, root_offset, offset, **kwargs
+            )
+    except Exception as e:
+        e = format_parse_error(e, field_type=self, desc=desc,
+                               parent=parent, attr_index=attr_index,
+                               offset=offset, root_offset=root_offset,
+                               buffer=rawdata, **kwargs)
+        raise e
+
+
 def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                        rawdata=None, root_offset=0, offset=0, **kwargs):
     try:
@@ -298,11 +326,13 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         s_desc = desc.get(STEPTREE)
         if s_desc:
             pointer_converter = kwargs.get("map_pointer_converter")
+            safe_mode = kwargs.get("safe_mode", True) and not s_desc.get(IGNORE_SAFE_MODE)
 
-            if pointer_converter is not None:
-                if kwargs.get("safe_mode") and not (
-                        desc.get(IGNORE_SAFE_MODE) or s_desc.get(IGNORE_SAFE_MODE)):
+            if safe_mode:
+                if pointer_converter is not None:
                     node[0] = max(0, min(node[0], s_desc.get(MAX, node[0])))
+                elif node[0] > s_desc.get(MAX, node[0]):
+                    raise ValueError("Rawdata size is above highest allowed value.")
 
             if kwargs.get("parsing_resource"):
                 # parsing JUST metadata from a resource cache

@@ -196,9 +196,12 @@ BITMAP_PADDING = 512
 #each sub-bitmap(cubemap face) must be a multiple of 128 bytes
 CUBEMAP_PADDING = 128
 
-#I cant imagine Halo allowing any one field even close to this many
-#indices, though I have seen some open sauce stuff go over 180,000.
+# max value a reflexive count is theoretically allowed to be
 MAX_REFLEXIVE_COUNT = 2**31-1
+
+# this numbers was taken from crawling the tag
+# definitions for the highest value among them
+SANE_MAX_REFLEXIVE_COUNT = 0x800000   # sbsp.detail_objects.counts
 
 MAX_TAG_PATH_LEN = 254
 

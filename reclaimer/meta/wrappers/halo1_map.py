@@ -436,7 +436,7 @@ class Halo1Map(HaloMap):
             if rsrc_map is None:
                 return
 
-            meta = rsrc_map.get_meta(tag_id)
+            meta = rsrc_map.get_meta(tag_id, **kw)
             if tag_cls == "snd!":
                 # since we're reading the resource tag from the perspective of
                 # the map referencing it, we have more accurate information
