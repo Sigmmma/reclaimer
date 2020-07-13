@@ -293,7 +293,7 @@ def reflexive_array_parser(self, desc, node=None, parent=None, attr_index=None,
         if parent is not None and rawdata is not None:
             if root_offset + offset + parent.size * desc['SUB_STRUCT'][SIZE] > len(rawdata):
                 raise ValueError("Reflexive size is out of bounds of input stream.")
-            
+
         return array_parser(
             self, desc, node, parent, attr_index, rawdata, root_offset, offset, **kwargs
             )
@@ -328,11 +328,14 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
             pointer_converter = kwargs.get("map_pointer_converter")
             safe_mode = kwargs.get("safe_mode", True) and not s_desc.get(IGNORE_SAFE_MODE)
 
-            if safe_mode:
-                if pointer_converter is not None:
-                    node[0] = max(0, min(node[0], s_desc.get(MAX, node[0])))
-                elif node[0] > s_desc.get(MAX, node[0]):
-                    raise ValueError("Rawdata size is above highest allowed value.")
+            if pointer_converter is not None:
+                node[0] = max(0, min(node[0], s_desc.get(MAX, node[0])))
+
+            #if safe_mode:
+            #    if pointer_converter is not None:
+            #        node[0] = max(0, min(node[0], s_desc.get(MAX, node[0])))
+            #    elif node[0] > s_desc.get(MAX, node[0]):
+            #        raise ValueError("Rawdata size is above highest allowed value.")
 
             if kwargs.get("parsing_resource"):
                 # parsing JUST metadata from a resource cache
