@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.9.6]
 ### Changed
- - Loosened up one of the safegaurds for rawdata fields.
+ - Loosened up one of the safeguards for rawdata fields.
 
 ## [2.9.5]
 ### Added
