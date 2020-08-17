@@ -88,7 +88,9 @@ def extract_model(tagdata, tag_path="", **kw):
 
     markers_by_perm = {}
     geoms_by_perm_lod_region = {}
-    
+
+    # When scale is 0 it really should be 1.
+
     u_scale = 1 if tagdata.base_map_u_scale == 0 else tagdata.base_map_u_scale 
     v_scale = 1 if tagdata.base_map_v_scale == 0 else tagdata.base_map_v_scale 
 
