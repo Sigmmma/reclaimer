@@ -88,9 +88,9 @@ def extract_model(tagdata, tag_path="", **kw):
 
     markers_by_perm = {}
     geoms_by_perm_lod_region = {}
-
-    u_scale = tagdata.base_map_u_scale
-    v_scale = tagdata.base_map_v_scale
+    
+    u_scale = 1 if tagdata.base_map_u_scale == 0 else tagdata.base_map_u_scale 
+    v_scale = 1 if tagdata.base_map_v_scale == 0 else tagdata.base_map_v_scale 
 
     for region in tagdata.regions.STEPTREE:
         region_index = len(regions)
