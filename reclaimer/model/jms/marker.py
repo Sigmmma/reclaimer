@@ -9,6 +9,7 @@
 
 __all__ = ( 'JmsMarker', )
 
+from math import isclose
 
 class JmsMarker:
     __slots__ = (
@@ -46,23 +47,15 @@ class JmsMarker:
         self.pos_x, self.pos_y, self.pos_z, self.radius)
 
     def __eq__(self, other):
-        if not isinstance(other, JmsMarker):
-            return False
-        elif self.name != other.name:
-            return False
-        elif self.permutation != other.permutation:
-            return False
-        elif self.region != other.region:
-            return False
-        elif abs(self.radius - other.radius) > 0.00001:
-            return False
-        elif (abs(self.rot_i - other.rot_i) > 0.00001 or
-              abs(self.rot_j - other.rot_j) > 0.00001 or
-              abs(self.rot_k - other.rot_k) > 0.00001 or
-              abs(self.rot_w - other.rot_w) > 0.00001):
-            return False
-        elif (abs(self.pos_x - other.pos_x) > 0.000001 or
-              abs(self.pos_y - other.pos_y) > 0.000001 or
-              abs(self.pos_z - other.pos_z) > 0.000001):
-            return False
-        return True
+        return (isinstance(other, JmsMarker)
+        and self.name == other.name
+        and self.permutation == other.permutation
+        and self.region == other.region
+        and isclose(self.radius, other.radius, rel_tol=0.00001)
+        and isclose(self.rot_i,  other.rot_i,  rel_tol=0.00001)
+        and isclose(self.rot_j,  other.rot_j,  rel_tol=0.00001)
+        and isclose(self.rot_k,  other.rot_k,  rel_tol=0.00001)
+        and isclose(self.rot_w,  other.rot_w,  rel_tol=0.00001)
+        and isclose(self.pos_x,  other.pos_x,  rel_tol=0.00001)
+        and isclose(self.pos_y,  other.pos_y,  rel_tol=0.00001)
+        and isclose(self.pos_z,  other.pos_z,  rel_tol=0.00001))

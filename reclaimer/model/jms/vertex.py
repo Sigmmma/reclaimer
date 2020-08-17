@@ -9,6 +9,7 @@
 
 __all__ = ( 'JmsVertex', )
 
+from math import isclose
 
 class JmsVertex:
     __slots__ = (
@@ -68,21 +69,30 @@ class JmsVertex:
         self.tex_u, self.tex_v, self.tex_w)
 
     def __eq__(self, other):
-        if not isinstance(other, JmsVertex):
-            return False
-        elif (abs(self.pos_z  - other.pos_z)  > 0.00001 or
-              abs(self.norm_k - other.norm_k) > 0.0001):
-            return False
-        elif (abs(self.pos_x - other.pos_x) > 0.00001 or
-              abs(self.pos_y - other.pos_y) > 0.00001):
-            return False
-        elif (abs(self.norm_i - other.norm_i) > 0.0001 or
-              abs(self.norm_j - other.norm_j) > 0.0001):
-            return False
-        elif abs(self.node_1_weight - other.node_1_weight) > 0.0001:
-            return False
-        elif self.node_0 != other.node_0 or self.node_1 != other.node_1:
-            return False
+        return (isinstance(other, JmsVertex)
+        and self.name == other.name
+        and self.permutation == other.permutation
+        and self.region == other.region
+        and isclose(self.radius, other.radius, rel_tol=0.00001)
 
-        return (abs(self.tex_u - other.tex_u) <= 0.0001 and
-                abs(self.tex_v - other.tex_v) <= 0.0001)
+        # Comparing these here might have been a speed optimization?
+        and isclose(self.pos_z,  other.pos_z,  rel_tol=0.00001)
+        and isclose(self.norm_k, other.norm_k, rel_tol=0.0001)
+
+        and isclose(self.pos_x,  other.pos_x,  rel_tol=0.00001)
+        and isclose(self.pos_y,  other.pos_y,  rel_tol=0.00001)
+
+        and isclose(self.norm_i, other.norm_i, rel_tol=0.0001)
+        and isclose(self.norm_j, other.norm_j, rel_tol=0.0001)
+        # The earlier code did not compare W likely because the effective
+        # direction for an inverted W component is the same. But this will cause
+        # issues when interpolating normals between vertices (on the triangle).
+        and isclose(self.norm_w, other.norm_w, rel_tol=0.0001)
+
+        and isclose(self.node_1_weight, other.node_1_weight, rel_tol=0.0001)
+
+        and self.node_0 == other.node_0
+        and self.node_1 == other.node_1
+
+        and isclose(self.tex_u, her.tex_u, rel_tol=0.0001)
+        and isclose(self.tex_v, her.tex_v, rel_tol=0.0001))

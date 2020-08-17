@@ -9,6 +9,7 @@
 
 __all__ = ( 'JmsNode', )
 
+from math import isclose
 from ..constants import ( JMS_VERSION_HALO_1, JMS_VERSION_HALO_2_8210, )
 
 class JmsNode:
@@ -43,24 +44,18 @@ class JmsNode:
         self.pos_x, self.pos_y, self.pos_z)
 
     def __eq__(self, other):
-        if not isinstance(other, JmsNode):
-            return False
-        elif self.name != other.name:
-            return False
-        elif self.first_child != other.first_child:
-            return False
-        elif self.sibling_index != other.sibling_index:
-            return False
-        elif (abs(self.rot_i - other.rot_i) > 0.00001 or
-              abs(self.rot_j - other.rot_j) > 0.00001 or
-              abs(self.rot_k - other.rot_k) > 0.00001 or
-              abs(self.rot_w - other.rot_w) > 0.00001):
-            return False
-        elif (abs(self.pos_x - other.pos_x) > 0.00001 or
-              abs(self.pos_y - other.pos_y) > 0.00001 or
-              abs(self.pos_z - other.pos_z) > 0.00001):
-            return False
-        return True
+        return (isinstance(other, JmsNode)
+        and self.name == other.name
+        and self.first_child == other.first_child
+        and self.sibling_index == other.sibling_index
+        and isclose(self.radius, other.radius, rel_tol=0.00001)
+        and isclose(self.rot_i,  other.rot_i,  rel_tol=0.00001)
+        and isclose(self.rot_j,  other.rot_j,  rel_tol=0.00001)
+        and isclose(self.rot_k,  other.rot_k,  rel_tol=0.00001)
+        and isclose(self.rot_w,  other.rot_w,  rel_tol=0.00001)
+        and isclose(self.pos_x,  other.pos_x,  rel_tol=0.00001)
+        and isclose(self.pos_y,  other.pos_y,  rel_tol=0.00001)
+        and isclose(self.pos_z,  other.pos_z,  rel_tol=0.00001))
 
     def is_node_hierarchy_equal(self, other):
         if not isinstance(other, JmsNode):
