@@ -68,6 +68,30 @@ class BitmTag(HekTag):
             return self.data.tagdata.bitmaps.bitmaps_array[b_index].format.data
         self.data.tagdata.bitmaps.bitmaps_array[b_index].format.data = new_value
 
+    def fix_top_format(self):
+        if len(self.data.tagdata.bitmaps.bitmaps_array) <= 0:
+            self.data.tagdata.format.data = "color_key_transparency"
+
+        # Why can't get_name get the name of the current option?
+        pixel_format = self.data.tagdata.bitmaps.bitmaps_array[0].format.get_name(
+            self.data.tagdata.bitmaps.bitmaps_array[0].format.data)
+
+        top_format = "color_key_transparency"
+        if pixel_format in ("a8", "y8", "ay8", "a8y8"):
+            top_format = "monochrome"
+        elif pixel_format in ("r5g6b5", "a1r5g5b5", "a4r4g4b4"):
+            top_format = "color_16bit"
+        elif pixel_format in ("x8r8g8b8", "a8r8g8b8", "p8_bump"):
+            top_format = "color_32bit"
+        elif pixel_format == "dxt1":
+            top_format = "color_key_transparency"
+        elif pixel_format == "dxt3":
+            top_format = "explicit_alpha"
+        elif pixel_format == "dxt5":
+            top_format = "interpolated_alpha"
+
+        self.data.tagdata.format.set_to(top_format)
+
     def bitmap_width_height_depth(self, b_index=0, new_value=None):
         bitmap = self.data.tagdata.bitmaps.bitmaps_array[b_index]
         if new_value is None:
