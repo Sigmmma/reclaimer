@@ -41,7 +41,7 @@ permutation = Struct('permutation',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
     Pad(2),
 
-    #reflexive("local_markers", local_marker, 32, DYN_NAME_PATH=".name"),
+    reflexive("local_markers", local_marker, 32, DYN_NAME_PATH=".name"),
     SIZE=88
     )
 
