@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.9.10]
+### Changed
+ - Add missing "inhibits weapon attack" field in model_collision definition.
+ - Fix burst_return_length being incorrectly marked as seconds insteaf of world units.
+
 ## [2.9.9]
 ### Changed
  - Updated xbox model struct for invader
