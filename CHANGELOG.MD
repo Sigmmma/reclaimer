@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [2.9.10]
 ### Changed
  - Add missing "inhibits weapon attack" field in model_collision definition.
- - Fix burst_return_length being incorrectly marked as seconds insteaf of world units.
+ - Fix burst_return_length being incorrectly marked as seconds instead of world units.
  - Update build config for Python 3.9.
 
 ## [2.9.9]
