@@ -199,9 +199,9 @@ CUBEMAP_PADDING = 128
 # max value a reflexive count is theoretically allowed to be
 MAX_REFLEXIVE_COUNT = 2**31-1
 
-# this numbers was taken from crawling the tag
-# definitions for the highest value among them
-SANE_MAX_REFLEXIVE_COUNT = 0x800000   # sbsp.detail_objects.counts
+# this number was taken by seeing what the highest indexable reflexive number
+# is.
+SANE_MAX_REFLEXIVE_COUNT = 2^16-1
 
 MAX_TAG_PATH_LEN = 254
 
