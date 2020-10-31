@@ -201,7 +201,7 @@ MAX_REFLEXIVE_COUNT = 2**31-1
 
 # this number was taken by seeing what the highest indexable reflexive number
 # is.
-SANE_MAX_REFLEXIVE_COUNT = 2^16-1
+SANE_MAX_REFLEXIVE_COUNT = 2**16-1
 
 MAX_TAG_PATH_LEN = 254
 
