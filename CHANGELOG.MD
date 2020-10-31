@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [2.9.11]
 ### Changed
- - Change SANE_MAX_REFLEXIVE_COUNT from 0x800000 to 2^16-1
+ - Change SANE_MAX_REFLEXIVE_COUNT from 0x800000 to 0xFFFE
  - Change code that decides what max size to use from finding the minimum between
    max entries for that reflexive and SANE_MAX_REFLEXIVE_COUNT to finding the maximum.
 
