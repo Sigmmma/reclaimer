@@ -243,9 +243,7 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
                     #    (ex: bad hek+ extraction)
                     node[0] = node[1] = 0
 
-            elif node[0] > SANE_MAX_REFLEXIVE_COUNT or (
-                    safe_mode and node[0] > s_desc.get(MAX, node[0])
-                    ):
+            elif node[0] > max(SANE_MAX_REFLEXIVE_COUNT, s_desc.get(MAX, 0)):
                 raise ValueError("Reflexive size is above highest allowed value.")
 
             if not node[0]:
