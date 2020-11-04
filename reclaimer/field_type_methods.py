@@ -235,8 +235,7 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[1])
                 if safe_mode:
                     # make sure the reflexive sizes are within sane bounds.
-                    node[0] = max(0, max(node[0], s_desc.get(
-                        MAX, SANE_MAX_REFLEXIVE_COUNT)))
+                    node[0] = min(node[0], max(SANE_MAX_REFLEXIVE_COUNT, s_desc.get(MAX, 0)))
 
                 if (file_ptr < 0 or file_ptr +
                     node[0]*s_desc[SUB_STRUCT].get(SIZE, 0) > len(rawdata)):
