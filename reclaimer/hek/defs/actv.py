@@ -102,7 +102,7 @@ actv_body = Struct("tagdata",
     Struct("burst_geometry",
         float_wu("burst_origin_radius"),
         float_rad("burst_origin_angle"),  # radians
-        float_wu("burst_return_length"),
+        from_to_wu("burst_return_length"),
         float_rad("burst_return_angle"),  # radians
         from_to_sec("burst_duration", UNIT_SCALE=sec_unit_scale),  # seconds
         from_to_sec("burst_separation"),
