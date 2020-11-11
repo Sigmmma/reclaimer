@@ -1,8 +1,12 @@
 # Reclaimer
+[![](https://img.shields.io/pypi/dm/reclaimer)](https://pypistats.org/packages/reclaimer)
+![](https://ci.appveyor.com/api/projects/status/github/Sigmmma/reclaimer?svg=true)
+[![PyPI version](https://badge.fury.io/py/reclaimer.svg)](https://pypi.org/project/reclaimer/)
+[![GitHub version](https://badge.fury.io/gh/Sigmmma%2Freclaimer.svg)](https://github.com/Sigmmma/reclaimer)
 
 ## What is this repository for?
 
-* Reclaimer is a library of [supyr_struct](https://bitbucket.org/moses_of_egypt/supyr_struct) structure descriptors and tag definitions for creating and modifying data files for video games utilizing the Blam engine. These descriptors and definitions are currently limited to Halo 1(xbox, custom edition, and the community made "open sauce" variant) with some support for Stubbs the Zombie. There are plans to branch into Halo 2, though for now the "he2k" sub-module is just a placeholder. Some of the tag definitions have an accompanying object class with methods for manipulating the tag(recalculating inertial matrices in physics tags for example).
+* Reclaimer is a library of [supyr_struct](https://github.com/Sigmmma/supyr_struct) structure descriptors and tag definitions for creating and modifying data files for video games utilizing the Blam engine. These descriptors and definitions are currently limited to Halo 1(xbox, custom edition, and the community made "open sauce" variant) with some support for Stubbs the Zombie. There are plans to branch into Halo 2, though for now the "he2k" sub-module is just a placeholder. Some of the tag definitions have an accompanying object class with methods for manipulating the tag(recalculating inertial matrices in physics tags for example).
 
 ## Installing
 
@@ -17,7 +21,7 @@ or
 *    Extract a copy of the repository into a directory titled "reclaimer".
 *    Move the file "setup.py" into the directory containing "reclaimer".
 *    Open a command prompt, navigate to the directory containing setup.py, and execute:```python setup.py install```
-*    During install, python should try to download and install [supyr_struct](https://bitbucket.org/moses_of_egypt/supyr_struct). If it fails to, you must install that as well.
+*    During install, python should try to download and install [supyr_struct](https://github.com/Sigmmma/supyr_struct). If it fails to, you must install that as well.
 
 Once the install finishes, reclaimer should be ready to use.
 
@@ -57,7 +61,3 @@ bytearray(b'\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
 \x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00
 \x00\x00\x00\x00\x00\x00\x00\x00')
 ```
-
-## Who do I talk to?
-
-* Devin Bobadilla (Author of reclaimer) mosesbobadilla@gmail.com
