@@ -10,6 +10,7 @@
 from ...common_descs import *
 from .objs.coll import CollTag
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.util import desc_variant
 
 bsp_node_tooltip = (
     "Refers to a leaf node if negative.\n"
@@ -286,8 +287,9 @@ fast_node = Struct("node",
     SIZE=64
     )
 
-fast_coll_body = dict(coll_body)
-fast_coll_body[12] = reflexive("nodes", fast_node, 64, DYN_NAME_PATH='.name')
+fast_coll_body = desc_variant(coll_body,
+    ("nodes", reflexive("nodes", fast_node, 64, DYN_NAME_PATH='.name')),
+    )
 
 
 def get():

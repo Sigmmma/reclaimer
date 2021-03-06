@@ -9,6 +9,7 @@
 
 from .mod2 import *
 from .objs.mode import ModeTag
+from supyr_struct.util import desc_variant
 
 def get():
     return mode_def
@@ -93,10 +94,11 @@ part = Struct('part',
     SIZE=104
     )
 
-fast_part = dict(part)
-fast_part[9]  = raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex, 65535)
-fast_part[10] = raw_reflexive("compressed_vertices", fast_compressed_vertex, 65535)
-fast_part[11] = raw_reflexive("triangles", triangle, 65535)
+fast_part = desc_variant(part,
+    ("uncompressed_vertices", raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex, 65535)),
+    ("compressed_vertices",   raw_reflexive("compressed_vertices", fast_compressed_vertex, 65535)),
+    ("triangles",             raw_reflexive("triangles", triangle, 65535)),
+    )
 
 region = Struct('region',
     ascii_str32("name"),
@@ -152,8 +154,9 @@ mode_body = Struct('tagdata',
     SIZE=232
     )
 
-fast_mode_body = dict(mode_body)
-fast_mode_body[19] = reflexive("geometries", fast_geometry, 256)
+fast_mode_body = desc_variant(mode_body,
+    ("geometries", reflexive("geometries", fast_geometry, 256)),
+    )
 
 mode_def = TagDef("mode",
     blam_header('mode', 4),

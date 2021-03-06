@@ -11,11 +11,13 @@ from .obje import *
 from .devi import *
 from .objs.mach import MachTag
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.util import desc_variant
 
 # replace the object_type enum one that uses
 # the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=7)
+obje_attrs = desc_variant(obje_attrs,
+    ("object_type", object_type(7))
+    )
 
 mach_attrs = Struct("mach_attrs",
     SEnum16('type',

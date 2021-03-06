@@ -10,6 +10,7 @@
 from .coll import *
 from .objs.sbsp import SbspTag
 from supyr_struct.defs.block_def import BlockDef
+from supyr_struct.util import desc_variant
 
 cluster_fog_tooltip = (
     "Unknown flag is set if negative.\n"
@@ -517,18 +518,18 @@ sbsp_body = Struct("tagdata",
     SIZE=648,
     )
 
-fast_sbsp_body = dict(sbsp_body)
-fast_sbsp_body[16] = reflexive("collision_bsp", fast_collision_bsp, 1)
-fast_sbsp_body[17] = raw_reflexive("nodes", node, 131072)
-fast_sbsp_body[21] = raw_reflexive("leaves", leaf, 65535)
-fast_sbsp_body[22] = raw_reflexive("leaf_surfaces", leaf_surface, 262144)
-fast_sbsp_body[23] = raw_reflexive("surface", surface, 131072)
-fast_sbsp_body[27] = raw_reflexive("lens_flare_markers", lens_flare_marker, 65535)
-fast_sbsp_body[32] = raw_reflexive("breakable_surfaces", breakable_surface, 256)
-fast_sbsp_body[40] = raw_reflexive("pathfinding_surfaces", pathfinding_surface, 131072)
-fast_sbsp_body[41] = raw_reflexive("pathfinding_edges", pathfinding_edge, 262144)
-fast_sbsp_body[47] = raw_reflexive("markers", marker, 1024, DYN_NAME_PATH='.name')
-
+fast_sbsp_body = desc_variant(sbsp_body,
+    ("collision_bsp",        reflexive("collision_bsp", fast_collision_bsp, 1)),
+    ("nodes",                raw_reflexive("nodes", node, 131072)),
+    ("leaves",               raw_reflexive("leaves", leaf, 65535)),
+    ("leaf_surfaces",        raw_reflexive("leaf_surfaces", leaf_surface, 262144)),
+    ("surfaces",             raw_reflexive("surfaces", surface, 131072)),
+    ("lens_flare_markers",   raw_reflexive("lens_flare_markers", lens_flare_marker, 65535)),
+    ("breakable_surfaces",   raw_reflexive("breakable_surfaces", breakable_surface, 256)),
+    ("pathfinding_surfaces", raw_reflexive("pathfinding_surfaces", pathfinding_surface, 131072)),
+    ("pathfinding_edges",    raw_reflexive("pathfinding_edges", pathfinding_edge, 262144)),
+    ("markers",              raw_reflexive("markers", marker, 1024, DYN_NAME_PATH='.name')),
+    )
 
 sbsp_meta_header_def = BlockDef("sbsp_meta_header",
     # to convert these pointers to offsets, do:  pointer - bsp_magic
