@@ -56,7 +56,7 @@ actv_body = Struct("tagdata",
     dependency("actor_definition", "actr"),
     dependency("unit", valid_units),
     dependency("major_variant", "actv"),
-    SEnum16("mcc_actor_type", TOOLTIP="Used to determine score in MCC", *mcc_actor_types),
+    SEnum16("mcc_scoring_type", TOOLTIP="Used to determine score in MCC", *mcc_actor_types),
 
 
     #Movement switching

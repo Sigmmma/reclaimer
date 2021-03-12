@@ -174,7 +174,10 @@ unit_attrs = Struct("unit_attrs",
         ),
     Pad(2),
 
-    Pad(12),  # open sauce unit extension padding
+    Struct("mcc_additions", # replaced with opensauce unit extension in os_v4
+        SEnum16("mcc_scoring_type", TOOLTIP="Used to determine score in MCC", *mcc_actor_types),
+        Pad(10),
+    ),
     reflexive("new_hud_interfaces", new_hud_interface, 2,
         'default/solo', 'multiplayer'),
     reflexive("dialogue_variants", dialogue_variant, 16,
