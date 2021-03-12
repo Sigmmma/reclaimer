@@ -41,29 +41,33 @@ def get_map_version(header):
         build_date = None
 
     if version == "halo1pc":
-        # apparently the halo pc build and halo 2 alpha
-        # use the same version integer of 7
+        # Halo pc and Halo 2 alpha both use engine version 7
+        # We keep halo1pc if neither of these conditions are met
         if build_date == map_build_dates["halo2alpha"]:
             version = "halo2alpha"
         elif build_date == map_build_dates["halo1anni"]:
             version = "halo1anni"
+
     elif version == "halo1xbox":
         if build_date is None:
             version = None
         elif build_date == map_build_dates["stubbs"]:
             version = "stubbs"
-        elif build_date == "":
+        # Xbox and stubbs maps both don't have build dates
+        elif build_date == "" and :
+            # Xbox maps don't have a build date, but they do have this bit of data
             if header.unknown in (11, 1033):
-                # this is the only discernable difference
-                # between xbox demo and stubbs pc maps
                 version = "halo1xboxdemo"
+            # Stubs PC headers match xbox headers without the unknown data
             else:
                 version = "stubbspc"
         elif build_date == map_build_dates["shadowrun_proto"]:
             version = "shadowrun_proto"
+
     elif hasattr(header, "yelo_header") and (
             header.yelo_header.yelo.enum_name == "yelo"):
         version = "halo1yelo"
+
     elif version == "halo2":
         version = None
         if build_date == map_build_dates['halo2beta']:
@@ -74,9 +78,11 @@ def get_map_version(header):
             version = "halo2epsilon"
         elif build_date == map_build_dates['halo2vista']:
             version = "halo2vista"
+
     elif version == "halo3":
         if build_date == map_build_dates['halo3odst']:
             version = "halo3odst"
+
     elif version == "haloreach":
         if build_date == map_build_dates['haloreachbeta']:
             version = "haloreachbeta"

@@ -77,9 +77,11 @@ class Halo1Map(HaloMap):
     sound_rsrc_id = None
     defs = None
 
+    # Module path printed when loading the tag defs
     tag_defs_module = "reclaimer.hek.defs"
     tag_classes_to_load = tuple(sorted(tag_class_fcc_to_ext.keys()))
 
+    # Handler that controls how to load tags, eg tag definitions
     handler_class = HaloHandler
 
     force_checksum = False
