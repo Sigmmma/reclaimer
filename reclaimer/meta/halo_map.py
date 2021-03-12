@@ -54,7 +54,7 @@ def get_map_version(header):
         elif build_date == map_build_dates["stubbs"]:
             version = "stubbs"
         # Xbox and stubbs maps both don't have build dates
-        elif build_date == "" and :
+        elif build_date == "":
             # Xbox maps don't have a build date, but they do have this bit of data
             if header.unknown in (11, 1033):
                 version = "halo1xboxdemo"
