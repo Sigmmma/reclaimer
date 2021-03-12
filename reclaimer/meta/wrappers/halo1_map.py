@@ -25,10 +25,10 @@ from reclaimer.halo_script.hsc import get_hsc_data_block,\
 from reclaimer.common_descs import make_dependency_os_block
 from reclaimer.hek.defs.snd_ import snd__meta_stub_blockdef
 from reclaimer.hek.defs.sbsp import sbsp_meta_header_def
+from reclaimer.hek.handler   import HaloHandler
 from reclaimer.os_hek.defs.gelc    import gelc_def
 from reclaimer.os_v4_hek.defs.coll import fast_coll_def
 from reclaimer.os_v4_hek.defs.sbsp import fast_sbsp_def
-from reclaimer.os_v4_hek.handler   import OsV4HaloHandler
 from reclaimer.meta.wrappers.byteswapping import raw_block_def, byteswap_animation,\
      byteswap_uncomp_verts, byteswap_comp_verts, byteswap_tris,\
      byteswap_coll_bsp, byteswap_sbsp_meta, byteswap_scnr_script_syntax_data,\
@@ -77,10 +77,12 @@ class Halo1Map(HaloMap):
     sound_rsrc_id = None
     defs = None
 
-    tag_defs_module = "reclaimer.os_v4_hek.defs"
+    # Module path printed when loading the tag defs
+    tag_defs_module = "reclaimer.hek.defs"
     tag_classes_to_load = tuple(sorted(tag_class_fcc_to_ext.keys()))
 
-    handler_class = OsV4HaloHandler
+    # Handler that controls how to load tags, eg tag definitions
+    handler_class = HaloHandler
 
     force_checksum = False
 
