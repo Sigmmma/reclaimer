@@ -7,3 +7,4 @@ No earlier version, no later version. Check LICENSE for details.
 
 Copyright (c) 2014-2020 Devin Bobadilla
 Copyright (c) 2017-2020 Michelle van der Graaf
+Copyright (c)      2020 Zatarita

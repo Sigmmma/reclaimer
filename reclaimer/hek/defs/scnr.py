@@ -67,23 +67,6 @@ unit_control_packet = Struct("unit_control_packet",
 
     )
 
-r_a_stream_header = Struct("r_a_stream_header",
-    UInt8("move_index", DEFAULT=3, MAX=6),
-    UInt8("bool_index"),
-    stance_flags,
-    FlSInt16("weapon", DEFAULT=-1),
-    QStruct("speed", FlFloat("x"), FlFloat("y"), ORIENT="h"),
-    QStruct("feet", INCLUDE=fl_float_xyz),
-    QStruct("body", INCLUDE=fl_float_xyz),
-    QStruct("head", INCLUDE=fl_float_xyz),
-    QStruct("change", INCLUDE=fl_float_xyz),
-    FlUInt16("unknown1"),
-    FlUInt16("unknown2"),
-    FlUInt16("unknown3", DEFAULT=0xFFFF),
-    FlUInt16("unknown4", DEFAULT=0xFFFF),
-    SIZE=60
-    )
-
 device_flags = (
     "initially_open",  # value of 1.0
     "initially_off",  # value of 0.0
