@@ -37,6 +37,7 @@ material_response = Struct("material_response",
         SEnum16('response', *responses),
         Bool16("flags",
             "only_against_units",
+            "never against units"
             ),
         float_zero_to_one("skip_fraction"),
         from_to_rad("impact_angle"),  # radians

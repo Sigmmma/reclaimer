@@ -50,7 +50,7 @@ waypoint_arrow = Struct("waypoint_arrow",
 
 
 messaging_parameters = Struct("messaging_parameters",
-    SEnum16("anchor", *hud_anchors),
+    SEnum16("anchor", *hud_anchors_mcc),
 
     Pad(34),
     QStruct("anchor_offset",
@@ -182,8 +182,36 @@ misc_hud_crap = Struct("misc_hud_crap",
     SInt16("checkpoint_begin_text"),
     SInt16("checkpoint_end_text"),
     dependency("checkpoint", "snd!"),
-    BytearrayRaw("unknown", SIZE=96, VISIBLE=False),
-    SIZE=120
+    SIZE=24
+    )
+
+targets = Struct("targets",
+    dependency("target_bitmap", "bitm"),
+    SEnum16("language",
+        "english",
+        "french",
+        "spanish",
+        "italian",
+        "german",
+        "tchinese",
+        "japanese",
+        "korean",
+        "portuguese",
+        "latam_spanish",
+        "polish",
+        "russian",
+        "schinese"
+        ),
+    Bool16("flags",
+        "legacy_mode"
+        ),
+    SIZE=20
+    )
+
+remaps = Struct("remaps",
+    dependency("original_bitmap", "bitm"),
+    reflexive("targets", targets, 26, DYN_NAME_PATH='.target_bitmap.filepath'),
+    SIZE=28
     )
 
 hudg_body = Struct("tagdata",
@@ -209,6 +237,8 @@ hudg_body = Struct("tagdata",
     Pad(40),
     dependency("carnage_report_bitmap", "bitm"),
     misc_hud_crap,
+    reflexive("remaps", remaps, 32, DYN_NAME_PATH='.original_bitmap.filepath'),
+    Pad(84),
     SIZE=1104
     )
 

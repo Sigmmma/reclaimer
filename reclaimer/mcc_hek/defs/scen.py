@@ -20,6 +20,10 @@ obje_attrs = desc_variant(obje_attrs,
 
 scen_body = Struct("tagdata",
     obje_attrs,
+    Pad(2),
+    Bool32('flags',
+        'unused',
+        ),
     SIZE=508,
     )
 

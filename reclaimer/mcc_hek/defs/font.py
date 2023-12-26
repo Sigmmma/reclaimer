@@ -38,9 +38,11 @@ character = QStruct("character",
     )
 
 font_body = Struct("tagdata",
-    SInt32("flags"),
+    Bool32("flags",
+        "never_override_with_remastered_font_under_MCC",
+        ),
     SInt16("ascending_height"),
-    SInt16("decending_height"),
+    SInt16("descending_height"),
     SInt16("leading_height"),
     SInt16("leading_width"),
     Pad(36),

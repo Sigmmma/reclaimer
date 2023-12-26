@@ -39,6 +39,7 @@ scex_attrs = Struct("scex_attrs",
     Bool32("extra_flags",
         "dont_fade_active_camouflage",
         "numeric_countdown_timer"
+        "custom_edition_blending",
         ),
     SIZE=80
     )

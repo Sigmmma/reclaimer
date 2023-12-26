@@ -44,6 +44,7 @@ deca_body = Struct("tagdata",
         "SAPIEN_incremental_counter",
         "animation_loop",
         "preserve_aspect",
+        "disabled in remastered by blood setting",
         COMMENT=decal_comment
         ),
     SEnum16("type",

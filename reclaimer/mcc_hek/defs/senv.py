@@ -80,6 +80,7 @@ environment_shader = Struct("environment_shader",
         "alpha_tested",
         "bump_map_is_specular_mask",
         "true_atmospheric_fog",
+        "use_variant_2_for_calculation_bump_attention",
         COMMENT=environment_shader_comment
         ),
     SEnum16("type",

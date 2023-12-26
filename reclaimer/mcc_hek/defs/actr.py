@@ -109,7 +109,7 @@ actr_body = Struct("tagdata",
     Struct("movement",
         float_zero_to_one("dive_into_cover_chance"),
         float_zero_to_one("emerge_from_cover_chance"),
-        float_zero_to_one("dive_from_grenade_cover_chance"),
+        float_zero_to_one("dive_from_grenade_chance"),
         float_wu("pathfinding_radius"),  # world units
         float_zero_to_one("glass_ignorance_chance"),
         float_wu("stationary_movement_dist"),  # world units
@@ -141,10 +141,10 @@ actr_body = Struct("tagdata",
         from_to_neg_one_to_one("cosine_maximum_aiming_deviation", VISIBLE=False),
         from_to_neg_one_to_one("cosine_maximum_looking_deviation", VISIBLE=False),
 
-        dependency("DO_NOT_USE_1", "weap"),
+        dependency("DO_NOT_USE_weapon", "weap"),
 
         Pad(268),
-        dependency("DO_NOT_USE_2", "proj")
+        dependency("DO_NOT_USE_projectile", "proj")
         ),
 
     Struct("unopposable",
@@ -253,7 +253,7 @@ actr_body = Struct("tagdata",
         from_to_sec("combat_idle_speech_time"),  # seconds
 
         Pad(176),
-        dependency("DO_NOT_USE_3", "actr"),
+        dependency("DO_NOT_USE_major_upgrade", "actr"),
         ),
     SIZE=1272
     )

@@ -154,8 +154,8 @@ event = Struct("event",
 effe_body = Struct("tagdata",
     Bool32("flags",
         {NAME: "deleted_when_inactive", GUI_NAME: "deleted when attachment deactivates"},
-        {NAME: "required", GUI_NAME: "required for gameplay (cannot optimize out)"},
-        {NAME: "never_cull", VISIBLE: VISIBILITY_HIDDEN}
+        {NAME: "must_be_deterministic", GUI_NAME: "must_be_deterministic"},
+        {NAME: "disabled_in_remastered_by_blood_setting"}
         ),
     dyn_senum16("loop_start_event",
         DYN_NAME_PATH=".events.events_array[DYN_I].NAME"),

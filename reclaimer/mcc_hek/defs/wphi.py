@@ -34,6 +34,28 @@ crosshair_types = (
     "flash_when_firing_with_depleted_battery",
     )
 
+crosshair_types_mcc = (
+    "aim",
+    "zoom_overlay",
+    "charge",
+    "should_reload",
+    "flash_heat",
+    "flash_total_ammo",
+    "flash_battery",
+    "reload_overheat",
+    "flash_when_firing_and_no_ammo",
+    "flash_when_throwing_grenade_and_no_grenade",
+    "low_ammo_and_none_left_to_reload",
+    "should_reload_secondary_trigger",
+    "flash_secondary_total_ammo",
+    "flash_secondary_reload",
+    "flash_when_firing_secondary_and_no_ammo",
+    "low_secondary_ammo_and_none_left_to_reload",
+    "primary_trigger_ready",
+    "secondary_trigger_ready",
+    "flash_when_firing_with_depleted_battery",
+    )
+
 attached_state = SEnum16("state_attached_to",
     "total_ammo",
     "loaded_ammo",
@@ -47,8 +69,8 @@ attached_state = SEnum16("state_attached_to",
 
 use_on_map_type = SEnum16("can_use_on_map_type",
     "any",
-    "solo",
-    "multiplayer",
+    "fullscreen",
+    "splitscreen",
     )
 
 static_element = Struct("static_element",
@@ -56,7 +78,20 @@ static_element = Struct("static_element",
     Pad(2),
     use_on_map_type,
 
-    Pad(30),
+    SEnum16("anchor",
+        "from_parent"
+        "top_left"
+        "top_right"
+        "bottom_left"
+        "bottom_right"
+        "center"
+        "top_center"
+        "bottom_center"
+        "left_center"
+        "right_center"
+        ),
+
+    Pad(28),
     QStruct("anchor_offset",
         SInt16("x"), SInt16("y"), ORIENT='h',
         ),
@@ -91,7 +126,20 @@ meter_element = Struct("meter_element",
     Pad(2),
     use_on_map_type,
 
-    Pad(30),
+    SEnum16("anchor",
+        "from_parent"
+        "top_left"
+        "top_right"
+        "bottom_left"
+        "bottom_right"
+        "center"
+        "top_center"
+        "bottom_center"
+        "left_center"
+        "right_center"
+        ),
+
+    Pad(28),
     QStruct("anchor_offset",
         SInt16("x"), SInt16("y"), ORIENT='h',
         ),
@@ -109,7 +157,7 @@ meter_element = Struct("meter_element",
     UInt32("color_at_meter_maximum", INCLUDE=xrgb_uint32),
     UInt32("flash_color", INCLUDE=xrgb_uint32),
     UInt32("empty_color", INCLUDE=argb_uint32),
-    Bool8("flags", *hud_panel_meter_flags),
+    Bool8("flags", *hud_panel_meter_mcc_flags),
     SInt8("minimum_meter_value"),
     SInt16("sequence_index"),
     SInt8("alpha_multiplier"),
@@ -119,6 +167,7 @@ meter_element = Struct("meter_element",
     Float("translucency"),
     #QStruct("disabled_color", INCLUDE=argb_byte),
     UInt32("disabled_color", INCLUDE=argb_uint32),
+    Float("min_alpha"),
     SIZE=180
     )
 
@@ -127,7 +176,20 @@ number_element = Struct("number_element",
     Pad(2),
     use_on_map_type,
 
-    Pad(30),
+    SEnum16("anchor",
+        "from_parent"
+        "top_left"
+        "top_right"
+        "bottom_left"
+        "bottom_right"
+        "center"
+        "top_center"
+        "bottom_center"
+        "left_center"
+        "right_center"
+        ),
+
+    Pad(28),
     QStruct("anchor_offset",
         SInt16("x"), SInt16("y"), ORIENT='h',
         ),
@@ -240,7 +302,7 @@ overlay = Struct("overlay",
     )
 
 crosshair = Struct("crosshair",
-    SEnum16("crosshair_type", *crosshair_types),
+    SEnum16("crosshair_type", *crosshair_types_mcc),
     Pad(2),
     use_on_map_type,
 
@@ -255,7 +317,20 @@ overlay_element = Struct("overlay_element",
     Pad(2),
     use_on_map_type,
 
-    Pad(30),
+    SEnum16("anchor",
+        "from_parent"
+        "top_left"
+        "top_right"
+        "bottom_left"
+        "bottom_right"
+        "center"
+        "top_center"
+        "bottom_center"
+        "left_center"
+        "right_center"
+        ),
+
+    Pad(28),
     dependency("overlay_bitmap", "bitm"),
     reflexive("overlays", overlay, 16),
     SIZE=104
@@ -323,7 +398,7 @@ wphi_body = Struct("tagdata",
         ),
 
     Pad(32),
-    SEnum16("anchor", *hud_anchors),
+    SEnum16("anchor", *hud_anchors_mcc),
 
     Pad(34),
     reflexive("static_elements", static_element, 16),

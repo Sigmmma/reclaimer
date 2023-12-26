@@ -250,7 +250,7 @@ coll_body = Struct("tagdata",
         QStruct("z", INCLUDE=from_to),
         ),
 
-    reflexive("pathfinding_spheres", pathfinding_sphere, 32),
+    reflexive("pathfinding_spheres", pathfinding_sphere, 256),
     reflexive("nodes", node, 64, DYN_NAME_PATH='.name'),
 
     SIZE=664,

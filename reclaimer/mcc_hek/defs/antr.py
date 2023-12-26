@@ -102,8 +102,8 @@ unit_weapon_desc = Struct("weapon",
     reflexive("animations", anim_enum_desc, 55,
         *unit_weapon_animation_names
         ),
-    reflexive("ik_points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
-    reflexive("weapon_types", weapon_types_desc, 10, DYN_NAME_PATH=".label"),
+    reflexive("ik_points", ik_point_desc, 8, DYN_NAME_PATH=".marker"),
+    reflexive("weapon_types", weapon_types_desc, 64, DYN_NAME_PATH=".label"),
     SIZE=188,
     )
 
@@ -126,8 +126,8 @@ unit_desc = Struct("unit",
     reflexive("animations", anim_enum_desc, 30,
         *unit_animation_names
         ),
-    reflexive("ik_points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
-    reflexive("weapons", unit_weapon_desc, 16, DYN_NAME_PATH=".name"),
+    reflexive("ik_points", ik_point_desc, 8, DYN_NAME_PATH=".marker"),
+    reflexive("weapons", unit_weapon_desc, 64, DYN_NAME_PATH=".name"),
     SIZE=100,
     )
 
@@ -165,7 +165,7 @@ vehicle_desc = Struct("vehicle",
     reflexive("animations", anim_enum_desc, 8,
         *vehicle_animation_names
         ),
-    reflexive("suspension_animations", suspension_desc, 8),
+    reflexive("suspension_animations", suspension_desc, 32),
     SIZE=116,
     )
 
@@ -179,8 +179,8 @@ device_desc = Struct("device",
 
 fp_animation_desc = Struct("fp_animation",
     Pad(16),
-    reflexive("animations", anim_enum_desc, 28,
-        *fp_animation_names
+    reflexive("animations", anim_enum_desc, 30,
+        *fp_animation_names_mcc
         ),
     SIZE=28,
     )
@@ -264,13 +264,13 @@ animation_desc = Struct("animation",
     Pad(4),
     SInt32("offset_to_compressed_data", EDITABLE=False),
     rawdata_ref("default_data", max_size=16384),
-    rawdata_ref("frame_data", max_size=1048576),
+    rawdata_ref("frame_data", max_size=4194304),
     SIZE=180,
     )
 
 antr_body = Struct("tagdata",
     reflexive("objects",  object_desc, 4),
-    reflexive("units",    unit_desc, 32, DYN_NAME_PATH=".label"),
+    reflexive("units",    unit_desc, 2048, DYN_NAME_PATH=".label"),
     reflexive("weapons",  weapon_desc, 1),
     reflexive("vehicles", vehicle_desc, 1),
     reflexive("devices",  device_desc, 1),
@@ -279,7 +279,7 @@ antr_body = Struct("tagdata",
         ),
     reflexive("fp_animations", fp_animation_desc, 1),
     #i have no idea why they decided to cap it at 257 instead of 256....
-    reflexive("sound_references", sound_reference_desc, 257,
+    reflexive("sound_references", sound_reference_desc, 512,
         DYN_NAME_PATH=".sound.filepath"),
     Float("limp_body_node_radius"),
     Bool16("flags",
@@ -288,7 +288,7 @@ antr_body = Struct("tagdata",
         ),
     Pad(2),
     reflexive("nodes", nodes_desc, 64, DYN_NAME_PATH=".name"),
-    reflexive("animations", animation_desc, 256, DYN_NAME_PATH=".name"),
+    reflexive("animations", animation_desc, 2048, DYN_NAME_PATH=".name"),
     SIZE=128,
     )
 

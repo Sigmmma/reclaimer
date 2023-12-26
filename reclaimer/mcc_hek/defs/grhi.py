@@ -219,7 +219,7 @@ hud_background = Struct("",
     )
 
 grhi_body = Struct("tagdata",
-    SEnum16("anchor", *hud_anchors),
+    SEnum16("anchor", *hud_anchors_mcc),
 
     Pad(34),
     Struct("grenade_hud_background", INCLUDE=hud_background),

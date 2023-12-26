@@ -35,6 +35,13 @@ vehi_attrs = Struct("vehi_attrs",
         "ai_driver_flying",
         "ai_driver_can_sidestep",
         "ai_driver_hovering",
+        "vehicle_steers_directly",
+        "unused",
+        "has_e_brake",
+        "noncombat_vehicle",
+        "no_friction_with_driver",
+        "can_trigger_automatic_opening_doors",
+        "autoaim_when_teamless"
         ),
     SEnum16('type', *vehicle_types),
 

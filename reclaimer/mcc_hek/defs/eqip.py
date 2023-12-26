@@ -29,7 +29,7 @@ eqip_attrs = Struct("eqip_attrs",
         'health',
         'grenade',
         ),
-    SEnum16('grenade_type', *grenade_types),
+    SEnum16('grenade_type', *grenade_types_mcc),
     float_sec('powerup_time'),
     dependency('pickup_sound', "snd!"),
 
