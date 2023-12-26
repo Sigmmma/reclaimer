@@ -1118,6 +1118,10 @@ class Halo1Map(HaloMap):
             # need to scale velocities by 30
             meta.proj_attrs.physics.initial_velocity *= 30
             meta.proj_attrs.physics.final_velocity *= 30
+            meta.proj_attrs.detonation.minimum_velocity *= 30
+            for material_response in meta.proj_attrs.material_responses.STEPTREE:
+                material_response.potential_response.impact_velocity[0] *= 30
+                material_response.potential_response.impact_velocity[1] *= 30
 
         elif tag_cls == "sbsp":
             if byteswap:
