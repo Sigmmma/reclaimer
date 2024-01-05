@@ -7,49 +7,18 @@
 # See LICENSE for more information.
 #
 
+from ...hek.defs.mach import *
+
+#import and use the mcc obje attrs
 from .obje import *
-from .devi import *
-from .objs.mach import MachTag
-from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.util import desc_variant
 
 # replace the object_type enum one that uses
 # the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(7))
-    )
+obje_attrs = dict(obje_attrs)
+obje_attrs[0] = dict(obje_attrs[0], DEFAULT=7)
 
-mach_attrs = Struct("mach_attrs",
-    SEnum16('type',
-        'door',
-        'platform',
-        'gear',
-        ),
-    Bool16('flags',
-        'pathfinding_obstable',
-        'except_when_open',
-        'elevator',
-        ),
-    float_sec('door_open_time'),  # seconds
-
-    Pad(80),
-    SEnum16('triggers_when',
-        'pause_until_crushed',
-        'reverse_directions'
-        ),
-    SInt16('elevator_node'),
-    Pad(52),
-    UInt32("door_open_time_ticks")
-    )
-
-mach_body = Struct("tagdata",
-    obje_attrs,
-    devi_attrs,
-    mach_attrs,
-
-    SIZE=804,
-    )
-
+mach_body = dict(mach_body)
+mach_body[0] = obje_attrs
 
 def get():
     return mach_def

@@ -7,23 +7,18 @@
 # See LICENSE for more information.
 #
 
+from ...hek.defs.garb import *
+
+#import and use the mcc obje attrs
 from .obje import *
-from .item import *
-from .objs.obje import ObjeTag
-from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.util import desc_variant
 
 # replace the object_type enum one that uses
 # the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(4))
-    )
+obje_attrs = dict(obje_attrs)
+obje_attrs[0] = dict(obje_attrs[0], DEFAULT=4)
 
-garb_body = Struct("tagdata",
-    obje_attrs,
-    item_attrs,
-    SIZE=944,
-    )
+garb_body = dict(garb_body)
+garb_body[0] = obje_attrs
 
 
 def get():
