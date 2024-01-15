@@ -7,46 +7,34 @@
 # See LICENSE for more information.
 #
 
-from ...common_descs import *
-from .objs.tag import HekTag
-from supyr_struct.defs.tag_def import TagDef
-from .grhi import hud_background
+from ...hek.defs.unhi import *
+from .grhi import hud_background, mcc_hud_anchor
+from supyr_struct.util import desc_variant
 
-warning_sound = Struct("warning_sound",
-    dependency("sound", ('lsnd', 'snd!')),
-    Bool32("latched_to",
-        "shield_recharging",
-        "shield_recharged",
-        "shield_low",
-        "shield_empty",
-        "health_low",
-        "health_empty",
-        "health_minor_damage",
-        "health_major_damage",
-        ),
-    Float("scale"),
-    SIZE=56
-    )
-
-shield_panel_meter = Struct("shield_panel_meter",
+# to reduce a lot of code, these have been snipped out
+meter_xform_common = ( # NOTE: used by wphi
     QStruct("anchor_offset",
         SInt16("x"), SInt16("y"), ORIENT='h',
         ),
     Float("width_scale"),
     Float("height_scale"),
     Bool16("scaling_flags", *hud_scaling_flags),
-
     Pad(22),
+    )
+meter_common = ( # NOTE: used by wphi
     dependency("meter_bitmap", "bitm"),
-    #QStruct("color_at_meter_minimum", INCLUDE=xrgb_byte),
-    #QStruct("color_at_meter_maximum", INCLUDE=xrgb_byte),
-    #QStruct("flash_color", INCLUDE=xrgb_byte),
-    #QStruct("empty_color", INCLUDE=argb_byte),
     UInt32("color_at_meter_minimum", INCLUDE=xrgb_uint32),
     UInt32("color_at_meter_maximum", INCLUDE=xrgb_uint32),
     UInt32("flash_color", INCLUDE=xrgb_uint32),
     UInt32("empty_color", INCLUDE=argb_uint32),
-    Bool8("flags", *hud_panel_meter_mcc_flags),
+    Bool8("flags",
+        "use_min_max_for_state_changes",
+        "interpolate_between_min_max_flash_colors_as_state_changes",
+        "interpolate_color_along_hsv_space",
+        "more_colors_for_hsv_interpolation",
+        "invert_interpolation",
+        "use_xbox_shading",
+        ),
     SInt8("minimum_meter_value"),
     SInt16("sequence_index"),
     SInt8("alpha_multiplier"),
@@ -54,77 +42,32 @@ shield_panel_meter = Struct("shield_panel_meter",
     SInt16("value_scale"),
     Float("opacity"),
     Float("translucency"),
-    #QStruct("disabled_color", INCLUDE=argb_byte),
     UInt32("disabled_color", INCLUDE=argb_uint32),
+    )
+
+shield_panel_meter = Struct("shield_panel_meter",
+    *meter_xform_common,
+    *meter_common,
     Float("min_alpha"),
     Pad(12),
-    #QStruct("overcharge_minimum_color", INCLUDE=xrgb_byte),
-    #QStruct("overcharge_maximum_color", INCLUDE=xrgb_byte),
-    #QStruct("overcharge_flash_color", INCLUDE=xrgb_byte),
-    #QStruct("overcharge_empty_color", INCLUDE=xrgb_byte),
     UInt32("overcharge_minimum_color", INCLUDE=xrgb_uint32),
     UInt32("overcharge_maximum_color", INCLUDE=xrgb_uint32),
     UInt32("overcharge_flash_color", INCLUDE=xrgb_uint32),
     UInt32("overcharge_empty_color", INCLUDE=xrgb_uint32),
+    Pad(16),
     SIZE=136
     )
 
 health_panel_meter = Struct("health_panel_meter",
-    QStruct("anchor_offset",
-        SInt16("x"), SInt16("y"), ORIENT='h',
-        ),
-    Float("width_scale"),
-    Float("height_scale"),
-    Bool16("scaling_flags", *hud_scaling_flags),
-
-    Pad(22),
-    dependency("meter_bitmap", "bitm"),
-    #QStruct("color_at_meter_minimum", INCLUDE=xrgb_byte),
-    #QStruct("color_at_meter_maximum", INCLUDE=xrgb_byte),
-    #QStruct("flash_color", INCLUDE=xrgb_byte),
-    #QStruct("empty_color", INCLUDE=argb_byte),
-    UInt32("color_at_meter_minimum", INCLUDE=xrgb_uint32),
-    UInt32("color_at_meter_maximum", INCLUDE=xrgb_uint32),
-    UInt32("flash_color", INCLUDE=xrgb_uint32),
-    UInt32("empty_color", INCLUDE=argb_uint32),
-    Bool8("flags", *hud_panel_meter_mcc_flags),
-    SInt8("minimum_meter_value"),
-    SInt16("sequence_index"),
-    SInt8("alpha_multiplier"),
-    SInt8("alpha_bias"),
-    SInt16("value_scale"),
-    Float("opacity"),
-    Float("translucency"),
-    #QStruct("disabled_color", INCLUDE=argb_byte),
-    UInt32("disabled_color", INCLUDE=argb_uint32),
+    *meter_xform_common,
+    *meter_common,
     Float("min_alpha"),
     Pad(12),
-    #QStruct("medium_health_left_color", INCLUDE=xrgb_byte),
     UInt32("medium_health_left_color", INCLUDE=xrgb_uint32),
     Float("max_color_health_fraction_cutoff"),
     Float("min_color_health_fraction_cutoff"),
+    Pad(20),
     SIZE=136
-    )
-
-motion_sensor_center = Struct("motion_sensor_center",
-    QStruct("anchor_offset",
-        SInt16("x"), SInt16("y"), ORIENT='h',
-        ),
-    Float("width_scale"),
-    Float("height_scale"),
-    Bool16("scaling_flags", *hud_scaling_flags),
-    SIZE=16
-    )
-
-auxilary_overlay = Struct("auxilary_overlay",
-    Struct("background", INCLUDE=hud_background),
-    SEnum16("type",
-        "team_icon"
-        ),
-    Bool16("flags",
-        "use_team_color"
-        ),
-    SIZE=132
     )
 
 auxilary_meter = Struct("auxilary_meter",
@@ -132,74 +75,28 @@ auxilary_meter = Struct("auxilary_meter",
     SEnum16("type", "integrated_light", VISIBLE=False),
     Struct("background", INCLUDE=hud_background),
 
-    QStruct("anchor_offset",
-        SInt16("x"), SInt16("y"), ORIENT='h',
-        ),
-    Float("width_scale"),
-    Float("height_scale"),
-    Bool16("scaling_flags", *hud_scaling_flags),
-
-    Pad(22),
-    dependency("meter_bitmap", "bitm"),
-    #QStruct("color_at_meter_minimum", INCLUDE=xrgb_byte),
-    #QStruct("color_at_meter_maximum", INCLUDE=xrgb_byte),
-    #QStruct("flash_color", INCLUDE=xrgb_byte),
-    #QStruct("empty_color", INCLUDE=argb_byte),
-    UInt32("color_at_meter_minimum", INCLUDE=xrgb_uint32),
-    UInt32("color_at_meter_maximum", INCLUDE=xrgb_uint32),
-    UInt32("flash_color", INCLUDE=xrgb_uint32),
-    UInt32("empty_color", INCLUDE=argb_uint32),
-    Bool8("flags", *hud_panel_meter_mcc_flags),
-    SInt8("minimum_meter_value"),
-    SInt16("sequence_index"),
-    SInt8("alpha_multiplier"),
-    SInt8("alpha_bias"),
-    SInt16("value_scale"),
-    Float("opacity"),
-    Float("translucency"),
-    #QStruct("disabled_color", INCLUDE=argb_byte),
-    UInt32("disabled_color", INCLUDE=argb_uint32),
+    *meter_xform_common,
+    *meter_common,
     Float("min_alpha"),
-
     Pad(12),
     Float("minimum_fraction_cutoff"),
     Bool32("overlay_flags",
         "show_only_when_active",
         "flash_once_if_activated_while_disabled",
         ),
+    Pad(24),
+    Pad(64),
 
     SIZE=324,
     COMMENT="\nThis auxilary meter is meant for the flashlight.\n"
     )
 
-unhi_body = Struct("tagdata",
-    SEnum16("anchor", *hud_anchors_mcc),
-
-    Pad(34),
-    Struct("unit_hud_background", INCLUDE=hud_background),
-    Struct("shield_panel_background", INCLUDE=hud_background),
-    shield_panel_meter,
-    Struct("health_panel_background", INCLUDE=hud_background),
-    health_panel_meter,
-    Struct("motion_sensor_background", INCLUDE=hud_background),
-    Struct("motion_sensor_foreground", INCLUDE=hud_background),
-
-    Pad(32),
-    motion_sensor_center,
-
-    Pad(20),
-    SEnum16("auxilary_overlay_anchor", *hud_anchors_mcc),
-    Pad(34),
-    reflexive("auxilary_overlays", auxilary_overlay, 16),
-
-    Pad(16),
-    reflexive("warning_sounds", warning_sound, 12,
-        DYN_NAME_PATH='.sound.filepath'),
-    reflexive("auxilary_meters", auxilary_meter, 16),
-
-    SIZE=1388
+unhi_body = desc_variant(unhi_body,
+    ("anchor", SEnum16("anchor", *hud_anchors_mcc)),
+    ("shield_panel_meter", shield_panel_meter),
+    ("health_panel_meter", health_panel_meter),
+    ("auxilary_meters", reflexive("auxilary_meters", auxilary_meter, 16)),
     )
-
 
 def get():
     return unhi_def

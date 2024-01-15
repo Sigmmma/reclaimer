@@ -7,33 +7,18 @@
 # See LICENSE for more information.
 #
 
+from ...hek.defs.eqip import *
 from .obje import *
 from .item import *
-from .objs.obje import ObjeTag
-from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.util import desc_variant
+
+eqip_attrs = desc_variant(eqip_attrs,
+    ("grenade_type", SEnum16("grenade_type", *grenade_types_mcc)),
+    )
 
 # replace the object_type enum one that uses
 # the correct default value for this object
 obje_attrs = desc_variant(obje_attrs,
     ("object_type", object_type(3))
-    )
-
-eqip_attrs = Struct("eqip_attrs",
-    SEnum16('powerup_type',
-        'none',
-        'double_speed',
-        'overshield',
-        'active_camo',
-        'full_spectrum_vision',
-        'health',
-        'grenade',
-        ),
-    SEnum16('grenade_type', *grenade_types_mcc),
-    float_sec('powerup_time'),
-    dependency('pickup_sound', "snd!"),
-
-    SIZE=168
     )
 
 eqip_body = Struct("tagdata",
@@ -43,7 +28,6 @@ eqip_body = Struct("tagdata",
 
     SIZE=944,
     )
-
 
 def get():
     return eqip_def

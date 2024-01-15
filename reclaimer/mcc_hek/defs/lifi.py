@@ -8,17 +8,21 @@
 #
 
 from ...hek.defs.lifi import *
-
-#import and use the mcc obje attrs
 from .obje import *
+from .devi import *
 
 # replace the object_type enum one that uses
 # the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=9)
+obje_attrs = desc_variant(obje_attrs,
+    ("object_type", object_type(9))
+    )
 
-lifi_body = dict(lifi_body)
-lifi_body[0] = obje_attrs
+lifi_body = Struct("tagdata",
+    obje_attrs,
+    devi_attrs,
+
+    SIZE=720,
+    )
 
 def get():
     return lifi_def

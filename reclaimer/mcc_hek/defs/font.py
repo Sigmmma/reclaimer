@@ -7,55 +7,18 @@
 # See LICENSE for more information.
 #
 
-from ...common_descs import *
-from .objs.tag import HekTag
-from supyr_struct.defs.tag_def import TagDef
+from ...hek.defs.font import *
+from supyr_struct.util import desc_variant
 
-def get(): return font_def
-
-
-character_table = QStruct("character_table",
-    SInt16("character_index"),
-    SIZE=2
+flags = Bool32("flags",
+    "never_override_with_remastered_font_under_mcc",
+    )
+font_body = desc_variant(font_body,
+    ("flags", flags)
     )
 
-character_tables = Struct("character_tables",
-    reflexive("character_table", character_table, 256),
-    SIZE=12
-    )
-
-character = QStruct("character",
-    UInt16("character"),
-    SInt16("character_width"),
-    SInt16("bitmap_width", EDITABLE=False),
-    SInt16("bitmap_height", EDITABLE=False),
-    SInt16("bitmap_origin_x"),
-    SInt16("bitmap_origin_y"),
-    SInt16("hardware_character_index"),
-    Pad(2),
-    SInt32("pixels_offset", EDITABLE=False),
-    SIZE=20, WIDGET=FontCharacterFrame
-    )
-
-font_body = Struct("tagdata",
-    Bool32("flags",
-        "never_override_with_remastered_font_under_MCC",
-        ),
-    SInt16("ascending_height"),
-    SInt16("descending_height"),
-    SInt16("leading_height"),
-    SInt16("leading_width"),
-    Pad(36),
-
-    reflexive("character_tables", character_tables, 256),
-    dependency("bold", "font"),
-    dependency("italic", "font"),
-    dependency("condense", "font"),
-    dependency("underline", "font"),
-    reflexive("characters", character, 65535),
-    rawdata_ref("pixels", max_size=8388608),
-    SIZE=156,
-    )
+def get(): 
+    return font_def
 
 font_def = TagDef("font",
     blam_header('font'),

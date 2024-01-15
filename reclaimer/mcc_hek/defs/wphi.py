@@ -7,102 +7,20 @@
 # See LICENSE for more information.
 #
 
-from ...common_descs import *
-from .objs.wphi import WphiTag
-from supyr_struct.defs.tag_def import TagDef
-from .grhi import messaging_information, multitex_overlay, hud_background
+from ...hek.defs.wphi import *
+from .grhi import multitex_overlay, mcc_hud_anchor
+from .unhi import meter_xform_common, meter_common
+from supyr_struct.util import desc_variant
 
-crosshair_types = (
-    "aim",
-    "zoom",
-    "charge",
-    "should_reload",
-    "flash_heat",
-    "flash_total_ammo",
-    "flash_battery",
-    "reload_overheat",
-    "flash_when_firing_and_no_ammo",
-    "flash_when_throwing_grenade_and_no_grenade",
-    "low_ammo_and_none_left_to_reload",
-    "should_reload_secondary_trigger",
-    "flash_secondary_total_ammo",
-    "flash_secondary_reload",
-    "flash_when_firing_secondary_and_no_ammo",
-    "low_secondary_ammo_and_none_left_to_reload",
-    "primary_trigger_ready",
-    "secondary_trigger_ready",
-    "flash_when_firing_with_depleted_battery",
-    )
-
-crosshair_types_mcc = (
-    "aim",
-    "zoom_overlay",
-    "charge",
-    "should_reload",
-    "flash_heat",
-    "flash_total_ammo",
-    "flash_battery",
-    "reload_overheat",
-    "flash_when_firing_and_no_ammo",
-    "flash_when_throwing_grenade_and_no_grenade",
-    "low_ammo_and_none_left_to_reload",
-    "should_reload_secondary_trigger",
-    "flash_secondary_total_ammo",
-    "flash_secondary_reload",
-    "flash_when_firing_secondary_and_no_ammo",
-    "low_secondary_ammo_and_none_left_to_reload",
-    "primary_trigger_ready",
-    "secondary_trigger_ready",
-    "flash_when_firing_with_depleted_battery",
-    )
-
-attached_state = SEnum16("state_attached_to",
-    "total_ammo",
-    "loaded_ammo",
-    "heat",
-    "age",
-    "secondary_weapon_total_ammo",
-    "secondary_weapon_loaded_ammo",
-    "distance_to_target",
-    "elevation_to_target",
-    )
-
-use_on_map_type = SEnum16("can_use_on_map_type",
-    "any",
-    "fullscreen",
-    "splitscreen",
-    )
-
-static_element = Struct("static_element",
+# to reduce a lot of code, these have been snipped out
+element_common = (
     attached_state,
     Pad(2),
     use_on_map_type,
-
-    SEnum16("anchor",
-        "from_parent"
-        "top_left"
-        "top_right"
-        "bottom_left"
-        "bottom_right"
-        "center"
-        "top_center"
-        "bottom_center"
-        "left_center"
-        "right_center"
-        ),
-
+    mcc_hud_anchor,
     Pad(28),
-    QStruct("anchor_offset",
-        SInt16("x"), SInt16("y"), ORIENT='h',
-        ),
-    Float("width_scale"),
-    Float("height_scale"),
-    Bool16("scaling_flags", *hud_scaling_flags),
-
-    Pad(22),
-    dependency("interface_bitmap", "bitm"),
-    #QStruct("default_color", INCLUDE=argb_byte),
-    #QStruct("flashing_color", INCLUDE=argb_byte),
+    )
+element_flash_common = (
     UInt32("default_color", INCLUDE=argb_uint32),
     UInt32("flashing_color", INCLUDE=argb_uint32),
     float_sec("flash_period"),
@@ -110,8 +28,14 @@ static_element = Struct("static_element",
     SInt16("number_of_flashes"),
     Bool16("flash_flags", *hud_flash_flags),
     float_sec("flash_length"),
-    #QStruct("disabled_color", INCLUDE=argb_byte),
     UInt32("disabled_color", INCLUDE=argb_uint32),
+    )
+
+static_element = Struct("static_element",
+    *element_common,
+    *meter_xform_common,
+    dependency("interface_bitmap", "bitm"),
+    *element_flash_common,
 
     Pad(4),
     SInt16("sequence_index"),
@@ -122,93 +46,16 @@ static_element = Struct("static_element",
     )
 
 meter_element = Struct("meter_element",
-    attached_state,
-    Pad(2),
-    use_on_map_type,
-
-    SEnum16("anchor",
-        "from_parent"
-        "top_left"
-        "top_right"
-        "bottom_left"
-        "bottom_right"
-        "center"
-        "top_center"
-        "bottom_center"
-        "left_center"
-        "right_center"
-        ),
-
-    Pad(28),
-    QStruct("anchor_offset",
-        SInt16("x"), SInt16("y"), ORIENT='h',
-        ),
-    Float("width_scale"),
-    Float("height_scale"),
-    Bool16("scaling_flags", *hud_scaling_flags),
-
-    Pad(22),
-    dependency("meter_bitmap", "bitm"),
-    #QStruct("color_at_meter_minimum", INCLUDE=xrgb_byte),
-    #QStruct("color_at_meter_maximum", INCLUDE=xrgb_byte),
-    #QStruct("flash_color", INCLUDE=xrgb_byte),
-    #QStruct("empty_color", INCLUDE=argb_byte),
-    UInt32("color_at_meter_minimum", INCLUDE=xrgb_uint32),
-    UInt32("color_at_meter_maximum", INCLUDE=xrgb_uint32),
-    UInt32("flash_color", INCLUDE=xrgb_uint32),
-    UInt32("empty_color", INCLUDE=argb_uint32),
-    Bool8("flags", *hud_panel_meter_mcc_flags),
-    SInt8("minimum_meter_value"),
-    SInt16("sequence_index"),
-    SInt8("alpha_multiplier"),
-    SInt8("alpha_bias"),
-    SInt16("value_scale"),
-    Float("opacity"),
-    Float("translucency"),
-    #QStruct("disabled_color", INCLUDE=argb_byte),
-    UInt32("disabled_color", INCLUDE=argb_uint32),
-    Float("min_alpha"),
+    *element_common,
+    *meter_xform_common,
+    *meter_common,
     SIZE=180
     )
 
 number_element = Struct("number_element",
-    attached_state,
-    Pad(2),
-    use_on_map_type,
-
-    SEnum16("anchor",
-        "from_parent"
-        "top_left"
-        "top_right"
-        "bottom_left"
-        "bottom_right"
-        "center"
-        "top_center"
-        "bottom_center"
-        "left_center"
-        "right_center"
-        ),
-
-    Pad(28),
-    QStruct("anchor_offset",
-        SInt16("x"), SInt16("y"), ORIENT='h',
-        ),
-    Float("width_scale"),
-    Float("height_scale"),
-    Bool16("scaling_flags", *hud_scaling_flags),
-
-    Pad(22),
-    #QStruct("default_color", INCLUDE=argb_byte),
-    #QStruct("flashing_color", INCLUDE=argb_byte),
-    UInt32("default_color", INCLUDE=argb_uint32),
-    UInt32("flashing_color", INCLUDE=argb_uint32),
-    float_sec("flash_period"),
-    float_sec("flash_delay"),
-    SInt16("number_of_flashes"),
-    Bool16("flash_flags", *hud_flash_flags),
-    float_sec("flash_length"),
-    #QStruct("disabled_color", INCLUDE=argb_byte),
-    UInt32("disabled_color", INCLUDE=argb_uint32),
+    *element_common,
+    *meter_xform_common,
+    *element_flash_common,
 
     Pad(4),
     SInt8("maximum_number_of_digits"),
@@ -227,194 +74,19 @@ number_element = Struct("number_element",
     SIZE=160
     )
 
-crosshair_overlay = Struct("crosshair_overlay",
-    QStruct("anchor_offset",
-        SInt16("x"), SInt16("y"), ORIENT='h',
-        ),
-    Float("width_scale"),
-    Float("height_scale"),
-    Bool16("scaling_flags", *hud_scaling_flags),
-
-    Pad(22),
-    #QStruct("default_color", INCLUDE=argb_byte),
-    #QStruct("flashing_color", INCLUDE=argb_byte),
-    UInt32("default_color", INCLUDE=argb_uint32),
-    UInt32("flashing_color", INCLUDE=argb_uint32),
-    float_sec("flash_period"),
-    float_sec("flash_delay"),
-    SInt16("number_of_flashes"),
-    Bool16("flash_flags", *hud_flash_flags),
-    float_sec("flash_length"),
-    #QStruct("disabled_color", INCLUDE=argb_byte),
-    UInt32("disabled_color", INCLUDE=argb_uint32),
-
-    Pad(4),
-    SInt16("frame_rate", UNIT_SCALE=per_sec_unit_scale),
-    SInt16("sequence_index"),
-    Bool32("type",
-        "flashes_when_active",
-        "not_a_sprite",
-        "show_only_when_zoomed",
-        "show_sniper_data",
-        "hide_area_outside_reticle",
-        "one_zoom_level",
-        "dont_show_when_zoomed",
-        ),
-    SIZE=108
-    )
-
-overlay = Struct("overlay",
-    QStruct("anchor_offset",
-        SInt16("x"), SInt16("y"), ORIENT='h',
-        ),
-    Float("width_scale"),
-    Float("height_scale"),
-    Bool16("scaling_flags", *hud_scaling_flags),
-
-    Pad(22),
-    #QStruct("default_color", INCLUDE=argb_byte),
-    #QStruct("flashing_color", INCLUDE=argb_byte),
-    UInt32("default_color", INCLUDE=argb_uint32),
-    UInt32("flashing_color", INCLUDE=argb_uint32),
-    float_sec("flash_period"),
-    float_sec("flash_delay"),
-    SInt16("number_of_flashes"),
-    Bool16("flash_flags", *hud_flash_flags),
-    float_sec("flash_length"),
-    #QStruct("disabled_color", INCLUDE=argb_byte),
-    UInt32("disabled_color", INCLUDE=argb_uint32),
-
-    Pad(4),
-    SInt16("frame_rate", UNIT_SCALE=per_sec_unit_scale),
-    Pad(2),
-    SInt16("sequence_index"),
-    Bool16("type",
-        "show_on_flashing",
-        "show_on_empty",
-        "show_on_reload_overheating",
-        "show_on_default",
-        "show_always",
-        ),
-    Bool32("flags",
-        "flashes_when_active",
-        ),
-    SIZE=136
-    )
-
-crosshair = Struct("crosshair",
-    SEnum16("crosshair_type", *crosshair_types_mcc),
-    Pad(2),
-    use_on_map_type,
-
-    Pad(30),
-    dependency("crosshair_bitmap", "bitm"),
-    reflexive("crosshair_overlays", crosshair_overlay, 16),
-    SIZE=104
-    )
-
 overlay_element = Struct("overlay_element",
-    attached_state,
-    Pad(2),
-    use_on_map_type,
-
-    SEnum16("anchor",
-        "from_parent"
-        "top_left"
-        "top_right"
-        "bottom_left"
-        "bottom_right"
-        "center"
-        "top_center"
-        "bottom_center"
-        "left_center"
-        "right_center"
-        ),
-
-    Pad(28),
+    *element_common,
     dependency("overlay_bitmap", "bitm"),
     reflexive("overlays", overlay, 16),
     SIZE=104
     )
 
-screen_effect = Struct("screen_effect",
-    Pad(4),
-    Struct("mask",
-        Bool16("flags",
-            "only_when_zoomed"
-            ),
-        Pad(18),
-        dependency("fullscreen_mask", "bitm"),
-        dependency("splitscreen_mask", "bitm")
-        ),
-
-    Pad(8),
-    Struct("convolution",
-        Bool16("flags",
-            "only_when_zoomed"
-            ),
-        Pad(2),
-        from_to_rad("fov_in_bounds"),  # radians
-        QStruct("radius_out_bounds",
-            INCLUDE=from_to, SIDETIP="pixels")  # pixels
-        ),
-
-    Pad(24),
-    Struct("night_vision",
-        Bool16("flags",
-            "only_when_zoomed",
-            "connect_to_flashlight",
-            "masked"
-            ),
-        SInt16("script_source", MIN=0, MAX=3, SIDETIP="[0,3]"),
-        Float("intensity", MIN=0.0, MAX=1.0, SIDETIP="[0,1]")
-        ),
-
-    Pad(24),
-    Struct("desaturation",
-        Bool16("flags",
-            "only_when_zoomed",
-            "connect_to_flashlight",
-            "additive",
-            "masked"
-            ),
-        SInt16("script_source", MIN=0, MAX=3, SIDETIP="[0,3]"),
-        Float("intensity", MIN=0.0, MAX=1.0, SIDETIP="[0,1]"),
-        QStruct("tint", INCLUDE=rgb_float)
-        ),
-    SIZE=184
-    )
-
-wphi_body = Struct("tagdata",
-    dependency("child_hud", "wphi"),
-    Struct("flash_cutoffs",
-        Bool16("flags",
-            "use_parent_hud_flashing_parameters"
-            ),
-        Pad(2),
-        SInt16("total_ammo_cutoff"),
-        SInt16("loaded_ammo_cutoff"),
-        SInt16("heat_cutoff"),
-        SInt16("age_cutoff"),
-        ),
-
-    Pad(32),
-    SEnum16("anchor", *hud_anchors_mcc),
-
-    Pad(34),
-    reflexive("static_elements", static_element, 16),
-    reflexive("meter_elements", meter_element, 16),
-    reflexive("number_elements", number_element, 16),
-    reflexive("crosshairs", crosshair, 19),
-    reflexive("overlay_elements", overlay_element, 16),
-    FlBool32("crosshair_types", *crosshair_types, VISIBLE=False),
-
-    # necessary for reticles to show up sometimes
-    Pad(12),
-    reflexive("screen_effect", screen_effect, 1),
-
-    Pad(132),
-    messaging_information,
-    SIZE=380,
+wphi_body = desc_variant(wphi_body,
+    ("anchor", mcc_hud_anchor),
+    ("static_elements", reflexive("static_elements", static_element, 16)),
+    ("meter_elements", reflexive("meter_elements", meter_element, 16)),
+    ("number_elements", reflexive("number_elements", number_element, 16)),
+    ("overlay_elements", reflexive("overlay_elements", overlay_element, 16)),
     )
 
 

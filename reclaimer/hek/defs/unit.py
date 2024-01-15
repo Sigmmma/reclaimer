@@ -175,7 +175,7 @@ unit_attrs = Struct("unit_attrs",
     Pad(2),
 
     Struct("mcc_additions", # replaced with opensauce unit extension in os_v4
-        SEnum16("mcc_scoring_type", TOOLTIP="Used to determine score in MCC", *mcc_actor_types),
+        SEnum16("mcc_scoring_type", TOOLTIP="Used to determine score in MCC", *actor_types_mcc),
         Pad(10),
     ),
     reflexive("new_hud_interfaces", new_hud_interface, 2,

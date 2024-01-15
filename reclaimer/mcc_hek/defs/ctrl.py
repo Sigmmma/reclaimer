@@ -8,17 +8,22 @@
 #
 
 from ...hek.defs.ctrl import *
-
-#import and use the mcc obje attrs
 from .obje import *
+from .devi import *
 
 # replace the object_type enum one that uses
 # the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=8)
+obje_attrs = desc_variant(obje_attrs,
+    ("object_type", object_type(8))
+    )
 
-ctrl_body = dict(ctrl_body)
-ctrl_body[0] = obje_attrs
+ctrl_body = Struct("tagdata",
+    obje_attrs,
+    devi_attrs,
+    ctrl_attrs,
+
+    SIZE=792,
+    )
 
 def get():
     return ctrl_def
