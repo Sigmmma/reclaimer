@@ -17,7 +17,7 @@ metagame_scoring = Struct("metagame_scoring",
     )
 
 unit_attrs = desc_variant(unit_attrs,
-    ("mcc_additions", metagame_scoring),
+    ("pad_45", metagame_scoring),
     ("grenade_type", SEnum16("grenade_type", *grenade_types_mcc)),
     )
 

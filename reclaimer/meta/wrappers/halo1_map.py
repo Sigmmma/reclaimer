@@ -985,57 +985,51 @@ class Halo1Map(HaloMap):
                 verts_attr_name = "uncompressed_vertices"
                 byteswap_verts = byteswap_uncomp_verts
                 vert_size = 68
-
-                if engine != "stubbspc":
-                    # need to swap the lod cutoff and nodes values around
-                    cutoffs = (meta.superlow_lod_cutoff, meta.low_lod_cutoff,
-                               meta.high_lod_cutoff, meta.superhigh_lod_cutoff)
-                    meta.superlow_lod_cutoff  = cutoffs[3]
-                    meta.low_lod_cutoff       = cutoffs[2]
-                    meta.high_lod_cutoff      = cutoffs[1]
-                    meta.superhigh_lod_cutoff = cutoffs[0]
-
             else:
                 verts_attr_name = "compressed_vertices"
                 byteswap_verts = byteswap_comp_verts
                 vert_size = 32
 
-            # If this is a gbxmodel localize the markers.
-            # We skip this for xbox models for arsenic.
+            # lod cutoffs are swapped between tag and cache form
+            cutoffs = (meta.superlow_lod_cutoff, meta.low_lod_cutoff,
+                       meta.high_lod_cutoff, meta.superhigh_lod_cutoff)
+            meta.superlow_lod_cutoff  = cutoffs[3]
+            meta.low_lod_cutoff       = cutoffs[2]
+            meta.high_lod_cutoff      = cutoffs[1]
+            meta.superhigh_lod_cutoff = cutoffs[0]
 
-            if tag_cls == "mod2":
-                # ensure all local marker arrays are empty
-                for region in meta.regions.STEPTREE:
-                    for perm in region.permutations.STEPTREE:
-                        del perm.local_markers.STEPTREE[:]
+            # localize the global markers
+            # ensure all local marker arrays are empty
+            for region in meta.regions.STEPTREE:
+                for perm in region.permutations.STEPTREE:
+                    del perm.local_markers.STEPTREE[:]
 
-                # localize the global markers
-                for g_marker in meta.markers.STEPTREE:
-                    for g_marker_inst in g_marker.marker_instances.STEPTREE:
-                        try:
-                            region = meta.regions.STEPTREE[g_marker_inst.region_index]
-                        except IndexError:
-                            print("Model marker instance for", g_marker.name, "has invalid region index", g_marker_inst.region_index, "and is skipped.")
-                            continue
+            for g_marker in meta.markers.STEPTREE:
+                for g_marker_inst in g_marker.marker_instances.STEPTREE:
+                    try:
+                        region = meta.regions.STEPTREE[g_marker_inst.region_index]
+                    except IndexError:
+                        print("Model marker instance for", g_marker.name, "has invalid region index", g_marker_inst.region_index, "and is skipped.")
+                        continue
 
-                        try:
-                            perm = region.permutations.STEPTREE[g_marker_inst.permutation_index]
-                        except IndexError:
-                            print("Model marker instance for", g_marker.name, "has invalid permutation index", g_marker_inst.permutation_index, "and is skipped.")
-                            continue
+                    try:
+                        perm = region.permutations.STEPTREE[g_marker_inst.permutation_index]
+                    except IndexError:
+                        print("Model marker instance for", g_marker.name, "has invalid permutation index", g_marker_inst.permutation_index, "and is skipped.")
+                        continue
 
-                        # make a new local marker
-                        perm.local_markers.STEPTREE.append()
-                        l_marker = perm.local_markers.STEPTREE[-1]
+                    # make a new local marker
+                    perm.local_markers.STEPTREE.append()
+                    l_marker = perm.local_markers.STEPTREE[-1]
 
-                        # copy the global marker into the local
-                        l_marker.name           = g_marker.name
-                        l_marker.node_index     = g_marker_inst.node_index
-                        l_marker.translation[:] = g_marker_inst.translation[:]
-                        l_marker.rotation[:]    = g_marker_inst.rotation[:]
+                    # copy the global marker into the local
+                    l_marker.name           = g_marker.name
+                    l_marker.node_index     = g_marker_inst.node_index
+                    l_marker.translation[:] = g_marker_inst.translation[:]
+                    l_marker.rotation[:]    = g_marker_inst.rotation[:]
 
-                # clear the global markers
-                del meta.markers.STEPTREE[:]
+            # clear the global markers
+            del meta.markers.STEPTREE[:]
 
             # grab vertices and indices from the map
             for geom in meta.geometries.STEPTREE:

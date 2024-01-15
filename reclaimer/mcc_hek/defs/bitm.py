@@ -14,7 +14,7 @@ format_comment_parts = format_comment.split("NOTE: ", 1)
 format_comment = "".join((
     format_comment_parts[0],
     """\
-HIGH QUALITY COMPRESSION: ????
+*HIGH QUALITY COMPRESSION: ????
 
 NOTE:""",
     format_comment_parts[1],

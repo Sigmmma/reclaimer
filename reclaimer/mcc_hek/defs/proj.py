@@ -15,14 +15,7 @@ potential_response_flags = Bool16("flags",
     "only_against_units",
     "never_against_units"
     )
-potential_response_descs = [
-    desc for desc in material_response.values()
-    if isinstance(desc, dict) and desc.get("NAME") == "potential_response"
-    ]
-if not potential_response_descs:
-    raise ValueError("Could not locate descriptor 'potential_response' in material_response")
-
-potential_response = desc_variant(potential_response_descs[0],
+potential_response = desc_variant(potential_response,
     ("flags", potential_response_flags)
     )
 material_response = desc_variant(material_response,

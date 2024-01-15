@@ -38,14 +38,8 @@ mcc_upgrades = Struct("mcc_upgrades",
         ),
     SIZE=6
     )
-firing_descs = [
-    desc for desc in trigger.values()
-    if isinstance(desc, dict) and desc.get("NAME") == "firing"
-    ]
-if not firing_descs:
-    raise ValueError("Could not locate descriptor 'firing' in trigger")
 
-firing = desc_variant(firing_descs[0],
+firing = desc_variant(firing,
     ("pad_9", mcc_upgrades)
     )
 trigger = desc_variant(trigger,

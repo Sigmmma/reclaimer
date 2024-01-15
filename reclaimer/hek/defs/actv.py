@@ -56,12 +56,12 @@ actv_body = Struct("tagdata",
     dependency("actor_definition", "actr"),
     dependency("unit", valid_units),
     dependency("major_variant", "actv"),
-    SEnum16("mcc_scoring_type", TOOLTIP="Used to determine score in MCC", *mcc_actor_types),
 
+    Pad(4), # replaced with metagame_scoring in mcc_hek
 
     #Movement switching
     Struct("movement_switching",
-        Pad(22),
+        Pad(20),
         SEnum16("movement_type",
             "always_run",
             "always_crouch",

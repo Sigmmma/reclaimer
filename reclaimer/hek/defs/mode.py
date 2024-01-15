@@ -125,18 +125,17 @@ mode_body = Struct('tagdata',
         ),
     SInt32('node_list_checksum'),
 
-    # xbox has these values swapped around in order
-    Float('superlow_lod_cutoff', SIDETIP="pixels"),
-    Float('low_lod_cutoff', SIDETIP="pixels"),
-    Float('medium_lod_cutoff', SIDETIP="pixels"),
-    Float('high_lod_cutoff', SIDETIP="pixels"),
     Float('superhigh_lod_cutoff', SIDETIP="pixels"),
+    Float('high_lod_cutoff', SIDETIP="pixels"),
+    Float('medium_lod_cutoff', SIDETIP="pixels"),
+    Float('low_lod_cutoff', SIDETIP="pixels"),
+    Float('superlow_lod_cutoff', SIDETIP="pixels"),
 
-    SInt16('superlow_lod_nodes', SIDETIP="nodes"),
-    SInt16('low_lod_nodes', SIDETIP="nodes"),
-    SInt16('medium_lod_nodes', SIDETIP="nodes"),
-    SInt16('high_lod_nodes', SIDETIP="nodes"),
-    SInt16('superhigh_lod_nodes', SIDETIP="nodes"),
+    SInt16('superlow_lod_nodes', SIDETIP="nodes", VISIBLE=False),
+    SInt16('low_lod_nodes', SIDETIP="nodes", VISIBLE=False),
+    SInt16('medium_lod_nodes', SIDETIP="nodes", VISIBLE=False),
+    SInt16('high_lod_nodes', SIDETIP="nodes", VISIBLE=False),
+    SInt16('superhigh_lod_nodes', SIDETIP="nodes", VISIBLE=False),
 
     Pad(10),
 

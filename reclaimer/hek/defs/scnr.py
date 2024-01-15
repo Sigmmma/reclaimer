@@ -235,11 +235,21 @@ object_name = Struct("object_name",
     SIZE=36
     )
 
+# 8 bytes of padding, with the 5th byte being defined separately
+# so it can be replaced with the appearance_player_index in mcc_hek
+_object_ref_pad_fields = tuple(
+    Pad(n) for n in (2, 2, 1, 3)
+    )
+
 # Object references
-scenery = object_reference("scenery", SIZE=72, block_name="sceneries")
+scenery = object_reference("scenery",
+    *_object_ref_pad_fields,
+    SIZE=72, block_name="sceneries"
+    )
 
 biped = object_reference("biped",
-    Pad(40),
+    *_object_ref_pad_fields,
+    Pad(32),
     float_zero_to_one("body_vitality"),
     Bool32("flags",
         "dead",
@@ -248,7 +258,8 @@ biped = object_reference("biped",
     )
 
 vehicle = object_reference("vehicle",
-    Pad(40),
+    *_object_ref_pad_fields,
+    Pad(32),
     float_zero_to_one("body_vitality"),
     Bool32("flags",
         "dead",
@@ -285,11 +296,14 @@ equipment = object_reference("equipment",
         "obsolete",
         {NAME: "can_accelerate", GUI_NAME:"moves due to explosions"},
         ),
+    Pad(1),  # replaced with appearance_player_index in mcc_hek
+    Pad(3),
     SIZE=40
     )
 
 weapon = object_reference("weapon",
-    Pad(40),
+    *_object_ref_pad_fields,
+    Pad(32),
     SInt16("rounds_left"),
     SInt16("rounds_loaded"),
     Bool16("flags",
@@ -310,7 +324,7 @@ device_group = Struct("device_group",
     )
 
 machine = object_reference("machine",
-    Pad(8),
+    *_object_ref_pad_fields,
     dyn_senum16("power_group",
         DYN_NAME_PATH=".....device_groups.STEPTREE[DYN_I].name"),
     dyn_senum16("position_group",
@@ -326,7 +340,7 @@ machine = object_reference("machine",
     )
 
 control = object_reference("control",
-    Pad(8),
+    *_object_ref_pad_fields,
     dyn_senum16("power_group",
         DYN_NAME_PATH=".....device_groups.STEPTREE[DYN_I].name"),
     dyn_senum16("position_group",
@@ -340,7 +354,7 @@ control = object_reference("control",
     )
 
 light_fixture = object_reference("light_fixture",
-    Pad(8),
+    *_object_ref_pad_fields,
     dyn_senum16("power_group",
         DYN_NAME_PATH=".....device_groups.STEPTREE[DYN_I].name"),
     dyn_senum16("position_group",
@@ -353,7 +367,10 @@ light_fixture = object_reference("light_fixture",
     SIZE=88
     )
 
-sound_scenery = object_reference("sound_scenery", SIZE=40, block_name="sound_sceneries")
+sound_scenery = object_reference("sound_scenery",
+    *_object_ref_pad_fields,
+    SIZE=40, block_name="sound_sceneries"
+    )
 
 # Object swatches
 scenery_swatch = object_swatch("scenery_swatch", "scen")
@@ -378,6 +395,8 @@ player_starting_profile = Struct("player_starting_profile",
     SInt16("secondary_rounds_total"),
     SInt8("starting_frag_grenade_count", MIN=0),
     SInt8("starting_plasma_grenade_count", MIN=0),
+    Pad(1),  # replaced with starting_grenade_type2_count in mcc_hek
+    Pad(1),  # replaced with starting_grenade_type3_count in mcc_hek
     SIZE=104
     )
 
@@ -542,6 +561,8 @@ halo_script = Struct("script",
     SEnum16("return_type", *script_object_types, EDITABLE=False),
     UInt32("root_expression_index", EDITABLE=False),
     Computed("decompiled_script", WIDGET=HaloScriptTextFrame),
+    Pad(40),
+    Pad(12),  # replaced with parameters in mcc_hek
     SIZE=92,
     )
 
@@ -606,7 +627,8 @@ cutscene_title = Struct("cutscene_title",
         "center",
         ),
 
-    Pad(6),
+    Pad(2),
+    Pad(4),  # replaced with flags in mcc_hek
     #QStruct("text_color", INCLUDE=argb_byte),
     #QStruct("shadow_color", INCLUDE=argb_byte),
     UInt32("text_color", INCLUDE=argb_uint32),
@@ -942,7 +964,8 @@ scnr_body = Struct("tagdata",
     rawdata_ref("scenario_editor_data", max_size=65536),
     reflexive("comments", comment, 1024),
 
-    Pad(224),
+    Pad(12),  # replaced with scavenger_hunt_objects in mcc_hek
+    Pad(212),
     reflexive("object_names", object_name, 512,
         DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True),
     reflexive("sceneries", scenery, 2000, IGNORE_SAFE_MODE=True),

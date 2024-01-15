@@ -31,19 +31,11 @@ damage_flags = Bool32("flags",
     "allow_any_non_zero_acceleration_value",
     )
 
-damage_descs = [
-    desc for desc in cdmg_body.values()
-    if isinstance(desc, dict) and desc.get("NAME") == "damage"
-    ]
-if not damage_descs:
-    raise ValueError("Could not locate descriptor 'damage' in cdmg_body")
-
-damage = desc_variant(damage_descs[0],
+damage = desc_variant(damage,
     ("flags", damage_flags),
     ("instantaneous_acceleration", QStruct("instantaneous_acceleration", INCLUDE=ijk_float)),
-    ("pad_3", Pad(0)),
+    ("pad_13", Pad(0)),
     )
-
 cdmg_body = desc_variant(cdmg_body,
     ("damage", damage),
     )

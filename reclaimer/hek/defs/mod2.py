@@ -289,11 +289,11 @@ mod2_body = Struct('tagdata',
     Float('low_lod_cutoff', SIDETIP="pixels"),
     Float('superlow_lod_cutoff', SIDETIP="pixels"),
 
-    SInt16('superlow_lod_nodes', SIDETIP="nodes"),
-    SInt16('low_lod_nodes', SIDETIP="nodes"),
-    SInt16('medium_lod_nodes', SIDETIP="nodes"),
-    SInt16('high_lod_nodes', SIDETIP="nodes"),
-    SInt16('superhigh_lod_nodes', SIDETIP="nodes"),
+    SInt16('superlow_lod_nodes', SIDETIP="nodes", VISIBLE=False),
+    SInt16('low_lod_nodes', SIDETIP="nodes", VISIBLE=False),
+    SInt16('medium_lod_nodes', SIDETIP="nodes", VISIBLE=False),
+    SInt16('high_lod_nodes', SIDETIP="nodes", VISIBLE=False),
+    SInt16('superhigh_lod_nodes', SIDETIP="nodes", VISIBLE=False),
 
     Pad(10),
 
