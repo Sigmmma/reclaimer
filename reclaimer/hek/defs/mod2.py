@@ -150,6 +150,29 @@ permutation = Struct('permutation',
     reflexive("local_markers", local_marker, 32, DYN_NAME_PATH=".name"),
     SIZE=88
     )
+    
+model_meta_info = Struct("model_meta_info",
+    UEnum16("index_type",  # name is a guess.  always 1?
+        ("uncompressed", 1),
+        ),
+    Pad(2),
+    UInt32("index_count"),
+    # THESE TWO VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
+    UInt32("indices_magic_offset"),
+    UInt32("indices_offset"),
+
+    UEnum16("vertex_type",  # name is a guess
+        ("uncompressed", 4),
+        ("compressed",   5),
+        ),
+    Pad(2),
+    UInt32("vertex_count"),
+    Pad(4),  # always 0?
+    # THESE TWO VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
+    UInt32("vertices_magic_offset"),
+    UInt32("vertices_offset"),
+    VISIBLE=False, SIZE=36
+    )
 
 part = Struct('part',
     Bool32('flags',
@@ -175,28 +198,7 @@ part = Struct('part',
     reflexive("compressed_vertices", fast_compressed_vertex, 32767),
     reflexive("triangles", triangle, 32767),
     #Pad(36),
-    Struct("model_meta_info",
-        UEnum16("index_type",  # name is a guess.  always 1?
-            ("uncompressed", 1),
-            ),
-        Pad(2),
-        UInt32("index_count"),
-        # THESE TWO VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
-        UInt32("indices_magic_offset"),
-        UInt32("indices_offset"),
-
-        UEnum16("vertex_type",  # name is a guess
-            ("uncompressed", 4),
-            ("compressed",   5),
-            ),
-        Pad(2),
-        UInt32("vertex_count"),
-        Pad(4),  # always 0?
-        # THESE TWO VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
-        UInt32("vertices_magic_offset"),
-        UInt32("vertices_offset"),
-        VISIBLE=False, SIZE=36
-        ),
+    model_meta_info,
 
     Pad(3),
     SInt8('local_node_count', MIN=0, MAX=22),

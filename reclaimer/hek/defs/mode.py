@@ -46,6 +46,28 @@ permutation = Struct('permutation',
     SIZE=88
     )
 
+# dip == double-indirect pointer
+dip_model_meta_info = Struct("model_meta_info",
+    UEnum16("index_type",  # name is a guess.  always 1?
+        ("uncompressed", 1),
+        ),
+    Pad(2),
+    UInt32("index_count"),
+    UInt32("indices_offset"),
+    UInt32("indices_reflexive_offset"),
+
+    UEnum16("vertex_type",  # name is a guess
+        ("uncompressed", 4),
+        ("compressed",   5),
+        ),
+    Pad(2),
+    UInt32("vertex_count"),
+    Pad(4),  # always 0?
+    UInt32("vertices_offset"),
+    UInt32("vertices_reflexive_offset"),
+    VISIBLE=False, SIZE=36
+    )
+
 part = Struct('part',
     Bool32('flags',
         'stripped',
@@ -70,26 +92,7 @@ part = Struct('part',
     reflexive("triangles", triangle, 65535),
 
     #Pad(36),
-    Struct("model_meta_info",
-        UEnum16("index_type",  # name is a guess.  always 1?
-            ("uncompressed", 1),
-            ),
-        Pad(2),
-        UInt32("index_count"),
-        UInt32("indices_offset"),
-        UInt32("indices_reflexive_offset"),
-
-        UEnum16("vertex_type",  # name is a guess
-            ("uncompressed", 4),
-            ("compressed",   5),
-            ),
-        Pad(2),
-        UInt32("vertex_count"),
-        Pad(4),  # always 0?
-        UInt32("vertices_offset"),
-        UInt32("vertices_reflexive_offset"),
-        VISIBLE=False, SIZE=36
-        ),
+    dip_model_meta_info,
 
     SIZE=104
     )
@@ -142,7 +145,8 @@ mode_body = Struct('tagdata',
     Float('base_map_u_scale'),
     Float('base_map_v_scale'),
 
-    Pad(116),
+    Pad(104),
+    Pad(12), # replaced with unknown reflexive in stubbs
 
     reflexive("markers", marker, 256, DYN_NAME_PATH=".name"),
     reflexive("nodes", node, 64, DYN_NAME_PATH=".name"),

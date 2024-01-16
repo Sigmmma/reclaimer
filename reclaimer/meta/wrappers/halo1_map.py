@@ -976,19 +976,14 @@ class Halo1Map(HaloMap):
                           "halo1anni", "halo1pcdemo", "stubbspc"):
                 # model_magic seems to be the same for all pc maps
                 verts_start = tag_index.model_data_offset
-                tris_start  = verts_start + tag_index.vertex_data_size
+                tris_start  = verts_start + (
+                    tag_index.index_parts_offset 
+                    if engine == "stubbspc" else 
+                    tag_index.vertex_data_size
+                    )
                 model_magic = None
             else:
                 model_magic = magic
-
-            if model_magic is None:
-                verts_attr_name = "uncompressed_vertices"
-                byteswap_verts = byteswap_uncomp_verts
-                vert_size = 68
-            else:
-                verts_attr_name = "compressed_vertices"
-                byteswap_verts = byteswap_comp_verts
-                vert_size = 32
 
             # lod cutoffs are swapped between tag and cache form
             cutoffs = (meta.superlow_lod_cutoff, meta.low_lod_cutoff,
@@ -1034,9 +1029,17 @@ class Halo1Map(HaloMap):
             # grab vertices and indices from the map
             for geom in meta.geometries.STEPTREE:
                 for part in geom.parts.STEPTREE:
-                    verts_block = part[verts_attr_name]
                     tris_block  = part.triangles
-                    info  = part.model_meta_info
+                    info        = part.model_meta_info
+
+                    if info.vertex_type.enum_name == "compressed":
+                        verts_block     = part.compressed_vertices
+                        byteswap_verts  = byteswap_comp_verts
+                        vert_size       = 32
+                    else:
+                        verts_block     = part.uncompressed_vertices
+                        byteswap_verts  = byteswap_uncomp_verts
+                        vert_size       = 68
 
                     # null out certain things in the part
                     part.previous_part_index = part.next_part_index = 0
@@ -1050,10 +1053,7 @@ class Halo1Map(HaloMap):
                     tris_block.STEPTREE  = raw_block_def.build()
 
                     # read the offsets of the vertices and indices from the map
-                    if engine == "stubbspc":
-                        verts_off = verts_start + info.vertices_reflexive_offset
-                        tris_off  = tris_start  + info.indices_reflexive_offset
-                    elif model_magic is None:
+                    if model_magic is None:
                         verts_off = verts_start + info.vertices_offset
                         tris_off  = tris_start  + info.indices_offset
                     else:

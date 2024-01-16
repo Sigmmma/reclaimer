@@ -174,7 +174,7 @@ def byteswap_comp_verts(verts_block):
 
     byteswap_struct_array(
         original, swapped, 32, None, 0,
-        two_byte_offs=(24, 26, 28, 30),
+        two_byte_offs=(24, 26, 30),
         four_byte_offs=(0, 4, 8, 12, 16, 20)
         )
 
