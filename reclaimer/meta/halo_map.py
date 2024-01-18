@@ -120,7 +120,7 @@ def get_map_header(map_file, header_only=False):
                 if header_only:
                     header_def = h2x_map_header_def
 
-        elif ver_little in (5, 6, 609):
+        elif ver_little in (5, 6, 13, 609):
             header_def = map_header_def
 
         elif ver_little == 134:
@@ -227,7 +227,7 @@ def get_map_magic(header):
 def get_is_compressed_map(comp_data, header):
     if header.version.data == 134:
         return header.vap_header.compression_type.data != 0
-    elif header.version.data not in (7, 609):
+    elif header.version.data not in (7, 13, 609):
         decomp_len = header.decomp_len
         if get_map_version(header) == "pcstubbs":
             decomp_len -= 2048

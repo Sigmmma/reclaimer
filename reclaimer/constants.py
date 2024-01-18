@@ -30,6 +30,7 @@ def inject_halo_constants():
 
 
 PCDEMO_INDEX_MAGIC          = 0x4BF10000
+MCC_INDEX_MAGIC             = 0x50000000
 PC_INDEX_MAGIC              = 0x40440000
 CE_INDEX_MAGIC              = 0x40440000
 ANNIVERSARY_INDEX_MAGIC     = 0x004B8000
@@ -51,6 +52,7 @@ map_build_dates = {
     "halo1yelo":       "01.00.00.0609",
     "halo1vap":        "01.00.00.0609",
     "halo1pc":         "01.00.00.0564",
+    "halo1mcc":        "01.03.43.0000",
     "halo2alpha":      "02.01.07.4998",
     "halo2beta":       "02.06.28.07902",
     "halo2epsilon":    "02.08.28.09214",
@@ -75,6 +77,7 @@ map_versions = {
     "halo1pcdemo":     6,
     "halo1pc":         7,
     "halo1anni":       7,
+    "halo1mcc":        13,
     "halo1ce":         609,
     "halo1yelo":       609,
     "halo1vap":        134,
@@ -95,7 +98,8 @@ map_versions = {
 
 GEN_1_HALO_ENGINES = ("halo1xboxdemo", "halo1xbox",
                       "halo1ce", "halo1vap", "halo1yelo",
-                      "halo1pcdemo", "halo1pc", "halo1anni", )
+                      "halo1pcdemo", "halo1pc", "halo1anni", 
+                      "halo1mcc", )
 
 GEN_1_ENGINES = GEN_1_HALO_ENGINES + (
     "stubbs", "stubbspc", "shadowrun_proto", )
@@ -119,6 +123,7 @@ map_magics = {
     "halo1pcdemo":     PCDEMO_INDEX_MAGIC,
     "halo1pc":         PC_INDEX_MAGIC,
     "halo1anni":       ANNIVERSARY_INDEX_MAGIC,
+    "halo1mcc":        MCC_INDEX_MAGIC,
     "halo1ce":         CE_INDEX_MAGIC,
     "halo1yelo":       CE_INDEX_MAGIC,
     "halo1vap":        CE_INDEX_MAGIC,
@@ -185,11 +190,10 @@ FORMAT_NAME_MAP = (
     "V8U8", "G8B8", "UNUSED6", "UNUSED7", "UNUSED8",
     "UNUSED9", "UNUSED10", "UNUSED11", "UNUSED12", "UNUSED13",
     "UNUSED14", "DXN", "CTX1", "DXT3A", "DXT3Y", "DXT5A", "DXT5Y", "DXT5AY")
+MCC_FORMAT_NAME_MAP = FORMAT_NAME_MAP[:FORMAT_NAME_MAP.index("P8")] + ("BC7", )
 
-I_FORMAT_NAME_MAP = {}
-for i in range(len(FORMAT_NAME_MAP)):
-    if i not in I_FORMAT_NAME_MAP:
-        I_FORMAT_NAME_MAP[FORMAT_NAME_MAP[i]] = i
+I_FORMAT_NAME_MAP       = {fmt: i for i, fmt in enumerate(FORMAT_NAME_MAP)}
+I_MCC_FORMAT_NAME_MAP  = {fmt: i for i, fmt in enumerate(MCC_FORMAT_NAME_MAP)}
 
 #each bitmap's number of bytes must be a multiple of 512
 BITMAP_PADDING = 512

@@ -28,6 +28,10 @@ except (ImportError, AttributeError):
 class BitmTag(HekTag):
     tex_infos = ()
     p8_palette = None
+    
+    @property
+    def format_name_map(self):
+        return FORMAT_NAME_MAP
 
     def __init__(self, *args, **kwargs):
         HekTag.__init__(self, *args, **kwargs)
@@ -309,7 +313,7 @@ class BitmTag(HekTag):
                 "Arbytmap is not loaded. Cannot get bitmap size.")
 
         w, h, d, = self.bitmap_width_height_depth(b_index)
-        fmt = FORMAT_NAME_MAP[self.bitmap_format(b_index)]
+        fmt = self.format_name_map[self.bitmap_format(b_index)]
 
         bytes_count = 0
         for mipmap in range(self.bitmap_mipmaps_count(b_index) + 1):
@@ -379,7 +383,7 @@ class BitmTag(HekTag):
         tex_infos = self.tex_infos
 
         for i in range(self.bitmap_count()):
-            format = FORMAT_NAME_MAP[self.bitmap_format(i)]
+            format = self.format_name_map[self.bitmap_format(i)]
             flags = self.bitmap_flags(i)
             old_w, old_h, _ = self.bitmap_width_height_depth(i)
 
@@ -420,7 +424,7 @@ class BitmTag(HekTag):
             # since we need this information to read the bitmap we extract it
             mw, mh, md, = self.bitmap_width_height_depth(i)
             type         = self.bitmap_type(i)
-            format       = FORMAT_NAME_MAP[self.bitmap_format(i)]
+            format       = self.format_name_map[self.bitmap_format(i)]
             mipmap_count = self.bitmap_mipmaps_count(i) + 1
             sub_bitmap_count = ab.SUB_BITMAP_COUNTS[TYPE_NAME_MAP[type]]
 

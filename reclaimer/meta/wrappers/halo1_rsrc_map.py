@@ -224,7 +224,9 @@ class Halo1RsrcMap(HaloMap):
         kwargs = dict(parsing_resource=True)
         desc = self.get_meta_descriptor(tag_cls)
         if desc is None or self.engine not in ("halo1ce", "halo1yelo",
-                                               "halo1vap"):
+                                               "halo1vap", "halo1mcc"):
+            return
+        elif self.engine == "halo1mcc" and tag_cls == "bitm":
             return
         elif tag_cls != 'snd!':
             # the pitch ranges pointer in resource sound tags is invalid, so
@@ -310,7 +312,7 @@ class Halo1RsrcMap(HaloMap):
         except Exception: loc_data = None
 
         is_not_indexed = not self.is_indexed(tag_index_ref.id & 0xFFff)
-        might_be_in_rsrc = engine in ("halo1pc", "halo1pcdemo",
+        might_be_in_rsrc = engine in ("halo1pc", "halo1pcdemo", "halo1mcc",
                                       "halo1ce", "halo1yelo", "halo1vap")
         might_be_in_rsrc &= not self.is_resource
 
@@ -365,7 +367,7 @@ class Halo1RsrcMap(HaloMap):
             meta.string.data = loc_data.read(b.size).decode('utf-16-le')
         elif tag_cls == "snd!":
             # might need to get samples and permutations from the resource map
-            is_pc = engine in ("halo1pc", "halo1pcdemo")
+            is_pc = engine in ("halo1pc", "halo1pcdemo", "halo1mcc")
             is_ce = engine in ("halo1ce", "halo1yelo", "halo1vap")
             if not(is_pc or is_ce):
                 return meta

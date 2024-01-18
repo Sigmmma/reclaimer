@@ -149,7 +149,7 @@ class Halo1Map(HaloMap):
             return
 
         self.sound_rsrc_id = id(sounds)
-        if self.engine in ("halo1ce", "halo1yelo", "halo1vap"):
+        if self.engine in ("halo1ce", "halo1yelo", "halo1vap", "halo1mcc"):
             # ce resource sounds are recognized by tag_path
             # so we must cache their offsets by their paths
             rsrc_snd_map = self.ce_rsrc_sound_indexes_by_path = {}
@@ -972,7 +972,7 @@ class Halo1Map(HaloMap):
             meta.stencil_bitmap.filepath = meta.source_bitmap.filepath = ''
 
         elif tag_cls in ("mode", "mod2"):
-            if engine in ("halo1yelo", "halo1ce", "halo1pc", "halo1vap",
+            if engine in ("halo1yelo", "halo1ce", "halo1pc", "halo1vap", "halo1mcc",
                           "halo1anni", "halo1pcdemo", "stubbspc"):
                 # model_magic seems to be the same for all pc maps
                 verts_start = tag_index.model_data_offset
@@ -1371,13 +1371,13 @@ class Halo1Map(HaloMap):
         return meta
 
     def get_resource_map_paths(self, maps_dir=""):
-        if self.is_resource or self.engine not in ("halo1pc", "halo1pcdemo",
+        if self.is_resource or self.engine not in ("halo1pc", "halo1pcdemo", "halo1mcc",
                                                    "halo1ce", "halo1yelo",
                                                    "halo1vap"):
             return {}
 
         map_paths = {"bitmaps": None, "sounds": None, "loc": None}
-        if self.engine not in ("halo1ce", "halo1yelo", "halo1vap"):
+        if self.engine not in ("halo1ce", "halo1yelo", "halo1vap",  "halo1mcc"):
             map_paths.pop('loc')
 
         data_files = False

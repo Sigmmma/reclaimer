@@ -8,6 +8,7 @@
 #
 
 from ...hek.defs.bitm import *
+from .objs.bitm import MccBitmTag
 from supyr_struct.util import desc_variant
 
 format_comment_parts = format_comment.split("NOTE: ", 1)
@@ -86,6 +87,6 @@ bitm_def = TagDef("bitm",
     blam_header('bitm', 7),
     bitm_body,
 
-    ext=".bitmap", endian=">", tag_cls=BitmTag,
+    ext=".bitmap", endian=">", tag_cls=MccBitmTag,
     subdefs = {'pixel_root':pixel_root}
     )

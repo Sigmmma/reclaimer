@@ -319,6 +319,13 @@ class HaloMap:
                     print("Loading %s..." % map_name)
 
                 new_map.load_map(map_path, **kw)
+                if self.engine == "halo1mcc" and (
+                    (new_map.engine == "halo1pc" and new_map.map_name == "bitmaps") or
+                    new_map.engine == "halo1ce"
+                    ):
+                    # cant tell the difference between mcc, ce, and pc resource maps
+                    new_map.engine = self.engine
+
                 if new_map.engine != self.engine:
                     if do_printout:
                         print("Incorrect engine for this map.")
