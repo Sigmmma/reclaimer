@@ -367,8 +367,8 @@ class Halo1RsrcMap(HaloMap):
             meta.string.data = loc_data.read(b.size).decode('utf-16-le')
         elif tag_cls == "snd!":
             # might need to get samples and permutations from the resource map
-            is_pc = engine in ("halo1pc", "halo1pcdemo", "halo1mcc")
-            is_ce = engine in ("halo1ce", "halo1yelo", "halo1vap")
+            is_pc = engine in ("halo1pc", "halo1pcdemo")
+            is_ce = engine in ("halo1ce", "halo1yelo", "halo1vap", "halo1mcc")
             if not(is_pc or is_ce):
                 return meta
             elif sound_data is None:

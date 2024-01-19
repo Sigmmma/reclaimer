@@ -15,8 +15,8 @@ from copy import deepcopy
 
 from reclaimer.constants import map_build_dates, map_magics, GEN_3_ENGINES
 from reclaimer.meta.halo1_map import map_header_def, map_header_vap_def,\
-     map_header_anni_def, map_header_demo_def, tag_index_pc_def,\
-     tag_index_xbox_def, tag_index_anni_def
+     map_header_anni_def, map_header_demo_def, map_header_mcc_def,\
+     tag_index_pc_def, tag_index_xbox_def, tag_index_anni_def
 from reclaimer.meta.halo2_alpha_map import h2_alpha_map_header_def,\
      h2_alpha_tag_index_def
 from reclaimer.meta.halo2_map import h2v_map_header_full_def,\
@@ -120,8 +120,11 @@ def get_map_header(map_file, header_only=False):
                 if header_only:
                     header_def = h2x_map_header_def
 
-        elif ver_little in (5, 6, 13, 609):
+        elif ver_little in (5, 6, 609):
             header_def = map_header_def
+
+        elif ver_little == 13:
+            header_def = map_header_mcc_def
 
         elif ver_little == 134:
             header_def = map_header_vap_def

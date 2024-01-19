@@ -242,10 +242,17 @@ map_header = Struct("map header",
         ),
     Pad(2),
     UInt32("crc32"),
-    Pad(8),
+    Pad(1),
+    Pad(3),
+    Pad(4),
     yelo_header,
     UEnum32('foot', ('foot', 'foot'), DEFAULT='foot', OFFSET=2044),
     SIZE=2048
+    )
+
+map_header_mcc = desc_variant(
+    map_header,
+    ("pad_12", UEnum8("enable_remastered_graphics", "yes", "no")),
     )
 
 map_header_vap = desc_variant(
@@ -326,3 +333,4 @@ tag_index_pc_def = BlockDef(tag_index_pc)
 tag_index_anni_def = BlockDef(tag_index_pc, endian=">")
 
 map_header_vap_def = BlockDef(map_header_vap)
+map_header_mcc_def = BlockDef(map_header_mcc)

@@ -93,6 +93,8 @@ class Halo1Map(HaloMap):
     bsp_headers = ()
     bsp_header_offsets = ()
     bsp_pointer_converters = ()
+    
+    sbsp_meta_header_def = sbsp_meta_header_def
 
     data_extractors = data_extraction.h1_data_extractors
 
@@ -273,10 +275,10 @@ class Halo1Map(HaloMap):
             for tag_id, offset in self.bsp_header_offsets.items():
                 if self.engine == "halo1anni":
                     with FieldType.force_big:
-                        header = sbsp_meta_header_def.build(
+                        header = self.sbsp_meta_header_def.build(
                             rawdata=self.map_data, offset=offset)
                 else:
-                    header = sbsp_meta_header_def.build(
+                    header = self.sbsp_meta_header_def.build(
                         rawdata=self.map_data, offset=offset)
 
                 if header.sig != header.get_desc("DEFAULT", "sig"):
@@ -1372,13 +1374,15 @@ class Halo1Map(HaloMap):
 
     def get_resource_map_paths(self, maps_dir=""):
         if self.is_resource or self.engine not in ("halo1pc", "halo1pcdemo", "halo1mcc",
-                                                   "halo1ce", "halo1yelo",
-                                                   "halo1vap"):
+                                                   "halo1ce", "halo1yelo", "halo1vap"):
             return {}
 
         map_paths = {"bitmaps": None, "sounds": None, "loc": None}
-        if self.engine not in ("halo1ce", "halo1yelo", "halo1vap",  "halo1mcc"):
+        if self.engine not in ("halo1ce", "halo1yelo", "halo1vap"):
             map_paths.pop('loc')
+
+        if self.engine == "halo1mcc":
+            map_paths.pop('sounds')
 
         data_files = False
         if hasattr(self.map_header, "yelo_header"):
@@ -1408,6 +1412,10 @@ class Halo1Map(HaloMap):
     def generate_map_info_string(self):
         string = HaloMap.generate_map_info_string(self)
         index, header = self.tag_index, self.map_header
+        
+        if self.engine == "halo1mcc":
+            string += """
+    supports remastered == %s""" % header.enable_remastered_graphics.enum_name
 
         string += """
 
@@ -1448,14 +1456,36 @@ Tag index:
             if header is None: continue
 
             magic  = self.bsp_magics[tag_id]
+            offset = self.bsp_header_offsets[tag_id]
             string += """    %s.structure_scenario_bsp
         bsp base pointer     == %s
         bsp magic            == %s
         bsp size             == %s
         bsp metadata pointer == %s   non-magic == %s\n""" % (
-            index.tag_index[tag_id].path, self.bsp_header_offsets[tag_id],
+            index.tag_index[tag_id].path, offset,
             magic, self.bsp_sizes[tag_id], header.meta_pointer,
-            header.meta_pointer - magic)
+            header.meta_pointer + offset - magic
+            )
+            if self.engine == "halo1mcc":
+                string += """\
+        render verts size    == %s
+        render verts pointer == %s\n""" % (
+                header.uncompressed_render_vertices_size,
+                header.uncompressed_render_vertices_pointer,
+                )
+            else:
+                string += """\
+        uncomp mats count    == %s
+        uncomp mats pointer  == %s   non-magic == %s
+        comp mats count      == %s
+        comp mats pointer    == %s   non-magic == %s\n""" % (
+                header.uncompressed_lightmap_materials_count,
+                header.uncompressed_lightmap_materials_pointer,
+                header.uncompressed_lightmap_materials_pointer + offset - magic,
+                header.compressed_lightmap_materials_count,
+                header.compressed_lightmap_materials_pointer,
+                header.compressed_lightmap_materials_pointer + offset - magic,
+                )
 
         if self.engine == "halo1yelo":
             string += self.generate_yelo_info_string()
