@@ -76,7 +76,7 @@ sound_list_header = Container("sound_list_header",
         SIZE='.string_len', 
         WIDGET_WIDTH=100
         ),
-    UInt32('sample_id'),
+    UInt32('sample_index'),
     UInt32('sample_count'),
     )
 
@@ -183,8 +183,8 @@ fmod_bank_header = Struct("header",
         "vorbis",
         ),
     Pad(8),
-    StrHex('hash', SIZE=16),
-    StrHex('dummy', SIZE=8),
+    StrHex('hash', SIZE=8),
+    StrHex('guid', SIZE=16),
     SIZE=FMOD_BANK_HEADER_SIZE
     )
 
