@@ -29,16 +29,19 @@ def has_next_chunk(parent=None, **kwargs):
     return (parent[-1] if parent else parent.parent).header.has_next_chunk
 
 
-def sample_data_size(parent=None, root_offset=0, offset=0, **kwargs):
+def sample_data_size(parent=None, node=None, root_offset=0, offset=0, **kwargs):
+    if node is not None:
+        return len(node)
+
     sample_array = getattr(parent, "parent", None)
     if not sample_array:
         return 0
 
     next_sample_index = sample_array.index_by_id(parent) + 1
-    start = sample_data_pointer(parent=parent, root_offset=root_offset, offset=offset)
+    start = sample_data_pointer(parent=parent)
     if next_sample_index >= len(sample_array):
-        fsb_header = getattr(getattr(sample_array, "parent", None), "header", None)
-        data_size  = getattr(fsb_header, "sample_data_size", 0) - start
+        fsb_header = sample_array.parent.header
+        data_size  = fsb_header.sample_data_size - start
     else:
         end = sample_data_pointer(parent=sample_array[next_sample_index])
         data_size = end - start
