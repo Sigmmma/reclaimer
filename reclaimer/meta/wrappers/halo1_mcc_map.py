@@ -30,7 +30,7 @@ class Halo1MccMap(Halo1Map):
     @property
     def uses_fmod_sound_bank(self):
         try:
-            return self.map_header.mcc_flags.data
+            return not self.map_header.mcc_flags.data
         except AttributeError:
             return False
 

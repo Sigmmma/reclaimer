@@ -1001,7 +1001,7 @@ class Halo1Map(HaloMap):
                         vert_size       = 68
 
                     # null out certain things in the part
-                    part.previous_part_index = part.next_part_index = 0
+                    #part.previous_part_index = part.next_part_index = 0
                     part.centroid_primary_node = 0
                     part.centroid_secondary_node = 0
                     part.centroid_primary_weight = 0.0
