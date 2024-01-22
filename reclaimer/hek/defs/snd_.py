@@ -67,22 +67,21 @@ For all intents and purposes, "ima adpcm" is useless.
 """
     )
 
-
 permutation = Struct('permutation',
     ascii_str32("name"),
     Float("skip_fraction"),
     Float("gain", DEFAULT=1.0),
     compression,
     SInt16("next_permutation_index", DEFAULT=-1),
-    FlSInt32("unknown0", VISIBLE=False),
-    FlUInt32("unknown1", VISIBLE=False),  # always zero?
-    FlUInt32("unknown2", VISIBLE=False),
+    UInt32("sample_data_pointer", VISIBLE=False),
+    UInt32("unknown", VISIBLE=False),  # always zero?
+    UInt32("parent_tag_id", VISIBLE=False),
     # this is actually the required length of the ogg
     # decompression buffer. For "none" compression, this
     # mirrors samples.size, so a more appropriate name
     # for this field should be pcm_buffer_size
     FlUInt32("ogg_sample_count", EDITABLE=False),
-    FlUInt32("unknown3", VISIBLE=False),  # seems to always be == unknown2
+    UInt32("parent_tag_id2", VISIBLE=False),
     rawdata_ref("samples", max_size=4194304, widget=SoundSampleFrame),
     rawdata_ref("mouth_data", max_size=8192),
     rawdata_ref("subtitle_data", max_size=512),

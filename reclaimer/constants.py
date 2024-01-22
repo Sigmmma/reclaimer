@@ -192,7 +192,7 @@ FORMAT_NAME_MAP = (
     "UNUSED14", "DXN", "CTX1", "DXT3A", "DXT3Y", "DXT5A", "DXT5Y", "DXT5AY")
 MCC_FORMAT_NAME_MAP = FORMAT_NAME_MAP[:FORMAT_NAME_MAP.index("P8")] + ("BC7", )
 
-I_FORMAT_NAME_MAP       = {fmt: i for i, fmt in enumerate(FORMAT_NAME_MAP)}
+I_FORMAT_NAME_MAP      = {fmt: i for i, fmt in enumerate(FORMAT_NAME_MAP)}
 I_MCC_FORMAT_NAME_MAP  = {fmt: i for i, fmt in enumerate(MCC_FORMAT_NAME_MAP)}
 
 #each bitmap's number of bytes must be a multiple of 512

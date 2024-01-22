@@ -249,10 +249,17 @@ map_header = Struct("map header",
     UEnum32('foot', ('foot', 'foot'), DEFAULT='foot', OFFSET=2044),
     SIZE=2048
     )
+    
+mcc_flags = Bool8("mcc_flags", 
+    # NOTE: this is probably a set of bools, but idk what they are, and idc enough to find out
+    "use_classic_unk0",
+    "use_classic_unk1",
+    "use_classic_unk2",
+    )
 
 map_header_mcc = desc_variant(
     map_header,
-    ("pad_12", UEnum8("enable_remastered_graphics", "yes", "no")),
+    ("pad_12", mcc_flags),
     )
 
 map_header_vap = desc_variant(

@@ -333,11 +333,11 @@ class Halo1RsrcMapTag(Tag):
         meta_head, samp_head = rsrc_tags[-1], rsrc_tags[-2]
 
         for pr in tag_data.pitch_ranges.STEPTREE:
-            pr.unknown0 = 1.0
+            pr.playback_rate = 1.0
             pr.unknown1 = pr.unknown2 = -1
             for perm in pr.permutations.STEPTREE:
-                perm.unknown1 = 0
-                perm.unknown3 = perm.unknown2 = 0xFFffFFff
+                perm.unknown = 0
+                perm.parent_tag_id = perm.parent_tag_id2 = 0xFFffFFff
                 sample_data = perm.samples.data
                 if perm.compression.enum_name == "none":
                     sample_data = array(">h", sample_data)

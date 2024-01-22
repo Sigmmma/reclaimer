@@ -230,12 +230,13 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
         if s_desc:
             pointer_converter = kwargs.get('map_pointer_converter')
             safe_mode = kwargs.get("safe_mode", True) and not desc.get(IGNORE_SAFE_MODE)
+            arr_len_max = desc[0].get(MAX, 0) # get the max value from the size field
 
             if pointer_converter is not None:
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[1])
                 if safe_mode:
                     # make sure the reflexive sizes are within sane bounds.
-                    node[0] = min(node[0], max(SANE_MAX_REFLEXIVE_COUNT, s_desc.get(MAX, 0)))
+                    node[0] = min(node[0], max(SANE_MAX_REFLEXIVE_COUNT, arr_len_max))
 
                 if (file_ptr < 0 or file_ptr +
                     node[0]*s_desc[SUB_STRUCT].get(SIZE, 0) > len(rawdata)):
@@ -243,7 +244,7 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
                     #    (ex: bad hek+ extraction)
                     node[0] = node[1] = 0
 
-            elif node[0] > max(SANE_MAX_REFLEXIVE_COUNT, s_desc.get(MAX, 0)):
+            elif node[0] > max(SANE_MAX_REFLEXIVE_COUNT, arr_len_max):
                 raise ValueError("Reflexive size is above highest allowed value.")
 
             if not node[0]:

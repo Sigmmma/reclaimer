@@ -860,51 +860,8 @@ class Halo1Map(HaloMap):
                 if not byteswap: break
                 byteswap_animation(anim)
 
-        elif tag_cls == "bitm":
-            # set the size of the compressed plate data to nothing
-            meta.compressed_color_plate_data.STEPTREE = BytearrayBuffer()
-
-            # to enable compatibility with my bitmap converter we'll set the
-            # base address to a certain constant based on the console platform
-            is_xbox = get_is_xbox_map(engine)
-
-            new_pixels_offset = 0
-
-            # uncheck the prefer_low_detail flag and
-            # set up the pixels_offset correctly.
-            for bitmap in meta.bitmaps.STEPTREE:
-                bitmap.flags.prefer_low_detail = is_xbox
-                bitmap.pixels_offset = new_pixels_offset
-                new_pixels_offset += bitmap.pixels_meta_size
-
-                # clear some meta-only fields
-                bitmap.pixels_meta_size = 0
-                bitmap.bitmap_id_unknown1 = bitmap.bitmap_id_unknown2 = 0
-                bitmap.bitmap_data_pointer = 0
-
-                if is_xbox:
-                    bitmap.base_address = 1073751810
-                    if "dxt" in bitmap.format.enum_name:
-                        # need to correct mipmap count on xbox dxt bitmaps.
-                        # the game seems to prune the mipmap texels for any
-                        # mipmaps whose dimensions are 2x2 or smaller
-
-                        max_dim = max(bitmap.width, bitmap.height)
-                        if 2 ** bitmap.mipmaps > max_dim:
-                            # make sure the mipmap level isnt higher than the
-                            # number of mipmaps that should be able to exist.
-                            bitmap.mipmaps = int(log(max_dim, 2))
-
-                        last_mip_dim = max_dim // (2 ** bitmap.mipmaps)
-                        if last_mip_dim == 1:
-                            bitmap.mipmaps -= 2
-                        elif last_mip_dim == 2:
-                            bitmap.mipmaps -= 1
-
-                        if bitmap.mipmaps < 0:
-                            bitmap.mipmaps = 0
-                else:
-                    bitmap.base_address = 0
+        elif tag_cls in ("bitm", "snd!"):
+            meta = Halo1RsrcMap.meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs)
 
         elif tag_cls == "cdmg":
             # divide camera shaking wobble period by 30
@@ -1128,6 +1085,9 @@ class Halo1Map(HaloMap):
 
             for cluster in meta.clusters.STEPTREE:
                 predicted_resources.append(cluster.predicted_resources)
+            
+            for coll_mat in meta.collision_materials.STEPTREE:
+                coll_mat.unknown = 0  # supposed to be 0 in tag form
 
             compressed = "xbox" in engine or engine in ("stubbs", "shadowrun_proto")
 
@@ -1307,15 +1267,6 @@ class Halo1Map(HaloMap):
                 b.fade_out_time /= 30
                 b.up_time       /= 30
 
-        elif tag_cls == "snd!":
-            meta.maximum_bend_per_second = meta.maximum_bend_per_second ** 30
-            for pitch_range in meta.pitch_ranges.STEPTREE:
-                if not byteswap: break
-                for permutation in pitch_range.permutations.STEPTREE:
-                    if permutation.compression.enum_name == "none":
-                        # byteswap pcm audio
-                        byteswap_pcm16_samples(permutation.samples)
-
         elif tag_cls == "shpp":
             predicted_resources.append(meta.predicted_resources)
 
@@ -1373,16 +1324,13 @@ class Halo1Map(HaloMap):
         return meta
 
     def get_resource_map_paths(self, maps_dir=""):
-        if self.is_resource or self.engine not in ("halo1pc", "halo1pcdemo", "halo1mcc",
+        if self.is_resource or self.engine not in ("halo1pc", "halo1pcdemo",
                                                    "halo1ce", "halo1yelo", "halo1vap"):
             return {}
 
         map_paths = {"bitmaps": None, "sounds": None, "loc": None}
         if self.engine not in ("halo1ce", "halo1yelo", "halo1vap"):
             map_paths.pop('loc')
-
-        if self.engine == "halo1mcc":
-            map_paths.pop('sounds')
 
         data_files = False
         if hasattr(self.map_header, "yelo_header"):
@@ -1412,10 +1360,15 @@ class Halo1Map(HaloMap):
     def generate_map_info_string(self):
         string = HaloMap.generate_map_info_string(self)
         index, header = self.tag_index, self.map_header
-        
+
         if self.engine == "halo1mcc":
-            string += """
-    supports remastered == %s""" % header.enable_remastered_graphics.enum_name
+            # NOTE: these flags are subject to change, so
+            #       for now they're dynamically named
+            string += "\n    remastered flags:"
+            for name in header.mcc_flags.NAME_MAP:
+                line = "\n        " + (name.replace("_", " "))
+                line += " " * (29-len(line)) + "== "
+                string += line + str(bool(header.mcc_flags[name]))
 
         string += """
 

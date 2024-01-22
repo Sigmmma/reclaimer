@@ -57,28 +57,31 @@ def tag_class(*args, **kwargs):
         )
 
 
-def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **desc):
+def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **kwargs):
     '''This function serves to macro the creation of a reflexive'''
-    desc.update(
-        INCLUDE=reflexive_struct,
+    reflexive_fields = (
+        SInt32("size", VISIBLE=VISIBILITY_METADATA, EDITABLE=False, MAX=max_count),
+        reflexive_struct[1],
+        reflexive_struct[2],
+        )
+    kwargs.update(
         STEPTREE=ReflexiveArray(name + "_array",
-            SIZE=".size", MAX=max_count,
-            SUB_STRUCT=substruct, WIDGET=ReflexiveFrame
+            SIZE=".size", SUB_STRUCT=substruct, WIDGET=ReflexiveFrame
             ),
         SIZE=12
         )
 
-    if DYN_NAME_PATH in desc:
-        desc[STEPTREE][DYN_NAME_PATH] = desc.pop(DYN_NAME_PATH)
+    if DYN_NAME_PATH in kwargs:
+        kwargs[STEPTREE][DYN_NAME_PATH] = kwargs.pop(DYN_NAME_PATH)
     if names:
         name_map = {}
         for i in range(len(names)):
             e_name = BlockDef.str_to_name(None, names[i])
             name_map[e_name] = i
 
-        desc[STEPTREE][NAME_MAP] = name_map
+        kwargs[STEPTREE][NAME_MAP] = name_map
 
-    return Reflexive(name, **desc)
+    return Reflexive(name, *reflexive_fields, **kwargs)
 
 def get_raw_reflexive_offsets(desc, two_byte_offs, four_byte_offs, off=0):
     if INCLUDE in desc:
