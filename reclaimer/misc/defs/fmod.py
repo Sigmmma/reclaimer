@@ -8,9 +8,9 @@
 #
 
 from reclaimer.common_descs import *
+from .objs.fmod import FModSoundBankTag,\
+    FMOD_BANK_HEADER_SIZE, FMOD_SAMPLE_CHUNK_SIZE
 from supyr_struct.defs.tag_def import TagDef
-
-FMOD_BANK_HEADER_SIZE = 60
 
 
 def get():
@@ -29,24 +29,36 @@ def has_next_chunk(parent=None, **kwargs):
     return (parent[-1] if parent else parent.parent).header.has_next_chunk
 
 
-def sample_data_size(parent=None, node=None, root_offset=0, offset=0, **kwargs):
+def sample_data_size(
+        parent=None, node=None, attr_index=None, 
+        new_val=None, root_offset=0, offset=0, rawdata=None,
+        **kwargs
+        ):
+    if new_val is not None:
+        # can't set size here
+        return
+    elif parent is not None and attr_index is not None:
+        node = parent[attr_index]
+
     if node is not None:
         return len(node)
 
     sample_array = getattr(parent, "parent", None)
-    if not sample_array:
+    if not sample_array or not rawdata:
+        # NOTE: checking if rawdata is passed to indicate that
+        #       we're actually trying to parse from something.
+        #       if it's not, we've appended an empty block.
         return 0
 
     next_sample_index = sample_array.index_by_id(parent) + 1
-    start = sample_data_pointer(parent=parent)
     if next_sample_index >= len(sample_array):
-        fsb_header = sample_array.parent.header
-        data_size  = fsb_header.sample_data_size - start
+        start  = parent.header.data_qword_offset * FMOD_SAMPLE_CHUNK_SIZE
+        end    = sample_array.parent.header.sample_data_size
     else:
-        end = sample_data_pointer(parent=sample_array[next_sample_index])
-        data_size = end - start
+        start  = sample_data_pointer(parent=parent)
+        end    = sample_data_pointer(parent=sample_array[next_sample_index])
 
-    return max(0, data_size)
+    return max(0, end - start)
 
 
 def sample_data_pointer(parent=None, root_offset=0, offset=0, **kwargs):
@@ -56,7 +68,7 @@ def sample_data_pointer(parent=None, root_offset=0, offset=0, **kwargs):
         root_offset + offset + FMOD_BANK_HEADER_SIZE +
         bank_header.sample_headers_size +
         bank_header.sample_names_size +
-        sample_header.data_qword_offset * 16
+        sample_header.data_qword_offset * FMOD_SAMPLE_CHUNK_SIZE
         )
 
 
@@ -207,5 +219,5 @@ fmod_bank_def = TagDef('fmod_bank',
         POINTER=sample_name_offsets_pointer,
         DYN_NAME_PATH=".name", WIDGET=DynamicArrayFrame,
         ),
-    ext='.fsb', endian='<'
+    ext='.fsb', endian='<', tag_cls=FModSoundBankTag
     )
