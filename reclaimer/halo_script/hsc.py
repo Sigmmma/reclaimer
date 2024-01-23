@@ -20,6 +20,7 @@ from reclaimer.h2.common_descs import script_types as h2_script_types,\
      script_object_types as h2_script_object_types
 
 from supyr_struct.defs.block_def import BlockDef
+from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.field_types import FieldType
 
 try:
@@ -84,6 +85,8 @@ For most intents and purposes, this value mirrors the 'type' field"""
         "is_script_call",
         "is_global",
         "is_garbage_collectable",
+        "is_parameter",  # MCC only
+        "is_stripped",   # MCC only
         ),
     UInt32("next_node"),
     UInt32("string_offset"),
@@ -110,7 +113,7 @@ fast_script_node = QStruct("script_node",
     SIZE=20
     )
 
-h1_script_syntax_data = Struct("script syntax data header",
+script_syntax_data_header = Struct("header",
     ascii_str32('name', DEFAULT="script node"),
     UInt16("max_nodes", DEFAULT=19001),  # this is 1 more than expected
     UInt16("node_size", DEFAULT=20),
@@ -123,6 +126,10 @@ h1_script_syntax_data = Struct("script syntax data header",
     BytesRaw("next", SIZE=4),
     Pointer32("first"),
     SIZE=56,
+    )
+
+h1_script_syntax_data = Struct("script_syntax_data_header",
+    INCLUDE=script_syntax_data_header,
     STEPTREE=WhileArray("nodes", SUB_STRUCT=fast_script_node)
     )
 
@@ -454,3 +461,17 @@ def hsc_bytecode_to_string(syntax_data, string_data, block_index,
     if block_type == "global":
         return "(%s%s)" % (head, body)
     return "(%s\n%s%s\n)" % (head, indent_str, body[1:])
+
+
+# for loading in binilla for debugging script data issues
+def get():
+    return script_syntax_data_def
+
+
+script_syntax_data_def = TagDef('script_syntax_data',
+    script_syntax_data_header,
+    Array("nodes", 
+        SUB_STRUCT=script_node, SIZE=".header.last_node"
+        ),
+    endian='>'
+    )

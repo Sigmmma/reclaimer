@@ -13,11 +13,12 @@ from traceback import format_exc
 
 from reclaimer.meta.wrappers.halo_map import HaloMap
 from reclaimer.meta.wrappers.halo1_rsrc_map import Halo1RsrcMap
-from reclaimer.meta.wrappers.halo1_map import Halo1Map
+from reclaimer.meta.wrappers.halo1_mcc_map import Halo1MccMap
 from reclaimer import data_extraction
 from reclaimer.halo_script.hsc import h1_script_syntax_data_def
 from reclaimer.hek.defs.coll import fast_coll_def
 from reclaimer.hek.defs.sbsp import fast_sbsp_def
+from reclaimer.mcc_hek.defs.sbsp import sbsp_meta_header_def
 from reclaimer.hek.handler import HaloHandler
 from reclaimer.util import int_to_fourcc
 
@@ -65,17 +66,19 @@ def end_swap_uint16(v):
     return ((v << 8) + (v >> 8)) & 0xFFFF
 
 
-class Halo1AnniMap(Halo1Map):
+class Halo1AnniMap(Halo1MccMap):
     tag_headers = None
     defs = None
 
     handler_class = HaloHandler
+    
+    sbsp_meta_header_def = sbsp_meta_header_def
+    
+    @property
+    def uses_fmod_sound_bank(self): return True
 
-    inject_rawdata = Halo1RsrcMap.inject_rawdata
-
-    def __init__(self, maps=None):
-        HaloMap.__init__(self, maps)
-        self.setup_tag_headers()
+    def get_resource_map_paths(self, maps_dir=""):
+        return {}
 
     def get_dependencies(self, meta, tag_id, tag_cls):
         if self.is_indexed(tag_id):
@@ -111,6 +114,19 @@ class Halo1AnniMap(Halo1Map):
             dependencies.append(node)
         return dependencies
 
+    def setup_sbsp_headers(self):
+        with FieldType.force_big:
+            super().setup_sbsp_headers()
+
+    def setup_rawdata_pages(self):
+        # NOTE: for some reason, anniversary maps have overlap between the 
+        #       sbsp virtual address range and the tag data address range. 
+        #       because of this, we don't setup any pages in the default 
+        #       pointer converter for sbsp
+        # NOTE: we also don't setup pages for the model data section, since
+        #       it's  also overlapping with the tag data address range.
+        pass
+
     def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, **kw):
         '''
         Takes a tag reference id as the sole argument.
@@ -137,7 +153,6 @@ class Halo1AnniMap(Halo1Map):
         # if we dont have a defintion for this tag_cls, then return nothing
         if self.get_meta_descriptor(tag_cls) is None:
             return
-
 
         if tag_cls is None:
             # couldn't determine the tag class
@@ -186,12 +201,11 @@ class Halo1AnniMap(Halo1Map):
         return meta
 
     def byteswap_anniversary_fields(self, meta, tag_cls):
-
         if tag_cls == "antr":
             unpack_header = PyStruct("<11i").unpack
             for b in meta.animations.STEPTREE:
-                b.unknown_sint16 = end_swap_int16(b.unknown_sint16)
-                b.unknown_float = end_swap_float(b.unknown_float)
+                b.first_permutation_index = end_swap_int16(b.first_permutation_index)
+                b.chance_to_play = end_swap_float(b.chance_to_play)
                 if not b.flags.compressed_data:
                     continue
 
@@ -234,8 +248,8 @@ class Halo1AnniMap(Halo1Map):
 
         elif tag_cls == "coll":
             for b in meta.nodes.STEPTREE:
-                b.unknown0 = end_swap_int16(b.unknown0)
-                b.unknown1 = end_swap_int16(b.unknown1)
+                b.unknown = end_swap_int16(b.unknown)
+                b.damage_region.data = end_swap_int16(b.damage_region.data)
 
         elif tag_cls == "effe":
             for event in meta.events.STEPTREE:
@@ -253,8 +267,8 @@ class Halo1AnniMap(Halo1Map):
             meta.string.parse(rawdata=block_bytes)
 
         elif tag_cls == "lens":
-            meta.unknown0 = end_swap_float(meta.unknown0)
-            meta.unknown1 = end_swap_float(meta.unknown1)
+            meta.cosine_falloff_angle = end_swap_float(meta.cosine_falloff_angle)
+            meta.cosine_cutoff_angle  = end_swap_float(meta.cosine_cutoff_angle)
 
         elif tag_cls == "lsnd":
             meta.unknown0 = end_swap_float(meta.unknown0)
@@ -263,7 +277,7 @@ class Halo1AnniMap(Halo1Map):
             meta.unknown3 = end_swap_float(meta.unknown3)
             meta.unknown4 = end_swap_int16(meta.unknown4)
             meta.unknown5 = end_swap_int16(meta.unknown5)
-            meta.unknown6 = end_swap_float(meta.unknown6)
+            meta.max_distance = end_swap_float(meta.max_distance)
 
         elif tag_cls == "metr":
             meta.screen_x_pos = end_swap_uint16(meta.screen_x_pos)
@@ -273,7 +287,7 @@ class Halo1AnniMap(Halo1Map):
 
         elif tag_cls in ("mod2", "mode"):
             for node in meta.nodes.STEPTREE:
-                node.unknown = end_swap_float(node.unknown)
+                node.scale = end_swap_float(node.scale)
                 for b in (node.rot_jj_kk, node.rot_kk_ii, node.rot_ii_jj,
                           node.translation_to_root):
                     for i in range(len(b)):
@@ -367,7 +381,7 @@ class Halo1AnniMap(Halo1Map):
                 b.reflexive_index = end_swap_int16(b.reflexive_index)
 
             for b in meta.trigger_volumes.STEPTREE:
-                b.unknown = end_swap_uint16(b.unknown)
+                b.unknown0 = end_swap_uint16(b.unknown0)
 
             for b in meta.encounters.STEPTREE:
                 b.unknown = end_swap_int16(b.unknown)
@@ -427,7 +441,6 @@ class Halo1AnniMap(Halo1Map):
 
                 b.parse(rawdata=block_bytes)
 
-
         if tag_cls in ("bipd", "vehi", "weap", "eqip", "garb", "proj",
                        "scen", "mach", "ctrl", "lifi", "plac", "ssce", "obje"):
             meta.obje_attrs.object_type.data = end_swap_int16(
@@ -438,22 +451,31 @@ class Halo1AnniMap(Halo1Map):
                 meta.shdr_attrs.shader_type.data)
 
     def inject_rawdata(self, meta, tag_cls, tag_index_ref):
-        pass
+        # TODO: Update this with extracting from sabre paks if 
+        #       bitmap/sound/model extraction is ever implemented
+        if tag_cls == "snd!":
+            # audio samples are ALWAYS in fmod, so fill the with empty padding
+            for pitches in meta.pitch_ranges.STEPTREE:
+                for perm in pitches.permutations.STEPTREE:
+                    for b in (perm.samples, perm.mouth_data, perm.subtitle_data):
+                        b.data = b"\x00"*b.size
+        elif tag_cls == "bitm":
+            # bitmap pixels are ALWAYS in saber paks, so fill the with empty padding
+            meta.compressed_color_plate_data.data = b"\x00"*meta.processed_pixel_data.size
+            meta.processed_pixel_data.data = b"\x00"*meta.processed_pixel_data.size
+        else:
+            meta = super().inject_rawdata(meta, tag_cls, tag_index_ref)
+
+        return meta
 
     def meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs):
+        if tag_cls in ("bitm", "snd!", "scnr", ):
+            # no bitmap pixels or sound samples in map. cant extract.
+            # also, we don't know how to properly byteswap recorded
+            # animations, so scenarios can't be extracted properly.
+            return
+
         kwargs["byteswap"] = False
-        Halo1Map.meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs)
-
-
-        # TODO: Remove this if bitmap/sound extraction is ever implemented
-        if tag_cls in ("snd!", "bitm"):
-            # these tags don't properly extract due to missing
-            # pixel data and sound permutation sample data
-            return
-        elif tag_cls in ("sbsp", "scnr"):
-            # renderable geometry is absent from h1 anniversary bsps, and
-            # we don't know how to properly byteswap recorded animations,
-            # so scenarios can't be extracted properly either.
-            return
+        super().meta_to_tag_data(meta, tag_cls, tag_index_ref, **kwargs)
 
         return meta

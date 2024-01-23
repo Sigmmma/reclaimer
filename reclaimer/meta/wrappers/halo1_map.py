@@ -271,24 +271,53 @@ class Halo1Map(HaloMap):
 
                 i += 1
 
-            # read the sbsp headers
-            for tag_id, offset in self.bsp_header_offsets.items():
-                if self.engine == "halo1anni":
-                    with FieldType.force_big:
-                        header = self.sbsp_meta_header_def.build(
-                            rawdata=self.map_data, offset=offset)
-                else:
-                    header = self.sbsp_meta_header_def.build(
-                        rawdata=self.map_data, offset=offset)
-
-                if header.sig != header.get_desc("DEFAULT", "sig"):
-                    print("Sbsp header is invalid for '%s'" %
-                          self.tag_index.tag_index[tag_id].path)
-                self.bsp_headers[tag_id] = header
-                self.tag_index.tag_index[tag_id].meta_offset = header.meta_pointer
+            self.setup_sbsp_headers()
 
         except Exception:
             print(format_exc())
+
+    def setup_sbsp_headers(self):
+        # read the sbsp headers
+        for tag_id, offset in self.bsp_header_offsets.items():
+            header = self.sbsp_meta_header_def.build(
+                rawdata=self.map_data, offset=offset)
+
+            if header.sig != header.get_desc("DEFAULT", "sig"):
+                print("Sbsp header is invalid for '%s'" %
+                      self.tag_index.tag_index[tag_id].path)
+            self.bsp_headers[tag_id] = header
+            self.tag_index.tag_index[tag_id].meta_offset = header.meta_pointer
+
+    def setup_rawdata_pages(self):
+        tag_index = self.tag_index
+
+        last_bsp_end = 0
+        # calculate the start of the rawdata section
+        for tag_id in self.bsp_headers:
+            bsp_end = self.bsp_header_offsets[tag_id] + self.bsp_sizes[tag_id]
+            if last_bsp_end < bsp_end:
+                last_bsp_end = bsp_end
+
+        # add the rawdata section
+        self.map_pointer_converter.add_page_info(
+            last_bsp_end, last_bsp_end,
+            tag_index.model_data_offset - last_bsp_end,
+            )
+
+        # add the model data section
+        if tag_index.SIZE == 40:
+            # PC tag index
+            self.map_pointer_converter.add_page_info(
+                0, tag_index.model_data_offset,
+                tag_index.model_data_size,
+                )
+        else:
+            # XBOX tag index
+            self.map_pointer_converter.add_page_info(
+                0, tag_index.model_data_offset,
+                (self.map_header.tag_index_header_offset -
+                 tag_index.model_data_offset),
+                )
 
     def load_map(self, map_path, **kwargs):
         HaloMap.load_map(self, map_path, **kwargs)
@@ -320,34 +349,7 @@ class Halo1Map(HaloMap):
             print("Could not read scenario tag")
 
         self.setup_sbsp_pointer_converters()
-
-        last_bsp_end = 0
-        # calculate the start of the rawdata section
-        for tag_id in self.bsp_headers:
-            bsp_end = self.bsp_header_offsets[tag_id] + self.bsp_sizes[tag_id]
-            if last_bsp_end < bsp_end:
-                last_bsp_end = bsp_end
-
-        # add the rawdata section
-        self.map_pointer_converter.add_page_info(
-            last_bsp_end, last_bsp_end,
-            tag_index.model_data_offset - last_bsp_end,
-            )
-
-        # add the model data section
-        if tag_index.SIZE == 40:
-            # PC tag index
-            self.map_pointer_converter.add_page_info(
-                0, tag_index.model_data_offset,
-                tag_index.model_data_size,
-                )
-        else:
-            # XBOX tag index
-            self.map_pointer_converter.add_page_info(
-                0, tag_index.model_data_offset,
-                (self.map_header.tag_index_header_offset -
-                 tag_index.model_data_offset),
-                )
+        self.setup_rawdata_pages()
 
         # get the globals meta
         try:
@@ -1001,7 +1003,6 @@ class Halo1Map(HaloMap):
                         vert_size       = 68
 
                     # null out certain things in the part
-                    #part.previous_part_index = part.next_part_index = 0
                     part.centroid_primary_node = 0
                     part.centroid_secondary_node = 0
                     part.centroid_primary_weight = 0.0
@@ -1419,7 +1420,7 @@ Tag index:
             magic, self.bsp_sizes[tag_id], header.meta_pointer,
             header.meta_pointer + offset - magic
             )
-            if self.engine == "halo1mcc":
+            if self.engine in ("halo1mcc", "halo1anni"):
                 string += """\
         render verts size    == %s
         render verts pointer == %s\n""" % (

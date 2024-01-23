@@ -239,7 +239,7 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
                     max_size = max(SANE_MAX_REFLEXIVE_COUNT, arr_len_max)
                     if node[0] > max_size:
                         print("Warning: Clipped %s reflexive size from %s to %s" % (
-                            desc[NAME], size, new_size
+                            desc[NAME], node[0], max_size
                             ))
                         node[0] = max(SANE_MAX_REFLEXIVE_COUNT, arr_len_max)
 

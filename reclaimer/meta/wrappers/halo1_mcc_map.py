@@ -29,14 +29,14 @@ class Halo1MccMap(Halo1Map):
     
     @property
     def uses_fmod_sound_bank(self):
-        try:
-            return not self.map_header.mcc_flags.data
-        except AttributeError:
-            return False
+        return not self.uses_sounds_map
 
     @property
     def uses_sounds_map(self):
-        return not self.uses_fmod_sound_bank
+        try:
+            return self.map_header.mcc_flags.use_sounds_map
+        except AttributeError:
+            return False
 
     def get_resource_map_paths(self, maps_dir=""):
         if self.is_resource:
@@ -139,6 +139,6 @@ class Halo1MccMap(Halo1Map):
                         map_data.seek(lm_verts_offset)
                         vert_data += map_data.read(lm_verts_size)
 
-                    data_block.data = vert_data
+                    data_block.data = bytearray(vert_data)
         else:
             return super().inject_rawdata(meta, tag_cls, tag_index_ref)
