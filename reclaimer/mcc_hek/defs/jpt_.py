@@ -8,8 +8,14 @@
 #
 
 from ...hek.defs.jpt_ import *
-from .cdmg import damage
+from .cdmg import damage_flags
 from supyr_struct.util import desc_variant
+
+damage = desc_variant(damage,
+    ("flags", damage_flags),
+    ("instantaneous_acceleration", QStruct("instantaneous_acceleration", INCLUDE=ijk_float)),
+    ("pad_13", Pad(0)),
+    )
 
 jpt__body = desc_variant(jpt__body,
     ("damage", damage),
