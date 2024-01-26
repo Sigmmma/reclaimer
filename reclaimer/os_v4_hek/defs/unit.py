@@ -220,10 +220,7 @@ seat_extension = Struct("seat_extension",
     SIZE=100
     )
 
-seat = dict(seat)
-unit_attrs = dict(unit_attrs)
-
-seat[0] = Bool32("flags",
+seat_flags = Bool32("flags",
     "invisible",
     "locked",
     "driver",
@@ -237,9 +234,16 @@ seat[0] = Bool32("flags",
     "allow_ai_noncombatants",
     ("allows_melee", 1<<20)
     )
-seat[20] = reflexive("seat_extensions", seat_extension, 1)
-unit_attrs[45] = reflexive("unit_extensions", unit_extension, 1)
-unit_attrs[54] = reflexive("seats", seat, 16, DYN_NAME_PATH='.label')
+
+seat = desc_variant(seat,
+    ("flags", seat_flags),
+    ("pad_20", reflexive("seat_extensions", seat_extension, 1)),
+    )
+
+unit_attrs = desc_variant(unit_attrs,
+    ("pad_45", reflexive("unit_extensions", unit_extension, 1)),
+    ("seats", reflexive("seats", seat, 16, DYN_NAME_PATH='.label')),
+    )
 
 unit_body = Struct('tagdata', unit_attrs)
 

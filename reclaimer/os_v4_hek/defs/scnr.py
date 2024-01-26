@@ -47,7 +47,7 @@ bsp_modifier = Struct("bsp_modifier",
 
 
 scnr_body = dict(scnr_body)
-scnr_body[64] = reflexive("bsp_modifiers", bsp_modifier, 32)
+scnr_body[65] = reflexive("bsp_modifiers", bsp_modifier, 32)
 
 def get():
     return scnr_def

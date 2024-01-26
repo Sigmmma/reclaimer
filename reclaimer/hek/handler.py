@@ -176,6 +176,10 @@ class HaloHandler(Handler):
 
     def get_def_id(self, filepath):
         filepath = Path(filepath)
+        if is_path_empty(filepath):
+            # return None instead of throwing an error about a non-existent file
+            return
+
         if self.tagsdir_relative and not filepath.is_absolute():
             filepath = self.tagsdir.joinpath(filepath)
 

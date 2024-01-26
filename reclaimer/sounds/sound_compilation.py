@@ -73,17 +73,17 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
                 snd__perms.append()  # create the new perm block
                 snd__perm, _ = snd__perms.pop(-1)
                 snd__perm.name = name
-                snd__perm.ogg_sample_count = (
+                snd__perm.buffer_size = (
                     channel_count * 2 * blam_samples.sample_count)
                 snd__perm.samples.data = blam_samples.sample_data
                 snd__perm.mouth_data.data = blam_samples.mouth_data
 
                 if blam_samples.compression == constants.COMPRESSION_XBOX_ADPCM:
                     snd__perm.compression.set_to("xbox_adpcm")
-                    snd__perm.ogg_sample_count = 0  # adpcm has this as 0 always
+                    snd__perm.buffer_size = 0  # adpcm has this as 0 always
                 elif blam_samples.compression == constants.COMPRESSION_IMA_ADPCM:
                     snd__perm.compression.set_to("ima_adpcm")
-                    snd__perm.ogg_sample_count = 0  # adpcm has this as 0 always
+                    snd__perm.buffer_size = 0  # adpcm has this as 0 always
                 elif blam_samples.compression == constants.COMPRESSION_OGG:
                     snd__perm.compression.set_to("ogg")
                 else:

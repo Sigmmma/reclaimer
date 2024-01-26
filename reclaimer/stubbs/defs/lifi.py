@@ -7,9 +7,9 @@
 # See LICENSE for more information.
 #
 
+from ...hek.defs.lifi import *
 from .obje import *
 from .devi import *
-from ...hek.defs.lifi import *
 
 # replace the object_type enum one that uses
 # the correct default value for this object

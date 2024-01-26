@@ -43,6 +43,7 @@ H2_XBOX_INDEX_MAGIC         = 0x80061000
 map_build_dates = {
     "stubbs":          "400",
     "stubbspc":        "",
+    "stubbspc64bit":   "",
     "shadowrun_proto": "01.12.07.0132",
     "halo1xboxdemo":   "",
     "halo1xbox":       "01.10.12.2276",
@@ -71,6 +72,7 @@ map_build_dates = {
 map_versions = {
     "stubbs":          5,
     "stubbspc":        5,
+    "stubbspc64bit":   5,
     "shadowrun_proto": 5,
     "halo1xboxdemo":   5,
     "halo1xbox":       5,
@@ -102,7 +104,8 @@ GEN_1_HALO_ENGINES = ("halo1xboxdemo", "halo1xbox",
                       "halo1mcc", )
 
 GEN_1_ENGINES = GEN_1_HALO_ENGINES + (
-    "stubbs", "stubbspc", "shadowrun_proto", )
+    "stubbs", "stubbspc", "stubbspc64bit", "shadowrun_proto", 
+    )
 
 GEN_2_ENGINES = ("halo2alpha", "halo2beta", "halo2epsilon",
                  "halo2xbox", "halo2vista", )
@@ -117,6 +120,7 @@ GEN_3_ENGINES = ("halo3", "halo3odst", "halo3beta",
 map_magics = {
     "stubbs":          STUBBS_INDEX_MAGIC,
     "stubbspc":        PC_INDEX_MAGIC,
+    "stubbspc64bit":   PC_INDEX_MAGIC,
     "shadowrun_proto": SHADOWRUN_PROTO_INDEX_MAGIC,
     "halo1xboxdemo":   XBOX_INDEX_MAGIC,
     "halo1xbox":       XBOX_INDEX_MAGIC,
@@ -217,6 +221,10 @@ tag_class_fcc_to_le_int = {}
 # their int encoding to their string encoding.
 tag_class_be_int_to_fcc = {}
 tag_class_le_int_to_fcc = {}
+
+LOD_NAMES = (
+    "superhigh", "high", "medium", "low", "superlow"
+    )
 
 # maps tag class four character codes to the tags file extension
 tag_class_fcc_to_ext = {

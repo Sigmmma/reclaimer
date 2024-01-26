@@ -11,15 +11,19 @@ from ...hek.defs.proj import *
 from ..common_descs import *
 from .obje import *
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.util import desc_variant
 
 # replace the object_type enum one that uses
 # the correct default value for this object
 obje_attrs = dict(obje_attrs)
 obje_attrs[0] = dict(obje_attrs[0], DEFAULT=5)
 
-proj_attrs = dict(proj_attrs)
-proj_attrs[13] = reflexive("material_responses", material_response,
-                           len(materials_list), *materials_list)
+material_responses = reflexive("material_responses", 
+    material_response, len(materials_list), *materials_list
+    )
+proj_attrs = desc_variant(proj_attrs,
+    ("material_responses", material_responses)
+    )
 
 proj_body = Struct("tagdata",
     obje_attrs,

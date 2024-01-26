@@ -186,7 +186,8 @@ unit_attrs = Struct("unit_attrs",
     SEnum16('grenade_type', *grenade_types),
     SInt16('grenade_count', MIN=0),
 
-    Pad(4),
+    FlUInt16("soft_ping_stun_ticks", VISIBLE=False), # set to soft_ping_interrupt_time * 30
+    FlUInt16("hard_ping_stun_ticks", VISIBLE=False), # set to hard_ping_interrupt_time * 30
     reflexive("powered_seats", powered_seat, 2,
               "driver", "gunner"),
     reflexive("weapons", weapon, 4, DYN_NAME_PATH='.weapon.filepath'),

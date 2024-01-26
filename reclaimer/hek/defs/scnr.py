@@ -354,7 +354,10 @@ control = object_reference("control",
     )
 
 light_fixture = object_reference("light_fixture",
-    *_object_ref_pad_fields,
+    FlUInt16("bsp_indices_mask", VISIBLE=False),
+    Pad(2),
+    Pad(1),
+    Pad(3),
     dyn_senum16("power_group",
         DYN_NAME_PATH=".....device_groups.STEPTREE[DYN_I].name"),
     dyn_senum16("position_group",
@@ -486,8 +489,9 @@ netgame_equipment = Struct("netgame_equipment",
     SInt16("team_index"),
     SInt16("spawn_time", SIDETIP="seconds(0 = default)",
             UNIT_SCALE=sec_unit_scale),  # seconds
+    FlUInt32("unknown", VISIBLE=False),
 
-    Pad(48),
+    Pad(44),
     QStruct("position", INCLUDE=xyz_float),
     float_rad("facing"),  # radians
     dependency("item_collection", "itmc"),
@@ -596,7 +600,7 @@ cutscene_flag = Struct("cutscene_flag",
     )
 
 cutscene_camera_point = Struct("cutscene_camera_point",
-    Pad(4),
+    FlUInt32("unknown", VISIBLE=False),
     ascii_str32("name"),
     Pad(4),
     QStruct("position", INCLUDE=xyz_float),
@@ -606,7 +610,7 @@ cutscene_camera_point = Struct("cutscene_camera_point",
     )
 
 cutscene_title = Struct("cutscene_title",
-    Pad(4),
+    FlUInt32("unknown", VISIBLE=False),
     ascii_str32("name"),
     Pad(4),
     QStruct("text_bounds",
@@ -648,8 +652,11 @@ move_position = Struct("move_position",
     dyn_senum16("animation",
         DYN_NAME_PATH="tagdata.ai_animation_references.STEPTREE[DYN_I].animation_name"),
     SInt8("sequence_id"),
+    Pad(1),
+    Pad(8),
 
-    Pad(45),
+    FlUInt16("cluster_index", VISIBLE=False),
+    Pad(34),
     SInt32("surface_index"),
     SIZE=80
     )
@@ -657,7 +664,7 @@ move_position = Struct("move_position",
 actor_starting_location = Struct("starting_location",
     QStruct("position", INCLUDE=xyz_float),
     float_rad("facing"),  # radians
-    Pad(2),
+    FlUInt16("cluster_index", VISIBLE=False),
     SInt8("sequence_id"),
     Bool8("flags",
         "required",
@@ -781,7 +788,7 @@ encounter = Struct("encounter",
         {NAME: "unused8",  GUI_NAME: "8 / unused8"},
         {NAME: "unused9",  GUI_NAME: "9 / unused9"}
         ),
-    SInt16('unknown', VISIBLE=False),
+    FlUInt16('unknown', VISIBLE=False, DEFAULT=1),
     SEnum16("search_behavior",
         "normal",
         "never",
@@ -821,6 +828,7 @@ command = Struct("command",
 
 point = Struct("point",
     QStruct("position", INCLUDE=xyz_float),
+    FlUInt32("surface_index", VISIBLE=False),
     SIZE=20
     )
 
@@ -869,8 +877,14 @@ participant = Struct("participant",
     dyn_senum16("set_new_name", DYN_NAME_PATH="tagdata.object_names.STEPTREE[DYN_I].name"),
 
     Pad(12),
-    BytesRaw("unknown", DEFAULT=b"\xFF"*12, SIZE=12, VISIBLE=False),
+    FlUInt16("variant_1_id", VISIBLE=False),
+    FlUInt16("variant_2_id", VISIBLE=False),
+    FlUInt16("variant_3_id", VISIBLE=False),
+    FlUInt16("variant_4_id", VISIBLE=False),
+    FlUInt16("variant_5_id", VISIBLE=False),
+    FlUInt16("variant_6_id", VISIBLE=False),
     ascii_str32("encounter_name"),
+    FlUInt32("encounter_index", VISIBLE=False),
     SIZE=84
     )
 

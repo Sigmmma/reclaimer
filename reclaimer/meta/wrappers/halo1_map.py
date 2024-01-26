@@ -305,7 +305,7 @@ class Halo1Map(HaloMap):
             )
 
         # add the model data section
-        if tag_index.SIZE == 40:
+        if hasattr(tag_index, "model_data_size"):
             # PC tag index
             self.map_pointer_converter.add_page_info(
                 0, tag_index.model_data_offset,
@@ -878,7 +878,10 @@ class Halo1Map(HaloMap):
 
         elif tag_cls == "effe":
             # mask away the meta-only flags
-            meta.flags.data &= 3
+            # NOTE: xbox has a cache flag in the 2nd 
+            #       bit, so it should be masked out too.
+            meta.flags.data &= (1 if "xbox" in engine else 3)
+
             for event in meta.events.STEPTREE:
                 # tool exceptions if any parts reference a damage effect
                 # tag type, but have an empty filepath for the reference
@@ -906,7 +909,11 @@ class Halo1Map(HaloMap):
         elif tag_cls == "lens":
             # DON'T multiply corona rotation by pi/180
             # reminder that this is not supposed to be changed
-            pass # meta.corona_rotation.function_scale *= pi/180
+
+            if meta.corona_rotation.function_scale == 360.0:
+                # fix a really old bug(i think its the
+                # reason the above comment was created)
+                meta.corona_rotation.function_scale = 0.0
 
         elif tag_cls == "ligh":
             # divide light time by 30
@@ -934,14 +941,10 @@ class Halo1Map(HaloMap):
 
         elif tag_cls in ("mode", "mod2"):
             if engine in ("halo1yelo", "halo1ce", "halo1pc", "halo1vap", "halo1mcc",
-                          "halo1anni", "halo1pcdemo", "stubbspc"):
+                          "halo1anni", "halo1pcdemo", "stubbspc", "stubbspc64bit"):
                 # model_magic seems to be the same for all pc maps
                 verts_start = tag_index.model_data_offset
-                tris_start  = verts_start + (
-                    tag_index.index_parts_offset 
-                    if engine == "stubbspc" else 
-                    tag_index.vertex_data_size
-                    )
+                tris_start  = verts_start + tag_index.index_parts_offset
                 model_magic = None
             else:
                 model_magic = magic
@@ -1088,7 +1091,7 @@ class Halo1Map(HaloMap):
                 predicted_resources.append(cluster.predicted_resources)
             
             for coll_mat in meta.collision_materials.STEPTREE:
-                coll_mat.unknown = 0  # supposed to be 0 in tag form
+                coll_mat.material_type.data = 0  # supposed to be 0 in tag form
 
             compressed = "xbox" in engine or engine in ("stubbs", "shadowrun_proto")
 
@@ -1315,6 +1318,11 @@ class Halo1Map(HaloMap):
             # clear the merged values reflexive
             del shpg_attrs.merged_values.STEPTREE[:]
 
+        elif tag_cls == "soso":
+            if "xbox" not in engine and engine != "shadowrun_proto":
+                if hasattr(meta.soso_attrs.reflection, "reflection_bump_map"):
+                    meta.soso_attrs.reflection.reflection_bump_map.filepath = ""
+
         elif tag_cls == "weap":
             predicted_resources.append(meta.weap_attrs.predicted_resources)
 
@@ -1363,13 +1371,14 @@ class Halo1Map(HaloMap):
         index, header = self.tag_index, self.map_header
 
         if self.engine == "halo1mcc":
-            # NOTE: these flags are subject to change, so
-            #       for now they're dynamically named
-            string += "\n    remastered flags:"
-            for name in header.mcc_flags.NAME_MAP:
-                line = "\n        " + (name.replace("_", " "))
-                line += " " * (29-len(line)) + "== "
-                string += line + str(bool(header.mcc_flags[name]))
+            string += """\n    Calculated information:
+        use bitmaps map      == %s
+        use sounds map       == %s
+        no remastered sync   == %s""" % (
+            bool(header.mcc_flags.use_bitmaps_map), 
+            bool(header.mcc_flags.use_sounds_map), 
+            bool(header.mcc_flags.disable_remastered_sync), 
+            )
 
         string += """
 
@@ -1381,28 +1390,33 @@ Tag index:
     tag count           == %s
     scenario tag id     == %s
     index array pointer == %s   non-magic == %s
-    model data pointer  == %s
     meta data length    == %s
     vertex parts count  == %s
     index  parts count  == %s""" % (
         self.index_magic, self.map_magic,
         index.tag_count, index.scenario_tag_id & 0xFFff,
         index.tag_index_offset, index.tag_index_offset - self.map_magic,
-        index.model_data_offset, header.tag_data_size,
+        header.tag_data_size,
         index.vertex_parts_count, index.index_parts_count)
 
-        if index.SIZE == 36:
+        if hasattr(index, "model_data_size"):
             string += """
-    index parts pointer == %s   non-magic == %s""" % (
-        index.index_parts_offset, index.index_parts_offset - self.map_magic)
-        else:
-            string += """
-    vertex data size    == %s
+    vertex data pointer == %s
+    index  data pointer == %s
     index  data size    == %s
     model  data size    == %s""" % (
-        index.vertex_data_size,
-        index.model_data_size - index.vertex_data_size,
-        index.model_data_size)
+        index.model_data_offset, 
+        index.index_parts_offset,
+        index.model_data_size - index.index_parts_offset,
+        index.model_data_size
+        )
+        else:
+            string += """
+    vertex refs pointer == %s   non-magic == %s
+    index  refs pointer == %s   non-magic == %s""" % (
+        index.model_data_offset,  index.model_data_offset - self.map_magic,
+        index.index_parts_offset, index.index_parts_offset - self.map_magic,
+        )
 
         string += "\n\nSbsp magic and headers:\n"
         for tag_id in self.bsp_magics:

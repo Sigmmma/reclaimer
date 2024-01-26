@@ -154,15 +154,18 @@ event = Struct("event",
 effe_body = Struct("tagdata",
     Bool32("flags",
         {NAME: "deleted_when_inactive", GUI_NAME: "deleted when attachment deactivates"},
+        # NOTE: on xbox the must_be_deterministic flag is in place
+        #       of required, as the required flag didn't exist.
         {NAME: "required", GUI_NAME: "required for gameplay (cannot optimize out)"},
-        {NAME: "never_cull", VISIBLE: VISIBILITY_HIDDEN}
+        {NAME: "must_be_deterministic", VISIBLE: VISIBILITY_HIDDEN}
         ),
     dyn_senum16("loop_start_event",
         DYN_NAME_PATH=".events.events_array[DYN_I].NAME"),
     dyn_senum16("loop_stop_event",
         DYN_NAME_PATH=".events.events_array[DYN_I].NAME"),
+    FlFloat("max_damage_radius", VISIBLE=False),
 
-    Pad(32),
+    Pad(28),
     reflexive("locations", location, 32, DYN_NAME_PATH='.marker_name'),
     reflexive("events", event, 32),
 

@@ -8,46 +8,19 @@
 #
 
 from ...common_descs import *
+from .jpt_ import damage, camera_shaking
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
+from supyr_struct.util import desc_variant
 
-# split out to be reused in mcc_hek
-damage = Struct("damage",
-    SEnum16("priority",
-        "none",
-        "harmless",
-        {NAME: "backstab", GUI_NAME: "lethal to the unsuspecting"},
-        "emp",
-        ),
-    SEnum16("category", *damage_category),
-    Bool32("flags",
-        "does_not_hurt_owner",
-        {NAME: "headshot", GUI_NAME: "can cause headshots"},
-        "pings_resistant_units",
-        "does_not_hurt_friends",
-        "does_not_ping_shields",
-        "detonates_explosives",
-        "only_hurts_shields",
-        "causes_flaming_death",
-        {NAME: "indicator_points_down",
-         GUI_NAME: "damage indicator always points down"},
-        "skips_shields",
-        "only_hurts_one_infection_form",
-        {NAME: "multiplayer_headshot",
-         GUI_NAME: "can cause multiplayer headshots"},
-        "infection_form_pop",
-        ),
-    Pad(4),
-    Float("damage_lower_bound"),
-    QStruct("damage_upper_bound", INCLUDE=from_to),
-    float_zero_to_one("vehicle_passthrough_penalty"),
-    Pad(4),
-    float_zero_to_one("stun"),
-    float_zero_to_one("maximum_stun"),
-    float_sec("stun_time"),
-    Pad(4),
-    float_zero_to_inf("instantaneous_acceleration"),
-    Pad(8),
+damage = desc_variant(damage,
+    ("aoe_core_radius", Pad(4)),
+    ("active_camouflage_damage", Pad(4)),
+    )
+
+camera_shaking = desc_variant(camera_shaking,
+    ("duration", Pad(4)),
+    ("fade_function", Pad(2)),
     )
 
 cdmg_body = Struct("tagdata",
@@ -58,20 +31,11 @@ cdmg_body = Struct("tagdata",
     QStruct("vibrate_parameters",
         float_zero_to_one("low_frequency"),
         float_zero_to_one("high_frequency"),
-        Pad(24),
+        Pad(16),
         ),
 
-    Struct("camera_shaking",
-        float_wu("random_translation"),
-        float_rad("random_rotation"),  # radians
-        Pad(12),
-
-        SEnum16("wobble_function", *animation_functions),
-        Pad(2),
-        float_sec("wobble_function_period"),
-        Float("wobble_weight"),
-        Pad(192),
-        ),
+    camera_shaking,
+    Pad(160),
 
     damage,
     damage_modifiers,

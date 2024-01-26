@@ -179,6 +179,17 @@ vap_header = Struct("vap_header",
         )
     )
 
+map_version = UEnum32("version",
+    ("halo1xbox",   5),
+    ("halo1pcdemo", 6),
+    ("halo1pc", 7),
+    ("halo2", 8),
+    ("halo3beta", 9),
+    ("halo3", 11),
+    ("halo1mcc", 13),
+    ("halo1ce", 609),
+    ("halo1vap", 134),
+    )
 
 # Halo Demo maps have a different header
 # structure with garbage filling the padding
@@ -194,16 +205,7 @@ map_header_demo = Struct("map header",
     UInt32("tag data size"),
     ascii_str32("build date", EDITABLE=False),
     Pad(672),
-    UEnum32("version",
-        ("halo1xbox",   5),
-        ("halo1pcdemo", 6),
-        ("halo1pc", 7),
-        ("halo2", 8),
-        ("halo3beta", 9),
-        ("halo3", 11),
-        ("halo1ce", 609),
-        ("halo1vap", 134),
-        ),
+    map_version,
     ascii_str32("map name"),
     UInt32("unknown"),
     UInt32("crc32"),
@@ -217,17 +219,7 @@ map_header_demo = Struct("map header",
 
 map_header = Struct("map header",
     UEnum32('head', ('head', 'head'), DEFAULT='head'),
-    UEnum32("version",
-        ("halo1xbox",   5),
-        ("halo1pcdemo", 6),
-        ("halo1pc", 7),
-        ("halo2", 8),
-        ("halo3beta", 9),
-        ("halo3", 11),
-        ("halo1mcc", 13),
-        ("halo1ce", 609),
-        ("halo1vap", 134),
-        ),
+    map_version,
     UInt32("decomp len"),
     UInt32("unknown"),
     UInt32("tag index header offset"),
@@ -266,13 +258,13 @@ map_header_vap = desc_variant(
     ("yelo_header", Struct("vap_header", INCLUDE=vap_header, OFFSET=128)),
     )
 
-tag_header = Struct("tag header",
-    UEnum32("class 1", GUI_NAME="primary tag class", INCLUDE=valid_tags_os),
-    UEnum32("class 2", GUI_NAME="secondary tag class", INCLUDE=valid_tags_os),
-    UEnum32("class 3", GUI_NAME="tertiary tag class", INCLUDE=valid_tags_os),
+tag_header = Struct("tag_header",
+    UEnum32("class_1", GUI_NAME="primary tag class", INCLUDE=valid_tags_os),
+    UEnum32("class_2", GUI_NAME="secondary tag class", INCLUDE=valid_tags_os),
+    UEnum32("class_3", GUI_NAME="tertiary tag class", INCLUDE=valid_tags_os),
     UInt32("id"),
-    UInt32("path offset"),
-    UInt32("meta offset"),
+    UInt32("path_offset"),
+    UInt32("meta_offset"),
     UInt8("indexed"),
     Pad(3),
     # if indexed is non-zero, the meta_offset is the literal index in
@@ -283,42 +275,42 @@ tag_header = Struct("tag header",
     SIZE=32
     )
 
-tag_index_array = TagIndex("tag index",
+tag_index_array = TagIndex("tag_index",
     SIZE=".tag_count", SUB_STRUCT=tag_header, POINTER=tag_index_array_pointer
     )
 
-tag_index_xbox = Struct("tag index",
-    UInt32("tag index offset"),
-    UInt32("scenario tag id"),
-    UInt32("map id"),  # normally unused, but can be used
+tag_index_xbox = Struct("tag_index",
+    UInt32("tag_index_offset"),
+    UInt32("scenario_tag_id"),
+    UInt32("map_id"),  # normally unused, but can be used
                        # for spoofing the maps checksum.
-    UInt32("tag count"),
+    UInt32("tag_count"),
 
-    UInt32("vertex parts count"),
-    UInt32("model data offset"),
+    UInt32("vertex_parts_count"),
+    UInt32("model_data_offset"),
 
-    UInt32("index parts count"),
-    UInt32("index parts offset"),
-    UInt32("tag sig", EDITABLE=False, DEFAULT='tags'),
+    UInt32("index_parts_count"),
+    UInt32("index_parts_offset"),
+    UInt32("tag_sig", EDITABLE=False, DEFAULT='tags'),
 
     SIZE=36,
     STEPTREE=tag_index_array
     )
 
-tag_index_pc = Struct("tag index",
-    UInt32("tag index offset"),
-    UInt32("scenario tag id"),
-    UInt32("map id"),  # normally unused, but can be used
+tag_index_pc = Struct("tag_index",
+    UInt32("tag_index_offset"),
+    UInt32("scenario_tag_id"),
+    UInt32("map_id"),  # normally unused, but can be used
                        # for spoofing the maps checksum.
-    UInt32("tag count"),
+    UInt32("tag_count"),
 
-    UInt32("vertex parts count"),
-    UInt32("model data offset"),
+    UInt32("vertex_parts_count"),
+    UInt32("model_data_offset"),
 
-    UInt32("index parts count"),
-    UInt32("vertex data size"),
-    UInt32("model data size"),
-    UInt32("tag sig", EDITABLE=False, DEFAULT='tags'),
+    UInt32("index_parts_count"),
+    UInt32("index_parts_offset"),
+    UInt32("model_data_size"),
+    UInt32("tag_sig", EDITABLE=False, DEFAULT='tags'),
 
     SIZE=40,
     STEPTREE=tag_index_array

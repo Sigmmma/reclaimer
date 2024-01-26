@@ -35,5 +35,5 @@ deca_def = TagDef("deca",
     blam_header('deca'),
     deca_body,
 
-    ext=".decal", endian=">", tag_cls=HekTag
+    ext=".decal", endian=">", tag_cls=DecaTag
     )

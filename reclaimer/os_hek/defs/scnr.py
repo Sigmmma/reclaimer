@@ -41,8 +41,7 @@ reference = Struct("tag_reference",
 
 # copy the scnr_body and replace the descriptors for certain
 # fields with ones that are tweaked for use with open sauce
-scnr_body = desc_variant(
-    scnr_body,
+scnr_body = desc_variant(scnr_body,
     ("DONT_USE", dependency_os("project_yellow_definitions", 'yelo')),
     ("player_starting_profiles",
      reflexive("player_starting_profiles",
@@ -71,5 +70,5 @@ scnr_def = TagDef("scnr",
     blam_header('scnr', 2),
     scnr_body,
 
-    ext=".scenario", endian=">", tag_cls=HekTag
+    ext=".scenario", endian=">", tag_cls=ScnrTag
     )

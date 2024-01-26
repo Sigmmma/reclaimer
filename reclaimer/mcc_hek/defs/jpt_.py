@@ -13,7 +13,9 @@ from supyr_struct.util import desc_variant
 
 damage = desc_variant(damage,
     ("flags", damage_flags),
-    ("instantaneous_acceleration", QStruct("instantaneous_acceleration", INCLUDE=ijk_float)),
+    ("instantaneous_acceleration", QStruct("instantaneous_acceleration", INCLUDE=ijk_float,
+        SIDETIP="[-inf,+inf]", ORIENT="h"
+        )),
     ("pad_13", Pad(0)),
     )
 

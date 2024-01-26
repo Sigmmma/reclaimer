@@ -15,7 +15,11 @@ format_comment_parts = format_comment.split("NOTE: ", 1)
 format_comment = "".join((
     format_comment_parts[0],
     """\
-*HIGH QUALITY COMPRESSION: ????
+*HIGH QUALITY COMPRESSION: Block compression format similar to DXT3 and DXT5,
+    with same size as DXT3/DXT5(8-bits per pixel), but with higher quality
+    results. The format is far too complex to describe short-hand here, but
+    for those interested in learning about it, it is described here:
+        https://learn.microsoft.com/en-us/windows/win32/direct3d11/bc7-format
 
 NOTE:""",
     format_comment_parts[1],
@@ -37,8 +41,21 @@ bitmap_format = SEnum16("format",
     ("p8_bump", 17),
     ("bc7", 18),
     )
+bitmap_flags = Bool16("flags",
+    "power_of_2_dim",
+    "compressed",
+    "palletized",
+    "swizzled",
+    "linear",
+    "v16u16",
+    {NAME: "unknown", VISIBLE: False},
+    {NAME: "prefer_low_detail", VISIBLE: False},
+    {NAME: "data_in_resource_map", VISIBLE: False},
+    {NAME: "environment", VISIBLE: False},
+    )
 bitmap = desc_variant(bitmap,
     ("format", bitmap_format),
+    ("flags", bitmap_flags),
     )
 body_format = SEnum16("format",
     "color_key_transparency",
@@ -55,7 +72,7 @@ body_flags = Bool16("flags",
     "disable_height_map_compression",
     "uniform_sprite_sequences",
     "sprite_bug_fix",
-    "hud_scale_0.5",
+    {NAME: "hud_scale_half", GUI_NAME: "hud scale 50%"},
     "invert_detail_fade",
     "use_average_color_for_detail_fade"
     )

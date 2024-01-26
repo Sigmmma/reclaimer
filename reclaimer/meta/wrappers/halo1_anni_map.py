@@ -249,7 +249,7 @@ class Halo1AnniMap(Halo1MccMap):
         elif tag_cls == "coll":
             for b in meta.nodes.STEPTREE:
                 b.unknown = end_swap_int16(b.unknown)
-                b.damage_region.data = end_swap_int16(b.damage_region.data)
+                b.damage_region = end_swap_int16(b.damage_region)
 
         elif tag_cls == "effe":
             for event in meta.events.STEPTREE:
@@ -307,7 +307,7 @@ class Halo1AnniMap(Halo1MccMap):
             # TODO: Might need to byteswap cluster data and sound_pas data
 
             for coll_mat in meta.collision_materials.STEPTREE:
-                coll_mat.unknown = end_swap_uint32(coll_mat.unknown)
+                coll_mat.material_type.data = end_swap_int16(coll_mat.material_type.data)
 
             node_data = meta.nodes.STEPTREE
             for i in range(0, len(node_data), 2):
@@ -377,14 +377,14 @@ class Halo1AnniMap(Halo1MccMap):
 
         elif tag_cls == "scnr":
             for b in meta.object_names.STEPTREE:
-                b.object_type.data = end_swap_uint16(b.object_type.data)
+                b.object_type.data = end_swap_int16(b.object_type.data)
                 b.reflexive_index = end_swap_int16(b.reflexive_index)
 
             for b in meta.trigger_volumes.STEPTREE:
                 b.unknown0 = end_swap_uint16(b.unknown0)
 
             for b in meta.encounters.STEPTREE:
-                b.unknown = end_swap_int16(b.unknown)
+                b.unknown = end_swap_uint16(b.unknown)
 
             # PROLLY GONNA HAVE TO BYTESWAP RECORDED ANIMS AND MORE SHIT
             syntax_data = meta.script_syntax_data.data
@@ -418,7 +418,7 @@ class Halo1AnniMap(Halo1MccMap):
         elif tag_cls == "snd!":
             for pr in meta.pitch_ranges.STEPTREE:
                 for b in pr.permutations.STEPTREE:
-                    b.ogg_sample_count = end_swap_uint32(b.ogg_sample_count)
+                    b.buffer_size = end_swap_uint32(b.buffer_size)
 
         elif tag_cls == "spla":
             meta.spla_attrs.primary_noise_map.unknown0 = end_swap_uint16(

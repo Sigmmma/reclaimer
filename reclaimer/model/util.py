@@ -9,6 +9,7 @@
 
 import os
 
+from reclaimer.constants import LOD_NAMES
 from reclaimer.model.jms import JmsVertex
 from reclaimer.hek.defs.scex import scex_def
 from reclaimer.hek.defs.schi import schi_def
@@ -40,7 +41,6 @@ mod2_tri_strip_def = BlockDef(
     endian='>'
     )
 
-LOD_NAMES = ("superhigh", "high", "medium", "low", "superlow")
 MAX_STRIP_LEN = 32763 * 3
 
 EMPTY_GEOM_VERTS = (

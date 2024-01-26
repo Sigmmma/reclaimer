@@ -65,7 +65,7 @@ shield = Struct("shield",
     dependency("shield_depleted_effect", "effe"),
     dependency("shield_recharging_effect", "effe"),
     Pad(8),
-    Float("shield_recharge_rate", VISIBLE=False),
+    FlFloat("shield_recharge_rate", VISIBLE=False),
     )
 
 bsp3d_node = QStruct("bsp3d_node",
@@ -295,8 +295,8 @@ fast_node = Struct("node",
         DYN_NAME_PATH="..[DYN_I].name"),
 
     Pad(8),
-    FlSInt16("unknown0", VISIBLE=False),
-    FlSInt16("unknown1", VISIBLE=False),
+    FlSInt16("unknown", VISIBLE=False),
+    FlSInt16("damage_region", VISIBLE=False),
     reflexive("bsps", fast_permutation_bsp, 32),
     SIZE=64
     )

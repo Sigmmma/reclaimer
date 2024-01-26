@@ -15,7 +15,7 @@ damage_flags = Bool32("flags",
     {NAME: "headshot", GUI_NAME: "can cause headshots"},
     "pings_resistant_units",
     "does_not_hurt_friends",
-    "does_not_ping_shields",
+    "does_not_ping_units",
     "detonates_explosives",
     "only_hurts_shields",
     "causes_flaming_death",
@@ -33,9 +33,12 @@ damage_flags = Bool32("flags",
 
 damage = desc_variant(damage,
     ("flags", damage_flags),
-    ("instantaneous_acceleration", QStruct("instantaneous_acceleration", INCLUDE=ijk_float)),
+    ("instantaneous_acceleration", QStruct("instantaneous_acceleration", INCLUDE=ijk_float,
+        SIDETIP="[-inf,+inf]", ORIENT="h"
+        )),
     ("pad_13", Pad(0)),
     )
+
 cdmg_body = desc_variant(cdmg_body,
     ("damage", damage),
     )

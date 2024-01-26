@@ -76,11 +76,10 @@ permutation = Struct('permutation',
     UInt32("sample_data_pointer", VISIBLE=False),
     UInt32("unknown", VISIBLE=False),  # always zero?
     UInt32("parent_tag_id", VISIBLE=False),
-    # this is actually the required length of the ogg
+    # for ogg vorbis, this is the required length of the
     # decompression buffer. For "none" compression, this
-    # mirrors samples.size, so a more appropriate name
-    # for this field should be pcm_buffer_size
-    FlUInt32("ogg_sample_count", EDITABLE=False),
+    # mirrors samples.size
+    FlUInt32("buffer_size", EDITABLE=False),
     UInt32("parent_tag_id2", VISIBLE=False),
     rawdata_ref("samples", max_size=4194304, widget=SoundSampleFrame),
     rawdata_ref("mouth_data", max_size=8192),
@@ -149,8 +148,11 @@ snd__body = Struct("tagdata",
     compression,
     dependency("promotion_sound", "snd!"),
     SInt16("promotion_count"),
-    SInt16("unknown1", VISIBLE=False),
-    Struct("unknown2", INCLUDE=rawdata_ref_struct, VISIBLE=False),
+    Pad(2),
+    FlUInt32("max_play_length", VISIBLE=False),
+    Pad(8),
+    FlUInt32("unknown1", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    FlUInt32("unknown2", VISIBLE=False, DEFAULT=0xFFFFFFFF),
     reflexive("pitch_ranges", pitch_range, 8,
         DYN_NAME_PATH='.name'),
 

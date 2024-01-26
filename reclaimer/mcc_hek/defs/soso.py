@@ -27,6 +27,8 @@ model_shader = desc_variant(model_shader,
 
 soso_attrs = desc_variant(soso_attrs,
     ("model_shader", model_shader),
+    ("reflection_bump_scale", Pad(4)),
+    ("reflection_bump_map", Pad(16)),
     )
 
 soso_body = Struct("tagdata",

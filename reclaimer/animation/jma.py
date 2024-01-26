@@ -640,6 +640,10 @@ def read_jma(jma_string, stop_at="", anim_name=""):
             print("Could not read node list checksum.")
             return jma_anim
 
+        if jma_anim.node_list_checksum >= 0x80000000:
+            # jma gave us an unsigned checksum.... sign it
+            jma_anim.node_list_checksum -= 0x100000000
+
         if stop_at == "nodes": continue
 
         # read the nodes

@@ -89,6 +89,10 @@ def _read_jms_8200(jms_data, stop_at="", perm_name=None):
         print("Could not read node list checksum.")
         return jms_model
 
+    if jms_model.node_list_checksum >= 0x80000000:
+        # jms gave us an unsigned checksum.... sign it
+        jms_model.node_list_checksum -= 0x100000000
+
     stop = (stop_at == "nodes")
     if not stop:
         # read the nodes

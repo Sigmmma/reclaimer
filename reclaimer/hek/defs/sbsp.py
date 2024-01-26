@@ -17,6 +17,13 @@ cluster_fog_tooltip = (
     "Add 0x8000 to get fog index."
     )
 
+# calculated when compiled into map
+material_type_cache_enum = FlSEnum16("material_type",
+    *(tuple((materials_list[i], i) for i in
+       range(len(materials_list))) + (("NONE", -1), )),
+    VISIBLE=False
+    )
+
 
 # the order is an array of vertices first, then an array of lightmap vertices.
 #
@@ -69,7 +76,8 @@ vertex = QStruct("vertex", INCLUDE=xyz_float, SIZE=12)
 
 collision_material = Struct("collision_material",
     dependency("shader", valid_shaders),
-    FlUInt32("unknown", VISIBLE=False),
+    Pad(2),
+    material_type_cache_enum,
     SIZE=20
     )
 
@@ -289,10 +297,7 @@ breakable_surface = Struct("breakable_surface",
 
 fog_plane = Struct("fog_plane",
     SInt16("front_region"),
-    FlSEnum16("material_type",
-        *(tuple((materials_list[i], i) for i in
-           range(len(materials_list))) + (("NONE", -1), )),
-        VISIBLE=False),  # calculated when compiled into map
+    material_type_cache_enum,
     QStruct("plane", INCLUDE=plane),
     reflexive("vertices", vertex, 4096),
     SIZE=32

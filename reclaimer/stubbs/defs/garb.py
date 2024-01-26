@@ -8,8 +8,6 @@
 #
 
 from ...hek.defs.garb import *
-
-#import and use the open saucified obje attrs
 from .obje import *
 
 # replace the object_type enum one that uses
@@ -19,7 +17,6 @@ obje_attrs[0] = dict(obje_attrs[0], DEFAULT=4)
 
 garb_body = dict(garb_body)
 garb_body[0] = obje_attrs
-
 
 def get():
     return garb_def

@@ -291,6 +291,10 @@ class Halo1RsrcMap(HaloMap):
             # uncheck the prefer_low_detail flag and
             # set up the pixels_offset correctly.
             for bitmap in meta.bitmaps.STEPTREE:
+                # clear meta-only flags
+                bitmap.flags.data &= 0x3F
+
+                # TODO: convert bitmaps to pc format(swap cubemap faces and mipmaps)
                 bitmap.flags.prefer_low_detail = is_xbox
                 bitmap.pixels_offset = new_pixels_offset
                 new_pixels_offset += bitmap.pixels_meta_size
@@ -326,12 +330,30 @@ class Halo1RsrcMap(HaloMap):
 
         elif tag_cls == "snd!":
             meta.maximum_bend_per_second = meta.maximum_bend_per_second ** 30
+            meta.unknown1 = 0xFFFFFFFF
+            meta.unknown2 = 0xFFFFFFFF
             for pitch_range in meta.pitch_ranges.STEPTREE:
-                for perm in pitch_range.permutations.STEPTREE:
-                    if byteswap and perm.compression.enum_name == "none":
-                        # byteswap pcm audio
-                        byteswap_pcm16_samples(perm.samples)
+                # null some meta-only fields
+                pitch_range.playback_rate = 0.0
+                pitch_range.unknown1      = -1
+                pitch_range.unknown2      = -1
 
+                for perm in pitch_range.permutations.STEPTREE:
+                    if perm.compression.enum_name == "none":
+                        buffer_size = len(perm.samples)
+                        if byteswap:
+                            # byteswap pcm audio
+                            byteswap_pcm16_samples(perm.samples)
+                    elif perm.compression.enum_name == "ogg":
+                        # TODO: find a way to calculate the buffer size here
+                        buffer_size = perm.buffer_size
+                    else:
+                        buffer_size = 0
+
+                    # fix buffer_size possibly being incorrect
+                    perm.buffer_size = buffer_size
+
+                    # null some meta-only fields
                     perm.sample_data_pointer = perm.parent_tag_id = perm.unknown = 0
                     if hasattr(perm, "runtime_flags"): # mcc
                         perm.runtime_flags = 0

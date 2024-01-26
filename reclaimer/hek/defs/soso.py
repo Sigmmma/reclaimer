@@ -113,7 +113,9 @@ reflection = Struct("reflection",
     QStruct("parallel_tint_color", INCLUDE=rgb_float),
 
     dependency("cube_map", "bitm"),
-    #COMMENT=reflection_prop_comment
+    Pad(16),
+
+    COMMENT=reflection_prop_comment
     )
 
 soso_attrs = Struct("soso_attrs",
@@ -123,7 +125,6 @@ soso_attrs = Struct("soso_attrs",
     Pad(16),
     #Color-Change
     SEnum16("color_change_source", *function_names, COMMENT=cc_comment),
-
 
     Pad(30),
     #Self-Illumination
@@ -142,10 +143,15 @@ soso_attrs = Struct("soso_attrs",
     Pad(8),
     #Reflection Properties
     reflection,
-    Pad(16),
 
-    Float("unknown0", VISIBLE=False),
-    BytesRaw("unknown1", SIZE=16, VISIBLE=False),  # little endian dependency
+    # NOTE: this isn't actually used in pc, but may be usable on xbox.
+    Float("reflection_bump_scale", VISIBLE=False),
+    dependency("reflection_bump_map", "bitm", VISIBLE=False, COMMENT="""
+    DO NOT USE THIS UNLESS YOU ARE MODDING XBOX HALO 1.
+
+    It has not been tested to confirm if it works on 
+    Xbox, but it certainly doesnt work on PC or later.
+    """),
 
     SIZE=400
     )

@@ -9,19 +9,15 @@
 
 from ...hek.defs.actr import *
 from ..common_descs import *
+from supyr_struct.util import desc_variant
 
-actr_body = dict(actr_body)
-actr_body[3] = SEnum16("type", *actor_types)
-actr_body[12] = dict(actr_body[12])
-actr_body[12][2] = SEnum16("leader_type", *actor_types)
+panic = desc_variant(panic,
+    ("leader_type", SEnum16("leader_type", *actor_types))
+    )
 
-actr_body[14] = dict(actr_body[14])
-actr_body[14][6] = SEnum16("defensive_crouch_type",
-    "never",
-    "danger",
-    "low_shields",
-    "hide_behind_shield",
-    "any_target",
+actr_body = desc_variant(actr_body,
+    ("type", SEnum16("type", *actor_types)),
+    ("panic", panic)
     )
 
 

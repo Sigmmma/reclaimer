@@ -101,7 +101,7 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
                 if perm.compression.enum_name == "ogg":
                     # not actually a sample count. fix struct field name
                     compression = constants.COMPRESSION_OGG
-                    sample_count = perm.ogg_sample_count // 2
+                    sample_count = perm.buffer_size // 2
                 elif perm.compression.enum_name == "none":
                     compression = (constants.COMPRESSION_PCM_16_BE
                                    if pcm_is_big_endian else

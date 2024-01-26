@@ -37,6 +37,14 @@ class BitmTag(HekTag):
         HekTag.__init__(self, *args, **kwargs)
         self.p8_palette = HALO_P8_PALETTE
 
+    def calc_internal_data(self, **kwargs):
+        HekTag.calc_internal_data(self)
+        
+        tagdata = self.data.tagdata
+        if tagdata.compressed_color_plate_data.size == 0:
+            tagdata.color_plate_width  = 0
+            tagdata.color_plate_height = 0
+
     def bitmap_count(self, new_value=None):
         if new_value is None:
             return self.data.tagdata.bitmaps.size

@@ -148,7 +148,7 @@ mode_body = Struct('tagdata',
     Pad(104),
     Pad(12), # replaced with unknown reflexive in stubbs
 
-    reflexive("markers", marker, 256, DYN_NAME_PATH=".name"),
+    reflexive("markers", marker, 256, DYN_NAME_PATH=".name", VISIBLE=False),
     reflexive("nodes", node, 64, DYN_NAME_PATH=".name"),
     reflexive("regions", region, 32, DYN_NAME_PATH=".name"),
     reflexive("geometries", geometry, 256),

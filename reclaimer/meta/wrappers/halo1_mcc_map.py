@@ -24,8 +24,20 @@ class Halo1MccMap(Halo1Map):
     
     sbsp_meta_header_def = sbsp_meta_header_def
 
-    def __init__(self, maps=None):
-        Halo1Map.__init__(self, maps)
+    def load_map(self, map_path, **kwargs):
+        super().load_map(map_path, **kwargs)
+
+        # NOTE: mcc halo 1 resource maps MUST be handled differently than
+        #       pc and ce because of the multiple types they may use.
+        #       mcc maps may reference different bitmaps.map and sounds.map
+        #       depending on what folder they're located in, so we're
+        #       going to ignore any resource maps passed in unless
+        #       they're coming from the same folder as this map.
+        if self.are_resources_in_same_directory:
+            print("Unlinking potentially incompatible resource maps from %s" %
+                self.map_name
+                )
+            self.maps = {}
     
     @property
     def uses_fmod_sound_bank(self):

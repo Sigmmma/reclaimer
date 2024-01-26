@@ -336,8 +336,12 @@ class Halo1RsrcMapTag(Tag):
             pr.playback_rate = 1.0
             pr.unknown1 = pr.unknown2 = -1
             for perm in pr.permutations.STEPTREE:
-                perm.unknown = 0
-                perm.parent_tag_id = perm.parent_tag_id2 = 0xFFffFFff
+                perm.sample_data_pointer = perm.parent_tag_id = perm.unknown = 0
+                if hasattr(perm, "runtime_flags"): # mcc
+                    perm.runtime_flags = 0
+                else: # non-mcc
+                    perm.parent_tag_id2 = 0
+
                 sample_data = perm.samples.data
                 if perm.compression.enum_name == "none":
                     sample_data = array(">h", sample_data)

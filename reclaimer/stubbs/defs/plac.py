@@ -8,8 +8,6 @@
 #
 
 from ...hek.defs.plac import *
-
-#import and use the open saucified obje attrs
 from .obje import *
 
 # replace the object_type enum one that uses

@@ -66,7 +66,10 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **kwargs):
         )
     kwargs.update(
         STEPTREE=ReflexiveArray(name + "_array",
-            SIZE=".size", SUB_STRUCT=substruct, WIDGET=ReflexiveFrame
+            SIZE=".size", SUB_STRUCT=substruct, WIDGET=ReflexiveFrame,
+            # NOTE: also adding max here since various things rely on it
+            #       (i.e. compilation/mozz tag block size limit/etc)
+            MAX=max_count
             ),
         SIZE=12
         )

@@ -22,6 +22,8 @@ HALO_1_MAX_NODES = 64
 
 HALO_1_MAX_MARKERS = 256
 
+HALO_1_MAX_MARKERS_PER_PERM = 32
+
 
 # If a jms file is prefixed with this token it
 # cannot be randomly chosen as a permutation

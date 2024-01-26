@@ -18,7 +18,7 @@ from string import ascii_letters
 
 from reclaimer.meta.halo_map import get_map_version, get_map_header,\
      get_tag_index, get_index_magic, get_map_magic, get_is_compressed_map,\
-     decompress_map
+     decompress_map, get_engine_name
 from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
 from reclaimer.util import is_protected_tag, int_to_fourcc, path_normalize
 
@@ -146,6 +146,13 @@ class HaloMap:
         # need to reopen the map as a writable stream
         # and replace self.map_data with it
         return self.map_data
+
+    @property
+    def are_resources_in_same_directory(self):
+        for map_name, filepath in self.get_resource_map_paths().items():
+            if filepath and filepath.parent != self.filepath.parent:
+                return False
+        return True
 
     # wrappers around the tag index handler
     def get_total_dir_count(self, dir=""):  return self.tag_index_manager.get_total_dir_count(dir)
@@ -374,6 +381,9 @@ class HaloMap:
         map_header = get_map_header(self.map_data)
         tag_index  = self.orig_tag_index = get_tag_index(
             self.map_data, map_header)
+
+        # calculate this more accurately now that the map data is available
+        self.engine = get_engine_name(map_header, self.map_data)
 
         if tag_index is None:
             print("    Could not read tag index.")

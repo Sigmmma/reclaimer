@@ -10,7 +10,6 @@
 from ...hek.defs.mach import *
 from .obje import *
 from .devi import *
-from supyr_struct.defs.tag_def import TagDef
 
 # replace the object_type enum one that uses
 # the correct default value for this object
