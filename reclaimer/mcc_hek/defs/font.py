@@ -8,14 +8,11 @@
 #
 
 from ...hek.defs.font import *
-from supyr_struct.util import desc_variant
 
 flags = Bool32("flags",
     "never_override_with_remastered_font_under_mcc",
     )
-font_body = desc_variant(font_body,
-    ("flags", flags)
-    )
+font_body = desc_variant(font_body, flags)
 
 def get(): 
     return font_def

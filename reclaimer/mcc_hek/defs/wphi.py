@@ -10,7 +10,6 @@
 from ...hek.defs.wphi import *
 from .grhi import multitex_overlay, mcc_hud_anchor
 from .unhi import meter_xform_common, meter_common
-from supyr_struct.util import desc_variant
 
 # to reduce a lot of code, these have been snipped out
 element_common = (
@@ -82,11 +81,11 @@ overlay_element = Struct("overlay_element",
     )
 
 wphi_body = desc_variant(wphi_body,
-    ("anchor", mcc_hud_anchor),
-    ("static_elements", reflexive("static_elements", static_element, 16)),
-    ("meter_elements", reflexive("meter_elements", meter_element, 16)),
-    ("number_elements", reflexive("number_elements", number_element, 16)),
-    ("overlay_elements", reflexive("overlay_elements", overlay_element, 16)),
+    mcc_hud_anchor,
+    reflexive("static_elements", static_element, 16),
+    reflexive("meter_elements", meter_element, 16),
+    reflexive("number_elements", number_element, 16),
+    reflexive("overlay_elements", overlay_element, 16),
     )
 
 

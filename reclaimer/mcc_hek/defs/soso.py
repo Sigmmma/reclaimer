@@ -9,7 +9,6 @@
 
 from ...hek.defs.soso import *
 from .shdr import *
-from supyr_struct.util import desc_variant
 
 model_shader_flags = Bool16("flags",
     "detail_after_reflection",
@@ -21,15 +20,8 @@ model_shader_flags = Bool16("flags",
     "multipurpose_map_uses_og_xbox_channel_order",
     )
 
-model_shader = desc_variant(model_shader,
-    ("flags", model_shader_flags),
-    )
-
-soso_attrs = desc_variant(soso_attrs,
-    ("model_shader", model_shader),
-    ("reflection_bump_scale", Pad(4)),
-    ("reflection_bump_map", Pad(16)),
-    )
+model_shader = desc_variant(model_shader, model_shader_flags)
+soso_attrs   = desc_variant(soso_attrs, model_shader)
 
 soso_body = Struct("tagdata",
     shdr_attrs,

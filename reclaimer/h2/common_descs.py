@@ -213,6 +213,7 @@ script_object_types = (
 
     "object_definition",
     "shader",
+    # should there be a space in these 3?
     "render model",
     "structure definition",
     "lightmap definition",
@@ -228,6 +229,21 @@ script_object_types = (
     "weapon_name",
     "device_name",
     "scenery_name",
+    )
+# used in determining which script object types are tag refs
+# NOTE: these are a bit of a guess based on the enums above and
+#       the pattern displayed in the h1 script object types
+script_object_tag_ref_types = (
+    "effect",
+    "damage",
+    "looping_sound",
+    "animation_graph",
+    "damage_effect",
+    "object_definition",
+    "shader",
+    "render model",
+    "structure definition",
+    "lightmap definition",
     )
 
 #Shared Enumerator options

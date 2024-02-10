@@ -11,7 +11,6 @@ from ...common_descs import *
 from .jpt_ import damage, camera_shaking
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
-from supyr_struct.util import desc_variant
 
 damage = desc_variant(damage,
     ("aoe_core_radius", Pad(4)),

@@ -20,8 +20,11 @@ from supyr_struct.buffer import BytearrayBuffer
 from supyr_struct.field_types import FieldType
 from supyr_struct.defs.frozen_dict import FrozenDict
 
+from reclaimer.halo_script.hsc_decompilation import extract_scripts
 from reclaimer.halo_script.hsc import get_hsc_data_block,\
-     HSC_IS_SCRIPT_OR_GLOBAL, SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES
+    get_script_syntax_node_tag_refs, clean_script_syntax_nodes,\
+    get_script_types, HSC_IS_SCRIPT_OR_GLOBAL,\
+    SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES
 from reclaimer.common_descs import make_dependency_os_block
 from reclaimer.hek.defs.snd_ import snd__meta_stub_blockdef
 from reclaimer.hek.defs.sbsp import sbsp_meta_header_def
@@ -216,12 +219,7 @@ class Halo1Map(HaloMap):
             try:
                 seen_tag_ids = set()
                 syntax_data = get_hsc_data_block(meta.script_syntax_data.data)
-                for node in syntax_data.nodes:
-                    if (node.flags & HSC_IS_SCRIPT_OR_GLOBAL or
-                        node.type not in range(24, 32)):
-                        # not a tag index ref
-                        continue
-
+                for node in get_script_syntax_node_tag_refs(syntax_data):
                     tag_index_id = node.data & 0xFFff
                     if (tag_index_id in range(len(tag_index_array)) and
                         tag_index_id not in seen_tag_ids):
@@ -741,6 +739,10 @@ class Halo1Map(HaloMap):
             syntax_data = get_hsc_data_block(meta.script_syntax_data.data)
             script_nodes_modified = False
 
+            # lets not use magic numbers here
+            _, script_object_types = get_script_types(self.engine)
+            biped_node_enum = script_object_types.index("actor_type")
+
             # clean up any fucked up palettes
             for pal_block, inst_block in (
                     (meta.sceneries_palette, meta.sceneries),
@@ -763,8 +765,7 @@ class Halo1Map(HaloMap):
                     # determine which palette indices are used by script data
                     for i in range(len(syntax_data.nodes)):
                         node = syntax_data.nodes[i]
-                        # 35 == "actor_type"  script type
-                        if node.type == 35 and not(node.flags & HSC_IS_SCRIPT_OR_GLOBAL):
+                        if node.type == biped_node_enum and not(node.flags & HSC_IS_SCRIPT_OR_GLOBAL):
                             script_nodes_to_modify.add(i)
                             used_pal_indices.add(node.data & 0xFFff)
 
@@ -1233,26 +1234,34 @@ class Halo1Map(HaloMap):
                 string_data = meta.script_string_data.data.decode("latin-1")
                 syntax_data = get_hsc_data_block(raw_syntax_data=meta.script_syntax_data.data)
 
+                # lets not use magic numbers here
+                _, script_object_types = get_script_types(engine)
+                trigger_volume_enum = script_object_types.index("trigger_volume")
+
                 # NOTE: For a list of all the script object types
                 # with their corrosponding enum value, check
-                #     reclaimer.enums.script_object_types
-                keep_these = {i: set() for i in
+                #     reclaimer.halo_script.hsc.get_script_types
+                keep_these = {script_object_types.index(typ): set() for typ in
                               SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES}
-                for b in meta.bsp_switch_trigger_volumes.STEPTREE:
-                    keep_these[11].add(b.trigger_volume)
 
+                # don't de-duplicate trigger volumes
+                for b in meta.bsp_switch_trigger_volumes.STEPTREE:
+                    keep_these[trigger_volume_enum].add(b.trigger_volume)
+
+                # for everything we're keeping, clear the upper 16bits of the data
                 for i in range(min(syntax_data.last_node, len(syntax_data.nodes))):
                     node = syntax_data.nodes[i]
-                    if node.type not in keep_these:
-                        continue
+                    if node.type in keep_these:
+                        keep_these[node.type].add(node.data & 0xFFff)
 
-                    keep_these[node.type].add(node.data & 0xFFff)
-
+                # for everything else, rename duplicates
                 for script_object_type, reflexive_name in \
                         SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES.items():
-                    keep = keep_these[script_object_type]
-                    reflexive = meta[reflexive_name].STEPTREE
-                    counts = {b.name.lower(): 0 for b in reflexive}
+
+                    script_object_type_enum = script_object_types.index(script_object_type)
+                    keep        = keep_these[script_object_type_enum]
+                    reflexive   = meta[reflexive_name].STEPTREE
+                    counts      = {b.name.lower(): 0 for b in reflexive}
                     for b in reflexive:
                         counts[b.name.lower()] += 1
 
@@ -1260,6 +1269,23 @@ class Halo1Map(HaloMap):
                         name = reflexive[i].name.lower()
                         if counts[name] > 1 and i not in keep:
                             reflexive[i].name = ("DUP%s~%s" % (i, name))[: 31]
+
+                # null tag refs after we're done with them
+                clean_script_syntax_nodes(syntax_data, engine)
+            
+            # decompile scripts and put them in the source_files array so
+            # sapien can recompile them when it opens an extracted scenario
+            source_files = meta.source_files.STEPTREE
+            del source_files[:]
+            script_sources, global_sources = extract_scripts(
+                engine=engine, tagdata=meta, add_comments=False, minify=True
+                )
+            i = 0
+            for source in (*script_sources, *global_sources):
+                source_files.append()
+                source_files[-1].source_name = "decompiled_%s.hsc" % i
+                source_files[-1].source.data = source.encode('latin-1')
+                i += 1
 
             # divide the cutscene times by 30(they're in ticks) and
             # subtract the fade-in time from the up_time(normally added
@@ -1319,9 +1345,9 @@ class Halo1Map(HaloMap):
             del shpg_attrs.merged_values.STEPTREE[:]
 
         elif tag_cls == "soso":
-            if "xbox" not in engine and engine != "shadowrun_proto":
-                if hasattr(meta.soso_attrs.reflection, "reflection_bump_map"):
-                    meta.soso_attrs.reflection.reflection_bump_map.filepath = ""
+            # set the mcc multipurpose_map_uses_og_xbox_channel_order flag
+            if "xbox" in engine or "stubbs" in engine or engine == "shadowrun_proto":
+                meta.soso_attrs.model_shader.flags.data |= 1<<6
 
         elif tag_cls == "weap":
             predicted_resources.append(meta.weap_attrs.predicted_resources)

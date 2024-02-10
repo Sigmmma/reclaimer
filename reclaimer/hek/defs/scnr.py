@@ -8,7 +8,7 @@
 #
 
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.scnr import ScnrTag
 from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.util import desc_variant
 
@@ -1077,5 +1077,5 @@ scnr_def = TagDef("scnr",
     blam_header('scnr', 2),
     scnr_body,
 
-    ext=".scenario", endian=">", tag_cls=HekTag
+    ext=".scenario", endian=">", tag_cls=ScnrTag
     )

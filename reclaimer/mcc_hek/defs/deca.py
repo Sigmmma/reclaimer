@@ -8,7 +8,6 @@
 #
 
 from ...hek.defs.deca import *
-from supyr_struct.util import desc_variant
 
 flags = Bool16("flags",
     "geometry_inherited_by_next_decal_in_chain",
@@ -24,9 +23,7 @@ flags = Bool16("flags",
     COMMENT=decal_comment
     )
 
-deca_body = desc_variant(deca_body,
-    ("flags", flags)
-    )
+deca_body = desc_variant(deca_body, flags)
 
 def get():
     return deca_def

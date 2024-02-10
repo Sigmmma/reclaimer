@@ -27,7 +27,7 @@ except Exception:
 
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
-from supyr_struct.util import desc_variant
+from supyr_struct.util import desc_variant_with_verify as desc_variant
 
 from reclaimer.field_types import *
 from reclaimer.field_type_methods import tag_ref_str_size,\
@@ -154,18 +154,17 @@ def rawdata_ref(name, f_type=BytearrayRaw, max_size=None,
     if max_size is not None:
         ref_struct_kwargs[MAX] = max_size
         ref_struct = desc_variant(ref_struct,
-            ("size", SInt32("size",
-                GUI_NAME="", SIDETIP="bytes", EDITABLE=False, MAX=max_size, )
-             )
+            SInt32("size", GUI_NAME="", SIDETIP="bytes", 
+                EDITABLE=False, MAX=max_size
+                )
             )
 
     if widget is not None:
         kwargs[WIDGET] = widget
 
-    return RawdataRef(name,
-        INCLUDE=ref_struct,
+    return desc_variant(ref_struct,
         STEPTREE=f_type("data", GUI_NAME="", SIZE=".size", **kwargs),
-        **ref_struct_kwargs
+        NAME=name, **ref_struct_kwargs
         )
 
 
@@ -182,10 +181,10 @@ def rawtext_ref(name, f_type=StrRawLatin1, max_size=None,
     if max_size is not None:
         ref_struct_kwargs[MAX] = max_size
         ref_struct = desc_variant(ref_struct,
-            ("size", SInt32("size",
+            SInt32("size",
                 GUI_NAME="", SIDETIP="bytes", EDITABLE=False,
-                MAX=max_size, VISIBLE=VISIBILITY_METADATA, )
-             )
+                MAX=max_size, VISIBLE=VISIBILITY_METADATA
+                )
             )
 
     return RawdataRef(name,
@@ -227,12 +226,12 @@ def dependency(name='tag_ref', valid_ids=None, **kwargs):
     elif valid_ids is None:
         valid_ids = valid_tags
 
-    return TagRef(name,
+    return desc_variant(tag_ref_struct,
         valid_ids,
-        INCLUDE=tag_ref_struct,
         STEPTREE=StrTagRef(
-            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254),
-        **kwargs
+            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254
+            ),
+        NAME=name, **kwargs
         )
 
 
@@ -245,6 +244,9 @@ def object_type(default=-1):
         VISIBLE=False, DEFAULT=default
         )
 
+def obje_attrs_variant(obje_attrs, typ="", **desc):
+    obj_index = object_types.index(typ) if typ else 0
+    return desc_variant(obje_attrs, object_type(obj_index - 1))
 
 def zone_asset(name, **kwargs):
     return ZoneAsset(name, INCLUDE=zone_asset_struct, **kwargs)
@@ -274,12 +276,11 @@ def string_id(name, index_bit_ct, set_bit_ct, len_bit_ct=None, **kwargs):
 def blam_header(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
     return desc_variant(tag_header,
-        ("tag_class", UEnum32("tag_class",
+        UEnum32("tag_class",
             GUI_NAME="tag_class", INCLUDE=valid_tags,
             EDITABLE=False, DEFAULT=tagid
-            )
-         ),
-        ("version", UInt16("version", DEFAULT=version, EDITABLE=False)),
+            ),
+        UInt16("version", DEFAULT=version, EDITABLE=False),
         )
 
 
@@ -661,6 +662,7 @@ rawdata_ref_struct = RawdataRef('rawdata_ref',
     UInt32("raw_pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),  # doesnt use magic
     UInt32("pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     UInt32("id", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    SIZE=20,
     ORIENT='h'
     )
 
@@ -669,6 +671,7 @@ reflexive_struct = Reflexive('reflexive',
     SInt32("size", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     UInt32("pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     UInt32("id", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),  # 0 in meta it seems
+    SIZE=12,
     )
 
 # This is the descriptor used wherever a tag references another tag
@@ -677,6 +680,7 @@ tag_ref_struct = TagRef('dependency',
     SInt32("path_pointer", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     SInt32("path_length", MAX=MAX_TAG_PATH_LEN, VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
     UInt32("id", VISIBLE=VISIBILITY_METADATA, EDITABLE=False),
+    SIZE=16,
     ORIENT='h'
     )
 
@@ -698,7 +702,10 @@ zone_asset_struct = ZoneAsset("zone_asset",
 extra_layers_block = dependency("extra_layer", valid_shaders)
 
 damage_modifiers = QStruct("damage_modifiers",
-    *(float_zero_to_inf(material_name) for material_name in materials_list)
+    *(float_zero_to_inf(material_name) for material_name in materials_list),
+    # NOTE: there's enough allocated for 40 materials. We're assuming 
+    #       the rest of the space is all for these damage modifiers
+    SIZE=4*40
     )
 
 # Miscellaneous shared descriptors
@@ -810,24 +817,23 @@ def dependency_os(name='tag_ref', valid_ids=None, **kwargs):
     elif valid_ids is None:
         valid_ids = valid_tags_os
 
-    return TagRef(name,
+    return desc_variant(tag_ref_struct,
         valid_ids,
-        INCLUDE=tag_ref_struct,
         STEPTREE=StrTagRef(
-            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254),
-        **kwargs
+            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254
+            ),
+        NAME=name, **kwargs
         )
 
 
 def blam_header_os(tagid, version=1):
     '''This function serves to macro the creation of a tag header'''
     return desc_variant(tag_header_os,
-        ("tag_class", UEnum32("tag_class",
+        UEnum32("tag_class",
             GUI_NAME="tag_class", INCLUDE=valid_tags_os,
             EDITABLE=False, DEFAULT=tagid
-            )
-         ),
-        ("version", UInt16("version", DEFAULT=version, EDITABLE=False)),
+            ),
+        UInt16("version", DEFAULT=version, EDITABLE=False),
         )
 
 

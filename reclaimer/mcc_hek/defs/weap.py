@@ -10,7 +10,6 @@
 from ...hek.defs.weap import *
 from .obje import *
 from .item import *
-from supyr_struct.util import desc_variant
 
 trigger_flags = Bool32("flags",
     "tracks_fired_projectile",
@@ -42,20 +41,12 @@ mcc_upgrades = Struct("mcc_upgrades",
 firing = desc_variant(firing,
     ("pad_9", mcc_upgrades)
     )
-trigger = desc_variant(trigger,
-    ("flags", trigger_flags),
-    ("firing", firing)
-    )
+trigger = desc_variant(trigger, trigger_flags, firing)
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(2))
-    )
-
+obje_attrs = obje_attrs_variant(obje_attrs, "weap")
 weap_attrs = desc_variant(weap_attrs,
-    ("triggers", reflexive("triggers", trigger, 2, "primary", "secondary")),
-    ("weapon_type", SEnum16('weapon_type', *weapon_types_mcc))
+    reflexive("triggers", trigger, 2, "primary", "secondary"),
+    SEnum16('weapon_type', *weapon_types_mcc)
     )
 
 weap_body = Struct("tagdata",

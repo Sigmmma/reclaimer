@@ -10,19 +10,19 @@
 from reclaimer.meta.halo1_map import tag_index_xbox, map_version,\
     tag_header as tag_index_header, tag_path_pointer, tag_index_array_pointer
 from reclaimer.stubbs.common_descs import *
-from supyr_struct.util import desc_variant
 
 stubbs_tag_index_header = desc_variant(tag_index_header,
-    ("class_1", UEnum32("class_1", GUI_NAME="primary tag class",   INCLUDE=stubbs_valid_tags)),
-    ("class_2", UEnum32("class_2", GUI_NAME="secondary tag class", INCLUDE=stubbs_valid_tags)),
-    ("class_3", UEnum32("class_3", GUI_NAME="tertiary tag class",  INCLUDE=stubbs_valid_tags)),
+    UEnum32("class_1", GUI_NAME="primary tag class",   INCLUDE=stubbs_valid_tags),
+    UEnum32("class_2", GUI_NAME="secondary tag class", INCLUDE=stubbs_valid_tags),
+    UEnum32("class_3", GUI_NAME="tertiary tag class",  INCLUDE=stubbs_valid_tags),
     )
 
 stubbs_64bit_tag_index_header = desc_variant(stubbs_tag_index_header,
-    ("path_offset", Pointer64("path_offset")),
-    ("meta_offset", Pointer64("meta_offset")),
+    Pointer64("path_offset"),
+    Pointer64("meta_offset"),
+    verify=False,
+    SIZE=40
     )
-stubbs_64bit_tag_index_header.update(SIZE=40)
 
 stubbs_tag_index_array = TagIndex("tag index",
     SIZE=".tag_count", SUB_STRUCT=stubbs_tag_index_header,
@@ -34,8 +34,9 @@ stubbs_64bit_tag_index_array = TagIndex("tag index",
     POINTER=tag_index_array_pointer
     )
 
-stubbs_tag_index = dict(tag_index_xbox)
-stubbs_tag_index.update(STEPTREE=stubbs_tag_index_array)
+stubbs_tag_index = desc_variant(tag_index_xbox,
+    STEPTREE=stubbs_tag_index_array
+    )
 
 stubbs_64bit_tag_index = Struct("tag_index",
     Pointer64("tag_index_offset"),

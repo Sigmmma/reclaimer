@@ -11,12 +11,7 @@ from ...hek.defs.garb import *
 from .obje import *
 from .item import *
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(4))
-    )
-
+obje_attrs = obje_attrs_variant(obje_attrs, "garb")
 garb_body = Struct("tagdata",
     obje_attrs,
     item_attrs,

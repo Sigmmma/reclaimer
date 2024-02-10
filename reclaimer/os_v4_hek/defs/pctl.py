@@ -9,19 +9,18 @@
 
 from ...hek.defs.pctl import *
 
-particle_state = dict(particle_state)
-particle_type  = dict(particle_type)
-pctl_body      = dict(pctl_body)
-
-particle_state[19] = reflexive(
-    "shader_extensions",
-    Struct("shader_extension", INCLUDE=os_shader_extension),
-    1)
-particle_type[12] = reflexive(
-    "particle_states", particle_state, 8, DYN_NAME_PATH='.name')
-pctl_body[5] = reflexive(
-    "particle_types", particle_type, 4, DYN_NAME_PATH='.name')
-
+shader_extensions = reflexive("shader_extensions",
+    Struct("shader_extension", INCLUDE=os_shader_extension), 1
+    )
+particle_state = desc_variant(particle_state,
+    ("pad_19", shader_extensions),
+    )
+particle_type  = desc_variant(particle_type,
+    reflexive("particle_states", particle_state, 8, DYN_NAME_PATH='.name'),
+    )
+pctl_body      = desc_variant(pctl_body,
+    reflexive("particle_types", particle_type, 4, DYN_NAME_PATH='.name'),
+    )
 
 def get():
     return pctl_def

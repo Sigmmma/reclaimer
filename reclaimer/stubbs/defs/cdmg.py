@@ -9,16 +9,9 @@
 
 from ...hek.defs.cdmg import *
 from ..common_descs import *
-from supyr_struct.util import desc_variant
 
-damage = desc_variant(damage,
-    ("category", SEnum16("category", *damage_category))
-    )
-
-cdmg_body = desc_variant(cdmg_body,
-    ("damage", damage),
-    ("damage_modifiers", damage_modifiers)
-    )
+damage    = desc_variant(damage, SEnum16("category", *damage_category))
+cdmg_body = desc_variant(cdmg_body, damage, damage_modifiers)
 
 def get():
     return cdmg_def

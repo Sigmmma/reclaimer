@@ -8,17 +8,10 @@
 #
 
 from ...hek.defs.bipd import *
-from supyr_struct.util import desc_variant
-
-#import and use the mcc obje and unit attrs
 from .obje import *
 from .unit import *
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(0))
-    )
+obje_attrs = obje_attrs_variant(obje_attrs, "bipd")
 
 bipd_body = Struct("tagdata",
     obje_attrs,

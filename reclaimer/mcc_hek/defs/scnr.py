@@ -8,7 +8,6 @@
 #
 
 from ...hek.defs.scnr import *
-from supyr_struct.util import desc_variant
 
 object_ref_flags = Bool16('not_placed',
     "automatically",
@@ -24,9 +23,10 @@ starting_equipment_flags = Bool32("flags",
     "type2_grenades_only",
     "type3_grenades_only",
     )
-parameters = Struct("parameters",
+parameter = Struct("parameter",
     ascii_str32("name", EDITABLE=False),
     SEnum16("return_type", *script_object_types, EDITABLE=False),
+    Pad(2),
     SIZE=36,
     )
 cutscene_title_flags = Bool32("flags",
@@ -66,13 +66,13 @@ netgame_equipment = desc_variant(netgame_equipment,
     ("team_index", SInt16("usage_id")),
     )
 starting_equipment = desc_variant(starting_equipment,
-    ("flags", starting_equipment_flags),
+    starting_equipment_flags
     )
 halo_script = desc_variant(halo_script,
-    ("pad_6", reflexive("parameters", parameters, 16))
+    ("pad_6", reflexive("parameters", parameter, 16))
     )
 source_file = desc_variant(source_file,
-    ("source", rawdata_ref("source", max_size=1048576, widget=HaloScriptSourceFrame))
+    rawdata_ref("source", max_size=1048576, widget=HaloScriptSourceFrame),
     )
 cutscene_title = desc_variant(cutscene_title,
     ("pad_8", cutscene_title_flags),
@@ -86,37 +86,37 @@ scnr_flags = Bool16("flags",
     )
 
 scnr_body = desc_variant(scnr_body,
-    ("flags", scnr_flags),
+    scnr_flags,
     ("pad_13",       reflexive("scavenger_hunt_objects", scavenger_hunt_objects, 16)),
-    ("object_names", reflexive("object_names", object_name,   640, DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True)),
-    ("sceneries",  reflexive("sceneries",  scenery,  2000, IGNORE_SAFE_MODE=True)),
-    ("bipeds",     reflexive("bipeds",     biped,     128, IGNORE_SAFE_MODE=True)),
-    ("vehicles",   reflexive("vehicles",   vehicle,   256, IGNORE_SAFE_MODE=True)),
-    ("equipments", reflexive("equipments", equipment, 256, IGNORE_SAFE_MODE=True)),
-    ("weapons",    reflexive("weapons",    weapon,    128, IGNORE_SAFE_MODE=True)),
-    ("machines",   reflexive("machines",   machine,   400, IGNORE_SAFE_MODE=True)),
-    ("controls",   reflexive("controls",   control,   100, IGNORE_SAFE_MODE=True)),
-    ("light_fixtures",     reflexive("light_fixtures",  light_fixture, 500, IGNORE_SAFE_MODE=True)),
-    ("sound_sceneries",    reflexive("sound_sceneries", sound_scenery, 256, IGNORE_SAFE_MODE=True)),
-    ("sceneries_palette",  reflexive("sceneries_palette",  scenery_swatch,   256, DYN_NAME_PATH='.name.filepath')),
-    ("bipeds_palette",     reflexive("bipeds_palette",     biped_swatch,     256, DYN_NAME_PATH='.name.filepath')),
-    ("vehicles_palette",   reflexive("vehicles_palette",   vehicle_swatch,   256, DYN_NAME_PATH='.name.filepath')),
-    ("equipments_palette", reflexive("equipments_palette", equipment_swatch, 256, DYN_NAME_PATH='.name.filepath')),
-    ("weapons_palette",    reflexive("weapons_palette",    weapon_swatch,    256, DYN_NAME_PATH='.name.filepath')),
-    ("machines_palette",   reflexive("machines_palette",   machine_swatch,   256, DYN_NAME_PATH='.name.filepath')),
-    ("controls_palette",   reflexive("controls_palette",   control_swatch,   256, DYN_NAME_PATH='.name.filepath')),
-    ("light_fixtures_palette",   reflexive("light_fixtures_palette",   light_fixture_swatch,    256, DYN_NAME_PATH='.name.filepath')),
-    ("sound_sceneries_palette",  reflexive("sound_sceneries_palette",  sound_scenery_swatch,    256, DYN_NAME_PATH='.name.filepath')),
-    ("player_starting_profiles", reflexive("player_starting_profiles", player_starting_profile, 256, DYN_NAME_PATH='.name')),
-    ("netgame_equipments",       reflexive("netgame_equipments",  netgame_equipment, 200, DYN_NAME_PATH='.item_collection.filepath')),
-    ("starting_equipments",      reflexive("starting_equipments", starting_equipment, 200)),
-    ("script_syntax_data", rawdata_ref("script_syntax_data", max_size=655396, IGNORE_SAFE_MODE=True)),
-    ("script_string_data", rawdata_ref("script_string_data", max_size=819200, IGNORE_SAFE_MODE=True)),
-    ("scripts",         reflexive("scripts", halo_script, 1024, DYN_NAME_PATH='.name')),
-    ("globals",         reflexive("globals", halo_global, 512, DYN_NAME_PATH='.name')),
-    ("references",      reflexive("references", reference, 512, DYN_NAME_PATH='.reference.filepath')),
-    ("source_files",    reflexive("source_files", source_file, 16, DYN_NAME_PATH='.source_name')),
-    ("cutscene_titles", reflexive("cutscene_titles", cutscene_title, 64, DYN_NAME_PATH='.name')),
+    reflexive("object_names", object_name,   640, DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True),
+    reflexive("sceneries",  scenery,  2000, IGNORE_SAFE_MODE=True),
+    reflexive("bipeds",     biped,     128, IGNORE_SAFE_MODE=True),
+    reflexive("vehicles",   vehicle,   256, IGNORE_SAFE_MODE=True),
+    reflexive("equipments", equipment, 256, IGNORE_SAFE_MODE=True),
+    reflexive("weapons",    weapon,    128, IGNORE_SAFE_MODE=True),
+    reflexive("machines",   machine,   400, IGNORE_SAFE_MODE=True),
+    reflexive("controls",   control,   100, IGNORE_SAFE_MODE=True),
+    reflexive("light_fixtures",  light_fixture, 500, IGNORE_SAFE_MODE=True),
+    reflexive("sound_sceneries", sound_scenery, 256, IGNORE_SAFE_MODE=True),
+    reflexive("sceneries_palette",  scenery_swatch,   256, DYN_NAME_PATH='.name.filepath'),
+    reflexive("bipeds_palette",     biped_swatch,     256, DYN_NAME_PATH='.name.filepath'),
+    reflexive("vehicles_palette",   vehicle_swatch,   256, DYN_NAME_PATH='.name.filepath'),
+    reflexive("equipments_palette", equipment_swatch, 256, DYN_NAME_PATH='.name.filepath'),
+    reflexive("weapons_palette",    weapon_swatch,    256, DYN_NAME_PATH='.name.filepath'),
+    reflexive("machines_palette",   machine_swatch,   256, DYN_NAME_PATH='.name.filepath'),
+    reflexive("controls_palette",   control_swatch,   256, DYN_NAME_PATH='.name.filepath'),
+    reflexive("light_fixtures_palette",   light_fixture_swatch,    256, DYN_NAME_PATH='.name.filepath'),
+    reflexive("sound_sceneries_palette",  sound_scenery_swatch,    256, DYN_NAME_PATH='.name.filepath'),
+    reflexive("player_starting_profiles", player_starting_profile, 256, DYN_NAME_PATH='.name'),
+    reflexive("netgame_equipments",  netgame_equipment, 200, DYN_NAME_PATH='.item_collection.filepath'),
+    reflexive("starting_equipments", starting_equipment, 200),
+    rawdata_ref("script_syntax_data", max_size=655396, IGNORE_SAFE_MODE=True),
+    rawdata_ref("script_string_data", max_size=819200, IGNORE_SAFE_MODE=True),
+    reflexive("scripts", halo_script, 1024, DYN_NAME_PATH='.name'),
+    reflexive("globals", halo_global, 512, DYN_NAME_PATH='.name'),
+    reflexive("references", reference, 512, DYN_NAME_PATH='.reference.filepath'),
+    reflexive("source_files", source_file, 16, DYN_NAME_PATH='.source_name'),
+    reflexive("cutscene_titles", cutscene_title, 64, DYN_NAME_PATH='.name'),
     )
 
 def get():

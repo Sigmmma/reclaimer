@@ -8,7 +8,6 @@
 #
 
 from ...hek.defs.snd_ import *
-from supyr_struct.util import desc_variant
 
 
 mcc_snd__flags = Bool32("flags",
@@ -29,12 +28,12 @@ permutation = desc_variant(permutation,
     ("parent_tag_id2", UInt32("parent_tag_id")),
     )
 pitch_range = desc_variant(pitch_range,
-    ("permutations", reflexive("permutations", permutation, 256, DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True)),
+    reflexive("permutations", permutation, 256, DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True),
     )
 
 mcc_snd__body = desc_variant(snd__body,
-    ("flags", mcc_snd__flags),
-    ("pitch_ranges", reflexive("pitch_ranges", pitch_range, 8, DYN_NAME_PATH='.name')),
+    mcc_snd__flags,
+    reflexive("pitch_ranges", pitch_range, 8, DYN_NAME_PATH='.name'),
     )
 
 def get():
@@ -47,7 +46,7 @@ snd__def = TagDef("snd!",
     ext=".sound", endian=">", tag_cls=Snd_Tag,
     )
 
-snd__meta_stub = desc_variant(
-    mcc_snd__body, ("pitch_ranges", Pad(12))
+snd__meta_stub = desc_variant(mcc_snd__body,
+    ("pitch_ranges", Pad(12)),
     )
 snd__meta_stub_blockdef = BlockDef(snd__meta_stub)

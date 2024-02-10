@@ -8,7 +8,6 @@
 #
 
 from ...hek.defs.obje import *
-from supyr_struct.util import desc_variant
 
 obje_flags = Bool16('flags',
     'does_not_cast_shadow',
@@ -21,10 +20,8 @@ obje_flags = Bool16('flags',
     {NAME: 'xbox_unknown_bit_8', VALUE: 1<<8, VISIBLE: False},
     {NAME: 'xbox_unknown_bit_11', VALUE: 1<<11, VISIBLE: False},
     )
-obje_attrs = desc_variant(obje_attrs,
-    ("flags", obje_flags),
-    )
 
+obje_attrs = desc_variant(obje_attrs, obje_flags)
 obje_body = Struct('tagdata',
     obje_attrs,
     SIZE=380

@@ -8,10 +8,9 @@
 #
 
 from ...hek.defs.matg import *
-from supyr_struct.util import desc_variant
 
-matg_body = desc_variant(matg_body,
-    ("grenades", reflexive("grenades", grenade, 4, *grenade_types_mcc)),
+matg_body = desc_variant(matg_body, 
+    reflexive("grenades", grenade, 4, *grenade_types_mcc),
     )
 
 def get():

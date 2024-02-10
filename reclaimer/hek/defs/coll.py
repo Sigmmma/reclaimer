@@ -66,6 +66,7 @@ shield = Struct("shield",
     dependency("shield_recharging_effect", "effe"),
     Pad(8),
     FlFloat("shield_recharge_rate", VISIBLE=False),
+    SIZE=248
     )
 
 bsp3d_node = QStruct("bsp3d_node",

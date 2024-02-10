@@ -9,16 +9,13 @@
 
 from ...hek.defs.schi import *
 from .shdr import *
-from supyr_struct.util import desc_variant
 
 extra_flags = Bool32("extra_flags",
     "dont_fade_active_camouflage",
     "numeric_countdown_timer",
     "custom_edition_blending",
     )
-schi_attrs = desc_variant(schi_attrs,
-    ("extra_flags", extra_flags)
-    )
+schi_attrs = desc_variant(schi_attrs, extra_flags)
 
 schi_body = Struct("tagdata",
     shdr_attrs,

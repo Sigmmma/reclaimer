@@ -62,6 +62,15 @@ reflection = Struct("reflection",
     SIZE=128
     )
 
+# for reuse in mcc
+bitmaps = Struct("bitmaps",
+    dependency("bitmap", "bitm"),
+    Bool16("flags",
+        "sun",
+        ),
+    Pad(78),
+    SIZE=96
+    )
 
 lens_body = Struct("tagdata",
     float_rad("falloff_angle"),  # radians
@@ -81,14 +90,7 @@ lens_body = Struct("tagdata",
 	    COMMENT=occlusion_comment
         ),
 
-    Struct("bitmaps",
-        dependency("bitmap", "bitm"),
-        Bool16("flags",
-            "sun",
-            ),
-        Pad(78),
-        ),
-
+    bitmaps,
     Struct("corona_rotation",
         SEnum16("function",
             "none",

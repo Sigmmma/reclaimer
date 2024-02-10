@@ -176,7 +176,8 @@ vap_header = Struct("vap_header",
     Pad(256),
     STEPTREE=Array("blocks",
         SIZE=".block_count", SUB_STRUCT=vap_block
-        )
+        ),
+    SIZE=480
     )
 
 map_version = UEnum32("version",
@@ -256,6 +257,7 @@ map_header_mcc = desc_variant(
 map_header_vap = desc_variant(
     map_header,
     ("yelo_header", Struct("vap_header", INCLUDE=vap_header, OFFSET=128)),
+    verify=False,
     )
 
 tag_header = Struct("tag_header",
@@ -279,24 +281,6 @@ tag_index_array = TagIndex("tag_index",
     SIZE=".tag_count", SUB_STRUCT=tag_header, POINTER=tag_index_array_pointer
     )
 
-tag_index_xbox = Struct("tag_index",
-    UInt32("tag_index_offset"),
-    UInt32("scenario_tag_id"),
-    UInt32("map_id"),  # normally unused, but can be used
-                       # for spoofing the maps checksum.
-    UInt32("tag_count"),
-
-    UInt32("vertex_parts_count"),
-    UInt32("model_data_offset"),
-
-    UInt32("index_parts_count"),
-    UInt32("index_parts_offset"),
-    UInt32("tag_sig", EDITABLE=False, DEFAULT='tags'),
-
-    SIZE=36,
-    STEPTREE=tag_index_array
-    )
-
 tag_index_pc = Struct("tag_index",
     UInt32("tag_index_offset"),
     UInt32("scenario_tag_id"),
@@ -316,10 +300,10 @@ tag_index_pc = Struct("tag_index",
     STEPTREE=tag_index_array
     )
 
-#tag_index_pc = tipc = dict(tag_index_xbox)
-#tipc['ENTRIES'] += 1; tipc['SIZE'] += 4
-#tipc[7] = UInt32("vertex data size")
-#tipc[9] = tipc[8]; tipc[8] = UInt32("model data size")
+tag_index_xbox = desc_variant(tag_index_pc,
+    ("model_data_size", Pad(0)),
+    SIZE=36, verify=False
+    )
 
 map_header_def = BlockDef(map_header)
 map_header_anni_def = BlockDef(map_header, endian=">")

@@ -46,6 +46,7 @@ damage = Struct("damage",
     Pad(4),
     float_zero_to_inf("instantaneous_acceleration"),
     Pad(8),
+    SIZE=60
     )
 
 camera_shaking = Struct("camera_shaking",

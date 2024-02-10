@@ -9,8 +9,6 @@
 
 from ...hek.defs.part import *
 
-from supyr_struct.util import desc_variant
-
 particle_shader_extensions = reflexive("particle_shader_extensions",
     Struct("particle_shader_extension", INCLUDE=os_shader_extension),
     1

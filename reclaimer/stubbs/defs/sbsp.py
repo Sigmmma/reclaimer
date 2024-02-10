@@ -9,52 +9,24 @@
 
 from ...hek.defs.sbsp import *
 from ..common_descs import *
-from supyr_struct.util import desc_variant
 
-
-cluster = Struct("cluster",
-    SInt16('sky'),
-    SInt16('fog'),
-    dyn_senum16('background_sound',
-        DYN_NAME_PATH="tagdata.background_sounds_palette.STEPTREE[DYN_I].name"),
-    dyn_senum16('sound_environment',
-        DYN_NAME_PATH="tagdata.sound_environments_palette." +
-        "STEPTREE[DYN_I].name"),
-    dyn_senum16('weather',
-        DYN_NAME_PATH="tagdata.weather_palettes.STEPTREE[DYN_I].name"),
-
-    UInt16("transition_structure_bsp", VISIBLE=False),
-    UInt16("first_decal_index", VISIBLE=False),
-    UInt16("decal_count", VISIBLE=False),
-    QStruct("unknown0",
-        Float('float_0'),
-        Float('float_1'),
-        Float('float_2'),
-        Float('float_3'),
-        Float('float_4'),
-        Float('float_5'),
-        SIZE=24
-        ),
-
-    reflexive("predicted_resources", predicted_resource, 1024),
-    reflexive("subclusters", subcluster, 4096),
-    SInt16("first_lens_flare_marker_index"),
-    SInt16("lens_flare_marker_count"),
-
-    # stubbs seems to have different data here than surface indices
-    Pad(12),
-    reflexive("mirrors", mirror, 16, DYN_NAME_PATH=".shader.filepath"),
-    reflexive("portals", portal, 128),
-    SIZE=104
+cluster_unknown = QStruct("unknown",
+    Float('float_0'),
+    Float('float_1'),
+    Float('float_2'),
+    Float('float_3'),
+    Float('float_4'),
+    Float('float_5'),
+    SIZE=24
     )
 
+surface_indices = desc_variant(reflexive_struct, NAME="surface_indices")
+    
+cluster  = desc_variant(cluster, ("pad_8", cluster_unknown), surface_indices)
+clusters = reflexive("clusters", cluster, 8192)
 
-sbsp_body = desc_variant(sbsp_body,
-    ("clusters", reflexive("clusters", cluster, 8192)),
-    )
-fast_sbsp_body = desc_variant(fast_sbsp_body,
-    ("clusters", reflexive("clusters", cluster, 8192)),
-    )
+sbsp_body      = desc_variant(sbsp_body, clusters)
+fast_sbsp_body = desc_variant(fast_sbsp_body, clusters)
 
 
 def get():

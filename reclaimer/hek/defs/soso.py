@@ -61,7 +61,7 @@ model_shader = Struct("model_shader",
         ),
     Pad(14),
     Float("translucency"),
-    COMMENT=soso_comment
+    SIZE=20, COMMENT=soso_comment
     )
 
 self_illumination = Struct("self_illumination",
@@ -119,39 +119,29 @@ reflection = Struct("reflection",
     )
 
 soso_attrs = Struct("soso_attrs",
-    #Model Shader Properties
     model_shader,
 
     Pad(16),
-    #Color-Change
     SEnum16("color_change_source", *function_names, COMMENT=cc_comment),
 
     Pad(30),
-    #Self-Illumination
     self_illumination,
 
     Pad(12),
-    #Diffuse, Multipurpose, and Detail Maps
     maps,
 
     # this padding is the reflexive for the OS shader model extension
     Pad(12),
 
-    #Texture Scrolling Animation
     texture_scrolling,
 
     Pad(8),
-    #Reflection Properties
     reflection,
 
-    # NOTE: this isn't actually used in pc, but may be usable on xbox.
-    Float("reflection_bump_scale", VISIBLE=False),
-    dependency("reflection_bump_map", "bitm", VISIBLE=False, COMMENT="""
-    DO NOT USE THIS UNLESS YOU ARE MODDING XBOX HALO 1.
-
-    It has not been tested to confirm if it works on 
-    Xbox, but it certainly doesnt work on PC or later.
-    """),
+    # NOTE: these aren't actually used, but they were at one point in
+    #       development. keeping these for documentation purposes.
+    Pad(4),  #Float("reflection_bump_scale", VISIBLE=False),
+    Pad(16), #dependency("reflection_bump_map", "bitm", VISIBLE=False),
 
     SIZE=400
     )

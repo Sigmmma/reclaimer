@@ -39,7 +39,8 @@ actv_grenades = Struct("grenades",
     float_wu("collateral_damage_radius"),
     float_zero_to_one("grenade_chance"),
     float_sec("grenade_check_time", UNIT_SCALE=sec_unit_scale),
-    float_sec("encounter_grenade_timeout", UNIT_SCALE=sec_unit_scale)
+    float_sec("encounter_grenade_timeout", UNIT_SCALE=sec_unit_scale),
+    SIZE=52,
     )
 
 actv_body = Struct("tagdata",

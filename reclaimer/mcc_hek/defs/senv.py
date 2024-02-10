@@ -9,7 +9,6 @@
 
 from ...hek.defs.senv import *
 from .shdr import *
-from supyr_struct.util import desc_variant
 
 environment_shader_flags = Bool16("flags",
     "alpha_tested",
@@ -19,15 +18,9 @@ environment_shader_flags = Bool16("flags",
     COMMENT=environment_shader_comment
     )
 
-environment_shader = desc_variant(environment_shader,
-    ("flags", environment_shader_flags),
-    )
-
-senv_attrs = desc_variant(senv_attrs,
-    ("environment_shader", environment_shader),
-    )
-
-senv_body = Struct("tagdata",
+environment_shader = desc_variant(environment_shader, environment_shader_flags)
+senv_attrs = desc_variant(senv_attrs, environment_shader)
+senv_body  = Struct("tagdata",
     shdr_attrs,
     senv_attrs,
     SIZE=836,

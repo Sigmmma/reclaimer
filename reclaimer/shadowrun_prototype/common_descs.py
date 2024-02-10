@@ -10,6 +10,19 @@
 from reclaimer.common_descs import *
 from reclaimer.shadowrun_prototype.constants import *
 
+# TODO: move shared enumerators into separate enums.py module
+# ###########################################################################
+# The order of element in all the enumerators is important(DONT SHUFFLE THEM)
+# ###########################################################################
+
+#Shared Enumerator options
+
+# TODO: update these if any of the new shadowrun tag types are found
+#       to be used in scripts, or if there are new builtin functions
+# NOTE: we're re-defining these here simply as a placeholder
+script_types          = tuple(script_types)
+script_object_types   = tuple(script_object_types)
+
 
 def sr_tag_class(*args, **kwargs):
     '''
@@ -19,7 +32,6 @@ def sr_tag_class(*args, **kwargs):
     kwargs["class_mapping"] = sr_tag_class_fcc_to_ext
     return tag_class(*args, **kwargs)
 
-
 def dependency(name='tag_ref', valid_ids=None, **kwargs):
     '''This function serves to macro the creation of a tag dependency'''
     if isinstance(valid_ids, tuple):
@@ -27,15 +39,19 @@ def dependency(name='tag_ref', valid_ids=None, **kwargs):
     elif isinstance(valid_ids, str):
         valid_ids = sr_tag_class(valid_ids)
     elif valid_ids is None:
-        valid_ids = valid_tags
+        valid_ids = sr_valid_tags
 
-    return TagRef(name,
+    return desc_variant(tag_ref_struct,
         valid_ids,
-        INCLUDE=tag_ref_struct,
         STEPTREE=StrTagRef(
-            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=234),
-        **kwargs
+            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254
+            ),
+        NAME=name, **kwargs
         )
+
+# should really rename "dependency" above to this.
+# until then, make an alias so it's clear what we're referencing
+dependency_sr = dependency
 
 
 def blam_header(tagid, version=1):

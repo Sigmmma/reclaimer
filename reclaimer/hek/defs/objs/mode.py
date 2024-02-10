@@ -92,7 +92,7 @@ class ModeTag(HekTag):
                         unpack_vert(verts[i: i+vert_size])
                         for i in range(0, len(verts), vert_size)
                         ]
-                    weight_key, node_0_key, node_1_key = 0, 1, 2
+                    node_0_key, node_1_key, weight_key = 0, 1, 2
                 else:
                     # verts aren't packed, so use as-is
                     weight_key              = "node_0_weight" 

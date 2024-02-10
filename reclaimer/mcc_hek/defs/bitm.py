@@ -9,7 +9,6 @@
 
 from ...hek.defs.bitm import *
 from .objs.bitm import MccBitmTag
-from supyr_struct.util import desc_variant
 
 format_comment_parts = format_comment.split("NOTE: ", 1)
 format_comment = "".join((
@@ -53,10 +52,7 @@ bitmap_flags = Bool16("flags",
     {NAME: "data_in_resource_map", VISIBLE: False},
     {NAME: "environment", VISIBLE: False},
     )
-bitmap = desc_variant(bitmap,
-    ("format", bitmap_format),
-    ("flags", bitmap_flags),
-    )
+bitmap = desc_variant(bitmap, bitmap_format, bitmap_flags)
 body_format = SEnum16("format",
     "color_key_transparency",
     "explicit_alpha",
@@ -86,15 +82,15 @@ sprite_processing = Struct("sprite_processing",
       {NAME: "x1024", VALUE: 5, GUI_NAME: "1024x1024"},
       ),
     UInt16("sprite_budget_count"),
-    COMMENT=sprite_processing_comment
+    SIZE=4, COMMENT=sprite_processing_comment
     )
 bitm_body = desc_variant(bitm_body,
-    ("format", body_format),
-    ("flags", body_flags),
-    ("sprite_processing", sprite_processing),
-    ("compressed_color_plate_data", rawdata_ref("compressed_color_plate_data", max_size=1073741824)),
-    ("processed_pixel_data", rawdata_ref("processed_pixel_data", max_size=1073741824)),
-    ("bitmaps", reflexive("bitmaps", bitmap, 65536, IGNORE_SAFE_MODE=True)),
+    body_format,
+    body_flags,
+    sprite_processing,
+    rawdata_ref("compressed_color_plate_data", max_size=1073741824),
+    rawdata_ref("processed_pixel_data", max_size=1073741824),
+    reflexive("bitmaps", bitmap, 65536, IGNORE_SAFE_MODE=True),
     )
 
 def get():

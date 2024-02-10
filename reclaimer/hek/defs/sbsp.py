@@ -258,6 +258,7 @@ cluster = Struct("cluster",
 
     # almost certain this is padding, though a value in the third
     # and fourth bytes is non-zero in meta, but not in a tag, so idk.
+    # also this is a bunch of floats in stubbs, so there's also that.
     Pad(24),
 
     reflexive("predicted_resources", predicted_resource, 1024, VISIBLE=False),

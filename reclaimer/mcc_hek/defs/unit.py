@@ -7,8 +7,7 @@
 # See LICENSE for more information.
 #
 
-from ...hek.defs.unit import *
-from supyr_struct.util import desc_variant    
+from ...hek.defs.unit import * 
 
 metagame_scoring = Struct("metagame_scoring",
     SEnum16("metagame_type", TOOLTIP="Used to determine score in MCC", *actor_types_mcc),
@@ -18,7 +17,7 @@ metagame_scoring = Struct("metagame_scoring",
 
 unit_attrs = desc_variant(unit_attrs,
     ("pad_45", metagame_scoring),
-    ("grenade_type", SEnum16("grenade_type", *grenade_types_mcc)),
+    SEnum16("grenade_type", *grenade_types_mcc),
     )
 
 unit_body = Struct('tagdata',

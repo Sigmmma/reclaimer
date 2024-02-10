@@ -10,13 +10,8 @@
 from .obje import *
 from .item import *
 from .objs.weap import WeapTag
-from supyr_struct.util import desc_variant
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(2))
-    )
+obje_attrs = obje_attrs_variant(obje_attrs, "weap")
 
 magazine_item = Struct("magazine_item",
     SInt16("rounds"),

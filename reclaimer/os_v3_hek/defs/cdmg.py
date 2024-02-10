@@ -8,7 +8,6 @@
 #
 
 from ...hek.defs.cdmg import *
-from supyr_struct.util import desc_variant
 
 damage_flags = Bool32("flags",
     "does_not_hurt_owner",
@@ -28,16 +27,14 @@ damage_flags = Bool32("flags",
     )
 
 damage = desc_variant(damage,
-    ("flags", damage_flags),
-    ("instantaneous_acceleration", QStruct("instantaneous_acceleration", 
-        INCLUDE=ijk_float, SIDETIP="[-inf,+inf]"
-        )),
+    damage_flags,
+    QStruct("instantaneous_acceleration", INCLUDE=ijk_float, SIDETIP="[-inf,+inf]"),
     ("pad_13", Pad(0)),
+    # we're doing some weird stuff to make this work, so we're turning off verify
+    verify=False
     )
 
-cdmg_body = desc_variant(cdmg_body,
-    ("damage", damage),
-    )
+cdmg_body = desc_variant(cdmg_body, damage)
 
 def get():
     return cdmg_def

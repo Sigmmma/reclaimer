@@ -8,7 +8,6 @@
 #
 
 from ...hek.defs.effe import *
-from supyr_struct.util import desc_variant
 
 flags = Bool32("flags",
     {NAME: "deleted_when_inactive", GUI_NAME: "deleted when attachment deactivates"},
@@ -17,9 +16,7 @@ flags = Bool32("flags",
     "disabled_in_remastered_by_blood_setting"
     )
 
-effe_body = desc_variant(effe_body,
-    ("flags", flags),
-    )
+effe_body = desc_variant(effe_body,  flags)
 
 def get():
     return effe_def

@@ -9,15 +9,16 @@
 
 from ...os_v3_hek.defs.obje import *
 
-obje_attrs = dict(obje_attrs)
-obje_attrs[1] = Bool16('flags',
-    'does_not_cast_shadow',
-    'transparent_self_occlusion',
-    'brighter_than_it_should_be',
-    'not_a_pathfinding_obstacle',
-    'cast_shadow_by_default',
-    {NAME: 'xbox_unknown_bit_8', VALUE: 1<<8, VISIBLE: False},
-    {NAME: 'xbox_unknown_bit_11', VALUE: 1<<11, VISIBLE: False},
+obje_attrs = desc_variant(obje_attrs,
+    Bool16('flags',
+        'does_not_cast_shadow',
+        'transparent_self_occlusion',
+        'brighter_than_it_should_be',
+        'not_a_pathfinding_obstacle',
+        'cast_shadow_by_default',
+        {NAME: 'xbox_unknown_bit_8', VALUE: 1<<8, VISIBLE: False},
+        {NAME: 'xbox_unknown_bit_11', VALUE: 1<<11, VISIBLE: False},
+        ),
     )
 
 obje_body = Struct('tagdata',

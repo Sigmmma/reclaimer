@@ -9,14 +9,11 @@
 
 from ...hek.defs.obje import *
 from ..common_descs import *
-from supyr_struct.util import desc_variant
 
 def get():
     return obje_def
 
-obje_attrs = desc_variant(obje_attrs,
-    ("model", dependency_stubbs('model', 'mode')),
-    )
+obje_attrs = desc_variant(obje_attrs, dependency_stubbs('model', 'mode'))
 
 obje_body = Struct('tagdata',
     obje_attrs,

@@ -10,7 +10,6 @@
 from ...hek.defs.vehi import *
 from .obje import *
 from .unit import *
-from supyr_struct.util import desc_variant
     
 vehi_flags = Bool32("flags",
     "speed_wakes_physics",
@@ -37,15 +36,8 @@ vehi_flags = Bool32("flags",
     "autoaim_when_teamless"
     )
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(1))
-    )
-
-vehi_attrs = desc_variant(vehi_attrs,
-    ('flags', vehi_flags),
-    )
+obje_attrs = obje_attrs_variant(obje_attrs, "vehi")
+vehi_attrs = desc_variant(vehi_attrs, vehi_flags)
 
 vehi_body = Struct("tagdata",
     obje_attrs,

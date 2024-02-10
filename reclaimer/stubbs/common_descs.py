@@ -9,6 +9,7 @@
 
 from reclaimer.common_descs import *
 
+# TODO: move shared enumerators into separate enums.py module
 # ###########################################################################
 # The order of element in all the enumerators is important(DONT SHUFFLE THEM)
 # ###########################################################################
@@ -121,10 +122,21 @@ weapon_types = (
     "unknown5",
     )
 
-damage_modifiers = QStruct("damage_modifiers",
-    *(float_zero_to_inf(material_name) for material_name in materials_list)
-    )
+# TODO: update these WHEN the new stubbs tag types are found to
+#       be used in scripts, or if there are new builtin functions.
+#       there are definitely new object types inserted, as the player
+#       script types are set to return weapons now instead of units.
+# NOTE: we're re-defining these here simply as a placeholder
+script_types          = tuple(script_types)
+script_object_types   = tuple(script_object_types)
 
+
+damage_modifiers = QStruct("damage_modifiers",
+    *(float_zero_to_inf(material_name) for material_name in materials_list),
+    # NOTE: there's enough allocated for 40 materials. We're assuming 
+    #       the rest of the space is all for these damage modifiers
+    SIZE=4*40
+    )
 
 def tag_class_stubbs(*args, **kwargs):
     '''
@@ -144,12 +156,12 @@ def dependency_stubbs(name='tag_ref', valid_ids=None, **kwargs):
     elif valid_ids is None:
         valid_ids = stubbs_valid_tags
 
-    return TagRef(name,
+    return desc_variant(tag_ref_struct,
         valid_ids,
-        INCLUDE=tag_ref_struct,
         STEPTREE=StrTagRef(
-            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=234),
-        **kwargs
+            "filepath", SIZE=tag_ref_str_size, GUI_NAME="", MAX=254
+            ),
+        NAME=name, **kwargs
         )
 
 

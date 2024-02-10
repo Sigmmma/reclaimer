@@ -11,15 +11,11 @@ from ...hek.defs.eqip import *
 from .obje import *
 from .item import *
 
-eqip_attrs = desc_variant(eqip_attrs,
-    ("grenade_type", SEnum16("grenade_type", *grenade_types_mcc)),
+eqip_attrs = desc_variant(eqip_attrs, 
+    SEnum16("grenade_type", *grenade_types_mcc)
     )
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(3))
-    )
+obje_attrs = obje_attrs_variant(obje_attrs, "eqip")
 
 eqip_body = Struct("tagdata",
     obje_attrs,

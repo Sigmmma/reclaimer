@@ -174,7 +174,7 @@ def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
 
         cls = shader_class_bytes[shader_type]
     elif cls in (b'2dom', b'edom'):
-        if "xbox" in engine:
+        if "xbox" in engine or "halo" not in engine:
             cls = b'edom'
         else:
             cls = b'2dom'

@@ -9,30 +9,19 @@
 
 from ...hek.defs.proj import *
 from .obje import *
-from supyr_struct.util import desc_variant
 
 potential_response_flags = Bool16("flags",
     "only_against_units",
     "never_against_units"
     )
-potential_response = desc_variant(potential_response,
-    ("flags", potential_response_flags)
-    )
-material_response = desc_variant(material_response,
-    ("potential_response", potential_response)
-    )
+potential_response = desc_variant(potential_response, potential_response_flags)
+material_response  = desc_variant(material_response, potential_response)
 material_responses = reflexive("material_responses",
     material_response, len(materials_list), *materials_list
     )
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(5))
-    )
-proj_attrs = desc_variant(proj_attrs,
-    ("material_responses", material_responses)
-    )
+obje_attrs = obje_attrs_variant(obje_attrs, "proj")
+proj_attrs = desc_variant(proj_attrs,  material_responses)
 
 proj_body = Struct("tagdata",
     obje_attrs,

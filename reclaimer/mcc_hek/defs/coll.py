@@ -8,13 +8,12 @@
 #
 
 from ...hek.defs.coll import *
-from supyr_struct.util import desc_variant
 
 coll_body = desc_variant(coll_body,
-    ("pathfinding_spheres", reflexive("pathfinding_spheres", pathfinding_sphere, 256)),
+    reflexive("pathfinding_spheres", pathfinding_sphere, 256),
     )
 fast_coll_body = desc_variant(coll_body,
-    ("nodes", reflexive("nodes", fast_node, 64, DYN_NAME_PATH='.name')),
+    reflexive("nodes", fast_node, 64, DYN_NAME_PATH='.name'),
     )
 
 def get():

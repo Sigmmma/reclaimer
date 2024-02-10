@@ -6,11 +6,16 @@
 # Reclaimer is free software under the GNU General Public License v3.0.
 # See LICENSE for more information.
 #
+import math
 
+from collections import namedtuple
 from struct import unpack
 from traceback import format_exc
 
 from reclaimer import data_extraction
+from reclaimer.mcc_hek.defs.bitm import bitm_def as pixel_root_subdef
+from reclaimer.mcc_hek.defs.objs.bitm import MccBitmTag, HALO_P8_PALETTE
+from reclaimer.stubbs.defs.objs.bitm import StubbsBitmTag, STUBBS_P8_PALETTE
 from reclaimer.util import get_is_xbox_map
 from reclaimer.meta.halo_map import map_header_def, tag_index_pc_def
 from reclaimer.meta.halo1_rsrc_map import lite_halo1_rsrc_map_def as halo1_rsrc_map_def
@@ -21,6 +26,9 @@ from reclaimer.meta.wrappers.halo_map import HaloMap
 
 from supyr_struct.buffer import BytearrayBuffer, get_rawdata
 from supyr_struct.field_types import FieldType
+
+# reassign since we only want a reference to the sub-definition
+pixel_root_subdef = pixel_root_subdef.subdefs['pixel_root']
 
 # this is ultra hacky, but it seems to be the only
 # way to fix the tagid for the sounds resource map
@@ -83,6 +91,33 @@ def uses_external_sounds(sound_meta):
                 if b.flags.data_in_resource_map:
                     return True
     return False
+
+
+class MetaBitmTag():
+    '''
+    This class exists to facilitate processing bitmap tags extracted 
+    from maps without fully converting them to tag objects first.
+    '''
+    _fake_data_block = namedtuple('FakeDataBlock',
+        ("blam_header", "tagdata")
+        )
+    def __init__(self, tagdata=None):
+        self.data = self._fake_data_block(None, tagdata)
+
+    # stubed since there's nothing to calculate here
+    def calc_internal_data(self): pass
+
+    @property
+    def pixel_root_definition(self): return pixel_root_subdef
+
+
+class MetaHaloBitmTag(MetaBitmTag, MccBitmTag):
+    @property
+    def p8_palette(self): return HALO_P8_PALETTE
+
+class MetaStubbsBitmTag(MetaBitmTag, StubbsBitmTag):
+    @property
+    def p8_palette(self): return STUBBS_P8_PALETTE
 
 
 class Halo1RsrcMap(HaloMap):
@@ -279,54 +314,52 @@ class Halo1RsrcMap(HaloMap):
         byteswap    = kwargs.get("byteswap", True)
 
         if tag_cls == "bitm":
+            bitm_tag_cls = MetaStubbsBitmTag if "stubbs" in engine else MetaHaloBitmTag
+            bitm_tag     = bitm_tag_cls(meta)
+            bitmaps      = meta.bitmaps.STEPTREE
+
             # set the size of the compressed plate data to nothing
             meta.compressed_color_plate_data.STEPTREE = BytearrayBuffer()
 
-            # to enable compatibility with my bitmap converter we'll set the
-            # base address to a certain constant based on the console platform
-            is_xbox = get_is_xbox_map(engine)
+            # set up the pixels_offsets
+            pixels_offset = 0
+            for bitmap in bitmaps:
+                bitmap.pixels_offset = pixels_offset
+                pixels_offset       += bitmap.pixels_meta_size
 
-            new_pixels_offset = 0
+            # undo xbox-specific stuff(reorder bitmaps, fix mipmap dims, unswizzle)
+            if get_is_xbox_map(engine):
+                # correct mipmap count on xbox dxt bitmaps. texels for any
+                # mipmaps whose dimensions are 2x2 or smaller are pruned
+                for bitmap in (b for b in bitmaps if "dxt" in b.format.enum_name):
+                    # figure out largest dimension(clip to 1 to avoid log(0, 2))
+                    max_dim = max(1, bitmap.width, bitmap.height)
 
-            # uncheck the prefer_low_detail flag and
-            # set up the pixels_offset correctly.
-            for bitmap in meta.bitmaps.STEPTREE:
-                # clear meta-only flags
-                bitmap.flags.data &= 0x3F
+                    # subtract 2 to account for width/height of 1 or 2 not having mips
+                    maxmips = int(max(0, math.log(max_dim, 2) - 2))
 
-                # TODO: convert bitmaps to pc format(swap cubemap faces and mipmaps)
-                bitmap.flags.prefer_low_detail = is_xbox
-                bitmap.pixels_offset = new_pixels_offset
-                new_pixels_offset += bitmap.pixels_meta_size
+                    # clip mipmap count to max and min number that can exist
+                    bitmap.mipmaps = max(0, min(maxmips, bitmap.mipmaps))
 
-                # clear some meta-only fields
-                bitmap.pixels_meta_size = 0
-                bitmap.bitmap_id_unknown1 = bitmap.bitmap_id_unknown2 = 0
-                bitmap.bitmap_data_pointer = 0
+                # rearrange the bitmap pixels so they're in standard format
+                try:
+                    bitm_tag.parse_bitmap_blocks()
+                    bitm_tag.sanitize_bitmaps()
+                    bitm_tag.set_swizzled(False)
+                    bitm_tag.add_bitmap_padding(False)
+                except Exception:
+                    print(format_exc())
+                    print("Failed to convert xbox bitmap data to pc.")
 
-                if is_xbox:
-                    bitmap.base_address = 1073751810
-                    if "dxt" in bitmap.format.enum_name:
-                        # need to correct mipmap count on xbox dxt bitmaps.
-                        # the game seems to prune the mipmap texels for any
-                        # mipmaps whose dimensions are 2x2 or smaller
+            # clear meta-only fields
+            for bitmap in bitmaps:
+                bitmap.flags.data        &= 0x3F
+                bitmap.base_address       = 0
+                bitmap.pixels_meta_size   = bitmap.bitmap_data_pointer = 0
+                bitmap.bitmap_id_unknown1 = bitmap.bitmap_id_unknown2  = 0
 
-                        max_dim = max(bitmap.width, bitmap.height)
-                        if 2 ** bitmap.mipmaps > max_dim:
-                            # make sure the mipmap level isnt higher than the
-                            # number of mipmaps that should be able to exist.
-                            bitmap.mipmaps = int(log(max_dim, 2))
-
-                        last_mip_dim = max_dim // (2 ** bitmap.mipmaps)
-                        if last_mip_dim == 1:
-                            bitmap.mipmaps -= 2
-                        elif last_mip_dim == 2:
-                            bitmap.mipmaps -= 1
-
-                        if bitmap.mipmaps < 0:
-                            bitmap.mipmaps = 0
-                else:
-                    bitmap.base_address = 0
+            # serialize the pixel_data and replace the parsed block with it
+            meta.processed_pixel_data.data = meta.processed_pixel_data.data.serialize()
 
         elif tag_cls == "snd!":
             meta.maximum_bend_per_second = meta.maximum_bend_per_second ** 30

@@ -8,10 +8,8 @@
 #
 
 from ...hek.defs.lens import *
-from supyr_struct.util import desc_variant
 
-bitmaps = Struct("bitmaps",
-    dependency("bitmap", "bitm"),
+bitmaps = desc_variant(bitmaps,
     Bool16("flags",
         "sun",
         "no_occlusion_test",
@@ -20,13 +18,9 @@ bitmaps = Struct("bitmaps",
         "fade_in_more_quickly",
         "fade_out_more_quickly",
         "scale_by_marker",
-        ),
-    Pad(78),
+        )
     )
-
-lens_body = desc_variant(lens_body,
-    ("bitmaps", bitmaps),
-    )
+lens_body = desc_variant(lens_body, bitmaps)
 
 def get():
     return lens_def

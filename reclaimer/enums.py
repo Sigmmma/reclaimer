@@ -400,6 +400,17 @@ script_object_types = (
     "device_name",
     "scenery_name", # 48
     )
+# used in determining which script object types are tag refs
+script_object_tag_ref_types = (
+    "sound",
+    "effect",
+    "damage",
+    "looping_sound",
+    "animation_graph",
+    "actor_variant",
+    "damage_effect",
+    "object_definition",
+    )
 # DO NOT MODIFY ANY OF THESE ENUMS!
 # The exact lettering is important!
 # INCOMPLETE: Entries with None haven't been determined yet.
@@ -461,9 +472,9 @@ script_built_in_functions = (
     "objects_can_see_object",
     "objects_can_see_flag",
     "objects_delete_by_definition",
-    None,
+    None,  # NOTE: might be related to sound_get/set_gain
     # these next 5 might be shifted. a little
-    "sound_set_gain", # *
+    "sound_get_gain", # **
     "sound_set_gain", # * same as previous, but extra arg
     "script_recompile", # *
     "help", # *
@@ -562,100 +573,103 @@ script_built_in_functions = (
     "cheat_spawn_warthog", # *
     "cheat_all_vehicles", # *
     "cheat_teleport_to_camera", # *
-    "cheat_active_camouflage", # *
-    # no space for this command. Might not actually exist
-    #"cheat_active_camouflage_local_player", # *
+    # seems cheat_active_camouflage is a variant of 
+    # cheat_active_camouflage_local_player with the
+    # local player index set to 0.
+    #"cheat_active_camouflage",
+    "cheat_active_camouflage_local_player", # *
     "cheats_load", # *
     "ai_free",
     "ai_free_units",
     "ai_attach",
-    "ai_attach",
+    "ai_attach_free", # **
     "ai_detach", # 160
-    "ai_place",
-    "ai_place",
+    "ai_place", # ???
+    "ai_place", # ???
     "ai_kill",
     "ai_kill_silent",
     "ai_erase",
     "ai_erase_all",
     "ai_select", # *
-    # no space for this command. Might not actually exist
+    # seems ai_deselect is a variant of ai_select
     #"ai_deselect", # *
     "ai_spawn_actor",
-    "ai_spawn_actor",
+    "ai_set_respawn",  # **
     "ai_set_deaf", # 170
     "ai_set_blind",
-    "ai_magically_see_encounter",
-    "ai_magically_see_encounter",
+    "ai_magically_see_encounter", # ???
+    "ai_magically_see_encounter", # ???
     "ai_magically_see_players",
     "ai_magically_see_unit", # *
     "ai_timer_expire",
     "ai_attack",
-    "ai_attack",
+    "ai_defend", # **
     "ai_retreat",
     "ai_maneuver", # 180
-    "ai_maneuver",
-    "ai_migrate",
-    "ai_migrate",
+    "ai_maneuver_enable", # **
+    "ai_migrate", # ??
+    "ai_migrate", # ??
     "ai_migrate_and_speak",
     "ai_migrate_by_unit",
     "ai_allegiance",
+    # seems ai_allegiance_remove is a variant of ai_allegiance 
     "ai_living_count",
-    "ai_living_count",
+    "ai_living_fraction", # **
     "ai_strength",
-    "ai_strength", # 190
-    "ai_nonswarm_count",
+    "ai_strength", # 190 ???
+    "ai_swarm_count", # **
     "ai_nonswarm_count",
     "ai_actors",
     "ai_go_to_vehicle",
     "ai_going_to_vehicle",
     "ai_exit_vehicle",
     "ai_braindead",
-    "ai_braindead",
+    "ai_braindead", # ???
     "ai_braindead_by_unit",
     "ai_prefer_target", # 200
     "ai_teleport_to_starting_location",
     "ai_teleport_to_starting_location_if_unsupported",
-    "ai_teleport_to_starting_location_if_unsupported",
+    "ai_teleport_to_starting_location_if_unsupported", # ???
     "ai_renew",
-    "ai_try_to_fight",
+    "ai_try_to_fight_nothing", # **
     "ai_try_to_fight",
     "ai_try_to_fight_player",
     "ai_command_list",
     "ai_command_list_by_unit",
     "ai_command_list_advance", # 210
     "ai_command_list_status",
-    "ai_command_list_status",
+    "ai_is_attacking", # **
     "ai_force_active",
-    "ai_force_active",
+    "ai_force_active_by_unit", # **
     "ai_set_return_state", # *
     "ai_set_current_state", # *
     "ai_playfight",
-    "ai_playfight",
+    "ai_playfight", # ???
     "ai_status",
     "ai_vehicle_encounter", # 220
     "ai_vehicle_enterable_distance",
-    "ai_vehicle_enterable_distance",
+    "ai_vehicle_enterable_team", # **
     "ai_vehicle_enterable_actor_type",
     "ai_vehicle_enterable_actors", # *
     "ai_vehicle_enterable_disable",
     "ai_look_at_object", # *
     "ai_stop_looking", # *
     "ai_automatic_migration_target",
-    "ai_automatic_migration_target",
+    "ai_automatic_migration_target", # ???
     "ai_follow_target_disable", # 230
     "ai_follow_target_players",
     "ai_follow_target_ai",
     "ai_follow_distance",
     "ai_conversation",
-    "ai_conversation",
+    "ai_conversation", # ???
     "ai_conversation_stop",
     "ai_conversation_advance",
-    "ai_conversation_status",
+    "ai_conversation_line", # **
     "ai_conversation_status",
     "ai_link_activation", # 240
     "ai_berserk",
     "ai_set_team",
-    "ai_allow_dormant",
+    "ai_allow_charge", # **
     "ai_allow_dormant",
     "ai_allegiance_broken",
     "camera_control",
@@ -663,21 +677,21 @@ script_built_in_functions = (
     "camera_set_relative",
     "camera_set_first_person",
     "camera_set_dead", # 250
-    "camera_set_dead",
+    "camera_set_dead", # ???
     "camera_time",
     "debug_camera_load",
     "debug_camera_save",
     "game_speed",
     "game_variant", # *
     "game_difficulty_get",
-    "game_difficulty_get",
+    "game_difficulty_get", # ???
     "game_difficulty_get_real",
     "profile_service_clear_timers", # * 260
     "profile_service_dump_timers", # *
     "map_reset",
     "map_name",
-    "switch_bsp",
-    "structure_bsp_index",
+    "multiplayer_map_name", # **
+    "game_difficulty_set", # **
     "crash", # *
     "switch_bsp",
     "structure_bsp_index",
@@ -693,23 +707,26 @@ script_built_in_functions = (
     "debug_tags", # *
     "profile_reset", # *
     "profile_dump", # *280
-    # no space for these commands. Might not actually exist
+    # seems profile_activate, profile_deactivate, and 
+    # profile_graph_toggle are variants of profile_dump
     #"profile_activate", # *
     #"profile_deactivate", # *
     #"profile_graph_toggle", # *
     "debug_pvs", # *
     "radiosity_start", # *
-    # no space for these commands. Might not actually exist
+    # seems radiosity_save and radiosity_debug_point
+    # are variants of radiosity_start
     #"radiosity_save", # *
     #"radiosity_debug_point", # *
     "ai",
     "ai_dialogue_triggers",
     "ai_grenades",
-    None, None,
-    "ai",
-    "ai_dialogue_triggers",
-    "ai_grenades", # 290
-    None,
+    "ai_lines", # *
+    "ai_debug_sound_point_set", # *
+    "ai_debug_vocalize", # *
+    "ai_debug_teleport_to", # *
+    "ai_debug_speak", # 290 *
+    "ai_debug_speak_list", # **
     "fade_in",
     "fade_out",
     "cinematic_start",

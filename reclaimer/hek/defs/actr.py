@@ -34,6 +34,7 @@ panic = Struct("panic",
     float_zero_to_one("leader_killed_panic_chance"),
     float_zero_to_one("panic_damage_threshold"),
     float_wu("surprise_distance"),  # world units
+    SIZE=28
     )
 
 actr_body = Struct("tagdata",
@@ -175,16 +176,7 @@ actr_body = Struct("tagdata",
         ),
 
     Pad(8),
-    Struct("panic",
-        from_to_sec("cowering_time"),  # seconds
-        float_zero_to_one("friend_killed_panic_chance"),
-        SEnum16("leader_type", *actor_types),
-
-        Pad(2),
-        float_zero_to_one("leader_killed_panic_chance"),
-        float_zero_to_one("panic_damage_threshold"),
-        float_wu("surprise_distance"),  # world units
-        ),
+    panic,
 
     Pad(28),
     Struct("defensive",

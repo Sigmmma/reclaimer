@@ -8,14 +8,11 @@
 #
 
 from ...hek.defs.grhi import *
-from supyr_struct.util import desc_variant
 
 # NOTE: used by unhi and wphi
 mcc_hud_anchor = SEnum16("anchor", *hud_anchors_mcc)
 
-grhi_body = desc_variant(grhi_body,
-    ("anchor", mcc_hud_anchor),
-    )
+grhi_body = desc_variant(grhi_body, mcc_hud_anchor)
 
 def get():
     return grhi_def

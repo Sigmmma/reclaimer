@@ -11,12 +11,7 @@ from ...hek.defs.ctrl import *
 from .obje import *
 from .devi import *
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(8))
-    )
-
+obje_attrs = obje_attrs_variant(obje_attrs, "ctrl")
 ctrl_body = Struct("tagdata",
     obje_attrs,
     devi_attrs,

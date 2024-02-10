@@ -8,7 +8,6 @@
 #
 
 from ...hek.defs.soso import *
-from supyr_struct.util import desc_variant
 
 specular_map_comment = """SPECULAR (COLOR) MAP
 The specular color map is multiplied by the stock specular
@@ -52,8 +51,7 @@ os_reflection_prop_comment = """REFLECTION PROPERIES
 When the opensauce extension is used the tint values in here are overwritten
 by the ones in the os extension when the map is loaded."""
 
-reflection = desc_variant(reflection)
-reflection.update(COMMENT=os_reflection_prop_comment)
+reflection = desc_variant(reflection, COMMENT=os_reflection_prop_comment)
 
 os_soso_ext = Struct("shader_model_extension",
     #Specular Color
@@ -104,8 +102,6 @@ os_soso_ext = Struct("shader_model_extension",
 
 soso_attrs = desc_variant(soso_attrs,
     ("pad_7", reflexive("os_shader_model_ext", os_soso_ext, 1)),
-    ("reflection_bump_scale", Pad(4)),
-    ("reflection_bump_map", Pad(16)),
     )
 
 soso_body = Struct("tagdata",

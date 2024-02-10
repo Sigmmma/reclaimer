@@ -9,12 +9,8 @@
 
 from ...hek.defs.shdr import *
 from ..common_descs import *
-from supyr_struct.util import desc_variant
 
-shdr_attrs = desc_variant(shdr_attrs,
-    ("material_type", SEnum16("material_type", *materials_list)),
-    )
-
+shdr_attrs  = desc_variant(shdr_attrs, SEnum16("material_type", *materials_list))
 shader_body = Struct("tagdata",
     shdr_attrs,
     SIZE=40

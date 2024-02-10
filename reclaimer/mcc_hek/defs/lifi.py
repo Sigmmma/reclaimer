@@ -11,12 +11,7 @@ from ...hek.defs.lifi import *
 from .obje import *
 from .devi import *
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(9))
-    )
-
+obje_attrs = obje_attrs_variant(obje_attrs, "lifi")
 lifi_body = Struct("tagdata",
     obje_attrs,
     devi_attrs,

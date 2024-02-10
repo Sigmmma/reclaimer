@@ -8,7 +8,6 @@
 #
 
 from ...hek.defs.lsnd import *
-from supyr_struct.util import desc_variant
 
 lsnd_flags = Bool32("flags",
     "deafening_to_ai",
@@ -17,9 +16,7 @@ lsnd_flags = Bool32("flags",
     "siege_of_the_madrigal",
     )
 
-lsnd_body = desc_variant(lsnd_body,
-    ("flags", lsnd_flags),
-    )
+lsnd_body = desc_variant(lsnd_body, lsnd_flags)
 
 def get():
     return lsnd_def

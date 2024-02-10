@@ -8,7 +8,6 @@
 #
 
 from ...hek.defs.hudg import *
-from supyr_struct.util import desc_variant
 
 targets = Struct("targets",
     dependency("target_bitmap", "bitm"),
@@ -38,14 +37,11 @@ remap = Struct("remap",
     reflexive("targets", targets, 26, DYN_NAME_PATH='.target_bitmap.filepath'),
     SIZE=28
     )
-remaps = reflexive("remaps", remap, 32, DYN_NAME_PATH='.original_bitmap.filepath')
 
 misc_hud_crap = desc_variant(misc_hud_crap,
-    ("unknown", remaps)
+    ("unknown0", reflexive("remaps", remap, 32, DYN_NAME_PATH='.original_bitmap.filepath'))
     )
-hudg_body = desc_variant(hudg_body,
-    ("misc_hud_crap", misc_hud_crap)
-    )
+hudg_body = desc_variant(hudg_body, misc_hud_crap)
 
 def get():
     return hudg_def

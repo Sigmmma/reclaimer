@@ -10,6 +10,8 @@
 from ...common_descs import *
 from .objs.obje import ObjeTag
 from supyr_struct.defs.tag_def import TagDef
+# import here so it can be reused in all variants of object
+from supyr_struct.util import desc_variant
 
 def get():
     return obje_def

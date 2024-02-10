@@ -10,6 +10,8 @@
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
+# import here so it can be reused in all variants of unit
+from supyr_struct.util import desc_variant
 
 def get():
     return unit_def

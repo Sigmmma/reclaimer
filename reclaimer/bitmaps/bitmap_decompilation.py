@@ -126,7 +126,6 @@ def extract_bitmaps(tagdata, tag_path, **kw):
     if not ext:
         ext = "dds"
 
-    is_xbox = get_is_xbox_map(engine)
     is_gen3 = hasattr(tagdata, "zone_assets_normal")
     if Arbytmap is None:
         # cant extract xbox bitmaps yet
@@ -196,17 +195,10 @@ def extract_bitmaps(tagdata, tag_path, **kw):
         if arby_fmt is None:
             continue
 
-        i_max = tex_info["sub_bitmap_count"] if is_xbox else bitmap.mipmaps + 1
-        j_max = bitmap.mipmaps + 1 if is_xbox else tex_info['sub_bitmap_count']
         off = bitmap.pixels_offset
-        for i in range(i_max):
-            if not is_xbox:
-                mip_size = size_calc(arby_fmt, w, h, d, i, tiled)
-
-            for j in range(j_max):
-                if is_xbox:
-                    mip_size = size_calc(arby_fmt, w, h, d, j, tiled)
-
+        for m in range(bitmap.mipmaps + 1):
+            mip_size = size_calc(arby_fmt, w, h, d, m, tiled)
+            for f in range(tex_info['sub_bitmap_count']):
                 if fmt == "p8_bump":
                     tex_block.append(
                         array('B', pix_data[off: off + (mip_size // 4)]))
@@ -216,19 +208,9 @@ def extract_bitmaps(tagdata, tag_path, **kw):
                         pix_data, off, tex_block,
                         arby_fmt, 1, 1, 1, mip_size)
 
-            # skip the xbox alignment padding to get to the next texture
-            if is_xbox and typ == "cubemap":
+            if typ == "cubemap":
                 off += ((CUBEMAP_PADDING - (off % CUBEMAP_PADDING)) %
                         CUBEMAP_PADDING)
-
-
-        if is_xbox and typ == "cubemap":
-            template = tuple(tex_block)
-            i = 0
-            for f in (0, 2, 1, 3, 4, 5):
-                for m in range(bitmap.mipmaps + 1):
-                    tex_block[m*6 + f] = template[i]
-                    i += 1
 
         if not tex_block:
             # nothing to extract
@@ -236,4 +218,4 @@ def extract_bitmaps(tagdata, tag_path, **kw):
 
         arby.load_new_texture(texture_block=tex_block, texture_info=tex_info,
                               tile_mode=False, swizzle_mode=False)
-        arby.save_to_file(keep_alpha=keep_alpha)
+        arby.save_to_file(keep_alpha=keep_alpha, overwrite=kw.get("overwrite", False))

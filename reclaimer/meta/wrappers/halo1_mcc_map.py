@@ -33,7 +33,7 @@ class Halo1MccMap(Halo1Map):
         #       depending on what folder they're located in, so we're
         #       going to ignore any resource maps passed in unless
         #       they're coming from the same folder as this map.
-        if self.are_resources_in_same_directory:
+        if not self.are_resources_in_same_directory:
             print("Unlinking potentially incompatible resource maps from %s" %
                 self.map_name
                 )

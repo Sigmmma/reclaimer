@@ -9,12 +9,8 @@
 
 from ...hek.defs.scex import *
 from .schi import *
-from supyr_struct.util import desc_variant
 
-scex_attrs = desc_variant(scex_attrs,
-    ("extra_flags", extra_flags)
-    )
-
+scex_attrs = desc_variant(scex_attrs, extra_flags)
 scex_body = Struct("tagdata",
     shdr_attrs,
     scex_attrs,

@@ -9,7 +9,6 @@
 
 from ...hek.defs.unhi import *
 from .grhi import hud_background, mcc_hud_anchor
-from supyr_struct.util import desc_variant
 
 # to reduce a lot of code, these have been snipped out
 meter_xform_common = ( # NOTE: used by wphi
@@ -92,10 +91,10 @@ auxilary_meter = Struct("auxilary_meter",
     )
 
 unhi_body = desc_variant(unhi_body,
-    ("anchor", SEnum16("anchor", *hud_anchors_mcc)),
-    ("shield_panel_meter", shield_panel_meter),
-    ("health_panel_meter", health_panel_meter),
-    ("auxilary_meters", reflexive("auxilary_meters", auxilary_meter, 16)),
+    SEnum16("anchor", *hud_anchors_mcc),
+    shield_panel_meter,
+    health_panel_meter,
+    reflexive("auxilary_meters", auxilary_meter, 16),
     )
 
 def get():

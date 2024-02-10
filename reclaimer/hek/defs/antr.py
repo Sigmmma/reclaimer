@@ -128,6 +128,7 @@ unit_desc = Struct("unit",
         ),
     reflexive("ik_points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
     reflexive("weapons", unit_weapon_desc, 16, DYN_NAME_PATH=".name"),
+    Pad(0),  # replaced with unknown reflexive in stubbs
     SIZE=100,
     )
 
@@ -161,7 +162,8 @@ vehicle_desc = Struct("vehicle",
     SInt16("down_frame_count"),
     SInt16("up_frame_count"),
 
-    Pad(68),
+    Pad(56),
+    Pad(12),  # replaced with seats reflexive in stubbs
     reflexive("animations", anim_enum_desc, 8,
         *vehicle_animation_names
         ),
@@ -220,6 +222,7 @@ animation_desc = Struct("animation",
     Float("weight"),
     SInt16("key_frame_index"),
     SInt16("second_key_frame_index"),
+    Pad(0), # replaced with Pad(8) in stubbs
 
     dyn_senum16("next_animation",
         DYN_NAME_PATH="..[DYN_I].name"),

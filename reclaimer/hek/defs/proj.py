@@ -9,13 +9,8 @@
 
 from .obje import *
 from .objs.obje import ObjeTag
-from supyr_struct.util import desc_variant
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(5))
-    )
+obje_attrs = obje_attrs_variant(obje_attrs, "proj")
 
 responses = (
     "disappear",

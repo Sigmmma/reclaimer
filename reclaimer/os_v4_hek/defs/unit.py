@@ -236,13 +236,13 @@ seat_flags = Bool32("flags",
     )
 
 seat = desc_variant(seat,
-    ("flags", seat_flags),
+    seat_flags,
     ("pad_20", reflexive("seat_extensions", seat_extension, 1)),
     )
 
 unit_attrs = desc_variant(unit_attrs,
     ("pad_45", reflexive("unit_extensions", unit_extension, 1)),
-    ("seats", reflexive("seats", seat, 16, DYN_NAME_PATH='.label')),
+    reflexive("seats", seat, 16, DYN_NAME_PATH='.label'),
     )
 
 unit_body = Struct('tagdata', unit_attrs)

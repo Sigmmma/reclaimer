@@ -27,65 +27,49 @@ unknown_struct = Struct("unknown",
 #    SIZE=64
 #    )
 
-pc_part = desc_variant(part,
-    ("model_meta_info", model_meta_info),
-    )
+pc_part   = desc_variant(part, model_meta_info)
 fast_part = desc_variant(part,
-    ("uncompressed_vertices", raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex)),
-    ("compressed_vertices", raw_reflexive("compressed_vertices", fast_compressed_vertex)),
-    ("triangles", raw_reflexive("triangles", triangle)),
+    raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex),
+    raw_reflexive("compressed_vertices", fast_compressed_vertex),
+    raw_reflexive("triangles", triangle),
     )
-fast_pc_part = desc_variant(fast_part,
-    ("model_meta_info", model_meta_info),
-    )
+fast_pc_part = desc_variant(fast_part, model_meta_info)
 
-pc_geometry = desc_variant(geometry,
-    ("parts", reflexive("parts", pc_part, 32)),
-    )
-fast_geometry = desc_variant(geometry,
-    ("parts", reflexive("parts", fast_part, 32)),
-    )
-fast_pc_geometry = desc_variant(geometry,
-    ("parts", reflexive("parts", fast_pc_part, 32)),
-    )
+pc_geometry      = desc_variant(geometry, reflexive("parts", pc_part, 32))
+fast_geometry    = desc_variant(geometry, reflexive("parts", fast_part, 32))
+fast_pc_geometry = desc_variant(geometry, reflexive("parts", fast_pc_part, 32))
 
 mode_body = desc_variant(mode_body,
     ("pad_16", reflexive("unknown", unknown_struct, DYN_NAME_PATH=".name")),
     )
-pc_mode_body = desc_variant(mode_body,
-    ("geometries", reflexive("geometries", pc_geometry, 256))
-    )
-fast_mode_body = desc_variant(mode_body,
-    ("geometries", reflexive("geometries", fast_geometry, 256))
-    )
-fast_pc_mode_body = desc_variant(mode_body,
-    ("geometries", reflexive("geometries", fast_pc_geometry, 256))
-    )
+pc_mode_body      = desc_variant(mode_body, reflexive("geometries", pc_geometry, 256))
+fast_mode_body    = desc_variant(mode_body, reflexive("geometries", fast_geometry, 256))
+fast_pc_mode_body = desc_variant(mode_body, reflexive("geometries", fast_pc_geometry, 256))
+
+# increment version to differentiate from halo models
+stubbs_mode_header = blam_header_stubbs('mode', 6)
+stubbs_mode_kwargs = dict(ext=".model", endian=">", tag_cls=ModeTag)
 
 mode_def = TagDef("mode",
-    blam_header_stubbs('mode', 6),  # increment to differentiate it from mode and mod2
-    mode_body,
-
-    ext=".model", endian=">", tag_cls=ModeTag
+    stubbs_mode_header,
+    mode_body, 
+    **stubbs_mode_kwargs
     )
 
 fast_mode_def = TagDef("mode",
-    blam_header_stubbs('mode', 6),  # increment to differentiate it from mode and mod2
-    fast_mode_body,
-
-    ext=".model", endian=">", tag_cls=ModeTag
+    stubbs_mode_header,
+    fast_mode_body, 
+    **stubbs_mode_kwargs
     )
 
 pc_mode_def = TagDef("mode",
-    blam_header_stubbs('mode', 6),  # increment to differentiate it from mode and mod2
+    stubbs_mode_header,
     pc_mode_body,
-
-    ext=".model", endian=">", tag_cls=ModeTag
+    **stubbs_mode_kwargs
     )
 
 fast_pc_mode_def = TagDef("mode",
-    blam_header_stubbs('mode', 6),  # increment to differentiate it from mode and mod2
+    stubbs_mode_header,
     fast_pc_mode_body,
-
-    ext=".model", endian=">", tag_cls=ModeTag
+    **stubbs_mode_kwargs
     )

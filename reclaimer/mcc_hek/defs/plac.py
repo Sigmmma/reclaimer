@@ -10,12 +10,7 @@
 from ...hek.defs.plac import *
 from .obje import *
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(10))
-    )
-
+obje_attrs = obje_attrs_variant(obje_attrs, "plac")
 plac_body = Struct("tagdata",
     obje_attrs,
 
