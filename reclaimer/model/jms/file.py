@@ -531,7 +531,10 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
 
         f.write("%s\n" % len(materials))
         for mat in materials:
-            f.write("%s\n%s\n" % (mat.name + mat.properties, mat.tiff_path))
+            f.write("%s%s%d\n%s\n" % (
+                mat.name, mat.properties, mat.permutation_name,
+                mat.tiff_path
+                ))
 
         f.write("%s\n" % len(jms_model.markers))
         for marker in jms_model.markers:

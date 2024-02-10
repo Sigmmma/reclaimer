@@ -82,9 +82,11 @@ def extract_model(tagdata, tag_path="", **kw):
             ))
 
     for b in tagdata.shaders.STEPTREE:
-        materials.append(JmsMaterial(
-            b.shader.filepath.split("/")[-1].split("\\")[-1])
-            )
+        shader_name = b.shader.filepath.replace("/", "\\").split("\\")[-1]
+        if b.permutation_index != 0:
+            shader_name += str(b.permutation_index)
+
+        materials.append(JmsMaterial(shader_name))
 
     markers_by_perm = {}
     geoms_by_perm_lod_region = {}

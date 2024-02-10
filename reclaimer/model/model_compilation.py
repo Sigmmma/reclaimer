@@ -66,30 +66,22 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                 node.pos_x**2 + node.pos_y**2 + node.pos_z**2) / SCALE_INTERNAL_TO_JMS
 
 
-    # record shader ordering and permutation indices
-    mod2_shaders = tagdata.shaders.STEPTREE
-    shdr_perm_indices_by_name = {}
-    for mod2_shader in mod2_shaders:
-        shdr_name = mod2_shader.shader.filepath.split("\\")[-1]
-        shdr_perm_indices = shdr_perm_indices_by_name.setdefault(shdr_name, [])
-        shdr_perm_indices.append(mod2_shader.permutation_index)
-
-    del mod2_shaders[:]
     # make shader references
+    mod2_shaders = tagdata.shaders.STEPTREE
+    del mod2_shaders[:]
     for mat in merged_jms.materials:
         mod2_shaders.append()
         mod2_shader = mod2_shaders[-1]
-        mod2_shader.shader.filepath = mat.shader_path
+
+        mod2_shader.shader.filepath   = mat.shader_path
+        mod2_shader.permutation_index = mat.permutation_index
+
         if mat.shader_type:
             mod2_shader.shader.tag_class.set_to(mat.shader_type)
         else:
             mod2_shader.shader.tag_class.set_to("shader")
 
         shdr_name = mod2_shader.shader.filepath.split("\\")[-1].lower()
-        shdr_perm_indices = shdr_perm_indices_by_name.get(shdr_name)
-        if shdr_perm_indices:
-            mod2_shader.permutation_index = shdr_perm_indices.pop(0)
-
 
     # make regions
     mod2_regions = tagdata.regions.STEPTREE

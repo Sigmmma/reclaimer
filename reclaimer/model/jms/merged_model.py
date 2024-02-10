@@ -75,8 +75,10 @@ class MergedJmsModel:
             for mat in other_model.materials:
                 self.materials.append(
                     JmsMaterial(
-                        mat.name, mat.tiff_path, mat.shader_path,
-                        mat.shader_type, mat.properties)
+                        mat.name + str(mat.permutation_index),
+                        mat.tiff_path, mat.shader_path,
+                        mat.shader_type, mat.properties
+                        )
                     )
 
             self.regions = {}
