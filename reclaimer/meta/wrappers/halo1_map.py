@@ -8,7 +8,9 @@
 #
 
 import os
+import sys
 
+from array import array as PyArray
 from copy import deepcopy
 from math import pi, log
 from pathlib import Path
@@ -44,7 +46,7 @@ from reclaimer import data_extraction
 from reclaimer.constants import tag_class_fcc_to_ext
 from reclaimer.util.compression import compress_normal32, decompress_normal32
 from reclaimer.util import is_overlapping_ranges, is_valid_ascii_name_str,\
-     int_to_fourcc
+     int_to_fourcc, get_block_max
 
 from supyr_struct.util import is_path_empty
 
@@ -536,10 +538,9 @@ class Halo1Map(HaloMap):
                     next_anim = animations[next_anim].next_animation
 
             anims_to_remove = []
-
+            max_anim_count = get_block_max(meta.animations)
             for i in range(len(animations)):
-                if self.engine != "halo1yelo" and i >= 256:
-                    # cap it to the non-OS limit of 256 animations
+                if i >= max_anim_count:
                     break
 
                 anim = animations[i]
@@ -640,23 +641,24 @@ class Halo1Map(HaloMap):
                     bsps.extend(node.bsps.STEPTREE)
 
             for bsp in bsps:
-                highest_used_vert = -1
-                edge_data = bsp.edges.STEPTREE
                 vert_data = bsp.vertices.STEPTREE
-                for i in range(0, len(edge_data), 24):
-                    v0_i = (edge_data[i] +
-                            (edge_data[i + 1] << 8) +
-                            (edge_data[i + 2] << 16) +
-                            (edge_data[i + 3] << 24))
-                    v1_i = (edge_data[i + 4] +
-                            (edge_data[i + 5] << 8) +
-                            (edge_data[i + 6] << 16) +
-                            (edge_data[i + 7] << 24))
-                    highest_used_vert = max(highest_used_vert, v0_i, v1_i)
+                # first 2 ints in each edge are the vert indices, and theres
+                # 6 int32s per edge. find the highest vert index being used
+                if bsp.edges.STEPTREE:
+                    byteorder = 'big' if engine == "halo1anni" else 'little'
 
-                if highest_used_vert * 16 < len(vert_data):
-                    del vert_data[(highest_used_vert + 1) * 16: ]
-                    bsp.vertices.size = highest_used_vert + 1
+                    edges = PyArray("i", bsp.edges.STEPTREE)
+                    if byteorder != sys.byteorder:
+                        edges.byteswap()
+
+                    max_start_vert = max(edges[0: len(edges): 6])
+                    max_end_vert   = max(edges[1: len(edges): 6])
+                else:
+                    max_start_vert = max_end_vert = -1
+
+                if max_start_vert * 16 < len(vert_data):
+                    del vert_data[(max_start_vert + 1) * 16: ]
+                    bsp.vertices.size = max_start_vert + 1
 
         elif tag_cls in ("mode", "mod2"):
             used_shaders = set()
@@ -1101,9 +1103,7 @@ class Halo1Map(HaloMap):
             else:
                 generate_verts = kwargs.get("generate_comp_verts", False)
 
-            endian = "<"
-            if engine == "halo1anni":
-                endian = ">"
+            endian = ">" if engine == "halo1anni" else "<"
 
             comp_norm   = compress_normal32
             decomp_norm = decompress_normal32
