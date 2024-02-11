@@ -347,6 +347,9 @@ class Halo1RsrcMap(HaloMap):
                     bitm_tag.sanitize_bitmaps()
                     bitm_tag.set_swizzled(False)
                     bitm_tag.add_bitmap_padding(False)
+
+                    # serialize the pixel_data and replace the parsed block with it
+                    meta.processed_pixel_data.data = meta.processed_pixel_data.data.serialize()
                 except Exception:
                     print(format_exc())
                     print("Failed to convert xbox bitmap data to pc.")
@@ -357,9 +360,6 @@ class Halo1RsrcMap(HaloMap):
                 bitmap.base_address       = 0
                 bitmap.pixels_meta_size   = bitmap.bitmap_data_pointer = 0
                 bitmap.bitmap_id_unknown1 = bitmap.bitmap_id_unknown2  = 0
-
-            # serialize the pixel_data and replace the parsed block with it
-            meta.processed_pixel_data.data = meta.processed_pixel_data.data.serialize()
 
         elif tag_cls == "snd!":
             meta.maximum_bend_per_second = meta.maximum_bend_per_second ** 30
