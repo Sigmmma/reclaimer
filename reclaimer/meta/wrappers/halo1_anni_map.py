@@ -201,6 +201,8 @@ class Halo1AnniMap(Halo1MccMap):
         return meta
 
     def byteswap_anniversary_fields(self, meta, tag_cls):
+        # TODO: use byteswapping.py to quickly handle a lot of this
+        #       due to it possibly having accelerators available.
         if tag_cls == "antr":
             unpack_header = PyStruct("<11i").unpack
             for b in meta.animations.STEPTREE:

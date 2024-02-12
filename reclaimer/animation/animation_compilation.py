@@ -39,9 +39,9 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False, endian=">"):
     default_data_size = jma_anim.default_data_size
     frame_data_size   = jma_anim.frame_data_frame_size * stored_frame_count
 
-    max_frame_info_size   = anim.frame_info.get_desc('MAX', 'size')
-    max_default_data_size = anim.default_data.get_desc('MAX', 'size')
-    max_frame_data_size   = anim.frame_data.get_desc('MAX', 'size')
+    max_frame_info_size   = util.get_block_max(anim.frame_info)
+    max_default_data_size = util.get_block_max(anim.default_data)
+    max_frame_data_size   = util.get_block_max(anim.frame_data)
 
     if not ignore_size_limits:
         if frame_info_size > max_frame_info_size:
@@ -103,10 +103,10 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False, endian=">"):
     return errors
 
 
-def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
-                             animation_count_limit=256, delta_tolerance=None,
-                             update_mode=ANIMATION_COMPILE_MODE_PRESERVE,
-                             mod2_nodes=None):
+def compile_model_animations(
+        antr_tag, jma_anim_set, ignore_size_limits=False, delta_tolerance=None,
+        update_mode=ANIMATION_COMPILE_MODE_PRESERVE, mod2_nodes=None
+        ):
     errors = []
 
     tagdata = antr_tag.data.tagdata
@@ -220,7 +220,7 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
         anim_index = antr_indices_by_type_strings.get(
             name_pieces, len(antr_anims))
 
-        if anim_index >= animation_count_limit:
+        if anim_index >= util.get_block_max(tagdata.animations):
             errors.append(
                 "Too many animations. Cannot add '%s'" % jma_anim_name)
             continue

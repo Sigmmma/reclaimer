@@ -292,6 +292,7 @@ antr_body = Struct("tagdata",
     Pad(2),
     reflexive("nodes", nodes_desc, 64, DYN_NAME_PATH=".name"),
     reflexive("animations", animation_desc, 256, DYN_NAME_PATH=".name"),
+    Pad(0), # replaced with stock_animation in magy tag class in os_hek
     SIZE=128,
     )
 

@@ -4,6 +4,7 @@ import zlib
 from math import log
 
 from supyr_struct.util import *
+from supyr_struct.exceptions import DescKeyError
 from reclaimer.util import compression
 from reclaimer.util import geometry
 from reclaimer.util import matrices
@@ -46,6 +47,13 @@ def is_overlapping_ranges(range_0, range_1):
 
 def get_is_xbox_map(engine):
     return "xbox" in engine or engine in ("stubbs", "shadowrun_proto")
+
+
+def get_block_max(block, default=0xFFffFFff):
+    try:
+        return block.get_desc('MAX', 'size')
+    except DescKeyError:
+        return default
 
 
 def float_to_str(f, max_sig_figs=7):

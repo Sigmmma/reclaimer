@@ -19,7 +19,8 @@ class JmsVertex:
         "tangent_i", "tangent_j", "tangent_k",
         "node_1", "node_1_weight",
         "tex_u", "tex_v", "tex_w",
-        "other_nodes", "other_weights", "other_uvws"
+        "other_nodes", "other_weights", "other_uvws",
+        "region"
         )
     def __init__(self, node_0=0,
                  pos_x=0.0, pos_y=0.0, pos_z=0.0,
@@ -28,7 +29,9 @@ class JmsVertex:
                  tex_u=0, tex_v=0, tex_w=0,
                  binorm_i=0.0,  binorm_j=1.0,  binorm_k=0.0,
                  tangent_i=1.0, tangent_j=0.0, tangent_k=0.0,
-                 other_nodes=(), other_weights=(), other_uvws=()):
+                 other_nodes=(), other_weights=(), other_uvws=(),
+                 region=0,
+                 ):
         if node_1_weight <= 0:
             node_1 = -1
             node_1_weight = 0
@@ -54,18 +57,21 @@ class JmsVertex:
         self.other_nodes = other_nodes
         self.other_weights = other_weights
         self.other_uvws = other_uvws
+        self.region = region
 
     def __repr__(self):
         return """JmsVertex(node_0=%s,
     x=%s, y=%s, z=%s,
     i=%s, j=%s, k=%s,
     node_1=%s, node_1_weight=%s,
-    u=%s, v=%s, w=%s
+    u=%s, v=%s, w=%s,
+    region=%s
 )""" % (self.node_0,
         self.pos_x, self.pos_y, self.pos_z,
         self.norm_i, self.norm_j, self.norm_k,
         self.node_1, self.node_1_weight,
-        self.tex_u, self.tex_v, self.tex_w)
+        self.tex_u, self.tex_v, self.tex_w,
+        self.region)
 
     def __eq__(self, other):
         if not isinstance(other, JmsVertex):
@@ -80,6 +86,8 @@ class JmsVertex:
               abs(self.norm_j - other.norm_j) > 0.0001):
             return False
         elif abs(self.node_1_weight - other.node_1_weight) > 0.0001:
+            return False
+        elif self.region != other.region:
             return False
         elif self.node_0 != other.node_0 or self.node_1 != other.node_1:
             return False

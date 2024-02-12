@@ -98,6 +98,6 @@ class JmsMaterial:
         self.properties = self.properties.replace("!", "") + ("!" if new_val else "")
 
     def __repr__(self):
-        return """JmsMaterial(name=%s,
-    tiff_path=%s
-)""" % (self.name, self.tiff_path)
+        return """JmsMaterial(name=%s%s,
+    tiff_path=%s, properties=%s
+)""" % (self.name, self.permutation_index, self.tiff_path, self.properties)

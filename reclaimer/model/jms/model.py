@@ -12,7 +12,9 @@ __all__ = ( 'JmsModel', )
 
 import math
 
-from ..constants import JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN
+from ..constants import JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN,\
+    JMS_VER_HALO_1_TRI_REGIONS, JMS_VER_HALO_1_3D_UVWS,\
+    JMS_VER_HALO_1_MARKER_RADIUS
 
 
 class JmsModel:
@@ -61,6 +63,17 @@ class JmsModel:
         self.markers = markers if markers else []
         self.verts   = verts   if verts   else []
         self.tris    = tris    if tris    else []
+        
+    @property
+    def has_face_regions(self): return self.version >= JMS_VER_HALO_1_TRI_REGIONS
+    @property
+    def has_marker_radius(self): return self.version >= JMS_VER_HALO_1_MARKER_RADIUS
+    @property
+    def has_marker_regions(self): return self.has_face_regions
+    @property
+    def has_vert_regions(self): return not self.has_marker_regions
+    @property
+    def has_3d_uvws(self): return self.version >= JMS_VER_HALO_1_3D_UVWS
 
     def calculate_vertex_normals(self):
         verts = self.verts
