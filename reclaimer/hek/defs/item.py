@@ -10,8 +10,6 @@
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
-# import here so it can be reused in all variants of item
-from supyr_struct.util import desc_variant
 
 message_index_comment = """MESSAGE INDEX
 This sets which string from tags\\ui\\hud\\hud_item_messages.unicode_string_list to display."""

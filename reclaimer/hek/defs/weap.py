@@ -89,6 +89,7 @@ firing = Struct("firing",
     from_to_zero_to_one("error"),
     float_sec("error_acceleration_time"),
     float_sec("error_deceleration_time"),
+    SIZE=60
     )
 
 trigger = Struct("trigger",
