@@ -57,10 +57,12 @@ def tag_class(*args, **kwargs):
         )
 
 
-def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **kwargs):
+def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names,
+              EXT_MAX=SANE_MAX_REFLEXIVE_COUNT, **kwargs):
     '''This function serves to macro the creation of a reflexive'''
+    EXT_MAX = max(EXT_MAX, max_count)
     reflexive_fields = (
-        SInt32("size", VISIBLE=VISIBILITY_METADATA, EDITABLE=False, MAX=max_count),
+        SInt32("size", VISIBLE=VISIBILITY_METADATA, EDITABLE=False, MAX=max_count, EXT_MAX=EXT_MAX),
         reflexive_struct[1],
         reflexive_struct[2],
         )
@@ -69,7 +71,7 @@ def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **kwargs):
             SIZE=".size", SUB_STRUCT=substruct, WIDGET=ReflexiveFrame,
             # NOTE: also adding max here since various things rely on it
             #       (i.e. compilation/mozz tag block size limit/etc)
-            MAX=max_count
+            MAX=max_count, EXT_MAX=EXT_MAX
             ),
         SIZE=12
         )
@@ -597,6 +599,32 @@ valid_shaders = tag_class(
 valid_widgets = tag_class('ant!', 'flag', 'glw!', 'mgs2', 'elec')
 
 
+# Map related descriptors
+map_version = UEnum32("version",
+    ("halo1xbox",   5),
+    ("halo1pcdemo", 6),
+    ("halo1pc",     7),
+    ("halo2",       8),
+    ("halo3beta",   9),
+    ("halo3",      11),
+    ("haloreach",  12),
+    ("halo1mcc",   13),
+    ("halo1ce",    609),
+    ("halo1vap",   134),
+    )
+gen1_map_type = UEnum16("map_type",
+    "sp",
+    "mp",
+    "ui",
+    )
+gen2_map_type = UEnum16("map_type",
+    "sp",
+    "mp",
+    "ui",
+    "shared",
+    "sharedsp",
+    )
+
 
 # Descriptors
 tag_header = Struct("blam_header",
@@ -698,6 +726,7 @@ zone_asset_struct = ZoneAsset("zone_asset",
     UInt16("idx"),
     UInt32("unused", VISIBLE=VISIBILITY_METADATA),
     )
+
 
 extra_layers_block = dependency("extra_layer", valid_shaders)
 

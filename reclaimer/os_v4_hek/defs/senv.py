@@ -7,7 +7,7 @@
 # See LICENSE for more information.
 #
 
-from ...os_hek.defs.senv import *
+from ...os_v3_hek.defs.senv import *
 
 dlm_comment = """DIRECTIONAL LIGHTMAP PROPERTIES
 Special shader settings for when your map has directional lightmaps rendered for it."""

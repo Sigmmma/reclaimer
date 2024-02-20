@@ -7,7 +7,7 @@
 # See LICENSE for more information.
 #
 
-from ...os_hek.defs.gelo import *
+from ...os_v3_hek.defs.gelo import *
 
 gelo_body = desc_variant(gelo_body,
     # was removed

@@ -103,7 +103,7 @@ unit_weapon_desc = Struct("weapon",
         *unit_weapon_animation_names
         ),
     reflexive("ik_points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
-    reflexive("weapon_types", weapon_types_desc, 10, DYN_NAME_PATH=".label"),
+    reflexive("weapon_types", weapon_types_desc, 16, DYN_NAME_PATH=".label"),
     SIZE=188,
     )
 
@@ -123,7 +123,7 @@ unit_desc = Struct("unit",
     SInt16("up_frame_count"),
 
     Pad(8),
-    reflexive("animations", anim_enum_desc, 30,
+    reflexive("animations", anim_enum_desc, len(unit_animation_names),
         *unit_animation_names
         ),
     reflexive("ik_points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
@@ -291,7 +291,7 @@ antr_body = Struct("tagdata",
         ),
     Pad(2),
     reflexive("nodes", nodes_desc, 64, DYN_NAME_PATH=".name"),
-    reflexive("animations", animation_desc, 256, DYN_NAME_PATH=".name"),
+    reflexive("animations", animation_desc, 256, DYN_NAME_PATH=".name", EXT_MAX=2048),
     Pad(0), # replaced with stock_animation in magy tag class in os_hek
     SIZE=128,
     )

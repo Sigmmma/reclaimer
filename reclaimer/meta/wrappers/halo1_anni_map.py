@@ -68,17 +68,18 @@ def end_swap_uint16(v):
 
 class Halo1AnniMap(Halo1MccMap):
     tag_headers = None
+    # NOTE: setting defs to None so setup_defs doesn't think the
+    #       defs are setup cause of class property inheritance.
     defs = None
 
     handler_class = HaloHandler
     
     sbsp_meta_header_def = sbsp_meta_header_def
-    
-    @property
-    def uses_fmod_sound_bank(self): return True
 
-    def get_resource_map_paths(self, maps_dir=""):
-        return {}
+    @property
+    def uses_bitmaps_map(self): return False
+    @property
+    def uses_sounds_map(self): return False
 
     def get_dependencies(self, meta, tag_id, tag_cls):
         if self.is_indexed(tag_id):

@@ -16,6 +16,18 @@ class Halo1XboxMap(Halo1Map):
     tag_defs_module = "reclaimer.hek.defs"
     # Handler that controls how to load tags, eg tag definitions
     handler_class = HaloHandler
+    # NOTE: setting defs to None so setup_defs doesn't think the
+    #       defs are setup cause of class property inheritance.
+    defs = None
 
-    def __init__(self, maps=None):
-        super().__init__(maps)
+    def is_indexed(self, tag_id):
+        return False
+
+    @property
+    def resource_maps_folder(self): return None
+    @property
+    def uses_bitmaps_map(self): return False
+    @property
+    def uses_loc_map(self): return False
+    @property
+    def uses_sounds_map(self): return False

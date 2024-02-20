@@ -16,8 +16,6 @@ obje_attrs = desc_variant(obje_attrs,
         'brighter_than_it_should_be',
         'not_a_pathfinding_obstacle',
         'cast_shadow_by_default',
-        {NAME: 'xbox_unknown_bit_8', VALUE: 1<<8, VISIBLE: False},
-        {NAME: 'xbox_unknown_bit_11', VALUE: 1<<11, VISIBLE: False},
         ),
     )
 

@@ -1283,6 +1283,10 @@ actor_states = (
     'fleeing'
     )
 
+unit_animation_names_os = unit_animation_names + (
+    "boarding", "mounted"
+    )
+
 # MCC Shared Enumerator options
 grenade_types_mcc = grenade_types_os  # they're the same
 hud_anchors_mcc = (

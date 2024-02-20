@@ -59,8 +59,8 @@ compressed_lightmap_vertex = QStruct("compressed_lightmap_vertex",
     # this normal is the direction the light is hitting from, and
     # is used for calculating dynamic shadows on dynamic objects
     UInt32('normal'),
-    SInt16('u', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
-    SInt16('v', UNIT_SCALE=1/32767, MIN=-32767, WIDGET_WIDTH=10),
+    SInt16('u', UNIT_SCALE=1/SINT16_MAX, MIN=-SINT16_MAX, WIDGET_WIDTH=10),
+    SInt16('v', UNIT_SCALE=1/SINT16_MAX, MIN=-SINT16_MAX, WIDGET_WIDTH=10),
     SIZE=8
     )
 
@@ -265,7 +265,7 @@ cluster = Struct("cluster",
     reflexive("subclusters", subcluster, 4096),
     SInt16("first_lens_flare_marker_index"),
     SInt16("lens_flare_marker_count"),
-    reflexive("surface_indices", surface_index, 32768),
+    reflexive("surface_indices", surface_index, SINT16_INDEX_MAX),
     reflexive("mirrors", mirror, 16, DYN_NAME_PATH=".shader.filepath"),
     reflexive("portals", portal, 128),
     SIZE=104
@@ -403,7 +403,7 @@ detail_object_z_reference_vector = QStruct("detail_object_z_reference_vector",
 detail_object = Struct("detail_object",
     reflexive("cells", detail_object_cell, 262144),
     reflexive("instances", detail_object_instance, 2097152),
-    reflexive("counts", detail_object_count, 8388608),
+    reflexive("counts", detail_object_count, SINT24_INDEX_MAX),
     reflexive("z_reference_vectors", detail_object_z_reference_vector, 262144),
     Bool8("flags",
         "enabled",  # required to be set on map compile.
@@ -426,8 +426,8 @@ face = Struct("face",
     )
 
 leaf_map_leaf = Struct("leaf_map_leaf",
-    reflexive("faces", face, 256),
-    reflexive("portal_indices", portal_index, 256),
+    reflexive("faces", face, UINT8_INDEX_MAX),
+    reflexive("portal_indices", portal_index, UINT8_INDEX_MAX),
     SIZE=24
     )
 
@@ -473,23 +473,23 @@ sbsp_body = Struct("tagdata",
     QStruct("world_bounds_x", INCLUDE=from_to),
     QStruct("world_bounds_y", INCLUDE=from_to),
     QStruct("world_bounds_z", INCLUDE=from_to),
-    reflexive("leaves", leaf, 65535),
+    reflexive("leaves", leaf, UINT16_INDEX_MAX),
     reflexive("leaf_surfaces", leaf_surface, 262144),
     reflexive("surfaces", surface, 131072),
     reflexive("lightmaps", lightmap, 128),
 
     Pad(12),
-    reflexive("lens_flares", lens_flare, 256,
+    reflexive("lens_flares", lens_flare, UINT8_INDEX_MAX,
         DYN_NAME_PATH='.shader.filepath'),
-    reflexive("lens_flare_markers", lens_flare_marker, 65535),
+    reflexive("lens_flare_markers", lens_flare_marker, UINT16_INDEX_MAX),
     reflexive("clusters", cluster, 8192),
 
     # this is an array of 8 byte structs for each cluster
-    rawdata_ref("cluster_data", max_size=65536),
+    rawdata_ref("cluster_data", max_size=UINT16_INDEX_MAX),
     reflexive("cluster_portals", cluster_portal, 512),
 
     Pad(12),
-    reflexive("breakable_surfaces", breakable_surface, 256),
+    reflexive("breakable_surfaces", breakable_surface, UINT8_INDEX_MAX),
     reflexive("fog_planes", fog_plane, 32),
     reflexive("fog_regions", fog_region, 32),
     reflexive("fog_palettes", fog_palette, 32,
@@ -519,7 +519,7 @@ sbsp_body = Struct("tagdata",
     reflexive("runtime_decals", runtime_decal, 6144, VISIBLE=False),
 
     Pad(12),
-    reflexive("leaf_map_leaves", leaf_map_leaf, 65536, VISIBLE=False),
+    reflexive("leaf_map_leaves", leaf_map_leaf, UINT16_INDEX_MAX, VISIBLE=False),
     reflexive("leaf_map_portals", leaf_map_portal, 524288, VISIBLE=False),
     SIZE=648,
     )
@@ -527,11 +527,11 @@ sbsp_body = Struct("tagdata",
 fast_sbsp_body = desc_variant(sbsp_body,
     ("collision_bsp",        reflexive("collision_bsp", fast_collision_bsp, 1)),
     ("nodes",                raw_reflexive("nodes", node, 131072)),
-    ("leaves",               raw_reflexive("leaves", leaf, 65535)),
+    ("leaves",               raw_reflexive("leaves", leaf, UINT16_INDEX_MAX)),
     ("leaf_surfaces",        raw_reflexive("leaf_surfaces", leaf_surface, 262144)),
     ("surfaces",             raw_reflexive("surface", surface, 131072)),
-    ("lens_flare_markers",   raw_reflexive("lens_flare_markers", lens_flare_marker, 65535)),
-    ("breakable_surfaces",   raw_reflexive("breakable_surfaces", breakable_surface, 256)),
+    ("lens_flare_markers",   raw_reflexive("lens_flare_markers", lens_flare_marker, UINT16_INDEX_MAX)),
+    ("breakable_surfaces",   raw_reflexive("breakable_surfaces", breakable_surface, UINT8_INDEX_MAX)),
     ("pathfinding_surfaces", raw_reflexive("pathfinding_surfaces", pathfinding_surface, 131072)),
     ("pathfinding_edges",    raw_reflexive("pathfinding_edges", pathfinding_edge, 262144)),
     ("markers",              raw_reflexive("markers", marker, 1024, DYN_NAME_PATH='.name')),

@@ -7,7 +7,7 @@
 # See LICENSE for more information.
 #
 
-from ...hek.defs.pctl import *
+from ...os_v3_hek.defs.pctl import *
 
 shader_extensions = reflexive("shader_extensions",
     Struct("shader_extension", INCLUDE=os_shader_extension), 1

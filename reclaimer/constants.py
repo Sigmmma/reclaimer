@@ -98,21 +98,48 @@ map_versions = {
     #"halo5":           ????,
     }
 
-GEN_1_HALO_ENGINES = ("halo1xboxdemo", "halo1xbox",
-                      "halo1ce", "halo1vap", "halo1yelo",
-                      "halo1pcdemo", "halo1pc", "halo1anni", 
-                      "halo1mcc", )
+# NOTE: do NOT change these. they are used in various places
+#       to determine how to read tags/data from different maps
+GEN_1_HALO_XBOX_ENGINES = frozenset((
+    "halo1xboxdemo", "halo1xbox",
+    ))
+GEN_1_STUBBS_ENGINES = frozenset((
+    "stubbs", "stubbspc", "stubbspc64bit",
+    ))
+GEN_1_SHADOWRUN_ENGINES = frozenset((
+    "shadowrun_proto",
+    ))
+GEN_1_HALO_CUSTOM_ENGINES = frozenset((
+    "halo1ce", "halo1vap", "halo1yelo", "halo1mcc",
+    ))
+GEN_1_HALO_PC_ENGINES = frozenset((
+    "halo1pcdemo", "halo1pc",
+    ))
 
-GEN_1_ENGINES = GEN_1_HALO_ENGINES + (
-    "stubbs", "stubbspc", "stubbspc64bit", "shadowrun_proto", 
+GEN_1_HALO_GBX_ENGINES = GEN_1_HALO_PC_ENGINES.union(
+    GEN_1_HALO_CUSTOM_ENGINES
     )
 
-GEN_2_ENGINES = ("halo2alpha", "halo2beta", "halo2epsilon",
-                 "halo2xbox", "halo2vista", )
+GEN_1_HALO_ENGINES = frozenset((
+    "halo1anni",
+    )).union(GEN_1_HALO_GBX_ENGINES)\
+      .union(GEN_1_HALO_XBOX_ENGINES)
 
-GEN_3_ENGINES = ("halo3", "halo3odst", "halo3beta",
-                 "haloreachbeta", "haloreach",
-                 "halo4", "halo4nettest", "halo5", )
+GEN_1_ENGINES = GEN_1_HALO_ENGINES\
+    .union(GEN_1_STUBBS_ENGINES)\
+    .union(GEN_1_SHADOWRUN_ENGINES)
+
+GEN_2_ENGINES = frozenset((
+    "halo2alpha", "halo2beta", "halo2epsilon",
+    "halo2xbox", "halo2vista",
+    ))
+
+# NOTE: these aren't all gen3, but this basically means "anything halo 3 and newer".
+GEN_3_ENGINES = frozenset((
+    "halo3", "halo3odst", "halo3beta",
+    "haloreachbeta", "haloreach",
+    "halo4", "halo4nettest", "halo5",
+    ))
 
 # magic is actually the virtual address the map is loaded at. Halo 3 and
 # beyond instead partition the map into sections with a virtual address for
@@ -191,7 +218,7 @@ FORMAT_NAME_MAP = (
     "UNUSED4", "UNUSED5",
     "DXT1", "DXT3", "DXT5", "P8-BUMP", "P8",
     "A32R32G32B32F", "R32G32B32F", "R16G16B16F",
-    "V8U8", "G8B8", "UNUSED6", "UNUSED7", "UNUSED8",
+    "V8U8", "G8B8", "UNUSED6", "A16R16G16B16F", "UNUSED8",
     "UNUSED9", "UNUSED10", "UNUSED11", "UNUSED12", "UNUSED13",
     "UNUSED14", "DXN", "CTX1", "DXT3A", "DXT3Y", "DXT5A", "DXT5Y", "DXT5AY")
 MCC_FORMAT_NAME_MAP = FORMAT_NAME_MAP[:FORMAT_NAME_MAP.index("P8")] + ("BC7", )
@@ -214,9 +241,21 @@ CUBEMAP_PADDING = 128
 # max value a reflexive count is theoretically allowed to be
 MAX_REFLEXIVE_COUNT = 2**31-1
 
-# this number was taken by seeing what the highest indexable reflexive number
-# is.
+EXT_MAX = "EXT_MAX"  # absolute max number of elements a reflexive can 
+#                      contain. enforced even when not using safe mode
+#                      this of this as an "extreme" max value.
+
+# this number was taken by seeing what the highest indexable 
+# reflexive number is.
 SANE_MAX_REFLEXIVE_COUNT = 0xFFFE
+SINT24_MAX = 0x7FffFF
+UINT16_MAX = 0xFFff
+SINT16_MAX = 0x7Fff
+UINT8_MAX  = 0xFF
+SINT24_INDEX_MAX = SINT24_MAX + 1
+UINT16_INDEX_MAX = UINT16_MAX + 1
+SINT16_INDEX_MAX = SINT16_MAX + 1
+UINT8_INDEX_MAX  = UINT8_MAX  + 1
 
 MAX_TAG_PATH_LEN = 254
 

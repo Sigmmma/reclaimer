@@ -7,13 +7,13 @@
 # See LICENSE for more information.
 #
 
-from reclaimer.meta.wrappers.halo1_map import Halo1Map
+from reclaimer.meta.wrappers.halo1_xbox_map import Halo1XboxMap
 from reclaimer.stubbs.constants import stubbs_tag_class_fcc_to_ext
 from reclaimer.stubbs.handler   import StubbsHandler
 from supyr_struct.defs.frozen_dict import FrozenDict
 
 
-class StubbsMap(Halo1Map):
+class StubbsMap(Halo1XboxMap):
     xbox_defs = None
     pc_defs = None
 
@@ -33,6 +33,9 @@ class StubbsMap(Halo1Map):
             this_class.pc_defs = val
         else:
             this_class.xbox_defs = val
+
+    def is_indexed(self, tag_id):
+        return False
 
     def setup_defs(self):
         this_class = type(self)

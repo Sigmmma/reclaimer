@@ -20,7 +20,7 @@ INVALID_PATH_CHARS = set([str(i.to_bytes(1, 'little'), 'latin-1')
 VALID_NUMERIC_CHARS = frozenset("0123456789")
 for name in ('CON', 'PRN', 'AUX', 'NUL'):
     RESERVED_WINDOWS_FILENAME_MAP[name] = '_' + name
-for i in range(1, 9):
+for i in VALID_NUMERIC_CHARS:
     RESERVED_WINDOWS_FILENAME_MAP['COM%s' % i] = '_COM%s' % i
     RESERVED_WINDOWS_FILENAME_MAP['LPT%s' % i] = '_LPT%s' % i
 INVALID_PATH_CHARS.update('<>:"|?*')

@@ -21,60 +21,26 @@ class Halo1MccMap(Halo1Map):
     tag_defs_module = "reclaimer.mcc_hek.defs"
     # Handler that controls how to load tags, eg tag definitions
     handler_class = MCCHaloHandler
+    # NOTE: setting defs to None so setup_defs doesn't think the
+    #       defs are setup cause of class property inheritance.
+    defs = None
     
     sbsp_meta_header_def = sbsp_meta_header_def
 
-    def load_map(self, map_path, **kwargs):
-        super().load_map(map_path, **kwargs)
+    indexable_tag_classes = frozenset(("bitm", "snd!"))
 
-        # NOTE: mcc halo 1 resource maps MUST be handled differently than
-        #       pc and ce because of the multiple types they may use.
-        #       mcc maps may reference different bitmaps.map and sounds.map
-        #       depending on what folder they're located in, so we're
-        #       going to ignore any resource maps passed in unless
-        #       they're coming from the same folder as this map.
-        if not self.are_resources_in_same_directory:
-            print("Unlinking potentially incompatible resource maps from %s" %
-                self.map_name
-                )
-            self.maps = {}
-    
     @property
-    def uses_fmod_sound_bank(self):
-        return not self.uses_sounds_map
-
+    def uses_loc_map(self): 
+        return False
     @property
     def uses_sounds_map(self):
         try:
             return self.map_header.mcc_flags.use_sounds_map
         except AttributeError:
             return False
-
-    def get_resource_map_paths(self, maps_dir=""):
-        if self.is_resource:
-            return {}
-
-        map_paths = dict(bitmaps=None, sounds=None)
-
-        # NOTE: for now we're just checking if ANY of these flags are set.
-        #       if they ARE, we assume we're using classic resources, which
-        #       means reading from sounds.map. if they're NOT set, we still
-        #       expect bitmap resource data to be in bitmaps.map, but the
-        #       external sound data is in fmod sound banks.
-        if self.uses_fmod_sound_bank:
-            map_paths.pop("sounds")
-
-        maps_dir = self.filepath.parent if is_path_empty(maps_dir) else Path(maps_dir)
-
-        # detect the map paths for the resource maps
-        for map_name in sorted(map_paths.keys()):
-            map_path = maps_dir.joinpath(map_name + ".map")
-            if self.maps.get(map_name) is not None:
-                map_paths[map_name] = self.maps[map_name].filepath
-            elif map_path.is_file():
-                map_paths[map_name] = map_path
-
-        return map_paths
+    @property
+    def uses_fmod_sound_bank(self):
+        return not self.uses_sounds_map
 
     def meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs):
         # for sounds, ensure we can extract ALL their sample data from either

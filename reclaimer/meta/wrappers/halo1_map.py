@@ -31,7 +31,6 @@ from reclaimer.common_descs import make_dependency_os_block
 from reclaimer.hek.defs.snd_ import snd__meta_stub_blockdef
 from reclaimer.hek.defs.sbsp import sbsp_meta_header_def
 from reclaimer.hek.handler   import HaloHandler
-from reclaimer.os_hek.defs.gelc    import gelc_def
 from reclaimer.os_v4_hek.defs.coll import fast_coll_def
 from reclaimer.os_v4_hek.defs.sbsp import fast_sbsp_def
 from reclaimer.meta.wrappers.byteswapping import raw_block_def, byteswap_animation,\
@@ -43,7 +42,7 @@ from reclaimer.meta.wrappers.halo1_rsrc_map import Halo1RsrcMap, inject_sound_da
 from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
 from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
 from reclaimer import data_extraction
-from reclaimer.constants import tag_class_fcc_to_ext
+from reclaimer.constants import tag_class_fcc_to_ext, GEN_1_HALO_CUSTOM_ENGINES
 from reclaimer.util.compression import compress_normal32, decompress_normal32
 from reclaimer.util import is_overlapping_ranges, is_valid_ascii_name_str,\
      int_to_fourcc, get_block_max
@@ -102,6 +101,10 @@ class Halo1Map(HaloMap):
     sbsp_meta_header_def = sbsp_meta_header_def
 
     data_extractors = data_extraction.h1_data_extractors
+    
+    indexable_tag_classes = set((
+        "bitm", "snd!", "font", "hmt ", "ustr"
+        ))
 
     def __init__(self, maps=None):
         HaloMap.__init__(self, maps)
@@ -119,13 +122,52 @@ class Halo1Map(HaloMap):
         self.setup_tag_headers()
 
     @property
+    def globals_tag_id(self):
+        if not self.tag_index:
+            return None
+
+        for b in self.tag_index.tag_index:
+            if int_to_fourcc(b.class_1.data) == "matg":
+                return b.id & 0xFFff
+
+    @property
+    def resource_map_prefix(self): 
+        return ""
+    @property
+    def resource_maps_folder(self):
+        return self.filepath.parent
+    @property
+    def resources_maps_mismatched(self):
+        maps_dir = self.resource_maps_folder
+        if not maps_dir:
+            return False
+
+        for map_name, filepath in self.get_resource_map_paths().items():
+            if filepath and filepath.parent != maps_dir:
+                return True
+        return False
+    @property
+    def uses_bitmaps_map(self):
+        return not self.is_resource
+    @property
+    def uses_loc_map(self):
+        return not self.is_resource and "pc" not in self.engine
+    @property
+    def uses_sounds_map(self):
+        return not self.is_resource
+
+    @property
     def decomp_file_ext(self):
-        if self.engine == "halo1yelo":
-            return ".yelo"
-        elif self.engine == "halo1vap":
-            return ".vap"
-        else:
-            return ".map"
+        return (
+            ".vap" if self.engine == "halo1vap" else 
+            self._decomp_file_ext
+            )
+
+    def is_indexed(self, tag_id):
+        tag_header = self.tag_index.tag_index[tag_id]
+        if not tag_header.indexed:
+            return False
+        return int_to_fourcc(tag_header.class_1.data) in self.indexable_tag_classes
 
     def setup_defs(self):
         this_class = type(self)
@@ -138,7 +180,6 @@ class Halo1Map(HaloMap):
 
             this_class.defs = dict(this_class.handler.defs)
             this_class.defs["coll"] = fast_coll_def
-            this_class.defs["gelc"] = gelc_def
             this_class.defs["sbsp"] = fast_sbsp_def
             this_class.defs = FrozenDict(this_class.defs)
 
@@ -156,7 +197,7 @@ class Halo1Map(HaloMap):
             return
 
         self.sound_rsrc_id = id(sounds)
-        if self.engine in ("halo1ce", "halo1yelo", "halo1vap", "halo1mcc"):
+        if self.engine in GEN_1_HALO_CUSTOM_ENGINES:
             # ce resource sounds are recognized by tag_path
             # so we must cache their offsets by their paths
             rsrc_snd_map = self.ce_rsrc_sound_indexes_by_path = {}
@@ -353,13 +394,7 @@ class Halo1Map(HaloMap):
 
         # get the globals meta
         try:
-            matg_id = None
-            for b in tag_index_array:
-                if int_to_fourcc(b.class_1.data) == "matg":
-                    matg_id = b.id & 0xFFff
-                    break
-
-            self.matg_meta = self.get_meta(matg_id)
+            self.matg_meta = self.get_meta(self.globals_tag_id)
             if self.matg_meta is None:
                 print("Could not read globals tag")
         except Exception:
@@ -373,6 +408,15 @@ class Halo1Map(HaloMap):
 
         self.clear_map_cache()
 
+        if self.resources_maps_mismatched and kwargs.get("unlink_mismatched_resources", True):
+            # this map reference different resource maps depending on what
+            # folder its located in. we need to ignore any resource maps 
+            # passed in unless they're in the same folder as this map.
+            print("Unlinking potentially incompatible resource maps from %s" %
+                self.map_name
+                )
+            self.maps = {}
+
     def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, **kw):
         '''
         Takes a tag reference id as the sole argument.
@@ -381,20 +425,19 @@ class Halo1Map(HaloMap):
         if tag_id is None:
             return
 
-        magic     = self.map_magic
-        engine    = self.engine
-        map_data  = self.map_data
-        tag_index = self.tag_index
-        tag_index_array = tag_index.tag_index
-
-        # if we are given a 32bit tag id, mask it off
-        tag_id &= 0xFFFF
         tag_index_ref = self.tag_index_manager.get_tag_index_ref(tag_id)
         if tag_index_ref is None:
             return
 
+        # if we are given a 32bit tag id, mask it off
+        tag_id   &= 0xFFFF
+        magic     = self.map_magic
+        engine    = self.engine
+        map_data  = self.map_data
+
         tag_cls = None
-        if tag_id == (tag_index.scenario_tag_id & 0xFFFF):
+        is_scenario = (tag_id == (self.tag_index.scenario_tag_id & 0xFFFF))
+        if is_scenario:
             tag_cls = "scnr"
         elif tag_index_ref.class_1.enum_name not in ("<INVALID>", "NONE"):
             tag_cls = int_to_fourcc(tag_index_ref.class_1.data)
@@ -462,7 +505,7 @@ class Halo1Map(HaloMap):
 
             return meta
         elif not reextract:
-            if tag_id == tag_index.scenario_tag_id & 0xFFff and self.scnr_meta:
+            if is_scenario and self.scnr_meta:
                 return self.scnr_meta
             elif tag_cls == "matg" and self.matg_meta:
                 return self.matg_meta
@@ -481,7 +524,7 @@ class Halo1Map(HaloMap):
                     map_pointer_converter=pointer_converter,
                     offset=pointer_converter.v_ptr_to_f_ptr(offset),
                     tag_index_manager=self.tag_index_manager,
-                    safe_mode=not kw.get("disable_safe_mode"),
+                    safe_mode=(self.safe_mode and not kw.get("disable_safe_mode")),
                     parsing_resource=force_parsing_rsrc)
         except Exception:
             print(format_exc())
@@ -490,6 +533,7 @@ class Halo1Map(HaloMap):
 
         meta = block[0]
         try:
+            # TODO: remove this dirty-ass hack
             if tag_cls == "bitm" and get_is_xbox_map(engine):
                 for bitmap in meta.bitmaps.STEPTREE:
                     # make sure to set this for all xbox bitmaps
@@ -645,7 +689,7 @@ class Halo1Map(HaloMap):
                 # first 2 ints in each edge are the vert indices, and theres
                 # 6 int32s per edge. find the highest vert index being used
                 if bsp.edges.STEPTREE:
-                    byteorder = 'big' if engine == "halo1anni" else 'little'
+                    byteorder = 'big' if self.engine == "halo1anni" else 'little'
 
                     edges = PyArray("i", bsp.edges.STEPTREE)
                     if byteorder != sys.byteorder:
@@ -1359,36 +1403,31 @@ class Halo1Map(HaloMap):
         return meta
 
     def get_resource_map_paths(self, maps_dir=""):
-        if self.is_resource or self.engine not in ("halo1pc", "halo1pcdemo",
-                                                   "halo1ce", "halo1yelo", "halo1vap"):
+        if self.is_resource or not self.resource_maps_folder:
             return {}
 
-        map_paths = {"bitmaps": None, "sounds": None, "loc": None}
-        if self.engine not in ("halo1ce", "halo1yelo", "halo1vap"):
-            map_paths.pop('loc')
+        map_paths = {
+            name: None for name in (
+                *(["bitmaps"] if self.uses_bitmaps_map else []),
+                *(["sounds"]  if self.uses_sounds_map  else []),
+                *(["loc"]     if self.uses_loc_map     else []),
+                )
+            }
 
-        data_files = False
-        if hasattr(self.map_header, "yelo_header"):
-            data_files = self.map_header.yelo_header.flags.uses_mod_data_files
-
-        if not is_path_empty(maps_dir):
-            maps_dir = Path(maps_dir)
-        elif data_files:
-            maps_dir = self.filepath.parent.joinpath("data_files")
-        else:
-            maps_dir = self.filepath.parent
-
-        map_name_str = "%s.map"
-        if data_files:
-            map_name_str = "~" + map_name_str
+        name_str = self.resource_map_prefix + "%s.map"
+        maps_dir = (
+            Path(maps_dir) if not is_path_empty(maps_dir) else
+            self.resource_maps_folder
+            )
 
         # detect the map paths for the resource maps
-        for map_name in sorted(map_paths.keys()):
-            map_path = maps_dir.joinpath(map_name_str % map_name)
-            if self.maps.get(map_name) is not None:
-                map_paths[map_name] = self.maps[map_name].filepath
-            elif map_path.is_file():
-                map_paths[map_name] = map_path
+        if maps_dir:
+            for map_name in sorted(map_paths.keys()):
+                map_path = maps_dir.joinpath(name_str % map_name)
+                if self.maps.get(map_name) is not None:
+                    map_paths[map_name] = self.maps[map_name].filepath
+                elif map_path.is_file():
+                    map_paths[map_name] = map_path
 
         return map_paths
 

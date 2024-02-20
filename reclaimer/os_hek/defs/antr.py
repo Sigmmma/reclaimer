@@ -10,7 +10,9 @@
 from ...hek.defs.antr import *
 
 antr_body = desc_variant(antr_body,
-    reflexive("animations", animation_desc, 2048, DYN_NAME_PATH=".name")
+    # original maximum according to comment?
+    # https://github.com/HaloMods/OpenSauce/blob/master/OpenSauce/Halo1/Halo1_CheApe/Halo1_CheApe_Readme.txt#L40
+    reflexive("animations", animation_desc, 500, DYN_NAME_PATH=".name")
     )
 
 def get():

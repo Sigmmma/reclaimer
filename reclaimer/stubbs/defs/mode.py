@@ -29,22 +29,22 @@ unknown_struct = Struct("unknown",
 
 pc_part   = desc_variant(part, model_meta_info)
 fast_part = desc_variant(part,
-    raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex),
-    raw_reflexive("compressed_vertices", fast_compressed_vertex),
-    raw_reflexive("triangles", triangle),
+    raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex, SINT16_MAX),
+    raw_reflexive("compressed_vertices", fast_compressed_vertex, SINT16_MAX),
+    raw_reflexive("triangles", triangle, SINT16_MAX),
     )
 fast_pc_part = desc_variant(fast_part, model_meta_info)
 
-pc_geometry      = desc_variant(geometry, reflexive("parts", pc_part, 32))
-fast_geometry    = desc_variant(geometry, reflexive("parts", fast_part, 32))
-fast_pc_geometry = desc_variant(geometry, reflexive("parts", fast_pc_part, 32))
+pc_geometry      = desc_variant(geometry, reflexive("parts", pc_part, 32, EXT_MAX=SINT16_MAX))
+fast_geometry    = desc_variant(geometry, reflexive("parts", fast_part, 32, EXT_MAX=SINT16_MAX))
+fast_pc_geometry = desc_variant(geometry, reflexive("parts", fast_pc_part, 32, EXT_MAX=SINT16_MAX))
 
 mode_body = desc_variant(mode_body,
     ("pad_16", reflexive("unknown", unknown_struct, DYN_NAME_PATH=".name")),
     )
-pc_mode_body      = desc_variant(mode_body, reflexive("geometries", pc_geometry, 256))
-fast_mode_body    = desc_variant(mode_body, reflexive("geometries", fast_geometry, 256))
-fast_pc_mode_body = desc_variant(mode_body, reflexive("geometries", fast_pc_geometry, 256))
+pc_mode_body      = desc_variant(mode_body, reflexive("geometries", pc_geometry, 256, EXT_MAX=SINT16_MAX))
+fast_mode_body    = desc_variant(mode_body, reflexive("geometries", fast_geometry, 256, EXT_MAX=SINT16_MAX))
+fast_pc_mode_body = desc_variant(mode_body, reflexive("geometries", fast_pc_geometry, 256, EXT_MAX=SINT16_MAX))
 
 # increment version to differentiate from halo models
 stubbs_mode_header = blam_header_stubbs('mode', 6)

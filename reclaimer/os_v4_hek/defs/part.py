@@ -7,7 +7,7 @@
 # See LICENSE for more information.
 #
 
-from ...hek.defs.part import *
+from ...os_v3_hek.defs.part import *
 
 particle_shader_extensions = reflexive("particle_shader_extensions",
     Struct("particle_shader_extension", INCLUDE=os_shader_extension),

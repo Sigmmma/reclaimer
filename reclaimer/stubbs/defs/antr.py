@@ -98,7 +98,7 @@ antr_body = desc_variant(antr_body,
     ("sound_references",  reflexive("effect_references",
         effect_reference_desc, DYN_NAME_PATH=".effect.filepath")
         ),
-    reflexive("animations", animation_desc, DYN_NAME_PATH=".name"),
+    reflexive("animations", animation_desc, DYN_NAME_PATH=".name", EXT_MAX=2048),
     SIZE=128,
     )
 

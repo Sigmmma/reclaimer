@@ -25,6 +25,8 @@ eqip_attrs = Struct("eqip_attrs",
     SEnum16('grenade_type', *grenade_types),
     float_sec('powerup_time'),
     dependency('pickup_sound', "snd!"),
+    Pad(144),  # looks like open sauce HAD plans for this at one point. 
+    #            keeping the padding defined here cause, well, who knows?
 
     SIZE=168
     )

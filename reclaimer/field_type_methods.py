@@ -229,19 +229,21 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
         s_desc = desc.get(STEPTREE)
         if s_desc:
             pointer_converter = kwargs.get('map_pointer_converter')
-            safe_mode = kwargs.get("safe_mode", True) and not desc.get(IGNORE_SAFE_MODE)
-            arr_len_max = desc[0].get(MAX, 0) # get the max value from the size field
+            safe_mode       = kwargs.get("safe_mode", True) and not desc.get(IGNORE_SAFE_MODE)
+            # get the max value from the size field
+            arr_len_max     = desc[0].get(MAX, 0)
+            arr_ext_len_max = desc[0].get(EXT_MAX, SANE_MAX_REFLEXIVE_COUNT)
+            arr_abs_len_max = arr_len_max if (safe_mode and arr_len_max) else arr_ext_len_max
 
             if pointer_converter is not None:
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[1])
                 if safe_mode:
                     # make sure the reflexive sizes are within sane bounds.
-                    max_size = max(SANE_MAX_REFLEXIVE_COUNT, arr_len_max)
-                    if node[0] > max_size:
+                    if node[0] > arr_abs_len_max:
                         print("Warning: Clipped %s reflexive size from %s to %s" % (
-                            desc[NAME], node[0], max_size
+                            desc[NAME], node[0], arr_abs_len_max
                             ))
-                        node[0] = max(SANE_MAX_REFLEXIVE_COUNT, arr_len_max)
+                        node[0] = arr_abs_len_max
 
                 if (file_ptr < 0 or file_ptr +
                     node[0]*s_desc[SUB_STRUCT].get(SIZE, 0) > len(rawdata)):
@@ -249,7 +251,7 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
                     #    (ex: bad hek+ extraction)
                     node[0] = node[1] = 0
 
-            elif node[0] > max(SANE_MAX_REFLEXIVE_COUNT, arr_len_max):
+            elif node[0] > arr_abs_len_max:
                 raise ValueError("Reflexive size is above highest allowed value.")
 
             if not node[0]:

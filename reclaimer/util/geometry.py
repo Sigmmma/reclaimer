@@ -345,9 +345,8 @@ class EdgeLoopNode(list):
         return depth
 
 
-def planes_to_verts_and_edge_loops(planes, center, plane_dir=True, max_plane_ct=32,
+def planes_to_verts_and_edge_loops(planes, plane_dir=True, max_plane_ct=32,
                                    use_double_rounding=False, round_adjust=0):
-    assert len(center) == 3
     # make a set out of the planes to remove duplicates
     planes = list(set(tuple(Plane(p).normalized) for p in planes))
     indices_by_planes = {p: set() for p in planes}

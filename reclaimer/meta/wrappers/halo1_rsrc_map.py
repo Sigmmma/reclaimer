@@ -12,6 +12,8 @@ from collections import namedtuple
 from struct import unpack
 from traceback import format_exc
 
+from reclaimer.constants import GEN_1_HALO_CUSTOM_ENGINES,\
+    GEN_1_HALO_PC_ENGINES, GEN_1_HALO_GBX_ENGINES
 from reclaimer import data_extraction
 from reclaimer.mcc_hek.defs.bitm import bitm_def as pixel_root_subdef
 from reclaimer.mcc_hek.defs.objs.bitm import MccBitmTag, HALO_P8_PALETTE
@@ -151,19 +153,15 @@ class Halo1RsrcMap(HaloMap):
         pth = self.orig_tag_index[0].tag.path if self.orig_tag_index else ""
         self.filepath = map_path
 
-        ce_engine = ""
-        for halo_map in self.maps.values():
-            ce_engine = getattr(halo_map, "engine")
-            if ce_engine:
-                break
-
         rsrc_tag_count = len(rsrc_map.data.tags)
         if resource_type == 3 or (pth.endswith('__pixels') or
                                   pth.endswith('__permutations')):
-            if ce_engine:
-                self.engine = ce_engine
-            else:
-                self.engine = "halo1ce"
+            engine = ""
+            for halo_map in self.maps.values():
+                engine = engine or getattr(halo_map, "engine")
+                if engine: break
+
+            self.engine = engine or "halo1ce"
         elif ((resource_type == 1 and rsrc_tag_count == 1107) or
               (resource_type == 2 and rsrc_tag_count == 7192)):
             self.engine = "halo1pcdemo"
@@ -270,8 +268,7 @@ class Halo1RsrcMap(HaloMap):
 
         kwargs = dict(parsing_resource=True)
         desc = self.get_meta_descriptor(tag_cls)
-        if desc is None or self.engine not in ("halo1ce", "halo1yelo",
-                                               "halo1vap", "halo1mcc"):
+        if desc is None or self.engine not in GEN_1_HALO_CUSTOM_ENGINES:
             return
         elif self.engine == "halo1mcc" and tag_cls == "bitm":
             return
@@ -293,7 +290,7 @@ class Halo1RsrcMap(HaloMap):
                 desc, parent=block, attr_index=0, rawdata=self.map_data,
                 tag_index_manager=self.snd_rsrc_tag_index_manager,
                 tag_cls=tag_cls, root_offset=tag_index_ref.meta_offset,
-                safe_mode=not kw.get("disable_safe_mode"),
+                safe_mode=(self.safe_mode and not kw.get("disable_safe_mode")),
                 indexed=True, **kwargs)
             FieldType.force_normal()
 
@@ -412,8 +409,7 @@ class Halo1RsrcMap(HaloMap):
         loc_data    = getattr(loc,     "map_data", None)
 
         is_not_indexed = not self.is_indexed(tag_index_ref.id & 0xFFff)
-        might_be_in_rsrc = engine in ("halo1pc", "halo1pcdemo", "halo1mcc",
-                                      "halo1ce", "halo1yelo", "halo1vap")
+        might_be_in_rsrc = engine in GEN_1_HALO_GBX_ENGINES
         might_be_in_rsrc &= not self.is_resource
 
         # get some rawdata that would be pretty annoying to do in the parser
@@ -468,9 +464,9 @@ class Halo1RsrcMap(HaloMap):
 
         elif tag_cls == "snd!":
             # might need to get samples and permutations from the resource map
-            is_pc   = engine in ("halo1pc", "halo1pcdemo")
-            is_ce   = engine in ("halo1ce", "halo1yelo", "halo1vap")
             is_mcc  = engine == "halo1mcc"
+            is_pc   = engine in GEN_1_HALO_PC_ENGINES
+            is_ce   = engine in GEN_1_HALO_CUSTOM_ENGINES and not is_mcc
 
             # ce tagpaths are in the format:  path__permutations
             #     ex: sound\sfx\impulse\coolant\enter_water__permutations

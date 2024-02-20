@@ -180,33 +180,17 @@ vap_header = Struct("vap_header",
     SIZE=480
     )
 
-map_version = UEnum32("version",
-    ("halo1xbox",   5),
-    ("halo1pcdemo", 6),
-    ("halo1pc", 7),
-    ("halo2", 8),
-    ("halo3beta", 9),
-    ("halo3", 11),
-    ("halo1mcc", 13),
-    ("halo1ce", 609),
-    ("halo1vap", 134),
-    )
-
 # Halo Demo maps have a different header
 # structure with garbage filling the padding
 map_header_demo = Struct("map header",
     Pad(2),
-    UEnum16("map type",
-        "sp",
-        "mp",
-        "ui",
-        ),
+    gen1_map_type, # NOTE: in common_descs.py
     Pad(700),
     UEnum32('head', ('head', 'Ehed'), EDITABLE=False, DEFAULT='Ehed'),
     UInt32("tag data size"),
     ascii_str32("build date", EDITABLE=False),
     Pad(672),
-    map_version,
+    map_version, # NOTE: in common_descs.py
     ascii_str32("map name"),
     UInt32("unknown"),
     UInt32("crc32"),
@@ -220,7 +204,7 @@ map_header_demo = Struct("map header",
 
 map_header = Struct("map header",
     UEnum32('head', ('head', 'head'), DEFAULT='head'),
-    map_version,
+    map_version, # NOTE: in common_descs.py
     UInt32("decomp len"),
     UInt32("unknown"),
     UInt32("tag index header offset"),
@@ -228,11 +212,7 @@ map_header = Struct("map header",
     Pad(8),
     ascii_str32("map name"),
     ascii_str32("build date", EDITABLE=False),
-    UEnum16("map type",
-        "sp",
-        "mp",
-        "ui",
-        ),
+    gen1_map_type, # NOTE: in common_descs.py
     Pad(2),
     UInt32("crc32"),
     Pad(1),

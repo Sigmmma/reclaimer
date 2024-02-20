@@ -36,6 +36,11 @@ HSC_IS_GLOBAL      = 1 << 2
 HSC_IS_GARBAGE_COLLECTABLE = 1 << 3
 HSC_IS_PARAMETER   = 1 << 4
 HSC_IS_STRIPPED    = 1 << 5
+# yelo
+# TODO: do something with supporting these if necessary
+HSC_YELO_PARAM_IDX = 1 << 4
+HSC_YELO_LOCAL_IDX = 1 << 5
+HSC_YELO_CONST_IDX = 1 << 6
 HSC_IS_SCRIPT_OR_GLOBAL = HSC_IS_SCRIPT_CALL | HSC_IS_GLOBAL
 
 script_node_ref = BitStruct("node", 

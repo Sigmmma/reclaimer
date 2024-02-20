@@ -19,7 +19,9 @@ class StubbsMap64Bit(StubbsMap):
 
     tag_defs_module = StubbsHandler.default_defs_path
     tag_classes_to_load = ()
-    defs = ()
+    # NOTE: setting defs to None so setup_defs doesn't think the
+    #       defs are setup cause of class property inheritance.
+    defs = None
 
     def setup_defs(self):
         self.defs = {}

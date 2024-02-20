@@ -42,7 +42,7 @@ permutation = Struct('permutation',
         DYN_NAME_PATH="tagdata.geometries.geometries_array[DYN_I].NAME"),
     Pad(2),
 
-    reflexive("local_markers", local_marker, 32, DYN_NAME_PATH=".name"),
+    reflexive("local_markers", local_marker, 32, DYN_NAME_PATH=".name", EXT_MAX=SINT16_MAX),
     SIZE=88
     )
 
@@ -84,12 +84,12 @@ part = Struct('part',
 
     QStruct('centroid_translation', INCLUDE=xyz_float),
 
-    #reflexive("uncompressed_vertices", uncompressed_vertex_union, 65535),
-    #reflexive("compressed_vertices", compressed_vertex_union, 65535),
-    #reflexive("triangles", triangle_union, 65535),
-    reflexive("uncompressed_vertices", fast_uncompressed_vertex, 65535),
-    reflexive("compressed_vertices", fast_compressed_vertex, 65535),
-    reflexive("triangles", triangle, 65535),
+    #reflexive("uncompressed_vertices", uncompressed_vertex_union, SINT16_MAX),
+    #reflexive("compressed_vertices", compressed_vertex_union, SINT16_MAX),
+    #reflexive("triangles", triangle_union, SINT16_MAX),
+    reflexive("uncompressed_vertices", fast_uncompressed_vertex, SINT16_MAX),
+    reflexive("compressed_vertices", fast_compressed_vertex, SINT16_MAX),
+    reflexive("triangles", triangle, SINT16_MAX),
 
     #Pad(36),
     dip_model_meta_info,
@@ -98,27 +98,27 @@ part = Struct('part',
     )
 
 fast_part = desc_variant(part,
-    ("uncompressed_vertices", raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex, 65535)),
-    ("compressed_vertices",   raw_reflexive("compressed_vertices", fast_compressed_vertex, 65535)),
-    ("triangles",             raw_reflexive("triangles", triangle, 65535)),
+    raw_reflexive("uncompressed_vertices", fast_uncompressed_vertex, SINT16_MAX),
+    raw_reflexive("compressed_vertices", fast_compressed_vertex, SINT16_MAX),
+    raw_reflexive("triangles", triangle, SINT16_MAX),
     )
 
 region = Struct('region',
     ascii_str32("name"),
     Pad(32),
-    reflexive("permutations", permutation, 32, DYN_NAME_PATH=".name"),
+    reflexive("permutations", permutation, 32, DYN_NAME_PATH=".name", EXT_MAX=UINT8_MAX),
     SIZE=76
     )
 
 geometry = Struct('geometry',
     Pad(36),
-    reflexive("parts", part, 32),
+    reflexive("parts", part, 32, EXT_MAX=SINT16_MAX),
     SIZE=48
     )
 
 fast_geometry = Struct('geometry',
     Pad(36),
-    reflexive("parts", fast_part, 32),
+    reflexive("parts", fast_part, 32, EXT_MAX=SINT16_MAX),
     SIZE=48
     )
 
@@ -148,17 +148,23 @@ mode_body = Struct('tagdata',
     Pad(104),
     Pad(12), # replaced with unknown reflexive in stubbs
 
+    # NOTE: the extended max for nodes and regions can't be set higher due
+    #       to data structure limits. there is an object struct used at
+    #       runtime that only has enough room to reference 8 regions. for
+    #       nodes, there is only enough room in each animation to flag 64
+    #       nodes as animated. theoretically you could add another 32 if
+    #       if used neighboring padding, but this is untested, and a strech.
     reflexive("markers", marker, 256, DYN_NAME_PATH=".name", VISIBLE=False),
     reflexive("nodes", node, 64, DYN_NAME_PATH=".name"),
     reflexive("regions", region, 32, DYN_NAME_PATH=".name"),
-    reflexive("geometries", geometry, 256),
-    reflexive("shaders", shader, 256, DYN_NAME_PATH=".shader.filepath"),
+    reflexive("geometries", geometry, 256, EXT_MAX=SINT16_MAX),
+    reflexive("shaders", shader, 256, DYN_NAME_PATH=".shader.filepath", EXT_MAX=SINT16_MAX),
 
     SIZE=232
     )
 
 fast_mode_body = desc_variant(mode_body,
-    ("geometries", reflexive("geometries", fast_geometry, 256)),
+    reflexive("geometries", fast_geometry, 256, EXT_MAX=SINT16_MAX),
     )
 
 mode_def = TagDef("mode",
