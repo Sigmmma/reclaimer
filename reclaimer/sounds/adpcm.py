@@ -15,13 +15,13 @@
 # IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import array
-import audioop
 import sys
+    
 
 from struct import unpack_from
 from types import MethodType
 
-from . import constants
+from . import constants, util, audioop
 
 try:
     from .ext import adpcm_ext
@@ -48,7 +48,6 @@ def _slow_decode_xbadpcm_samples(in_data, out_data, channel_ct):
     pcm_blocksize   = channel_ct * constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE // 2
     adpcm_blocksize = channel_ct * constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE
 
-    adpcm2lin = audioop.adpcm2lin
     all_codes = memoryview(in_data)
 
     state_unpacker = MethodType(unpack_from, "<" + "hBx" * channel_ct)
@@ -73,7 +72,7 @@ def _slow_decode_xbadpcm_samples(in_data, out_data, channel_ct):
                     for j in range(c * 4, len(swapped_codes), code_block_size)
                     )
             decoded_samples = memoryview(
-                adpcm2lin(swapped_codes, 2, all_states[c])[0]).cast("h")
+                audioop.adpcm2lin(swapped_codes, 2, all_states[c])[0]).cast("h")
 
             # interleave the samples for each channel
             out_data[k + c] = all_states[c][0]
@@ -115,7 +114,7 @@ def encode_adpcm_samples(in_data, channel_ct, input_big_endian=False,
             "Accelerator module not detected. Cannot compress to ADPCM.")
 
     if (sys.byteorder == "big") != input_big_endian:
-        out_data = audioop.byteswap(out_data, 2)
+        in_data = audioop.byteswap(in_data, 2)
 
     adpcm_blocksize = constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE * channel_ct
     pcm_blocksize = constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE * channel_ct

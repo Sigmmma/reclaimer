@@ -8,12 +8,11 @@
 #
 
 import array
-import audioop
 import re
 import struct
 import sys
 
-from reclaimer.sounds import constants
+from reclaimer.sounds import audioop, constants
 
 BAD_PATH_CHAR_REMOVAL = re.compile(r'[<>:"|?*]{1, }')
 
@@ -70,13 +69,6 @@ def get_sample_count(sample_data, compression, encoding):
         chunk_count *= constants.IMA_ADPCM_DECOMPRESSED_BLOCKSIZE // 2
 
     return chunk_count
-
-
-def byteswap_pcm16_sample_data(samples):
-    return convert_pcm_to_pcm(
-        samples,
-        constants.COMPRESSION_PCM_16_LE,
-        constants.COMPRESSION_PCM_16_BE)
 
 
 def is_big_endian_pcm(compression):
@@ -144,11 +136,11 @@ def convert_pcm_to_pcm(samples, compression, target_compression,
         samples = samples[: len(samples) - (len(samples) % current_width)]
 
     if compression == constants.COMPRESSION_PCM_8_UNSIGNED:
-        # bias by 128 to shift unsigned into signed
+        # convert unsigned into signed
         samples = audioop.bias(samples, 1, 128)
     elif current_width > 1 and compression not in constants.NATIVE_ENDIANNESS_FORMATS:
         # byteswap samples to system endianness before processing
-        samples = audioop.byteswap(samples, current_width)
+        samples = audioop.byteswap(samples, target_width)
         compression = change_pcm_endianness(compression)
 
     if current_width != target_width:
@@ -177,7 +169,7 @@ def convert_pcm_to_pcm(samples, compression, target_compression,
         sample_rate = target_sample_rate
 
     if target_compression == constants.COMPRESSION_PCM_8_UNSIGNED:
-        # bias by 128 to shift signed back into unsigned
+        # convert signed back into unsigned
         samples = audioop.bias(samples, 1, 128)
     elif target_width > 1 and (is_big_endian_pcm(compression) !=
                                is_big_endian_pcm(target_compression)):
@@ -207,18 +199,14 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
 
     sample_width = constants.sample_widths[compression]
     channel_count = constants.channel_counts[encoding]
-
+    sample_typecode = constants.sample_typecodes[encoding]
     if compression == constants.COMPRESSION_PCM_8_UNSIGNED:
-        # bias by 128 to shift unsigned into signed
         sample_data = audioop.bias(sample_data, 1, 128)
     elif sample_width > 1 and compression not in constants.NATIVE_ENDIANNESS_FORMATS:
-        # byteswap samples to system endianness before processing
         sample_data = audioop.byteswap(sample_data, sample_width)
 
-    if sample_width == 2:
-        sample_data = memoryview(sample_data).cast("h")
-    elif sample_width == 4:
-        sample_data = memoryview(sample_data).cast("i")
+    if sample_width != 1:
+        sample_data = memoryview(sample_data).cast(sample_typecode)
 
     # mouth data is sampled at 30Hz, so we divide the audio
     # sample_rate by that to determine how many samples we must

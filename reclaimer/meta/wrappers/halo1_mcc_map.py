@@ -53,7 +53,7 @@ class Halo1MccMap(Halo1Map):
             if uses_external_sounds(meta):
                 # no sounds.map to read sounds from, and sound
                 # data is specified as external. can't extract
-                return None
+                raise ValueError("Sound sample data missing.")
 
         meta = super().meta_to_tag_data(meta, tag_cls, tag_index_ref, **kwargs)
         if tag_cls == "sbsp":

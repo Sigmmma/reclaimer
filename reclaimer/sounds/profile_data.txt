@@ -1,0 +1,51 @@
+ncalls:  for the number of calls.
+tottime: for the total time spent in the given function (and excluding time made in calls to sub-functions)
+percall: is the quotient of tottime divided by ncalls
+cumtime: is the cumulative time spent in this and all subfunctions (from invocation till exit). This figure is accurate even for recursive functions.
+percall: is the quotient of cumtime divided by primitive calls
+
+
+329195580 function calls in 105.508 seconds
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+
+
+PURE PYTHON audioop functions
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       12    2.833    0.236    2.847    0.237 audioop.py:49(bias)
+       16    0.017    0.001    0.045    0.003 audioop.py:72(byteswap)
+       12    7.460    0.622    7.466    0.622 audioop.py:103(lin2lin)
+       12    5.873    0.489    5.880    0.490 audioop.py:146(tomono)
+       12   17.638    1.470   17.666    1.472 audioop.py:181(tostereo)
+
+NATIVE audioop functions
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+       12    0.026    0.002    0.026    0.002 {built-in method audioop.bias}
+       16    0.057    0.004    0.057    0.004 {built-in method audioop.byteswap}
+       12    0.022    0.002    0.022    0.002 {built-in method audioop.lin2lin}
+       12    0.074    0.006    0.074    0.006 {built-in method audioop.tomono}
+       12    0.192    0.016    0.192    0.016 {built-in method audioop.tostereo}
+
+
+generators used in testing delta of pure-python vs native
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      128    0.000    0.000    0.000    0.000 audioop.py:246(<genexpr>)
+ 67896328    6.276    0.000    6.276    0.000 audioop.py:256(<genexpr>)
+ 67372044    5.998    0.000    5.998    0.000 audioop.py:273(<genexpr>)
+ 33686028    3.076    0.000    3.076    0.000 audioop.py:285(<genexpr>)
+134744076   12.662    0.000   12.662    0.000 audioop.py:297(<genexpr>)
+ 25496588    2.336    0.000    2.336    0.000 audioop.py:309(<genexpr>)
+
+
+MISC CALLS FROM ABOVE
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+        1   35.529   35.529  105.490  105.490 audioop.py:220(_run_tests)
+        1    0.000    0.000  105.508  105.508 {built-in method builtins.exec}
+       12    0.000    0.000    0.000    0.000 {built-in method builtins.abs}
+       60    0.000    0.000    0.000    0.000 {built-in method builtins.isinstance}
+       28    0.000    0.000    0.000    0.000 {built-in method builtins.len}
+       64    5.282    0.083    5.282    0.083 {built-in method builtins.sum}
+        8    0.015    0.002    0.015    0.002 {method 'byteswap' of 'array.array' objects}
+        1    0.000    0.000    0.000    0.000 {method 'disable' of '_lsprof.Profiler' objects}
+       16    0.000    0.000    0.000    0.000 {method 'join' of 'str' objects}
+       68    0.124    0.002    0.124    0.002 {method 'tobytes' of 'array.array' objects}

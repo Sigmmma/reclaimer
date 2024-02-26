@@ -14,7 +14,8 @@ byteswapping routines for, like raw vertex, triangle, and animation data.
 '''
 import array
 
-from reclaimer.sounds.util import byteswap_pcm16_sample_data
+from struct import Struct as PyStruct
+from reclaimer.sounds import audioop
 from supyr_struct.field_types import BytearrayRaw
 from supyr_struct.defs.block_def import BlockDef
 
@@ -24,11 +25,48 @@ try:
 except:
     fast_byteswapping = False
 
+# These end_swap_XXXX functions are for byteswapping the
+# endianness of values parsed from tags as the wrong order.
+def end_swap_float(v, packer=PyStruct(">f").pack,
+                   unpacker=PyStruct("<f").unpack):
+    return unpacker(packer(v))[0]
+
+def end_swap_int32(v):
+    assert v >= -0x80000000 and v < 0x80000000
+    if v < 0:
+        v += 0x100000000
+    v = ((((v << 24) + (v >> 24)) & 0xFF0000FF) +
+         ((v << 8) & 0xFF0000) +
+         ((v >> 8) & 0xFF00))
+    if v & 0x80000000:
+        return v - 0x100000000
+    return v
+
+def end_swap_int16(v):
+    assert v >= -0x8000 and v < 0x8000
+    if v < 0:
+        v += 0x10000
+    v = ((v << 8)  + (v >> 8)) & 0xFFFF
+    if v & 0x8000:
+        return v - 0x10000
+    return v
+
+def end_swap_uint32(v):
+    assert v >= 0 and v <= 0xFFFFFFFF
+    return ((((v << 24) + (v >> 24)) & 0xFF0000FF) +
+            ((v << 8) & 0xFF0000) +
+            ((v >> 8) & 0xFF00))
+
+def end_swap_uint16(v):
+    assert v >= 0 and v <= 0xFFFF
+    return ((v << 8) + (v >> 8)) & 0xFFFF
+
 
 raw_block_def = BlockDef("raw_block",
     BytearrayRaw('data',
         SIZE=lambda node, *a, **kw: 0 if node is None else len(node))
     )
+
 
 def make_mutable_struct_array_copy(data, struct_size):
     valid_length = struct_size*(len(data)//struct_size)
@@ -118,7 +156,8 @@ def byteswap_coll_bsp(bsp):
 def byteswap_pcm16_samples(pcm_block):
     # replace the verts with the byteswapped ones
     pcm_block.STEPTREE = bytearray(
-        byteswap_pcm16_sample_data(pcm_block.STEPTREE))
+        audioop.byteswap(pcm_block.STEPTREE, 2)
+        )
 
 
 def byteswap_sbsp_meta(meta):
@@ -130,6 +169,100 @@ def byteswap_sbsp_meta(meta):
     for b in (meta.leaves, meta.leaf_surfaces, meta.surface,
               meta.lens_flare_markers, meta.breakable_surfaces, meta.markers):
         byteswap_raw_reflexive(b)
+
+
+def byteswap_anniversary_antr(meta):
+    # NOTE: don't need to byteswap the uncompresed animation data, as that's
+    #       already handled by the non-anniversary antr byteswapping code.
+
+    for b in meta.animations.STEPTREE:
+        b.first_permutation_index = end_swap_int16(b.first_permutation_index)
+        b.chance_to_play = end_swap_float(b.chance_to_play)
+        if not b.flags.compressed_data:
+            continue
+
+        # slice out the compressed data and byteswap the 
+        # 11 UInt32 that make up the 44 byte header that
+        # points to the 
+        comp_data = bytearray(b.frame_data.data[b.offset_to_compressed_data: ])
+        unswapped = bytes(comp_data)
+        byteswap_struct_array(
+            unswapped, comp_data, count=11, size=4, four_byte_offs=[0],
+            )
+        header = PyStruct("<11i").unpack(comp_data[: 44])
+
+        # figure out where each array starts, ends, and the item size
+        starts = (0, *header)
+        ends   = (*header, len(comp_data))
+        widths = (4, 2, 2, 2,  4, 2, 4, 4,  4, 2, 4, 4)
+
+        # byteswap each array
+        for start, end, width in zip(starts, ends, widths):
+            byteswap_struct_array(
+                unswapped, comp_data, size=width, 
+                count = (end - start)//width,
+                four_byte_offs=([0] if width == 4 else []),
+                two_byte_offs=( [0] if width == 2 else []),
+                )
+
+        # replace the frame_data with the compressed data and some
+        # blank uncompressed default/frame data so tool doesnt cry
+        frame_data_size   = b.frame_count * b.frame_size
+        default_data_size = b.node_count * (12 + 8 + 4) - b.frame_size
+
+        b.offset_to_compressed_data = frame_data_size
+
+        b.frame_data.data    = bytearray(frame_data_size) + comp_data
+        b.default_data.data += bytearray(
+            max(0, len(b.default_data.data) - default_data_size)
+            )
+
+
+def byteswap_anniversary_sbsp(meta):
+    # make a copy of the nodes to byteswap to
+    orig    = meta.nodes.STEPTREE
+    swapped = meta.nodes.STEPTREE = make_mutable_struct_array_copy(orig, 2)
+    byteswap_struct_array(
+        orig, swapped, size=2,
+        two_byte_offs=[0],
+        )
+
+    for lm in meta.lightmaps.STEPTREE:
+        for b in lm.materials.STEPTREE:
+            # logic is the same, so put comp/uncomp byteswap in a loop
+            for v_size, lm_v_size, rawdata_ref, sint16_offs in (
+                    [56, 20, b.uncompressed_vertices,   ()], 
+                    [32,  8, b.compressed_vertices, (4, 6)]
+                    ):
+                verts_size    = v_size    * b.vertices_count
+                lm_verts_size = lm_v_size * b.lightmap_vertices_count
+
+                # make a copy of the verts to byteswap to
+                orig    = rawdata_ref.STEPTREE[: verts_size+lm_verts_size]
+                swapped = rawdata_ref.STEPTREE = make_mutable_struct_array_copy(orig, 2)
+
+                # render verts first
+                byteswap_struct_array(
+                    orig, swapped, size=v_size, 
+                    start=0, count=b.vertices_count,
+                    four_byte_offs=range(0, v_size, 4),
+                    )
+
+                # followed by lightmap verts
+                byteswap_struct_array(
+                    orig, swapped, size=lm_v_size, 
+                    start=verts_size, count=b.lightmap_vertices_count,
+                    four_byte_offs=range(0, lm_v_size, 4),
+                    two_byte_offs=sint16_offs,
+                    )
+
+
+def byteswap_anniversary_rawdata_ref(rawdata_ref, **kwargs):
+    if rawdata_ref.size:
+        orig    = rawdata_ref.serialize(attr_index="data")
+        swapped = bytearray(orig)
+        byteswap_struct_array(orig, swapped, **kwargs)
+        rawdata_ref.parse(rawdata=swapped, attr_index="data")
 
 
 def byteswap_scnr_script_syntax_data(meta):

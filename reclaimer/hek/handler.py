@@ -83,8 +83,6 @@ class HaloHandler(Handler):
         self.datadir = Path(
             kwargs.get("datadir", self.tagsdir.parent.joinpath("data")))
 
-        # These break on Python 3.9
-
         if self.tag_ref_cache is None:
             self.tag_ref_cache  = self.build_loc_caches(TagRef)
 
@@ -112,16 +110,10 @@ class HaloHandler(Handler):
         if f_type is None:
             return NO_LOC_REFS
 
-        # python 3.9 band-aid
-
-        try:
-            nodepath_ref = NodepathRef(cond(desc))
-        except Exception:
-            print("Ignore me if you're not a developer")
-            print(format_exc())
-            return NO_LOC_REFS
-
+        nodepath_ref = NodepathRef(cond(desc))
         for key in desc:
+            if not isinstance(desc[key], dict):
+                continue
             sub_nodepath_ref = self._build_loc_cache(cond, desc[key])
             if sub_nodepath_ref.is_ref or sub_nodepath_ref:
                 nodepath_ref[key] = sub_nodepath_ref

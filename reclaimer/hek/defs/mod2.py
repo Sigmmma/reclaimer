@@ -152,19 +152,14 @@ permutation = Struct('permutation',
     )
     
 model_meta_info = Struct("model_meta_info",
-    UEnum16("index_type",  # name is a guess.  always 1?
-        ("uncompressed", 1),
-        ),
+    UEnum16("index_type", *H1_TRIANGLE_BUFFER_TYPES),
     Pad(2),
     UInt32("index_count"),
     # THESE TWO VALUES ARE DIFFERENT THAN ON XBOX IT SEEMS
     UInt32("indices_magic_offset"),
     UInt32("indices_offset"),
 
-    UEnum16("vertex_type",  # name is a guess
-        ("uncompressed", 4),
-        ("compressed",   5),
-        ),
+    UEnum16("vertex_type",  *H1_VERTEX_BUFFER_TYPES),
     Pad(2),
     UInt32("vertex_count"),
     Pad(4),  # always 0?

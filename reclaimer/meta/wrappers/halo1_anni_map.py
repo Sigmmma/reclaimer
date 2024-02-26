@@ -8,9 +8,13 @@
 #
 
 from math import pi, sqrt, log
-from struct import Struct as PyStruct
 from traceback import format_exc
 
+from reclaimer.meta.wrappers.byteswapping import byteswap_anniversary_sbsp,\
+    byteswap_anniversary_antr, byteswap_anniversary_rawdata_ref,\
+    byteswap_scnr_script_syntax_data, end_swap_float, end_swap_int32,\
+    end_swap_int16, end_swap_uint32, end_swap_uint16
+    
 from reclaimer.meta.wrappers.halo_map import HaloMap
 from reclaimer.meta.wrappers.halo1_rsrc_map import Halo1RsrcMap
 from reclaimer.meta.wrappers.halo1_mcc_map import Halo1MccMap
@@ -18,52 +22,12 @@ from reclaimer import data_extraction
 from reclaimer.halo_script.hsc import h1_script_syntax_data_def
 from reclaimer.hek.defs.coll import fast_coll_def
 from reclaimer.hek.defs.sbsp import fast_sbsp_def
-from reclaimer.mcc_hek.defs.sbsp import sbsp_meta_header_def
 from reclaimer.hek.handler import HaloHandler
 from reclaimer.util import int_to_fourcc
 
 from supyr_struct.field_types import FieldType
 
 __all__ = ("Halo1AnniMap",)
-
-
-def end_swap_float(v, packer=PyStruct(">f").pack,
-                   unpacker=PyStruct("<f").unpack):
-    return unpacker(packer(v))[0]
-
-
-def end_swap_int32(v):
-    assert v >= -0x80000000 and v < 0x80000000
-    if v < 0:
-        v += 0x100000000
-    v = ((((v << 24) + (v >> 24)) & 0xFF0000FF) +
-         ((v << 8) & 0xFF0000) +
-         ((v >> 8) & 0xFF00))
-    if v & 0x80000000:
-        return v - 0x100000000
-    return v
-
-
-def end_swap_int16(v):
-    assert v >= -0x8000 and v < 0x8000
-    if v < 0:
-        v += 0x10000
-    v = ((v << 8)  + (v >> 8)) & 0xFFFF
-    if v & 0x8000:
-        return v - 0x10000
-    return v
-
-
-def end_swap_uint32(v):
-    assert v >= 0 and v <= 0xFFFFFFFF
-    return ((((v << 24) + (v >> 24)) & 0xFF0000FF) +
-            ((v << 8) & 0xFF0000) +
-            ((v >> 8) & 0xFF00))
-
-
-def end_swap_uint16(v):
-    assert v >= 0 and v <= 0xFFFF
-    return ((v << 8) + (v >> 8)) & 0xFFFF
 
 
 class Halo1AnniMap(Halo1MccMap):
@@ -73,47 +37,14 @@ class Halo1AnniMap(Halo1MccMap):
     defs = None
 
     handler_class = HaloHandler
-    
-    sbsp_meta_header_def = sbsp_meta_header_def
 
     @property
     def uses_bitmaps_map(self): return False
     @property
     def uses_sounds_map(self): return False
 
-    def get_dependencies(self, meta, tag_id, tag_cls):
-        if self.is_indexed(tag_id):
-            if tag_cls != "snd!":
-                return ()
-
-            rsrc_id = meta.promotion_sound.id & 0xFFff
-            if rsrc_id == 0xFFFF: return ()
-
-            sounds = self.maps.get("sounds")
-            rsrc_id = rsrc_id // 2
-            if   sounds is None: return ()
-            elif rsrc_id >= len(sounds.tag_index.tag_index): return ()
-
-            tag_path = sounds.tag_index.tag_index[rsrc_id].path
-            inv_snd_map = getattr(self, 'ce_tag_indexs_by_paths', {})
-            tag_id = inv_snd_map.get(tag_path, 0xFFFF)
-            if tag_id >= len(self.tag_index.tag_index): return ()
-
-            return [self.tag_index.tag_index[tag_id]]
-
-        if self.handler is None: return ()
-
-        dependency_cache = self.handler.tag_ref_cache.get(tag_cls)
-        if not dependency_cache: return ()
-
-        nodes = self.handler.get_nodes_by_paths(dependency_cache, (None, meta))
-        dependencies = []
-
-        for node in nodes:
-            if node.id & 0xFFff == 0xFFFF:
-                continue
-            dependencies.append(node)
-        return dependencies
+    def is_indexed(self, tag_id):
+        return False
 
     def setup_sbsp_headers(self):
         with FieldType.force_big:
@@ -202,48 +133,17 @@ class Halo1AnniMap(Halo1MccMap):
         return meta
 
     def byteswap_anniversary_fields(self, meta, tag_cls):
-        # TODO: use byteswapping.py to quickly handle a lot of this
-        #       due to it possibly having accelerators available.
+        # fix all the forced-little-endian fields that are big-endian, but were
+        # read as little-endian(that's what FlUInt/FlSInt/FlFloat fields are)
+
+        # TODO: use handler build_loc_caches to locate all forced-little-endian
+        #       fields and force them to big-endian without having to write these
         if tag_cls == "antr":
-            unpack_header = PyStruct("<11i").unpack
             for b in meta.animations.STEPTREE:
                 b.first_permutation_index = end_swap_int16(b.first_permutation_index)
-                b.chance_to_play = end_swap_float(b.chance_to_play)
-                if not b.flags.compressed_data:
-                    continue
+                b.chance_to_play          = end_swap_float(b.chance_to_play)
 
-                comp_data = b.frame_data.data[b.offset_to_compressed_data: ]
-                # byteswap compressed frame data header
-                for i in range(0, 44, 4):
-                    data = comp_data[i: i + 4]
-                    for j in range(4):
-                        comp_data[i + 3 - j] = data[j]
-
-                header = list(unpack_header(comp_data[: 44]))
-                header.insert(0, 44)
-                header.append(len(comp_data))
-
-                item_sizes = (4, 2, 2, 2,  4, 2, 4, 4,  4, 2, 4, 4)
-                comp_data_off_len_size = []
-                for i in range(len(header) - 1):
-                    comp_data_off_len_size.append([
-                        header[i], header[i + 1] - header[i], item_sizes[i]])
-
-                for off, length, size in comp_data_off_len_size:
-                    for i in range(off, off + length, size):
-                        data = comp_data[i: i + size]
-                        for j in range(size):
-                            comp_data[i + size - 1 - j] = data[j]
-
-                # replace the frame_data with the compressed data and some
-                # blank default / frame data so tool doesnt shit the bed.
-                default_data_size = b.node_count * (12 + 8 + 4) - b.frame_size
-                b.default_data.data += bytearray(
-                    max(0, len(b.default_data.data) - default_data_size))
-
-                b.offset_to_compressed_data = b.frame_count * b.frame_size
-                b.frame_data.data = bytearray(
-                    b.frame_count * b.frame_size) + comp_data
+            byteswap_anniversary_antr(meta)
 
         elif tag_cls == "bitm":
             for b in meta.bitmaps.STEPTREE:
@@ -261,13 +161,7 @@ class Halo1AnniMap(Halo1MccMap):
                     b.unknown1 = end_swap_int16(b.unknown1)
 
         elif tag_cls == "hmt ":
-            block_bytes = bytearray(meta.string.serialize())
-            for i in range(20, len(block_bytes), 2):
-                byte = block_bytes[i + 1]
-                block_bytes[i + 1] = block_bytes[i]
-                block_bytes[i] = byte
-
-            meta.string.parse(rawdata=block_bytes)
+            byteswap_anniversary_rawdata_ref(meta.string, size=2, two_byte_offs=[0])
 
         elif tag_cls == "lens":
             meta.cosine_falloff_angle = end_swap_float(meta.cosine_falloff_angle)
@@ -293,8 +187,8 @@ class Halo1AnniMap(Halo1MccMap):
                 node.scale = end_swap_float(node.scale)
                 for b in (node.rot_jj_kk, node.rot_kk_ii, node.rot_ii_jj,
                           node.translation_to_root):
-                    for i in range(len(b)):
-                        b[i] = end_swap_float(b[i])
+                    for i, val in enumerate(b):
+                        b[i] = end_swap_float(val)
 
         elif tag_cls == "part":
             meta.rendering.unknown0 = end_swap_int32(meta.rendering.unknown0)
@@ -302,86 +196,33 @@ class Halo1AnniMap(Halo1MccMap):
             meta.rendering.unknown2 = end_swap_uint32(meta.rendering.unknown2)
 
         elif tag_cls == "pphy":
-            meta.scaled_density = end_swap_float(meta.scaled_density)
+            meta.scaled_density      = end_swap_float(meta.scaled_density)
             meta.water_gravity_scale = end_swap_float(meta.water_gravity_scale)
-            meta.air_gravity_scale = end_swap_float(meta.air_gravity_scale)
+            meta.air_gravity_scale   = end_swap_float(meta.air_gravity_scale)
 
         elif tag_cls == "sbsp":
+            for b in meta.collision_materials.STEPTREE:
+                b.material_type.data = end_swap_int16(b.material_type.data)
+
+            for b in meta.fog_planes.STEPTREE:
+                b.material_type.data = end_swap_int16(b.material_type.data)
+
+            for lm in meta.lightmaps.STEPTREE:
+                for b in lm.materials.STEPTREE:
+                    b.unknown_meta_offset0          = end_swap_uint32(b.unknown_meta_offset0)
+                    b.unknown_meta_offset1          = end_swap_uint32(b.unknown_meta_offset1)
+                    b.vertices_meta_offset          = end_swap_uint32(b.vertices_meta_offset)
+                    b.lightmap_vertices_meta_offset = end_swap_uint32(b.lightmap_vertices_meta_offset)
+
+            # byteswap the rawdata
+            byteswap_anniversary_sbsp(meta)
+
             # TODO: Might need to byteswap cluster data and sound_pas data
-
-            for coll_mat in meta.collision_materials.STEPTREE:
-                coll_mat.material_type.data = end_swap_int16(coll_mat.material_type.data)
-
-            node_data = meta.nodes.STEPTREE
-            for i in range(0, len(node_data), 2):
-                b0 = node_data[i]
-                node_data[i] = node_data[i + 1]
-                node_data[i + 1] = b0
-
-            leaf_data = meta.leaves.STEPTREE
-            for i in range(0, len(leaf_data), 16):
-                b0 = leaf_data[i]
-                leaf_data[i] = leaf_data[i + 1]
-                leaf_data[i + 1] = b0
-
-                b0 = leaf_data[i + 2]
-                leaf_data[i + 2] = leaf_data[i + 3]
-                leaf_data[i + 3] = b0
-
-                b0 = leaf_data[i + 4]
-                leaf_data[i + 4] = leaf_data[i + 5]
-                leaf_data[i + 5] = b0
-
-                b0 = leaf_data[i + 6]
-                leaf_data[i + 6] = leaf_data[i + 7]
-                leaf_data[i + 7] = b0
-
-            for lightmap in meta.lightmaps.STEPTREE:
-                for b in lightmap.materials.STEPTREE:
-                    vt_ct = b.vertices_count
-                    l_vt_ct = b.lightmap_vertices_count
-
-                    u_verts = b.uncompressed_vertices.STEPTREE
-                    c_verts = b.compressed_vertices.STEPTREE
-
-                    b.unknown_meta_offset0 = end_swap_uint32(
-                        b.unknown_meta_offset0)
-                    b.vertices_meta_offset = end_swap_uint32(
-                        b.vertices_meta_offset)
-
-                    b.vertex_type.data = end_swap_uint16(b.vertex_type.data)
-
-                    b.unknown_meta_offset1 = end_swap_uint32(
-                        b.unknown_meta_offset1)
-                    b.lightmap_vertices_meta_offset = end_swap_uint32(
-                        b.lightmap_vertices_meta_offset)
-
-                    # byteswap (un)compressed verts and lightmap verts
-                    for data in (u_verts, c_verts):
-                        for i in range(0, len(data), 4):
-                            b0 = data[i]
-                            b1 = data[i+1]
-                            data[i]   = data[i+3]
-                            data[i+1] = data[i+2]
-                            data[i+2] = b1
-                            data[i+3] = b0
-
-                    # since the compressed lightmap u and v coordinates are
-                    # 2 byte fields rather than 4, the above byteswapping
-                    # will have swapped u and v. we need to swap them back.
-                    # multiply vt_ct by 32 to skip non-lightmap verts, and
-                    # add 4 to skip the 4 byte compressed lightmap normal.
-                    for i in range(vt_ct * 32 + 4, len(c_verts), 8):
-                        c_verts[i: i + 1] = c_verts[i+1], c_verts[i]
-
-            for fog_plane in meta.fog_planes.STEPTREE:
-                fog_plane.material_type.data = end_swap_int16(
-                    fog_plane.material_type.data)
 
         elif tag_cls == "scnr":
             for b in meta.object_names.STEPTREE:
                 b.object_type.data = end_swap_int16(b.object_type.data)
-                b.reflexive_index = end_swap_int16(b.reflexive_index)
+                b.reflexive_index  = end_swap_int16(b.reflexive_index)
 
             for b in meta.trigger_volumes.STEPTREE:
                 b.unknown0 = end_swap_uint16(b.unknown0)
@@ -389,34 +230,13 @@ class Halo1AnniMap(Halo1MccMap):
             for b in meta.encounters.STEPTREE:
                 b.unknown = end_swap_uint16(b.unknown)
 
-            # PROLLY GONNA HAVE TO BYTESWAP RECORDED ANIMS AND MORE SHIT
-            syntax_data = meta.script_syntax_data.data
-            with FieldType.force_big:
-                syntax_header = h1_script_syntax_data_def.build(rawdata=syntax_data)
-
-            i = 56
-            for node_i in range(syntax_header.last_node):
-                n_typ = syntax_data[i + 5] + (syntax_data[i + 4] << 8)
-                flags = syntax_data[i + 7] + (syntax_data[i + 6] << 8)
-                if flags & 7 == 1:
-                    # node is a primitive
-                    if n_typ == 5:
-                        # node is a boolean
-                        syntax_data[i + 19] = syntax_data[i + 16]
-                        syntax_data[i + 16: i + 19] = (0, 0, 0) # null these 3
-                    elif n_typ == 7:
-                        # node is a sint16
-                        syntax_data[i + 18] = syntax_data[i + 16]
-                        syntax_data[i + 19] = syntax_data[i + 17]
-                        syntax_data[i + 16: i + 18] = (0, 0) # null these 2
-
-                i += 20
+            # NOTE: this is gonna get swapped back when converting to tagdata
+            byteswap_scnr_script_syntax_data(meta)
 
         elif tag_cls == "senv":
-            meta.senv_attrs.bump_properties.map_scale_x = end_swap_float(
-                meta.senv_attrs.bump_properties.map_scale_x)
-            meta.senv_attrs.bump_properties.map_scale_y = end_swap_float(
-                meta.senv_attrs.bump_properties.map_scale_y)
+            bump_props = meta.senv_attrs.bump_properties
+            bump_props.map_scale_x = end_swap_float(bump_props.map_scale_x)
+            bump_props.map_scale_y = end_swap_float(bump_props.map_scale_y)
 
         elif tag_cls == "snd!":
             for pr in meta.pitch_ranges.STEPTREE:
@@ -424,34 +244,30 @@ class Halo1AnniMap(Halo1MccMap):
                     b.buffer_size = end_swap_uint32(b.buffer_size)
 
         elif tag_cls == "spla":
-            meta.spla_attrs.primary_noise_map.unknown0 = end_swap_uint16(
-                meta.spla_attrs.primary_noise_map.unknown0)
-            meta.spla_attrs.primary_noise_map.unknown1 = end_swap_uint16(
-                meta.spla_attrs.primary_noise_map.unknown1)
-
-            meta.spla_attrs.secondary_noise_map.unknown0 = end_swap_uint16(
-                meta.spla_attrs.secondary_noise_map.unknown0)
-            meta.spla_attrs.secondary_noise_map.unknown1 = end_swap_uint16(
-                meta.spla_attrs.secondary_noise_map.unknown1)
+            for noise_map in (
+                    meta.spla_attrs.primary_noise_map,
+                    meta.spla_attrs.secondary_noise_map
+                    ):
+                noise_map.unknown0 = end_swap_uint16(noise_map.unknown0)
+                noise_map.unknown1 = end_swap_uint16(noise_map.unknown1)
 
         elif tag_cls == "ustr":
+            # need to serialize the unicode strings reflexive back to the
+            # endianness it was read as, and then byteswap the code-points 
+            # of each character(NOTE: 12 is the end of the refelxive header)
             for b in meta.strings.STEPTREE:
-                block_bytes = bytearray(b.serialize())
-                for i in range(12, len(block_bytes), 2):
-                    byte = block_bytes[i + 1]
-                    block_bytes[i + 1] = block_bytes[i]
-                    block_bytes[i] = byte
-
-                b.parse(rawdata=block_bytes)
+                byteswap_anniversary_rawdata_ref(b, size=2, two_byte_offs=[0])
 
         if tag_cls in ("bipd", "vehi", "weap", "eqip", "garb", "proj",
                        "scen", "mach", "ctrl", "lifi", "plac", "ssce", "obje"):
             meta.obje_attrs.object_type.data = end_swap_int16(
-                meta.obje_attrs.object_type.data)
+                meta.obje_attrs.object_type.data
+                )
         elif tag_cls in ("senv", "soso", "sotr", "schi", "scex",
                          "swat", "sgla", "smet", "spla", "shdr"):
             meta.shdr_attrs.shader_type.data = end_swap_int16(
-                meta.shdr_attrs.shader_type.data)
+                meta.shdr_attrs.shader_type.data
+                )
 
     def inject_rawdata(self, meta, tag_cls, tag_index_ref):
         # TODO: Update this with extracting from sabre paks if 
@@ -472,11 +288,15 @@ class Halo1AnniMap(Halo1MccMap):
         return meta
 
     def meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs):
-        if tag_cls in ("bitm", "snd!", "scnr", ):
-            # no bitmap pixels or sound samples in map. cant extract.
-            # also, we don't know how to properly byteswap recorded
-            # animations, so scenarios can't be extracted properly.
-            return
+        # no bitmap pixels or sound samples in map. cant extract.
+        # also, we don't know how to properly byteswap recorded
+        # animations, so scenarios can't be extracted properly.
+        if tag_cls == "bitm":
+            raise ValueError("Bitmap pixel data missing.")
+        elif tag_cls == "snd!":
+            raise ValueError("Sound sample data missing.")
+        elif tag_cls == "scnr":
+            raise ValueError("Cannot byteswap recorded animations.")
 
         kwargs["byteswap"] = False
         super().meta_to_tag_data(meta, tag_cls, tag_index_ref, **kwargs)

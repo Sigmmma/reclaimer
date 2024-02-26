@@ -259,6 +259,20 @@ UINT8_INDEX_MAX  = UINT8_MAX  + 1
 
 MAX_TAG_PATH_LEN = 254
 
+# NOTE: do not change these names. they are used with Block.set_to
+H1_TRIANGLE_BUFFER_TYPES = (
+    "triangle_list",
+    "triangle_strip"
+    )
+H1_VERTEX_BUFFER_TYPES = (
+    "sbsp_uncomp_material_verts",
+    "sbsp_comp_material_verts",
+    "sbsp_uncomp_lightmap_verts",
+    "sbsp_comp_lightmap_verts",
+    "model_uncomp_verts",
+    "model_comp_verts",
+    )
+
 # maps tag class four character codes(fccs) in
 # their string encoding to their int encoding.
 tag_class_fcc_to_be_int = {}

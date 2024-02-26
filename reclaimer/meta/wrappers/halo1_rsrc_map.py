@@ -268,9 +268,11 @@ class Halo1RsrcMap(HaloMap):
 
         kwargs = dict(parsing_resource=True)
         desc = self.get_meta_descriptor(tag_cls)
-        if desc is None or self.engine not in GEN_1_HALO_CUSTOM_ENGINES:
-            return
-        elif self.engine == "halo1mcc" and tag_cls == "bitm":
+        if (desc is None or self.engine == "halo1mcc" or 
+            self.engine not in GEN_1_HALO_CUSTOM_ENGINES):
+            # NOTE: mcc resource maps DON'T contain metadata, they only
+            #       contain bitmap pixel data and sound sample data.
+            #       as such, they're EXACTLY like halo1pc resource maps
             return
         elif tag_cls != 'snd!':
             # the pitch ranges pointer in resource sound tags is invalid, so

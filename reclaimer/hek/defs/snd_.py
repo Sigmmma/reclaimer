@@ -171,6 +171,6 @@ snd__def = TagDef("snd!",
     )
 
 snd__meta_stub = desc_variant(
-    snd__body, ("pitch_ranges", Pad(12))
+    snd__body, ("pitch_ranges", reflexive_struct)
     )
 snd__meta_stub_blockdef = BlockDef(snd__meta_stub)

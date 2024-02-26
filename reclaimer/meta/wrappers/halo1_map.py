@@ -14,7 +14,7 @@ from array import array as PyArray
 from copy import deepcopy
 from math import pi, log
 from pathlib import Path
-from struct import unpack, pack_into
+from struct import unpack, unpack_from, pack_into
 from traceback import format_exc
 from types import MethodType
 
@@ -253,9 +253,15 @@ class Halo1Map(HaloMap):
         dependencies = []
 
         for node in nodes:
-            if node.id & 0xFFff == 0xFFFF:
+            # need to filter to dependencies that are actually valid
+            tag_id = node.id & 0xFFff
+            if tag_id not in range(len(tag_index_array)):
                 continue
-            dependencies.append(node)
+
+            tag_index_ref = tag_index_array[tag_id]
+            if (node.tag_class.enum_name == tag_index_ref.class_1.enum_name and
+                node.id == tag_index_ref.id):
+                dependencies.append(node)
 
         if tag_cls == "scnr":
             # collect the tag references from the scenarios syntax data
@@ -268,6 +274,7 @@ class Halo1Map(HaloMap):
                         tag_index_id not in seen_tag_ids):
                         seen_tag_ids.add(tag_index_id)
                         tag_index_ref = tag_index_array[tag_index_id]
+
                         dependencies.append(make_dependency_os_block(
                             tag_index_ref.class_1.enum_name, tag_index_ref.id,
                             tag_index_ref.path, tag_index_ref.path_offset))
@@ -460,18 +467,20 @@ class Halo1Map(HaloMap):
             tag_id = offset
 
             rsrc_map = None
-            if tag_cls == "snd!" and "sounds" in self.maps:
-                rsrc_map = self.maps["sounds"]
-                sound_mapping = self.ce_rsrc_sound_indexes_by_path
-                tag_path = tag_index_ref.path
-                if sound_mapping is None or tag_path not in sound_mapping:
-                    return
+            if tag_cls == "snd!":
+                if "sounds" in self.maps:
+                    rsrc_map = self.maps["sounds"]
+                    sound_mapping = self.ce_rsrc_sound_indexes_by_path
+                    tag_path = tag_index_ref.path
+                    if sound_mapping is None or tag_path not in sound_mapping:
+                        return
 
-                tag_id = sound_mapping[tag_path]//2
+                    tag_id = sound_mapping[tag_path]//2
 
-            elif tag_cls == "bitm" and "bitmaps" in self.maps:
-                rsrc_map = self.maps["bitmaps"]
-                tag_id = tag_id//2
+            elif tag_cls == "bitm":
+                if "bitmaps" in self.maps:
+                    rsrc_map = self.maps["bitmaps"]
+                    tag_id = tag_id//2
 
             elif "loc" in self.maps:
                 rsrc_map = self.maps["loc"]
@@ -486,12 +495,12 @@ class Halo1Map(HaloMap):
                 return
 
             meta = rsrc_map.get_meta(tag_id, **kw)
+            snd_stub = None
             if tag_cls == "snd!":
-                # since we're reading the resource tag from the perspective of
-                # the map referencing it, we have more accurate information
-                # about which other sound it could be referencing. This is only
-                # a concern when dealing with open sauce resource maps, as they
-                # could have additional promotion sounds we cant statically map
+                # while the sound samples and complete tag are in the 
+                # resource map, the metadata for the body of the sound
+                # tag is in the main map. Need to copy its values into
+                # the resource map sound tag we extracted.
                 try:
                     # read the meta data from the map
                     with FieldType.force_little:
@@ -499,9 +508,24 @@ class Halo1Map(HaloMap):
                             rawdata=map_data,
                             offset=pointer_converter.v_ptr_to_f_ptr(offset),
                             tag_index_manager=self.tag_index_manager)
-                    meta.promotion_sound = snd_stub.promotion_sound
                 except Exception:
                     print(format_exc())
+
+            if snd_stub:
+                # copy values over
+                for name in (
+                        "flags", "sound_class", "sample_rate",
+                        "minimum_distance", "maximum_distance", 
+                        "skip_fraction", "random_pitch_bounds",
+                        "inner_cone_angle", "outer_cone_angle",
+                        "outer_cone_gain", "gain_modifier", 
+                        "maximum_bend_per_second", 
+                        "modifiers_when_scale_is_zero",
+                        "modifiers_when_scale_is_one",
+                        "encoding", "compression", "promotion_sound",
+                        "promotion_count", "max_play_length",
+                        ):
+                    setattr(meta, name, getattr(snd_stub, name))
 
             return meta
         elif not reextract:
@@ -898,7 +922,6 @@ class Halo1Map(HaloMap):
                 for perm in change_color.permutations.STEPTREE:
                     perm.weight, cutoff = perm.weight - cutoff, perm.weight
 
-
         if tag_cls == "actv":
             # multiply grenade velocity by 30
             meta.grenades.grenade_velocity *= 30
@@ -995,6 +1018,10 @@ class Halo1Map(HaloMap):
                 model_magic = None
             else:
                 model_magic = magic
+                
+            # need to unset this flag, as it forces map-compile-time processing
+            # to occur on the model's vertices, which shouldn't be done twice.
+            meta.flags.blend_shared_normals = False
 
             # lod cutoffs are swapped between tag and cache form
             cutoffs = (meta.superlow_lod_cutoff, meta.low_lod_cutoff,
@@ -1043,14 +1070,21 @@ class Halo1Map(HaloMap):
                     tris_block  = part.triangles
                     info        = part.model_meta_info
 
-                    if info.vertex_type.enum_name == "compressed":
+                    if info.vertex_type.enum_name == "model_comp_verts":
                         verts_block     = part.compressed_vertices
                         byteswap_verts  = byteswap_comp_verts
                         vert_size       = 32
-                    else:
+                    elif info.vertex_type.enum_name == "model_uncomp_verts":
                         verts_block     = part.uncompressed_vertices
                         byteswap_verts  = byteswap_uncomp_verts
                         vert_size       = 68
+                    else:
+                        print("Error: Unknown vertex type in model: %s" % info.vertex_type.data)
+                        continue
+
+                    if info.index_type.enum_name != "triangle_strip":
+                        print("Error: Unknown index type in model: %s" % info.index_type.data)
+                        continue
 
                     # null out certain things in the part
                     part.centroid_primary_node = 0
@@ -1140,124 +1174,123 @@ class Halo1Map(HaloMap):
             for coll_mat in meta.collision_materials.STEPTREE:
                 coll_mat.material_type.data = 0  # supposed to be 0 in tag form
 
-            compressed = "xbox" in engine or engine in ("stubbs", "shadowrun_proto")
-
-            if compressed:
-                generate_verts = kwargs.get("generate_uncomp_verts", False)
-            else:
-                generate_verts = kwargs.get("generate_comp_verts", False)
-
-            endian = ">" if engine == "halo1anni" else "<"
-
             comp_norm   = compress_normal32
             decomp_norm = decompress_normal32
 
-            comp_vert_nbt_unpacker = MethodType(unpack, endian + "3I")
-            uncomp_vert_nbt_packer = MethodType(pack_into, endian + "12s9f8s")
+            comp_vert_unpacker      = MethodType(unpack_from, "<12s3I8s")
+            comp_vert_packer        = MethodType(pack_into,   "<12s3I8s")
+            uncomp_vert_unpacker    = MethodType(unpack_from, "<12s9f8s")
+            uncomp_vert_packer      = MethodType(pack_into,   "<12s9f8s")
 
-            comp_vert_nuv_unpacker = MethodType(unpack, endian + "I2h")
-            uncomp_vert_nuv_packer = MethodType(pack_into, endian + "5f")
-
-            uncomp_vert_nbt_unpacker = MethodType(unpack, endian + "9f")
-            comp_vert_nbt_packer = MethodType(pack_into, endian + "12s3I8s")
-
-            uncomp_vert_nuv_unpacker = MethodType(unpack, endian + "5f")
-            comp_vert_nuv_packer = MethodType(pack_into, endian + "I2h")
+            comp_lm_vert_unpacker   = MethodType(unpack_from, "<I2h")
+            comp_lm_vert_packer     = MethodType(pack_into,   "<I2h")
+            uncomp_lm_vert_unpacker = MethodType(unpack_from, "<5f")
+            uncomp_lm_vert_packer   = MethodType(pack_into,   "<5f")
 
             for lightmap in meta.lightmaps.STEPTREE:
-                for b in lightmap.materials.STEPTREE:
-                    # need to null these or switching bsps will crash sapien
-                    b.unknown_meta_offset0 = b.unknown_meta_offset1 = 0
-                    b.vertices_meta_offset = 0
-                    b.lightmap_vertices_meta_offset = 0
-                    b.vertex_type.data = 0
+                if not (kwargs.get("generate_comp_verts") or
+                        kwargs.get("generate_uncomp_verts")):
+                    break
 
-                    if not generate_verts:
-                        continue
+                for mat in lightmap.materials.STEPTREE:
+                    # this code has been designed to be able to handle vertices
+                    # in compressed, uncompressed, or mixed format. no real
+                    # chance of them ever getting mixed, but who knows?
 
-                    vert_count = b.vertices_count
-                    lightmap_vert_count = b.lightmap_vertices_count
+                    # how much data WOULD be in the buffers if they were full
+                    u_verts_size     = 56*mat.vertices_count
+                    c_verts_size     = 32*mat.vertices_count
+                    u_lm_verts_size  = 20*mat.lightmap_vertices_count
+                    c_lm_verts_size  =  8*mat.lightmap_vertices_count
 
-                    u_verts = b.uncompressed_vertices
-                    c_verts = b.compressed_vertices
+                    vert_offs    = zip(
+                        range(0, u_verts_size, 56),
+                        range(0, c_verts_size, 32),
+                        )
+                    lm_vert_offs = zip(
+                        range(u_verts_size, u_lm_verts_size, 20),
+                        range(c_verts_size, c_lm_verts_size,  8),
+                        )
+                    vert_type    = mat.vertex_type.enum_name
+                    lm_vert_type = mat.lightmap_vertex_type.enum_name
 
-                    if compressed:
-                        # generate uncompressed vertices from the compressed
-                        comp_buffer   = c_verts.STEPTREE
-                        uncomp_buffer = bytearray(56*vert_count +
-                                                  20*lightmap_vert_count)
-                        in_off  = 0
-                        out_off = 0
-                        for i in range(vert_count):
-                            n, b, t = comp_vert_nbt_unpacker(
-                                comp_buffer[in_off + 12: in_off + 24])
+                    # convert the vertex buffers into bytearrays, and insert 
+                    # padding for the vertices we're going to generate below
+                    u_buffer = bytearray(mat.uncompressed_vertices.STEPTREE)
+                    c_buffer = bytearray(mat.compressed_vertices.STEPTREE)
 
-                            # write the uncompressed data
-                            uncomp_vert_nbt_packer(
-                                uncomp_buffer, out_off,
-                                comp_buffer[in_off: in_off + 12],
-                                *decomp_norm(n),
-                                *decomp_norm(b),
-                                *decomp_norm(t),
-                                comp_buffer[in_off + 24: in_off + 32])
-
-                            in_off  += 32
-                            out_off += 56
-
-                        for i in range(lightmap_vert_count):
-                            n, u, v = comp_vert_nuv_unpacker(
-                                comp_buffer[in_off: in_off + 8])
-                            # write the uncompressed data
-                            uncomp_vert_nuv_packer(
-                                uncomp_buffer, out_off,
-                                *decomp_norm(n), u/32767, v/32767)
-
-                            in_off  += 8
-                            out_off += 20
-                    else:
-                        # generate compressed vertices from uncompressed
-                        uncomp_buffer = u_verts.STEPTREE
-                        comp_buffer   = bytearray(32*vert_count +
-                                                  8*lightmap_vert_count)
-
-                        in_off  = 0
-                        out_off = 0
-                        # for speed purposes, we'll assume all vectors
-                        # are already normalized to a length of ~1.0
-                        for i in range(vert_count):
-                            ni, nj, nk, bi, bj, bk, ti, tj, tk = \
-                                uncomp_vert_nbt_unpacker(
-                                    uncomp_buffer[in_off + 12: in_off + 48])
-
-                            # write the compressed data
-                            comp_vert_nbt_packer(
-                                comp_buffer, out_off,
-                                uncomp_buffer[in_off: in_off + 12],
+                    if (kwargs.get("generate_comp_verts") and
+                        vert_type == "sbsp_uncomp_material_verts"
+                        ):
+                        # generate compressed verts from uncompressed
+                        c_buffer = bytearray(c_verts_size) + c_buffer
+                        for u_off, c_off in vert_offs:
+                            xyz, ni, nj, nk, bi, bj, bk, ti, tj, tk, uv = \
+                                uncomp_vert_unpacker(u_buffer, u_off)
+                            comp_vert_packer(
+                                c_buffer, c_off,
+                                xyz,
                                 comp_norm(ni, nj, nk),
                                 comp_norm(bi, bj, bk),
                                 comp_norm(ti, tj, tk),
-                                uncomp_buffer[in_off + 48: in_off + 56])
+                                uv
+                                )
+                    elif (kwargs.get("generate_uncomp_verts") and
+                        vert_type == "sbsp_comp_material_verts"
+                        ):
+                        # generate uncompressed verts from compressed
+                        u_buffer = bytearray(u_verts_size) + u_buffer
+                        for u_off, c_off in vert_offs:
+                            xyz, n, b, t, uv = comp_vert_unpacker(c_buffer, c_off)
+                            uncomp_vert_packer(
+                                u_buffer, u_off,
+                                xyz,
+                                *decomp_norm(n),
+                                *decomp_norm(b),
+                                *decomp_norm(t),
+                                uv
+                                )
 
-                            in_off  += 56
-                            out_off += 32
-
-                        for i in range(lightmap_vert_count):
-                            ni, nj, nk, u, v = uncomp_vert_nuv_unpacker(
-                                uncomp_buffer[in_off: in_off + 20])
-
-                            # write the compressed data
-                            comp_vert_nuv_packer(
-                                comp_buffer, out_off,
+                    if (kwargs.get("generate_comp_verts") and
+                        lm_vert_type == "sbsp_uncomp_lightmap_verts"
+                        ):
+                        # generate compressed lightmap verts from uncompressed
+                        c_buffer += bytearray(c_lm_verts_size)
+                        for u_off, c_off in lm_vert_offs:
+                            ni, nj, nk, u, v = uncomp_lm_vert_unpacker(u_buffer, c_off)
+                            comp_lm_vert_packer(
+                                c_buffer, u_off,
                                 comp_norm(ni, nj, nk),
-                                int(min(max(u, -1.0), 1.0)*32767),
-                                int(min(max(v, -1.0), 1.0)*32767))
+                                int((-1 if u < -1 else 1 if u > 1 else u)*32767),
+                                int((-1 if v < -1 else 1 if v > 1 else v)*32767),
+                                )
+                    elif (kwargs.get("generate_uncomp_verts") and
+                        lm_vert_type == "sbsp_comp_lightmap_verts"
+                        ):
+                        # generate uncompressed lightmap verts from compressed
+                        u_buffer += bytearray(u_lm_verts_size)
+                        for u_off, c_off in lm_vert_offs:
+                            n, u, v = comp_lm_vert_unpacker(c_buffer, c_off)
+                            uncomp_lm_vert_packer(
+                                u_buffer, u_off,
+                                *decomp_norm(n), u/32767, v/32767
+                                )
 
-                            in_off  += 20
-                            out_off += 8
+                    # need to null these or original CE sapien could crash
+                    mat.unknown_meta_offset0  = mat.vertices_meta_offset          = 0
+                    mat.unknown_meta_offset1  = mat.lightmap_vertices_meta_offset = 0
 
-                    # replace the buffers
-                    u_verts.STEPTREE = uncomp_buffer
-                    c_verts.STEPTREE = comp_buffer
+                    # set these to the correct vertex types based on what we have
+                    vert_type_str = (
+                        "sbsp_comp_%s_verts"
+                        if c_verts_size and c_lm_verts_size else 
+                        "sbsp_uncomp_%s_verts"
+                        )
+                    mat.vertex_type.set_to(vert_type_str % "material")
+                    mat.lightmap_vertex_type.set_to(vert_type_str % "lightmap")
+
+                    mat.uncompressed_vertices.STEPTREE = u_buffer
+                    mat.compressed_vertices.STEPTREE   = c_buffer
 
         elif tag_cls == "scnr":
             # need to remove the references to the child scenarios
