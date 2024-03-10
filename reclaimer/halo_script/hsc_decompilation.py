@@ -131,19 +131,23 @@ def extract_scripts(
             )
 
         # concatenate script sources until they are too large to be compiled
-        sources.append(header)
-        for src in sorted_sources:
-            if not src:
-                continue
+        concat_src = ""
+        for i, src in enumerate(sorted_sources):
+            if src:
+                # translate \n to \r\n since that's what haloscripts uses.
+                src = _lf_to_crlf(src + ("\n" if minify else "\n\n"))
 
-            # translate \n to \r\n since that's what haloscripts uses.
-            src = _lf_to_crlf(src + ("\n" if minify else "\n\n"))
+            # we're gonna pass the limit on script size if we concatenate
+            # this script source, so we need to append it and start anew.
+            if len(concat_src) + len(src) >= max_script_size:
+                sources.append(header + concat_src)
+                concat_src = src
+            else:
+                concat_src += src
 
-            # if we're gonna pass our limit, append a new source file
-            if len(sources[-1]) + len(src) >= max_script_size:
-                sources.append(header)
-
-            sources[-1] += src
+            # ensure the last script source is appended if it's not empty
+            if i+1 == len(sorted_sources):
+                sources.append(header + concat_src)
 
     # TEMPORARY CODE
     #from reclaimer.enums import TEST_PRINT_HSC_BUILT_IN_FUNCTIONS

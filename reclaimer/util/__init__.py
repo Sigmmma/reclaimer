@@ -134,10 +134,15 @@ def is_valid_ascii_name_str(string):
     return True
 
 def calc_halo_crc32(buffer, offset=None, size=None, crc=0xFFffFFff):
-    if offset is not None:
+    offset = 0 if offset is None else offset
+    if isinstance(buffer, (bytes, bytearray)):
+        size      = len(buffer) if size is None else size
+        tag_bytes = buffer[offset: offset + size]
+    else:
         buffer.seek(offset)
+        tag_bytes = buffer.read(size)
 
-    return zlib.crc32(buffer.read(size), crc ^ 0xFFffFFff) ^ 0xFFffFFff
+    return zlib.crc32(tag_bytes, crc ^ 0xFFffFFff) ^ 0xFFffFFff
 
 NEWLINE_MATCHER = re.compile(r'\r\n|\n\r|\r|\n')
 
