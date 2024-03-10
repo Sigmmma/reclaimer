@@ -11,6 +11,18 @@ from ...common_descs import *
 from .objs.scnr import ScnrTag
 from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.util import desc_variant
+from reclaimer.misc.defs.recorded_animations import build_r_a_stream_block
+
+
+def compute_decompiled_ra_stream(parent=None, **kwargs):
+    try:
+        if parent is not None:
+            parent.decompiled_stream = build_r_a_stream_block(
+                parent.parent.unit_control_data_version,
+                parent.parent.recorded_animation_event_stream.STEPTREE
+                )
+    except Exception:
+        pass
 
 
 def object_reference(name, *args, **kwargs):
@@ -42,47 +54,6 @@ def object_swatch(name, def_id, size=48):
         SIZE=size
         )
 
-fl_float_xyz = QStruct("",
-    FlFloat("x"),
-    FlFloat("y"),
-    FlFloat("z"),
-    ORIENT="h"
-    )
-
-stance_flags = FlBool16("stance",
-    "walk",
-    "look_only",
-    "primary_fire",
-    "secondary_fire",
-    "jump",
-    "crouch",
-    "melee",
-    "flashlight",
-    "action1",
-    "action2",
-    "action_hold",
-    )
-
-unit_control_packet = Struct("unit_control_packet",
-
-    )
-
-r_a_stream_header = Struct("r_a_stream_header",
-    UInt8("move_index", DEFAULT=3, MAX=6),
-    UInt8("bool_index"),
-    stance_flags,
-    FlSInt16("weapon", DEFAULT=-1),
-    QStruct("speed", FlFloat("x"), FlFloat("y"), ORIENT="h"),
-    QStruct("feet", INCLUDE=fl_float_xyz),
-    QStruct("body", INCLUDE=fl_float_xyz),
-    QStruct("head", INCLUDE=fl_float_xyz),
-    QStruct("change", INCLUDE=fl_float_xyz),
-    FlUInt16("unknown1"),
-    FlUInt16("unknown2"),
-    FlUInt16("unknown3", DEFAULT=0xFFFF),
-    FlUInt16("unknown4", DEFAULT=0xFFFF),
-    SIZE=60
-    )
 
 device_flags = (
     "initially_open",  # value of 1.0
@@ -456,7 +427,19 @@ recorded_animation = Struct("recorded_animation",
     SInt16("length_of_animation", SIDETIP="ticks"),  # ticks
     Pad(6),
     rawdata_ref("recorded_animation_event_stream", max_size=2097152),
-    SIZE=64
+    Pad(0),
+    SIZE=64,
+    )
+
+recorded_animation_with_ra_stream = desc_variant(recorded_animation,
+    ("pad_8", QStruct("decompiled_stream",
+        # NOTE: making this a steptree to ensure the data in the
+        #       recorded_animation_event_stream is parsed and available
+        STEPTREE=Computed("decompiled_stream",
+            COMPUTE_READ=compute_decompiled_ra_stream, WIDGET=ContainerFrame
+            ),
+        SIZE=0,
+        ))
     )
 
 netgame_flag = Struct("netgame_flag",
@@ -1070,6 +1053,11 @@ scnr_body = Struct("tagdata",
     SIZE=1456,
     )
 
+scnr_body_with_decomp_ra_stream = desc_variant(scnr_body, 
+    reflexive("recorded_animations", recorded_animation_with_ra_stream, 1024,
+    DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX)
+    )
+
 def get():
     return scnr_def
 
@@ -1077,5 +1065,11 @@ scnr_def = TagDef("scnr",
     blam_header('scnr', 2),
     scnr_body,
 
+    ext=".scenario", endian=">", tag_cls=ScnrTag
+    )
+
+scnr_with_decomp_ra_stream_def = TagDef("scnr",
+    blam_header('scnr', 2),
+    scnr_body_with_decomp_ra_stream,
     ext=".scenario", endian=">", tag_cls=ScnrTag
     )

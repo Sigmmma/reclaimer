@@ -103,7 +103,8 @@ def decode_adpcm_samples(in_data, channel_ct, output_big_endian=False):
 
 
 def encode_adpcm_samples(in_data, channel_ct, input_big_endian=False,
-                         noise_shaping=NOISE_SHAPING_OFF, lookahead=3):
+                         noise_shaping=NOISE_SHAPING_OFF, lookahead=3,
+                         fit_to_blocksize=True):
     assert noise_shaping in (NOISE_SHAPING_OFF, NOISE_SHAPING_STATIC, NOISE_SHAPING_DYNAMIC)
     assert lookahead in range(6)
 
@@ -117,13 +118,16 @@ def encode_adpcm_samples(in_data, channel_ct, input_big_endian=False,
         in_data = audioop.byteswap(in_data, 2)
 
     adpcm_blocksize = constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE * channel_ct
-    pcm_blocksize = constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE * channel_ct
+    pcm_blocksize   = constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE * channel_ct
+    pcm_block_count = len(in_data) // pcm_blocksize
 
-    pad_size = len(in_data) % pcm_blocksize
-    if pad_size:
-        pad_size = pcm_blocksize - pad_size
+    pad_size = (pcm_blocksize - (len(in_data) % pcm_blocksize)) % pcm_blocksize
+    if fit_to_blocksize and pad_size:
+        # truncate to fit to blocksize
+        in_data = in_data[:pcm_block_count * pcm_blocksize]
+    elif pad_size:
         # repeat the last sample to the end to pad to a multiple of blocksize
-        pad_piece_size = (channel_ct * 2)
+        pad_piece_size = channel_ct * 2
         in_data += in_data[-pad_piece_size: ] * (pad_size // pad_piece_size)
 
     out_data = bytearray(

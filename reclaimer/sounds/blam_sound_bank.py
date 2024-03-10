@@ -13,7 +13,7 @@ from pathlib import Path
 from traceback import format_exc
 
 from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation
-from reclaimer.sounds import constants, ogg, adpcm
+from reclaimer.sounds import constants, adpcm
 
 
 class BlamSoundPitchRange:
@@ -55,11 +55,13 @@ class BlamSoundPitchRange:
         return new_pitch_range
 
     def export_to_directory(self, directory, overwrite=False,
-                            export_source=True, decompress=True):
+                            export_source=True, decompress=True, 
+                            format=constants.CONTAINER_EXT_WAV):
         for name, perm in self.permutations.items():
             perm.export_to_file(
                 Path(directory, name), overwrite,
-                export_source, decompress)
+                export_source, decompress, format
+                )
 
     def import_from_directory(self, directory, clear_existing=True,
                               replace_existing=True):
@@ -70,8 +72,7 @@ class BlamSoundPitchRange:
             # import each sound file to a new sound permutation
             for filename in files:
                 filepath = Path(root, filename)
-                if filepath.suffix.lower() != ".wav":
-                    # only import wav files
+                if filepath.suffix.lower() not in constants.SUPPORTED_CONTAINER_EXTS:
                     continue
 
                 name_key = filepath.stem.lower().strip()
@@ -97,16 +98,32 @@ class BlamSoundBank:
     # this value is fine to bump under most circumstances.
     chunk_size = constants.DEF_SAMPLE_CHUNK_SIZE
 
-    vorbis_bitrate_info = None
-
+    # if True, truncates samples to fit to a multiple of 130.
+    # otherwise pads the block up with the last sample in it.
+    adpcm_fit_to_blocksize = True
     adpcm_noise_shaping = adpcm.NOISE_SHAPING_OFF
     adpcm_lookahead = 3
+
+    # Combinations of nominal/lower/upper carry these implications:
+    #   all three set to the same value:
+    #     implies a fixed rate bitstream
+    #   only nominal set:
+    #     implies a VBR stream that has this nominal bitrate.
+    #     No hard upper/lower limit
+    #   upper and or lower set:
+    #     implies a VBR bitstream that obeys the bitrate limits.
+    #     nominal may also be set to give a nominal rate.
+    #   none set:
+    #     the coder does not care to speculate.
+    ogg_bitrate_lower   = -1
+    ogg_bitrate_upper   = -1
+    ogg_bitrate_nominal = -1
+    ogg_bitrate_window  = -1
 
     _pitch_ranges = ()
 
     def __init__(self):
         self._pitch_ranges = {}
-        self.vorbis_bitrate_info = ogg.VorbisBitrateInfo()
 
     @property
     def pitch_ranges(self):
@@ -122,11 +139,15 @@ class BlamSoundBank:
             chunk_size = self.chunk_size
 
         adpcm_kwargs = dict(
-            noise_shaping=self.adpcm_noise_shaping,
-            lookahead=self.adpcm_lookahead
+            noise_shaping    = self.adpcm_noise_shaping,
+            lookahead        = self.adpcm_lookahead,
+            fit_to_blocksize = self.adpcm_fit_to_blocksize,
             )
         ogg_kwargs = dict(
-            bitrate_info=self.vorbis_bitrate_info
+            ogg_bitrate_lower   = self.ogg_bitrate_lower,
+            ogg_bitrate_upper   = self.ogg_bitrate_upper,
+            ogg_bitrate_nominal = self.ogg_bitrate_nominal,
+            ogg_bitrate_window  = self.ogg_bitrate_window,
             )
 
         for pitch_range in self.pitch_ranges.values():
@@ -151,7 +172,8 @@ class BlamSoundBank:
         return new_sound_bank
 
     def export_to_directory(self, directory, overwrite=False,
-                            export_source=True, decompress=True):
+                            export_source=True, decompress=True,
+                            format=constants.CONTAINER_EXT_WAV):
         for name, pitch_range in self.pitch_ranges.items():
             if len(self.pitch_ranges) > 1:
                 pitch_directory = Path(directory, name)
@@ -159,7 +181,9 @@ class BlamSoundBank:
                 pitch_directory = Path(directory)
 
             pitch_range.export_to_directory(
-                pitch_directory, overwrite, export_source, decompress)
+                pitch_directory, overwrite, export_source, 
+                decompress, format
+                )
 
     def import_from_directory(self, directory, clear_existing=True,
                               merge_same_names=False):

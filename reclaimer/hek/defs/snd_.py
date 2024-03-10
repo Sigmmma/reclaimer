@@ -99,7 +99,8 @@ pitch_range = Struct('pitch_range',
     SInt32("unknown2", VISIBLE=False, DEFAULT=-1),
 
     reflexive("permutations", permutation, 256,
-        DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
+        DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX
+        ),
     SIZE=72,
     )
 
@@ -156,7 +157,7 @@ snd__body = Struct("tagdata",
     reflexive("pitch_ranges", pitch_range, 8,
         DYN_NAME_PATH='.name'),
 
-    SIZE=164,
+    SIZE=164, WIDGET=SoundPlayerFrame
     )
 
 

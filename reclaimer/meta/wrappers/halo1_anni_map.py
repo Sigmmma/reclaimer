@@ -15,6 +15,7 @@ from reclaimer.meta.wrappers.byteswapping import byteswap_anniversary_sbsp,\
     byteswap_scnr_script_syntax_data, end_swap_float, end_swap_int32,\
     end_swap_int16, end_swap_uint32, end_swap_uint16
     
+from reclaimer.misc.defs.recorded_animations import build_r_a_stream_block
 from reclaimer.meta.wrappers.halo_map import HaloMap
 from reclaimer.meta.wrappers.halo1_rsrc_map import Halo1RsrcMap
 from reclaimer.meta.wrappers.halo1_mcc_map import Halo1MccMap
@@ -230,6 +231,21 @@ class Halo1AnniMap(Halo1MccMap):
             for b in meta.encounters.STEPTREE:
                 b.unknown = end_swap_uint16(b.unknown)
 
+            for ra in meta.recorded_animations.STEPTREE:
+                # parse the recorded animations as big-endian
+                # and serialize back as little-endian
+                try:
+                    with FieldType.force_big:
+                        ra_block = build_r_a_stream_block(
+                            ra.unit_control_data_version,
+                            ra.recorded_animation_event_stream.STEPTREE,
+                            simple=True
+                            )
+                    ra.recorded_animation_event_stream.STEPTREE = ra_block.serialize()
+                except Exception:
+                    print(format_exc())
+                    print("Could not byteswap recorded animation '%s'" % ra.name)
+
             # NOTE: this is gonna get swapped back when converting to tagdata
             byteswap_scnr_script_syntax_data(meta)
 
@@ -295,8 +311,6 @@ class Halo1AnniMap(Halo1MccMap):
             raise ValueError("Bitmap pixel data missing.")
         elif tag_cls == "snd!":
             raise ValueError("Sound sample data missing.")
-        elif tag_cls == "scnr":
-            raise ValueError("Cannot byteswap recorded animations.")
 
         kwargs["byteswap"] = False
         super().meta_to_tag_data(meta, tag_cls, tag_index_ref, **kwargs)

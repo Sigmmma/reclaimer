@@ -9,21 +9,28 @@
 
 from copy import copy, deepcopy
 from math import pi
-try:
-    from mozzarilla.widgets.field_widgets import ReflexiveFrame,\
-         HaloRawdataFrame, HaloUInt32ColorPickerFrame, TextFrame,\
-         ColorPickerFrame, EntryFrame, HaloScriptSourceFrame,\
-         SoundSampleFrame, DynamicArrayFrame, DynamicEnumFrame,\
-         HaloScriptTextFrame, HaloBitmapTagFrame, FontCharacterFrame,\
-         MeterImageFrame, HaloHudMessageTextFrame
-except Exception:
-    ReflexiveFrame = HaloRawdataFrame = HaloUInt32ColorPickerFrame =\
-                     TextFrame = ColorPickerFrame = EntryFrame =\
-                     HaloScriptSourceFrame = SoundSampleFrame =\
-                     DynamicArrayFrame = DynamicEnumFrame =\
-                     HaloScriptTextFrame = HaloBitmapTagFrame =\
-                     FontCharacterFrame = MeterImageFrame =\
-                     HaloHudMessageTextFrame = None
+import os
+
+from reclaimer.constants import RECLAIMER_NO_GUI
+
+HaloRawdataFrame = ReflexiveFrame = SoundPlayerFrame = \
+    HaloUInt32ColorPickerFrame = ColorPickerFrame = ContainerFrame =\
+    EntryFrame = TextFrame = HaloScriptSourceFrame = SoundSampleFrame =\
+    HaloScriptTextFrame = HaloBitmapTagFrame = MeterImageFrame =\
+    FontCharacterFrame = HaloHudMessageTextFrame =\
+    DynamicArrayFrame = DynamicEnumFrame = None
+
+if not os.environ.get(RECLAIMER_NO_GUI):
+    try:
+        from mozzarilla.widgets.field_widgets import \
+            HaloRawdataFrame, ReflexiveFrame, SoundPlayerFrame,\
+            HaloUInt32ColorPickerFrame, ColorPickerFrame, ContainerFrame,\
+            EntryFrame, TextFrame, HaloScriptSourceFrame, SoundSampleFrame,\
+            HaloScriptTextFrame, HaloBitmapTagFrame, MeterImageFrame,\
+            FontCharacterFrame, HaloHudMessageTextFrame,\
+            DynamicArrayFrame, DynamicEnumFrame
+    except Exception:
+        print("Unable to import mozzarilla widgets. UI features may not work.")
 
 from supyr_struct.defs.common_descs import *
 from supyr_struct.defs.block_def import BlockDef
@@ -34,6 +41,7 @@ from reclaimer.field_type_methods import tag_ref_str_size,\
      read_string_id_string, write_string_id_string, get_set_string_id_size
 from reclaimer.constants import *
 from reclaimer.enums import *
+
 
 # before we do anything, we need to inject these constants so any definitions
 # that are built that use them will have them in their descriptor entries.

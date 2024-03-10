@@ -89,10 +89,7 @@ class BlamSoundPermutation:
         if target_encoding is None:
             target_encoding = self.source_encoding
 
-        if self.source_compression == constants.COMPRESSION_OGG:
-            raise NotImplementedError(
-                "Cannot partition Ogg Vorbis samples.")
-        elif (target_compression not in constants.PCM_FORMATS and
+        if (target_compression not in constants.PCM_FORMATS and
               target_compression != constants.COMPRESSION_IMA_ADPCM and
               target_compression != constants.COMPRESSION_XBOX_ADPCM and
               target_compression != constants.COMPRESSION_OGG):
@@ -214,21 +211,27 @@ class BlamSoundPermutation:
     def get_concatenated_mouth_data(self):
         return b''.join(p.mouth_data for p in self.processed_samples)
 
-    def regenerate_source(self):
+    def regenerate_source(
+            self, compression=None, sample_rate=None, encoding=None
+            ):
         '''
         Regenerates an uncompressed, concatenated audio stream
         from the compressed samples. Use when loading a sound tag
         for re-compression, re-sampling, or re-encoding.
         '''
-        # always regenerate to constants.DEFAULT_UNCOMPRESSED_FORMAT
+        # default to regenerating to constants.DEFAULT_UNCOMPRESSED_FORMAT
         # because, technically speaking, that is highest sample depth
         # we can ever possibly see in Halo CE.
+        if compression is None: compression = constants.DEFAULT_UNCOMPRESSED_FORMAT
+        if sample_rate is None: sample_rate = self.sample_rate
+        if encoding    is None: encoding    = self.encoding
+
         self._source_sample_data = self.get_concatenated_sample_data(
-            constants.DEFAULT_UNCOMPRESSED_FORMAT,
-            self.sample_rate, self.encoding)
-        self._source_compression = constants.DEFAULT_UNCOMPRESSED_FORMAT
-        self._source_sample_rate = self.sample_rate
-        self._source_encoding = self.encoding
+            compression, sample_rate, encoding
+            )
+        self._source_compression = compression
+        self._source_sample_rate = sample_rate
+        self._source_encoding    = encoding
 
     @staticmethod
     def create_from_file(filepath):
@@ -242,74 +245,89 @@ class BlamSoundPermutation:
         return new_perm
 
     def export_to_file(self, filepath_base, overwrite=False,
-                       export_source=True, decompress=True):
+                       export_source=True, decompress=True,
+                       format=constants.CONTAINER_EXT_WAV):
         perm_chunks = []
-        encoding = self.encoding
-        sample_rate = self.sample_rate
+
+        filepath = Path(util.BAD_PATH_CHAR_REMOVAL.sub("_", str(filepath_base)))
+        filepath = Path("unnamed" if is_path_empty(filepath) else filepath)
+        filepath = filepath.with_suffix(format)
+        
         if export_source and self.source_sample_data:
             # export the source data
             perm_chunks.append(
-                (self.compression, self.source_encoding, self.source_sample_data)
+                (self.compression, self.source_sample_rate, 
+                 self.source_encoding, self.source_sample_data,
+                 filepath)
                 )
-            sample_rate = self.source_sample_rate
         elif self.processed_samples:
             # concatenate processed samples if source samples don't exist.
             # also, if compression is ogg, we have to decompress
             compression = self.compression
-            if decompress or compression == constants.COMPRESSION_OGG:
+            if decompress or compression in constants.PYOGG_CONTAINER_FORMATS:
                 compression = constants.COMPRESSION_PCM_16_LE
 
             try:
                 sample_data = self.get_concatenated_sample_data(
-                    compression, sample_rate, encoding)
-                if sample_data:
-                    perm_chunks.append((compression, self.encoding, sample_data))
-            except Exception:
-                print("Could not decompress permutation pieces. Concatenating.")
-                perm_chunks.extend(
-                    (piece.compression, piece.encoding, piece.sample_data)
-                    for piece in self.processed_samples
+                    compression, self.sample_rate, self.encoding
                     )
+                if sample_data:
+                    perm_chunks.append((
+                        compression, self.sample_rate, self.encoding, 
+                        sample_data, filepath
+                        ))
+            except Exception:
+                print("Could not decompress permutation pieces. Exporting in pieces.")
+                # gotta switch format to the container it's compressed as
+                for i, piece in enumerate(self.processed_samples):
+                    format = {
+                        constants.COMPRESSION_OGG:  constants.CONTAINER_EXT_OGG,
+                        constants.COMPRESSION_OPUS: constants.CONTAINER_EXT_OPUS,
+                        constants.COMPRESSION_FLAC: constants.CONTAINER_EXT_FLAC,
+                        }.get(piece.compression, format)
 
-        i = -1
-        wav_file = wav_def.build()
-        for compression, encoding, sample_data in perm_chunks:
-            i += 1
-            filepath = Path(util.BAD_PATH_CHAR_REMOVAL.sub("_", str(filepath_base)))
+                    name_base = "%s__%%s%s" % (filepath.stem, format)
+                    perm_chunks.append(
+                        (piece.compression, piece.sample_rate, piece.encoding,
+                        piece.sample_data, filepath.with_name(name_base % i))
+                        )
 
-            if is_path_empty(filepath):
-                filepath = Path("unnamed")
+        if format == constants.CONTAINER_EXT_WAV:
+            self._export_to_wav(perm_chunks, overwrite)
+        elif format in constants.SUPPORTED_CONTAINER_EXTS:
+            self._export_to_container(perm_chunks, overwrite)
+        else:
+            raise ValueError("Unknown compression method.")
 
-            if len(perm_chunks) > 1:
-                filepath = filepath.parent.joinpath(filepath.stem + "__%s" % i)
+    def _export_to_container(self, perm_chunks, overwrite):
+        for perm_chunk in perm_chunks:
+            compression, sample_rate, encoding, sample_data, filepath = perm_chunk
 
-            # figure out if the sample data is already encapsulated in a
-            # container, or if it'll need to be encapsulated in a wav file.
-            is_container_format = True
-            if compression == constants.COMPRESSION_OGG:
-                ext = ".ogg"
-            elif compression == constants.COMPRESSION_WMA:
-                ext = ".wma"
-            elif compression == constants.COMPRESSION_UNKNOWN:
-                ext = ".bin"
-            else:
-                is_container_format = False
-                ext = ".wav"
-
-            if filepath.suffix.lower() != ext:
-                filepath = filepath.with_suffix(ext)
-
-            if not sample_data or (not overwrite and filepath.is_file()):
+            format = filepath.suffix.lower()
+            if format == constants.CONTAINER_EXT_WAV:
+                # if somehow a wav got passed in, pass off to that method
+                self._export_to_wav([perm_chunk], overwrite)
+                continue
+            elif not sample_data or (not overwrite and filepath.is_file()):
                 continue
 
-            if is_container_format:
-                try:
-                    filepath.parent.mkdir(exist_ok=True, parents=True)
-                    with filepath.open("wb") as f:
-                        f.write(sample_data)
-                except Exception:
-                    print(format_exc())
+            # TODO: write this
+            #       make sure to handle samples already being in ogg and not
+            #       needing to be decompressed and reencoded if not chunked.
 
+            try:
+                filepath.parent.mkdir(exist_ok=True, parents=True)
+                with filepath.open("wb") as f:
+                    f.write(sample_data)
+            except Exception:
+                print(format_exc())
+
+    def _export_to_wav(self, perm_chunks, overwrite):
+        wav_file = wav_def.build()
+
+        for perm_chunk in perm_chunks:
+            compression, sample_rate, encoding, sample_data, filepath = perm_chunk
+            if not sample_data or (not overwrite and filepath.is_file()):
                 continue
 
             wav_file.filepath = filepath
@@ -364,10 +382,25 @@ class BlamSoundPermutation:
 
     def import_from_file(self, filepath):
         filepath = Path(filepath)
+        format   = filepath.suffix.lower()
+
         if not filepath.is_file():
             raise OSError('File "%s" does not exist. Cannot import.' % filepath)
 
-        wav_file = wav_def.build(filepath=filepath)
+        if format == constants.CONTAINER_EXT_WAV:
+            self._import_from_wav(filepath)
+        elif (format in constants.SUPPORTED_CONTAINER_EXTS and 
+              format in constants.PYOGG_CONTAINER_EXTS):
+            self._import_from_container(filepath)
+        else:
+            raise ValueError("Cannot import this type of file.")
+
+    def _import_from_container(self, filepath):
+        # TODO: update this to handle ogg vorbis, flac, and opus
+        raise NotImplementedError()
+
+    def _import_from_wav(self, filepath):
+        wav_file   = wav_def.build(filepath=filepath)
         wav_header = wav_file.data.wav_header
         wav_format = wav_file.data.wav_format
         wav_chunks = wav_file.data.wav_chunks

@@ -10,7 +10,7 @@
 import math
 import traceback
 
-from reclaimer.sounds import util, constants
+from reclaimer.sounds import audioop, constants, ogg, util
 
 __all__ = ("compile_sound", "compile_pitch_range",)
 
@@ -37,7 +37,7 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
 
         if channel_count != blam_channel_count:
             errors.append('Cannot add %s channel sounds to %s channel tag.' %
-                          (blam_channel_count, sample_rate))
+                          (blam_channel_count, channel_count))
 
         if blam_sound_perm.compression not in (constants.COMPRESSION_PCM_16_LE,
                                                constants.COMPRESSION_PCM_16_BE,
@@ -57,8 +57,8 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
     if errors:
         return errors
 
-    snd__perms = pitch_range.permutations.STEPTREE
-    snd__perm_names = set()
+    snd__perms       = pitch_range.permutations.STEPTREE
+    snd__perm_names  = set()
     # loop over the permutations blam_samples and string
     # them together into lists of permutation blocks
     for blam_perm_name in sorted(blam_pitch_range.permutations):
@@ -73,22 +73,32 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
                 snd__perms.append()  # create the new perm block
                 snd__perm, _ = snd__perms.pop(-1)
                 snd__perm.name = name
-                snd__perm.buffer_size = (
-                    channel_count * 2 * blam_samples.sample_count)
                 snd__perm.samples.data = blam_samples.sample_data
                 snd__perm.mouth_data.data = blam_samples.mouth_data
+                comp = blam_samples.compression
 
-                if blam_samples.compression == constants.COMPRESSION_XBOX_ADPCM:
-                    snd__perm.compression.set_to("xbox_adpcm")
-                    snd__perm.buffer_size = 0  # adpcm has this as 0 always
-                elif blam_samples.compression == constants.COMPRESSION_IMA_ADPCM:
-                    snd__perm.compression.set_to("ima_adpcm")
-                    snd__perm.buffer_size = 0  # adpcm has this as 0 always
-                elif blam_samples.compression == constants.COMPRESSION_OGG:
-                    snd__perm.compression.set_to("ogg")
-                else:
-                    snd__perm.compression.set_to("none")
+                if comp == constants.COMPRESSION_PCM_16_LE:
+                    # need to byteswap to big-endian
+                    snd__perm.samples.data = audioop.byteswap(snd__perm.samples.data, 2)
 
+                comp_name = (
+                    "xbox_adpcm" if comp == constants.COMPRESSION_XBOX_ADPCM else
+                    "ima_adpcm"  if comp == constants.COMPRESSION_IMA_ADPCM  else
+                    "ogg"        if comp == constants.COMPRESSION_OGG        else
+                    "none"
+                    )
+
+                # only ogg and 16bit pcm need the buffer size calculated
+                sample_count = (
+                    ogg.get_pcm_sample_count(blam_samples.sample_data)
+                    if comp_name == "ogg" and sound_const.OGGVORBIS_AVAILABLE else
+                    blam_samples.sample_count
+                    if comp_name in ("ogg", "none") else 
+                    0
+                    )
+
+                snd__perm.compression.set_to(comp_name)
+                snd__perm.buffer_size = channel_count * 2 * sample_count
                 snd__perm_chain.append(snd__perm)
 
             errors.extend(
@@ -104,7 +114,7 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
 
 def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
                   update_mode=constants.SOUND_COMPILE_MODE_PRESERVE,
-                  force_sample_rate=False):
+                  force_sample_rate=False, sapien_pcm_hack=False):
     '''
     Compiles the given blam_sound_bank into the given (Halo 1 snd!) snd__tag.
     '''
@@ -135,13 +145,14 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
         tagdata.flags.fit_to_adpcm_blocksize = False
         tagdata.flags.split_long_sound_into_permutations = bool(
             blam_sound_bank.split_into_smaller_chunks)
+        tagdata.flags.fit_to_adpcm_blocksize = bool(
+            blam_sound_bank.adpcm_fit_to_blocksize)
 
         if blam_sound_bank.compression in (constants.COMPRESSION_PCM_16_LE,
                                            constants.COMPRESSION_PCM_16_BE):
-            # intentionally set this to something other than "none"
+            # set this to something other than "none"
             # as otherwise the sound won't play in sapien
-            tagdata.compression.set_to("ogg")
-            # tagdata.compression.set_to("none")
+            tagdata.compression.set_to("ogg" if sapien_pcm_hack else "none")
         elif blam_sound_bank.compression == constants.COMPRESSION_XBOX_ADPCM:
             tagdata.flags.fit_to_adpcm_blocksize = True
             tagdata.compression.set_to("xbox_adpcm")

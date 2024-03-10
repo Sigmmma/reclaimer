@@ -15,12 +15,14 @@ from reclaimer.hek.defs.objs.tag import HekTag
 
 try:
     import arbytmap as ab
-
     if not hasattr(ab, "FORMAT_P8_BUMP"):
         ab.FORMAT_P8_BUMP = "P8-BUMP"
 
         """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
-        ab.register_format(format_id=ab.FORMAT_P8_BUMP, depths=(8,8,8,8))
+        ab.register_format(
+            format_id=ab.FORMAT_P8_BUMP, depths=(8,8,8,8)
+            )
+
 except (ImportError, AttributeError):
     ab = None
 

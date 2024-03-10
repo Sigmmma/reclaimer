@@ -1,69 +1,70 @@
-#
-# This file is part of Reclaimer.
-#
-# For authors and copyright check AUTHORS.TXT
-#
-# Reclaimer is free software under the GNU General Public License v3.0.
-# See LICENSE for more information.
-#
+import ctypes
+import pathlib
+import tempfile
+import threading
+import uuid
 
-class VorbisBitrateInfo:
-    '''
-    Intermediary class for storing bitrate info to pass to vorbis compression
-    functions.
+from reclaimer.sounds import constants, util
 
-    Combinations of nominal, lower, upper values carry the following
-    implications:
-      all three set to the same value:
-        implies a fixed rate bitstream
-      only nominal set:
-        implies a VBR stream that nominals the nominal bitrate. No hard
-        upper/lower limit
-      upper and or lower set:
-        implies a VBR bitstream that obeys the bitrate limits. nominal
-        may also be set to give a nominal rate.
-      none set:
-        the coder does not care to speculate.
-    '''
-    lower = -1
-    upper = -1
-    nominal = -1
+try:
+    import pyogg
+    from pyogg import vorbis as pyogg_vorbis
+except ImportError:
+    pyogg = pyogg_vorbis = None
 
-    # compression base quality [-0.1, 1.0]
-    quality = None
+TEMP_ROOT   = pathlib.Path(tempfile.gettempdir(), "reclaimer_tmp")
+NAME_FORMAT = "ogg_tmpfile_%s.ogg"
 
-    use_quality = False
 
-    def __init__(self, nominal=-1, lower=-1, upper=-1, quality=0.5):
-        '''
-        See class documentation for variable descriptions.
-        '''
-        if quality is not None:
-            self.set_bitrate_quality(quality)
-        else:
-            self.set_bitrate_variable(nominal, upper, lower)
+def vorbis_file_from_data_stream(data_stream, streaming=False):
+    if not (pyogg and constants.OGGVORBIS_AVAILABLE): 
+        raise NotImplementedError(
+        "OggVorbis decoder not available. Cannot decompress."
+        )
+    
+    # look, it's WAY easier to just dump the file to a temp folder and
+    # have VorbisFile decode the entire thing than to try and hook into
+    # calling the ogg parsing and vorbis decoder functions on a stream.
+    filepath = TEMP_ROOT.joinpath(NAME_FORMAT % threading.get_native_id())
+    filepath.parent.mkdir(parents=True, exist_ok=True)
+    with open(filepath, "wb") as f:
+        f.write(data_stream)
 
-    def set_bitrate_fixed(self, bitrate):
-        '''
-        Sets a fixed bitrate to the requested number.
-        '''
-        self.upper = self.nominal = self.lower = bitrate
-        self.use_quality = False
+    return (
+        pyogg.VorbisFileStream if streaming else 
+        pyogg.VorbisFile
+        )(str(filepath))
 
-    def set_bitrate_variable(self, nominal, upper=-1, lower=-1):
-        '''
-        Sets a variable bitrate based on the nominal and
-        optionally upper and lower numbers.
-        Check class docstring for further detail.
-        '''
-        self.nominal = nominal
-        self.upper = upper
-        self.lower = lower
-        self.use_quality = False
 
-    def set_bitrate_quality(self, quality):
-        '''
-        Sets a bitrate using the quality float.
-        '''
-        self.quality = min(1.0, max(-0.1, float(quality)))
-        self.use_quality = True
+def decode_oggvorbis(data_stream):
+    vorbis_file = vorbis_file_from_data_stream(data_stream)
+    sample_data = vorbis_file.buffer
+    sample_rate = vorbis_file.frequency
+    compression = constants.OGG_DECOMPRESSED_FORMAT
+    encoding    = (
+        constants.ENCODING_STEREO if vorbis_file.channels == 2 else
+        constants.ENCODING_MONO   if vorbis_file.channels == 1 else
+        constants.ENCODING_UNKNOWN
+        )
+
+    return sample_data, compression, encoding, sample_rate
+
+
+def encode_oggvorbis(
+        sample_data, channel_count, sample_rate, 
+        is_big_endian=False, **kwargs
+        ):
+    if not (pyogg and constants.OGGVORBIS_ENCODING_AVAILABLE): 
+        raise NotImplementedError(
+            "OggVorbis encoder not available. Cannot compress."
+            )
+    data_stream = b''
+
+    return data_stream
+
+
+def get_pcm_sample_count(data_stream):
+    vorbis_file = vorbis_file_from_data_stream(data_stream, streaming=True)
+    return pyogg_vorbis.libvorbisfile.ov_pcm_total(
+        ctypes.byref(vorbis_file.vf), 0
+        )

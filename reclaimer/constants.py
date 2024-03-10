@@ -7,11 +7,46 @@
 # See LICENSE for more information.
 #
 
+import os
 from struct import unpack
 
 from supyr_struct.defs.constants import *
 from supyr_struct.util import fourcc_to_int
-from binilla.constants import *
+
+# environment variable controls
+RECLAIMER_NO_GUI  = "RECLAIMER_NO_GUI" # if non-empty, tells reclaimer to
+#                                        not load binilla or mozzarilla
+#                                        modules wherever possible.
+RECLAIMER_NO_ARBY = "RECLAIMER_NO_ARBY" # if non-empty, tells reclaimer to not
+#                                         load arbytmap wherever possible.
+
+# copied from binilla.constants for in case they're not available
+EDITABLE            = "EDITABLE"
+VISIBLE             = "VISIBLE"
+GUI_NAME            = "GUI_NAME"
+HIDE_TITLE          = "HIDE_TITLE"
+ORIENT              = "ORIENT"
+WIDGET_WIDTH        = "WIDGET_WIDTH"
+TOOLTIP             = "TOOLTIP"
+COMMENT             = "COMMENT"
+SIDETIP             = "SIDETIP"
+ALLOW_MAX           = "ALLOW_MAX"
+ALLOW_MIN           = "ALLOW_MIN"
+UNIT_SCALE          = "UNIT_SCALE"
+EXT                 = "EXT"
+PORTABLE            = "PORTABLE"
+WIDGET              = "WIDGET"
+DYN_NAME_PATH       = "DYN_NAME_PATH"
+DYN_I               = "[DYN_I]"
+VISIBILITY_SHOWN    = 1
+VISIBILITY_HIDDEN   = 0
+VISIBILITY_METADATA = -1
+
+if not os.environ.get(RECLAIMER_NO_GUI):
+    try:
+        from binilla.constants import *
+    except ImportError:
+        pass
 
 # some reflexives are so massive that it's significantly faster to treat them
 # as raw data and just byteswap them using precalculated offsets and sizes

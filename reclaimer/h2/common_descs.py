@@ -8,19 +8,18 @@
 #
 
 from copy import copy, deepcopy
+import os
 
-try:
-    from mozzarilla.widgets.field_widgets import ReflexiveFrame, HaloRawdataFrame,\
-         TextFrame, ColorPickerFrame, EntryFrame, SoundSampleFrame,\
-         DynamicArrayFrame, Halo2BitmapTagFrame
-except Exception:
-    ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
-                     EntryFrame = SoundSampleFrame = DynamicArrayFrame =\
-                     Halo2BitmapTagFrame = None
+from reclaimer.h2.constants import RECLAIMER_NO_GUI, h2_tag_class_fcc_to_ext
+
+Halo2BitmapTagFrame = None
+if not os.environ.get(RECLAIMER_NO_GUI):
+    try:
+        from mozzarilla.widgets.field_widgets import Halo2BitmapTagFrame
+    except ImportError:
+        print("Unable to import mozzarilla widgets. UI features may not work.")
+
 from reclaimer.common_descs import *
-from reclaimer.h2.constants import STEPTREE, DYN_NAME_PATH, NAME_MAP,\
-     COMMENT, TOOLTIP, WIDGET, MAX, MAX_REFLEXIVE_COUNT, VISIBLE, ORIENT,\
-     MAX_TAG_PATH_LEN, DEFAULT, h2_tag_class_fcc_to_ext
 from reclaimer.h2.field_types import *
 from reclaimer.h2.enums import *
 

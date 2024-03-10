@@ -32,7 +32,11 @@ class Halo1YeloMap(Halo1Map):
         # requirement that they be yelo maps, this wrapper is able to be
         # used with the engine still set to halo1ce. to determine if the
         # map is truely a .yelo map, we need to check the engine.
-        return self.engine == "halo1yelo"
+        yelo_header = self.map_header.yelo_header
+        return "<INVALID>" not in (
+            yelo_header.yelo.enum_name, 
+            yelo_header.version_type.enum_name
+            )
 
     @property
     def uses_mod_data_files(self):
@@ -99,3 +103,70 @@ class Halo1YeloMap(Halo1Map):
 
         # make a shallow copy for this instance to manipulate
         self.defs = dict(self.defs)
+
+    def generate_map_info_string(self):
+        string = super().generate_map_info_string()
+        if self.is_fully_yelo:
+            string += self.generate_yelo_info_string()
+        return string
+
+    def generate_yelo_info_string(self):
+        yelo    = self.map_header.yelo_header
+        flags   = yelo.flags
+        info    = yelo.build_info
+        version = yelo.tag_versioning
+        cheape  = yelo.cheape_definitions
+        rsrc    = yelo.resources
+        min_os  = info.minimum_os_build
+
+        return """
+Yelo information:
+    Mod name              == %s
+    Memory upgrade amount == %sx
+
+    Flags:
+        uses memory upgrades       == %s
+        uses mod data files        == %s
+        is protected               == %s
+        uses game state upgrades   == %s
+        has compression parameters == %s
+
+    Build info:
+        build string  == %s
+        timestamp     == %s
+        stage         == %s
+        revision      == %s
+
+    Cheape:
+        build string      == %s
+        version           == %s.%s.%s
+        size              == %s
+        offset            == %s
+        decompressed size == %s
+
+    Versioning:
+        minimum open sauce     == %s.%s.%s
+        project yellow         == %s
+        project yellow globals == %s
+
+    Resources:
+        compression parameters header offset   == %s
+        tag symbol storage header offset       == %s
+        string id storage header offset        == %s
+        tag string to id storage header offset == %s\n""" % (
+            yelo.mod_name, yelo.memory_upgrade_multiplier,
+            bool(flags.uses_memory_upgrades),
+            bool(flags.uses_mod_data_files),
+            bool(flags.is_protected),
+            bool(flags.uses_game_state_upgrades),
+            bool(flags.has_compression_params),
+            info.build_string, info.timestamp, info.stage.enum_name,
+            info.revision, cheape.build_string,
+            info.cheape.maj, info.cheape.min, info.cheape.build,
+            cheape.size, cheape.offset, cheape.decompressed_size,
+            min_os.maj, min_os.min, min_os.build,
+            version.project_yellow, version.project_yellow_globals,
+            rsrc.compression_params_header_offset,
+            rsrc.tag_symbol_storage_header_offset,
+            rsrc.string_id_storage_header_offset,
+            rsrc.tag_string_to_id_storage_header_offset)

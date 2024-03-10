@@ -927,6 +927,18 @@ class Halo1Map(HaloMap):
             meta.grenades.grenade_velocity *= 30
 
         elif tag_cls in ("antr", "magy"):
+            # try to fix HEK+ extraction bug
+            for obj in meta.objects.STEPTREE:
+                for enum in (obj.function, obj.function_controls):
+                    uint16_data = enum.data & 0xFFff
+                    if (uint16_data & 0xFF00 and not uint16_data & 0xFF):
+                        # higher bits are set than lower. this is likely
+                        # a HEK plus extraction bug and should be fixed
+                        uint16_data = ((uint16_data>>8) | (uint16_data<<8)) & 0xFFff
+                        enum.data = uint16_data - (
+                            0 if uint16_data < 0x8000 else 0x10000
+                            )
+
             # byteswap animation data
             for anim in meta.animations.STEPTREE:
                 if not byteswap: break
@@ -1427,6 +1439,16 @@ class Halo1Map(HaloMap):
                 meta.soso_attrs.model_shader.flags.data |= 1<<6
 
         elif tag_cls == "weap":
+            # try to fix HEK+ extraction bug
+            uint16_data = (meta.weap_attrs.aiming.zoom_levels & 0xFFff)
+            if (uint16_data & 0xFF00 and not uint16_data & 0xFF):
+                # higher bits are set than lower. this is likely
+                # a HEK plus extraction bug and should be fixed
+                uint16_data = ((uint16_data>>8) | (uint16_data<<8)) & 0xFFff
+                meta.weap_attrs.aiming.zoom_levels = uint16_data - (
+                    0 if uint16_data < 0x8000 else 0x10000
+                    )
+
             predicted_resources.append(meta.weap_attrs.predicted_resources)
 
         # remove any predicted resources
@@ -1553,73 +1575,10 @@ Tag index:
                 header.compressed_lightmap_materials_pointer + offset - magic,
                 )
 
-        if self.engine == "halo1yelo":
-            string += self.generate_yelo_info_string()
-        elif self.engine == "halo1vap":
+        if self.engine == "halo1vap":
             string += self.generate_vap_info_string()
 
         return string
-
-    def generate_yelo_info_string(self):
-        yelo    = self.map_header.yelo_header
-        flags   = yelo.flags
-        info    = yelo.build_info
-        version = yelo.tag_versioning
-        cheape  = yelo.cheape_definitions
-        rsrc    = yelo.resources
-        min_os  = info.minimum_os_build
-
-        return """
-Yelo information:
-    Mod name              == %s
-    Memory upgrade amount == %sx
-
-    Flags:
-        uses memory upgrades       == %s
-        uses mod data files        == %s
-        is protected               == %s
-        uses game state upgrades   == %s
-        has compression parameters == %s
-
-    Build info:
-        build string  == %s
-        timestamp     == %s
-        stage         == %s
-        revision      == %s
-
-    Cheape:
-        build string      == %s
-        version           == %s.%s.%s
-        size              == %s
-        offset            == %s
-        decompressed size == %s
-
-    Versioning:
-        minimum open sauce     == %s.%s.%s
-        project yellow         == %s
-        project yellow globals == %s
-
-    Resources:
-        compression parameters header offset   == %s
-        tag symbol storage header offset       == %s
-        string id storage header offset        == %s
-        tag string to id storage header offset == %s\n""" % (
-            yelo.mod_name, yelo.memory_upgrade_multiplier,
-            bool(flags.uses_memory_upgrades),
-            bool(flags.uses_mod_data_files),
-            bool(flags.is_protected),
-            bool(flags.uses_game_state_upgrades),
-            bool(flags.has_compression_params),
-            info.build_string, info.timestamp, info.stage.enum_name,
-            info.revision, cheape.build_string,
-            info.cheape.maj, info.cheape.min, info.cheape.build,
-            cheape.size, cheape.offset, cheape.decompressed_size,
-            min_os.maj, min_os.min, min_os.build,
-            version.project_yellow, version.project_yellow_globals,
-            rsrc.compression_params_header_offset,
-            rsrc.tag_symbol_storage_header_offset,
-            rsrc.string_id_storage_header_offset,
-            rsrc.tag_string_to_id_storage_header_offset)
 
     def generate_vap_info_string(self):
         vap = self.map_header.vap_header

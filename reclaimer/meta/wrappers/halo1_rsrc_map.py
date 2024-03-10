@@ -25,6 +25,7 @@ from reclaimer.meta.wrappers.byteswapping import raw_block_def, byteswap_pcm16_s
 from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
 from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
 from reclaimer.meta.wrappers.halo_map import HaloMap
+from reclaimer.sounds import ogg as sounds_ogg, constants as sound_const
 
 from supyr_struct.buffer import BytearrayBuffer, get_rawdata
 from supyr_struct.field_types import FieldType
@@ -364,6 +365,10 @@ class Halo1RsrcMap(HaloMap):
             meta.maximum_bend_per_second = meta.maximum_bend_per_second ** 30
             meta.unknown1 = 0xFFFFFFFF
             meta.unknown2 = 0xFFFFFFFF
+            channels = sound_const.channel_counts.get(
+                meta.encoding.data, 1
+                )
+            bytes_per_sample = 2 * channels
             for pitch_range in meta.pitch_ranges.STEPTREE:
                 # null some meta-only fields
                 pitch_range.playback_rate = 0.0
@@ -377,8 +382,13 @@ class Halo1RsrcMap(HaloMap):
                             # byteswap pcm audio
                             byteswap_pcm16_samples(perm.samples)
                     elif perm.compression.enum_name == "ogg":
-                        # TODO: find a way to calculate the buffer size here
-                        buffer_size = perm.buffer_size
+                        # oggvorbis NEEDS this set for proper playback ingame
+                        buffer_size = (
+                            sounds_ogg.get_pcm_sample_count(perm.samples.data)
+                            if sound_const.OGGVORBIS_AVAILABLE else
+                            # oh well. default to whatever it's set to
+                            (perm.buffer_size // bytes_per_sample)
+                            ) * bytes_per_sample
                     else:
                         buffer_size = 0
 

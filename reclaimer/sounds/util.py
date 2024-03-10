@@ -199,14 +199,15 @@ def generate_mouth_data(sample_data, compression, sample_rate, encoding):
 
     sample_width = constants.sample_widths[compression]
     channel_count = constants.channel_counts[encoding]
-    sample_typecode = constants.sample_typecodes[encoding]
     if compression == constants.COMPRESSION_PCM_8_UNSIGNED:
         sample_data = audioop.bias(sample_data, 1, 128)
     elif sample_width > 1 and compression not in constants.NATIVE_ENDIANNESS_FORMATS:
         sample_data = audioop.byteswap(sample_data, sample_width)
 
     if sample_width != 1:
-        sample_data = memoryview(sample_data).cast(sample_typecode)
+        sample_data = memoryview(sample_data).cast(
+            "h" if sample_width == 2 else "i"
+            )
 
     # mouth data is sampled at 30Hz, so we divide the audio
     # sample_rate by that to determine how many samples we must

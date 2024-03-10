@@ -14,6 +14,8 @@ from time import time
 from traceback import format_exc
 from pathlib import Path, PureWindowsPath
 
+# NOTE: this is a pretty tough dependency to move to make
+#       reclaimer able to operate without binilla installed.
 from binilla.handler import Handler
 
 from reclaimer.data_extraction import h1_data_extractors

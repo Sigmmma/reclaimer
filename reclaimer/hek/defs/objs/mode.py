@@ -137,6 +137,45 @@ class ModeTag(HekTag):
         for lod, highest_node in max_lod_nodes.items():
             self.data.tagdata["%s_lod_nodes" % lod] = max(0, highest_node)
 
+    def globalize_local_markers(self):
+        tagdata = self.data.tagdata
+        all_global_markers = tagdata.markers.STEPTREE
+        all_global_markers_by_name = {b.name: b.marker_instances.STEPTREE
+                                      for b in all_global_markers}
+
+        for i in range(len(tagdata.regions.STEPTREE)):
+            region = tagdata.regions.STEPTREE[i]
+            for j in range(len(region.permutations.STEPTREE)):
+                perm = region.permutations.STEPTREE[j]
+
+                for k in range(len(perm.local_markers.STEPTREE)):
+                    local_marker = perm.local_markers.STEPTREE[k]
+                    global_markers = all_global_markers_by_name.get(
+                        local_marker.name, None)
+
+                    if global_markers is None or len(global_markers) >= 32:
+                        all_global_markers.append()
+                        all_global_markers[-1].name = local_marker.name
+                        global_markers = all_global_markers[-1].marker_instances.STEPTREE
+                        all_global_markers_by_name[local_marker.name] = global_markers
+
+                    global_markers.append()
+                    global_marker = global_markers[-1]
+
+                    global_marker.region_index = i
+                    global_marker.permutation_index = j
+                    global_marker.node_index = local_marker.node_index
+                    global_marker.rotation[:] = local_marker.rotation[:]
+                    global_marker.translation[:] = local_marker.translation[:]
+
+                del perm.local_markers.STEPTREE[:]
+
+        # sort the markers how Halo's picky ass wants them
+        name_map = {all_global_markers[i].name: i
+                    for i in range(len(all_global_markers))}
+        all_global_markers[:] = list(all_global_markers[name_map[name]]
+                                     for name in sorted(name_map))
+
     def compress_part_verts(self, geometry_index, part_index):
         part = self.data.tagdata.geometries.STEPTREE\
                [geometry_index].parts.STEPTREE[part_index]
