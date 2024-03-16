@@ -56,11 +56,11 @@ class BlamSoundPitchRange:
 
     def export_to_directory(self, directory, overwrite=False,
                             export_source=True, decompress=True, 
-                            format=constants.CONTAINER_EXT_WAV):
+                            ext=constants.CONTAINER_EXT_WAV, **kwargs):
         for name, perm in self.permutations.items():
             perm.export_to_file(
                 Path(directory, name), overwrite,
-                export_source, decompress, format
+                export_source, decompress, ext, **kwargs
                 )
 
     def import_from_directory(self, directory, clear_existing=True,
@@ -72,12 +72,15 @@ class BlamSoundPitchRange:
             # import each sound file to a new sound permutation
             for filename in files:
                 filepath = Path(root, filename)
-                if filepath.suffix.lower() not in constants.SUPPORTED_CONTAINER_EXTS:
+                if filepath.suffix.lower() not in constants.SUPPORTED_IMPORT_EXTS:
                     continue
 
-                name_key = filepath.stem.lower().strip()
                 perm = BlamSoundPermutation.create_from_file(filepath)
+                if perm is None:
+                    continue
+
                 perm.name = filepath.stem.strip()
+                name_key  = perm.name.lower()
 
                 if (perm and perm.source_sample_data) and (
                     replace_existing or name_key not in self.permutations):
@@ -116,9 +119,10 @@ class BlamSoundBank:
     #   none set:
     #     the coder does not care to speculate.
     ogg_bitrate_lower   = -1
-    ogg_bitrate_upper   = -1
     ogg_bitrate_nominal = -1
-    ogg_bitrate_window  = -1
+    ogg_bitrate_upper   = -1
+    ogg_quality_setting = 0
+    ogg_use_quality_value = False
 
     _pitch_ranges = ()
 
@@ -129,6 +133,22 @@ class BlamSoundBank:
     def pitch_ranges(self):
         return self._pitch_ranges
 
+    @property
+    def adpcm_kwargs(self): return dict(
+        noise_shaping    = self.adpcm_noise_shaping,
+        lookahead        = self.adpcm_lookahead,
+        fit_to_blocksize = self.adpcm_fit_to_blocksize,
+        )
+
+    @property
+    def ogg_kwargs(self): return dict(
+        bitrate_lower     = self.ogg_bitrate_lower,
+        bitrate_upper     = self.ogg_bitrate_upper,
+        bitrate_nominal   = self.ogg_bitrate_nominal,
+        quality_setting   = self.ogg_quality_setting,
+        use_quality_value = self.ogg_use_quality_value,
+        )
+
     def generate_mouth_data(self):
         for pitch_range in self.pitch_ranges.values():
             pitch_range.generate_mouth_data()
@@ -138,22 +158,10 @@ class BlamSoundBank:
         if self.split_into_smaller_chunks:
             chunk_size = self.chunk_size
 
-        adpcm_kwargs = dict(
-            noise_shaping    = self.adpcm_noise_shaping,
-            lookahead        = self.adpcm_lookahead,
-            fit_to_blocksize = self.adpcm_fit_to_blocksize,
-            )
-        ogg_kwargs = dict(
-            ogg_bitrate_lower   = self.ogg_bitrate_lower,
-            ogg_bitrate_upper   = self.ogg_bitrate_upper,
-            ogg_bitrate_nominal = self.ogg_bitrate_nominal,
-            ogg_bitrate_window  = self.ogg_bitrate_window,
-            )
-
         for pitch_range in self.pitch_ranges.values():
             pitch_range.compress_samples(
-                self.compression, self.sample_rate, self.encoding,
-                chunk_size, adpcm_kwargs=adpcm_kwargs, ogg_kwargs=ogg_kwargs,
+                self.compression, self.sample_rate, self.encoding, chunk_size,
+                adpcm_kwargs=self.adpcm_kwargs, ogg_kwargs=self.ogg_kwargs
                 )
 
     def regenerate_source(self):
@@ -173,7 +181,7 @@ class BlamSoundBank:
 
     def export_to_directory(self, directory, overwrite=False,
                             export_source=True, decompress=True,
-                            format=constants.CONTAINER_EXT_WAV):
+                            ext=constants.CONTAINER_EXT_WAV):
         for name, pitch_range in self.pitch_ranges.items():
             if len(self.pitch_ranges) > 1:
                 pitch_directory = Path(directory, name)
@@ -181,8 +189,8 @@ class BlamSoundBank:
                 pitch_directory = Path(directory)
 
             pitch_range.export_to_directory(
-                pitch_directory, overwrite, export_source, 
-                decompress, format
+                pitch_directory, overwrite, export_source, decompress, ext,
+                adpcm_kwargs=self.adpcm_kwargs, ogg_kwargs=self.ogg_kwargs
                 )
 
     def import_from_directory(self, directory, clear_existing=True,

@@ -11,6 +11,7 @@ import array
 import re
 import struct
 import sys
+from types import MethodType
 
 from reclaimer.sounds import audioop, constants
 
@@ -179,17 +180,70 @@ def convert_pcm_to_pcm(samples, compression, target_compression,
     return samples
 
 
-def convert_pcm_float32_to_pcm_32(sample_data):
-    samples = array.array('f', sample_data)
+def convert_pcm_float32_to_pcm_int(sample_data, width, wantarray=False):
+    typecode = audioop.SAMPLE_TYPECODES[width-1]
+    float_samples  = array.array('f', sample_data)
+    if sys.byteorder == "big" and not isinstance(sample_data, array.array):
+        # data is expected to be passed in as
+        # little-endian unless it's an array
+        float_samples.byteswap()
+
+    maxval = (1 << (8*width-1)) - 1
+    minval = -(maxval + 1)
+
+    out_data = array.array(typecode,
+        map(MethodType(max, minval),
+        map(MethodType(min, maxval),
+        map(round,
+        map(float(maxval+1).__rmul__, float_samples)
+        ))))
+
+    if sys.byteorder == "big" and width > 1:
+        # return is expected to be little-endian
+        out_data.byteswap()
+
+    return out_data if wantarray else out_data.tobytes()
+
+
+def convert_pcm_int_to_pcm_float32(sample_data, width, wantarray=False):
+    typecode    = audioop.SAMPLE_TYPECODES[width-1]
+    int_samples = array.array(typecode, sample_data)
     if sys.byteorder == "big":
         samples.byteswap()
 
-    samples = [-0x7fFFffFF if val <= -1.0 else
-               (0x7fFFffFF if val >=  1.0 else
-                int(val * 0x7fFFffFF))
-               for val in samples]
+    scale = 1/(1 << (8*width-1))
 
-    return struct.pack("<%di" % len(samples), *samples)
+    out_data = array.array("f",
+        map(MethodType(max, -1.0),
+        map(MethodType(min,  1.0),
+        map(scale.__rmul__, int_samples)
+        )))
+
+    if sys.byteorder == "big" and width > 1:
+        # return is expected to be little-endian
+        out_data.byteswap()
+
+    return out_data if wantarray else out_data.tobytes()
+
+
+def deinterleave_stereo(fragment, width, wantarray=False):
+    if width not in (1, 2, 4):
+        raise NotImplementedError(
+            "Cannot deinterleave %s-byte width samples." % width
+            )
+
+    typecode = audioop.SAMPLE_TYPECODES[width-1]
+    if not(isinstance(fragment, array.array) and
+           fragment.typecode == typecode):
+        fragment = array.array(typecode, fragment)
+
+    left_channel_data  = array.array(typecode, fragment[0::2])
+    right_channel_data = array.array(typecode, fragment[1::2])
+
+    return (
+        left_channel_data  if wantarray else left_channel_data.tobytes(), 
+        right_channel_data if wantarray else right_channel_data.tobytes()
+        )
 
 
 def generate_mouth_data(sample_data, compression, sample_rate, encoding):

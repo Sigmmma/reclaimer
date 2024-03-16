@@ -7,7 +7,9 @@
 # See LICENSE for more information.
 #
 
+import pathlib
 import sys
+import tempfile
 
 PLAYBACK_AVAILABLE  = False
 OGGVORBIS_AVAILABLE = False
@@ -16,6 +18,9 @@ OPUS_AVAILABLE      = False
 WMA_AVAILABLE       = False
 
 OGGVORBIS_ENCODING_AVAILABLE = False
+
+TEMP_ROOT                = pathlib.Path(tempfile.gettempdir(), "reclaimer_tmp")
+OGGVORBIS_TMPNAME_FORMAT = "pyogg_tmpfile_%s%s"
 
 try:
     import pyogg
@@ -34,10 +39,9 @@ try:
         pyogg, "PYOGG_VORBIS_ENC_AVAIL", False
         )
 
-    # NOTE: for right now these won't be available.
-    #       still need to implement them.
-    OGGVORBIS_ENCODING_AVAILABLE = False
-    OPUS_AVAILABLE = FLAC_AVAILABLE = False
+    # NOTE: for right now this won't be available.
+    #       still need to implement it.
+    #OGGVORBIS_ENCODING_AVAILABLE = False
 except ImportError:
     pass
 
@@ -77,12 +81,12 @@ COMPRESSION_FLAC  = 1025
 
 # these encoding constants mirror halo 1/2 enum values.
 ENCODING_UNKNOWN = -1
-ENCODING_MONO   = 0
-ENCODING_STEREO = 1
-ENCODING_CODEC  = 2
+ENCODING_MONO    = 0
+ENCODING_STEREO  = 1
+ENCODING_CODEC   = 2
 
 SAMPLE_RATE_22K = 22050
-SAMPLE_RATE_32K = 32000
+SAMPLE_RATE_32K = 32000  # halo 2
 SAMPLE_RATE_44K = 44100
 
 # Halo constants
@@ -100,8 +104,8 @@ MAX_HALO_SAMPLE_RATE = 48000
 
 XBOX_ADPCM_COMPRESSED_BLOCKSIZE   = 36
 XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE = 128
-IMA_ADPCM_COMPRESSED_BLOCKSIZE   = 36   # not correct
-IMA_ADPCM_DECOMPRESSED_BLOCKSIZE = 128  # not correct
+IMA_ADPCM_COMPRESSED_BLOCKSIZE    = 36   # not correct
+IMA_ADPCM_DECOMPRESSED_BLOCKSIZE  = 128  # not correct
 
 # Wave file format constants
 WAV_FORMAT_PCM        = 0x0001
@@ -130,11 +134,14 @@ PYOGG_CONTAINER_EXTS = frozenset((
     CONTAINER_EXT_OPUS, 
     CONTAINER_EXT_FLAC
     ))
-SUPPORTED_CONTAINER_EXTS = frozenset((
+SUPPORTED_IMPORT_EXTS = frozenset((
     CONTAINER_EXT_WAV,
     *([CONTAINER_EXT_OGG]  if OGGVORBIS_AVAILABLE else []),
     *([CONTAINER_EXT_OPUS] if OPUS_AVAILABLE      else []),
     *([CONTAINER_EXT_FLAC] if FLAC_AVAILABLE      else []),
+    ))
+SUPPORTED_EXPORT_EXTS = frozenset((
+    CONTAINER_EXT_WAV, CONTAINER_EXT_OGG
     ))
 
 # for all our purposes we only care about 
@@ -184,6 +191,9 @@ sample_widths = {
     COMPRESSION_PCM_24_BE: 3,
     COMPRESSION_PCM_32_LE: 4,
     COMPRESSION_PCM_32_BE: 4,
+    # this is what width they get decompressed to
+    COMPRESSION_XBOX_ADPCM: 2,
+    COMPRESSION_IMA_ADPCM:  2,
     }
 
 # maps wave format enum options and sample widths to our compression constants
@@ -234,4 +244,6 @@ halo_2_encodings = {
     }
 
 # unneeded for export
+del pathlib
 del sys
+del tempfile

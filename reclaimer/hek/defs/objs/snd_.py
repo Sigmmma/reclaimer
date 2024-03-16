@@ -8,6 +8,7 @@
 #
 
 from reclaimer.hek.defs.objs.tag import HekTag
+from reclaimer.sounds import constants as sound_const, ogg
 
 class Snd_Tag(HekTag):
 
@@ -15,10 +16,26 @@ class Snd_Tag(HekTag):
         HekTag.calc_internal_data(self)
         tagdata = self.data.tagdata
 
+        bytes_per_sample = sound_const.channel_counts.get(
+            tagdata.encoding.data, 1
+            ) * 2
         for pitch_range in tagdata.pitch_ranges.STEPTREE:
             pitch_range.playback_rate = 1
             if pitch_range.natural_pitch:
                 pitch_range.playback_rate = 1 / pitch_range.natural_pitch
+
+            # ensure buffer sizes are correct
+            for perm in pitch_range.permutations.STEPTREE:
+                if perm.compression.enum_name == "none":
+                    perm.buffer_size = len(perm.samples)
+                elif perm.compression.enum_name == "ogg":
+                    # oggvorbis NEEDS this set for proper playback ingame
+                    perm.buffer_size = (
+                        ogg.get_ogg_pcm_sample_count(perm.samples.data)
+                        if sound_const.OGGVORBIS_AVAILABLE else
+                        # oh well. default to whatever it's set to
+                        (perm.buffer_size // bytes_per_sample)
+                        ) * bytes_per_sample
 
         # default sound min and max distance by class
         sound_class = tagdata.sound_class.enum_name

@@ -46,7 +46,7 @@ def adpcm2lin(fragment, width, state):
 
 def bias(fragment, width, bias):
     if width not in (1, 2, 4):
-        raise NotImplementedError("Cannot bias sample data of width %s." % width)
+        raise NotImplementedError("Cannot bias %s-byte width samples." % width)
 
     # ensure fragment is the correct data type
     if width > 1 and not(isinstance(fragment, array.array) and
@@ -70,7 +70,7 @@ def bias(fragment, width, bias):
 def byteswap(fragment, width):
     if width not in (1, 2, 3, 4):
         raise NotImplementedError(
-            "Cannot byteswap sample data of width %s." % width
+            "Cannot byteswap %s-byte width samples." % width
             )
 
     orig_fragment = (
@@ -100,9 +100,9 @@ def byteswap(fragment, width):
 
 def lin2lin(fragment, width, newwidth):
     if width not in (1, 2, 4):
-        raise NotImplementedError("Cannot convert from sample width %s." % width)
+        raise NotImplementedError("Cannot convert from %s-byte width samples." % width)
     elif newwidth not in (1, 2, 4):
-        raise NotImplementedError("Cannot convert to sample width %s." % newwidth)
+        raise NotImplementedError("Cannot convert to %s-byte width samples." % newwidth)
 
     typecode     = SAMPLE_TYPECODES[width-1]
     new_typecode = SAMPLE_TYPECODES[newwidth-1]
@@ -144,7 +144,7 @@ def ratecv(fragment, width, nchannels, inrate, outrate, state, weightA=1, weight
 def tomono(fragment, width, lfactor, rfactor):
     if width not in (1, 2, 4):
         raise NotImplementedError(
-            "Cannot convert %s width samples to mono." % width
+            "Cannot convert %s-byte width samples to mono." % width
             )
 
     typecode = SAMPLE_TYPECODES[width-1]
@@ -179,7 +179,7 @@ def tomono(fragment, width, lfactor, rfactor):
 def tostereo(fragment, width, lfactor, rfactor):
     if width not in (1, 2, 4):
         raise NotImplementedError(
-            "Cannot convert %s width samples to stereo." % width
+            "Cannot convert %s-byte width samples to stereo." % width
             )
 
     typecode = SAMPLE_TYPECODES[width-1]

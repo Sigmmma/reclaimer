@@ -10,7 +10,7 @@
 from pathlib import Path
 from traceback import format_exc
 
-from reclaimer.sounds import constants, util, blam_sound_samples
+from reclaimer.sounds import blam_sound_samples, constants as const, ogg, util
 from supyr_struct.defs.audio.wav import wav_def
 from supyr_struct.util import is_path_empty
 
@@ -20,17 +20,17 @@ class BlamSoundPermutation:
 
     # permutation properties
     _source_sample_data = b''
-    _source_compression = constants.COMPRESSION_PCM_16_LE
-    _source_sample_rate = constants.SAMPLE_RATE_22K
-    _source_encoding = constants.ENCODING_MONO
+    _source_compression = const.COMPRESSION_PCM_16_LE
+    _source_sample_rate = const.SAMPLE_RATE_22K
+    _source_encoding    = const.ENCODING_MONO
 
     # processed properties
     _processed_samples = ()
 
     def __init__(self, sample_data=b'',
-                 compression=constants.COMPRESSION_PCM_16_LE,
-                 sample_rate=constants.SAMPLE_RATE_22K,
-                 encoding=constants.ENCODING_MONO, **kwargs):
+                 compression=const.COMPRESSION_PCM_16_LE,
+                 sample_rate=const.SAMPLE_RATE_22K,
+                 encoding=const.ENCODING_MONO, **kwargs):
         self.load_source_samples(
             sample_data, compression, sample_rate, encoding)
 
@@ -89,13 +89,13 @@ class BlamSoundPermutation:
         if target_encoding is None:
             target_encoding = self.source_encoding
 
-        if (target_compression not in constants.PCM_FORMATS and
-              target_compression != constants.COMPRESSION_IMA_ADPCM and
-              target_compression != constants.COMPRESSION_XBOX_ADPCM and
-              target_compression != constants.COMPRESSION_OGG):
+        if (target_compression not in const.PCM_FORMATS and
+              target_compression != const.COMPRESSION_IMA_ADPCM and
+              target_compression != const.COMPRESSION_XBOX_ADPCM and
+              target_compression != const.COMPRESSION_OGG):
             raise ValueError('Unknown compression type "%s"' % target_compression)
-        elif target_encoding not in (constants.ENCODING_MONO,
-                                     constants.ENCODING_STEREO):
+        elif target_encoding not in (const.ENCODING_MONO,
+                                     const.ENCODING_STEREO):
             raise ValueError("Compression encoding must be mono or stereo.")
         elif target_sample_rate <= 0:
             raise ValueError("Sample rate must be greater than zero.")
@@ -110,9 +110,9 @@ class BlamSoundPermutation:
         if (source_compression == target_compression and
             source_sample_rate == target_sample_rate and
             source_encoding == target_encoding and
-            (source_compression in constants.PCM_FORMATS or
-             source_compression == constants.COMPRESSION_IMA_ADPCM or
-             source_compression == constants.COMPRESSION_XBOX_ADPCM)):
+            (source_compression in const.PCM_FORMATS or
+             source_compression == const.COMPRESSION_IMA_ADPCM or
+             source_compression == const.COMPRESSION_XBOX_ADPCM)):
             # compressing to same settings and can split at target_chunk_size
             # because format has fixed compression ratio. recompression not
             # necessary. Just split source into pieces at target_chunk_size.
@@ -125,7 +125,7 @@ class BlamSoundPermutation:
                 source_sample_data, 0, source_compression,
                 source_sample_rate, source_encoding
                 )
-            source_compression = constants.DEFAULT_UNCOMPRESSED_FORMAT
+            source_compression = const.DEFAULT_UNCOMPRESSED_FORMAT
             source_sample_rate = target_sample_rate
             source_encoding = target_encoding
             source_sample_data = decompressor.get_decompressed(
@@ -182,11 +182,11 @@ class BlamSoundPermutation:
         if target_encoding is None:
             target_encoding = self.source_encoding
 
-        assert target_encoding in constants.channel_counts
+        assert target_encoding in const.channel_counts
 
         if (target_compression != self.compression or
             target_sample_rate != self.sample_rate or
-            target_encoding != self.encoding):
+            target_encoding    != self.encoding):
             # decompress processed samples to the target compression
             sample_data = b''.join(
                 p.get_decompressed(
@@ -200,7 +200,7 @@ class BlamSoundPermutation:
                 if piece.compression != compression:
                     raise ValueError(
                         "Cannot combine differently compressed samples without decompressing.")
-                elif piece.compression == constants.COMPRESSION_OGG:
+                elif piece.compression == const.COMPRESSION_OGG:
                     raise ValueError(
                         "Cannot combine ogg samples without decompressing.")
 
@@ -219,10 +219,10 @@ class BlamSoundPermutation:
         from the compressed samples. Use when loading a sound tag
         for re-compression, re-sampling, or re-encoding.
         '''
-        # default to regenerating to constants.DEFAULT_UNCOMPRESSED_FORMAT
+        # default to regenerating to const.DEFAULT_UNCOMPRESSED_FORMAT
         # because, technically speaking, that is highest sample depth
         # we can ever possibly see in Halo CE.
-        if compression is None: compression = constants.DEFAULT_UNCOMPRESSED_FORMAT
+        if compression is None: compression = const.DEFAULT_UNCOMPRESSED_FORMAT
         if sample_rate is None: sample_rate = self.sample_rate
         if encoding    is None: encoding    = self.encoding
 
@@ -246,26 +246,25 @@ class BlamSoundPermutation:
 
     def export_to_file(self, filepath_base, overwrite=False,
                        export_source=True, decompress=True,
-                       format=constants.CONTAINER_EXT_WAV):
+                       ext=const.CONTAINER_EXT_WAV, **kwargs):
         perm_chunks = []
 
         filepath = Path(util.BAD_PATH_CHAR_REMOVAL.sub("_", str(filepath_base)))
         filepath = Path("unnamed" if is_path_empty(filepath) else filepath)
-        filepath = filepath.with_suffix(format)
+        filepath = filepath.with_suffix(ext)
         
         if export_source and self.source_sample_data:
             # export the source data
-            perm_chunks.append(
-                (self.compression, self.source_sample_rate, 
-                 self.source_encoding, self.source_sample_data,
-                 filepath)
-                )
+            perm_chunks.append((
+                filepath, self.compression, self.source_sample_rate, 
+                self.source_encoding, self.source_sample_data,
+                ))
         elif self.processed_samples:
             # concatenate processed samples if source samples don't exist.
-            # also, if compression is ogg, we have to decompress
+            # if compression isn't some form of PCM, need to decompress it
             compression = self.compression
-            if decompress or compression in constants.PYOGG_CONTAINER_FORMATS:
-                compression = constants.COMPRESSION_PCM_16_LE
+            if decompress or compression not in const.PCM_FORMATS:
+                compression = const.COMPRESSION_PCM_16_LE
 
             try:
                 sample_data = self.get_concatenated_sample_data(
@@ -273,131 +272,145 @@ class BlamSoundPermutation:
                     )
                 if sample_data:
                     perm_chunks.append((
-                        compression, self.sample_rate, self.encoding, 
-                        sample_data, filepath
+                        filepath, compression, self.sample_rate,
+                        self.encoding, sample_data, 
                         ))
             except Exception:
                 print("Could not decompress permutation pieces. Exporting in pieces.")
                 # gotta switch format to the container it's compressed as
                 for i, piece in enumerate(self.processed_samples):
-                    format = {
-                        constants.COMPRESSION_OGG:  constants.CONTAINER_EXT_OGG,
-                        constants.COMPRESSION_OPUS: constants.CONTAINER_EXT_OPUS,
-                        constants.COMPRESSION_FLAC: constants.CONTAINER_EXT_FLAC,
-                        }.get(piece.compression, format)
+                    ext = {
+                        const.COMPRESSION_OGG:  const.CONTAINER_EXT_OGG,
+                        const.COMPRESSION_OPUS: const.CONTAINER_EXT_OPUS,
+                        const.COMPRESSION_FLAC: const.CONTAINER_EXT_FLAC,
+                        }.get(piece.compression, ext)
 
-                    name_base = "%s__%%s%s" % (filepath.stem, format)
-                    perm_chunks.append(
-                        (piece.compression, piece.sample_rate, piece.encoding,
-                        piece.sample_data, filepath.with_name(name_base % i))
-                        )
+                    name_base = "%s__%%s%s" % (filepath.stem, ext)
+                    perm_chunks.append((
+                        filepath.with_name(name_base % i), piece.compression, 
+                        piece.sample_rate, piece.encoding, piece.sample_data
+                        ))
 
-        if format == constants.CONTAINER_EXT_WAV:
-            self._export_to_wav(perm_chunks, overwrite)
-        elif format in constants.SUPPORTED_CONTAINER_EXTS:
-            self._export_to_container(perm_chunks, overwrite)
-        else:
-            raise ValueError("Unknown compression method.")
-
-    def _export_to_container(self, perm_chunks, overwrite):
-        for perm_chunk in perm_chunks:
-            compression, sample_rate, encoding, sample_data, filepath = perm_chunk
-
-            format = filepath.suffix.lower()
-            if format == constants.CONTAINER_EXT_WAV:
-                # if somehow a wav got passed in, pass off to that method
-                self._export_to_wav([perm_chunk], overwrite)
-                continue
-            elif not sample_data or (not overwrite and filepath.is_file()):
-                continue
-
-            # TODO: write this
-            #       make sure to handle samples already being in ogg and not
-            #       needing to be decompressed and reencoded if not chunked.
+        for perm_info in perm_chunks:
+            filepath, comp, rate, enc, data = perm_info
+            ext = filepath.suffix.lower()
+            if not data or (not overwrite and filepath.is_file()):
+                return
+            elif ext not in const.SUPPORTED_EXPORT_EXTS:
+                raise ValueError("Unsupported audio extension '%s'." % ext)
+            elif ext in const.PYOGG_CONTAINER_EXTS:
+                exporter = BlamSoundPermutation._export_to_pyogg_file
+            else:
+                exporter = BlamSoundPermutation._export_to_wav
 
             try:
-                filepath.parent.mkdir(exist_ok=True, parents=True)
-                with filepath.open("wb") as f:
-                    f.write(sample_data)
+                exporter(*perm_info, **kwargs)
             except Exception:
                 print(format_exc())
 
-    def _export_to_wav(self, perm_chunks, overwrite):
+    @staticmethod
+    def _export_to_pyogg_file(
+            filepath, compression, sample_rate, 
+            encoding, sample_data, **kwargs
+            ):
+        ext = filepath.suffix.lower()
+        if ext != const.CONTAINER_EXT_OGG:
+            raise ValueError("Exporting '%s' is currently unsupported" % ext)
+        elif compression != const.COMPRESSION_OGG:
+            # need to encode data to oggvorbis first
+            sample_data = ogg.encode_oggvorbis(
+                sample_data, sample_rate,
+                constants.sample_widths[compression], 
+                constants.channel_counts[encoding], 
+                util.is_big_endian_pcm(compression),
+                **kwargs.get("ogg_kwargs", {})
+                )
+
+        filepath.parent.mkdir(exist_ok=True, parents=True)
+        with filepath.open("wb") as f:
+            f.write(sample_data)
+
+    @staticmethod
+    def _export_to_wav(
+            filepath, compression, sample_rate, encoding, 
+            sample_data, **kwargs
+            ):
+        if not (compression in const.PCM_FORMATS or 
+                compression == const.COMPRESSION_IMA_ADPCM or
+                compression == const.COMPRESSION_XBOX_ADPCM
+                ):
+            print("Unknown compression method:", compression)
+            return
+
+        block_ratio = 1
+        block_size  = const.sample_widths[compression]
+        if compression == const.COMPRESSION_IMA_ADPCM:
+            # 16bit imaadpcm
+            block_ratio /= const.IMA_ADPCM_DECOMPRESSED_BLOCKSIZE * 2
+            block_size   = const.IMA_ADPCM_COMPRESSED_BLOCKSIZE
+        elif compression == const.COMPRESSION_XBOX_ADPCM:
+            # 16bit xbox adpcm
+            block_ratio /= const.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE * 2
+            block_size   = const.XBOX_ADPCM_COMPRESSED_BLOCKSIZE
+        elif util.is_big_endian_pcm(compression):
+            # one of the big-endian uncompressed pcm formats
+            sample_data = util.convert_pcm_to_pcm(
+                sample_data, compression,
+                util.change_pcm_endianness(compression)
+                )
+
         wav_file = wav_def.build()
+        wav_file.filepath = filepath
 
-        for perm_chunk in perm_chunks:
-            compression, sample_rate, encoding, sample_data, filepath = perm_chunk
-            if not sample_data or (not overwrite and filepath.is_file()):
-                continue
+        wav_fmt     = wav_file.data.wav_format
+        wav_chunks  = wav_file.data.wav_chunks
+        wav_chunks.append(case="data")
+        data_chunk  = wav_chunks[-1]
 
-            wav_file.filepath = filepath
+        wav_fmt.channels        = const.channel_counts.get(encoding, 1)
+        wav_fmt.sample_rate     = sample_rate
+        wav_fmt.bits_per_sample = block_size * 8
+        wav_fmt.block_align     = block_size * wav_fmt.channels
+        wav_fmt.byte_rate       = int(
+            sample_rate * wav_fmt.block_align * block_ratio
+            )
+        wav_fmt.fmt.data        = {
+            const.COMPRESSION_IMA_ADPCM:  const.WAV_FORMAT_IMA_ADPCM,
+            const.COMPRESSION_XBOX_ADPCM: const.WAV_FORMAT_XBOX_ADPCM,
+            }.get(compression, const.WAV_FORMAT_PCM)
 
-            wav_fmt = wav_file.data.wav_format
-            wav_chunks = wav_file.data.wav_chunks
-            wav_chunks.append(case="data")
-            data_chunk = wav_chunks[-1]
+        data_chunk.data = sample_data
+        wav_file.data.wav_header.filesize = 36 + len(sample_data)
 
-            wav_fmt.fmt.data = constants.WAV_FORMAT_PCM
-            wav_fmt.channels = constants.channel_counts.get(encoding, 1)
-            wav_fmt.sample_rate = sample_rate
-
-            samples_len = len(sample_data)
-            if compression in constants.PCM_FORMATS:
-                # one of the uncompressed pcm formats
-                if util.is_big_endian_pcm(compression):
-                    sample_data = util.convert_pcm_to_pcm(
-                        sample_data, compression,
-                        util.change_pcm_endianness(compression))
-
-                sample_width = constants.sample_widths[compression]
-                wav_fmt.bits_per_sample = sample_width * 8
-                wav_fmt.block_align = sample_width * wav_fmt.channels
-                wav_fmt.byte_rate = wav_fmt.sample_rate * wav_fmt.block_align
-            elif compression == constants.COMPRESSION_IMA_ADPCM:
-                # 16bit adpcm
-                wav_fmt.fmt.data = constants.WAV_FORMAT_IMA_ADPCM
-                wav_fmt.bits_per_sample = 16
-                wav_fmt.block_align = constants.IMA_ADPCM_COMPRESSED_BLOCKSIZE * wav_fmt.channels
-                wav_fmt.byte_rate = int(
-                    (wav_fmt.sample_rate * wav_fmt.block_align /
-                     (constants.IMA_ADPCM_DECOMPRESSED_BLOCKSIZE // 2))
-                    )
-            elif compression == constants.COMPRESSION_XBOX_ADPCM:
-                # 16bit adpcm
-                wav_fmt.fmt.data = constants.WAV_FORMAT_XBOX_ADPCM
-                wav_fmt.bits_per_sample = 16
-                wav_fmt.block_align = constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE * wav_fmt.channels
-                wav_fmt.byte_rate = int(
-                    (wav_fmt.sample_rate * wav_fmt.block_align /
-                     (constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE // 2))
-                    )
-            else:
-                print("Unknown compression method:", compression)
-                continue
-
-            data_chunk.data = sample_data
-            wav_file.data.wav_header.filesize = 36 + samples_len
-
-            wav_file.serialize(temp=False, backup=False)
+        wav_file.serialize(temp=False, backup=False)
 
     def import_from_file(self, filepath):
         filepath = Path(filepath)
-        format   = filepath.suffix.lower()
-
         if not filepath.is_file():
             raise OSError('File "%s" does not exist. Cannot import.' % filepath)
 
-        if format == constants.CONTAINER_EXT_WAV:
+        ext = filepath.suffix.lower()
+        if ext == const.CONTAINER_EXT_WAV:
             self._import_from_wav(filepath)
-        elif (format in constants.SUPPORTED_CONTAINER_EXTS and 
-              format in constants.PYOGG_CONTAINER_EXTS):
-            self._import_from_container(filepath)
+        elif (ext in const.PYOGG_CONTAINER_EXTS and
+              ext in const.SUPPORTED_IMPORT_EXTS):
+            self._import_from_pyogg_file(filepath, ext)
         else:
-            raise ValueError("Cannot import this type of file.")
+            raise ValueError("Unsupported audio extension '%s'." % ext)
 
-    def _import_from_container(self, filepath):
-        # TODO: update this to handle ogg vorbis, flac, and opus
-        raise NotImplementedError()
+    def _import_from_pyogg_file(self, filepath, ext):
+        pyogg_audio_file = ogg.pyogg_audiofile_from_filepath(
+            filepath, ext, streaming=False
+            )
+        sample_data = pyogg_audio_file.buffer
+        sample_rate = pyogg_audio_file.frequency
+        compression = const.OGG_DECOMPRESSED_FORMAT
+        encoding    = (
+            const.ENCODING_STEREO if pyogg_audio_file.channels == 2 else
+            const.ENCODING_MONO   if pyogg_audio_file.channels == 1 else
+            const.ENCODING_UNKNOWN
+            )
+        self.load_source_samples(sample_data, compression, sample_rate, encoding)
 
     def _import_from_wav(self, filepath):
         wav_file   = wav_def.build(filepath=filepath)
@@ -421,7 +434,7 @@ class BlamSoundPermutation:
                 "Format signature is invalid. Not a valid wav file.")
         elif data_chunk is None:
             raise ValueError("Data chunk not present. Not a valid wav file.")
-        elif wav_format.fmt.data not in constants.ALLOWED_WAV_FORMATS:
+        elif wav_format.fmt.data not in const.ALLOWED_WAV_FORMATS:
             raise ValueError(
                 'Invalid compression format "%s".' % wav_format.fmt.data)
         elif wav_format.channels not in (1, 2):
@@ -431,12 +444,12 @@ class BlamSoundPermutation:
         elif wav_format.sample_rate == 0:
             raise ValueError(
                 "Sample rate cannot be zero. Not a valid wav file")
-        elif (wav_format.fmt.data == constants.WAV_FORMAT_PCM_FLOAT and
+        elif (wav_format.fmt.data == const.WAV_FORMAT_PCM_FLOAT and
               wav_format.bits_per_sample != 32):
             raise ValueError(
                 "Pcm float sample width must be 32, not %s." %
                 wav_format.bits_per_sample)
-        elif (wav_format.fmt.data == constants.WAV_FORMAT_PCM and
+        elif (wav_format.fmt.data == const.WAV_FORMAT_PCM and
               wav_format.bits_per_sample not in (8, 16, 24, 32)):
             raise ValueError(
                 "Pcm sample width must be 8, 16, 24, or 32, not %s." %
@@ -452,20 +465,20 @@ class BlamSoundPermutation:
                   "Sample data may be truncated.")
 
         if wav_format.channels == 2:
-            encoding = constants.ENCODING_STEREO
+            encoding = const.ENCODING_STEREO
         else:
-            encoding = constants.ENCODING_MONO
+            encoding = const.ENCODING_MONO
 
         sample_data = data_chunk.data
-        if wav_format.fmt.data == constants.WAV_FORMAT_PCM_FLOAT:
-            sample_data = util.convert_pcm_float32_to_pcm_32(sample_data)
-            compression = constants.COMPRESSION_PCM_32_LE
+        if wav_format.fmt.data == const.WAV_FORMAT_PCM_FLOAT:
+            sample_data = util.convert_pcm_float32_to_pcm_int(sample_data, 4)
+            compression = const.COMPRESSION_PCM_32_LE
         else:
             sample_width = None
-            if wav_format.fmt.data == constants.WAV_FORMAT_PCM:
+            if wav_format.fmt.data == const.WAV_FORMAT_PCM:
                 sample_width = wav_format.bits_per_sample // 8
 
-            compression = constants.wav_format_mapping.get(
+            compression = const.wav_format_mapping.get(
                 (wav_format.fmt.data, sample_width))
 
         self.load_source_samples(

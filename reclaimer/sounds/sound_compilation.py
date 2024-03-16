@@ -39,11 +39,14 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
             errors.append('Cannot add %s channel sounds to %s channel tag.' %
                           (blam_channel_count, channel_count))
 
-        if blam_sound_perm.compression not in (constants.COMPRESSION_PCM_16_LE,
-                                               constants.COMPRESSION_PCM_16_BE,
-                                               constants.COMPRESSION_XBOX_ADPCM,
-                                               constants.COMPRESSION_IMA_ADPCM,
-                                               constants.COMPRESSION_OGG):
+        if blam_sound_perm.compression not in (
+                constants.COMPRESSION_PCM_16_LE,  
+                constants.COMPRESSION_PCM_16_BE,
+                constants.COMPRESSION_XBOX_ADPCM,
+                # not supported in-engine
+                #constants.COMPRESSION_IMA_ADPCM,
+                constants.COMPRESSION_OGG
+                ):
             errors.append('Unknown permutation compression "%s"' %
                           blam_sound_perm.compression)
 
@@ -83,15 +86,16 @@ def compile_pitch_range(pitch_range, blam_pitch_range,
 
                 comp_name = (
                     "xbox_adpcm" if comp == constants.COMPRESSION_XBOX_ADPCM else
-                    "ima_adpcm"  if comp == constants.COMPRESSION_IMA_ADPCM  else
+                    # not supported in-engine
+                    #"ima_adpcm"  if comp == constants.COMPRESSION_IMA_ADPCM  else
                     "ogg"        if comp == constants.COMPRESSION_OGG        else
                     "none"
                     )
 
                 # only ogg and 16bit pcm need the buffer size calculated
                 sample_count = (
-                    ogg.get_pcm_sample_count(blam_samples.sample_data)
-                    if comp_name == "ogg" and sound_const.OGGVORBIS_AVAILABLE else
+                    ogg.get_ogg_pcm_sample_count(blam_samples.sample_data)
+                    if comp_name == "ogg" and constants.OGGVORBIS_AVAILABLE else
                     blam_samples.sample_count
                     if comp_name in ("ogg", "none") else 
                     0
@@ -138,7 +142,6 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
         tagdata.modifiers_when_scale_is_zero[:] = (1.0, 0.0, 1.0)
         tagdata.modifiers_when_scale_is_one[:]  = (1.0, 1.0, 1.0)
 
-
     if update_mode != constants.SOUND_COMPILE_MODE_ADDITIVE:
         # update the flags, compression, encoding, and sample rate
         # of the tag to that of the samples being stored in it.
@@ -156,9 +159,10 @@ def compile_sound(snd__tag, blam_sound_bank, ignore_size_limits=False,
         elif blam_sound_bank.compression == constants.COMPRESSION_XBOX_ADPCM:
             tagdata.flags.fit_to_adpcm_blocksize = True
             tagdata.compression.set_to("xbox_adpcm")
-        elif blam_sound_bank.compression == constants.COMPRESSION_IMA_ADPCM:
-            tagdata.flags.fit_to_adpcm_blocksize = True
-            tagdata.compression.set_to("ima_adpcm")
+        # not supported in-engine
+        #elif blam_sound_bank.compression == constants.COMPRESSION_IMA_ADPCM:
+        #    tagdata.flags.fit_to_adpcm_blocksize = True
+        #    tagdata.compression.set_to("ima_adpcm")
         elif blam_sound_bank.compression == constants.COMPRESSION_OGG:
             tagdata.compression.set_to("ogg")
         else:

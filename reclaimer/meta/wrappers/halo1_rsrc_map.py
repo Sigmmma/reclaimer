@@ -9,6 +9,7 @@
 import math
 
 from collections import namedtuple
+from copy import deepcopy
 from struct import unpack
 from traceback import format_exc
 
@@ -244,10 +245,16 @@ class Halo1RsrcMap(HaloMap):
             return ()
 
         tag_id = meta.promotion_sound.id & 0xFFff
-        if tag_id not in range(len(self.tag_index.tag_index)):
+        tag_index_array = self.tag_index.tag_index
+        if tag_id not in range(len(tag_index_array)):
             return ()
 
-        return [self.tag_index.tag_index[tag_id]]
+        ref = deepcopy(meta.promotion_sound)
+        tag_index_ref      = tag_index_array[tag_id]
+        ref.tag_class.data = tag_index_ref.class_1.data
+        ref.id             = tag_index_ref.id
+        ref.filepath       = tag_index_ref.path
+        return [ref]
 
     def is_indexed(self, tag_id):
         return True
@@ -365,10 +372,9 @@ class Halo1RsrcMap(HaloMap):
             meta.maximum_bend_per_second = meta.maximum_bend_per_second ** 30
             meta.unknown1 = 0xFFFFFFFF
             meta.unknown2 = 0xFFFFFFFF
-            channels = sound_const.channel_counts.get(
+            bytes_per_sample = sound_const.channel_counts.get(
                 meta.encoding.data, 1
-                )
-            bytes_per_sample = 2 * channels
+                ) * 2
             for pitch_range in meta.pitch_ranges.STEPTREE:
                 # null some meta-only fields
                 pitch_range.playback_rate = 0.0
@@ -384,7 +390,7 @@ class Halo1RsrcMap(HaloMap):
                     elif perm.compression.enum_name == "ogg":
                         # oggvorbis NEEDS this set for proper playback ingame
                         buffer_size = (
-                            sounds_ogg.get_pcm_sample_count(perm.samples.data)
+                            sounds_ogg.get_ogg_pcm_sample_count(perm.samples.data)
                             if sound_const.OGGVORBIS_AVAILABLE else
                             # oh well. default to whatever it's set to
                             (perm.buffer_size // bytes_per_sample)

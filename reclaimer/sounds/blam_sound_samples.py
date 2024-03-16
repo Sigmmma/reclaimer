@@ -120,9 +120,11 @@ class BlamSoundSamples:
                 )
         elif target_compression == constants.COMPRESSION_OGG:
             # compress to ogg vorbis
-            sample_data = encode_oggvorbis(
-                sample_data, constants.channel_counts[target_encoding],
-                target_sample_rate, util.is_big_endian_pcm(compression),
+            sample_data = ogg.encode_oggvorbis(
+                sample_data, target_sample_rate,
+                constants.sample_widths[compression], 
+                constants.channel_counts[target_encoding],
+                util.is_big_endian_pcm(compression),
                 **compressor_kwargs.get("ogg_kwargs", {})
                 )
         elif target_compression != self.compression:
