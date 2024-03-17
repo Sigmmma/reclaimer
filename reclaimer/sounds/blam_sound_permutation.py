@@ -19,6 +19,7 @@ class BlamSoundPermutation:
     name = ""
 
     # permutation properties
+    _source_filename    = ""
     _source_sample_data = b''
     _source_compression = const.COMPRESSION_PCM_16_LE
     _source_sample_rate = const.SAMPLE_RATE_22K
@@ -46,6 +47,9 @@ class BlamSoundPermutation:
     @property
     def source_encoding(self):
         return self._source_encoding
+    @property
+    def source_filename(self):
+        return self._source_filename
 
     @property
     def processed_samples(self):
@@ -70,12 +74,13 @@ class BlamSoundPermutation:
             return self._source_encoding
 
     def load_source_samples(self, sample_data, compression,
-                            sample_rate, encoding):
+                            sample_rate, encoding, filename=""):
         self._source_sample_data = sample_data
         self._source_compression = compression
         self._source_sample_rate = sample_rate
-        self._source_encoding = encoding
-        self._processed_samples = []
+        self._source_encoding    = encoding
+        self._source_filename    = filename
+        self._processed_samples  = []
 
     def partition_samples(self, target_compression=None,
                           target_sample_rate=None, target_encoding=None,
@@ -102,7 +107,7 @@ class BlamSoundPermutation:
 
         source_compression = self.source_compression
         source_sample_rate = self.source_sample_rate
-        source_encoding = self.source_encoding
+        source_encoding    = self.source_encoding
         source_sample_data = self.source_sample_data
 
         target_chunk_size = util.get_sample_chunk_size(
@@ -121,15 +126,12 @@ class BlamSoundPermutation:
         else:
             # decompress samples so we can partition to a
             # different compression/encoding/sample rate
-            decompressor = blam_sound_samples.BlamSoundSamples(
-                source_sample_data, 0, source_compression,
-                source_sample_rate, source_encoding
-                )
             source_compression = const.DEFAULT_UNCOMPRESSED_FORMAT
             source_sample_rate = target_sample_rate
-            source_encoding = target_encoding
-            source_sample_data = decompressor.get_decompressed(
-                source_compression, source_sample_rate, source_encoding)
+            source_encoding    = target_encoding
+            source_sample_data = self.decompress_source_samples(
+                source_compression, source_sample_rate, source_encoding
+                )
 
             source_bytes_per_sample = util.get_block_size(
                 source_compression, source_encoding)
@@ -169,6 +171,20 @@ class BlamSoundPermutation:
         for samples in self.processed_samples:
             samples.compress(compression, sample_rate, encoding,
                              **compressor_kwargs)
+
+    def decompress_source_samples(self, compression, sample_rate, encoding):
+        assert compression in const.PCM_FORMATS
+        assert encoding in const.channel_counts
+
+        # decompress samples so we can partition to a
+        # different compression/encoding/sample rate
+        decompressor = blam_sound_samples.BlamSoundSamples(
+            self.source_sample_data, 0, self.source_compression,
+            self.source_sample_rate, self.source_encoding
+            )
+        return decompressor.get_decompressed(
+            compression, sample_rate, encoding
+            )
 
     def get_concatenated_sample_data(self, target_compression=None,
                                      target_sample_rate=None,
@@ -397,6 +413,8 @@ class BlamSoundPermutation:
             self._import_from_pyogg_file(filepath, ext)
         else:
             raise ValueError("Unsupported audio extension '%s'." % ext)
+
+        self._source_filename = filepath.name
 
     def _import_from_pyogg_file(self, filepath, ext):
         pyogg_audio_file = ogg.pyogg_audiofile_from_filepath(

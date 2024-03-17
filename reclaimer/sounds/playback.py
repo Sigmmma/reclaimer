@@ -47,20 +47,23 @@ def build_wave_object(sample_data, encoding, compression, sample_rate):
 
 
 def wave_object_from_blam_sound_perm(blam_perm):
-    if not blam_perm:
-        return None
-    elif not blam_perm.source_sample_data:
-        # if there is no source sample data, we'll try to use
-        # the concatenated processed sample data instead.
-        # need to decode to 16bit pcm
-        blam_perm.regenerate_source(constants.COMPRESSION_PCM_16_LE)
+    samples = getattr(blam_perm, "source_sample_data", None)
+    comp    = getattr(blam_perm, "source_compression", None)
+    enc     = getattr(blam_perm, "source_encoding",    None)
+    sr      = getattr(blam_perm, "source_sample_rate", None)
+    if blam_perm and (not samples or comp not in constants.PCM_FORMATS):
+        comp = constants.COMPRESSION_PCM_16_LE
+        if samples:
+            # sample data is compressed in a format we can't 
+            # linearly read, so we need to decompress it.
+            samples = blam_perm.decompress_source_samples(comp, sr, enc)
+        else:
+            # if there is no source sample data, so we'll try 
+            # to use the decompressed processed samples instead.
+            blam_perm.regenerate_source(comp)
+            samples = blam_perm.source_sample_data
 
-    return build_wave_object(
-        blam_perm.source_sample_data, 
-        blam_perm.source_encoding,
-        blam_perm.source_compression, 
-        blam_perm.source_sample_rate
-        ) if blam_perm.source_sample_data else None
+    return build_wave_object(samples, enc, comp, sr) if samples else None
 
 
 class SoundPlayerBase:
