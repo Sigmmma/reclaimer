@@ -11,7 +11,7 @@ from ...hek.defs.antr import *
 
 unit_weapon_desc = desc_variant(unit_weapon_desc,
     reflexive("ik_points", ik_point_desc, 8, DYN_NAME_PATH=".marker"),
-    reflexive("weapon_types", weapon_types_desc, 8, DYN_NAME_PATH=".label"),
+    reflexive("weapon_types", weapon_types_desc, 64, DYN_NAME_PATH=".label"),
     )
 unit_desc = desc_variant(unit_desc,
     reflexive("ik_points", ik_point_desc, 8, DYN_NAME_PATH=".marker"),

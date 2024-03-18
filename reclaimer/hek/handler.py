@@ -187,8 +187,10 @@ class HaloHandler(Handler):
                 engine_id = f.read(4).decode(encoding='latin-1')
             if def_id in self.defs and engine_id == self.tag_header_engine_id:
                 return def_id
+        except FileNotFoundError:
+            pass
         except Exception:
-            print(format_exc());
+            print(format_exc())
 
         return self.ext_id_map.get(filepath.suffix.lower())
 

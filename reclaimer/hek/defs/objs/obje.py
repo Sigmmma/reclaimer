@@ -21,8 +21,8 @@ class ObjeTag(HekTag):
         self.ext = '.' + full_class_name
         self.filepath = os.path.splitext(str(self.filepath))[0] + self.ext
 
-        tag_data = self.data.tagdata
-        object_type = tagdata.obje_attrs.object_type
+        obje_attrs = self.data.tagdata.obje_attrs
+        object_type = obje_attrs.object_type
         if full_class_name == "object":
             object_type.data = -1
         elif full_class_name == "biped":
@@ -53,7 +53,7 @@ class ObjeTag(HekTag):
             raise ValueError("Unknown object type '%s'" % full_class_name)
 
         # normalize color change weights
-        for cc in tagdata.change_colors.STEPTREE:
+        for cc in obje_attrs.change_colors.STEPTREE:
             perms = cc.permutations.STEPTREE
             total_weight = sum(max(0, perm.weight) for perm in perms)
             total_weight = total_weight or len(perms)
