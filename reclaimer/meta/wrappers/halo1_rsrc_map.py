@@ -6,8 +6,6 @@
 # Reclaimer is free software under the GNU General Public License v3.0.
 # See LICENSE for more information.
 #
-import math
-
 from collections import namedtuple
 from copy import deepcopy
 from struct import unpack
@@ -334,20 +332,8 @@ class Halo1RsrcMap(HaloMap):
                 bitmap.pixels_offset = pixels_offset
                 pixels_offset       += bitmap.pixels_meta_size
 
-            # undo xbox-specific stuff(reorder bitmaps, fix mipmap dims, unswizzle)
+            # undo xbox-specific stuff(reorder bitmaps and unswizzle)
             if get_is_xbox_map(engine):
-                # correct mipmap count on xbox dxt bitmaps. texels for any
-                # mipmaps whose dimensions are 2x2 or smaller are pruned
-                for bitmap in (b for b in bitmaps if "dxt" in b.format.enum_name):
-                    # figure out largest dimension(clip to 1 to avoid log(0, 2))
-                    max_dim = max(1, bitmap.width, bitmap.height)
-
-                    # subtract 2 to account for width/height of 1 or 2 not having mips
-                    maxmips = int(max(0, math.log(max_dim, 2) - 2))
-
-                    # clip mipmap count to max and min number that can exist
-                    bitmap.mipmaps = max(0, min(maxmips, bitmap.mipmaps))
-
                 # rearrange the bitmap pixels so they're in standard format
                 try:
                     bitm_tag.parse_bitmap_blocks()

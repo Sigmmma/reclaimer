@@ -700,6 +700,21 @@ class Halo1Map(HaloMap):
                     except Exception:
                         print("Couldn't read animation data.")
 
+        elif tag_cls == "bitm":
+            bitmaps = [b for b in meta.bitmaps.STEPTREE
+                       if "dxt" in b.format.enum_name]
+            # correct mipmap count on xbox dxt bitmaps. texels for any
+            # mipmaps whose dimensions are 2x2 or smaller are pruned
+            for bitmap in bitmaps:
+                # figure out largest dimension(clip to 1 to avoid log(0, 2))
+                max_dim = max(1, bitmap.width, bitmap.height)
+
+                # subtract 2 to account for width/height of 1 or 2 not having mips
+                maxmips = int(max(0, math.log(max_dim, 2) - 2))
+
+                # clip mipmap count to max and min number that can exist
+                bitmap.mipmaps = max(0, min(maxmips, bitmap.mipmaps))
+
         elif tag_cls in ("sbsp", "coll"):
             if tag_cls == "sbsp" :
                 bsps = meta.collision_bsp.STEPTREE
