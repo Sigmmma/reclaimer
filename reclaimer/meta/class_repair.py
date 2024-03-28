@@ -12,6 +12,7 @@ from reclaimer.meta.halo1_map_fast_functions import shader_class_bytes,\
      repair_dependency, repair_dependency_array
 from reclaimer.halo_script.hsc import get_hsc_data_block,\
      HSC_IS_SCRIPT_OR_GLOBAL
+from reclaimer.constants import *
 #from supyr_struct.util import *
 
 MAX_MATERIAL_COUNT = 33
@@ -84,6 +85,8 @@ def repair_item_attrs(offset, index_array, map_data, magic, repair, engine):
 
 
 def repair_unit_attrs(offset, index_array, map_data, magic, repair, engine):
+    is_yelo = engine == "halo1yelo"
+
     # struct size is 372
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'effe', offset + 12)))
@@ -119,7 +122,7 @@ def repair_unit_attrs(offset, index_array, map_data, magic, repair, engine):
 
         repair_dependency(*(args + (b'vtca', moff + 248)))
 
-        if "yelo" in engine:
+        if is_yelo:
             # seat extension
             for moff2 in iter_reflexive_offs(map_data, moff + 264 - magic, 100, 1, magic):
                 # seat boarding
@@ -134,7 +137,7 @@ def repair_unit_attrs(offset, index_array, map_data, magic, repair, engine):
                     repair_dependency(*(args + (b'!tpj', moff3 + 4)))
                     repair_dependency(*(args + (b'!tpj', moff3 + 96)))
 
-    if "yelo" in engine:
+    if is_yelo:
         # unit extension
         for moff in iter_reflexive_offs(map_data, offset + 288 - magic, 60, 1, magic):
             # mounted states
@@ -167,11 +170,15 @@ def repair_ant_(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
 
 
 def repair_antr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
+    is_mcc  = engine == "halo1mcc"
+
+    # sound references
     ct, moff, _ = read_reflexive(
-        map_data, index_array[tag_id].meta_offset + 0x54 - magic, 257, 20, magic)
+        map_data, index_array[tag_id].meta_offset + 0x54 - magic,
+        257*(2 if is_mcc else 1), 20, magic
+        )
     repair_dependency_array(index_array, map_data, magic, repair, engine,
                             b'!dns', moff, ct, 20)
-
 
 def repair_coll(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
@@ -193,8 +200,15 @@ def repair_coll(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
 def repair_cont(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
+    is_yelo = engine == "halo1yelo"
 
     repair_dependency(*(args + (b'mtib', tag_offset + 0x30)))
+    # OS v4 shader extension
+    ct, _, __ = read_reflexive(map_data, tag_offset + 0xB4 - magic)
+    if is_yelo and ct > 1:
+        map_data.seek(tag_offset + 0xB4 - magic)
+        map_data.write(b'\x01\x00\x00\x00')
+
     repair_dependency(*(args + (b'mtib', tag_offset + 0xD0)))
 
     # point states
@@ -220,13 +234,12 @@ def repair_DeLa(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
         repair_dependency(*(args + (b'!dns', moff + 24)))
 
     # search and replace functions
-    # Not needed anymore when tags are parsed in safe-mode
-    #ct, _, __ = read_reflexive(map_data, tag_offset + 96 - magic)
-    #if ct > 32:
-    #    # some people apparently think its cute to set this reflexive
-    #    # count so high so that tool just fails to compile the tag
-    #    map_data.seek(tag_offset + 96 - magic)
-    #    map_data.write(b'\x20\x00\x00\x00')
+    ct, _, __ = read_reflexive(map_data, tag_offset + 96 - magic)
+    if ct > 32:
+        # some people apparently think its cute to set this reflexive
+        # count so high so that tool just fails to compile the tag
+        map_data.seek(tag_offset + 96 - magic)
+        map_data.write(b'\x20\x00\x00\x00')
 
     repair_dependency(*(args + (b'rtsu', tag_offset + 236)))
     repair_dependency(*(args + (b'tnof', tag_offset + 252)))
@@ -395,6 +408,8 @@ def repair_lsnd(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
 def repair_matg(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
+    is_yelo = engine == "halo1yelo"
+    is_mcc  = engine == "halo1mcc"
 
     # sounds
     ct, moff, _ = read_reflexive(map_data, tag_offset + 0xF8 - magic, 2, 16, magic)
@@ -405,7 +420,10 @@ def repair_matg(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
     repair_dependency_array(*(args + (b'kart', moff, ct)))
 
     # grenades
-    for moff in iter_reflexive_offs(map_data, tag_offset + 0x128 - magic, 68, 4, magic):
+    for moff in iter_reflexive_offs(
+            map_data, tag_offset + 0x128 - magic, 68, 
+            4 if (is_yelo or is_mcc) else 2, magic
+            ):
         repair_dependency(*(args + (b'effe', moff + 4)))
         repair_dependency(*(args + (b'ihrg', moff + 20)))
         repair_dependency(*(args + (b'piqe', moff + 36)))
@@ -554,10 +572,11 @@ def repair_object(tag_id, index_array, map_data, magic, repair, engine, safe_mod
         # not an object
         return
 
+    is_yelo = engine == "halo1yelo"
     # obje_attrs struct size is 380
     args = (index_array, map_data, magic, repair, engine)
     repair_dependency(*(args + (b'2dom', tag_offset + 40)))
-    repair_dependency(*(args + (b'rtna', tag_offset + 56)))
+    repair_dependency(*(args + (None if is_yelo else b'rtna', tag_offset + 56)))
 
     repair_dependency(*(args + (b'lloc', tag_offset + 112)))
     repair_dependency(*(args + (b'syhp', tag_offset + 128)))
@@ -607,7 +626,7 @@ def repair_object(tag_id, index_array, map_data, magic, repair, engine, safe_mod
             repair_dependency(*(args + (None, tag_offset + 280)))
             repair_dependency(*(args + (None, tag_offset + 296)))
             repair_dependency(*(args + (b'2dom', tag_offset + 340)))
-            repair_dependency(*(args + (b'rtna', tag_offset + 356)))
+            repair_dependency(*(args + (None if is_yelo else b'rtna', tag_offset + 356)))
             repair_dependency(*(args + (b'ihpw', tag_offset + 376)))
             repair_dependency(*(args + (b'!dns', tag_offset + 392)))
             repair_dependency(*(args + (b'!dns', tag_offset + 408)))
@@ -623,7 +642,9 @@ def repair_object(tag_id, index_array, map_data, magic, repair, engine, safe_mod
                 repair_dependency(*(args + (None, moff + 72)))
 
                 # magazine items
-                ct, moff2, _ = read_reflexive(map_data, moff + 100 - magic, 2, 28, magic)
+                ct, moff2, _ = read_reflexive(
+                    map_data, moff + 100 - magic, 8 if is_yelo else 2, 28, magic
+                    )
                 repair_dependency_array(*(args + (b'piqe', moff2 + 12, ct, 28)))
 
             # triggers
@@ -689,18 +710,27 @@ def repair_object(tag_id, index_array, map_data, magic, repair, engine, safe_mod
 def repair_part(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
+    is_yelo = engine == "halo1yelo"
 
     repair_dependency(*(args + (b'mtib', tag_offset + 0x4)))
     repair_dependency(*(args + (b'yhpp', tag_offset + 0x14)))
     repair_dependency(*(args + (b'toof', tag_offset + 0x24)))
     repair_dependency(*(args + (None, tag_offset + 0x48)))
     repair_dependency(*(args + (None, tag_offset + 0x58)))
+    # OS v4 shader extension
+    ct, _, __ = read_reflexive(map_data, tag_offset + 0xE0 - magic)
+    if is_yelo and ct > 1:
+        map_data.seek(tag_offset + 0xE0 - magic)
+        map_data.write(b'\x01\x00\x00\x00')
+
     repair_dependency(*(args + (b'mtib', tag_offset + 0xFC)))
 
 
 def repair_pctl(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
+    is_yelo = engine == "halo1yelo"
+
     repair_dependency(*(args + (b'yhpp', tag_offset + 56)))
 
     # particle types
@@ -709,6 +739,12 @@ def repair_pctl(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
         for moff2 in iter_reflexive_offs(map_data, moff + 116 - magic, 376, 8, magic):
             repair_dependency(*(args + (b'mtib', moff2 + 48)))
             repair_dependency(*(args + (b'yhpp', moff2 + 132)))
+            # OS v4 shader extension
+            ct, _, __ = read_reflexive(map_data, moff2 + 0xE8 - magic)
+            if is_yelo and ct > 1:
+                map_data.seek(moff2 + 0xE8 - magic)
+                map_data.write(b'\x01\x00\x00\x00')
+
             repair_dependency(*(args + (b'mtib', moff2 + 260)))
 
 
@@ -764,12 +800,13 @@ def repair_sbsp(tag_offset, index_array, map_data, magic, repair, engine,
 
 
 def repair_scnr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
-    ### Need to finish this up. not all the limits specified here
-    # should be as low as they are because open sauce is a thing
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
 
-    if "yelo" in engine:
+    is_yelo = engine == "halo1yelo"
+    is_mcc  = engine == "halo1mcc"
+
+    if is_yelo:
         repair_dependency(*(args + (b'oley', tag_offset)))
 
         # bsp modifiers
@@ -818,7 +855,7 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
 
     # ai animation reference
     ct, moff, _ = read_reflexive(map_data, tag_offset + 1092 - magic, 128, 60, magic)
-    repair_dependency_array(*(args + (b'rtna', moff + 32, ct, 60)))
+    repair_dependency_array(*(args + (None if is_yelo else b'rtna', moff + 32, ct, 60)))
 
     # ai conversations
     for moff in iter_reflexive_offs(map_data, tag_offset + 1128 - magic, 116, 128, magic):
@@ -832,7 +869,7 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
             repair_dependency(*(args + (b'!dns', moff2 + 108)))
 
     # tag references
-    ct, moff, _ = read_reflexive(map_data, tag_offset + 1204 - magic, 256, 40, magic)
+    ct, moff, _ = read_reflexive(map_data, tag_offset + 1204 - magic, 512 if is_mcc else 256, 40, magic)
     repair_dependency_array(*(args + (None, moff + 24, ct, 40)))
 
     # structure bsps
@@ -842,11 +879,14 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
     # palettes
     # NOTE: Can't trust that these palettes are valid.
     # Need to check what the highest one used by all instances
+    max_pal_ct = 256 if is_mcc else 100
     for off, inst_size in (
             (540, 72), (564, 120), (588, 120), # scen  bipd  vehi
             (612, 40), (636, 92), (672, 64),   # eqip  weap  mach
             (696, 64), (720, 88), (744, 40)):  # ctrl  lifi  ssce
-        pal_ct, pal_moff, _ = read_reflexive(map_data, tag_offset + off - magic)
+        pal_ct, pal_moff, _ = read_reflexive(
+            map_data, tag_offset + off - magic, max_pal_ct
+            )
 
         if safe_mode:
             used_pal_indices = set()
@@ -867,7 +907,7 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
     # script syntax data references
     size, _, __, moff, ___ = read_rawdata_ref(map_data, tag_offset + 1140 - magic, magic)
     map_data.seek(moff - magic)
-    script_syntax_data_nodes = get_hsc_data_block(map_data.read(size)).nodes
+    script_syntax_data_nodes = get_hsc_data_block(map_data.read(size), engine).nodes
     for node in script_syntax_data_nodes:
         tag_cls = {
             24: 'snd!', 25: 'effe', 26: 'jpt!', 27: 'lsnd',
@@ -911,6 +951,7 @@ def repair_shader(tag_id, index_array, map_data, magic, repair, engine, safe_mod
     tag_offset = index_array[tag_id].meta_offset
     map_data.seek(tag_offset + 36 - magic)
     shader_type = int.from_bytes(map_data.read(2), 'little')
+    is_yelo = engine == "halo1yelo"
 
     if shader_type != -1 and shader_type not in range(len(shader_class_bytes) - 1):
         # not a shader
@@ -931,7 +972,7 @@ def repair_shader(tag_id, index_array, map_data, magic, repair, engine, safe_mod
         repair_dependency(*(args + (b'mtib', tag_offset + 0x22C)))
         repair_dependency(*(args + (b'mtib', tag_offset + 0x2FC)))
         # shader environment os extension
-        if "yelo" in engine:
+        if is_yelo:
             ct, moff, _ = read_reflexive(map_data, tag_offset + 0xC8 - magic, 1, 100, magic)
             repair_dependency_array(*(args + (b'mtib', moff + 8, ct, 100)))
 
@@ -941,7 +982,7 @@ def repair_shader(tag_id, index_array, map_data, magic, repair, engine, safe_mod
         repair_dependency(*(args + (b'mtib', tag_offset + 0xB4)))
         repair_dependency(*(args + (b'mtib', tag_offset + 0x13C)))
         # shader model os extension
-        if "yelo" in engine:
+        if is_yelo:
             for moff in iter_reflexive_offs(
                     map_data, tag_offset + 0xC8 - magic, 192, 1, magic):
                 repair_dependency(*(args + (b'mtib', moff)))
@@ -993,9 +1034,10 @@ def repair_shader(tag_id, index_array, map_data, magic, repair, engine, safe_mod
 def repair_sky(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     tag_offset = index_array[tag_id].meta_offset
     args = (index_array, map_data, magic, repair, engine)
+    is_yelo = engine == "halo1yelo"
 
     repair_dependency(*(args + (b'2dom', tag_offset)))
-    repair_dependency(*(args + (b'rtna', tag_offset + 0x10)))
+    repair_dependency(*(args + (None if is_yelo else b'rtna', tag_offset + 0x10)))
     repair_dependency(*(args + (b' gof', tag_offset + 0x98)))
     # lights
     ct, moff, _ = read_reflexive(map_data, tag_offset + 0xC4 - magic, 8, 116, magic)
@@ -1163,16 +1205,16 @@ def repair_avto(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
     args = (index_array, map_data, magic, repair, engine)
 
     # instigators
-    for moff in iter_reflexive_offs(map_data, tag_offset + 44, 32, 16, magic):
+    for moff in iter_reflexive_offs(map_data, tag_offset + 52, 32, 16, magic):
         repair_dependency(*(args + (b'tinu', moff)))
 
     # keyframe actions
-    for moff in iter_reflexive_offs(map_data, tag_offset + 88, 72, 9, magic):
+    for moff in iter_reflexive_offs(map_data, tag_offset + 96, 72, 9, magic):
         repair_dependency(*(args + (b'!tpj', moff + 8)))
         repair_dependency(*(args + (b'effe', moff + 24)))
 
     # attachments
-    for moff in iter_reflexive_offs(map_data, tag_offset + 104, 120, 16, magic):
+    for moff in iter_reflexive_offs(map_data, tag_offset + 112, 120, 16, magic):
         repair_dependency(*(args + (b'ejbo', moff)))
 
 
@@ -1189,7 +1231,7 @@ def repair_efpg(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
     ct, moff, _ = read_reflexive(
         map_data, index_array[tag_id].meta_offset + 60 - magic, 12, 16, magic)
     repair_dependency_array(
-        index_array, map_data, magic, repair, engine, b'gphs', moff, ct)
+        index_array, map_data, magic, repair, engine, b'gphs', moff, ct, 16)
 
 
 def repair_gelc(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
@@ -1232,7 +1274,7 @@ def repair_gelo(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
 def repair_magy(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):
     repair_antr(tag_id, index_array, map_data, magic, repair, engine)
     repair_dependency(index_array, map_data, magic, repair, engine,
-                      b'rtna', index_array[tag_id].meta_offset + 0x80)
+                      None, index_array[tag_id].meta_offset + 0x80)
 
 
 def repair_shpg(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):

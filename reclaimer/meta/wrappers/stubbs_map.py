@@ -7,26 +7,42 @@
 # See LICENSE for more information.
 #
 
-from reclaimer.meta.wrappers.halo1_map import Halo1Map
+from reclaimer.meta.wrappers.halo1_xbox_map import Halo1XboxMap
 from reclaimer.stubbs.constants import stubbs_tag_class_fcc_to_ext
 from reclaimer.stubbs.handler   import StubbsHandler
 from supyr_struct.defs.frozen_dict import FrozenDict
 
 
-class StubbsMap(Halo1Map):
-    defs = None
+class StubbsMap(Halo1XboxMap):
+    xbox_defs = None
+    pc_defs = None
 
     handler_class = StubbsHandler
 
     tag_defs_module = StubbsHandler.default_defs_path
     tag_classes_to_load = tuple(sorted(stubbs_tag_class_fcc_to_ext.keys()))
+    
+    @property
+    def defs(self):
+        this_class = type(self)
+        return this_class.pc_defs if self.engine == "stubbspc" else this_class.xbox_defs
+    @defs.setter
+    def defs(self, val):
+        this_class = type(self)
+        if self.engine == "stubbspc":
+            this_class.pc_defs = val
+        else:
+            this_class.xbox_defs = val
+
+    def is_indexed(self, tag_id):
+        return False
 
     def setup_defs(self):
         this_class = type(self)
-        if not this_class.defs:
+        if not(this_class.xbox_defs and this_class.pc_defs):
             print("    Loading definitions in %s" %
                   self.handler_class.default_defs_path)
-            this_class.defs = defs = {}
+            this_class.xbox_defs = this_class.pc_defs = {}
 
             # these imports were moved here because their defs would otherwise
             # be built when this module was imported, which is not good practice
@@ -39,16 +55,16 @@ class StubbsMap(Halo1Map):
             this_class.handler = self.handler_class(
                 build_reflexive_cache=False, build_raw_data_cache=False,
                 debug=2)
-            this_class.defs = dict(this_class.handler.defs)
+            this_class.xbox_defs = dict(this_class.handler.defs)
+            this_class.xbox_defs.update(
+                antr=antr_def, coll=coll_def, sbsp=sbsp_def, mode=mode_def
+                )
+            this_class.xbox_defs = FrozenDict(this_class.xbox_defs)
+            this_class.pc_defs   = dict(self.xbox_defs)
+            this_class.pc_defs.update(mode=pc_mode_def)
 
-            if self.engine == "stubbspc":
-                this_class.defs["mode"] = pc_mode_def
-            else:
-                this_class.defs["mode"] = mode_def
-            this_class.defs["antr"] = antr_def
-            this_class.defs["coll"] = coll_def
-            this_class.defs["sbsp"] = sbsp_def
-            this_class.defs = FrozenDict(this_class.defs)
+            this_class.xbox_defs = FrozenDict(this_class.xbox_defs)
+            this_class.pc_defs   = FrozenDict(this_class.pc_defs)
 
         # make a shallow copy for this instance to manipulate
         self.defs = dict(self.defs)

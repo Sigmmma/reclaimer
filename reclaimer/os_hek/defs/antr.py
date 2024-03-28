@@ -8,12 +8,11 @@
 #
 
 from ...hek.defs.antr import *
-from supyr_struct.util import desc_variant
 
-antr_body = desc_variant(
-    antr_body,
-    ("animations", reflexive(
-        "animations", animation_desc, 2048, DYN_NAME_PATH=".name"))
+antr_body = desc_variant(antr_body,
+    # original maximum according to comment?
+    # https://github.com/HaloMods/OpenSauce/blob/master/OpenSauce/Halo1/Halo1_CheApe/Halo1_CheApe_Readme.txt#L40
+    reflexive("animations", animation_desc, 500, DYN_NAME_PATH=".name")
     )
 
 def get():

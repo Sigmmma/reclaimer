@@ -16,9 +16,10 @@ from pathlib import Path, PureWindowsPath
 from traceback import format_exc
 from string import ascii_letters
 
+from reclaimer.constants import GEN_1_HALO_CUSTOM_ENGINES
 from reclaimer.meta.halo_map import get_map_version, get_map_header,\
      get_tag_index, get_index_magic, get_map_magic, get_is_compressed_map,\
-     decompress_map
+     decompress_map, get_engine_name
 from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
 from reclaimer.util import is_protected_tag, int_to_fourcc, path_normalize
 
@@ -29,7 +30,12 @@ from supyr_struct.util import is_path_empty
 VALID_MODULE_NAME_CHARS = ascii_letters + '_' + '0123456789'
 
 
-backslash_fix = re.compile(r"\\{2,}")
+multi_backslash_sub = re.compile(r"\\{2,}|/+")
+lead_trail_slash_space_sub = re.compile(r"^[\s\\]+|[\s\\]+$")
+def sanitize_tag_path(tag_path):
+    return lead_trail_slash_space_sub.sub(
+        '', multi_backslash_sub.sub(r'\\', tag_path)
+        ).lower()
 
 
 class HaloMap:
@@ -66,6 +72,7 @@ class HaloMap:
     engine          = ""
     is_resource     = False
     is_compressed   = False
+    safe_mode       = True
 
     handler = None
 
@@ -212,7 +219,7 @@ class HaloMap:
         return ()
 
     def is_indexed(self, tag_id):
-        return bool(self.tag_index.tag_index[tag_id].indexed)
+        return False
 
     def cache_original_tag_paths(self):
         tags = () if self.tag_index is None else self.tag_index.tag_index
@@ -224,23 +231,39 @@ class HaloMap:
         if self.tag_index is None:
             return
 
-        i = 0
-        found_counts = {}
-        for b in self.tag_index.tag_index:
-            tag_path = backslash_fix.sub(
-                r'\\', b.path.replace("/", "\\")).strip().strip("\\").lower()
+        name_id_counts = {}
+        # count how many times each tag name and class combination is used
+        for i, b in enumerate(self.tag_index.tag_index):
+            name_id = (sanitize_tag_path(b.path), b.class_1.enum_name)
+            name_id_counts[name_id] = name_id_counts.get(name_id, 0) + 1
 
-            name_id = (tag_path, b.class_1.enum_name)
-            if is_protected_tag(tag_path):
+        # figure out if any reused tag names stand out as protected
+        # because of being reused in with the same tag class
+        protected_names = set((
+            name_id[0]
+            for name_id, count in name_id_counts.items()
+            if is_protected_tag(name_id[0]) or count > 1
+            ))
+
+        # rename tags deemed to be protected
+        for i, b in enumerate(self.tag_index.tag_index):
+            tag_path = sanitize_tag_path(b.path)
+            if not self.is_indexed(i) and tag_path in protected_names:
                 tag_path = "protected_%s" % i
-            elif name_id in found_counts:
-                tag_path = "%s_%s" % (tag_path, found_counts[name_id])
-                found_counts[name_id] += 1
-            else:
-                found_counts[name_id] = 1
 
             b.path = tag_path
-            i += 1
+
+        name_id_counts = {}
+        # this bit is cause apparently spv3/open sauce v4/neil fucked up
+        # resource maps, and made it so that can contain duplicate tags.
+        for i, b in enumerate(self.tag_index.tag_index):
+            tag_path = sanitize_tag_path(b.path)
+            name_id  = (tag_path, b.class_1.enum_name)
+            count    = name_id_counts.setdefault(name_id, 1)
+            if self.is_indexed(i) and count > 1:
+                b.path = "%s_%s" % (tag_path, count)
+
+            name_id_counts[name_id] = count + 1
 
     def get_meta_descriptor(self, tag_cls):
         tagdef = self.defs.get(tag_cls)
@@ -319,7 +342,12 @@ class HaloMap:
                     print("Loading %s..." % map_name)
 
                 new_map.load_map(map_path, **kw)
-                if new_map.engine != self.engine:
+                if (self.engine in GEN_1_HALO_CUSTOM_ENGINES and
+                    new_map.engine in ("halo1pc", "halo1ce")):
+                    # cant tell mcc resource maps apart from ce and pc resource maps.
+                    # the same can be said of telling apart yelo and ce resource maps.
+                    new_map.engine = self.engine
+                elif new_map.engine != self.engine:
                     if do_printout:
                         print("Incorrect engine for this map.")
                     self.maps.pop(new_map.map_name, None)
@@ -370,6 +398,9 @@ class HaloMap:
         map_header = get_map_header(self.map_data)
         tag_index  = self.orig_tag_index = get_tag_index(
             self.map_data, map_header)
+
+        # calculate this more accurately now that the map data is available
+        self.engine = get_engine_name(map_header, self.map_data)
 
         if tag_index is None:
             print("    Could not read tag index.")

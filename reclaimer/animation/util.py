@@ -11,9 +11,10 @@ import traceback
 
 from math import pi
 
+from reclaimer.util import get_block_max
 from reclaimer.enums import unit_animation_names, unit_weapon_animation_names,\
      unit_weapon_type_animation_names, vehicle_animation_names,\
-     weapon_animation_names, device_animation_names, fp_animation_names,\
+     weapon_animation_names, device_animation_names, fp_animation_names_mcc,\
      unit_damage_animation_names
 from reclaimer.hek.defs.mod2 import TagDef, Pad, marker as mod2_marker_desc,\
      node as mod2_node_desc, reflexive, Struct
@@ -89,7 +90,7 @@ def split_anim_name_into_type_strings(anim_name):
         if part3: remainder = " ".join((part3, remainder))
 
         part2, part2_sani, perm_num = split_permutation_number(part2, remainder)
-        if ((part1_sani == "first-person" and part2_sani in fp_animation_names) or
+        if ((part1_sani == "first-person" and part2_sani in fp_animation_names_mcc) or
             (part1_sani == "vehicle" and part2_sani in vehicle_animation_names) or
             (part1_sani == "device"  and part2_sani in device_animation_names)):
             type_strings = part1_sani, part2_sani, perm_num
@@ -215,9 +216,10 @@ def set_animation_index(antr_tag, anim_name, anim_index,
 
     if part1 == "suspension":
         anim_name = anim_name.split(" ", 1)[1]
-        anim_enums = antr_vehicles[0].suspension_animations.STEPTREE
-        if len(anim_enums) >= 8:
-            # max of 8 suspension animations
+        susp_anims = antr_vehicles[0].suspension_animations
+        anim_enums = susp_anims.STEPTREE
+        if len(anim_enums) >= get_block_max(susp_anims):
+            # at the limit of suspension animations
             return False
 
         anim_enums.append()
@@ -226,7 +228,8 @@ def set_animation_index(antr_tag, anim_name, anim_index,
 
     elif part1 in ("first-person", "device", "vehicle"):
         if part1 == "first-person":
-            options = fp_animation_names
+            # NOTE: using mcc because they're the same, with an extension
+            options = fp_animation_names_mcc
             block = antr_fp_animations
         elif part1 == "device":
             options = device_animation_names
@@ -238,6 +241,10 @@ def set_animation_index(antr_tag, anim_name, anim_index,
         if not block:
             block.append()
 
+        # trim the options to how many are actually allowed
+        # NOTE: this is really just for fp_animation_names_mcc
+        max_anims   = get_block_max(block[0].animations)
+        options     = options[:max_anims]
         try:
             enum_index = options.index(part2)
         except ValueError:
@@ -338,7 +345,7 @@ def set_animation_index(antr_tag, anim_name, anim_index,
             break
 
     if unit is None:
-        if len(antr_units) >= antr_units.MAX:
+        if len(antr_units) >= get_block_max(antr_units.parent):
             return False
 
         antr_units.append()
@@ -369,7 +376,7 @@ def set_animation_index(antr_tag, anim_name, anim_index,
             break
 
     if unit_weap is None:
-        if len(unit_weaps) >= unit_weaps.MAX:
+        if len(unit_weaps) >= get_block_max(unit_weaps.parent):
             return False
 
         unit_weaps.append()
@@ -397,7 +404,7 @@ def set_animation_index(antr_tag, anim_name, anim_index,
             break
 
     if unit_weap_type is None:
-        if len(unit_weap_types) >= unit_weap_types.MAX:
+        if len(unit_weap_types) >= get_block_max(unit_weap_types.parent):
             return False
 
         unit_weap_types.append()

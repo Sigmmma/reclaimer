@@ -11,20 +11,19 @@ from math import sqrt
 from struct import unpack, pack_into
 from types import MethodType
 
+from reclaimer.constants import LOD_NAMES
 from reclaimer.hek.defs.objs.tag import HekTag
 from reclaimer.util.compression import compress_normal32, decompress_normal32
 from reclaimer.util.matrices import quaternion_to_matrix, Matrix
 
-# TODO: Make calc_internal_data recalculate the lod nodes, and remove that
-# same function from model.model_compilation.compile_gbxmodel and replace
-# it with a call to calc_internal_data. lod nodes are recalculated when
-# tags are compiled into maps, but the functionality should still be here.
+
 class ModeTag(HekTag):
 
     def calc_internal_data(self):
         '''
         For each node, this method recalculates the rotation matrix
-        from the quaternion, and the translation to the root bone.
+        from the quaternion, the translation to the root bone, and
+        the lod nodes.
         '''
         HekTag.calc_internal_data(self)
 
@@ -58,6 +57,125 @@ class ModeTag(HekTag):
             node.rot_kk_ii[:] = rotation[1]
             node.rot_ii_jj[:] = rotation[2]
 
+        # calculate the highest node used by each geometry
+        geom_max_node_indices = []
+        node_count = len(nodes)
+        for geometry in self.data.tagdata.geometries.STEPTREE:
+            geom_node_count = 0
+            for part in geometry.parts.STEPTREE:
+                if geom_node_count == node_count:
+                    break
+                elif getattr(part.flags, "ZONER", False):
+                    # don't need to check every vert when they're all right here
+                    geom_node_count = max((
+                        geom_node_count,
+                        *(v for v in part.local_nodes[:part.local_node_count])
+                        ))
+                    continue
+
+                is_comp = not part.uncompressed_vertices.STEPTREE
+                verts   = (
+                    part.compressed_vertices.STEPTREE if is_comp else 
+                    part.uncompressed_vertices.STEPTREE
+                    )
+                curr_highest = 0
+                max_highest = (node_count - 1) * (3 if is_comp else 1)
+                if isinstance(verts, (bytes, bytearray)):
+                    # verts are packed, so unpack what we need from it
+                    vert_size = 32 if is_comp else 68 # vert size in bytes
+                    unpack_vert = (
+                        MethodType(unpack, ">28x bbh") if is_comp else
+                        MethodType(unpack, ">56x hhf 4x")
+                        )
+                    # lazy unpack JUST the indices and weight
+                    verts = [
+                        unpack_vert(verts[i: i+vert_size])
+                        for i in range(0, len(verts), vert_size)
+                        ]
+                    node_0_key, node_1_key, weight_key = 0, 1, 2
+                else:
+                    # verts aren't packed, so use as-is
+                    weight_key              = "node_0_weight" 
+                    node_0_key, node_1_key  = "node_0_index", "node_1_index"
+
+                for vert in verts:
+                    node_0_weight  = vert[weight_key]
+                    if node_0_weight > 0 and vert[node_0_key] > curr_highest: 
+                        curr_highest = vert[node_0_key]
+                        if curr_highest == max_highest: break
+
+                    if node_0_weight < 1 and vert[node_1_key] > curr_highest:
+                        curr_highest = vert[node_1_key]
+                        if curr_highest == max_highest: break
+
+                if is_comp:
+                    # compressed nodes use indices multiplied by 3 for some reason
+                    curr_highest //= 3
+
+                geom_node_count = max(geom_node_count, curr_highest)
+
+            geom_max_node_indices.append(max(0, geom_node_count))
+
+        # calculate the highest node for each lod
+        max_lod_nodes = {lod: 0 for lod in LOD_NAMES}
+        for region in self.data.tagdata.regions.STEPTREE:
+            for perm in region.permutations.STEPTREE:
+                for lod_name in LOD_NAMES:
+                    try:
+                        highest_node_count = geom_max_node_indices[
+                            perm["%s_geometry_block" % lod_name]
+                            ]
+                    except IndexError:
+                        continue
+
+                    max_lod_nodes[lod_name] = max(
+                        max_lod_nodes[lod_name], 
+                        highest_node_count
+                        )
+
+        # set the node counts per lod
+        for lod, highest_node in max_lod_nodes.items():
+            self.data.tagdata["%s_lod_nodes" % lod] = max(0, highest_node)
+
+    def globalize_local_markers(self):
+        tagdata = self.data.tagdata
+        all_global_markers = tagdata.markers.STEPTREE
+        all_global_markers_by_name = {b.name: b.marker_instances.STEPTREE
+                                      for b in all_global_markers}
+
+        for i in range(len(tagdata.regions.STEPTREE)):
+            region = tagdata.regions.STEPTREE[i]
+            for j in range(len(region.permutations.STEPTREE)):
+                perm = region.permutations.STEPTREE[j]
+
+                for k in range(len(perm.local_markers.STEPTREE)):
+                    local_marker = perm.local_markers.STEPTREE[k]
+                    global_markers = all_global_markers_by_name.get(
+                        local_marker.name, None)
+
+                    if global_markers is None or len(global_markers) >= 32:
+                        all_global_markers.append()
+                        all_global_markers[-1].name = local_marker.name
+                        global_markers = all_global_markers[-1].marker_instances.STEPTREE
+                        all_global_markers_by_name[local_marker.name] = global_markers
+
+                    global_markers.append()
+                    global_marker = global_markers[-1]
+
+                    global_marker.region_index = i
+                    global_marker.permutation_index = j
+                    global_marker.node_index = local_marker.node_index
+                    global_marker.rotation[:] = local_marker.rotation[:]
+                    global_marker.translation[:] = local_marker.translation[:]
+
+                del perm.local_markers.STEPTREE[:]
+
+        # sort the markers how Halo's picky ass wants them
+        name_map = {all_global_markers[i].name: i
+                    for i in range(len(all_global_markers))}
+        all_global_markers[:] = list(all_global_markers[name_map[name]]
+                                     for name in sorted(name_map))
+
     def compress_part_verts(self, geometry_index, part_index):
         part = self.data.tagdata.geometries.STEPTREE\
                [geometry_index].parts.STEPTREE[part_index]
@@ -70,6 +188,8 @@ class ModeTag(HekTag):
 
         comp_verts = bytearray(b'\x00' * 32 * uncomp_verts_reflexive.size)
         uncomp_verts = uncomp_verts_reflexive.STEPTREE
+        if not isinstance(uncomp_verts, (bytes, bytearray)):
+            raise ValueError("Error: Uncompressed vertices must be in raw, unpacked form.")
 
         in_off = out_off = 0
         # compress each of the verts and write them to the buffer
@@ -105,6 +225,8 @@ class ModeTag(HekTag):
 
         uncomp_verts = bytearray(b'\x00' * 68 * comp_verts_reflexive.size)
         comp_verts = comp_verts_reflexive.STEPTREE
+        if not isinstance(comp_verts, (bytes, bytearray)):
+            raise ValueError("Error: Compressed vertices must be in raw, unpacked form.")
 
         in_off = out_off = 0
         # uncompress each of the verts and write them to the buffer

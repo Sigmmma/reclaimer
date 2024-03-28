@@ -8,7 +8,7 @@
 #
 
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.deca import DecaTag
 from supyr_struct.defs.tag_def import TagDef
 
 decal_comment = """COMPOUND DECALS:
@@ -91,7 +91,7 @@ deca_body = Struct("tagdata",
 
     #Sprite info
     Pad(20),
-    Float("maximum_sprite_extent", SIDETIP="pixels"),
+    Float("maximum_sprite_extent", SIDETIP="pixels", VISIBLE=False),
 
     SIZE=268,
     )
@@ -105,5 +105,5 @@ deca_def = TagDef("deca",
     blam_header('deca'),
     deca_body,
 
-    ext=".decal", endian=">", tag_cls=HekTag
+    ext=".decal", endian=">", tag_cls=DecaTag
     )

@@ -10,6 +10,8 @@
 from ...common_descs import *
 from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
+# import here so it can be reused in all variants of unit
+from supyr_struct.util import desc_variant
 
 def get():
     return unit_def
@@ -174,10 +176,8 @@ unit_attrs = Struct("unit_attrs",
         ),
     Pad(2),
 
-    Struct("mcc_additions", # replaced with opensauce unit extension in os_v4
-        SEnum16("mcc_scoring_type", TOOLTIP="Used to determine score in MCC", *mcc_actor_types),
-        Pad(10),
-    ),
+    Pad(12), # replaced with opensauce unit extension in os_v4 and mcc_additions in mcc_hek
+
     reflexive("new_hud_interfaces", new_hud_interface, 2,
         'default/solo', 'multiplayer'),
     reflexive("dialogue_variants", dialogue_variant, 16,
@@ -188,7 +188,8 @@ unit_attrs = Struct("unit_attrs",
     SEnum16('grenade_type', *grenade_types),
     SInt16('grenade_count', MIN=0),
 
-    Pad(4),
+    FlUInt16("soft_ping_stun_ticks", VISIBLE=False), # set to soft_ping_interrupt_time * 30
+    FlUInt16("hard_ping_stun_ticks", VISIBLE=False), # set to hard_ping_interrupt_time * 30
     reflexive("powered_seats", powered_seat, 2,
               "driver", "gunner"),
     reflexive("weapons", weapon, 4, DYN_NAME_PATH='.weapon.filepath'),

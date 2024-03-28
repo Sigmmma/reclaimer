@@ -14,10 +14,15 @@ class JmsMaterial:
     __slots__ = (
         "name", "tiff_path",
         "shader_path", "shader_type",
-        "properties"
+        "properties", "permutation_index"
         )
     def __init__(self, name="__unnamed", tiff_path="<none>",
                  shader_path="", shader_type="", properties=""):
+        permutation_index  = "0"
+        while name[-1:] in "0123456789":
+            permutation_index += name[-1]
+            name = name[:-1]
+
         for c in "!@#$%^&*-.":
             if c in name and c not in properties:
                 properties += c
@@ -28,6 +33,7 @@ class JmsMaterial:
         self.shader_path = shader_path if shader_path else name
         self.shader_type = shader_type
         self.properties = properties
+        self.permutation_index = int(permutation_index)
 
     @property
     def ai_defeaning(self): return "&" in self.properties
@@ -92,6 +98,6 @@ class JmsMaterial:
         self.properties = self.properties.replace("!", "") + ("!" if new_val else "")
 
     def __repr__(self):
-        return """JmsMaterial(name=%s,
-    tiff_path=%s
-)""" % (self.name, self.tiff_path)
+        return """JmsMaterial(name=%s%s,
+    tiff_path=%s, properties=%s
+)""" % (self.name, self.permutation_index, self.tiff_path, self.properties)

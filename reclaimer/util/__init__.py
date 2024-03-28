@@ -4,6 +4,7 @@ import zlib
 from math import log
 
 from supyr_struct.util import *
+from supyr_struct.exceptions import DescKeyError
 from reclaimer.util import compression
 from reclaimer.util import geometry
 from reclaimer.util import matrices
@@ -19,7 +20,7 @@ INVALID_PATH_CHARS = set([str(i.to_bytes(1, 'little'), 'latin-1')
 VALID_NUMERIC_CHARS = frozenset("0123456789")
 for name in ('CON', 'PRN', 'AUX', 'NUL'):
     RESERVED_WINDOWS_FILENAME_MAP[name] = '_' + name
-for i in range(1, 9):
+for i in VALID_NUMERIC_CHARS:
     RESERVED_WINDOWS_FILENAME_MAP['COM%s' % i] = '_COM%s' % i
     RESERVED_WINDOWS_FILENAME_MAP['LPT%s' % i] = '_LPT%s' % i
 INVALID_PATH_CHARS.update('<>:"|?*')
@@ -46,6 +47,13 @@ def is_overlapping_ranges(range_0, range_1):
 
 def get_is_xbox_map(engine):
     return "xbox" in engine or engine in ("stubbs", "shadowrun_proto")
+
+
+def get_block_max(block, default=0xFFffFFff):
+    try:
+        return block.get_desc('MAX', 'size')
+    except DescKeyError:
+        return default
 
 
 def float_to_str(f, max_sig_figs=7):
@@ -126,10 +134,15 @@ def is_valid_ascii_name_str(string):
     return True
 
 def calc_halo_crc32(buffer, offset=None, size=None, crc=0xFFffFFff):
-    if offset is not None:
+    offset = 0 if offset is None else offset
+    if isinstance(buffer, (bytes, bytearray)):
+        size      = len(buffer) if size is None else size
+        tag_bytes = buffer[offset: offset + size]
+    else:
         buffer.seek(offset)
+        tag_bytes = buffer.read(size)
 
-    return zlib.crc32(buffer.read(size), crc ^ 0xFFffFFff) ^ 0xFFffFFff
+    return zlib.crc32(tag_bytes, crc ^ 0xFFffFFff) ^ 0xFFffFFff
 
 NEWLINE_MATCHER = re.compile(r'\r\n|\n\r|\r|\n')
 

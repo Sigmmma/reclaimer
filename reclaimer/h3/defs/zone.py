@@ -234,6 +234,22 @@ zone_body = Struct("tagdata",
     ENDIAN=">", SIZE=532
     )
 
+# this defines JUST enough of the tag for bitmaps to be readable
+zone_body_odst_partial = Struct("tagdata",
+    SEnum16("map_type", *zone_map_type),
+    Pad(2),
+    h3_reflexive("resource_types", zone_resource_type,
+        DYN_NAME_PATH='.name.string'),
+    h3_reflexive("resource_structure_types", zone_resource_structure_type,
+        DYN_NAME_PATH='.name.string'),
+    Pad(60),
+    h3_reflexive("tag_resources", zone_tag_resource),
+    Pad(12*15),
+    Pad(36),
+    h3_rawdata_ref("fixup_info"),
+    ENDIAN=">"
+    )
+
 
 def get():
     return zone_def
@@ -241,6 +257,14 @@ def get():
 zone_def = TagDef("zone",
     h3_blam_header('zone'),
     zone_body,
+
+    ext=".%s" % h3_tag_class_fcc_to_ext["zone"], endian=">", tag_cls=H3Tag
+    )
+
+
+zone_def_odst_partial = TagDef("zone",
+    h3_blam_header('zone'),
+    zone_body_odst_partial,
 
     ext=".%s" % h3_tag_class_fcc_to_ext["zone"], endian=">", tag_cls=H3Tag
     )

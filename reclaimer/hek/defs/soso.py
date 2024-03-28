@@ -61,7 +61,7 @@ model_shader = Struct("model_shader",
         ),
     Pad(14),
     Float("translucency"),
-    COMMENT=soso_comment
+    SIZE=20, COMMENT=soso_comment
     )
 
 self_illumination = Struct("self_illumination",
@@ -113,39 +113,35 @@ reflection = Struct("reflection",
     QStruct("parallel_tint_color", INCLUDE=rgb_float),
 
     dependency("cube_map", "bitm"),
-    #COMMENT=reflection_prop_comment
+    Pad(16),
+
+    COMMENT=reflection_prop_comment
     )
 
 soso_attrs = Struct("soso_attrs",
-    #Model Shader Properties
     model_shader,
 
     Pad(16),
-    #Color-Change
     SEnum16("color_change_source", *function_names, COMMENT=cc_comment),
 
-
     Pad(30),
-    #Self-Illumination
     self_illumination,
 
     Pad(12),
-    #Diffuse, Multipurpose, and Detail Maps
     maps,
 
     # this padding is the reflexive for the OS shader model extension
     Pad(12),
 
-    #Texture Scrolling Animation
     texture_scrolling,
 
     Pad(8),
-    #Reflection Properties
     reflection,
-    Pad(16),
 
-    Float("unknown0", VISIBLE=False),
-    BytesRaw("unknown1", SIZE=16, VISIBLE=False),  # little endian dependency
+    # NOTE: these aren't actually used, but they were at one point in
+    #       development. keeping these for documentation purposes.
+    Pad(4),  #Float("reflection_bump_scale", VISIBLE=False),
+    Pad(16), #dependency("reflection_bump_map", "bitm", VISIBLE=False),
 
     SIZE=400
     )

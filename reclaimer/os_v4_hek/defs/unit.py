@@ -220,10 +220,7 @@ seat_extension = Struct("seat_extension",
     SIZE=100
     )
 
-seat = dict(seat)
-unit_attrs = dict(unit_attrs)
-
-seat[0] = Bool32("flags",
+seat_flags = Bool32("flags",
     "invisible",
     "locked",
     "driver",
@@ -237,9 +234,46 @@ seat[0] = Bool32("flags",
     "allow_ai_noncombatants",
     ("allows_melee", 1<<20)
     )
-seat[20] = reflexive("seat_extensions", seat_extension, 1)
-unit_attrs[45] = reflexive("unit_extensions", unit_extension, 1)
-unit_attrs[54] = reflexive("seats", seat, 16, DYN_NAME_PATH='.label')
+
+seat = desc_variant(seat,
+    seat_flags,
+    ("pad_20", reflexive("seat_extensions", seat_extension, 1)),
+    )
+
+unit_flags = Bool32("flags",
+    "circular_aiming",
+    "destroyed_after_dying",
+    "half_speed_interpolation",
+    "fires_from_camera",
+    "entrance_inside_bounding_sphere",
+    "unused",
+    "causes_passenger_dialogue",
+    "resists_pings",
+    "melee_attack_is_fatal",
+    "dont_reface_during_pings",
+    "has_no_aiming",
+    "simple_creature",
+    "impact_melee_attaches_to_unit",
+    "impact_melee_dies_on_shields",
+    "cannot_open_doors_automatically",
+    "melee_attackers_cannot_attach",
+    "not_instantly_killed_by_melee",
+    "shield_sapping",
+    "runs_around_flaming",
+    "inconsequential",
+    "special_cinematic_unit",
+    "ignored_by_autoaiming",
+    "shields_fry_infection_forms",
+    "integrated_light_controls_weapon",
+    "integrated_light_lasts_forever",
+    ("has_boarding_seats", 1<<31)
+    )
+
+unit_attrs = desc_variant(unit_attrs,
+    unit_flags,
+    ("pad_45", reflexive("unit_extensions", unit_extension, 1)),
+    reflexive("seats", seat, 16, DYN_NAME_PATH='.label'),
+    )
 
 unit_body = Struct('tagdata', unit_attrs)
 

@@ -82,9 +82,11 @@ def extract_model(tagdata, tag_path="", **kw):
             ))
 
     for b in tagdata.shaders.STEPTREE:
-        materials.append(JmsMaterial(
-            b.shader.filepath.split("/")[-1].split("\\")[-1])
-            )
+        shader_name = b.shader.filepath.replace("/", "\\").split("\\")[-1]
+        if b.permutation_index != 0:
+            shader_name += str(b.permutation_index)
+
+        materials.append(JmsMaterial(shader_name))
 
     markers_by_perm = {}
     geoms_by_perm_lod_region = {}
@@ -136,12 +138,8 @@ def extract_model(tagdata, tag_path="", **kw):
                 region_geoms.append(geom_index)
                 last_geom_index = geom_index
 
-    try:
-        use_local_nodes = tagdata.flags.parts_have_local_nodes
-    except Exception:
-        use_local_nodes = False
-    def_node_map = list(range(128))
-    def_node_map.append(-1)
+    can_have_local_nodes = hasattr(tagdata.flags, "parts_have_local_nodes")
+    def_node_map = [*range(128), -1]
 
     # use big endian since it will have been byteswapped
     comp_vert_unpacker = PyStruct(">3f3I2h2bh").unpack_from
@@ -181,60 +179,65 @@ def extract_model(tagdata, tag_path="", **kw):
                         v_origin = len(verts)
                         shader_index = part.shader_index
 
-                        try:
-                            node_map = list(part.local_nodes)
-                            node_map.append(-1)
-                            compressed = False
-                        except (AttributeError, KeyError):
-                            compressed = True
+                        node_map = (
+                            [*part.local_nodes, -1]
+                            if can_have_local_nodes and part.flags.ZONER else
+                            def_node_map
+                            )
 
-                        if not use_local_nodes:
-                            node_map = def_node_map
+                        tris_steptree    = part.triangles.STEPTREE
+                        cverts_steptree  = part.compressed_vertices.STEPTREE
+                        ucverts_steptree = part.uncompressed_vertices.STEPTREE
+                        unparsed = isinstance(
+                            getattr(tris_steptree, "data", None), 
+                            (bytearray, bytes)
+                            )
+                        compressed = (
+                            bool(unparsed and getattr(cverts_steptree, "data", None)) or 
+                            bool(not unparsed and cverts_steptree)
+                            )
+                        uncompressed = (
+                            bool(unparsed and getattr(ucverts_steptree, "data", None)) or 
+                            bool(not unparsed and ucverts_steptree)
+                            )
+                        # prefer uncompressed vertices if both exist
+                        compressed = compressed and not uncompressed
 
                         try:
-                            unparsed = isinstance(
-                                part.triangles.STEPTREE.data, bytearray)
-                        except Exception:
-                            unparsed = False
+                            vert_data = cverts_steptree if compressed else ucverts_steptree
+                            if unparsed:
+                                # if verts are unparsed, parse them
+                                unpack, v_size = (
+                                    (comp_vert_unpacker,   32) if compressed else 
+                                    (uncomp_vert_unpacker, 68)
+                                    )
+                                data = vert_data.data
+                                vert_data = [
+                                    unpack(data, i) for i in range(0, len(data), v_size)
+                                    ]
 
-                        # TODO: Make this work in meta(parse verts and tris)
-                        try:
-                            if compressed and unparsed:
-                                vert_data = part.compressed_vertices.STEPTREE.data
-                                for off in range(0, len(vert_data), 32):
-                                    v = comp_vert_unpacker(vert_data, off)
-                                    verts.append(JmsVertex(
+                            if compressed:
+                                verts.extend(
+                                    JmsVertex(
                                         v[8]//3,
                                         v[0] * 100, v[1] * 100, v[2] * 100,
                                         *decompress_normal32(v[3]),
                                         v[9]//3, 1.0 - (v[10]/32767),
-                                        u_scale * v[6]/32767, 1.0 - v_scale * v[7]/32767))
-                            elif compressed:
-                                for v in part.compressed_vertices.STEPTREE:
-                                    verts.append(JmsVertex(
-                                        v[8]//3,
-                                        v[0] * 100, v[1] * 100, v[2] * 100,
-                                        *decompress_normal32(v[3]),
-                                        v[9]//3, 1.0 - (v[10]/32767),
-                                        u_scale * v[6]/32767, 1.0 - v_scale * v[7]/32767))
-                            elif not compressed and unparsed:
-                                vert_data = part.uncompressed_vertices.STEPTREE.data
-                                for off in range(0, len(vert_data), 68):
-                                    v = uncomp_vert_unpacker(vert_data, off)
-                                    verts.append(JmsVertex(
-                                        node_map[v[14]],
-                                        v[0] * 100, v[1] * 100, v[2] * 100,
-                                        v[3], v[4], v[5],
-                                        node_map[v[15]], max(0, min(1, v[17])),
-                                        u_scale * v[12], 1.0 - v_scale * v[13]))
+                                        u_scale * v[6]/32767, 1.0 - v_scale * v[7]/32767
+                                        )
+                                    for v in vert_data
+                                    )
                             else:
-                                for v in part.uncompressed_vertices.STEPTREE:
-                                    verts.append(JmsVertex(
+                                verts.extend(
+                                    JmsVertex(
                                         node_map[v[14]],
                                         v[0] * 100, v[1] * 100, v[2] * 100,
                                         v[3], v[4], v[5],
                                         node_map[v[15]], max(0, min(1, v[17])),
-                                        u_scale * v[12], 1.0 - v_scale * v[13]))
+                                        u_scale * v[12], 1.0 - v_scale * v[13]
+                                        )
+                                    for v in vert_data
+                                    )
                         except Exception:
                             print(format_exc())
                             print("If you see this, tell Moses to stop "
@@ -242,7 +245,7 @@ def extract_model(tagdata, tag_path="", **kw):
 
                         try:
                             if unparsed:
-                                tri_block = part.triangles.STEPTREE.data
+                                tri_block = tris_steptree.data
                                 tri_list = [-1] * (len(tri_block) // 2)
                                 for i in range(len(tri_list)):
                                     # assuming big endian
@@ -252,9 +255,8 @@ def extract_model(tagdata, tag_path="", **kw):
                                     if tri_list[i] > 32767:
                                         tri_list[i] = -1
                             else:
-                                tri_block = part.triangles.STEPTREE
                                 tri_list = []
-                                for triangle in tri_block:
+                                for triangle in tris_steptree:
                                     tri_list.extend(triangle)
 
                             swap = True

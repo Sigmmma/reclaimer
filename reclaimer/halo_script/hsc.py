@@ -10,22 +10,32 @@
 from struct import pack, unpack
 from types import MethodType
 
-from reclaimer.field_types import *
-from reclaimer.constants import *
-from reclaimer.common_descs import ascii_str32,\
+from reclaimer.halo_script.defs.hsc import *
+
+from reclaimer.common_descs import \
      script_types as h1_script_types,\
-     script_object_types as h1_script_object_types
+     script_object_types as h1_script_object_types,\
+     script_object_tag_ref_types as h1_script_object_tag_ref_types
 from reclaimer.util import float_to_str
 from reclaimer.h2.common_descs import script_types as h2_script_types,\
-     script_object_types as h2_script_object_types
+     script_object_types as h2_script_object_types,\
+     script_object_tag_ref_types as h2_script_object_tag_ref_types
+from reclaimer.stubbs.common_descs import \
+    script_types as stubbs_script_types,\
+    script_object_types as stubbs_script_object_types,\
+    script_object_tag_ref_types as stubbs_script_object_tag_ref_types
+from reclaimer.shadowrun_prototype.common_descs import \
+    script_types as sr_script_types,\
+    script_object_types as sr_script_object_types,\
+    script_object_tag_ref_types as sr_script_object_tag_ref_types
 
-from supyr_struct.defs.block_def import BlockDef
 from supyr_struct.field_types import FieldType
 
 try:
     from reclaimer.enums import _script_built_in_functions_test
 except Exception:
     _script_built_in_functions_test = None
+
 
 # in a list that begins with the keyed expression, this
 # is the number of nodes required before we will indent them.
@@ -47,90 +57,23 @@ START_INDENTING_AFTER = {
     "ai_debug_communication_focus": 1,
     }
 
-HSC_IS_PRIMITIVE   = 1 << 0
-HSC_IS_SCRIPT_CALL = 1 << 1
-HSC_IS_GLOBAL      = 1 << 2
-HSC_IS_GARBAGE_COLLECTABLE = 1 << 3
-HSC_IS_SCRIPT_OR_GLOBAL = HSC_IS_SCRIPT_CALL | HSC_IS_GLOBAL
-
+_script_objects = ("object", "unit", "vehicle", "weapon", "device", "scenery")
 SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES = dict((
-    (10, "scripts"), (11, "trigger_volumes"), (12, "cutscene_flags"),
-    (13, "cutscene_camera_points"), (14, "cutscene_titles"),
-    (15, "recorded_animations"), (16, "device_groups"),
-    (17, "encounters"), (18, "command_lists"),
-    (19, "player_starting_profiles"), (20, "ai_conversations"),
-    ) + tuple((i, "object_names") for i in range(37, 49)))
-
-
-h1_script_type = SEnum16("type", *h1_script_types)
-h1_return_type = SEnum16("return_type", *h1_script_object_types)
-
-
-# this is a more complete version of the fast_script_node def below
-script_node = Struct("script_node",
-    UInt16("salt"),
-    Union("index_union",
-        CASES={
-            "constant_type":  Struct("constant_type", SInt16("value")),
-            "function_index": Struct("function_index", SInt16("value")),
-            "script_index":   Struct("script_index", SInt16("value")),
-            },
-        COMMENT="""
-For most intents and purposes, this value mirrors the 'type' field"""
-        ),
-    SEnum16("type", *h1_script_object_types),
-    Bool16("flags",
-        "is_primitive",
-        "is_script_call",
-        "is_global",
-        "is_garbage_collectable",
-        ),
-    UInt32("next_node"),
-    UInt32("string_offset"),
-    Union("data",
-        CASES={
-            "bool":  Struct("bool", UInt8("data")),
-            "int16": Struct("int16", SInt16("data")),
-            "int32": Struct("int32", SInt32("data")),
-            "real":  Struct("real", Float("data")),
-            "node":  Struct("node", UInt32("data")),
-            }
-        ),
-    SIZE=20
-    )
-
-fast_script_node = QStruct("script_node",
-    UInt16("salt"),
-    UInt16("index_union"),
-    UInt16("type"),
-    UInt16("flags"),
-    UInt32("next_node"),
-    UInt32("string_offset"),
-    UInt32("data"),
-    SIZE=20
-    )
-
-h1_script_syntax_data = Struct("script syntax data header",
-    ascii_str32('name', DEFAULT="script node"),
-    UInt16("max_nodes", DEFAULT=19001),  # this is 1 more than expected
-    UInt16("node_size", DEFAULT=20),
-    UInt8("is_valid", DEFAULT=1),
-    UInt8("identifier_zero_invalid"),   # zero?
-    UInt16("unused"),
-    UInt32("sig", DEFAULT="d@t@"),
-    UInt16("next_node"),  # zero?
-    UInt16("last_node"),
-    BytesRaw("next", SIZE=4),
-    Pointer32("first"),
-    SIZE=56,
-    STEPTREE=WhileArray("nodes", SUB_STRUCT=fast_script_node)
-    )
-
-h1_script_syntax_data_os = dict(h1_script_syntax_data)
-h1_script_syntax_data_os[1] = UInt16("max_nodes", DEFAULT=28501)
-
-h1_script_syntax_data_def    = BlockDef(h1_script_syntax_data)
-h1_script_syntax_data_os_def = BlockDef(h1_script_syntax_data_os)
+    ("script", "scripts"), 
+    ("trigger_volume", "trigger_volumes"), 
+    ("cutscene_flag", "cutscene_flags"),
+    ("cutscene_camera_point", "cutscene_camera_points"), 
+    ("cutscene_title", "cutscene_titles"),
+    ("cutscene_recording", "recorded_animations"), 
+    ("device_group", "device_groups"),
+    ("ai", "encounters"),
+    ("ai_command_list", "command_lists"),
+    ("starting_profile", "player_starting_profiles"), 
+    ("conversation", "ai_conversations"),
+    *((typ, "object_names") for typ in _script_objects),
+    *(("%s_name" % typ, "object_names") for typ in _script_objects),
+    ))
+del _script_objects
 
 
 def cast_uint32_to_float(uint32, packer=MethodType(pack, "<I"),
@@ -149,12 +92,14 @@ def cast_uint32_to_sint32(uint32):
 def get_hsc_node_string(string_data, node, hsc_node_strings_by_type=()):
     # if this is not a script or global, try to get the
     # string from the provided hsc_node_strings_by_type
-    if (not(node.flags & HSC_IS_SCRIPT_OR_GLOBAL) and
-            node.type in hsc_node_strings_by_type):
+    #if (not(node.flags & HSC_IS_SCRIPT_OR_GLOBAL) and
+    #        node.type in hsc_node_strings_by_type):
+    if node.type in hsc_node_strings_by_type:
         hsc_node_strings = hsc_node_strings_by_type[node.type]
 
         # "ai" script object types(17) use 32 bits of the
         # data field to specify index instead of just 16.
+        # TODO: remove hardcoding of 17 as "ai" script object type
         mask = 0xFFffFFff if node.type == 17 else 0xFFff
         if node.data & mask in hsc_node_strings:
             return hsc_node_strings[node.data & mask]
@@ -173,42 +118,65 @@ def get_hsc_node_string(string_data, node, hsc_node_strings_by_type=()):
 
 
 def get_hsc_data_block(raw_syntax_data=None, engine="halo1"):
+    '''
+    Accepts a bytes-like object of the script syntax data, and 
+    the engine the data is from.
+    Returns a block containing the script node header, and all
+    nodes following it in an array.
+    '''
     block_def = None
-    header_len = 56
-    sig_off = 40
+    block_def = (
+        h1_script_syntax_data_os_def    if "yelo" in engine else
+        h1_script_syntax_data_def       if "halo1" in engine else
+        h1_script_syntax_data_mcc       if "halo1mcc" in engine else
+        stubbs_script_syntax_data_def   if "stubbs" in engine else
+        sr_script_syntax_data_def       if "shadowrun" in engine else
+        None
+        )
 
-    if "yelo" in engine:
-        block_def = h1_script_syntax_data_os_def
-    elif "halo1" in engine:
-        block_def = h1_script_syntax_data_def
-
-    if block_def is None:
+    if block_def is None or len(raw_syntax_data) < HSC_HEADER_LEN:
         return
 
     endianness_force = FieldType.force_little
-    if raw_syntax_data[sig_off: sig_off+4] == b"d@t@":
+    if raw_syntax_data[HSC_SIG_OFFSET: HSC_SIG_OFFSET+4] == b"d@t@":
         endianness_force = FieldType.force_big
+    elif raw_syntax_data[HSC_SIG_OFFSET: HSC_SIG_OFFSET+4] != b"@t@d":
+        raise ValueError("Data stream does not appear to be script syntax data.")
 
     with endianness_force:
         syntax_data = block_def.build(rawdata=raw_syntax_data)
         node_size = syntax_data.node_size
         node_ct = min(syntax_data.max_nodes, syntax_data.last_node,
-                      (len(raw_syntax_data) - header_len) // node_size)
+                      (len(raw_syntax_data) - HSC_HEADER_LEN) // node_size)
 
         nodes = syntax_data.nodes
-        for i in range(header_len, header_len + node_ct*node_size, node_size):
+        for i in range(HSC_HEADER_LEN, HSC_HEADER_LEN + node_ct*node_size, node_size):
             nodes.append(rawdata=raw_syntax_data, root_offset=i)
 
     return syntax_data
 
 
-def get_h1_scenario_script_object_type_strings(scnr_data):
-    # NOTE: Still need to handle "hud_message", # 22
+def get_h1_scenario_script_object_type_strings(scnr_data, engine="halo1"):
+    '''
+    Returns a hash of hashes that contain all identifier strings that
+    exist in the scenario. The outer layer hash is keyed by the integer
+    enum value of the reference type, and the inner hashes are keyed by
+    the index a script node would locate them by(i.e. reflexive index).
+
+    NOTE: This function does not currently handle hud_message refs, as it
+          does not accept parsed hud_message tag data. Eventually add this.
+    '''
     script_strings_by_type = {}
+    _, script_object_types = get_script_types(engine)
+
+    biped_node_enum      = script_object_types.index("actor_type")
+    encounters_node_enum = script_object_types.index("ai")
+
     for script_object_type, reflexive_name in \
             SCRIPT_OBJECT_TYPES_TO_SCENARIO_REFLEXIVES.items():
+        script_object_type_enum = script_object_types.index(script_object_type)
         names = {}
-        script_strings_by_type[script_object_type] = names
+        script_strings_by_type[script_object_type_enum] = names
 
         i = 0
         for b in scnr_data[reflexive_name].STEPTREE:
@@ -216,13 +184,13 @@ def get_h1_scenario_script_object_type_strings(scnr_data):
             i += 1
 
     i = 0
-    script_strings_by_type[35] = names = {}
+    script_strings_by_type[biped_node_enum] = names = {}
     for b in scnr_data.bipeds_palette.STEPTREE:
         names[i] = b.name.filepath.split("/")[-1].split("\\")[-1]
         i += 1
 
     i = 0
-    script_strings_by_type[17] = names = {}
+    script_strings_by_type[encounters_node_enum] = names = {}
     for enc in scnr_data.encounters.STEPTREE:
         j = 0
         for squad in enc.squads.STEPTREE:
@@ -231,6 +199,13 @@ def get_h1_scenario_script_object_type_strings(scnr_data):
         i += 1
 
     return script_strings_by_type
+
+
+def get_scenario_script_object_type_strings(scnr_data, engine="halo1"):
+    # NOTE: update this if shadowrun or stubbs have differences to account for
+    return (
+        get_h1_scenario_script_object_type_strings(scnr_data, engine)
+        )
 
 
 def get_node_sibling_count(node, nodes):
@@ -275,8 +250,10 @@ def get_first_significant_node(node, nodes, string_data, parent=None,
     return node
 
 
-def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
-                            object_types, indent=1, indent_size=4, **kwargs):
+def decompile_node_bytecode(node_index, nodes, string_data,
+                            object_types, script_types, indent=1, indent_size=4, 
+                            indent_char=" ", return_char="\n", bool_as_int=False, 
+                            build_cond=True, **kwargs):
     if node_index < 0 or node_index >= len(nodes):
         return "", False, 0
 
@@ -292,56 +269,64 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
         newl = False
         node = nodes[node_index]
         node_type = node.type
-        union_i = node.index_union
         node_str = ""
+
         if node.flags == HSC_IS_GARBAGE_COLLECTABLE:
             start_node = get_first_significant_node(node, nodes, string_data)
 
             child_node, salt = start_node.data & 0xFFff, start_node.data >> 16
             if salt != 0:
                 node_str, newl, ct = decompile_node_bytecode(
-                    child_node, nodes, script_blocks, string_data,
-                    object_types, indent + 1, indent_size, **kwargs)
+                    child_node, nodes, string_data,
+                    object_types, script_types, indent + 1, indent_size,
+                    indent_char, return_char, bool_as_int, **kwargs)
 
                 if ct > 1 or newl or (node_str[:1]  != "(" and
                                       node_str[-1:] != ")"):
                     # only add a start parenthese so the end can be added
                     # on later when we decide how to pad the list elements
-                    node_str = "(%s" % node_str[1:]
+                    node_str = "(" + node_str
                 else:
                     # reparse the node at a lesser indent
                     node_str, newl, ct = decompile_node_bytecode(
-                        child_node, nodes, script_blocks, string_data,
-                        object_types, indent, indent_size, **kwargs)
+                        child_node, nodes, string_data,
+                        object_types, script_types, indent, indent_size, 
+                        indent_char, return_char, bool_as_int, **kwargs)
+                    node_str = (" " + node_str) if node_str else ""
 
         elif node.flags & HSC_IS_GLOBAL:
             node_str = get_hsc_node_string(string_data, node,
                                            hsc_node_strings_by_type)
-            if "global_uses" in kwargs:
+            if "global_uses" in kwargs and node_str:
                 kwargs["global_uses"].add(node_str)
 
-        elif (node.flags & HSC_IS_SCRIPT_CALL and
-              union_i >= 0 and union_i < len(script_blocks)):
+        elif node.flags & HSC_IS_SCRIPT_CALL:
             # is_script_call is set
-            block = script_blocks[union_i]
-            node_str = "(%s" % block.name
-            if "static_calls" in kwargs:
-                kwargs["static_calls"].add(block.name)
+            args_node, salt = node.data & 0xFFff, node.data >> 16
+            node_str = "("
+            script_call_node_str, newl, ct = decompile_node_bytecode(
+                args_node, nodes, string_data,
+                object_types, script_types, indent + 1, indent_size,
+                indent_char, return_char, bool_as_int, **kwargs)
+
+            node_str += script_call_node_str
 
         elif node.flags & HSC_IS_PRIMITIVE:
+            # TODO: remove value hardcoding in these node_type checks
             # is_primitive is set
             if node_type in (2, 10):
                 # function/script name
                 node_str = get_hsc_node_string(string_data, node,
                                                hsc_node_strings_by_type)
-                if node_type == 10 and "static_calls" in kwargs:
+                if node_type == 10 and "static_calls" in kwargs and node_str:
                     kwargs["static_calls"].add(node_str)
-            elif node_type in (3, 4):
-                # passthrough/void type
+            elif node_type in range(5):
+                # special form/unparsed/passthrough/void type
                 pass
             elif node_type == 5:
                 # bool
-                node_str = "true" if node.data&1 else "false"
+                val = node.data&1
+                node_str = str(val) if bool_as_int else ["false", "true"][val]
             elif node_type == 6:
                 # float
                 node_str = float_to_str(cast_uint32_to_float(node.data))
@@ -358,7 +343,7 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
 
         node_strs.append((node_str, newl))
         node_index, salt = node.next_node & 0xFFff, node.next_node >> 16
-        if salt == 0:
+        if salt == -1 and node_index == -1:
             break
 
         i += 1
@@ -368,7 +353,7 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
         return "", False, 0
 
     string = ""
-    indent_str = " " * indent_size * indent
+    indent_str = indent_char * indent_size * indent
     returned = False
     i = 0
     first_node = node_strs[0]
@@ -390,67 +375,167 @@ def decompile_node_bytecode(node_index, nodes, script_blocks, string_data,
             if returned:
                 node_str = indent_str + node_str
             else:
-                node_str = "\n" + indent_str + node_str
+                node_str = return_char + indent_str + node_str
                 has_newlines = True
         elif i > 1:
+            # ensure there's a space to separate parameters
             node_str = " " + node_str
 
         if cap_end:
             if local_newlines:
-                node_str += "\n" + indent_str
+                node_str += return_char + indent_str
             node_str += ")"
 
-        returned = node_str[-1] == "\n"
+        returned = node_str[-1] == return_char
         string += node_str
-
-    if string:
-        # always add a space to the beginning.
-        # it can be stripped off by whatever we return to
-        string = " " + string
 
     return string, has_newlines, i
 
 
+def get_script_types(engine="halo1"):
+    '''Returns the script types and script object types for this engine.'''
+    return (
+        (h1_script_types, h1_script_object_types) if "yelo" in engine else
+        (h1_script_types, h1_script_object_types) if "halo1" in engine else
+        (h2_script_types, h2_script_object_types) if "halo2" in engine else
+        (sr_script_types, sr_script_object_types) if "shadowrun" in engine else
+        (stubbs_script_types, stubbs_script_object_types)  if "stubbs" in engine else
+        ((), ())
+        )
+
+
+def get_script_tag_ref_type_names(engine="halo1"):
+    '''
+    Returns a list containing the enum name each script node tag
+    ref type for this engine.
+    '''
+    # these are the names of the script object types that are tag references
+    return (
+        h1_script_object_tag_ref_types  if "yelo" in engine else
+        h1_script_object_tag_ref_types  if "halo1" in engine else
+        h2_script_object_tag_ref_types  if "halo2" in engine else
+        sr_script_object_tag_ref_types  if "shadowrun" in engine else
+        stubbs_script_object_tag_ref_types  if "stubbs" in engine else
+        ()
+        )
+
+
+def get_script_tag_ref_types(engine="halo1"):
+    '''
+    Returns a list containing the enum value of each script node tag
+    ref type for this engine.
+    '''
+    # these are the names of the script object types that are tag references
+    tag_ref_script_types = get_script_tag_ref_type_names(engine)
+
+    _, script_object_types = get_script_types(engine)
+    return [
+        script_object_types.index(typ)
+        for typ in tag_ref_script_types
+        ]
+
+
+def get_script_syntax_node_tag_refs(syntax_data, engine="halo1"):
+    '''Returns a list of all script nodes that are tag references.'''
+    tag_ref_type_enums = set(get_script_tag_ref_types(engine))
+    tag_ref_nodes = []
+
+    # null all references to tags
+    for node in syntax_data.nodes:
+        if (node.flags & HSC_IS_SCRIPT_OR_GLOBAL or
+            node.type not in tag_ref_type_enums):
+            # not a tag index ref
+            continue
+
+        tag_ref_nodes.append(node)
+
+    return tag_ref_nodes
+
+
+def clean_script_syntax_nodes(syntax_data, engine="halo1"):
+    '''
+    Scans through script nodes and nulls tag references.
+    This is necessary for script syntax data in tag form.
+    '''
+    # null all references to tags
+    for node in get_script_syntax_node_tag_refs(syntax_data, engine):
+        # null the reference
+        node.data = 0xFFffFFff
+
+
 def hsc_bytecode_to_string(syntax_data, string_data, block_index,
                            script_blocks, global_blocks, block_type,
-                           engine="halo1", indent_size=4, **kwargs):
-    if block_type not in ("script", "global"):
+                           engine="halo1", indent_size=4, minify=False, 
+                           indent_char=" ", return_char="\n", **kwargs):
+    is_global = (block_type == "global")
+    is_script = (block_type == "script")
+    script_types, object_types = get_script_types(engine)
+    if not((is_global or is_script) and script_types and object_types):
         return ""
 
-    if ("halo1" in engine or "yelo" in engine or
-        "stubbs" in engine or "shadowrun" in engine):
-        script_types = h1_script_types
-        object_types = h1_script_object_types
-    elif "halo2" in engine:
-        script_types = h2_script_types
-        object_types = h2_script_object_types
-    else:
+    # figure out which reflexive and type enums to use
+    blocks      = script_blocks if is_script else global_blocks
+    typ_names   = script_types  if is_script else object_types
+
+    block   = blocks[block_index]
+    typ     = block.type.data
+
+    # invalid script/global type
+    if typ not in range(len(typ_names)):
         return ""
 
-    if block_type == "global":
-        block       = global_blocks[block_index]
-        script_type = ""
-        node_index  = block.initialization_expression_index & 0xFFFF
-        main_type   = object_types[block.type.data]
-    else:
-        block       = script_blocks[block_index]
-        script_type = script_types[block.type.data]
-        node_index  = block.root_expression_index & 0xFFFF
-        main_type   = object_types[block.return_type.data]
-        if script_type in ("dormant", "startup", "continuous"):
-            # these types wont compile if a return type is specified
-            main_type = ""
-        else:
-            script_type += " "
+    if minify:
+        indent_size = 0
+        indent_char = ""
+        return_char = ""
 
-    if "INVALID" in main_type:
-        return ""
+    # get the index of the node in the nodes array
+    node_index  = (
+        block.root_expression_index if is_script else
+        block.initialization_expression_index
+        ) & 0xFFff
 
-    indent_str  = " " * indent_size
-    head = "%s %s%s %s" % (block_type, script_type, main_type, block.name)
+    # figure out the type of the node
+    node_type = typ_names[typ]
+
+    # scripts also have a return type(except the 3 specified below)
+    if is_script and node_type not in ("dormant", "startup", "continuous"):
+        return_typ    = block.return_type.data
+        if return_typ not in range(len(object_types)):
+            # invalid return type
+            return ""
+
+        node_type += " " + object_types[return_typ]
+
+    # generate the suffix of the header, which includes the function/global
+    # name, and any parameters the function accepts(params are MCC only)
+    suffix = block.name
+    if hasattr(block, "parameters") and block.parameters.STEPTREE:
+        for param in block.parameters.STEPTREE:
+            return_typ    = param.return_type.data
+            if return_typ not in range(len(object_types)):
+                # invalid return type
+                print("Invalid return type '%s' in script '%s'" %
+                    (param.name, block.name)
+                    )
+                return ""
+            suffix += "%s(%s %s)" % (
+                indent_char, object_types[return_typ], param.name
+                )
+        suffix = "(%s)" % suffix
+
+    head   = "%s %s %s" % (block_type, node_type, suffix)
     body, _, __ = decompile_node_bytecode(
-        node_index, syntax_data.nodes, script_blocks, string_data,
-        object_types, 1, indent_size, **kwargs)
-    if block_type == "global":
-        return "(%s%s)" % (head, body)
-    return "(%s\n%s%s\n)" % (head, indent_str, body[1:])
+        node_index, syntax_data.nodes, string_data,
+        object_types=object_types, script_types=script_types,
+        indent_size=indent_size, indent_char=indent_char, 
+        return_char=return_char, **kwargs
+        )
+
+    if is_script:
+        body = "".join((return_char, " " * indent_size, body, return_char))
+    else:
+        # add a space to separate global definition from its value
+        body = " " + body
+
+    return "(%s%s)" % (head, body)

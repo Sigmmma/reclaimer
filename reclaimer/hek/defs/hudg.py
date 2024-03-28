@@ -182,7 +182,8 @@ misc_hud_crap = Struct("misc_hud_crap",
     SInt16("checkpoint_begin_text"),
     SInt16("checkpoint_end_text"),
     dependency("checkpoint", "snd!"),
-    BytearrayRaw("unknown", SIZE=96, VISIBLE=False),
+    BytearrayRaw("unknown0", SIZE=12, VISIBLE=False), # replaced with remaps in mcc
+    BytearrayRaw("unknown1", SIZE=84, VISIBLE=False),
     SIZE=120
     )
 

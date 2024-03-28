@@ -10,6 +10,8 @@
 from ...common_descs import *
 from .objs.obje import ObjeTag
 from supyr_struct.defs.tag_def import TagDef
+# import here so it can be reused in all variants of object
+from supyr_struct.util import desc_variant
 
 def get():
     return obje_def
@@ -60,7 +62,11 @@ function = Struct('function',
     dyn_senum16('turn_off_with', DYN_NAME_PATH="..[DYN_I].usage"),
     Float('scale_by'),
 
-    Pad(268),
+    FlFloat('bounds_range_inverse', VISIBLE=False),
+    FlFloat('sawtooth_count_inverse', VISIBLE=False),
+    FlFloat('step_count_inverse', VISIBLE=False),
+    FlFloat('period_inverse', VISIBLE=False),
+    Pad(252),
     ascii_str32('usage'),
 
     SIZE=360
@@ -107,7 +113,10 @@ obje_attrs = Struct('obje_attrs',
     QStruct('origin_offset', INCLUDE=xyz_float),
     float_zero_to_inf('acceleration_scale', UNIT_SCALE=per_sec_unit_scale),
 
-    Pad(4),
+    FlBool32("runtime_flags", 
+        "functions_control_color_scale", 
+        VISIBLE=False
+        ),
     dependency('model', valid_models),
     dependency('animation_graph', "antr"),
 

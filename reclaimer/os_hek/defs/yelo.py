@@ -22,6 +22,9 @@ build_info = Struct("build_info",
         "release",
         ),
     SInt32("revision"),
+    Timestamp64("timestamp", VISIBLE=False),
+    StrHex("uuid", SIZE=16, VISIBLE=False),
+
     SIZE=48
     )
 
@@ -73,22 +76,26 @@ yelo_body = Struct("tagdata",
     reflexive("build_info", build_info, 1),
 
     Pad(40),
+
     reflexive("scripted_ui_widgets", scripted_ui_widget, 128,
         DYN_NAME_PATH='.name'),
-
     Pad(16),
+
     # Physics
     Float("gravity_scale",      MIN=0.0, MAX=2.0, SIDETIP="[0,2]"),
     Float("player_speed_scale", MIN=0.0, MAX=6.0, SIDETIP="[0,6]"),
+    Pad(20),
 
-    Pad(44),
+    Bool32("networking_flags", VISIBLE=False), # unused
+    Pad(20),
+
     Bool32("gameplay_model",
         "prohibit_multi_team_vehicles",
         ),
-
     Pad(20),
+
     reflexive("yelo_scripting", yelo_scripting, 1),
-    Pad(12),#reflexive("unknown", void_desc),
+    Pad(92),
 
     SIZE=312
     )

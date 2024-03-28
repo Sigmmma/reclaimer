@@ -9,6 +9,7 @@
 
 import os
 
+from reclaimer.constants import LOD_NAMES, SINT16_MAX
 from reclaimer.model.jms import JmsVertex
 from reclaimer.hek.defs.scex import scex_def
 from reclaimer.hek.defs.schi import schi_def
@@ -31,16 +32,15 @@ __all__ = (
 
 
 mod2_verts_def = BlockDef(
-    raw_reflexive("vertices", mod2_vert_struct, 65535),
+    raw_reflexive("vertices", mod2_vert_struct, SINT16_MAX),
     endian='>'
     )
 
 mod2_tri_strip_def = BlockDef(
-    raw_reflexive("triangle", mod2_tri_struct, 65535),
+    raw_reflexive("triangle", mod2_tri_struct, SINT16_MAX),
     endian='>'
     )
 
-LOD_NAMES = ("superhigh", "high", "medium", "low", "superlow")
 MAX_STRIP_LEN = 32763 * 3
 
 EMPTY_GEOM_VERTS = (

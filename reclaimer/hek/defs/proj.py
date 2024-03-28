@@ -9,13 +9,8 @@
 
 from .obje import *
 from .objs.obje import ObjeTag
-from supyr_struct.util import desc_variant
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(5))
-    )
+obje_attrs = obje_attrs_variant(obje_attrs, "proj")
 
 responses = (
     "disappear",
@@ -23,6 +18,18 @@ responses = (
     "reflect",
     "overpenetrate",
     "attach"
+    )
+
+# split out to be reused in mcc_hek
+potential_response = Struct("potential_response",
+    SEnum16('response', *responses),
+    Bool16("flags",
+        "only_against_units",
+        ),
+    float_zero_to_one("skip_fraction"),
+    from_to_rad("impact_angle"),  # radians
+    from_to_wu_sec("impact_velocity"),  # world units/second
+    dependency('effect', "effe"),
     )
 
 material_response = Struct("material_response",
@@ -33,16 +40,7 @@ material_response = Struct("material_response",
     dependency('effect', "effe"),
 
     Pad(16),
-    Struct("potential_response",
-        SEnum16('response', *responses),
-        Bool16("flags",
-            "only_against_units",
-            ),
-        float_zero_to_one("skip_fraction"),
-        from_to_rad("impact_angle"),  # radians
-        from_to_wu_sec("impact_velocity"),  # world units/second
-        dependency('effect', "effe"),
-        ),
+    potential_response,
 
     Pad(16),
     SEnum16("scale_effects_by",

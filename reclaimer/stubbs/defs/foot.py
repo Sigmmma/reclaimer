@@ -31,7 +31,6 @@ foot_body = Struct("tagdata",
     )
 
 
-
 def get():
     return foot_def
 

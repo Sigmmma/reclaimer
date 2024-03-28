@@ -12,7 +12,7 @@ from struct import Struct as PyStruct
 
 from reclaimer.model.constants import (
     HALO_1_MAX_MATERIALS, HALO_1_MAX_REGIONS, HALO_1_MAX_GEOMETRIES_PER_MODEL,
-    SCALE_INTERNAL_TO_JMS, HALO_1_NAME_MAX_LEN
+    SCALE_INTERNAL_TO_JMS, HALO_1_NAME_MAX_LEN, HALO_1_MAX_MARKERS_PER_PERM
     )
 from reclaimer.model.jms import GeometryMesh
 from reclaimer.model.stripify import Stripifier
@@ -33,7 +33,6 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
     tagdata.base_map_v_scale = merged_jms.v_scale = v_scale
 
     tagdata.node_list_checksum = merged_jms.node_list_checksum
-
 
     errors = []
     if len(merged_jms.materials) > HALO_1_MAX_MATERIALS:
@@ -67,30 +66,22 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                 node.pos_x**2 + node.pos_y**2 + node.pos_z**2) / SCALE_INTERNAL_TO_JMS
 
 
-    # record shader ordering and permutation indices
-    mod2_shaders = tagdata.shaders.STEPTREE
-    shdr_perm_indices_by_name = {}
-    for mod2_shader in mod2_shaders:
-        shdr_name = mod2_shader.shader.filepath.split("\\")[-1]
-        shdr_perm_indices = shdr_perm_indices_by_name.setdefault(shdr_name, [])
-        shdr_perm_indices.append(mod2_shader.permutation_index)
-
-    del mod2_shaders[:]
     # make shader references
+    mod2_shaders = tagdata.shaders.STEPTREE
+    del mod2_shaders[:]
     for mat in merged_jms.materials:
         mod2_shaders.append()
         mod2_shader = mod2_shaders[-1]
-        mod2_shader.shader.filepath = mat.shader_path
+
+        mod2_shader.shader.filepath   = mat.shader_path
+        mod2_shader.permutation_index = mat.permutation_index
+
         if mat.shader_type:
             mod2_shader.shader.tag_class.set_to(mat.shader_type)
         else:
             mod2_shader.shader.tag_class.set_to("shader")
 
         shdr_name = mod2_shader.shader.filepath.split("\\")[-1].lower()
-        shdr_perm_indices = shdr_perm_indices_by_name.get(shdr_name)
-        if shdr_perm_indices:
-            mod2_shader.permutation_index = shdr_perm_indices.pop(0)
-
 
     # make regions
     mod2_regions = tagdata.regions.STEPTREE
@@ -98,7 +89,6 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
 
     global_markers = {}
     geom_meshes = []
-    all_lod_nodes = {lod: set([0]) for lod in util.LOD_NAMES}
     for region_name in sorted(merged_jms.regions):
         region = merged_jms.regions[region_name]
 
@@ -129,17 +119,6 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                 lod_mesh = perm.lod_meshes[lod_name]
                 geom_meshes.append(lod_mesh)
 
-                # figure out which nodes this mesh utilizes
-                this_meshes_nodes = set()
-                for mesh in lod_mesh.values():
-                    for vert in mesh.verts:
-                        if vert.node_1_weight < 1:
-                            this_meshes_nodes.add(vert.node_0)
-                        if vert.node_1_weight > 0:
-                            this_meshes_nodes.add(vert.node_1)
-
-                all_lod_nodes[lod_name].update(this_meshes_nodes)
-
                 lods_to_set = list(range(i, 5))
                 if skipped_lods:
                     lods_to_set.extend(skipped_lods)
@@ -152,25 +131,24 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
 
                 perm_added = True
 
-            # What are we doing here?
-            if len(perm.markers) > 32:
-                for marker in perm.markers:
-                    global_markers.setdefault(
-                        marker.name[: HALO_1_NAME_MAX_LEN], []).append(marker)
-            else:
-                perm_added |= bool(perm.markers)
-                mod2_markers = mod2_perm.local_markers.STEPTREE
-                for marker in perm.markers:
-                    mod2_markers.append()
-                    mod2_marker = mod2_markers[-1]
+            if len(perm.markers) > HALO_1_MAX_MARKERS_PER_PERM and not ignore_errors:
+                return ("Cannot add more than %s markers to a permutation. "
+                        "This model would contain %s markers." % (
+                            HALO_1_MAX_MARKERS_PER_PERM, len(perm.markers)), )
 
-                    mod2_marker.name = marker.name[: HALO_1_NAME_MAX_LEN]
-                    mod2_marker.node_index = marker.parent
-                    mod2_marker.translation[:] = marker.pos_x / SCALE_INTERNAL_TO_JMS,\
-                                                 marker.pos_y / SCALE_INTERNAL_TO_JMS,\
-                                                 marker.pos_z / SCALE_INTERNAL_TO_JMS
-                    mod2_marker.rotation[:] = marker.rot_i, marker.rot_j,\
-                                              marker.rot_k, marker.rot_w
+            perm_added |= bool(perm.markers)
+            mod2_markers = mod2_perm.local_markers.STEPTREE
+            for marker in perm.markers:
+                mod2_markers.append()
+                mod2_marker = mod2_markers[-1]
+
+                mod2_marker.name = marker.name[: HALO_1_NAME_MAX_LEN]
+                mod2_marker.node_index = marker.parent
+                mod2_marker.translation[:] = marker.pos_x / SCALE_INTERNAL_TO_JMS,\
+                                             marker.pos_y / SCALE_INTERNAL_TO_JMS,\
+                                             marker.pos_z / SCALE_INTERNAL_TO_JMS
+                mod2_marker.rotation[:] = marker.rot_i, marker.rot_j,\
+                                          marker.rot_k, marker.rot_w
 
 
             if not(perm_added or ignore_errors):
@@ -216,19 +194,6 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                                          marker.pos_z / SCALE_INTERNAL_TO_JMS
             mod2_marker.rotation[:] = marker.rot_i, marker.rot_j,\
                                       marker.rot_k, marker.rot_w
-
-    # set the node counts per lod
-    for lod in util.LOD_NAMES:
-        lod_nodes = all_lod_nodes[lod]
-        adding = True
-        node_ct = len(mod2_nodes)
-
-        for i in range(node_ct - 1, -1, -1):
-            if i in lod_nodes:
-                break
-            node_ct -= 1
-
-        setattr(tagdata, "%s_lod_nodes" % lod, max(0, node_ct - 1))
 
 
     # calculate triangle strips
@@ -320,3 +285,6 @@ def compile_gbxmodel(mod2_tag, merged_jms, ignore_errors=False):
                     mod2_tris[i]     = tri >> 8
                     mod2_tris[i + 1] = tri & 0xFF
                     i += 2
+
+    # calculate final bits of data before saving
+    mod2_tag.calc_internal_data()

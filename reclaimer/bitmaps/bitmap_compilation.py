@@ -13,6 +13,7 @@ from traceback import format_exc
 from arbytmap.bitmap_io import get_channel_order_by_masks,\
      get_channel_swap_mapping, swap_array_items
 from supyr_struct.defs.bitmaps.dds import dds_def
+from reclaimer.util import get_block_max
 
 __all__ = ("compile_bitmap_from_dds_files", "add_bitmap_to_bitmap_tag",
            "parse_dds_file", )
@@ -45,16 +46,20 @@ def add_bitmap_to_bitmap_tag(bitm_tag, width, height, depth, typ, fmt,
                              mip_count, new_pixels, seq_name=""):
     bitm_data = bitm_tag.data.tagdata
     sequences = bitm_data.sequences.STEPTREE
-    bitmaps = bitm_data.bitmaps.STEPTREE
-    seq_name = seq_name[: 31]
+    bitmaps   = bitm_data.bitmaps.STEPTREE
+    seq_name  = seq_name[: 31]
 
-    if len(bitmaps) >= 2048:
-        raise ValueError("Cannot add more bitmaps(max of 2048 per tag).")
+    max_bitmaps     = get_block_max(bitm_data.bitmaps)
+    max_sequences   = get_block_max(bitm_data.sequences)
+    max_pixel_bytes = get_block_max(bitm_data.processed_pixel_data)
+
+    if len(bitmaps) >= max_bitmaps:
+        raise ValueError("Cannot add more bitmaps(max of %s per tag)." % max_bitmaps)
 
     bitmaps.append()
     if not sequences or sequences[-1].sequence_name != seq_name:
-        if len(sequences) >= 256:
-            print("Cannot add more sequences(max of 256 per tag).")
+        if len(sequences) >= max_sequences:
+            print("Cannot add more sequences(max of %s per tag)." % max_sequences)
         else:
             sequences.append()
             sequences[-1].sequence_name = seq_name
@@ -101,6 +106,9 @@ def add_bitmap_to_bitmap_tag(bitm_tag, width, height, depth, typ, fmt,
     bitm_block.registration_point_y = height // 2
 
     bitm_block.pixels_offset = len(bitm_data.processed_pixel_data.data)
+
+    if len(bitm_data.processed_pixel_data.data) + len(new_pixels) >= max_pixel_bytes:
+        raise ValueError("Cannot add more pixel data(max of %s bytes per tag)." % max_pixel_bytes)
 
     # place the pixels from the dds tag into the bitmap tag
     bitm_data.processed_pixel_data.data += new_pixels

@@ -8,17 +8,10 @@
 #
 
 from ...os_v3_hek.defs.lifi import *
-
-#import and use the open saucified obje attrs
 from .obje import *
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=9)
-
-lifi_body = dict(lifi_body)
-lifi_body[0] = obje_attrs
+obje_attrs = obje_attrs_variant(obje_attrs, "lifi")
+lifi_body  = desc_variant(lifi_body, obje_attrs)
 
 def get():
     return lifi_def

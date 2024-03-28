@@ -7,7 +7,7 @@
 # See LICENSE for more information.
 #
 
-from ...os_hek.defs.senv import *
+from ...os_v3_hek.defs.senv import *
 
 dlm_comment = """DIRECTIONAL LIGHTMAP PROPERTIES
 Special shader settings for when your map has directional lightmaps rendered for it."""
@@ -51,8 +51,9 @@ os_senv_ext = Struct("shader_environment_extension",
     )
 
 # replace the padding with an open sauce shader environment extension reflexive
-senv_attrs = dict(senv_attrs)
-senv_attrs[3] = reflexive("os_shader_environment_ext", os_senv_ext, 1)
+senv_attrs = desc_variant(senv_attrs,
+    ("pad_3", reflexive("os_shader_environment_ext", os_senv_ext, 1)),
+    )
 
 senv_body = Struct("tagdata",
     shdr_attrs,

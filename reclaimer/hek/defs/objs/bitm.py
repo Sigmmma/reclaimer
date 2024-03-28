@@ -9,18 +9,20 @@
 
 from array import array
 from reclaimer.constants import TYPE_CUBEMAP, CUBEMAP_PADDING, BITMAP_PADDING,\
-     FORMAT_NAME_MAP, TYPE_NAME_MAP, FORMAT_P8_BUMP
+     FORMAT_NAME_MAP, TYPE_NAME_MAP, FORMAT_P8_BUMP, SWIZZLEABLE_FORMATS
 from reclaimer.bitmaps.p8_palette import HALO_P8_PALETTE
 from reclaimer.hek.defs.objs.tag import HekTag
 
 try:
     import arbytmap as ab
-
     if not hasattr(ab, "FORMAT_P8_BUMP"):
         ab.FORMAT_P8_BUMP = "P8-BUMP"
 
         """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
-        ab.register_format(format_id=ab.FORMAT_P8_BUMP, depths=(8,8,8,8))
+        ab.register_format(
+            format_id=ab.FORMAT_P8_BUMP, depths=(8,8,8,8)
+            )
+
 except (ImportError, AttributeError):
     ab = None
 
@@ -29,9 +31,29 @@ class BitmTag(HekTag):
     tex_infos = ()
     p8_palette = None
 
+    @property
+    def swizzleable_formats(self): 
+        return SWIZZLEABLE_FORMATS
+    
+    @property
+    def format_name_map(self):
+        return FORMAT_NAME_MAP
+    
+    @property
+    def pixel_root_definition(self):
+        return self.definition.subdefs['pixel_root']
+
     def __init__(self, *args, **kwargs):
         HekTag.__init__(self, *args, **kwargs)
         self.p8_palette = HALO_P8_PALETTE
+
+    def calc_internal_data(self, **kwargs):
+        HekTag.calc_internal_data(self)
+        
+        tagdata = self.data.tagdata
+        if tagdata.compressed_color_plate_data.size == 0:
+            tagdata.color_plate_width  = 0
+            tagdata.color_plate_height = 0
 
     def bitmap_count(self, new_value=None):
         if new_value is None:
@@ -69,26 +91,21 @@ class BitmTag(HekTag):
         self.data.tagdata.bitmaps.bitmaps_array[b_index].format.data = new_value
 
     def fix_top_format(self):
-        if len(self.data.tagdata.bitmaps.bitmaps_array) <= 0:
-            self.data.tagdata.format.data = "color_key_transparency"
-
-        # Why can't get_name get the name of the current option?
-        pixel_format = self.data.tagdata.bitmaps.bitmaps_array[0].format.get_name(
-            self.data.tagdata.bitmaps.bitmaps_array[0].format.data)
-
         top_format = "color_key_transparency"
-        if pixel_format in ("a8", "y8", "ay8", "a8y8"):
-            top_format = "monochrome"
-        elif pixel_format in ("r5g6b5", "a1r5g5b5", "a4r4g4b4"):
-            top_format = "color_16bit"
-        elif pixel_format in ("x8r8g8b8", "a8r8g8b8", "p8_bump"):
-            top_format = "color_32bit"
-        elif pixel_format == "dxt1":
-            top_format = "color_key_transparency"
-        elif pixel_format == "dxt3":
-            top_format = "explicit_alpha"
-        elif pixel_format == "dxt5":
-            top_format = "interpolated_alpha"
+        if self.bitmap_count() > 0:
+            pixel_format = self.data.tagdata.bitmaps.bitmaps_array[0].format.enum_name
+            if pixel_format in ("a8", "y8", "ay8", "a8y8"):
+                top_format = "monochrome"
+            elif pixel_format in ("r5g6b5", "a1r5g5b5", "a4r4g4b4"):
+                top_format = "color_16bit"
+            elif pixel_format in ("x8r8g8b8", "a8r8g8b8", "p8_bump"):
+                top_format = "color_32bit"
+            elif pixel_format == "dxt1":
+                top_format = "color_key_transparency"
+            elif pixel_format == "dxt3":
+                top_format = "explicit_alpha"
+            elif pixel_format == "dxt5":
+                top_format = "interpolated_alpha"
 
         self.data.tagdata.format.set_to(top_format)
 
@@ -309,7 +326,7 @@ class BitmTag(HekTag):
                 "Arbytmap is not loaded. Cannot get bitmap size.")
 
         w, h, d, = self.bitmap_width_height_depth(b_index)
-        fmt = FORMAT_NAME_MAP[self.bitmap_format(b_index)]
+        fmt = self.format_name_map[self.bitmap_format(b_index)]
 
         bytes_count = 0
         for mipmap in range(self.bitmap_mipmaps_count(b_index) + 1):
@@ -379,7 +396,7 @@ class BitmTag(HekTag):
         tex_infos = self.tex_infos
 
         for i in range(self.bitmap_count()):
-            format = FORMAT_NAME_MAP[self.bitmap_format(i)]
+            format = self.format_name_map[self.bitmap_format(i)]
             flags = self.bitmap_flags(i)
             old_w, old_h, _ = self.bitmap_width_height_depth(i)
 
@@ -409,7 +426,7 @@ class BitmTag(HekTag):
         tex_infos = self.tex_infos = []
 
         # this is the block that will hold all of the bitmap blocks
-        root_tex_block = self.definition.subdefs['pixel_root'].build()
+        root_tex_block = self.pixel_root_definition.build()
 
         is_xbox = self.is_xbox_bitmap
         get_mip_dims = ab.get_mipmap_dimensions
@@ -420,7 +437,7 @@ class BitmTag(HekTag):
             # since we need this information to read the bitmap we extract it
             mw, mh, md, = self.bitmap_width_height_depth(i)
             type         = self.bitmap_type(i)
-            format       = FORMAT_NAME_MAP[self.bitmap_format(i)]
+            format       = self.format_name_map[self.bitmap_format(i)]
             mipmap_count = self.bitmap_mipmaps_count(i) + 1
             sub_bitmap_count = ab.SUB_BITMAP_COUNTS[TYPE_NAME_MAP[type]]
 
@@ -481,3 +498,35 @@ class BitmTag(HekTag):
             # it's easier to work with bitmaps in one format so
             # we'll switch the mipmaps from XBOX to PC ordering
             self.change_sub_bitmap_ordering(False)
+
+    def set_swizzled(self, swizzle):
+        '''Swizzles or unswizzles all applicable bitmap formats.'''
+        if ab is None:
+            raise NotImplementedError("Arbytmap is not loaded. Cannot swizzle.")
+
+        pixel_data  = self.data.tagdata.processed_pixel_data.data
+        bitmaps     = self.data.tagdata.bitmaps.bitmaps_array
+        swizzler    = ab.swizzler.Swizzler(mask_type="MORTON")
+        for i in range(len(bitmaps)):
+            bitmap  = bitmaps[i]
+            format  = self.format_name_map[bitmap.format.data]
+            if format not in self.swizzleable_formats:
+                bitmap.flags.swizzled = False
+                continue
+            elif bitmap.flags.swizzled == bool(swizzle):
+                continue
+
+            w, h, d = bitmap.width, bitmap.height, bitmap.depth
+            faces   = 6 if bitmap.type.data == TYPE_CUBEMAP else 1
+            mipmaps = bitmap.mipmaps + 1
+
+            for f in range(faces):
+                for m in range(mipmaps):
+                    j = m*faces + f
+                    pixel_data[i][j] = swizzler.swizzle_single_array(
+                        pixel_data[i][j], swizzle, 1, 
+                        *ab.get_mipmap_dimensions(w, h, d, m),
+                        False
+                        )
+
+            bitmap.flags.swizzled = swizzle

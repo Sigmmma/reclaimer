@@ -6,11 +6,17 @@
 # Reclaimer is free software under the GNU General Public License v3.0.
 # See LICENSE for more information.
 #
-
+from collections import namedtuple
+from copy import deepcopy
 from struct import unpack
 from traceback import format_exc
 
+from reclaimer.constants import GEN_1_HALO_CUSTOM_ENGINES,\
+    GEN_1_HALO_PC_ENGINES, GEN_1_HALO_GBX_ENGINES
 from reclaimer import data_extraction
+from reclaimer.mcc_hek.defs.bitm import bitm_def as pixel_root_subdef
+from reclaimer.mcc_hek.defs.objs.bitm import MccBitmTag, HALO_P8_PALETTE
+from reclaimer.stubbs.defs.objs.bitm import StubbsBitmTag, STUBBS_P8_PALETTE
 from reclaimer.util import get_is_xbox_map
 from reclaimer.meta.halo_map import map_header_def, tag_index_pc_def
 from reclaimer.meta.halo1_rsrc_map import lite_halo1_rsrc_map_def as halo1_rsrc_map_def
@@ -18,9 +24,13 @@ from reclaimer.meta.wrappers.byteswapping import raw_block_def, byteswap_pcm16_s
 from reclaimer.meta.wrappers.map_pointer_converter import MapPointerConverter
 from reclaimer.meta.wrappers.tag_index_manager import TagIndexManager
 from reclaimer.meta.wrappers.halo_map import HaloMap
+from reclaimer.sounds import ogg as sounds_ogg, constants as sound_const
 
 from supyr_struct.buffer import BytearrayBuffer, get_rawdata
 from supyr_struct.field_types import FieldType
+
+# reassign since we only want a reference to the sub-definition
+pixel_root_subdef = pixel_root_subdef.subdefs['pixel_root']
 
 # this is ultra hacky, but it seems to be the only
 # way to fix the tagid for the sounds resource map
@@ -58,10 +68,6 @@ loc_exts    = tuple(loc_exts.get(i, 'unicode_string_list')
 
 
 def inject_sound_data(map_data, rsrc_data, rawdata_ref, map_magic):
-    if not rawdata_ref.size:
-        rawdata_ref.data = b''
-        return
-
     if rawdata_ref.flags.data_in_resource_map:
         data, ptr = rsrc_data, rawdata_ref.raw_pointer
     elif rawdata_ref.pointer == 0:
@@ -69,8 +75,51 @@ def inject_sound_data(map_data, rsrc_data, rawdata_ref, map_magic):
     else:
         data, ptr = map_data,  rawdata_ref.pointer + map_magic
 
-    data.seek(ptr)
-    rawdata_ref.data = data.read(rawdata_ref.size)
+    if data and rawdata_ref.size:
+        data.seek(ptr)
+        rawdata_ref.data = data.read(rawdata_ref.size)
+    else:
+        # hack to ensure the size is preserved when
+        # we replace the rawdata with empty bytes
+        size = rawdata_ref.size
+        rawdata_ref.data = b''
+        rawdata_ref.size = size
+
+
+def uses_external_sounds(sound_meta):
+    for pitches in sound_meta.pitch_ranges.STEPTREE:
+        for perm in pitches.permutations.STEPTREE:
+            for b in (perm.samples, perm.mouth_data, perm.subtitle_data):
+                if b.flags.data_in_resource_map:
+                    return True
+    return False
+
+
+class MetaBitmTag():
+    '''
+    This class exists to facilitate processing bitmap tags extracted 
+    from maps without fully converting them to tag objects first.
+    '''
+    _fake_data_block = namedtuple('FakeDataBlock',
+        ("blam_header", "tagdata")
+        )
+    def __init__(self, tagdata=None):
+        self.data = self._fake_data_block(None, tagdata)
+
+    # stubed since there's nothing to calculate here
+    def calc_internal_data(self): pass
+
+    @property
+    def pixel_root_definition(self): return pixel_root_subdef
+
+
+class MetaHaloBitmTag(MetaBitmTag, MccBitmTag):
+    @property
+    def p8_palette(self): return HALO_P8_PALETTE
+
+class MetaStubbsBitmTag(MetaBitmTag, StubbsBitmTag):
+    @property
+    def p8_palette(self): return STUBBS_P8_PALETTE
 
 
 class Halo1RsrcMap(HaloMap):
@@ -104,19 +153,15 @@ class Halo1RsrcMap(HaloMap):
         pth = self.orig_tag_index[0].tag.path if self.orig_tag_index else ""
         self.filepath = map_path
 
-        ce_engine = ""
-        for halo_map in self.maps.values():
-            ce_engine = getattr(halo_map, "engine")
-            if ce_engine:
-                break
-
         rsrc_tag_count = len(rsrc_map.data.tags)
         if resource_type == 3 or (pth.endswith('__pixels') or
                                   pth.endswith('__permutations')):
-            if ce_engine:
-                self.engine = ce_engine
-            else:
-                self.engine = "halo1ce"
+            engine = ""
+            for halo_map in self.maps.values():
+                engine = engine or getattr(halo_map, "engine")
+                if engine: break
+
+            self.engine = engine or "halo1ce"
         elif ((resource_type == 1 and rsrc_tag_count == 1107) or
               (resource_type == 2 and rsrc_tag_count == 7192)):
             self.engine = "halo1pcdemo"
@@ -198,10 +243,16 @@ class Halo1RsrcMap(HaloMap):
             return ()
 
         tag_id = meta.promotion_sound.id & 0xFFff
-        if tag_id not in range(len(self.tag_index.tag_index)):
+        tag_index_array = self.tag_index.tag_index
+        if tag_id not in range(len(tag_index_array)):
             return ()
 
-        return [self.tag_index.tag_index[tag_id]]
+        ref = deepcopy(meta.promotion_sound)
+        tag_index_ref      = tag_index_array[tag_id]
+        ref.tag_class.data = tag_index_ref.class_1.data
+        ref.id             = tag_index_ref.id
+        ref.filepath       = tag_index_ref.path
+        return [ref]
 
     def is_indexed(self, tag_id):
         return True
@@ -223,8 +274,11 @@ class Halo1RsrcMap(HaloMap):
 
         kwargs = dict(parsing_resource=True)
         desc = self.get_meta_descriptor(tag_cls)
-        if desc is None or self.engine not in ("halo1ce", "halo1yelo",
-                                               "halo1vap"):
+        if (desc is None or self.engine == "halo1mcc" or 
+            self.engine not in GEN_1_HALO_CUSTOM_ENGINES):
+            # NOTE: mcc resource maps DON'T contain metadata, they only
+            #       contain bitmap pixel data and sound sample data.
+            #       as such, they're EXACTLY like halo1pc resource maps
             return
         elif tag_cls != 'snd!':
             # the pitch ranges pointer in resource sound tags is invalid, so
@@ -244,7 +298,7 @@ class Halo1RsrcMap(HaloMap):
                 desc, parent=block, attr_index=0, rawdata=self.map_data,
                 tag_index_manager=self.snd_rsrc_tag_index_manager,
                 tag_cls=tag_cls, root_offset=tag_index_ref.meta_offset,
-                safe_mode=not kw.get("disable_safe_mode"),
+                safe_mode=(self.safe_mode and not kw.get("disable_safe_mode")),
                 indexed=True, **kwargs)
             FieldType.force_normal()
 
@@ -258,37 +312,90 @@ class Halo1RsrcMap(HaloMap):
         return block[0]
 
     def meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs):
-        magic      = self.map_magic
-        engine     = self.engine
-        map_data   = self.map_data
-        tag_index  = self.tag_index
-        is_xbox = get_is_xbox_map(engine)
+        magic       = self.map_magic
+        engine      = self.engine
+        map_data    = self.map_data
+        tag_index   = self.tag_index
+        byteswap    = kwargs.get("byteswap", True)
 
         if tag_cls == "bitm":
+            bitm_tag_cls = MetaStubbsBitmTag if "stubbs" in engine else MetaHaloBitmTag
+            bitm_tag     = bitm_tag_cls(meta)
+            bitmaps      = meta.bitmaps.STEPTREE
+
             # set the size of the compressed plate data to nothing
             meta.compressed_color_plate_data.STEPTREE = BytearrayBuffer()
 
-            new_pixels_offset = 0
+            # set up the pixels_offsets
+            pixels_offset = 0
+            for bitmap in bitmaps:
+                bitmap.pixels_offset = pixels_offset
+                pixels_offset       += bitmap.pixels_meta_size
 
-            # uncheck the prefer_low_detail flag and
-            # set up the pixels_offset correctly.
-            for bitmap in meta.bitmaps.STEPTREE:
-                bitmap.flags.prefer_low_detail = is_xbox
-                bitmap.pixels_offset = new_pixels_offset
-                new_pixels_offset += bitmap.pixels_meta_size
+            # undo xbox-specific stuff(reorder bitmaps and unswizzle)
+            if get_is_xbox_map(engine):
+                # rearrange the bitmap pixels so they're in standard format
+                try:
+                    bitm_tag.parse_bitmap_blocks()
+                    bitm_tag.sanitize_bitmaps()
+                    bitm_tag.set_swizzled(False)
+                    bitm_tag.add_bitmap_padding(False)
 
-                # clear some meta-only fields
-                bitmap.pixels_meta_size = 0
-                bitmap.bitmap_id_unknown1 = bitmap.bitmap_id_unknown2 = 0
-                bitmap.bitmap_data_pointer = bitmap.base_address = 0
+                    # serialize the pixel_data and replace the parsed block with it
+                    meta.processed_pixel_data.data = meta.processed_pixel_data.data.serialize()
+                except Exception:
+                    print(format_exc())
+                    print("Failed to convert xbox bitmap data to pc.")
+
+            # clear meta-only fields
+            for bitmap in bitmaps:
+                bitmap.flags.data        &= 0x3F
+                bitmap.base_address       = 0
+                bitmap.pixels_meta_size   = bitmap.bitmap_data_pointer = 0
+                bitmap.bitmap_id_unknown1 = bitmap.bitmap_id_unknown2  = 0
 
         elif tag_cls == "snd!":
             meta.maximum_bend_per_second = meta.maximum_bend_per_second ** 30
+            meta.unknown1 = 0xFFFFFFFF
+            meta.unknown2 = 0xFFFFFFFF
+            bytes_per_sample = sound_const.channel_counts.get(
+                meta.encoding.data, 1
+                ) * 2
             for pitch_range in meta.pitch_ranges.STEPTREE:
-                for permutation in pitch_range.permutations.STEPTREE:
-                    if permutation.compression.enum_name == "none":
-                        # byteswap pcm audio
-                        byteswap_pcm16_samples(permutation.samples)
+                # null some meta-only fields
+                pitch_range.playback_rate = 0.0
+                pitch_range.unknown1      = -1
+                pitch_range.unknown2      = -1
+
+                for perm in pitch_range.permutations.STEPTREE:
+                    if perm.compression.enum_name == "none":
+                        buffer_size = len(perm.samples)
+                        if byteswap:
+                            # byteswap pcm audio
+                            byteswap_pcm16_samples(perm.samples)
+                    elif perm.compression.enum_name == "ogg":
+                        # oggvorbis NEEDS this set for proper playback ingame
+                        buffer_size = (
+                            sounds_ogg.get_ogg_pcm_sample_count(perm.samples.data)
+                            if sound_const.OGGVORBIS_AVAILABLE else
+                            # oh well. default to whatever it's set to
+                            (perm.buffer_size // bytes_per_sample)
+                            ) * bytes_per_sample
+                    else:
+                        buffer_size = 0
+
+                    # fix buffer_size possibly being incorrect
+                    perm.buffer_size = buffer_size
+
+                    # null some meta-only fields
+                    perm.sample_data_pointer = perm.parent_tag_id = perm.unknown = 0
+                    if hasattr(perm, "runtime_flags"): # mcc
+                        perm.runtime_flags = 0
+                    else: # non-mcc
+                        perm.parent_tag_id2 = 0
+
+                    for b in (perm.samples, perm.mouth_data, perm.subtitle_data):
+                        b.flags.data_in_resource_map = False
 
         return meta
 
@@ -300,18 +407,13 @@ class Halo1RsrcMap(HaloMap):
         magic  = self.map_magic
         engine = self.engine
 
-        map_data = self.map_data
-
-        try:   bitmap_data = bitmaps.map_data
-        except Exception:    bitmap_data = None
-        try:   sound_data = sounds.map_data
-        except Exception:   sound_data = None
-        try:   loc_data = loc.map_data
-        except Exception: loc_data = None
+        map_data    = self.map_data
+        bitmap_data = getattr(bitmaps, "map_data", None)
+        sound_data  = getattr(sounds,  "map_data", None)
+        loc_data    = getattr(loc,     "map_data", None)
 
         is_not_indexed = not self.is_indexed(tag_index_ref.id & 0xFFff)
-        might_be_in_rsrc = engine in ("halo1pc", "halo1pcdemo",
-                                      "halo1ce", "halo1yelo", "halo1vap")
+        might_be_in_rsrc = engine in GEN_1_HALO_GBX_ENGINES
         might_be_in_rsrc &= not self.is_resource
 
         # get some rawdata that would be pretty annoying to do in the parser
@@ -363,30 +465,34 @@ class Halo1RsrcMap(HaloMap):
             b = meta.string
             loc_data.seek(b.pointer + meta_offset)
             meta.string.data = loc_data.read(b.size).decode('utf-16-le')
+
         elif tag_cls == "snd!":
             # might need to get samples and permutations from the resource map
-            is_pc = engine in ("halo1pc", "halo1pcdemo")
-            is_ce = engine in ("halo1ce", "halo1yelo", "halo1vap")
-            if not(is_pc or is_ce):
-                return meta
-            elif sound_data is None:
-                return
+            is_mcc  = engine == "halo1mcc"
+            is_pc   = engine in GEN_1_HALO_PC_ENGINES
+            is_ce   = engine in GEN_1_HALO_CUSTOM_ENGINES and not is_mcc
 
             # ce tagpaths are in the format:  path__permutations
             #     ex: sound\sfx\impulse\coolant\enter_water__permutations
             #
             # pc tagpaths are in the format:  path__pitchrange__permutation
             #     ex: sound\sfx\impulse\coolant\enter_water__0__0
-            other_data = map_data
-            sound_magic = 0 - magic
-            # DO NOT optimize this section. The logic is like this on purpose
-            if is_pc:
-                pass
-            elif self.is_resource:
-                other_data = sound_data
-                sound_magic = tag_index_ref.meta_offset + meta.get_size()
-            elif sounds is None:
+
+            if not(is_pc or is_ce or is_mcc):
+                # not pc, ce, or mcc, so sound data is read on initial tag parse
                 return
+            elif self.is_resource and is_ce:
+                # ce sounds.map contain tagdata, not just sample data.
+                # HOWEVER, the pointers in the tag data are relative to
+                # the END of the tag(idky), so we set the magic to it.
+                other_data = sound_data  # reading for resource, so sound map IS map data
+                sound_magic = tag_index_ref.meta_offset + meta.get_size()
+            else:
+                # either samples are in resource map and are pointed to with
+                # the raw pointer(relative to file start), or are in the main
+                # map and are pointed to with the magic-relative pointer
+                other_data = map_data
+                sound_magic = 0 - magic
 
             for pitches in meta.pitch_ranges.STEPTREE:
                 for perm in pitches.permutations.STEPTREE:

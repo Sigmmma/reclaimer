@@ -7,21 +7,12 @@
 # See LICENSE for more information.
 #
 
+from ...hek.defs.lifi import *
 from .obje import *
 from .devi import *
-from ...hek.defs.lifi import *
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=9)
-
-lifi_body = Struct("tagdata",
-    obje_attrs,
-    devi_attrs,
-
-    SIZE=720,
-    )
+obje_attrs = obje_attrs_variant(obje_attrs, "lifi")
+lifi_body  = desc_variant(lifi_body, obje_attrs)
 
 def get():
     return lifi_def

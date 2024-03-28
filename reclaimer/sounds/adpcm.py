@@ -15,13 +15,13 @@
 # IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 import array
-import audioop
 import sys
+    
 
 from struct import unpack_from
 from types import MethodType
 
-from . import constants
+from . import constants, util, audioop
 
 try:
     from .ext import adpcm_ext
@@ -48,7 +48,6 @@ def _slow_decode_xbadpcm_samples(in_data, out_data, channel_ct):
     pcm_blocksize   = channel_ct * constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE // 2
     adpcm_blocksize = channel_ct * constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE
 
-    adpcm2lin = audioop.adpcm2lin
     all_codes = memoryview(in_data)
 
     state_unpacker = MethodType(unpack_from, "<" + "hBx" * channel_ct)
@@ -73,7 +72,7 @@ def _slow_decode_xbadpcm_samples(in_data, out_data, channel_ct):
                     for j in range(c * 4, len(swapped_codes), code_block_size)
                     )
             decoded_samples = memoryview(
-                adpcm2lin(swapped_codes, 2, all_states[c])[0]).cast("h")
+                audioop.adpcm2lin(swapped_codes, 2, all_states[c])[0]).cast("h")
 
             # interleave the samples for each channel
             out_data[k + c] = all_states[c][0]
@@ -104,7 +103,8 @@ def decode_adpcm_samples(in_data, channel_ct, output_big_endian=False):
 
 
 def encode_adpcm_samples(in_data, channel_ct, input_big_endian=False,
-                         noise_shaping=NOISE_SHAPING_OFF, lookahead=3):
+                         noise_shaping=NOISE_SHAPING_OFF, lookahead=3,
+                         fit_to_blocksize=True):
     assert noise_shaping in (NOISE_SHAPING_OFF, NOISE_SHAPING_STATIC, NOISE_SHAPING_DYNAMIC)
     assert lookahead in range(6)
 
@@ -115,16 +115,19 @@ def encode_adpcm_samples(in_data, channel_ct, input_big_endian=False,
             "Accelerator module not detected. Cannot compress to ADPCM.")
 
     if (sys.byteorder == "big") != input_big_endian:
-        out_data = audioop.byteswap(out_data, 2)
+        in_data = audioop.byteswap(in_data, 2)
 
     adpcm_blocksize = constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE * channel_ct
-    pcm_blocksize = constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE * channel_ct
+    pcm_blocksize   = constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE * channel_ct
+    pcm_block_count = len(in_data) // pcm_blocksize
 
-    pad_size = len(in_data) % pcm_blocksize
-    if pad_size:
-        pad_size = pcm_blocksize - pad_size
+    pad_size = (pcm_blocksize - (len(in_data) % pcm_blocksize)) % pcm_blocksize
+    if fit_to_blocksize and pad_size:
+        # truncate to fit to blocksize
+        in_data = in_data[:pcm_block_count * pcm_blocksize]
+    elif pad_size:
         # repeat the last sample to the end to pad to a multiple of blocksize
-        pad_piece_size = (channel_ct * 2)
+        pad_piece_size = channel_ct * 2
         in_data += in_data[-pad_piece_size: ] * (pad_size // pad_piece_size)
 
     out_data = bytearray(

@@ -39,7 +39,8 @@ actv_grenades = Struct("grenades",
     float_wu("collateral_damage_radius"),
     float_zero_to_one("grenade_chance"),
     float_sec("grenade_check_time", UNIT_SCALE=sec_unit_scale),
-    float_sec("encounter_grenade_timeout", UNIT_SCALE=sec_unit_scale)
+    float_sec("encounter_grenade_timeout", UNIT_SCALE=sec_unit_scale),
+    SIZE=52,
     )
 
 actv_body = Struct("tagdata",
@@ -56,12 +57,12 @@ actv_body = Struct("tagdata",
     dependency("actor_definition", "actr"),
     dependency("unit", valid_units),
     dependency("major_variant", "actv"),
-    SEnum16("mcc_scoring_type", TOOLTIP="Used to determine score in MCC", *mcc_actor_types),
 
+    Pad(4), # replaced with metagame_scoring in mcc_hek
 
     #Movement switching
     Struct("movement_switching",
-        Pad(22),
+        Pad(20),
         SEnum16("movement_type",
             "always_run",
             "always_crouch",

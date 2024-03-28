@@ -9,9 +9,21 @@
 
 from math import ceil, log
 
-from arbytmap.bitmap_io import get_pixel_bytes_size
-from reclaimer.h3.constants import HALO3_SHARED_MAP_TYPES
+from reclaimer.h3.constants import HALO3_SHARED_MAP_TYPES, RECLAIMER_NO_ARBY
 from reclaimer.util import *
+
+
+def get_pixel_bytes_size(*args, **kwargs):
+    raise NameError(
+        "Arbytmap is not installed. "
+        "Cannot determine pixel bytes size"
+        )
+
+if not os.environ.get(RECLAIMER_NO_ARBY):
+    try:
+        from arbytmap.bitmap_io import get_pixel_bytes_size
+    except ImportError:
+        pass
 
 
 def get_virtual_dimension(bitm_fmt, dim, mip_level=0, tiled=False):

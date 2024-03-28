@@ -8,9 +8,21 @@
 #
 
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.scnr import ScnrTag
 from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.util import desc_variant
+from reclaimer.misc.defs.recorded_animations import build_r_a_stream_block
+
+
+def compute_decompiled_ra_stream(parent=None, **kwargs):
+    try:
+        if parent is not None:
+            parent.decompiled_stream = build_r_a_stream_block(
+                parent.parent.unit_control_data_version,
+                parent.parent.recorded_animation_event_stream.STEPTREE
+                )
+    except Exception:
+        pass
 
 
 def object_reference(name, *args, **kwargs):
@@ -42,47 +54,6 @@ def object_swatch(name, def_id, size=48):
         SIZE=size
         )
 
-fl_float_xyz = QStruct("",
-    FlFloat("x"),
-    FlFloat("y"),
-    FlFloat("z"),
-    ORIENT="h"
-    )
-
-stance_flags = FlBool16("stance",
-    "walk",
-    "look_only",
-    "primary_fire",
-    "secondary_fire",
-    "jump",
-    "crouch",
-    "melee",
-    "flashlight",
-    "action1",
-    "action2",
-    "action_hold",
-    )
-
-unit_control_packet = Struct("unit_control_packet",
-
-    )
-
-r_a_stream_header = Struct("r_a_stream_header",
-    UInt8("move_index", DEFAULT=3, MAX=6),
-    UInt8("bool_index"),
-    stance_flags,
-    FlSInt16("weapon", DEFAULT=-1),
-    QStruct("speed", FlFloat("x"), FlFloat("y"), ORIENT="h"),
-    QStruct("feet", INCLUDE=fl_float_xyz),
-    QStruct("body", INCLUDE=fl_float_xyz),
-    QStruct("head", INCLUDE=fl_float_xyz),
-    QStruct("change", INCLUDE=fl_float_xyz),
-    FlUInt16("unknown1"),
-    FlUInt16("unknown2"),
-    FlUInt16("unknown3", DEFAULT=0xFFFF),
-    FlUInt16("unknown4", DEFAULT=0xFFFF),
-    SIZE=60
-    )
 
 device_flags = (
     "initially_open",  # value of 1.0
@@ -235,11 +206,21 @@ object_name = Struct("object_name",
     SIZE=36
     )
 
+# 8 bytes of padding, with the 5th byte being defined separately
+# so it can be replaced with the appearance_player_index in mcc_hek
+_object_ref_pad_fields = tuple(
+    Pad(n) for n in (2, 2, 1, 3)
+    )
+
 # Object references
-scenery = object_reference("scenery", SIZE=72, block_name="sceneries")
+scenery = object_reference("scenery",
+    *_object_ref_pad_fields,
+    SIZE=72, block_name="sceneries"
+    )
 
 biped = object_reference("biped",
-    Pad(40),
+    *_object_ref_pad_fields,
+    Pad(32),
     float_zero_to_one("body_vitality"),
     Bool32("flags",
         "dead",
@@ -248,7 +229,8 @@ biped = object_reference("biped",
     )
 
 vehicle = object_reference("vehicle",
-    Pad(40),
+    *_object_ref_pad_fields,
+    Pad(32),
     float_zero_to_one("body_vitality"),
     Bool32("flags",
         "dead",
@@ -285,11 +267,14 @@ equipment = object_reference("equipment",
         "obsolete",
         {NAME: "can_accelerate", GUI_NAME:"moves due to explosions"},
         ),
+    Pad(1),  # replaced with appearance_player_index in mcc_hek
+    Pad(3),
     SIZE=40
     )
 
 weapon = object_reference("weapon",
-    Pad(40),
+    *_object_ref_pad_fields,
+    Pad(32),
     SInt16("rounds_left"),
     SInt16("rounds_loaded"),
     Bool16("flags",
@@ -310,7 +295,7 @@ device_group = Struct("device_group",
     )
 
 machine = object_reference("machine",
-    Pad(8),
+    *_object_ref_pad_fields,
     dyn_senum16("power_group",
         DYN_NAME_PATH=".....device_groups.STEPTREE[DYN_I].name"),
     dyn_senum16("position_group",
@@ -326,7 +311,7 @@ machine = object_reference("machine",
     )
 
 control = object_reference("control",
-    Pad(8),
+    *_object_ref_pad_fields,
     dyn_senum16("power_group",
         DYN_NAME_PATH=".....device_groups.STEPTREE[DYN_I].name"),
     dyn_senum16("position_group",
@@ -340,7 +325,10 @@ control = object_reference("control",
     )
 
 light_fixture = object_reference("light_fixture",
-    Pad(8),
+    FlUInt16("bsp_indices_mask", VISIBLE=False),
+    Pad(2),
+    Pad(1),
+    Pad(3),
     dyn_senum16("power_group",
         DYN_NAME_PATH=".....device_groups.STEPTREE[DYN_I].name"),
     dyn_senum16("position_group",
@@ -353,7 +341,10 @@ light_fixture = object_reference("light_fixture",
     SIZE=88
     )
 
-sound_scenery = object_reference("sound_scenery", SIZE=40, block_name="sound_sceneries")
+sound_scenery = object_reference("sound_scenery",
+    *_object_ref_pad_fields,
+    SIZE=40, block_name="sound_sceneries"
+    )
 
 # Object swatches
 scenery_swatch = object_swatch("scenery_swatch", "scen")
@@ -378,6 +369,8 @@ player_starting_profile = Struct("player_starting_profile",
     SInt16("secondary_rounds_total"),
     SInt8("starting_frag_grenade_count", MIN=0),
     SInt8("starting_plasma_grenade_count", MIN=0),
+    Pad(1),  # replaced with starting_grenade_type2_count in mcc_hek
+    Pad(1),  # replaced with starting_grenade_type3_count in mcc_hek
     SIZE=104
     )
 
@@ -434,7 +427,19 @@ recorded_animation = Struct("recorded_animation",
     SInt16("length_of_animation", SIDETIP="ticks"),  # ticks
     Pad(6),
     rawdata_ref("recorded_animation_event_stream", max_size=2097152),
-    SIZE=64
+    Pad(0),
+    SIZE=64,
+    )
+
+recorded_animation_with_ra_stream = desc_variant(recorded_animation,
+    ("pad_8", QStruct("decompiled_stream",
+        # NOTE: making this a steptree to ensure the data in the
+        #       recorded_animation_event_stream is parsed and available
+        STEPTREE=Computed("decompiled_stream",
+            COMPUTE_READ=compute_decompiled_ra_stream, WIDGET=ContainerFrame
+            ),
+        SIZE=0,
+        ))
     )
 
 netgame_flag = Struct("netgame_flag",
@@ -467,8 +472,9 @@ netgame_equipment = Struct("netgame_equipment",
     SInt16("team_index"),
     SInt16("spawn_time", SIDETIP="seconds(0 = default)",
             UNIT_SCALE=sec_unit_scale),  # seconds
+    FlUInt32("unknown", VISIBLE=False),
 
-    Pad(48),
+    Pad(44),
     QStruct("position", INCLUDE=xyz_float),
     float_rad("facing"),  # radians
     dependency("item_collection", "itmc"),
@@ -542,6 +548,8 @@ halo_script = Struct("script",
     SEnum16("return_type", *script_object_types, EDITABLE=False),
     UInt32("root_expression_index", EDITABLE=False),
     Computed("decompiled_script", WIDGET=HaloScriptTextFrame),
+    Pad(40),
+    Pad(12),  # replaced with parameters in mcc_hek
     SIZE=92,
     )
 
@@ -575,7 +583,7 @@ cutscene_flag = Struct("cutscene_flag",
     )
 
 cutscene_camera_point = Struct("cutscene_camera_point",
-    Pad(4),
+    FlUInt32("unknown", VISIBLE=False),
     ascii_str32("name"),
     Pad(4),
     QStruct("position", INCLUDE=xyz_float),
@@ -585,7 +593,7 @@ cutscene_camera_point = Struct("cutscene_camera_point",
     )
 
 cutscene_title = Struct("cutscene_title",
-    Pad(4),
+    FlUInt32("unknown", VISIBLE=False),
     ascii_str32("name"),
     Pad(4),
     QStruct("text_bounds",
@@ -606,7 +614,8 @@ cutscene_title = Struct("cutscene_title",
         "center",
         ),
 
-    Pad(6),
+    Pad(2),
+    Pad(4),  # replaced with flags in mcc_hek
     #QStruct("text_color", INCLUDE=argb_byte),
     #QStruct("shadow_color", INCLUDE=argb_byte),
     UInt32("text_color", INCLUDE=argb_uint32),
@@ -626,8 +635,11 @@ move_position = Struct("move_position",
     dyn_senum16("animation",
         DYN_NAME_PATH="tagdata.ai_animation_references.STEPTREE[DYN_I].animation_name"),
     SInt8("sequence_id"),
+    Pad(1),
+    Pad(8),
 
-    Pad(45),
+    FlUInt16("cluster_index", VISIBLE=False),
+    Pad(34),
     SInt32("surface_index"),
     SIZE=80
     )
@@ -635,7 +647,7 @@ move_position = Struct("move_position",
 actor_starting_location = Struct("starting_location",
     QStruct("position", INCLUDE=xyz_float),
     float_rad("facing"),  # radians
-    Pad(2),
+    FlUInt16("cluster_index", VISIBLE=False),
     SInt8("sequence_id"),
     Bool8("flags",
         "required",
@@ -704,8 +716,8 @@ squad = Struct("squad",
     from_to_sec("respawn_delay"),
 
     Pad(48),
-    reflexive("move_positions", move_position, 31),
-    reflexive("starting_locations", actor_starting_location, 31),
+    reflexive("move_positions", move_position, 32),
+    reflexive("starting_locations", actor_starting_location, 32),
     SIZE=232
     )
 
@@ -759,7 +771,7 @@ encounter = Struct("encounter",
         {NAME: "unused8",  GUI_NAME: "8 / unused8"},
         {NAME: "unused9",  GUI_NAME: "9 / unused9"}
         ),
-    SInt16('unknown', VISIBLE=False),
+    FlUInt16('unknown', VISIBLE=False, DEFAULT=1),
     SEnum16("search_behavior",
         "normal",
         "never",
@@ -799,6 +811,7 @@ command = Struct("command",
 
 point = Struct("point",
     QStruct("position", INCLUDE=xyz_float),
+    FlUInt32("surface_index", VISIBLE=False),
     SIZE=20
     )
 
@@ -847,8 +860,14 @@ participant = Struct("participant",
     dyn_senum16("set_new_name", DYN_NAME_PATH="tagdata.object_names.STEPTREE[DYN_I].name"),
 
     Pad(12),
-    BytesRaw("unknown", DEFAULT=b"\xFF"*12, SIZE=12, VISIBLE=False),
+    FlUInt16("variant_1_id", VISIBLE=False),
+    FlUInt16("variant_2_id", VISIBLE=False),
+    FlUInt16("variant_3_id", VISIBLE=False),
+    FlUInt16("variant_4_id", VISIBLE=False),
+    FlUInt16("variant_5_id", VISIBLE=False),
+    FlUInt16("variant_6_id", VISIBLE=False),
     ascii_str32("encounter_name"),
+    FlUInt32("encounter_index", VISIBLE=False),
     SIZE=84
     )
 
@@ -939,60 +958,61 @@ scnr_body = Struct("tagdata",
     reflexive("predicted_resources", predicted_resource, 1024, VISIBLE=False),
     reflexive("functions", function, 32,
         DYN_NAME_PATH='.name'),
-    rawdata_ref("scenario_editor_data", max_size=65536),
+    rawdata_ref("scenario_editor_data", max_size=UINT16_MAX),
     reflexive("comments", comment, 1024),
 
-    Pad(224),
+    Pad(12),  # replaced with scavenger_hunt_objects in mcc_hek
+    Pad(212),
     reflexive("object_names", object_name, 512,
-        DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True),
-    reflexive("sceneries", scenery, 2000, IGNORE_SAFE_MODE=True),
+        DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
+    reflexive("sceneries", scenery, 2000, IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
     reflexive("sceneries_palette", scenery_swatch, 100,
-        DYN_NAME_PATH='.name.filepath'),
-    reflexive("bipeds", biped, 128, IGNORE_SAFE_MODE=True),
+        DYN_NAME_PATH='.name.filepath', EXT_MAX=SINT16_MAX),
+    reflexive("bipeds", biped, 128, IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
     reflexive("bipeds_palette", biped_swatch, 100,
-        DYN_NAME_PATH='.name.filepath'),
-    reflexive("vehicles", vehicle, 80, IGNORE_SAFE_MODE=True),
+        DYN_NAME_PATH='.name.filepath', EXT_MAX=SINT16_MAX),
+    reflexive("vehicles", vehicle, 80, IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
     reflexive("vehicles_palette", vehicle_swatch, 100,
-        DYN_NAME_PATH='.name.filepath'),
-    reflexive("equipments", equipment, 256, IGNORE_SAFE_MODE=True),
+        DYN_NAME_PATH='.name.filepath', EXT_MAX=SINT16_MAX),
+    reflexive("equipments", equipment, 256, IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
     reflexive("equipments_palette", equipment_swatch, 100,
-        DYN_NAME_PATH='.name.filepath'),
-    reflexive("weapons", weapon, 128, IGNORE_SAFE_MODE=True),
+        DYN_NAME_PATH='.name.filepath', EXT_MAX=SINT16_MAX),
+    reflexive("weapons", weapon, 128, IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
     reflexive("weapons_palette", weapon_swatch, 100,
-        DYN_NAME_PATH='.name.filepath'),
+        DYN_NAME_PATH='.name.filepath', EXT_MAX=SINT16_MAX),
 
     reflexive("device_groups", device_group, 128,
         DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True),
-    reflexive("machines", machine, 400, IGNORE_SAFE_MODE=True),
+    reflexive("machines", machine, 400, IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
     reflexive("machines_palette", machine_swatch, 100,
-        DYN_NAME_PATH='.name.filepath'),
-    reflexive("controls", control, 100, IGNORE_SAFE_MODE=True),
+        DYN_NAME_PATH='.name.filepath', EXT_MAX=SINT16_MAX),
+    reflexive("controls", control, 100, IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
     reflexive("controls_palette", control_swatch, 100,
-        DYN_NAME_PATH='.name.filepath'),
-    reflexive("light_fixtures", light_fixture, 500, IGNORE_SAFE_MODE=True),
+        DYN_NAME_PATH='.name.filepath', EXT_MAX=SINT16_MAX),
+    reflexive("light_fixtures", light_fixture, 500, IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
     reflexive("light_fixtures_palette", light_fixture_swatch, 100,
-        DYN_NAME_PATH='.name.filepath'),
-    reflexive("sound_sceneries", sound_scenery, 256, IGNORE_SAFE_MODE=True),
+        DYN_NAME_PATH='.name.filepath', EXT_MAX=SINT16_MAX),
+    reflexive("sound_sceneries", sound_scenery, 256, IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
     reflexive("sound_sceneries_palette", sound_scenery_swatch, 100,
-        DYN_NAME_PATH='.name.filepath'),
+        DYN_NAME_PATH='.name.filepath', EXT_MAX=SINT16_MAX),
 
     Pad(84),
     reflexive("player_starting_profiles", player_starting_profile, 256,
-        DYN_NAME_PATH='.name'),
-    reflexive("player_starting_locations", player_starting_location, 256),
+        DYN_NAME_PATH='.name', EXT_MAX=SINT16_MAX),
+    reflexive("player_starting_locations", player_starting_location, 256, EXT_MAX=SINT16_MAX),
     reflexive("trigger_volumes", trigger_volume, 256,
-        DYN_NAME_PATH='.name'),
+        DYN_NAME_PATH='.name', EXT_MAX=SINT16_MAX),
     reflexive("recorded_animations", recorded_animation, 1024,
-        DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True),
+        DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
     reflexive("netgame_flags", netgame_flag, 200,
-        DYN_NAME_PATH='.type.enum_name'),
+        DYN_NAME_PATH='.type.enum_name', EXT_MAX=SINT16_MAX),
     reflexive("netgame_equipments", netgame_equipment, 200,
-        DYN_NAME_PATH='.item_collection.filepath'),
-    reflexive("starting_equipments", starting_equipment, 200),
+        DYN_NAME_PATH='.item_collection.filepath', EXT_MAX=SINT16_MAX),
+    reflexive("starting_equipments", starting_equipment, 200, EXT_MAX=SINT16_MAX),
     reflexive("bsp_switch_trigger_volumes", bsp_switch_trigger_volume, 256),
-    reflexive("decals", decal, 65535),
+    reflexive("decals", decal, 65535, EXT_MAX=UINT16_MAX),
     reflexive("decals_palette", decal_swatch, 128,
-        DYN_NAME_PATH='.name.filepath'),
+        DYN_NAME_PATH='.name.filepath', EXT_MAX=SINT16_MAX),
     reflexive("detail_object_collection_palette",
         detail_object_collection_swatch, 32, DYN_NAME_PATH='.name.filepath'),
 
@@ -1033,6 +1053,11 @@ scnr_body = Struct("tagdata",
     SIZE=1456,
     )
 
+scnr_body_with_decomp_ra_stream = desc_variant(scnr_body, 
+    reflexive("recorded_animations", recorded_animation_with_ra_stream, 1024,
+    DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX)
+    )
+
 def get():
     return scnr_def
 
@@ -1040,5 +1065,11 @@ scnr_def = TagDef("scnr",
     blam_header('scnr', 2),
     scnr_body,
 
-    ext=".scenario", endian=">", tag_cls=HekTag
+    ext=".scenario", endian=">", tag_cls=ScnrTag
+    )
+
+scnr_with_decomp_ra_stream_def = TagDef("scnr",
+    blam_header('scnr', 2),
+    scnr_body_with_decomp_ra_stream,
+    ext=".scenario", endian=">", tag_cls=ScnrTag
     )

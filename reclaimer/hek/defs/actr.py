@@ -24,6 +24,19 @@ danger_triggers = (
     "unused5",
     )
 
+# split out to be reused in stubbs
+panic = Struct("panic",
+    from_to_sec("cowering_time"),  # seconds
+    float_zero_to_one("friend_killed_panic_chance"),
+    SEnum16("leader_type", *actor_types),
+
+    Pad(2),
+    float_zero_to_one("leader_killed_panic_chance"),
+    float_zero_to_one("panic_damage_threshold"),
+    float_wu("surprise_distance"),  # world units
+    SIZE=28
+    )
+
 actr_body = Struct("tagdata",
     Bool32('flags',
         "can_see_in_darkness",
@@ -115,9 +128,10 @@ actr_body = Struct("tagdata",
         float_wu("stationary_movement_dist"),  # world units
         float_wu("free_flying_sidestep"),  # world units
         float_rad("begin_moving_angle"),  # radians
+        float_neg_one_to_one("cosine_begin_moving_angle", VISIBLE=False),
         ),
 
-    Pad(4),
+    Pad(0),
     Struct("looking",
         yp_float_rad("maximum_aiming_deviation"),  # radians
         yp_float_rad("maximum_looking_deviation"),  # radians
@@ -162,16 +176,7 @@ actr_body = Struct("tagdata",
         ),
 
     Pad(8),
-    Struct("panic",
-        from_to_sec("cowering_time"),  # seconds
-        float_zero_to_one("friend_killed_panic_chance"),
-        SEnum16("leader_type", *actor_types),
-
-        Pad(2),
-        float_zero_to_one("leader_killed_panic_chance"),
-        float_zero_to_one("panic_damage_threshold"),
-        float_wu("surprise_distance"),  # world units
-        ),
+    panic,
 
     Pad(28),
     Struct("defensive",

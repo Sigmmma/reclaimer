@@ -86,6 +86,9 @@ def read_reflexive(map_data, refl_offset, max_count=0xFFffFFff,
         map_data.seek(0, 2)
         max_count = min(max_count,
                         (map_data.tell() - (start - tag_magic)) // struct_size)
+    if count > max_count:
+        print("Warning: Clipped %s reflexive size from %s to %s" % (count, max_count))
+
     return min(count, max_count), start, id
 
 
@@ -173,8 +176,10 @@ def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
             return
 
         cls = shader_class_bytes[shader_type]
+    elif cls == b'lcpw':
+        cls = b'cmti'
     elif cls in (b'2dom', b'edom'):
-        if "xbox" in engine:
+        if "xbox" in engine or "halo" not in engine:
             cls = b'edom'
         else:
             cls = b'2dom'
