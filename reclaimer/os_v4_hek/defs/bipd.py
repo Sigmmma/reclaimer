@@ -8,19 +8,11 @@
 #
 
 from ...os_v3_hek.defs.bipd import *
-
-#import and use the open saucified obje and unit attrs
 from .obje import *
 from .unit import *
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=0)
-
-bipd_body = dict(bipd_body)
-bipd_body[0] = obje_attrs
-bipd_body[1] = unit_attrs
+obje_attrs = obje_attrs_variant(obje_attrs, "bipd")
+bipd_body  = desc_variant(bipd_body, obje_attrs, unit_attrs)
 
 def get():
     return bipd_def

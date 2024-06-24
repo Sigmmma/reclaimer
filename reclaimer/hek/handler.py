@@ -14,6 +14,8 @@ from time import time
 from traceback import format_exc
 from pathlib import Path, PureWindowsPath
 
+# NOTE: this is a pretty tough dependency to move to make
+#       reclaimer able to operate without binilla installed.
 from binilla.handler import Handler
 
 from reclaimer.data_extraction import h1_data_extractors
@@ -83,8 +85,6 @@ class HaloHandler(Handler):
         self.datadir = Path(
             kwargs.get("datadir", self.tagsdir.parent.joinpath("data")))
 
-        # These break on Python 3.9
-
         if self.tag_ref_cache is None:
             self.tag_ref_cache  = self.build_loc_caches(TagRef)
 
@@ -112,16 +112,10 @@ class HaloHandler(Handler):
         if f_type is None:
             return NO_LOC_REFS
 
-        # python 3.9 band-aid
-
-        try:
-            nodepath_ref = NodepathRef(cond(desc))
-        except Exception:
-            print("Ignore me if you're not a developer")
-            print(format_exc())
-            return NO_LOC_REFS
-
+        nodepath_ref = NodepathRef(cond(desc))
         for key in desc:
+            if not isinstance(desc[key], dict):
+                continue
             sub_nodepath_ref = self._build_loc_cache(cond, desc[key])
             if sub_nodepath_ref.is_ref or sub_nodepath_ref:
                 nodepath_ref[key] = sub_nodepath_ref
@@ -176,6 +170,10 @@ class HaloHandler(Handler):
 
     def get_def_id(self, filepath):
         filepath = Path(filepath)
+        if is_path_empty(filepath):
+            # return None instead of throwing an error about a non-existent file
+            return
+
         if self.tagsdir_relative and not filepath.is_absolute():
             filepath = self.tagsdir.joinpath(filepath)
 
@@ -189,8 +187,10 @@ class HaloHandler(Handler):
                 engine_id = f.read(4).decode(encoding='latin-1')
             if def_id in self.defs and engine_id == self.tag_header_engine_id:
                 return def_id
+        except FileNotFoundError:
+            pass
         except Exception:
-            print(format_exc());
+            print(format_exc())
 
         return self.ext_id_map.get(filepath.suffix.lower())
 

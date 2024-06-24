@@ -1,2 +1,4 @@
 supyr_struct
 binilla
+simpleaudio
+pyogg

@@ -83,7 +83,7 @@ cont_body = Struct("tagdata",
         SInt16("sequence_count"),
         Pad(100),
 
-        FlUInt32("unknown0", VISIBLE=False),
+        FlUInt32("unknown", VISIBLE=False),
         Bool16("shader_flags", *shader_flags),
         SEnum16("framebuffer_blend_function", *framebuffer_blend_functions),
         SEnum16("framebuffer_fade_mode", *render_fade_mode),

@@ -51,9 +51,7 @@ os_reflection_prop_comment = """REFLECTION PROPERIES
 When the opensauce extension is used the tint values in here are overwritten
 by the ones in the os extension when the map is loaded."""
 
-reflection = Struct("reflection",
-    INCLUDE=reflection, COMMENT=os_reflection_prop_comment
-    )
+reflection = desc_variant(reflection, COMMENT=os_reflection_prop_comment)
 
 os_soso_ext = Struct("shader_model_extension",
     #Specular Color
@@ -102,35 +100,8 @@ os_soso_ext = Struct("shader_model_extension",
     SIZE=192,
     )
 
-soso_attrs = Struct("soso_attrs",
-    #Model Shader Properties
-    model_shader,
-
-    Pad(16),
-    #Color-Change
-    SEnum16("color_change_source", *function_names, COMMENT=cc_comment),
-
-    Pad(30),
-    #Self-Illumination
-    self_illumination,
-
-    Pad(12),
-    #Diffuse, Multipurpose, and Detail Maps
-    maps,
-
-    reflexive("os_shader_model_ext", os_soso_ext, 1),
-
-    #Texture Scrolling Animation
-    texture_scrolling,
-
-    Pad(8),
-    #Reflection Properties
-    reflection,
-    Pad(16),
-
-    FlFloat("unknown0", VISIBLE=False),
-    BytesRaw("unknown1", SIZE=16, VISIBLE=False),  # little endian dependency
-    SIZE=400
+soso_attrs = desc_variant(soso_attrs,
+    ("pad_7", reflexive("os_shader_model_ext", os_soso_ext, 1)),
     )
 
 soso_body = Struct("tagdata",

@@ -8,19 +8,18 @@
 #
 
 from copy import copy, deepcopy
+import os
 
-try:
-    from mozzarilla.widgets.field_widgets import ReflexiveFrame, HaloRawdataFrame,\
-         TextFrame, ColorPickerFrame, EntryFrame, SoundSampleFrame,\
-         DynamicArrayFrame, Halo2BitmapTagFrame
-except Exception:
-    ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
-                     EntryFrame = SoundSampleFrame = DynamicArrayFrame =\
-                     Halo2BitmapTagFrame = None
+from reclaimer.h2.constants import RECLAIMER_NO_GUI, h2_tag_class_fcc_to_ext
+
+Halo2BitmapTagFrame = None
+if not os.environ.get(RECLAIMER_NO_GUI):
+    try:
+        from mozzarilla.widgets.field_widgets import Halo2BitmapTagFrame
+    except ImportError:
+        print("Unable to import mozzarilla widgets. UI features may not work.")
+
 from reclaimer.common_descs import *
-from reclaimer.h2.constants import STEPTREE, DYN_NAME_PATH, NAME_MAP,\
-     COMMENT, TOOLTIP, WIDGET, MAX, MAX_REFLEXIVE_COUNT, VISIBLE, ORIENT,\
-     MAX_TAG_PATH_LEN, DEFAULT, h2_tag_class_fcc_to_ext
 from reclaimer.h2.field_types import *
 from reclaimer.h2.enums import *
 
@@ -213,6 +212,7 @@ script_object_types = (
 
     "object_definition",
     "shader",
+    # should there be a space in these 3?
     "render model",
     "structure definition",
     "lightmap definition",
@@ -228,6 +228,21 @@ script_object_types = (
     "weapon_name",
     "device_name",
     "scenery_name",
+    )
+# used in determining which script object types are tag refs
+# NOTE: these are a bit of a guess based on the enums above and
+#       the pattern displayed in the h1 script object types
+script_object_tag_ref_types = (
+    "effect",
+    "damage",
+    "looping_sound",
+    "animation_graph",
+    "damage_effect",
+    "object_definition",
+    "shader",
+    "render model",
+    "structure definition",
+    "lightmap definition",
     )
 
 #Shared Enumerator options

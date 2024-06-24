@@ -9,7 +9,7 @@
 
 __all__ = ( 'JmsNode', )
 
-from ..constants import ( JMS_VERSION_HALO_1, JMS_VERSION_HALO_2_8210, )
+from ..constants import ( JMS_VER_HALO_1_RETAIL, JMS_VER_HALO_2_RETAIL, )
 
 class JmsNode:
     __slots__ = (
@@ -45,7 +45,7 @@ class JmsNode:
     def __eq__(self, other):
         if not isinstance(other, JmsNode):
             return False
-        elif self.name != other.name:
+        elif self.name.lower() != other.name.lower():
             return False
         elif self.first_child != other.first_child:
             return False
@@ -62,11 +62,13 @@ class JmsNode:
             return False
         return True
 
-    def is_node_hierarchy_equal(self, other):
+    def is_node_hierarchy_equal(self, other, name_only=False):
         if not isinstance(other, JmsNode):
             return False
-        elif self.name != other.name:
+        elif self.name.lower() != other.name.lower():
             return False
+        elif name_only:
+            pass
         elif self.first_child != other.first_child:
             return False
         elif self.sibling_index != other.sibling_index:
@@ -74,8 +76,8 @@ class JmsNode:
         return True
 
     @classmethod
-    def setup_node_hierarchy(cls, nodes, jms_version=JMS_VERSION_HALO_1):
-        if jms_version == JMS_VERSION_HALO_1:
+    def setup_node_hierarchy(cls, nodes, jms_version=JMS_VER_HALO_1_RETAIL):
+        if jms_version == JMS_VER_HALO_1_RETAIL:
             # Halo 1
             parented_nodes = set()
             # setup the parent node hierarchy
@@ -93,6 +95,6 @@ class JmsNode:
                         sib_node = nodes[sib_idx]
                         sib_node.parent_index = parent_idx
                         sib_idx = sib_node.sibling_index
-        elif jms_version == JMS_VERSION_HALO_2_8210:
+        elif jms_version == JMS_VER_HALO_2_RETAIL:
             # Halo 2
             pass

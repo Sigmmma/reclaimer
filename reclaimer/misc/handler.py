@@ -10,6 +10,8 @@
 from pathlib import Path
 import os
 
+# NOTE: this is a pretty tough dependency to move to make
+#       reclaimer able to operate without binilla installed.
 from binilla.handler import Handler
 from reclaimer.misc.defs import __all__ as all_def_names
 

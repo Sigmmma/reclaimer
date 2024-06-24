@@ -88,6 +88,7 @@ environment_shader = Struct("environment_shader",
         "blended_base_specular",
         COMMENT=environment_shader_type_comment
         ),
+    SIZE=4
     )
 
 diffuse = Struct("diffuse",

@@ -19,14 +19,8 @@ from math import sqrt
 from .objs.bipd import BipdTag
 from .obje import *
 from .unit import *
-from supyr_struct.util import desc_variant
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(0))
-    )
-
+obje_attrs = obje_attrs_variant(obje_attrs, "bipd")
 contact_point = Struct("contact_point",
     Pad(32),
     ascii_str32('marker_name'),

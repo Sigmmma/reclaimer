@@ -12,8 +12,8 @@
 # ##############
 __author__ = "Sigmmma"
 #           YYYY.MM.DD
-__date__ = "2021.03.23"
-__version__ = (2, 11, 2)
+__date__ = "2024.03.18"
+__version__ = (2, 22, 0)
 __website__ = "https://github.com/Sigmmma/reclaimer"
 __all__ = (
     "animation", "bitmaps", "h2", "h3", "halo_script", "hek", "meta", "misc",

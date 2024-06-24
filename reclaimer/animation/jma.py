@@ -27,6 +27,18 @@ JMA_ANIMATION_EXTENSIONS = (
     ".jma", ".jmm", ".jmo", ".jmr", ".jmt", ".jmw", ".jmz",
     )
 
+JMA_VER_HALO_1_OLDEST_KNOWN   = 16390
+JMA_VER_HALO_1_NODE_NAMES     = 16391
+JMA_VER_HALO_1_NODE_HIERARCHY = 16392
+JMA_VER_HALO_1_RETAIL         = JMA_VER_HALO_1_NODE_HIERARCHY
+
+JMA_VER_ALL = frozenset((
+    JMA_VER_HALO_1_OLDEST_KNOWN,
+    JMA_VER_HALO_1_NODE_NAMES,
+    JMA_VER_HALO_1_NODE_HIERARCHY,
+    JMA_VER_HALO_1_RETAIL,
+    ))
+
 
 def get_anim_ext(anim_type, frame_info_type, world_relative=False):
     anim_type = anim_type.lower()
@@ -150,6 +162,7 @@ class JmaAnimation:
     node_list_checksum = 0
     nodes = ()
     frames = ()
+    version = 0
 
     rot_keyframes = ()
     trans_keyframes = ()
@@ -173,7 +186,9 @@ class JmaAnimation:
 
     def __init__(self, name="", node_list_checksum=0,
                  anim_type="", frame_info_type="", world_relative=False,
-                 nodes=None, frames=None, actors=None, frame_rate=30):
+                 nodes=None, frames=None, actors=None, frame_rate=30,
+                 version=JMA_VER_HALO_1_RETAIL,
+                 ):
 
         self.name = name.strip(" ")
         self.node_list_checksum = node_list_checksum
@@ -184,6 +199,7 @@ class JmaAnimation:
         self.frame_info_type = frame_info_type
         self.frame_rate = frame_rate
         self.actors = actors if actors else ["unnamedActor"]
+        self.version = version
 
         self.root_node_info = []
         self.setup_keyframes()
@@ -202,6 +218,11 @@ class JmaAnimation:
         elif not self.scale_keyframes or len(self.scale_keyframes) != self.node_count:
             return False
         return True
+
+    @property
+    def has_node_names(self): return self.version >= JMA_VER_HALO_1_NODE_NAMES
+    @property
+    def has_node_hierarchy(self): return self.version >= JMA_VER_HALO_1_NODE_HIERARCHY
 
     @property
     def ext(self):
@@ -438,8 +459,27 @@ class JmaAnimation:
             z += dz
             yaw += dyaw
 
-    verify_nodes_valid = JmsModel.verify_nodes_valid
-    get_node_depths = JmsModel.get_node_depths
+    def get_node_depths(self):
+        if self.has_node_hierarchy:
+            return JmsModel.get_node_depths(self)
+        return []
+
+    def verify_nodes_valid(self):
+        errors = []
+        if self.has_node_hierarchy or len(self.nodes) not in range(1, 64):
+            return JmsModel.verify_nodes_valid(self)
+        elif self.has_node_names:
+            seen_names = set()
+            for i in range(len(self.nodes)):
+                n = self.nodes[i]
+                if len(n.name) >= 32:
+                    errors.append("Node name node '%s' is too long." % n.name)
+                elif n.name.lower() in seen_names:
+                    errors.append("Multiple nodes named '%s'." % n.name)
+
+                seen_names.add(n.name.lower())
+
+        return errors
 
     def calculate_animation_flags(self, tolerance=None):
         if tolerance is None:
@@ -486,9 +526,15 @@ class JmaAnimation:
             errors.append("Node counts do not match.")
             return errors
 
-        for i in range(len(self.nodes)):
-            if not self.nodes[i].is_node_hierarchy_equal(other_jma.nodes[i]):
-                errors.append("Nodes '%s' do not match." % i)
+        if self.has_node_names and other_jma.has_node_names:
+            for i in range(len(self.nodes)):
+                if not self.nodes[i].is_node_hierarchy_equal(
+                        other_jma.nodes[i], not (
+                            self.has_node_hierarchy and 
+                            other_jma.has_node_hierarchy
+                            )
+                        ):
+                    errors.append("Nodes '%s' do not match." % i)
 
         return errors
 
@@ -516,6 +562,7 @@ class JmaAnimationSet:
     node_list_checksum = 0
     nodes = ()
     animations = ()
+    version = JMA_VER_HALO_1_OLDEST_KNOWN
 
     def __init__(self, *jma_animations):
         self.nodes = []
@@ -526,14 +573,27 @@ class JmaAnimationSet:
 
     verify_animations_match = JmaAnimation.verify_animations_match
 
+    @property
+    def has_node_names(self): return self.version >= JMA_VER_HALO_1_NODE_NAMES
+    @property
+    def has_node_hierarchy(self): return self.version >= JMA_VER_HALO_1_NODE_HIERARCHY
+
     def merge_jma_animation(self, other_jma):
         assert isinstance(other_jma, JmaAnimation)
 
         if not other_jma:
             return
 
+        if other_jma.version > self.version and self.nodes:
+            # if the other jma's version is newer, grab its nodes if they
+            # match well enough, since they'll contain more detailed data
+            if (self.node_list_checksum == other_jma.node_list_checksum and 
+                not self.verify_animations_match(other_jma)):
+                self.nodes = []
+
         if not self.nodes:
             self.node_list_checksum = other_jma.node_list_checksum
+            self.version = other_jma.version
             self.nodes = []
             for node in other_jma.nodes:
                 self.nodes.append(
@@ -559,15 +619,18 @@ def read_jma(jma_string, stop_at="", anim_name=""):
     anim_name, ext = os.path.splitext(anim_name)
     anim_type, frame_info_type, world_relative = get_anim_types(ext)
 
-    jma_anim = JmaAnimation(anim_name, 0, anim_type,
-                            frame_info_type, world_relative)
     jma_string = jma_string.replace("\n", "\t")
 
     data = tuple(d for d in jma_string.split("\t") if d)
     dat_i = 0
+    version = parse_jm_int(data[dat_i])
 
-    if parse_jm_int(data[dat_i]) != 16392:
-        print("JMA identifier '16392' not found.")
+    jma_anim = JmaAnimation(anim_name, 0, anim_type,
+                            frame_info_type, world_relative,
+                            version=version)
+
+    if version not in JMA_VER_ALL:
+        print("Unknown JMA version '%s' found." % version)
         return jma_anim
 
     dat_i += 1
@@ -640,6 +703,10 @@ def read_jma(jma_string, stop_at="", anim_name=""):
             print("Could not read node list checksum.")
             return jma_anim
 
+        if jma_anim.node_list_checksum >= 0x80000000:
+            # jma gave us an unsigned checksum.... sign it
+            jma_anim.node_list_checksum -= 0x100000000
+
         if stop_at == "nodes": continue
 
         # read the nodes
@@ -647,10 +714,20 @@ def read_jma(jma_string, stop_at="", anim_name=""):
             i = 0  # make sure i is defined in case of exception
             nodes[:] = [None] * node_count
             for i in range(node_count):
-                nodes[i] = JmsNode(
-                    data[dat_i], parse_jm_int(data[dat_i+1]), parse_jm_int(data[dat_i+2])
-                    )
-                dat_i += 3
+                if jma_anim.has_node_hierarchy:
+                    node_data = (
+                        data[dat_i],
+                        parse_jm_int(data[dat_i+1]),
+                        parse_jm_int(data[dat_i+2])
+                        )
+                    dat_i += 3
+                elif jma_anim.has_node_names:
+                    node_data = (data[dat_i], )
+                    dat_i += 1
+                else:
+                    node_data = ("fake_node_%d" % i, )
+
+                nodes[i] = JmsNode(*node_data)
             JmsNode.setup_node_hierarchy(nodes)
         except Exception:
             print(traceback.format_exc())
@@ -705,7 +782,7 @@ def write_jma(filepath, jma_anim, use_blitzkrieg_rounding=False):
         jma_anim.apply_root_node_info_to_states()
 
     with filepath.open("w", encoding='latin1', newline="\r\n") as f:
-        f.write("16392\n")  # version number
+        f.write("%d\n" % jma_anim.version)
         f.write("%s\n" % jma_anim.frame_count)
         f.write("%s\n" % jma_anim.frame_rate)
 
@@ -720,10 +797,14 @@ def write_jma(filepath, jma_anim, use_blitzkrieg_rounding=False):
             f.write("%s\n" % len(nodes))
             f.write("%s\n" % int(jma_anim.node_list_checksum))
 
-            for node in nodes:
-                f.write("%s\n%s\n%s\n" %
-                    (node.name[: 31], node.first_child, node.sibling_index)
-                )
+            if jma_anim.has_node_hierarchy:
+                for node in nodes:
+                    f.write("%s\n%s\n%s\n" %
+                        (node.name[: 31], node.first_child, node.sibling_index)
+                    )
+            elif jma_anim.has_node_names:
+                for node in nodes:
+                    f.write("%s\n" % node.name[: 31])
 
             for frame in frames:
                 for nf in frame:

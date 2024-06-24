@@ -9,28 +9,31 @@
 
 from reclaimer.hek.defs.objs.tag import HekTag
 from reclaimer.util.matrices import euler_2d_to_vector_3d
-#from reclaimer.common_descs import valid_objects
+from reclaimer.enums import object_types
+from reclaimer.util import fourcc_to_int
+
+object_tag_class_ids = tuple(
+    fourcc_to_int(fourcc, byteorder='big') for fourcc in object_types
+    )
 
 class EffeTag(HekTag):
 
     def calc_internal_data(self):
         HekTag.calc_internal_data(self)
 
-        never_cull = False
+        dont_cull = False
         for event in self.data.tagdata.events.STEPTREE:
             for part in event.parts.STEPTREE:
-                if part.type.tag_class.enum_name == 'light':
-                    never_cull = True
-
-                part.effect_class = part.type.tag_class
-
-                #TODO: There is no good way to do this right now
-                #object_types = valid_objects('b').desc[0]['NAME_MAP'].keys()
-                #if part.effect_class.enum_name in object_types:
-                #    part.effect_class.enum_name = 'object'
+                tag_cls = part.type.tag_class
+                if tag_cls.data in object_tag_class_ids:
+                    dont_cull = True
+                    part.effect_class.set_to('object')
+                elif tag_cls.enum_name in ("damage_effect", "light"):
+                    dont_cull = True
+                    part.effect_class.set_to(tag_cls.enum_name)
 
             for particle in event.particles.STEPTREE:
                 particle.relative_direction_vector[:] = euler_2d_to_vector_3d(
                     *particle.relative_direction
                     )
-        self.data.tagdata.flags.never_cull = never_cull
+        self.data.tagdata.flags.must_be_deterministic = dont_cull
