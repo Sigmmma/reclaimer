@@ -7,13 +7,15 @@
 # See LICENSE for more information.
 #
 
-from reclaimer.meta.wrappers.halo1_map import Halo1Map
+from reclaimer.meta.wrappers.halo1_xbox_map import Halo1XboxMap
 from reclaimer.shadowrun_prototype.handler import ShadowrunPrototypeHandler
 from reclaimer.shadowrun_prototype.constants import sr_tag_class_fcc_to_ext
 from supyr_struct.defs.frozen_dict import FrozenDict
 
 
-class ShadowrunMap(Halo1Map):
+class ShadowrunMap(Halo1XboxMap):
+    # NOTE: setting defs to None so setup_defs doesn't think the
+    #       defs are setup cause of class property inheritance.
     defs = None
 
     handler_class = ShadowrunPrototypeHandler

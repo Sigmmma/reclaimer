@@ -144,7 +144,7 @@ sequence = Struct("sequence",
     SInt16("first_bitmap_index"),
     SInt16("bitmap_count"),
     Pad(16),
-    reflexive("sprites", sprite, 64),
+    reflexive("sprites", sprite, 64, EXT_MAX=SINT16_MAX),
     SIZE=64,
     )
 
@@ -256,7 +256,7 @@ bitm_body = Struct("tagdata",
           {NAME: "x512", VALUE: 4, GUI_NAME: "512x512"},
           ),
         UInt16("sprite_budget_count"),
-        COMMENT=sprite_processing_comment
+        SIZE=4, COMMENT=sprite_processing_comment
         ),
     UInt16("color_plate_width",  SIDETIP="pixels", EDITABLE=False),
     UInt16("color_plate_height", SIDETIP="pixels", EDITABLE=False),
@@ -275,7 +275,7 @@ bitm_body = Struct("tagdata",
     UInt16("sprite_spacing", SIDETIP="pixels"),
     Pad(2),
     reflexive("sequences", sequence, 256,
-        DYN_NAME_PATH='.sequence_name', IGNORE_SAFE_MODE=True),
+        DYN_NAME_PATH='.sequence_name', IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX),
     reflexive("bitmaps", bitmap, 2048, IGNORE_SAFE_MODE=True),
     SIZE=108, WIDGET=HaloBitmapTagFrame
     )

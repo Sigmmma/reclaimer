@@ -12,7 +12,7 @@ from .objs.tag import HekTag
 from supyr_struct.defs.tag_def import TagDef
 
 snde_body = QStruct("tagdata",
-    Pad(4),
+    FlUInt32("unknown", VISIBLE=False),
     UInt16("priority"),
     Pad(2),
     Float("room_intensity"),

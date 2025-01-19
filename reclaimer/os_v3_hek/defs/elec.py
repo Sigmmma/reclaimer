@@ -7,4 +7,4 @@
 # See LICENSE for more information.
 #
 
-from ...hek.defs.elec import *
+from ...os_hek.defs.elec import *

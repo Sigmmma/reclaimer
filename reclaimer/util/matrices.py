@@ -13,6 +13,8 @@ This module implements some basic matrix classes
 from math import log, sqrt, cos, sin, atan2, asin, acos, pi
 from sys import float_info
 
+POLAR_SINGULARITY_SINE = 0.999999999999
+
 
 class CannotRowReduce(ValueError): pass
 class MatrixNotInvertable(ValueError): pass
@@ -52,11 +54,38 @@ def line_from_verts(v0, v1):
     return tuple(b - a for a, b in zip(v0, v1))
 
 
+def polar_2d_to_vector_3d(t, p):
+    '''Angles are expected to be in radians.'''
+    # theta is angle from x-axis, phi is angle AROUND x-axis
+    return (cos(t), sin(t)*cos(p), sin(t)*sin(p))
+
+
+def vector_3d_to_polar_2d(i, j, k):
+    '''Angles returned are in radians.'''
+    # check for singularities at north and south poles
+    mag = 1 / (sqrt(i**2 + j**2 + k**2) or 1)
+    i, j, k = i * mag, j * mag, k * mag
+    return (
+        (-pi/2 if k < 0 else pi/2, 0) if abs(k) >= POLAR_SINGULARITY_SINE else
+        (atan2(sqrt(j**2 + k**2), i), atan2(k, j))
+        )
+
+
 def euler_2d_to_vector_3d(y, p):
     '''Angles are expected to be in radians.'''
-    return (cos(y) * cos(p),
-            sin(y) * cos(p),
-            sin(p))
+    # yaw is angle from x-axis, pitch is angle from z-axis
+    return (cos(y)*cos(p), sin(y)*cos(p), sin(p))
+
+
+def vector_3d_to_euler_2d(i, j, k):
+    '''Angles returned are in radians.'''
+    mag = 1 / (sqrt(i**2 + j**2 + k**2) or 1)
+    i, j, k = i*mag, j*mag, k*mag
+    # check for singularities at north and south poles
+    return (
+        (-pi/2 if k < 0 else pi/2, 0) if abs(k) >= POLAR_SINGULARITY_SINE else
+        (atan2(j, i), asin(k))
+        )
 
 
 def euler_to_quaternion(y, p, r):
@@ -71,15 +100,16 @@ def quaternion_to_euler(i, j, k, w):
     '''Angles returned are in radians.'''
     p_sin = 2*(i * j + k * w)
     # check for singularities at north and south poles
-    if p_sin > 0.999999999999:
-        return 2 * atan2(i, w),   pi / 2, 0
-    elif p_sin < -0.999999999999:
-        return -2 * atan2(i, w), -pi / 2, 0
-    else:
+    if abs(p_sin) < POLAR_SINGULARITY_SINE:
         y = atan2(2*(j*w - i*k), 1 - 2*(j**2 + k**2))
         p = asin(p_sin)
         r = atan2(2*(i*w - j*k), 1 - 2*(i**2 + k**2))
-        return y, p, r
+    else:
+        y, p, r = (2*atan2(i, w), pi/2, 0)
+        if p_sin < 0:
+            y, p = -y, -p
+
+    return y, p, r
 
 
 def axis_angle_to_quaternion(x, y, z, a):
@@ -90,6 +120,7 @@ def axis_angle_to_quaternion(x, y, z, a):
 
 
 def quaternion_to_axis_angle(i, j, k, w):
+    '''Angle returned is in radians.'''
     ray_len = sqrt(i**2 + j**2 + k**2 + w**2)
     i /= ray_len
     j /= ray_len
@@ -332,14 +363,26 @@ class Ray(Vector):
     mag = magnitude
 
     @classmethod
-    def cross(cls, v0, v1):
+    def cross(cls_or_ray, v0, v1):
+        if v1 is None:
+            v0, v1, cls_or_ray = cls_or_ray, v0, type(cls_or_ray)
+
         assert len(v0) >= 3
         assert len(v1) >= 3
-        return Ray(cross_product(v0, v1))
+        return cls_or_ray(cross_product(v0, v1))
     @classmethod
-    def dot(cls, v0, v1):
+    def dot(cls_or_ray, v0, v1):
+        if v1 is None:
+            v0, v1 = cls_or_ray, v0
+
         assert len(v0) == len(v1)
         return dot_product(v0, v1)
+
+    def cross_with(self, other):
+        return self.cross(self, other)
+
+    def dot_with(self, other):
+        return self.cross_product(self, other)
 
     def normalize(self):
         div = self.magnitude

@@ -63,10 +63,9 @@ bitmap = Struct("bitmap",
         ("rgbfp32", 20),
         ("rgbfp16", 21),
         ("v8u8", 22),
-        "unused23",
+        "g8b8",
         "unused24",
-        "unused25",  # ui\halox\main_menu.bkd.bitmap is set to this
-        #              and is palettized with dimensions 231 x 1 x 1
+        "a16r16g16b16f",
         "unused26",
         "unused27",
         "unused28",

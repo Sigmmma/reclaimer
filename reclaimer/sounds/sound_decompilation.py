@@ -17,7 +17,78 @@ from reclaimer.sounds.blam_sound_permutation import BlamSoundPermutation
 from reclaimer.sounds.blam_sound_samples import BlamSoundSamples
 
 
-__all__ = ("extract_h1_sounds", "extract_h2_sounds", )
+__all__ = (
+    "extract_h1_sounds", "extract_h2_sounds", 
+    "tag_perm_chain_to_blam_perm", "get_tag_perm_chain"
+    )
+
+
+def tag_perm_chain_to_blam_perm(
+        sound_perm_chain, sample_rate, encoding, pcm_is_big_endian=False
+        ):
+    compression = constants.COMPRESSION_PCM_16_LE
+    for perm in sound_perm_chain:
+        compression = constants.halo_1_compressions.get(
+            perm.compression.data, str(perm.compression.data)
+            )
+        break
+
+    if compression is None:
+        print("Unknown audio compression type: %s" % compression)
+        return
+
+    blam_permutation = BlamSoundPermutation(
+        sample_rate=sample_rate, encoding=encoding,
+        compression=compression
+        )
+    channels = constants.channel_counts.get(encoding, 1)
+
+    for perm in sound_perm_chain:
+        sample_data = perm.samples.data
+        compression = constants.halo_1_compressions.get(
+            perm.compression.data, str(perm.compression.data)
+            )
+        if compression == constants.COMPRESSION_OGG:
+            sample_count = perm.buffer_size // 2
+        elif compression == constants.COMPRESSION_PCM_16_LE:
+            compression = (constants.COMPRESSION_PCM_16_BE
+                           if pcm_is_big_endian else
+                           constants.COMPRESSION_PCM_16_LE)
+            sample_count = len(sample_data) // 2
+        elif compression == constants.COMPRESSION_XBOX_ADPCM:
+            sample_count = (
+                (constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE // 2) *
+                (len(sample_data) // constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE))
+        elif compression == constants.COMPRESSION_IMA_ADPCM:
+            sample_count = (
+                (constants.IMA_ADPCM_DECOMPRESSED_BLOCKSIZE // 2) *
+                (len(sample_data) // constants.IMA_ADPCM_COMPRESSED_BLOCKSIZE))
+        else:
+            print("Unknown audio compression type: %s" % compression)
+            continue
+
+        sample_count = sample_count // channels
+        # NOTE: do NOT modify sample rate by natural pitch.
+        #       it doesn't seem this is how it's used. try
+        #       with warthog_7_engine to hear the issue
+        blam_permutation.processed_samples.append(
+            BlamSoundSamples(
+                sample_data, sample_count, compression,
+                sample_rate, encoding, perm.mouth_data.data)
+                )
+
+    return blam_permutation
+
+
+def get_tag_perm_chain(permutations, perm_index):
+    seen, permlist = set(), []
+    while perm_index not in seen and perm_index in range(len(permutations)):
+        seen.add(perm_index)
+        perm = permutations[perm_index]
+        permlist.append(perm)
+        perm_index = perm.next_permutation_index
+
+    return permlist, seen
 
 
 def extract_h1_sounds(tagdata, tag_path, **kw):
@@ -27,8 +98,6 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
     pcm_is_big_endian = kw.get('byteswap_pcm_samples', False)
     tagpath_base = Path(kw['out_dir']).joinpath(Path(tag_path).with_suffix(""))
 
-    encoding = tagdata.encoding.data
-    channels = constants.channel_counts.get(encoding, 1)
     sample_rate = constants.halo_1_sample_rates.get(
         tagdata.sample_rate.data, 0)
     compression = constants.halo_1_compressions.get(
@@ -38,9 +107,9 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
     sound_bank = BlamSoundBank()
     sound_bank.split_into_smaller_chunks = tagdata.flags.split_long_sound_into_permutations
     sound_bank.split_to_adpcm_blocksize = tagdata.flags.fit_to_adpcm_blocksize
-    sound_bank.sample_rate = sample_rate
-    sound_bank.compression = compression
-    sound_bank.encoding = encoding
+    sound_bank.sample_rate  = sample_rate
+    sound_bank.compression  = compression
+    sound_bank.encoding     = tagdata.encoding.data
 
     same_pr_names = {}
     for i, pr in enumerate(tagdata.pitch_ranges.STEPTREE):
@@ -59,75 +128,33 @@ def extract_h1_sounds(tagdata, tag_path, **kw):
         same_names_permlists = {}
         unchecked_perms = set(range(len(pr.permutations.STEPTREE)))
 
-        perm_indices = list(
-            range(min(pr.actual_permutation_count, len(unchecked_perms))))
+        perm_indices = list(range(
+            min(pr.actual_permutation_count, len(unchecked_perms))
+            ))
         if not perm_indices:
             perm_indices = set(unchecked_perms)
-
-        playback_speed = 1.0
-        if pr.natural_pitch > 0:
-            playback_speed = 1 / pr.natural_pitch
 
         while perm_indices:
             # loop over all of the actual permutation indices and combine
             # the permutations they point to into a list with a shared name.
             # we do this so we can combine the permutations together into one.
             for j in perm_indices:
-                perm = pr.permutations.STEPTREE[j]
-                compression = perm.compression.enum_name
-                name = perm.name if perm.name else str(j)
-                permlist = same_names_permlists.get(name, [])
-                same_names_permlists[name] = permlist
+                name = pr.permutations.STEPTREE[j].name.strip() or str(j)
 
-                while j in unchecked_perms:
-                    perm = pr.permutations.STEPTREE[j]
-                    if compression != perm.compression.enum_name:
-                        # cant combine when compression is different
-                        break
+                perm_list, seen = get_tag_perm_chain(pr.permutations.STEPTREE, j)
+                same_names_permlists.setdefault(name, []).extend(perm_list)
 
-                    unchecked_perms.remove(j)
-                    permlist.append(perm)
+                unchecked_perms.difference_update(seen)
 
-                    j = perm.next_permutation_index
             perm_indices = set(unchecked_perms)
 
         for name, permlist in same_names_permlists.items():
-            blam_permutation = BlamSoundPermutation(
-                sample_rate=sample_rate, encoding=encoding)
-            sound_bank.pitch_ranges[pr_name].permutations[name] = blam_permutation
-
-            for perm in permlist:
-                sample_data = perm.samples.data
-                if perm.compression.enum_name == "ogg":
-                    # not actually a sample count. fix struct field name
-                    compression = constants.COMPRESSION_OGG
-                    sample_count = perm.ogg_sample_count // 2
-                elif perm.compression.enum_name == "none":
-                    compression = (constants.COMPRESSION_PCM_16_BE
-                                   if pcm_is_big_endian else
-                                   constants.COMPRESSION_PCM_16_LE)
-                    sample_count = len(sample_data) // 2
-                elif perm.compression.enum_name == "xbox_adpcm":
-                    compression = constants.COMPRESSION_XBOX_ADPCM
-                    sample_count = (
-                        (constants.XBOX_ADPCM_DECOMPRESSED_BLOCKSIZE // 2) *
-                        (len(sample_data) // constants.XBOX_ADPCM_COMPRESSED_BLOCKSIZE))
-                elif perm.compression.enum_name == "ima_adpcm":
-                    compression = constants.COMPRESSION_IMA_ADPCM
-                    sample_count = (
-                        (constants.IMA_ADPCM_DECOMPRESSED_BLOCKSIZE // 2) *
-                        (len(sample_data) // constants.IMA_ADPCM_COMPRESSED_BLOCKSIZE))
-                else:
-                    print("Unknown audio compression type:", perm.compression.data)
-                    continue
-
-                sample_count = sample_count // channels
-                blam_permutation.processed_samples.append(
-                    BlamSoundSamples(
-                        sample_data, sample_count, compression,
-                        int(round(sample_rate * playback_speed)),
-                        encoding, perm.mouth_data.data)
-                    )
+            blam_permutation = tag_perm_chain_to_blam_perm(
+                permlist, sample_rate, tagdata.encoding.data,
+                pcm_is_big_endian
+                )
+            if blam_permutation:
+                sound_bank.pitch_ranges[pr_name].permutations[name] = blam_permutation
 
     if do_write_wav:
         sound_bank.export_to_directory(
@@ -143,8 +170,6 @@ def get_sound_name(import_names, index):
 
 
 def extract_h2_sounds(tagdata, tag_path, **kw):
-    # TODO: Make this multiply the sample rate by the natural pitch
-
     halo_map = kw.get('halo_map')
     if not halo_map:
         print("Cannot run this function on tags.")

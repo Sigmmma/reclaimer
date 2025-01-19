@@ -9,7 +9,7 @@
 
 from traceback import format_exc
 
-from reclaimer.sounds import constants, ogg, util, adpcm
+from reclaimer.sounds import adpcm, constants, ogg, util
 
 
 class BlamSoundSamples:
@@ -65,9 +65,10 @@ class BlamSoundSamples:
             return
 
         if (target_compression == constants.COMPRESSION_OGG and
-              not constants.OGG_VORBIS_AVAILABLE):
+              not constants.OGGVORBIS_AVAILABLE):
             raise NotImplementedError(
-                "Ogg encoder not available. Cannot compress.")
+                "Ogg encoder not available. Cannot compress."
+                )
         elif (target_compression not in constants.PCM_FORMATS and
               target_compression != constants.COMPRESSION_XBOX_ADPCM and
               target_compression != constants.COMPRESSION_IMA_ADPCM and
@@ -112,21 +113,25 @@ class BlamSoundSamples:
                     constants.ADPCM_DECOMPRESSED_FORMAT)
                 compression = constants.ADPCM_DECOMPRESSED_FORMAT
 
-            adpcm_kwargs = compressor_kwargs.get("adpcm_kwargs", {})
-
             sample_data = adpcm.encode_adpcm_samples(
                 sample_data, constants.channel_counts[target_encoding],
-                util.is_big_endian_pcm(compression), **adpcm_kwargs)
+                util.is_big_endian_pcm(compression), 
+                **compressor_kwargs.get("adpcm_kwargs", {})
+                )
         elif target_compression == constants.COMPRESSION_OGG:
             # compress to ogg vorbis
-            # TODO: Finish this
-            ogg_kwargs = compressor_kwargs.get("ogg_kwargs", {})
-
-            raise NotImplementedError("Whoops, ogg is not implemented.")
+            sample_data = ogg.encode_oggvorbis(
+                sample_data, target_sample_rate,
+                constants.sample_widths[compression], 
+                constants.channel_counts[target_encoding],
+                util.is_big_endian_pcm(compression),
+                **compressor_kwargs.get("ogg_kwargs", {})
+                )
         elif target_compression != self.compression:
             # convert to a different pcm format
             sample_data = util.convert_pcm_to_pcm(
-                sample_data, self.compression, target_compression)
+                sample_data, self.compression, target_compression
+                )
 
         self._sample_data = sample_data
         self._compression = target_compression
@@ -146,21 +151,22 @@ class BlamSoundSamples:
         assert target_sample_rate > 0
 
         curr_compression = self.compression
+        curr_encoding    = self.encoding
+        curr_sample_rate = self.sample_rate
         if curr_compression in (constants.COMPRESSION_XBOX_ADPCM,
                                 constants.COMPRESSION_IMA_ADPCM):
             # decompress adpcm to 16bit pcm
             sample_data = adpcm.decode_adpcm_samples(
-                self.sample_data, constants.channel_counts[self.encoding],
+                self.sample_data, constants.channel_counts[curr_encoding],
                 util.is_big_endian_pcm(target_compression))
             curr_compression = constants.ADPCM_DECOMPRESSED_FORMAT
         elif not self.is_compressed:
             # samples are decompressed. use as-is
             sample_data = self.sample_data
         elif curr_compression == constants.COMPRESSION_OGG:
-            if not constants.OGG_VORBIS_AVAILABLE:
-                raise NotImplementedError(
-                    "Ogg decoder not available. Cannot decompress.")
-            # TODO: Finish this
+            sample_data, curr_compression, curr_encoding, curr_sample_rate =\
+                ogg.decode_oggvorbis(self.sample_data)
+
         elif curr_compression == constants.COMPRESSION_WMA:
             if not constants.WMA_AVAILABLE:
                 raise NotImplementedError(
@@ -170,12 +176,14 @@ class BlamSoundSamples:
             raise ValueError("Unknown compression format.")
 
         if (curr_compression != target_compression or
-            self.encoding != target_encoding or
-            self.sample_rate != target_sample_rate):
+            curr_encoding    != target_encoding or
+            curr_sample_rate != target_sample_rate):
             sample_data = util.convert_pcm_to_pcm(
-                sample_data, curr_compression, target_compression,
-                self.encoding, target_encoding,
-                self.sample_rate, target_sample_rate)
+                sample_data, 
+                curr_compression, target_compression,
+                curr_encoding,    target_encoding,
+                curr_sample_rate, target_sample_rate
+                )
 
         return sample_data
 

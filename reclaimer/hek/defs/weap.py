@@ -10,13 +10,8 @@
 from .obje import *
 from .item import *
 from .objs.weap import WeapTag
-from supyr_struct.util import desc_variant
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = desc_variant(obje_attrs,
-    ("object_type", object_type(2))
-    )
+obje_attrs = obje_attrs_variant(obje_attrs, "weap")
 
 magazine_item = Struct("magazine_item",
     SInt16("rounds"),
@@ -67,6 +62,36 @@ firing_effect = Struct("firing_effect",
     SIZE=132
     )
 
+# split out to be reused in mcc_hek
+firing = Struct("firing",
+    QStruct("rounds_per_second",
+        Float("from", UNIT_SCALE=per_sec_unit_scale, GUI_NAME=''),
+        Float("to",   UNIT_SCALE=per_sec_unit_scale),
+        ORIENT='h'
+        ),
+    float_sec("acceleration_time"),
+    float_sec("deceleration_time"),
+    Float("blurred_rate_of_fire", UNIT_SCALE=per_sec_unit_scale),
+
+    Pad(8),
+    SEnum16("magazine",
+        'primary',
+        'secondary',
+        ('NONE', -1),
+        DEFAULT=-1
+        ),
+    SInt16("rounds_per_shot"),
+    SInt16("minimum_rounds_loaded"),
+    SInt16("rounds_between_tracers"),
+
+    Pad(6),
+    SEnum16("firing_noise", *sound_volumes),
+    from_to_zero_to_one("error"),
+    float_sec("error_acceleration_time"),
+    float_sec("error_deceleration_time"),
+    SIZE=60
+    )
+
 trigger = Struct("trigger",
     Bool32("flags",
         "tracks_fired_projectile",
@@ -84,33 +109,7 @@ trigger = Struct("trigger",
         "projectiles_have_identical_error",
         "projectile_is_client_side_only",
         ),
-    Struct("firing",
-        QStruct("rounds_per_second",
-            Float("from", UNIT_SCALE=per_sec_unit_scale, GUI_NAME=''),
-            Float("to",   UNIT_SCALE=per_sec_unit_scale),
-            ORIENT='h'
-            ),
-        float_sec("acceleration_time"),
-        float_sec("deceleration_time"),
-        Float("blurred_rate_of_fire", UNIT_SCALE=per_sec_unit_scale),
-
-        Pad(8),
-        SEnum16("magazine",
-            'primary',
-            'secondary',
-            ('NONE', -1),
-            DEFAULT=-1
-            ),
-        SInt16("rounds_per_shot"),
-        SInt16("minimum_rounds_loaded"),
-        SInt16("rounds_between_tracers"),
-
-        Pad(6),
-        SEnum16("firing_noise", *sound_volumes),
-        from_to_zero_to_one("error"),
-        float_sec("error_acceleration_time"),
-        float_sec("error_deceleration_time"),
-        ),
+    firing,
 
     Pad(8),
     Struct("charging",

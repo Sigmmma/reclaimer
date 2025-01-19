@@ -17,7 +17,6 @@ spla_body = Struct("tagdata",
     SIZE=332,
     )
 
-
 def get():
     return spla_def
 

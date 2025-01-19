@@ -14,13 +14,8 @@ from ...hek.defs.vehi import *
 from .obje import *
 from .unit import *
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=1)
-
-vehi_attrs = dict(vehi_attrs)
-vehi_attrs[1] = SEnum16('type', *vehicle_types)
+obje_attrs = obje_attrs_variant(obje_attrs, "vehi")
+vehi_attrs = desc_variant(vehi_attrs, SEnum16('type', *vehicle_types))
 
 vehi_body = Struct("tagdata",
     obje_attrs,

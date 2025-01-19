@@ -7,10 +7,25 @@
 # See LICENSE for more information.
 #
 
+from reclaimer.hek.defs.mod2 import TagDef, Pad,\
+     marker as mod2_marker_desc, node as mod2_node_desc, reflexive
 from supyr_struct.defs.block_def import BlockDef
-from supyr_struct.field_types import QStruct, Struct, Container, Void,\
+from supyr_struct.field_types import QStruct, Struct, Container, Computed,\
      UBitInt, BitStruct, Float, UInt16, UInt32,\
      UInt32Array, UInt16Array, FloatArray
+
+
+partial_mod2_def = TagDef("mod2",
+    Pad(64),
+    Struct('tagdata',
+        Pad(172),
+        reflexive("markers", mod2_marker_desc, 256, DYN_NAME_PATH=".name"),
+        reflexive("nodes", mod2_node_desc, 64, DYN_NAME_PATH=".name"),
+        SIZE=232
+        ),
+    ext=".gbxmodel", endian=">"
+    )
+
 # these structure definitions aren't really used in any code, but
 # are a good way to illustrate the structure of the compressed data.
 # for uncompressed animations, the data is stored as:
@@ -83,7 +98,7 @@ compressed_frames_def = BlockDef("compressed frames",
     Struct("rotation_offsets",
         # keyframe_head offset for rotation is directly
         # after the header, so it is ALWAYS 44
-        Void("keyframe_head"),
+        Computed("keyframe_head"),
         UInt32("keyframes"),
         UInt32("default_data"),
         UInt32("keyframe_data"),

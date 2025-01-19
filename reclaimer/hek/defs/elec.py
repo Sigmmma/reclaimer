@@ -13,16 +13,34 @@ from supyr_struct.defs.tag_def import TagDef
 
 shader = Struct("shader",
     Pad(36),
-    FlUInt32("unknown0"),
+    FlUInt32("unknown0", VISIBLE=False),
     Bool16("shader_flags", *shader_flags),
     SEnum16("framebuffer_blend_function", *framebuffer_blend_functions),
     SEnum16("framebuffer_fade_mode", *render_fade_mode),
     Bool16("map_flags",
         "unfiltered"
         ),
-    Pad(40),
-    FlUInt32("unknown1"),
-    Pad(88),
+    Pad(12),
+    Pad(16),
+
+    #Secondary map
+    Struct("secondary_map",
+        dependency("bitmap", "bitm"),
+        SEnum16("anchor", *render_anchor),
+        Bool16("flags",
+            "unfiltered"
+            ),
+        Struct("u_animation", INCLUDE=anim_src_func_per_pha_sca),
+        Struct("v_animation", INCLUDE=anim_src_func_per_pha_sca),
+        Struct("rotation_animation", INCLUDE=anim_src_func_per_pha_sca_rot),
+        QStruct("rotation_center", INCLUDE=xy_float),
+        Pad(4),
+        Float("zsprite_radius_scale"),
+        Pad(8),
+        COMMENT=("NOTE: these fields are ONLY usable on Xbox.\n"
+                 "They will have no effect in any other engine."),
+        ),
+
     SIZE=180
     )
 

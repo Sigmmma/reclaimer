@@ -16,6 +16,7 @@ class ActrTag(HekTag):
     def calc_internal_data(self):
         HekTag.calc_internal_data(self)
         perception = self.data.tagdata.perception
+        movement = self.data.tagdata.movement
         looking = self.data.tagdata.looking
 
         perception.inv_combat_perception_time = 0
@@ -34,6 +35,8 @@ class ActrTag(HekTag):
         perception.inv_combat_perception_time /= 30
         perception.inv_guard_perception_time /= 30
         perception.inv_non_combat_perception_time /= 30
+
+        movement.cosine_begin_moving_angle = cos(movement.begin_moving_angle)
 
         for i in range(2):
             looking.cosine_maximum_aiming_deviation[i]  = cos(looking.maximum_aiming_deviation[i])

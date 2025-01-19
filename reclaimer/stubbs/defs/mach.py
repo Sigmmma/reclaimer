@@ -10,20 +10,9 @@
 from ...hek.defs.mach import *
 from .obje import *
 from .devi import *
-from supyr_struct.defs.tag_def import TagDef
 
-# replace the object_type enum one that uses
-# the correct default value for this object
-obje_attrs = dict(obje_attrs)
-obje_attrs[0] = dict(obje_attrs[0], DEFAULT=7)
-
-mach_body = Struct("tagdata",
-    obje_attrs,
-    devi_attrs,
-    mach_attrs,
-
-    SIZE=804,
-    )
+obje_attrs = obje_attrs_variant(obje_attrs, "mach")
+mach_body  = desc_variant(mach_body, obje_attrs, devi_attrs)
 
 def get():
     return mach_def

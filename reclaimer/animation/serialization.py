@@ -16,45 +16,53 @@ from types import MethodType
 
 from reclaimer.animation.jma import JmaRootNodeState, JmaNodeState
 from reclaimer.animation.structs import compressed_frames_def
+from reclaimer.animation import util
 from reclaimer.util import compression
 from reclaimer.util import matrices
 
-__all__ = ("serialize_frame_info", "deserialize_frame_info",
-           "serialize_default_data", "deserialize_default_data",
-           "serialize_frame_data", "deserialize_frame_data",
-           "deserialize_compressed_frame_data",
-           "serialize_compressed_frame_data",
-           "get_anim_flags", "get_keyframe_index_of_frame",)
+__all__ = (
+    "deserialize", "get_keyframe_index_of_frame",
+    "deserialize_uncomp_frame_data", "deserialize_frame_info", 
+    "deserialize_comp_frame_data",   "deserialize_default_data",
+      "serialize_uncomp_frame_data",   "serialize_frame_info",   
+      "serialize_comp_frame_data",     "serialize_default_data",
+    )
+
+
+def deserialize(anim, endian=">"):
+    if anim.flags.compressed_data:
+        # decompress compressed animations
+        kfs, frames = deserialize_comp_frame_data(anim, False, True)
+    else:
+        # create the node states from the frame_data and default_data
+        frames = deserialize_uncomp_frame_data(anim, None, True, endian)
+        kfs = [], [], []
+
+    return kfs, frames
 
 
 def serialize_frame_info(jma_anim, endian=">"):
-    frame_ct = jma_anim.frame_count - 1
-    data = bytearray(jma_anim.root_node_info_frame_size * frame_ct)
+    size  = jma_anim.root_node_info_frame_size
+    count = jma_anim.frame_count - 1
+    infos = jma_anim.root_node_info[: count]
+    data  = bytearray(size * count)
+    if not size:
+        return data
 
-    pack_2_float_into = MethodType(pack_into, endian + "2f")
-    pack_3_float_into = MethodType(pack_into, endian + "3f")
-    pack_4_float_into = MethodType(pack_into, endian + "4f")
-    frame_info_node_size = jma_anim.root_node_info_frame_size
+    pack = MethodType(pack_into, f"{endian}{size//4}f")
 
-    i = 0
     # write to the data
     if jma_anim.has_dz:
-        for info in jma_anim.root_node_info[: frame_ct]:
-            pack_4_float_into(
-                data, i, info.dx / 100, info.dy / 100, info.dz / 100, info.dyaw)
-            i += frame_info_node_size
+        for i, info in enumerate(infos):
+            pack(data, i*size, info.dx/100, info.dy/100, info.dz/100, info.dyaw)
 
     elif jma_anim.has_dyaw:
-        for info in jma_anim.root_node_info[: frame_ct]:
-            pack_3_float_into(
-                data, i, info.dx / 100, info.dy / 100, info.dyaw)
-            i += frame_info_node_size
+        for i, info in enumerate(infos):
+            pack(data, i*size, info.dx/100, info.dy/100, info.dyaw)
 
     elif jma_anim.has_dxdy:
-        for info in jma_anim.root_node_info[: frame_ct]:
-            pack_2_float_into(
-                data, i, info.dx / 100, info.dy / 100)
-            i += frame_info_node_size
+        for i, info in enumerate(infos):
+            pack(data, i*size, info.dx/100, info.dy/100)
 
     return data
 
@@ -126,700 +134,494 @@ def deserialize_frame_info(anim, include_extra_base_frame=False, endian=">"):
     return root_node_info
 
 
-def serialize_default_data(jma_anim, endian=">"):
-    data = bytearray(jma_anim.default_data_size)
-
-    rot_flags   = jma_anim.rot_flags
-    trans_flags = jma_anim.trans_flags
-    scale_flags = jma_anim.scale_flags
-
-    pack_1_float_into = MethodType(pack_into, endian +  "f")
-    pack_3_float_into = MethodType(pack_into, endian + "3f")
-    pack_4_int16_into = MethodType(pack_into, endian + "4h")
-
-    sqrt = math.sqrt
-
-    i = 0
-    # write to the data
-    def_frames = jma_anim.frames[0]
-    for n in range(jma_anim.node_count):
-        node_state = def_frames[n]
-        if not rot_flags[n]:
-            # components are ones-signed
-            qi = node_state.rot_i
-            qj = node_state.rot_j
-            qk = node_state.rot_k
-            qw = node_state.rot_w
-            nmag = qi**2 + qj**2 + qk**2 + qw**2
-            if nmag:
-                nmag = 32767.5 / sqrt(nmag)
-                qi = int(qi*nmag)
-                qj = int(qj*nmag)
-                qk = int(qk*nmag)
-                qw = int(qw*nmag)
-            else:
-                qi = qj = qk = 0
-                qw = 32767
-
-            pack_4_int16_into(data, i, qi, qj, qk, qw)
-            i += 8
-
-        if not trans_flags[n]:
-            pack_3_float_into(data, i,
-                node_state.pos_x / 100,
-                node_state.pos_y / 100,
-                node_state.pos_z / 100)
-            i += 12
-
-        if not scale_flags[n]:
-            pack_1_float_into(data, i, node_state.scale)
-            i += 4
-
-    return data
-
-
 def deserialize_default_data(anim, endian=">"):
-    return _deserialize_frame_data(anim, True, (), endian)[0]
-
-
-def serialize_frame_data(jma_anim, endian=">"):
-    data = bytearray(jma_anim.frame_data_frame_size *
-                     (jma_anim.frame_count - 1))
-
-    rot_flags   = jma_anim.rot_flags
-    trans_flags = jma_anim.trans_flags
-    scale_flags = jma_anim.scale_flags
-
-    pack_1_float_into = MethodType(pack_into, endian +  "f")
-    pack_3_float_into = MethodType(pack_into, endian + "3f")
-    pack_4_int16_into = MethodType(pack_into, endian + "4h")
-
-    is_overlay = jma_anim.anim_type == "overlay"
-
-    sqrt = math.sqrt
-
-    i = 0
-    for f in range(jma_anim.frame_count):
-        if not is_overlay and f + 1 == jma_anim.frame_count:
-            # skip the last frame for non-overlays
-            break
-        elif f == 0 and is_overlay:
-            # skip the first frame for overlays
-            continue
-
-        # write to the data
-        for n in range(jma_anim.node_count):
-            node_state = jma_anim.frames[f][n]
-
-            if rot_flags[n]:
-                # components are ones-signed
-                qi = node_state.rot_i
-                qj = node_state.rot_j
-                qk = node_state.rot_k
-                qw = node_state.rot_w
-                nmag = qi**2 + qj**2 + qk**2 + qw**2
-                if nmag:
-                    nmag = 32767.5 / sqrt(nmag)
-                    qi = int(qi*nmag)
-                    qj = int(qj*nmag)
-                    qk = int(qk*nmag)
-                    qw = int(qw*nmag)
-                else:
-                    qi = qj = qk = 0
-                    qw = 32767
-
-                pack_4_int16_into(data, i, qi, qj, qk, qw)
-                i += 8
-
-            if trans_flags[n]:
-                pack_3_float_into(data, i,
-                    node_state.pos_x / 100,
-                    node_state.pos_y / 100,
-                    node_state.pos_z / 100)
-                i += 12
-
-            if scale_flags[n]:
-                pack_1_float_into(data, i, node_state.scale)
-                i += 4
-
-    return data
-
-
-def deserialize_frame_data(anim, def_node_states=None,
-                           include_extra_base_frame=False, endian=">"):
-    if def_node_states is None:
-        def_node_states = deserialize_default_data(anim, endian)
-
-    frame_data = _deserialize_frame_data(anim, False, def_node_states, endian)
-
-    if not include_extra_base_frame:
-        pass
-    if anim.type.enum_name != "overlay":
-        # duplicate the first frame to the last frame for non-overlays
-        frame_data.append(deepcopy(frame_data[0]))
+    if anim.flags.compressed_data:
+        _, frames = deserialize_comp_frame_data(anim, True)
     else:
+        frames = _deserialize_uncomp_frame_data(anim, True, (), endian)
+
+    return frames[0]
+
+
+def deserialize_comp_frame_data(anim, get_default_data=False,
+                                include_extra_base_frame=True):
+    r_kfs_by_nodes = []
+    t_kfs_by_nodes = []
+    s_kfs_by_nodes = []
+
+    keyframes = (r_kfs_by_nodes, t_kfs_by_nodes, s_kfs_by_nodes)
+    if not anim.flags.compressed_data:
+        return keyframes, ()
+
+    sqrt        = math.sqrt
+    decomp_quat = compression.decompress_quaternion48
+    blend_trans = matrices.lerp_blend_vectors
+    blend_quats = matrices.nlerp_blend_quaternions
+    blend_scale = lambda scale_0, scale_1, ratio: (
+        scale_0 * (1 - ratio) + scale_1 * ratio
+        )
+
+    frame_count = 1 if get_default_data else anim.frame_count
+
+    # make a bunch of frames we can fill in below
+    frames = [[JmaNodeState() for n in range(anim.node_count)]
+              for f in range(frame_count)]
+
+    r_flags, t_flags, s_flags = util.get_anim_flags(anim)
+
+    try:
+        # parse the compressed animation block
+        cab = compressed_frames_def.build(
+            rawdata=anim.frame_data.STEPTREE,
+            root_offset=anim.offset_to_compressed_data)
+    except Exception:
+        cab = None
+
+    if not cab:
+        raise Exception("Failed to parse compressed animations "
+                        "block. It may be corrupt.")
+
+    # shorthands
+    cab_r, cab_t, cab_s = cab.rotation, cab.translation, cab.scale
+
+    # get the keyframe counts and keyframe offsets
+    r_kf_headers, t_kf_headers, s_kf_headers = [
+        [(v&4095, v>>12) for v in block.keyframe_head]
+        for block in (cab_r, cab_t, cab_s)
+        ]
+
+    r_kfs, t_kfs, s_kfs = cab_r.keyframes, cab_t.keyframes, cab_s.keyframes
+
+    r_ddata, r_fdata = cab_r.default_data, cab_r.keyframe_data
+    t_ddata, t_fdata = cab_t.default_data, cab_t.keyframe_data
+    s_ddata, s_fdata = cab_s.default_data, cab_s.keyframe_data
+
+    def_node_states = [JmaNodeState() for n in range(anim.node_count)]
+
+    # convert keyframe data into lists of component sets
+    r_fdata = [decomp_quat(*r_fdata[i: i+3])
+               for i in range(0, len(r_fdata), 3)]
+    t_fdata = [t_fdata[i: i+3] for i in range(0, len(t_fdata), 3)]
+
+    is_overlay = anim.type.enum_name == "overlay"
+    ri = ti = si = 0
+    for ni, def_ns in enumerate(def_node_states):
+        r_def = decomp_quat(*r_ddata[3*ni: 3*(ni + 1)])
+        t_def = t_ddata[3*ni: 3*(ni + 1)]
+        s_def = s_ddata[si] if s_flags[ni] else 1.0
+
+        def_ns.rot_i = r_def[0]
+        def_ns.rot_j = r_def[1]
+        def_ns.rot_k = r_def[2]
+        def_ns.rot_w = r_def[3]
+
+        def_ns.pos_x = t_def[0] * 100
+        def_ns.pos_y = t_def[1] * 100
+        def_ns.pos_z = t_def[2] * 100
+
+        def_ns.scale = s_def
+
+        ri, r_kf_ct, r_kf_off = ((ri+1, *r_kf_headers[ri])
+                                 if r_flags[ni] else (ri, 0, 0))
+        ti, t_kf_ct, t_kf_off = ((ti+1, *t_kf_headers[ti])
+                                 if t_flags[ni] else (ti, 0, 0))
+        si, s_kf_ct, s_kf_off = ((si+1, *s_kf_headers[si])
+                                 if s_flags[ni] else (si, 0, 0))
+
+        # add this nodes keyframes to the keyframe lists in the jma_anim
+        for kf_ct, kf_off, all_kfs, kfs_by_nodes in (
+                (r_kf_ct, r_kf_off, r_kfs, r_kfs_by_nodes),
+                (t_kf_ct, t_kf_off, t_kfs, t_kfs_by_nodes),
+                (s_kf_ct, s_kf_off, s_kfs, s_kfs_by_nodes)):
+            kfs_by_nodes.append(list(all_kfs[kf_off: kf_off + kf_ct]))
+
+        r_kf_end = r_kf_off + r_kf_ct - 1
+        t_kf_end = t_kf_off + t_kf_ct - 1
+        s_kf_end = s_kf_off + s_kf_ct - 1
+        for fi in range(frame_count):
+            node_frame = frames[fi][ni]
+
+            # decompress rotation
+            qi, qj, qk, qw = get_frame_from_keyframe_data(
+                fi, r_kf_off, r_kf_end, r_kfs,
+                r_def, r_fdata, blend_quats
+                )
+            mag         = qi**2 + qj**2 + qk**2 + qw**2
+            qw, q_scale = (qw, 1/sqrt(mag)) if mag else (1.0, 1)
+
+            node_frame.rot_i = qi * q_scale
+            node_frame.rot_j = qj * q_scale
+            node_frame.rot_k = qk * q_scale
+            node_frame.rot_w = qw * q_scale
+
+            # decompress position
+            x, y, z = get_frame_from_keyframe_data(
+                fi, t_kf_off, t_kf_end, t_kfs,
+                t_def, t_fdata, blend_trans
+                )
+            node_frame.pos_x = x * 100
+            node_frame.pos_y = y * 100
+            node_frame.pos_z = z * 100
+
+            # decompress scale
+            node_frame.scale = get_frame_from_keyframe_data(
+                fi, s_kf_off, s_kf_end, s_kfs,
+                s_def, s_fdata, blend_scale
+                )
+
+    if include_extra_base_frame and not get_default_data:
         # overlay animations start with frame 0 being
         # in the same state as the default node states
-        frame_data.insert(0, def_node_states)
+        is_overlay and frames.insert(0, def_node_states)
+
+        # non-overlays duplicate the first frame to the last frame
+        is_overlay or  frames.append(deepcopy(frames[0]))
+
+    return keyframes, frames
+
+
+def deserialize_uncomp_frame_data(
+        anim, def_node_states=None, include_extra_base_frame=True, endian=">"
+        ):
+    is_overlay = anim.type.enum_name == "overlay"
+    if def_node_states is None:
+        def_node_states = _deserialize_uncomp_frame_data(
+            anim, True, (), endian
+            )[0]
+
+    frame_data = _deserialize_uncomp_frame_data(
+        anim, False, def_node_states, endian
+        )
+
+    if include_extra_base_frame:
+        # overlay animations start with frame 0 being
+        # in the same state as the default node states
+        is_overlay and frame_data.insert(0, def_node_states)
+
+        # non-overlays duplicate the first frame to the last frame
+        is_overlay or  frame_data.append(deepcopy(frame_data[0]))
 
     return frame_data
 
 
-def _deserialize_frame_data(anim, get_default_data, def_node_states, endian):
+def _deserialize_uncomp_frame_data(
+        anim, get_default_data=False, def_node_states=(), endian=">"
+        ):
+    unpack_rot   = MethodType(unpack_from, endian + "4h")
     unpack_trans = MethodType(unpack_from, endian + "3f")
-    unpack_ijkw  = MethodType(unpack_from, endian + "4h")
-    unpack_float = MethodType(unpack_from, endian +  "f")
-    sqrt = math.sqrt
+    unpack_scale = MethodType(unpack_from, endian +  "f")
+    sqrt         = math.sqrt
 
-    rot_flags, trans_flags, scale_flags = get_anim_flags(anim)
+    r_flags, t_flags, s_flags = util.get_anim_flags(anim)
+    r_incs = [8  * (f != get_default_data) for f in r_flags]
+    t_incs = [12 * (f != get_default_data) for f in t_flags]
+    s_incs = [4  * (f != get_default_data) for f in s_flags]
 
-    if get_default_data:
-        store = False
-        stored_frame_count = 1
-        data = anim.default_data.data
-    else:
-        store = True
-        stored_frame_count = anim.frame_count
-        data = anim.frame_data.data
+    data, frame_count = ((anim.default_data.data, 1) if get_default_data else
+                         (anim.frame_data.data, anim.frame_count))
 
     all_node_states = [[JmaNodeState() for n in range(anim.node_count)]
-                       for f in range(stored_frame_count)]
+                       for f in range(frame_count)]
 
-    if get_default_data:
+    if get_default_data or not def_node_states:
         def_node_states = all_node_states[0]
 
     assert len(def_node_states) == anim.node_count
 
     i = 0
-    for f in range(stored_frame_count):
-        node_states = all_node_states[f]
+    for f, node_states in enumerate(all_node_states):
+        for r_inc, t_inc, s_inc, def_ns, ns in zip(
+                r_incs, t_incs, s_incs,
+                def_node_states, node_states
+                ):
+            if r_inc:
+                qi, qj, qk, qw = unpack_rot(data, i)
 
-        for n in range(anim.node_count):
-            def_node_state = def_node_states[n]
-            state = node_states[n]
+                mag = qi**2 + qj**2 + qk**2 + qw**2
+                qw, q_scale    = (qw, 1/sqrt(mag)) if mag else (1.0, 1)
 
-            qi = qj = qk = x = y = z = 0.0
-            qw = scale = 1.0
-            if rot_flags[n] == store:
-                qi, qj, qk, qw = unpack_ijkw(data, i)
-                i += 8
-
-                rot_len = qi**2 + qj**2 + qk**2 + qw**2
-                if rot_len:
-                    rot_len = 1 / sqrt(rot_len)
-                    qi *= rot_len
-                    qj *= rot_len
-                    qk *= rot_len
-                    qw *= rot_len
-                else:
-                    qi = qj = qk = 0.0
-                    qw = 1.0
+                qi, qj, qk, qw = (qi*q_scale, qj*q_scale,
+                                  qk*q_scale, qw*q_scale)
+                i  += r_inc
             else:
-                qi = def_node_state.rot_i
-                qj = def_node_state.rot_j
-                qk = def_node_state.rot_k
-                qw = def_node_state.rot_w
+                qi, qj, qk, qw = (def_ns.rot_i, def_ns.rot_j,
+                                  def_ns.rot_k, def_ns.rot_w)
 
-            if trans_flags[n] == store:
-                x, y, z = unpack_trans(data, i)
-                i += 12
+            x, y, z = (
+                (v*100 for v in unpack_trans(data, i)) if t_inc else
+                (def_ns.pos_x, def_ns.pos_y, def_ns.pos_z)
+                )
+            i += t_inc
 
-                x *= 100
-                y *= 100
-                z *= 100
-            else:
-                x = def_node_state.pos_x
-                y = def_node_state.pos_y
-                z = def_node_state.pos_z
+            s = unpack_scale(data, i)[0] if s_inc else def_ns.scale
+            i += s_inc
 
-            if scale_flags[n] == store:
-                scale = unpack_float(data, i)[0]
-                i += 4
-            else:
-                scale = def_node_state.scale
-
-            state.pos_x = x; state.pos_y = y; state.pos_z = z
-            state.rot_i = qi; state.rot_j = qj
-            state.rot_k = qk; state.rot_w = qw
-            state.scale = scale
+            ns.rot_i = qi
+            ns.rot_j = qj
+            ns.rot_k = qk
+            ns.rot_w = qw
+            ns.pos_x = x
+            ns.pos_y = y
+            ns.pos_z = z
+            ns.scale = s
 
     return all_node_states
 
 
-def serialize_compressed_frame_data(jma_anim):
-    # make a compressed block to store the data for serialization
-    comp_anim_block = compressed_frames_def.build()
+def serialize_default_data(jma_anim, endian=">"):
+    return _serialize_uncomp_frame_data(jma_anim, endian, False)
+
+
+def serialize_comp_frame_data(jma_anim):
+    # make a comp_anim_block to store the data for serialization
+    cab = compressed_frames_def.build()
+
+    # shorthands
+    cab_r, cab_t, cab_s = cab.rotation, cab.translation, cab.scale
 
     # local references for all these things to make access faster
-    rot_flags   = jma_anim.rot_flags
-    trans_flags = jma_anim.trans_flags
-    scale_flags = jma_anim.scale_flags
+    kfs_arrs   = (cab_r.keyframes,     cab_t.keyframes,     cab_s.keyframes)
+    ddata_arrs = (cab_r.default_data,  cab_t.default_data,  cab_s.default_data)
+    fdata_arrs = (cab_r.keyframe_data, cab_t.keyframe_data, cab_s.keyframe_data)
+    nodes_kfs  = [[] for xform_type in range(3)]
 
-    rot_keyframes   = comp_anim_block.rotation.keyframes
-    trans_keyframes = comp_anim_block.translation.keyframes
-    scale_keyframes = comp_anim_block.scale.keyframes
+    r_ddata,     t_ddata,     s_ddata     = ddata_arrs
+    r_fdata,     t_fdata,     s_fdata     = fdata_arrs
+    r_nodes_kfs, t_nodes_kfs, s_nodes_kfs = nodes_kfs
 
-    rot_def_data   = comp_anim_block.rotation.default_data
-    trans_def_data = comp_anim_block.translation.default_data
-    scale_def_data = comp_anim_block.scale.default_data
-
-    rot_keyframe_data   = comp_anim_block.rotation.keyframe_data
-    trans_keyframe_data = comp_anim_block.translation.keyframe_data
-    scale_keyframe_data = comp_anim_block.scale.keyframe_data
-
-    rot_keyframes_by_nodes   = [[] for i in range(jma_anim.node_count)]
-    trans_keyframes_by_nodes = [[] for i in range(jma_anim.node_count)]
-    scale_keyframes_by_nodes = [[] for i in range(jma_anim.node_count)]
-
-    # skip the first frame for overlays, otherwise the last frame
-    last_keyframe = jma_anim.frame_count - 2
-    skip_last_frame = (jma_anim.anim_type != "overlay")
+    nodes_flags = jma_anim.rot_flags, jma_anim.trans_flags, jma_anim.scale_flags
+    jma_nodes_kfs = (jma_anim.rot_keyframes, jma_anim.trans_keyframes,
+                     jma_anim.scale_keyframes)
 
     # calculate the keyframes and their counts based on the keyframes
     # in the jma_anim as well as the node transform flags
-    for ni in range(jma_anim.node_count):
-        # make sure to remove keyframe 0 since its stored in the default data
-        if rot_flags[ni]:
-            rot_keyframes_by_nodes[ni] = make_clean_keyframes_copy(
-                jma_anim.rot_keyframes[ni],
-                skip_last_frame, last_keyframe)
+    for flags, xf_kfs, jma_xf_kfs in zip(nodes_flags, nodes_kfs, jma_nodes_kfs):
+        for flag, jma_kfs in zip(flags, jma_xf_kfs):
+            xf_kfs.append([])
+            kfs = xf_kfs[-1]
 
-        if trans_flags[ni]:
-            trans_keyframes_by_nodes[ni] = make_clean_keyframes_copy(
-                jma_anim.trans_keyframes[ni],
-                skip_last_frame, last_keyframe)
+            # NOTE: stubbs may do some stuff here that prevents sorting
+            #       the keyframes, and since this code is used for stubbs
+            #       as well we'll avoid breaking anything with it.
+            flag and kfs.extend(jma_kfs)
 
-        if scale_flags[ni]:
-            scale_keyframes_by_nodes[ni] = make_clean_keyframes_copy(
-                jma_anim.scale_keyframes[ni],
-                skip_last_frame, last_keyframe)
+            # remove the 0th keyframe since its stored in the default data
+            kfs and (kfs[0] or kfs.pop(0))
+
+            # skip the first frame for overlays, otherwise the last frame
+            if kfs and jma_anim.last_frame_loops_to_first:
+                kfs[-1] + 1 < jma_anim.frame_count or kfs.pop(-1)
+
+            assert not kfs or kfs[-1] == jma_anim.frame_count-2, (
+                "Compressed animations must contain either no "
+                "keyframes, or at least the last stored keyframe."
+                )
 
     # make the keyframe arrays big enough to fill in the keyframe numbers
-    rot_keyframes.append(0)
-    trans_keyframes.append(0)
-    scale_keyframes.append(0)
-    rot_keyframes   *= sum(len(kfs) for kfs in rot_keyframes_by_nodes)
-    trans_keyframes *= sum(len(kfs) for kfs in trans_keyframes_by_nodes)
-    scale_keyframes *= sum(len(kfs) for kfs in scale_keyframes_by_nodes)
+    [arr.extend(0 for i in range(sum(len(n_kfs) for n_kfs in xf_kfs)))
+     for arr, xf_kfs in zip(kfs_arrs, nodes_kfs)]
 
     # make the default data arrays big enough to fill in the default data
-    rot_def_data.append(0)
-    trans_def_data.append(0)
-    scale_def_data.append(0)
-    rot_def_data   *= 3 * jma_anim.node_count
-    trans_def_data *= 3 * jma_anim.node_count
-    scale_def_data *= sum(bool(f) for f in scale_flags)
+    [arr.extend(0 for i in range(ct)) for arr, ct in
+     zip(ddata_arrs, (3*jma_anim.node_count, 3*jma_anim.node_count,
+                      sum(bool(f) for f in jma_anim.scale_flags)))]
 
     # make the frame data arrays big enough to fill in the frame data
-    rot_keyframe_data.append(0)
-    trans_keyframe_data.append(0)
-    scale_keyframe_data.append(0)
-    rot_keyframe_data   *= 3 * len(rot_keyframes)
-    trans_keyframe_data *= 3 * len(trans_keyframes)
-    scale_keyframe_data *= len(scale_keyframes)
+    [arr.extend(0 for i in range(len(kfs)*width)) for arr, kfs, width in
+     zip(fdata_arrs, kfs_arrs, (3, 3, 1))]
 
 
-    comp_quat = compression.compress_quaternion48
-    sqrt = math.sqrt
+    sqrt, comp_quat = math.sqrt, compression.compress_quaternion48
+    t_scale = 1/100
 
-    ri = ti = si = 0
-    def_ri = def_ti = def_si = 0
-
-    def_frame = jma_anim.frames[0]
-
-    for ni in range(jma_anim.node_count):
-        curr_rot_kfs   = array(rot_keyframes.typecode,
-                               rot_keyframes_by_nodes[ni])
-        curr_trans_kfs = array(trans_keyframes.typecode,
-                               trans_keyframes_by_nodes[ni])
-        curr_scale_kfs = array(scale_keyframes.typecode,
-                               scale_keyframes_by_nodes[ni])
-
-        keyframes_sane = True
-        if curr_rot_kfs:
-            keyframes_sane &= last_keyframe in curr_rot_kfs
-
-        if curr_trans_kfs:
-            keyframes_sane &= last_keyframe in curr_trans_kfs
-
-        if curr_scale_kfs:
-            keyframes_sane &= last_keyframe in curr_scale_kfs
-
-        assert keyframes_sane, (
-            "Compressed animations must contain either no "
-            "keyframes, or at least the last stored keyframe."
-            )
+    # counters to keep track of the default data and frame data
+    # index we're writing into in the compressed frame data block
+    ri = ti = si = def_ri = def_ti = def_si = 0
+    for ni, d_state in enumerate(jma_anim.frames[0]):
+        has_scale = bool(jma_anim.scale_flags[ni])
 
         # copy the keyframe indices for this node into the block
-        rot_keyframes[ri: ri + len(curr_rot_kfs)] = curr_rot_kfs
-        trans_keyframes[ti: ti + len(curr_trans_kfs)] = curr_trans_kfs
-        scale_keyframes[si: si + len(curr_scale_kfs)] = curr_scale_kfs
+        for kfs, xf_kfs, ki in zip(kfs_arrs, nodes_kfs, (ri, ti, si)):
+            kfs[ki: ki + len(xf_kfs[ni])] = array(kfs.typecode, xf_kfs[ni])
 
         # fill in the default data for this node
-        def_node_state = def_frame[ni]
+        for i, val in enumerate(comp_quat(d_state.rot_i, d_state.rot_j,
+                                          d_state.rot_k, d_state.rot_w),
+                                def_ri*3):
+            r_ddata[i] = val
 
-        w0, w1, w2 = comp_quat(
-            def_node_state.rot_i, def_node_state.rot_j,
-            def_node_state.rot_k, def_node_state.rot_w)
-        rot_def_data[def_ri] = w0
-        rot_def_data[def_ri + 1] = w1
-        rot_def_data[def_ri + 2] = w2
-        def_ri += 3
+        for i, val in enumerate((d_state.pos_x, d_state.pos_y, d_state.pos_z),
+                                def_ti*3):
+            t_ddata[i] = val*t_scale
 
-        trans_def_data[def_ti] = def_node_state.pos_x / 100
-        trans_def_data[def_ti + 1] = def_node_state.pos_y / 100
-        trans_def_data[def_ti + 2] = def_node_state.pos_z / 100
-        def_ti += 3
-
-        if scale_flags[ni]:
-            # only write a default scale if scale is animated
-            scale_def_data[def_si] = def_node_state.scale
-            def_si += 1
+        # only write a default scale if scale is animated
+        if has_scale:
+            s_ddata[def_si] = d_state.scale
 
         # fill in the keyframe data for this node
-        for kfi in curr_rot_kfs:
-            node_state = jma_anim.frames[kfi][ni]
-            w0, w1, w2 = comp_quat(
-                node_state.rot_i, node_state.rot_j,
-                node_state.rot_k, node_state.rot_w)
-            rot_keyframe_data[3*ri] = w0
-            rot_keyframe_data[3*ri + 1] = w1
-            rot_keyframe_data[3*ri + 2] = w2
+        for i, ns in enumerate((jma_anim.frames[kfi][ni]
+                                for kfi in r_nodes_kfs[ni]), ri):
+            for j, val in enumerate(comp_quat(ns.rot_i, ns.rot_j,
+                                              ns.rot_k, ns.rot_w), i*3):
+                r_fdata[j] = val
 
-            ri += 1
+        for i, ns in enumerate((jma_anim.frames[kfi][ni]
+                                for kfi in t_nodes_kfs[ni]), ti):
+            for j, val in enumerate((ns.pos_x, ns.pos_y, ns.pos_z), i*3):
+                t_fdata[j] = val*t_scale
 
-        for kfi in curr_trans_kfs:
-            node_state = jma_anim.frames[kfi][ni]
-            trans_keyframe_data[3*ti] = node_state.pos_x / 100
-            trans_keyframe_data[3*ti + 1] = node_state.pos_y / 100
-            trans_keyframe_data[3*ti + 2] = node_state.pos_z / 100
-            ti += 1
+        for i, ns in enumerate((jma_anim.frames[kfi][ni]
+                                for kfi in s_nodes_kfs[ni]), si):
+            s_fdata[i] = ns.scale
 
-        for kfi in curr_scale_kfs:
-            scale_keyframe_data[si] = jma_anim.frames[kfi][ni].scale
-            si += 1
-
+        ri, def_ri = ri + len(r_nodes_kfs[ni]), def_ri + 1
+        ti, def_ti = ti + len(t_nodes_kfs[ni]), def_ti + 1
+        si, def_si = si + len(s_nodes_kfs[ni]), def_si + has_scale
 
     # setup the keyframe counts, offsets, data stream offsets
-    calc_keyframe_header_data(
-        comp_anim_block,
-        [len(rot_keyframes_by_nodes[i]) for i in
-         range(len(rot_keyframes_by_nodes)) if rot_flags[i]],
+    calc_keyframe_header_data(cab, *(
+        [len(kfs) for i, kfs in enumerate(node_kfs) if flags[i]]
+        for node_kfs, flags in zip(nodes_kfs, nodes_flags)
+        ))
 
-        [len(trans_keyframes_by_nodes[i]) for i in
-         range(len(trans_keyframes_by_nodes)) if trans_flags[i]],
-
-        [len(scale_keyframes_by_nodes[i]) for i in
-         range(len(scale_keyframes_by_nodes)) if scale_flags[i]],
-        )
-
-    #print("RECOMP")
-    #print(comp_anim_block)
-    return comp_anim_block.serialize(calc_pointers=False)
+    return cab.serialize(calc_pointers=False)
 
 
-def deserialize_compressed_frame_data(anim):
-    rot_keyframes_by_nodes = []
-    trans_keyframes_by_nodes = []
-    scale_keyframes_by_nodes = []
+def serialize_uncomp_frame_data(jma_anim, endian=">"):
+    return _serialize_uncomp_frame_data(jma_anim, endian, True)
 
-    keyframes = (rot_keyframes_by_nodes,
-                 trans_keyframes_by_nodes,
-                 scale_keyframes_by_nodes)
-    if not anim.flags.compressed_data:
-        return keyframes, ()
 
-    # make a bunch of frames we can fill in below
-    frames = [[JmaNodeState() for n in range(anim.node_count)]
-              for f in range(anim.frame_count + 1)]
-
-    rot_flags, trans_flags, scale_flags = get_anim_flags(anim)
-
-    comp_anim_block = compressed_frames_def.build(
-        rawdata=anim.frame_data.STEPTREE,
-        root_offset=anim.offset_to_compressed_data)
-    #print("ORIG")
-    #print(comp_anim_block)
-
-    # get the keyframe counts and keyframe offsets
-    rot_keyframe_headers   = [(v & 4095, v >> 12) for v in
-                              comp_anim_block.rotation.keyframe_head]
-    trans_keyframe_headers = [(v & 4095, v >> 12) for v in
-                              comp_anim_block.translation.keyframe_head]
-    scale_keyframe_headers = [(v & 4095, v >> 12) for v in
-                              comp_anim_block.scale.keyframe_head]
-
-    rot_keyframes   = comp_anim_block.rotation.keyframes
-    trans_keyframes = comp_anim_block.translation.keyframes
-    scale_keyframes = comp_anim_block.scale.keyframes
-
-    rot_def_data   = comp_anim_block.rotation.default_data
-    trans_def_data = comp_anim_block.translation.default_data
-    scale_def_data = comp_anim_block.scale.default_data
-
-    rot_keyframe_data   = comp_anim_block.rotation.keyframe_data
-    trans_keyframe_data = comp_anim_block.translation.keyframe_data
-    scale_keyframe_data = comp_anim_block.scale.keyframe_data
-
-    decomp_quat = compression.decompress_quaternion48
-    blend_trans = matrices.lerp_blend_vectors
-    blend_quats = matrices.nlerp_blend_quaternions
+def _serialize_uncomp_frame_data(jma_anim, endian, write_flag):
     sqrt = math.sqrt
+    t_scale = 1/100
 
-    ri = ti = si = 0
-    for ni in range(anim.node_count):
-        rot_kf_ct  = trans_kf_ct  = scale_kf_ct  = 0
-        rot_kf_off = trans_kf_off = scale_kf_off = 0
+    # combining the write-pointer increments with the flags
+    r_incs = [8  * (f == write_flag) for f in jma_anim.rot_flags]
+    t_incs = [12 * (f == write_flag) for f in jma_anim.trans_flags]
+    s_incs = [4  * (f == write_flag) for f in jma_anim.scale_flags]
 
-        rot_def = decomp_quat(*rot_def_data[3 * ni: 3 * (ni + 1)])
-        trans_def = trans_def_data[3 * ni: 3 * (ni + 1)]
-        scale_def = 1.0
+    pack_rot   = MethodType(pack_into, endian + "4h")
+    pack_trans = MethodType(pack_into, endian + "3f")
+    pack_scale = MethodType(pack_into, endian +  "f")
 
-        if rot_flags[ni]:
-            rot_kf_ct, rot_kf_off = rot_keyframe_headers[ri]
-            ri += 1
+    # we skip the first frame for the frame_data in overlays, and the
+    # last for non-overlays. for overlay default_data, we use frame 0
+    frame_start = 1 if jma_anim.is_overlay and write_flag else 0
 
-        if trans_flags[ni]:
-            trans_kf_ct, trans_kf_off = trans_keyframe_headers[ti]
-            ti += 1
+    # only write frame 0 if writing default_data(write_flag == False)
+    frame_count = jma_anim.frame_count - 1 if write_flag else 1
+    frame_size  = (jma_anim.frame_data_frame_size if write_flag else
+                   jma_anim.default_data_size)
 
-        if scale_flags[ni]:
-            scale_kf_ct, scale_kf_off = scale_keyframe_headers[si]
-            scale_def = scale_def_data[si]
-            si += 1
+    i, data = 0, bytearray(frame_size * frame_count)
+    for frame in jma_anim.frames[frame_start: frame_start + frame_count]:
+        # write the data
+        for r_inc, t_inc, s_inc, ns in zip(r_incs, t_incs, s_incs, frame):
+            if r_inc:
+                # components are ones-signed
+                qi, qj, qk, qw = ns.rot_i, ns.rot_j, ns.rot_k, ns.rot_w
+                mag = sqrt(qi**2 + qj**2 + qk**2 + qw**2)
+                q_scale = (32767.5 / mag) if mag else 1
 
-        # add this nodes keyframes to the keyframe lists in the jma_anim
-        for kf_ct, kf_off, all_kfs, kfs_by_nodes in (
-                (rot_kf_ct, rot_kf_off, rot_keyframes,
-                 rot_keyframes_by_nodes),
-                (trans_kf_ct, trans_kf_off, trans_keyframes,
-                 trans_keyframes_by_nodes),
-                (scale_kf_ct, scale_kf_off, scale_keyframes,
-                 scale_keyframes_by_nodes)):
-            kfs_by_nodes.append(list(all_kfs[kf_off: kf_off + kf_ct]))
+                qi, qj, qk, qw = (
+                    int(qi*q_scale), int(qj*q_scale),
+                    int(qk*q_scale), int(qw*q_scale)
+                    ) if mag else (0, 0, 0, 0x7Fff)
 
+                pack_rot(data, i, qi, qj, qk, qw)
+                i += r_inc
 
-        if rot_kf_ct:
-            rot_first_kf = rot_keyframes[rot_kf_off]
-            rot_last_kf  = rot_keyframes[rot_kf_off + rot_kf_ct - 1]
-            rot_first = decomp_quat(*rot_keyframe_data[
-                3 * rot_kf_off:
-                3 * (rot_kf_off + 1)])
-            rot_last = decomp_quat(*rot_keyframe_data[
-                3 * (rot_kf_off + rot_kf_ct - 1):
-                3 * (rot_kf_off + rot_kf_ct)])
+            if t_inc:
+                x, y, z = ns.pos_x, ns.pos_y, ns.pos_z
+                pack_trans(data, i, x*t_scale, y*t_scale, z*t_scale)
+                i += t_inc
 
-        if trans_kf_ct:
-            trans_first_kf = trans_keyframes[trans_kf_off]
-            trans_last_kf  = trans_keyframes[trans_kf_off + trans_kf_ct - 1]
-            trans_first = trans_keyframe_data[
-                3 * trans_kf_off:
-                3 * (trans_kf_off + 1)]
-            trans_last = trans_keyframe_data[
-                3 * (trans_kf_off + trans_kf_ct - 1):
-                3 * (trans_kf_off + trans_kf_ct)]
+            s_inc and pack_scale(data, i, ns.scale)
+            i += s_inc
 
-        if scale_kf_ct:
-            scale_first_kf = scale_keyframes[scale_kf_off]
-            scale_last_kf  = scale_keyframes[scale_kf_off + scale_kf_ct - 1]
-            scale_first = scale_keyframe_data[scale_kf_off]
-            scale_last  = scale_keyframe_data[scale_kf_off + scale_kf_ct - 1]
-
-        for fi in range(anim.frame_count):
-            node_frame = frames[fi][ni]
-
-            if not rot_kf_ct or fi == 0:
-                # first frame OR only default data stored for this node
-                i, j, k, w = rot_def
-            elif fi == rot_last_kf:
-                # frame is the last keyframe. repeat it to the end
-                i, j, k, w = rot_last
-            elif fi < rot_first_kf:
-                # frame is before the first stored keyframe.
-                # blend from default data to first keyframe.
-                i, j, k, w = blend_quats(
-                    rot_def, rot_first, fi / rot_first_kf)
-            else:
-                # frame is at/past the first stored keyframe.
-                # don't need to use default data at all.
-                kf_i = get_keyframe_index_of_frame(
-                    fi, rot_keyframes, rot_kf_ct, rot_kf_off)
-                kf0 = rot_keyframes[kf_i]
-                q0 = decomp_quat(
-                    *rot_keyframe_data[kf_i * 3: (kf_i + 1) * 3])
-
-                if fi == kf0:
-                    # this keyframe is the frame we want.
-                    # no blending required
-                    i, j, k, w = q0
-                else:
-                    kf1 = rot_keyframes[kf_i + 1]
-                    ratio = (fi - kf0) / (kf1 - kf0)
-                    kf_i += 1
-                    q1 = decomp_quat(
-                        *rot_keyframe_data[kf_i * 3: (kf_i + 1) * 3])
-                    i, j, k, w = blend_quats(q0, q1, ratio)
+    return data
 
 
-            if not trans_kf_ct or fi == 0:
-                # first frame OR only default data stored for this node
-                x, y, z = trans_def
-            elif fi == trans_last_kf:
-                # frame is the last keyframe. repeat it to the end
-                x, y, z = trans_last
-            elif fi < trans_first_kf:
-                # frame is before the first stored keyframe.
-                # blend from default data to first keyframe.
-                x, y, z = blend_trans(
-                    trans_def, trans_first, fi / trans_first_kf)
-            else:
-                # frame is at/past the first stored keyframe.
-                # don't need to use default data at all.
-                kf_i = get_keyframe_index_of_frame(
-                    fi, trans_keyframes, trans_kf_ct, trans_kf_off)
-                kf0 = trans_keyframes[kf_i]
-                p0 = trans_keyframe_data[kf_i * 3: (kf_i + 1) * 3]
+def get_frame_from_keyframe_data(
+        frame_index, keyframes_start, keyframes_end, keyframes,
+        frame_0, keyframe_data, blender
+        ):
+    if keyframes_start >= keyframes_end or frame_index == 0:
+        # first frame OR only default data stored for this node
+        return frame_0
 
-                if fi == kf0:
-                    # this keyframe is the frame we want.
-                    # no blending required
-                    x, y, z = p0
-                else:
-                    kf1 = trans_keyframes[kf_i + 1]
-                    ratio = (fi - kf0) / (kf1 - kf0)
+    last_kf  = keyframes[keyframes_end]
+    if frame_index == last_kf:
+        # frame is the last keyframe. repeat it to the end
+        return keyframe_data[keyframes_end]
 
-                    kf_i += 1
-                    p1 = trans_keyframe_data[kf_i * 3: (kf_i + 1) * 3]
-                    x, y, z = blend_trans(p0, p1, ratio)
+    first_kf = keyframes[keyframes_start]
+    if frame_index < first_kf:
+        # frame is before the first stored keyframe.
+        # blend from default data to first keyframe.
+        frame_b = keyframe_data[keyframes_start]
+        ratio   = frame_index / first_kf
+        return blender(frame_0, frame_b, ratio)
 
+    # frame is at/past the first stored keyframe.
+    # don't need to use default data at all.
 
-            if not scale_kf_ct or fi == 0:
-                # first frame OR only default data stored for this node
-                scale = scale_def
-            elif fi == scale_last_kf:
-                # frame is the last keyframe. repeat it to the end
-                scale = scale_last
-            elif fi < scale_first_kf:
-                # frame is before the first stored keyframe.
-                # blend from default data to first keyframe.
-                ratio = fi / scale_first_kf
-                scale = scale_def * (1 - ratio) + scale_first * ratio
-            else:
-                # frame is at/past the first stored keyframe.
-                # don't need to use default data at all.
-                kf_i = get_keyframe_index_of_frame(
-                    fi, scale_keyframes, scale_kf_ct, scale_kf_off)
+    # find the keyframes this frame is between
+    for kf_i in range(keyframes_start, keyframes_end):
+        # TODO: make this more efficent using a binary search
+        if (keyframes[kf_i]  <= frame_index and
+            keyframes[kf_i+1] > frame_index):
+            break
 
-                if fi == kf0:
-                    # this keyframe is the frame we want.
-                    # no blending required
-                    scale = scale_keyframes[kf_i]
-                else:
-                    ratio = ((fi - scale_keyframes[kf_i]) /
-                             (scale_keyframes[kf_i + 1] -
-                              scale_keyframes[kf_i]))
-                    scale = (
-                        scale_keyframe_data[kf_i] * (1 - ratio) +
-                        scale_keyframe_data[kf_i + 1] * ratio)
+        # NOTE: unless the animation is broken, this will never
+        #       be hit. commenting out for speed, as there's not
+        #       really a good reason to keep it in
+        #elif kf_i == keyframes_end:
+        #    raise ValueError(f"No keyframes pairs containing frame {frame_index}")
+
+    frame_a = keyframe_data[kf_i]
+    if frame_index == keyframes[kf_i]:
+        # this keyframe is the frame we want.
+        # no blending required
+        return frame_a
+
+    frame_b = keyframe_data[kf_i+1]
+    ratio   = ((      frame_index - keyframes[kf_i]) /
+               (keyframes[kf_i+1] - keyframes[kf_i]))
+
+    return blender(frame_a, frame_b, ratio)
 
 
-            nmag = i**2 + j**2 + k**2 + w**2
-            if nmag:
-                nmag = 1 / sqrt(nmag)
-                node_frame.rot_i = i * nmag
-                node_frame.rot_j = j * nmag
-                node_frame.rot_k = k * nmag
-                node_frame.rot_w = w * nmag
-
-            node_frame.pos_x = x * 100
-            node_frame.pos_y = y * 100
-            node_frame.pos_z = z * 100
-
-            node_frame.scale = scale
-
-    if anim.type.enum_name != "overlay":
-        # duplicate the first frame to the last frame for non-overlays
-        frames[-1] = deepcopy(frames[0])
-
-    return keyframes, frames
-
-
-def get_keyframe_index_of_frame(frame, keyframes,
-                                keyframe_count=None, offset=0):
-    if keyframe_count is None:
-        keyframe_count = len(keyframes) - offset
-
-    # TODO: make this more efficent using a binary search
-    for i in range(offset, offset + keyframe_count - 1):
-        if keyframes[i] <= frame and frame < keyframes[i + 1]:
-            return i
-
-    raise ValueError(
-        "No keyframes pairs containing frame %s" % frame)
-
-
-def get_anim_flags(anim):
-    rot_flags   = anim.rot_flags0   | (anim.rot_flags1 << 32)
-    trans_flags = anim.trans_flags0 | (anim.trans_flags1 << 32)
-    scale_flags = anim.scale_flags0 | (anim.scale_flags1 << 32)
-
-    rot_flags   = [bool(rot_flags   & (1 << i)) for i in range(anim.node_count)]
-    trans_flags = [bool(trans_flags & (1 << i)) for i in range(anim.node_count)]
-    scale_flags = [bool(scale_flags & (1 << i)) for i in range(anim.node_count)]
-    return rot_flags, trans_flags, scale_flags
-
-
-def make_clean_keyframes_copy(keyframes, skip_last_frame, last_keyframe):
-    kfs = list(keyframes)
-    if not kfs:
-        return kfs
-
-    if kfs[0] == 0:
-        kfs.pop(0)
-
-    if kfs and skip_last_frame and kfs[-1] == last_keyframe + 1:
-        kfs.pop(-1)
-
-    return kfs
-
-
-def calc_keyframe_header_data(comp_anim_block, rot_keyframe_counts,
-                              trans_keyframe_counts, scale_keyframe_counts):
-
-    for keyframe_counts, keyframe_header in (
-            (rot_keyframe_counts,   comp_anim_block.rotation.keyframe_head),
-            (trans_keyframe_counts, comp_anim_block.translation.keyframe_head),
-            (scale_keyframe_counts, comp_anim_block.scale.keyframe_head)):
-        if not keyframe_counts:
+def calc_keyframe_header_data(comp_anim_block, rot_kf_counts,
+                              trans_kf_counts, scale_kf_counts):
+    cab = comp_anim_block
+    rot, trans, scale = cab.rotation, cab.translation, cab.scale
+    for kf_counts, kf_header in ((rot_kf_counts,   rot.keyframe_head),
+                                 (trans_kf_counts, trans.keyframe_head),
+                                 (scale_kf_counts, scale.keyframe_head)):
+        if not kf_counts:
             pass
-        elif max(keyframe_counts) >= 4096:
+        elif max(kf_counts) >= 4096:
             raise ValueError(
                 "Too many keyframes to compress per node. Must be < 4096, "
-                "but got %s" % max(keyframe_counts))
-        elif sum(keyframe_counts) >= 1048576:
+                "but got %s" % max(kf_counts))
+        elif sum(kf_counts) >= 1048576:
             raise ValueError(
                 "Too many keyframes to compress in total. Must be < 1048576 "
-                "but got %s" % sum(keyframe_counts))
+                "but got %s" % sum(kf_counts))
 
-        keyframe_header.append(0)
-        keyframe_header *= len(keyframe_counts)
+        kf_header.append(0)
+        kf_header *= len(kf_counts)
 
-        off = i = 0
-        for ct in keyframe_counts:
-            keyframe_header[i] = ct | (off << 12)
+        off = 0
+        for i, ct in enumerate(kf_counts):
+            kf_header[i] = ct | (off << 12)
             off += ct
-            i += 1
 
+    off = 44
     # setup the data stream offsets
-    off = None
-    for offs, data in (
-            (comp_anim_block.rotation_offsets, comp_anim_block.rotation),
-            (comp_anim_block.translation_offsets, comp_anim_block.translation),
-            (comp_anim_block.scale_offsets, comp_anim_block.scale)):
-        for i in range(4):
-            if off is None:
-                off = 44
-            else:
-                offs[i] = off
-
-            off += len(data[i]) * data[i].itemsize
+    for offs, data in ((cab.rotation_offsets,    rot),
+                       (cab.translation_offsets, trans),
+                       (cab.scale_offsets,       scale)):
+        for i, arr in enumerate(data):
+            offs[i], off = off, off+len(arr)*arr.itemsize

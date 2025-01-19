@@ -126,8 +126,11 @@ auxilary_overlay = Struct("auxilary_overlay",
     )
 
 auxilary_meter = Struct("auxilary_meter",
+    SEnum16("type", 
+        "integrated_light",
+        VISIBLE=False
+        ),
     Pad(18),
-    SEnum16("type", "integrated_light", VISIBLE=False),
     Struct("background", INCLUDE=hud_background),
 
     QStruct("anchor_offset",

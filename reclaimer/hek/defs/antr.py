@@ -63,7 +63,7 @@ object_desc = Struct("object",
     )
 
 anim_enum_desc = QStruct("animation",
-    dyn_senum16("animation", DYN_NAME_PATH=dyn_anim_path)
+    dyn_senum16("animation", DYN_NAME_PATH=dyn_anim_path, WIDGET_WIDTH=32)
     )
 
 ik_point_desc = Struct("ik_point",
@@ -103,7 +103,7 @@ unit_weapon_desc = Struct("weapon",
         *unit_weapon_animation_names
         ),
     reflexive("ik_points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
-    reflexive("weapon_types", weapon_types_desc, 10, DYN_NAME_PATH=".label"),
+    reflexive("weapon_types", weapon_types_desc, 16, DYN_NAME_PATH=".label"),
     SIZE=188,
     )
 
@@ -123,11 +123,12 @@ unit_desc = Struct("unit",
     SInt16("up_frame_count"),
 
     Pad(8),
-    reflexive("animations", anim_enum_desc, 30,
+    reflexive("animations", anim_enum_desc, len(unit_animation_names),
         *unit_animation_names
         ),
     reflexive("ik_points", ik_point_desc, 4, DYN_NAME_PATH=".marker"),
     reflexive("weapons", unit_weapon_desc, 16, DYN_NAME_PATH=".name"),
+    Pad(0),  # replaced with unknown reflexive in stubbs
     SIZE=100,
     )
 
@@ -161,7 +162,8 @@ vehicle_desc = Struct("vehicle",
     SInt16("down_frame_count"),
     SInt16("up_frame_count"),
 
-    Pad(68),
+    Pad(56),
+    Pad(12),  # replaced with seats reflexive in stubbs
     reflexive("animations", anim_enum_desc, 8,
         *vehicle_animation_names
         ),
@@ -220,6 +222,7 @@ animation_desc = Struct("animation",
     Float("weight"),
     SInt16("key_frame_index"),
     SInt16("second_key_frame_index"),
+    Pad(0), # replaced with unknown 8-byte struct in stubbs
 
     dyn_senum16("next_animation",
         DYN_NAME_PATH="..[DYN_I].name"),
@@ -227,6 +230,19 @@ animation_desc = Struct("animation",
         "compressed_data",
         "world_relative",
         { NAME:"pal", GUI_NAME:"25Hz(PAL)" },
+        {NAME: 'mozz_override_quality', VALUE: 1<<12, TOOLTIP: (
+            "Instructs Mozzarilla to override the tag-level compression\n"
+            "quality with the one specified in 'mozz compress quality'."
+            )},
+        {NAME: 'mozz_always_compress', VALUE: 1<<13, TOOLTIP: (
+            "Instructs Mozzarilla to always compress this animation.\n"
+            "The only time this is ignored is if the compressed version\n"
+            "will take up more space than the uncompressed one."
+            )},
+        {NAME: 'mozz_never_compress', VALUE: 1<<14, TOOLTIP: (
+            "Instructs Mozzarilla to never compress this animation.\n"
+            "Takes precedence over the 'mozz always compress' flag."
+            )},
         ),
     dyn_senum16("sound",
         DYN_NAME_PATH="tagdata.sound_references." +
@@ -236,16 +252,18 @@ animation_desc = Struct("animation",
     SInt8("right_foot_frame_index"),
     FlSInt16("first_permutation_index", VISIBLE=False,
         TOOLTIP="The index of the first animation in the permutation chain."),
-    FlFloat("chance_to_play", VISIBLE=False,
-        MIN=0.0, MAX=1.0, SIDETIP="[0,1]",
-        TOOLTIP=("Seems to be the chance range to select this permutation.\n"
-                 "Random number in the range [0,1] is rolled. The permutation\n"
-                 "chain is looped until the number is higher than or equal\n"
-                 "to that permutations chance to play. This chance to play\n"
-                 "is likely influenced by the animations 'weight' field.\n"
-                 "All permutation chains should have the last one end with\n"
-                 "a chance to play of 1.0")),
 
+    # chance_to_play is (0, 1] range to select this permutation for playing.
+    # a random number in the range [0,1] is rolled, and the permutation chain
+    # is iterated until the number is higher than or equal to a permutations
+    # chance to play. This chance to play is derived from the 'weight' field.
+    # in each animation in the chain. all chains are required to have the end
+    # of the chain have a chance to play of 1.0
+    FlFloat("chance_to_play",
+        VISIBLE=False, SIDETIP="[0%, 100%]", MIN=0.0, MAX=1.0, TOOLTIP=(
+            "When compiled into a map, this is the chance to play any\n"
+            "specific animation in a permutation chain."
+            )),
     rawdata_ref("frame_info", max_size=32768),
 
     # each of the bits in these flags determines whether
@@ -258,7 +276,14 @@ animation_desc = Struct("animation",
     Pad(8),
     UInt32("rot_flags0", EDITABLE=False),
     UInt32("rot_flags1", EDITABLE=False),
-    Pad(8),
+    Pad(4),
+    Pad(2),
+    Pad(1),
+    SInt8("mozz_compress_quality",
+        SIDETIP="[0%, 100%]", MIN=0, MAX=100, DEFAULT=70, TOOLTIP=(
+            "When compiling animations with Mozzarilla, this is used as\n"
+            "the quality value if the 'mozz override quality' flag is set."
+            )),
     UInt32("scale_flags0", EDITABLE=False),
     UInt32("scale_flags1", EDITABLE=False),
     Pad(4),
@@ -285,10 +310,24 @@ antr_body = Struct("tagdata",
     Bool16("flags",
         "compress_all_animations",
         "force_idle_compression",
+        {NAME: 'mozz_never_compress_overlays', VALUE: 1<<13, TOOLTIP: (
+            "By default Mozzarilla will compress any overlay animations\n"
+            "that are not used for keyframe poses. This disables that."
+            )},
+        {NAME: 'mozz_enable_compress_fields',  VALUE: 1<<14, TOOLTIP: (
+            "Instructs Mozzarilla to utilize all newly added fields for\n"
+            "controlling animation compression(they start with 'mozz_')."
+            )},
         ),
-    Pad(2),
+    Pad(1),
+    SInt8("mozz_compress_quality",
+        SIDETIP="[0%, 100%]", MIN=0, MAX=100, DEFAULT=70, TOOLTIP=(
+            "When compiling animations with Mozzarilla, this is used as the\n"
+            "quality value if the 'mozz enable compress_fields' flag is set."
+            )),
     reflexive("nodes", nodes_desc, 64, DYN_NAME_PATH=".name"),
-    reflexive("animations", animation_desc, 256, DYN_NAME_PATH=".name"),
+    reflexive("animations", animation_desc, 256, DYN_NAME_PATH=".name", EXT_MAX=2048),
+    Pad(0), # replaced with stock_animation in magy tag class in os_hek
     SIZE=128,
     )
 

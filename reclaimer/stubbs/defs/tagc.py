@@ -8,3 +8,23 @@
 #
 
 from ...hek.defs.tagc import *
+from ..common_descs import dependency_stubbs
+
+tag_reference = desc_variant(tag_reference, dependency_stubbs("tag"))
+
+tagc_body = desc_variant(tagc_body,
+    reflexive("tag_references", tag_reference, 200,
+        DYN_NAME_PATH='.tag.filepath'
+        )
+    )
+
+
+def get():
+    return tagc_def
+
+tagc_def = TagDef("tagc",
+    blam_header('tagc'),
+    tagc_body,
+
+    ext=".tag_collection", endian=">", tag_cls=HekTag
+    )

@@ -7,11 +7,46 @@
 # See LICENSE for more information.
 #
 
+import os
 from struct import unpack
 
 from supyr_struct.defs.constants import *
 from supyr_struct.util import fourcc_to_int
-from binilla.constants import *
+
+# environment variable controls
+RECLAIMER_NO_GUI  = "RECLAIMER_NO_GUI" # if non-empty, tells reclaimer to
+#                                        not load binilla or mozzarilla
+#                                        modules wherever possible.
+RECLAIMER_NO_ARBY = "RECLAIMER_NO_ARBY" # if non-empty, tells reclaimer to not
+#                                         load arbytmap wherever possible.
+
+# copied from binilla.constants for in case they're not available
+EDITABLE            = "EDITABLE"
+VISIBLE             = "VISIBLE"
+GUI_NAME            = "GUI_NAME"
+HIDE_TITLE          = "HIDE_TITLE"
+ORIENT              = "ORIENT"
+WIDGET_WIDTH        = "WIDGET_WIDTH"
+TOOLTIP             = "TOOLTIP"
+COMMENT             = "COMMENT"
+SIDETIP             = "SIDETIP"
+ALLOW_MAX           = "ALLOW_MAX"
+ALLOW_MIN           = "ALLOW_MIN"
+UNIT_SCALE          = "UNIT_SCALE"
+EXT                 = "EXT"
+PORTABLE            = "PORTABLE"
+WIDGET              = "WIDGET"
+DYN_NAME_PATH       = "DYN_NAME_PATH"
+DYN_I               = "[DYN_I]"
+VISIBILITY_SHOWN    = 1
+VISIBILITY_HIDDEN   = 0
+VISIBILITY_METADATA = -1
+
+if not os.environ.get(RECLAIMER_NO_GUI):
+    try:
+        from binilla.constants import *
+    except ImportError:
+        pass
 
 # some reflexives are so massive that it's significantly faster to treat them
 # as raw data and just byteswap them using precalculated offsets and sizes
@@ -30,6 +65,7 @@ def inject_halo_constants():
 
 
 PCDEMO_INDEX_MAGIC          = 0x4BF10000
+MCC_INDEX_MAGIC             = 0x50000000
 PC_INDEX_MAGIC              = 0x40440000
 CE_INDEX_MAGIC              = 0x40440000
 ANNIVERSARY_INDEX_MAGIC     = 0x004B8000
@@ -42,6 +78,7 @@ H2_XBOX_INDEX_MAGIC         = 0x80061000
 map_build_dates = {
     "stubbs":          "400",
     "stubbspc":        "",
+    "stubbspc64bit":   "",
     "shadowrun_proto": "01.12.07.0132",
     "halo1xboxdemo":   "",
     "halo1xbox":       "01.10.12.2276",
@@ -51,6 +88,7 @@ map_build_dates = {
     "halo1yelo":       "01.00.00.0609",
     "halo1vap":        "01.00.00.0609",
     "halo1pc":         "01.00.00.0564",
+    "halo1mcc":        "01.03.43.0000",
     "halo2alpha":      "02.01.07.4998",
     "halo2beta":       "02.06.28.07902",
     "halo2epsilon":    "02.08.28.09214",
@@ -69,12 +107,14 @@ map_build_dates = {
 map_versions = {
     "stubbs":          5,
     "stubbspc":        5,
+    "stubbspc64bit":   5,
     "shadowrun_proto": 5,
     "halo1xboxdemo":   5,
     "halo1xbox":       5,
     "halo1pcdemo":     6,
     "halo1pc":         7,
     "halo1anni":       7,
+    "halo1mcc":        13,
     "halo1ce":         609,
     "halo1yelo":       609,
     "halo1vap":        134,
@@ -93,19 +133,48 @@ map_versions = {
     #"halo5":           ????,
     }
 
-GEN_1_HALO_ENGINES = ("halo1xboxdemo", "halo1xbox",
-                      "halo1ce", "halo1vap", "halo1yelo",
-                      "halo1pcdemo", "halo1pc", "halo1anni", )
+# NOTE: do NOT change these. they are used in various places
+#       to determine how to read tags/data from different maps
+GEN_1_HALO_XBOX_ENGINES = frozenset((
+    "halo1xboxdemo", "halo1xbox",
+    ))
+GEN_1_STUBBS_ENGINES = frozenset((
+    "stubbs", "stubbspc", "stubbspc64bit",
+    ))
+GEN_1_SHADOWRUN_ENGINES = frozenset((
+    "shadowrun_proto",
+    ))
+GEN_1_HALO_CUSTOM_ENGINES = frozenset((
+    "halo1ce", "halo1vap", "halo1yelo", "halo1mcc",
+    ))
+GEN_1_HALO_PC_ENGINES = frozenset((
+    "halo1pcdemo", "halo1pc",
+    ))
 
-GEN_1_ENGINES = GEN_1_HALO_ENGINES + (
-    "stubbs", "stubbspc", "shadowrun_proto", )
+GEN_1_HALO_GBX_ENGINES = GEN_1_HALO_PC_ENGINES.union(
+    GEN_1_HALO_CUSTOM_ENGINES
+    )
 
-GEN_2_ENGINES = ("halo2alpha", "halo2beta", "halo2epsilon",
-                 "halo2xbox", "halo2vista", )
+GEN_1_HALO_ENGINES = frozenset((
+    "halo1anni",
+    )).union(GEN_1_HALO_GBX_ENGINES)\
+      .union(GEN_1_HALO_XBOX_ENGINES)
 
-GEN_3_ENGINES = ("halo3", "halo3odst", "halo3beta",
-                 "haloreachbeta", "haloreach",
-                 "halo4", "halo4nettest", "halo5", )
+GEN_1_ENGINES = GEN_1_HALO_ENGINES\
+    .union(GEN_1_STUBBS_ENGINES)\
+    .union(GEN_1_SHADOWRUN_ENGINES)
+
+GEN_2_ENGINES = frozenset((
+    "halo2alpha", "halo2beta", "halo2epsilon",
+    "halo2xbox", "halo2vista",
+    ))
+
+# NOTE: these aren't all gen3, but this basically means "anything halo 3 and newer".
+GEN_3_ENGINES = frozenset((
+    "halo3", "halo3odst", "halo3beta",
+    "haloreachbeta", "haloreach",
+    "halo4", "halo4nettest", "halo5",
+    ))
 
 # magic is actually the virtual address the map is loaded at. Halo 3 and
 # beyond instead partition the map into sections with a virtual address for
@@ -113,12 +182,14 @@ GEN_3_ENGINES = ("halo3", "halo3odst", "halo3beta",
 map_magics = {
     "stubbs":          STUBBS_INDEX_MAGIC,
     "stubbspc":        PC_INDEX_MAGIC,
+    "stubbspc64bit":   PC_INDEX_MAGIC,
     "shadowrun_proto": SHADOWRUN_PROTO_INDEX_MAGIC,
     "halo1xboxdemo":   XBOX_INDEX_MAGIC,
     "halo1xbox":       XBOX_INDEX_MAGIC,
     "halo1pcdemo":     PCDEMO_INDEX_MAGIC,
     "halo1pc":         PC_INDEX_MAGIC,
     "halo1anni":       ANNIVERSARY_INDEX_MAGIC,
+    "halo1mcc":        MCC_INDEX_MAGIC,
     "halo1ce":         CE_INDEX_MAGIC,
     "halo1yelo":       CE_INDEX_MAGIC,
     "halo1vap":        CE_INDEX_MAGIC,
@@ -182,14 +253,20 @@ FORMAT_NAME_MAP = (
     "UNUSED4", "UNUSED5",
     "DXT1", "DXT3", "DXT5", "P8-BUMP", "P8",
     "A32R32G32B32F", "R32G32B32F", "R16G16B16F",
-    "V8U8", "G8B8", "UNUSED6", "UNUSED7", "UNUSED8",
+    "V8U8", "G8B8", "UNUSED6", "A16R16G16B16F", "UNUSED8",
     "UNUSED9", "UNUSED10", "UNUSED11", "UNUSED12", "UNUSED13",
     "UNUSED14", "DXN", "CTX1", "DXT3A", "DXT3Y", "DXT5A", "DXT5Y", "DXT5AY")
+MCC_FORMAT_NAME_MAP = FORMAT_NAME_MAP[:FORMAT_NAME_MAP.index("P8")] + ("BC7", )
+SWIZZLEABLE_FORMATS = (
+    "A8", "L8", "AL8", "A8L8",
+    "R5G6B5",  "UNUSED3", "A1R5G5B5", "A4R4G4B4",
+    "X8R8G8B8", "A8R8G8B8", "P8-BUMP", "P8",
+    "A32R32G32B32F", "R32G32B32F", "R16G16B16F",
+    "V8U8", "G8B8"
+    )
 
-I_FORMAT_NAME_MAP = {}
-for i in range(len(FORMAT_NAME_MAP)):
-    if i not in I_FORMAT_NAME_MAP:
-        I_FORMAT_NAME_MAP[FORMAT_NAME_MAP[i]] = i
+I_FORMAT_NAME_MAP      = {fmt: i for i, fmt in enumerate(FORMAT_NAME_MAP)}
+I_MCC_FORMAT_NAME_MAP  = {fmt: i for i, fmt in enumerate(MCC_FORMAT_NAME_MAP)}
 
 #each bitmap's number of bytes must be a multiple of 512
 BITMAP_PADDING = 512
@@ -199,11 +276,37 @@ CUBEMAP_PADDING = 128
 # max value a reflexive count is theoretically allowed to be
 MAX_REFLEXIVE_COUNT = 2**31-1
 
-# this number was taken by seeing what the highest indexable reflexive number
-# is.
+EXT_MAX = "EXT_MAX"  # absolute max number of elements a reflexive can 
+#                      contain. enforced even when not using safe mode
+#                      this of this as an "extreme" max value.
+
+# this number was taken by seeing what the highest indexable 
+# reflexive number is.
 SANE_MAX_REFLEXIVE_COUNT = 0xFFFE
+SINT24_MAX = 0x7FffFF
+UINT16_MAX = 0xFFff
+SINT16_MAX = 0x7Fff
+UINT8_MAX  = 0xFF
+SINT24_INDEX_MAX = SINT24_MAX + 1
+UINT16_INDEX_MAX = UINT16_MAX + 1
+SINT16_INDEX_MAX = SINT16_MAX + 1
+UINT8_INDEX_MAX  = UINT8_MAX  + 1
 
 MAX_TAG_PATH_LEN = 254
+
+# NOTE: do not change these names. they are used with Block.set_to
+H1_TRIANGLE_BUFFER_TYPES = (
+    "triangle_list",
+    "triangle_strip"
+    )
+H1_VERTEX_BUFFER_TYPES = (
+    "sbsp_uncomp_material_verts",
+    "sbsp_comp_material_verts",
+    "sbsp_uncomp_lightmap_verts",
+    "sbsp_comp_lightmap_verts",
+    "model_uncomp_verts",
+    "model_comp_verts",
+    )
 
 # maps tag class four character codes(fccs) in
 # their string encoding to their int encoding.
@@ -213,6 +316,10 @@ tag_class_fcc_to_le_int = {}
 # their int encoding to their string encoding.
 tag_class_be_int_to_fcc = {}
 tag_class_le_int_to_fcc = {}
+
+LOD_NAMES = (
+    "superhigh", "high", "medium", "low", "superlow"
+    )
 
 # maps tag class four character codes to the tags file extension
 tag_class_fcc_to_ext = {

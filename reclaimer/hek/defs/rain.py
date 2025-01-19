@@ -53,10 +53,11 @@ particle_type = Struct("particle_type",
     Pad(32),
     QStruct("color_lower_bound", INCLUDE=argb_float),
     QStruct("color_upper_bound", INCLUDE=argb_float),
+    FlFloat("sprite_size", VISIBLE=False),
 
     #Shader
     Struct("shader",
-        Pad(64),
+        Pad(60),
         dependency("sprite_bitmap", "bitm"),
         SEnum16("render_mode", *render_mode),
         SEnum16("render_direction_source",
@@ -64,7 +65,8 @@ particle_type = Struct("particle_type",
             "from_acceleration"
             ),
 
-        Pad(40),
+        Pad(36),
+        FlUInt32("unknown", VISIBLE=False),
         Bool16("shader_flags", *shader_flags),
         SEnum16("framebuffer_blend_function", *framebuffer_blend_functions),
         SEnum16("framebuffer_fade_mode", *render_fade_mode),

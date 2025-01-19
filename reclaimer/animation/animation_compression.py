@@ -28,14 +28,16 @@ def decompress_animation(anim, keep_compressed=True, endian=">"):
     jma_anim.scale_flags_int = anim.scale_flags0 | (anim.scale_flags1 << 32)
 
     # decompress the frame data
-    _, jma_anim.frames = serialization.deserialize_compressed_frame_data(anim)
+    _, jma_anim.frames = serialization.deserialize_comp_frame_data(
+        anim, False, True
+        )
 
     # make some fake nodes so the serialization functions work
     jma_anim.nodes = jms.util.generate_fake_nodes(anim.node_count)
 
     # serialize the animation data
     def_data   = serialization.serialize_default_data(jma_anim, endian)
-    frame_data = serialization.serialize_frame_data(jma_anim, endian)
+    frame_data = serialization.serialize_uncomp_frame_data(jma_anim, endian)
 
     if keep_compressed:
         anim.offset_to_compressed_data = len(frame_data)
@@ -50,7 +52,7 @@ def decompress_animation(anim, keep_compressed=True, endian=">"):
     return True
 
 
-def compress_animation(anim, endian=">", **kw):
+def compress_animation(anim, endian=">", recalculate_keyframes=False, **kw):
     jma_anim = kw.pop("jma_anim", None)
     if jma_anim is None:
         jma_anim = jma.JmaAnimation(
@@ -62,29 +64,35 @@ def compress_animation(anim, endian=">", **kw):
         jma_anim.scale_flags_int = anim.scale_flags0 | (anim.scale_flags1 << 32)
 
         # create the node states from the frame_data and default_data
-        jma_anim.frames = serialization.deserialize_frame_data(
-            anim, None, True, endian)
+        jma_anim.frames = serialization.deserialize_uncomp_frame_data(
+            anim, None, True, endian
+            )
 
         # make some fake nodes so the serialization functions work
         jma_anim.nodes = jms.util.generate_fake_nodes(anim.node_count)
-
-        keyframes = kw.pop("keyframes", None)
-        # either use provided keyframes, or generate them
-        if keyframes is None:
-            jma_anim.compress_animation(**kw)
-        else:
-            jma_anim.rot_keyframes   = keyframes[0]
-            jma_anim.trans_keyframes = keyframes[1]
-            jma_anim.scale_keyframes = keyframes[2]
 
     if jma_anim.root_node_info_applied:
         jma_anim = deepcopy(jma_anim)
         jma_anim.apply_root_node_info_to_states(True)
 
+    keyframes = kw.pop("keyframes", None)
+
+    # either use provided keyframes, or generate them
+    if keyframes:
+        jma_anim.rot_keyframes   = keyframes[0]
+        jma_anim.trans_keyframes = keyframes[1]
+        jma_anim.scale_keyframes = keyframes[2]
+    elif recalculate_keyframes or not(
+            jma_anim.rot_keyframes and
+            jma_anim.trans_keyframes and
+            jma_anim.scale_keyframes):
+        jma_anim.calculate_keyframes(**kw)
+
     # serialize the animation data
-    comp_frame_data = serialization.serialize_compressed_frame_data(jma_anim)
+    comp_frame_data = serialization.serialize_comp_frame_data(jma_anim)
 
     uncomp_frame_data = anim.frame_data.STEPTREE
+    # clear any previously existing compressed data
     if anim.flags.compressed_data:
         del uncomp_frame_data[anim.offset_to_compressed_data: ]
 
