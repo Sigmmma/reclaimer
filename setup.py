@@ -89,7 +89,11 @@ setup(
         },
     platforms=["POSIX", "Windows"],
     keywords=["reclaimer", "halo"],
-    install_requires=['supyr_struct>=1.5.0', 'binilla', 'arbytmap'],
+    install_requires=[
+        'supyr_struct>=1.5.0', 'binilla', 'arbytmap',
+        'py-simple-audio @ git+ssh://git@github.com/Sigmmma/py-simple-audio.git@1.0.4',
+        'PyOgg @ git+ssh://git@github.com/Sigmmma/PyOgg@0.7.1'
+        ],
     requires=['supyr_struct', 'binilla', 'arbytmap'],
     provides=['reclaimer'],
     python_requires=">=3.5",
@@ -104,6 +108,9 @@ setup(
         "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: C",
         ],
