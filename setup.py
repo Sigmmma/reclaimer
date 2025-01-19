@@ -91,8 +91,8 @@ setup(
     keywords=["reclaimer", "halo"],
     install_requires=[
         'supyr_struct>=1.5.0', 'binilla', 'arbytmap',
-        'py-simple-audio @ git+ssh://git@github.com/Sigmmma/py-simple-audio.git@1.0.4',
-        'PyOgg @ git+ssh://git@github.com/Sigmmma/PyOgg@0.7.1'
+        'py-simple-audio @ git+https://git@github.com/Sigmmma/py-simple-audio.git@1.0.4',
+        'PyOgg @ git+https://git@github.com/Sigmmma/PyOgg@0.7.1'
         ],
     requires=['supyr_struct', 'binilla', 'arbytmap'],
     provides=['reclaimer'],
