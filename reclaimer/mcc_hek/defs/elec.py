@@ -8,3 +8,22 @@
 #
 
 from ...hek.defs.elec import *
+
+def get():
+    return elec_def
+
+# NOTE: only xbox supports the secondary map struct here
+shader = desc_variant(shader,
+    ("secondary_map", Pad(104)),
+    verify=False
+    )
+elec_body = desc_variant(elec_body,
+    reflexive("shaders", shader, 1),
+    )
+
+elec_def = TagDef("elec",
+    blam_header("elec"),
+    elec_body,
+
+    ext=".lightning", endian=">", tag_cls=HekTag,
+    )

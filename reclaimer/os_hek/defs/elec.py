@@ -12,6 +12,7 @@ from ...hek.defs.elec import *
 def get():
     return elec_def
 
+# NOTE: only xbox supports the secondary map struct here
 shader = desc_variant(shader,
     ("secondary_map", Pad(104)),
     verify=False
