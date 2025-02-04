@@ -23,7 +23,7 @@ from supyr_struct.defs.block_def import BlockDef
 try:
     from .ext import byteswapping_ext
     fast_byteswapping = True
-except:
+except ImportError:
     fast_byteswapping = False
 
 # These end_swap_XXXX functions are for byteswapping the

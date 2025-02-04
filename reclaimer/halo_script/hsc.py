@@ -105,16 +105,16 @@ def get_hsc_node_string(string_data, node, hsc_node_strings_by_type=()):
             return hsc_node_strings[node.data & mask]
 
     end = string_data.find("\x00", node.string_offset)
-    string = string_data[node.string_offset: end]
+    node_string = string_data[node.string_offset: end]
     #if _script_built_in_functions_test is not None and node.type == 2:
     #    if node.index_union not in range(len(_script_built_in_functions_test)):
     #        _script_built_in_functions_test.extend(
     #            [None] * (node.index_union + 1 -
     #                      len(_script_built_in_functions_test)))
     #    if _script_built_in_functions_test[node.index_union] is None:
-    #        _script_built_in_functions_test[node.index_union] = string
+    #        _script_built_in_functions_test[node.index_union] = node_string
 
-    return string
+    return node_string
 
 
 def get_hsc_data_block(raw_syntax_data=None, engine="halo1"):
@@ -178,25 +178,18 @@ def get_h1_scenario_script_object_type_strings(scnr_data, engine="halo1"):
         names = {}
         script_strings_by_type[script_object_type_enum] = names
 
-        i = 0
-        for b in scnr_data[reflexive_name].STEPTREE:
+        for i, b in enumerate(scnr_data[reflexive_name].STEPTREE):
             names[i] = b.name
-            i += 1
 
-    i = 0
     script_strings_by_type[biped_node_enum] = names = {}
-    for b in scnr_data.bipeds_palette.STEPTREE:
+    for i, b in enumerate(scnr_data.bipeds_palette.STEPTREE):
         names[i] = b.name.filepath.split("/")[-1].split("\\")[-1]
-        i += 1
 
-    i = 0
     script_strings_by_type[encounters_node_enum] = names = {}
-    for enc in scnr_data.encounters.STEPTREE:
-        j = 0
-        for squad in enc.squads.STEPTREE:
-            names[i + (j << 16) + 0x80000000] = "%s/%s" % (enc.name, squad.name)
-            j += 1
-        i += 1
+    for i, encounter in enumerate(scnr_data.encounters.STEPTREE):
+        for j, squad in enumerate(encounter.squads.STEPTREE):
+            names[i + (j << 16) + 0x80000000] = "%s/%s" % (
+                encounter.name, squad.name)
 
     return script_strings_by_type
 
@@ -352,7 +345,7 @@ def decompile_node_bytecode(node_index, nodes, string_data,
     if not node_str_ct:
         return "", False, 0
 
-    string = ""
+    node_string = ""
     indent_str = indent_char * indent_size * indent
     returned = False
     i = 0
@@ -387,9 +380,9 @@ def decompile_node_bytecode(node_index, nodes, string_data,
             node_str += ")"
 
         returned = node_str[-1] == return_char
-        string += node_str
+        node_string += node_str
 
-    return string, has_newlines, i
+    return node_string, has_newlines, i
 
 
 def get_script_types(engine="halo1"):
@@ -474,10 +467,10 @@ def hsc_bytecode_to_string(syntax_data, string_data, block_index,
         return ""
 
     # figure out which reflexive and type enums to use
-    blocks      = script_blocks if is_script else global_blocks
+    hsc_blocks  = script_blocks if is_script else global_blocks
     typ_names   = script_types  if is_script else object_types
 
-    block   = blocks[block_index]
+    block   = hsc_blocks[block_index]
     typ     = block.type.data
 
     # invalid script/global type

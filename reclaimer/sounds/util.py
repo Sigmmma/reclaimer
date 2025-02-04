@@ -104,17 +104,14 @@ def change_pcm_width(compression, new_width):
     Only considers the linear PCM formats.
     '''
     assert compression in constants.PCM_FORMATS
-    is_big_endian = is_big_endian_pcm(compression)
-
-    if new_width == 4:
-        new_compression = constants.COMPRESSION_PCM_32_LE
-    elif new_width == 3:
-        new_compression = constants.COMPRESSION_PCM_24_LE
-    elif new_width == 2:
-        new_compression = constants.COMPRESSION_PCM_16_LE
-    elif new_width == 1:
-        new_compression = constants.COMPRESSION_PCM_8_SIGNED
-        is_big_endian = False
+    is_big_endian   = is_big_endian_pcm(compression) and new_width > 1
+    new_compression = (
+        constants.COMPRESSION_PCM_32_LE     if new_width == 4 else
+        constants.COMPRESSION_PCM_24_LE     if new_width == 3 else
+        constants.COMPRESSION_PCM_16_LE     if new_width == 2 else
+        constants.COMPRESSION_PCM_8_SIGNED  if new_width == 1 else
+        compression
+        )
 
     return new_compression | int(is_big_endian)
 
@@ -209,7 +206,7 @@ def convert_pcm_int_to_pcm_float32(sample_data, width, wantarray=False):
     typecode    = audioop.SAMPLE_TYPECODES[width-1]
     int_samples = array.array(typecode, sample_data)
     if sys.byteorder == "big":
-        samples.byteswap()
+        int_samples.byteswap()
 
     scale = 1/(1 << (8*width-1))
 

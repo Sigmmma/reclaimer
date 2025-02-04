@@ -13,8 +13,8 @@ from reclaimer.h2.constants import *
 
 def h2_rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                           rawdata=None, root_offset=0, offset=0, **kwargs):
+    orig_offset = offset
     try:
-        orig_offset = offset
         if node is None:
             parent[attr_index] = node = desc.get(NODE_CLS, self.node_cls)\
                 (desc, parent=parent, init_attrs=rawdata is None)
@@ -74,8 +74,8 @@ def h2_rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
 def h2_tag_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                       rawdata=None, root_offset=0, offset=0, **kwargs):
     # parse tag_class and id(if meta) or path length(if not meta)
+    orig_offset = offset
     try:
-        orig_offset = offset
         if node is None:
             parent[attr_index] = node = desc.get(NODE_CLS, self.node_cls)\
                 (desc, parent=parent, init_attrs=rawdata is None)

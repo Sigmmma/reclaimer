@@ -26,7 +26,7 @@ from . import constants, util, audioop
 try:
     from .ext import adpcm_ext
     fast_adpcm = True
-except:
+except ImportError:
     fast_adpcm = False
 
 __all__ = (

@@ -74,23 +74,19 @@ class JmsVertex:
         self.region)
 
     def __eq__(self, other):
-        if not isinstance(other, JmsVertex):
+        if (not isinstance(other, JmsVertex)          or
+            abs(self.pos_z  - other.pos_z)  > 0.00001 or
+            abs(self.pos_x  - other.pos_x)  > 0.00001 or
+            abs(self.pos_y  - other.pos_y)  > 0.00001 or
+            abs(self.norm_k - other.norm_k) > 0.0001  or
+            abs(self.norm_i - other.norm_i) > 0.0001  or
+            abs(self.norm_j - other.norm_j) > 0.0001  or
+            abs(self.node_1_weight - other.node_1_weight) > 0.0001 or
+            abs(self.tex_u - other.tex_u) > 0.0001    or
+            abs(self.tex_v - other.tex_v) > 0.0001    or
+            self.region != other.region or
+            self.node_0 != other.node_0 or
+            self.node_1 != other.node_1
+            ):
             return False
-        elif (abs(self.pos_z  - other.pos_z)  > 0.00001 or
-              abs(self.norm_k - other.norm_k) > 0.0001):
-            return False
-        elif (abs(self.pos_x - other.pos_x) > 0.00001 or
-              abs(self.pos_y - other.pos_y) > 0.00001):
-            return False
-        elif (abs(self.norm_i - other.norm_i) > 0.0001 or
-              abs(self.norm_j - other.norm_j) > 0.0001):
-            return False
-        elif abs(self.node_1_weight - other.node_1_weight) > 0.0001:
-            return False
-        elif self.region != other.region:
-            return False
-        elif self.node_0 != other.node_0 or self.node_1 != other.node_1:
-            return False
-
-        return (abs(self.tex_u - other.tex_u) <= 0.0001 and
-                abs(self.tex_v - other.tex_v) <= 0.0001)
+        return True

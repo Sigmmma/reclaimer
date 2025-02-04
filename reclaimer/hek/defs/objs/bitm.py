@@ -471,10 +471,8 @@ class BitmTag(HekTag):
             dim0 = sub_bitmap_count if is_xbox else mipmap_count
             dim1 = mipmap_count if is_xbox else sub_bitmap_count
             for j in range(dim0):
-                if not is_xbox: w, h, d = get_mip_dims(mw, mh, md, j)
-
                 for k in range(dim1):
-                    if is_xbox: w, h, d = get_mip_dims(mw, mh, md, k)
+                    w, h, d = get_mip_dims(mw, mh, md, k if is_xbox else j)
 
                     if format == ab.FORMAT_P8_BUMP:
                         pixel_count = w*h

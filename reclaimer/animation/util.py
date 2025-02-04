@@ -15,15 +15,15 @@ from reclaimer.animation import constants as const
 from reclaimer.util import get_block_max
 from reclaimer.enums import unit_animation_names, unit_weapon_animation_names,\
      unit_weapon_type_animation_names, vehicle_animation_names,\
-     weapon_animation_names, device_animation_names, fp_animation_names_mcc,\
-     unit_damage_animation_names, unit_damage_types, unit_damage_sides,\
-     unit_damage_regions
+     weapon_animation_names, device_animation_names,\
+     fp_animation_names, fp_animation_names_mcc,\
+     unit_damage_animation_names, unit_damage_types,\
+     unit_damage_regions, unit_damage_sides
 
 __all__ = (
     'split_anim_name_into_type_strings', 'split_permutation_number',
     'set_animation_enum_index', 'set_animation_index',
     'get_default_animation_enums', 'set_default_animation_enums',
-    'calculate_node_vectors'
     )
 
 
@@ -93,9 +93,9 @@ def calculate_anim_flags(frames, tolerance=1.0):
             # be due to how compressed animations handle default scales.
             s_diffs.add(1 - s1.scale)
 
-        r_abs_diffs[n] = max(-min(r_diffs), max(r_diffs))
-        t_abs_diffs[n] = max(-min(t_diffs), max(t_diffs))
-        s_abs_diffs[n] = max(-min(s_diffs), max(s_diffs))
+        r_abs_diffs[n] = max(-min(r_diffs), *r_diffs)
+        t_abs_diffs[n] = max(-min(t_diffs), *t_diffs)
+        s_abs_diffs[n] = max(-min(s_diffs), *s_diffs)
 
     tolerance = abs(max(0, tolerance) or 1.0)
     ep_r = const.QUAT_EPSILON  * tolerance

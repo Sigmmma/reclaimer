@@ -117,7 +117,7 @@ def extract_scripts(
 
             if need_to_sort.keys() == next_need_to_sort.keys():
                 print("Could not sort these %ss so dependencies come first:" % typ)
-                for name in need_to_sort.keys():
+                for name in sorted(need_to_sort):
                     print("\t%s" % name)
                     print("\t  Requires: ", ", ".join(sorted(sort_by[name])))
                     print()

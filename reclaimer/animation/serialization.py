@@ -21,7 +21,7 @@ from reclaimer.util import compression
 from reclaimer.util import matrices
 
 __all__ = (
-    "deserialize", "get_keyframe_index_of_frame",
+    "deserialize", "get_frame_from_keyframe_data",
     "deserialize_uncomp_frame_data", "deserialize_frame_info", 
     "deserialize_comp_frame_data",   "deserialize_default_data",
       "serialize_uncomp_frame_data",   "serialize_frame_info",   

@@ -89,17 +89,15 @@ class Halo1YeloMap(Halo1Map):
     def setup_defs(self):
         this_class = type(self)
         if this_class.defs is None:
-            this_class.defs = defs = {}
             print("    Loading definitions in '%s'" % self.tag_defs_module)
-            this_class.handler = self.handler_class(
+            handler = self.handler_class(
                 build_reflexive_cache=False, build_raw_data_cache=False,
                 debug=2)
 
-            this_class.defs = dict(this_class.handler.defs)
-            this_class.defs["coll"] = fast_coll_def
-            this_class.defs["sbsp"] = fast_sbsp_def
-            this_class.defs["gelc"] = gelc_def
-            this_class.defs = FrozenDict(this_class.defs)
+            defs = dict(handler.defs)
+            defs.update(coll=fast_coll_def, sbsp=fast_sbsp_def, gelc=gelc_def)
+            this_class.defs = FrozenDict(defs)
+            this_class.handler = handler
 
         # make a shallow copy for this instance to manipulate
         self.defs = dict(self.defs)

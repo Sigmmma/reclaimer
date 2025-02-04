@@ -101,3 +101,16 @@ class JmsMaterial:
         return """JmsMaterial(name=%s%s,
     tiff_path=%s, properties=%s
 )""" % (self.name, self.permutation_index, self.tiff_path, self.properties)
+
+    def __eq__(self, other):
+        if (not isinstance(other, JmsMaterial) or
+            self.name.lower()        != other.name.lower() or
+            self.shader_type.lower() != other.shader_type.lower() or
+            set(self.properties)     != set(other.properties) or
+            self.permutation_index   != other.permutation_index or
+            # don't actually care about this one
+            #self.tiff_path.lower()   != other.tiff_path.lower() or
+            self.shader_path.lower() != other.shader_path.lower()
+            ):
+            return False
+        return True

@@ -67,7 +67,7 @@ def set_tag_meta_pointers(block, meta_pointer, raw_pointer_base=0):
 
 
 class Halo1RsrcMapTag(Tag):
-    defs = ()
+    defs = {}
     tag_path_indices = ()
 
     _orig_tag_count = 0

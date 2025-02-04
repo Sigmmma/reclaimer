@@ -189,9 +189,9 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
                      rawdata=None, root_offset=0, offset=0, **kwargs):
     """
     """
+    orig_offset = offset
     try:
         __lsi__ = list.__setitem__
-        orig_offset = offset
         if node is None:
             parent[attr_index] = node = desc.get(NODE_CLS, self.node_cls)\
                 (desc, parent=parent)
@@ -311,8 +311,8 @@ def reflexive_array_parser(self, desc, node=None, parent=None, attr_index=None,
 
 def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                        rawdata=None, root_offset=0, offset=0, **kwargs):
+    orig_offset = offset
     try:
-        orig_offset = offset
         if node is None:
             parent[attr_index] = node = desc.get(NODE_CLS, self.node_cls)\
                 (desc, parent=parent, init_attrs=rawdata is None)
@@ -330,11 +330,11 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         s_desc = desc.get(STEPTREE)
         if s_desc:
             pointer_converter = kwargs.get("map_pointer_converter")
-            safe_mode = kwargs.get("safe_mode", True) and not s_desc.get(IGNORE_SAFE_MODE)
 
             if pointer_converter is not None:
                 node[0] = max(0, min(node[0], s_desc.get(MAX, node[0])))
 
+            #safe_mode = kwargs.get("safe_mode", True) and not s_desc.get(IGNORE_SAFE_MODE)
             #if safe_mode:
             #    if pointer_converter is not None:
             #        node[0] = max(0, min(node[0], s_desc.get(MAX, node[0])))

@@ -87,7 +87,7 @@ def byteswap(fragment, width):
         fragment[::3]  = orig_fragment[2::3]
         fragment[2::3] = orig_fragment[::3]
         fragment = bytes(fragment)
-    elif width == 2 or width == 4:
+    elif width in (2, 4):
         # we can use array.array to byteswap 16/32 bit pcm
         fragment = array.array("i" if width == 4 else "h", fragment)
         fragment.byteswap()
@@ -241,14 +241,6 @@ def _run_tests():
             #(       0x00, 0xFFffFFff,   0x100, 4, 1, "I", 0x7FffFFff),
             #(       0x00, 0xFFffFFff,   0x100, 4, 2, "I", 0x7FffFFff),
             ]:
-        get_delta = lambda: list(
-                itertools.starmap(int.__sub__,
-                zip(
-                    array.array(typecode, audioop_data),
-                    array.array(typecode, reclaimer_data)
-                ))
-            )
-
         min_val, max_val, step_val, width, new_width, typecode, bias_val = test_vals
         test_vals_str = ", ".join(str(v) for v in test_vals)
 
@@ -265,7 +257,15 @@ def _run_tests():
             # NOTE: can't do much ATM with 24bit samples cause of how awkward they are
             continue
 
-        delta           = get_delta()
+        def get_delta(tc=typecode, ctrl_data=audioop_data,
+                      test_data=reclaimer_data):
+            return list(
+                itertools.starmap(int.__sub__,
+                zip(array.array(tc, ctrl_data),
+                    array.array(tc, test_data)
+                )))
+
+        delta   = get_delta()
         if max(map(abs, delta)) > 1:
             print(delta)
             print("Test failure: Inconsistency in byteswap(%s)" % test_vals_str)

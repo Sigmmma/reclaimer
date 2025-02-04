@@ -12,18 +12,16 @@ from reclaimer.util import matrices
 
 POS_INF = float("inf")
 NEG_INF = float("-inf")
-RESERVED_WINDOWS_FILENAME_MAP = {}
-INVALID_PATH_CHARS = set([str(i.to_bytes(1, 'little'), 'latin-1')
-                          for i in (tuple(range(32)) +
-                                    tuple(range(128, 256)))]
-                         )
-VALID_NUMERIC_CHARS = frozenset("0123456789")
-for name in ('CON', 'PRN', 'AUX', 'NUL'):
-    RESERVED_WINDOWS_FILENAME_MAP[name] = '_' + name
-for i in VALID_NUMERIC_CHARS:
-    RESERVED_WINDOWS_FILENAME_MAP['COM%s' % i] = '_COM%s' % i
-    RESERVED_WINDOWS_FILENAME_MAP['LPT%s' % i] = '_LPT%s' % i
-INVALID_PATH_CHARS.update('<>:"|?*')
+
+INVALID_PATH_CHARS = set(
+    "".join(str(i.to_bytes(1, 'little'), 'latin-1')
+            for i in (*range(32), *range(128, 256))) + '<>:"|?*'
+    )
+RESERVED_WINDOWS_FILENAME_MAP = {
+    **{name: '_%s' % name for name in ('COM', 'PRN', 'AUX', 'NUL')},
+    **{'COM%s' % i: '_COM%s' %i for i in range(10)},
+    **{'LPT%s' % i: '_LPT%s' %i for i in range(10)},
+    }
 
 
 def is_reserved_tag(tag_index_ref):

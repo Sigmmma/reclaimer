@@ -45,24 +45,20 @@ class JmsMarker:
         self.rot_i, self.rot_j, self.rot_k, self.rot_w,
         self.pos_x, self.pos_y, self.pos_z, self.radius)
 
+
     def __eq__(self, other):
-        if not isinstance(other, JmsMarker):
-            return False
-        elif self.name != other.name:
-            return False
-        elif self.permutation != other.permutation:
-            return False
-        elif self.region != other.region:
-            return False
-        elif abs(self.radius - other.radius) > 0.00001:
-            return False
-        elif (abs(self.rot_i - other.rot_i) > 0.00001 or
-              abs(self.rot_j - other.rot_j) > 0.00001 or
-              abs(self.rot_k - other.rot_k) > 0.00001 or
-              abs(self.rot_w - other.rot_w) > 0.00001):
-            return False
-        elif (abs(self.pos_x - other.pos_x) > 0.000001 or
-              abs(self.pos_y - other.pos_y) > 0.000001 or
-              abs(self.pos_z - other.pos_z) > 0.000001):
+        if (not isinstance(other, JmsMarker)          or
+            self.name.lower() != other.name.lower()   or
+            self.permutation  != other.permutation    or
+            self.region       != other.region         or
+            abs(self.radius - other.radius) > 0.00001 or
+            abs(self.pos_z  - other.pos_z)  > 0.00001 or
+            abs(self.pos_x  - other.pos_x)  > 0.00001 or
+            abs(self.pos_y  - other.pos_y)  > 0.00001 or
+            abs(self.rot_w  - other.rot_w)  > 0.00001 or
+            abs(self.rot_k  - other.rot_k)  > 0.00001 or
+            abs(self.rot_i  - other.rot_i)  > 0.00001 or
+            abs(self.rot_j  - other.rot_j)  > 0.00001
+            ):
             return False
         return True

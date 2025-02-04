@@ -43,7 +43,7 @@ def sample_data_size(
     if node is not None:
         return len(node)
 
-    sample_array = getattr(parent, "parent", None)
+    sample_array = getattr(parent, "parent", [])
     if not sample_array or not rawdata:
         # NOTE: checking if rawdata is passed to indicate that
         #       we're actually trying to parse from something.
@@ -62,13 +62,13 @@ def sample_data_size(
 
 
 def sample_data_pointer(parent=None, root_offset=0, offset=0, **kwargs):
-    sample_header = parent.header
-    bank_header = _get_fmod_bank(sample_header).header
+    header = parent.header
+    bank_header = _get_fmod_bank(header).header
     return (
         root_offset + offset + FMOD_BANK_HEADER_SIZE +
         bank_header.sample_headers_size +
         bank_header.sample_names_size +
-        sample_header.data_qword_offset * FMOD_SAMPLE_CHUNK_SIZE
+        header.data_qword_offset * FMOD_SAMPLE_CHUNK_SIZE
         )
 
 

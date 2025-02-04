@@ -511,6 +511,7 @@ def _read_jms_8210(jms_data, stop_at=""):
             # set the permutation name for each marker
             marker.permutation = perm_name
 
+        # TODO: address this
         if True or len(material_perm_names) > 1:
             # more than one perm. need to split into multiple and rebase
             vert_rebase_map = {}
@@ -545,10 +546,10 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
     '''
     Writes a JmsModel to filepath.
     '''
-    if use_blitzkrieg_rounding:
-        to_str = lambda f: float_to_str_truncate(f, 6)
-    else:
-        to_str = float_to_str
+    to_str = (
+        float_to_str if not use_blitzkrieg_rounding else
+        (lambda f: float_to_str_truncate(f, 6))
+        )
 
     materials = jms_model.materials
     regions = jms_model.regions

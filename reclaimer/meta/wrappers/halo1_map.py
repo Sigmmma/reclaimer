@@ -172,16 +172,15 @@ class Halo1Map(HaloMap):
     def setup_defs(self):
         this_class = type(self)
         if this_class.defs is None:
-            this_class.defs = defs = {}
             print("    Loading definitions in '%s'" % self.tag_defs_module)
-            this_class.handler = self.handler_class(
+            handler = self.handler_class(
                 build_reflexive_cache=False, build_raw_data_cache=False,
                 debug=2)
 
-            this_class.defs = dict(this_class.handler.defs)
-            this_class.defs["coll"] = fast_coll_def
-            this_class.defs["sbsp"] = fast_sbsp_def
-            this_class.defs = FrozenDict(this_class.defs)
+            defs = dict(handler.defs)
+            defs.update(coll=fast_coll_def, sbsp=fast_sbsp_def)
+            this_class.defs = FrozenDict(defs)
+            this_class.handler = handler
 
         # make a shallow copy for this instance to manipulate
         self.defs = dict(self.defs)
@@ -425,7 +424,7 @@ class Halo1Map(HaloMap):
                 )
             self.maps = {}
 
-    def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, **kw):
+    def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, *a, **kw):
         '''
         Takes a tag reference id as the sole argument.
         Returns that tags meta data as a parsed block.
@@ -795,7 +794,7 @@ class Halo1Map(HaloMap):
             comments_to_keep = set()
             for i in range(len(comments)):
                 comment = comments[i]
-                if max(max(comment.position), abs(min(comment.position))) > 5000:
+                if max(abs(min(comment.position)), *comment.position) > 5000:
                     # check if the position is outside halos max world bounds
                     continue
 
@@ -1031,6 +1030,7 @@ class Halo1Map(HaloMap):
                 model_magic = None
             else:
                 model_magic = magic
+                tris_start  = verts_start = 0
                 
             # need to unset this flag, as it forces map-compile-time processing
             # to occur on the model's vertices, which shouldn't be done twice.

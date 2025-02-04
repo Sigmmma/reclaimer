@@ -909,18 +909,18 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
     map_data.seek(moff - magic)
     script_syntax_data_nodes = get_hsc_data_block(map_data.read(size), engine).nodes
     for node in script_syntax_data_nodes:
-        tag_cls = {
+        tag_class = {
             24: 'snd!', 25: 'effe', 26: 'jpt!', 27: 'lsnd',
             28: 'antr', 29: 'actv', 30: 'jpt!', 31: 'obje'
             }.get(node.type)
-        if tag_cls is None or (node.flags & HSC_IS_SCRIPT_OR_GLOBAL):
+        if tag_class is None or (node.flags & HSC_IS_SCRIPT_OR_GLOBAL):
             continue
 
         sub_tag_id = node.data & 0xFFff
         if sub_tag_id in repair or sub_tag_id not in range(len(index_array)):
             continue
 
-        if tag_cls == "obje":
+        if tag_class == "obje":
             try:
                 map_data.seek(index_array[sub_tag_id].meta_offset - magic)
                 object_type = int.from_bytes(map_data.read(2), 'little')
@@ -929,9 +929,9 @@ def repair_scnr(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
             except Exception:
                 continue
 
-            tag_cls = object_class_bytes[object_type]
+            tag_class = object_class_bytes[object_type]
 
-        repair[sub_tag_id] = tag_cls
+        repair[sub_tag_id] = tag_class
 
 
     # decals
@@ -1054,7 +1054,7 @@ def repair_Soul(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
 
 
 def repair_tagc(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True,
-                tag_cls=None, max_count=200):
+                tag_class=None, max_count=200):
     ct, moff, _ = read_reflexive(
         map_data, index_array[tag_id].meta_offset - magic, max_count, 16, magic)
 
@@ -1070,7 +1070,7 @@ def repair_tagc(tag_id, index_array, map_data, magic, repair, engine, safe_mode=
             break
 
         repair_dependency(index_array, map_data, magic, repair, engine,
-                          tag_cls, moff2)
+                          tag_class, moff2)
 
 
 def repair_udlg(tag_id, index_array, map_data, magic, repair, engine, safe_mode=True):

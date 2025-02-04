@@ -27,36 +27,29 @@ from reclaimer.animation import constants as const, util
 def get_anim_ext(anim_type, frame_info_type, world_relative=False):
     anim_type = anim_type.lower()
     frame_info_type = frame_info_type.lower()
-    if anim_type == "replacement":
-        return ".jmr"
-    elif anim_type == "overlay":
-        return ".jmo"
-    elif "dz" in frame_info_type:
-        return ".jmz"
-    elif "dyaw" in frame_info_type:
-        return ".jmt"
-    elif "dx" in frame_info_type and "dy" in frame_info_type:
-        return ".jma"
-    elif world_relative:
-        return ".jmw"
-    else:
-        return ".jmm"
+    return "." + (
+        "jmr" if anim_type == "replacement" else
+        "jmo" if anim_type == "overlay"     else
+        "jmz" if "dz"   in frame_info_type  else
+        "jmt" if "dyaw" in frame_info_type  else
+        "jma" if "dx"   in frame_info_type  else
+        "jmw" if world_relative             else
+        "jmm"
+        )
 
 
 def get_anim_types(anim_ext):
-    anim_ext = anim_ext.lower()
-    if "jmr" in anim_ext:
-        return anim_types[2], anim_frame_info_types[0], False
-    elif "jmo" in anim_ext:
-        return anim_types[1], anim_frame_info_types[0], False
-    elif "jmz" in anim_ext:
-        return anim_types[0], anim_frame_info_types[3], False
-    elif "jmt" in anim_ext:
-        return anim_types[0], anim_frame_info_types[2], False
-    elif "jma" in anim_ext:
-        return anim_types[0], anim_frame_info_types[1], False
-    else:
-        return anim_types[0], anim_frame_info_types[0], "jmw" in anim_ext
+    anim_ext  = anim_ext.lower().strip(".")
+    anim_type = {"jmr": anim_types[2],
+                 "jmo": anim_types[1],
+                 }.get(anim_ext, anim_types[0])
+    info_type = {"jmz": anim_frame_info_types[3],
+                 "jmt": anim_frame_info_types[2],
+                 "jma": anim_frame_info_types[1],
+                 }.get(anim_ext, anim_frame_info_types[0])
+    world_rel = anim_ext == "jmw"
+
+    return (anim_type, info_type, world_rel)
 
 
 class JmaRootNodeState:
@@ -77,12 +70,12 @@ class JmaRootNodeState:
         self.x, self.y, self.z, self.yaw)
 
     def __eq__(self, other):
-        if not isinstance(other, JmaRootNodeState):
-            return False
-        elif (abs(self.dx - other.dx) > const.TRANS_EPSILON or
-              abs(self.dy - other.dy) > const.TRANS_EPSILON or
-              abs(self.dz - other.dz) > const.TRANS_EPSILON or
-              abs(self.dyaw - other.dyaw) > const.DYAW_EPSILON):
+        if (not isinstance(other, JmaRootNodeState)           or
+            abs(self.dx - other.dx)     > const.TRANS_EPSILON or
+            abs(self.dy - other.dy)     > const.TRANS_EPSILON or
+            abs(self.dz - other.dz)     > const.TRANS_EPSILON or
+            abs(self.dyaw - other.dyaw) > const.DYAW_EPSILON
+            ):
             return False
         return True
 
@@ -118,18 +111,16 @@ class JmaNodeState:
         self.scale)
 
     def __eq__(self, other):
-        if not isinstance(other, JmaNodeState):
-            return False
-        elif (abs(self.rot_i - other.rot_i) > const.QUAT_EPSILON or
-              abs(self.rot_j - other.rot_j) > const.QUAT_EPSILON or
-              abs(self.rot_k - other.rot_k) > const.QUAT_EPSILON or
-              abs(self.rot_w - other.rot_w) > const.QUAT_EPSILON):
-            return False
-        elif (abs(self.pos_x - other.pos_x) > const.TRANS_EPSILON or
-              abs(self.pos_y - other.pos_y) > const.TRANS_EPSILON or
-              abs(self.pos_z - other.pos_z) > const.TRANS_EPSILON):
-            return False
-        elif abs(self.scale - other.scale) > const.SCALE_EPSILON:
+        if (not isinstance(other, JmaNodeState)                 or
+            abs(self.rot_i - other.rot_i) > const.QUAT_EPSILON  or
+            abs(self.rot_j - other.rot_j) > const.QUAT_EPSILON  or
+            abs(self.rot_k - other.rot_k) > const.QUAT_EPSILON  or
+            abs(self.rot_w - other.rot_w) > const.QUAT_EPSILON  or
+            abs(self.pos_x - other.pos_x) > const.TRANS_EPSILON or
+            abs(self.pos_y - other.pos_y) > const.TRANS_EPSILON or
+            abs(self.pos_z - other.pos_z) > const.TRANS_EPSILON or
+            abs(self.scale - other.scale) > const.SCALE_EPSILON
+            ):
             return False
         return True
 
@@ -359,13 +350,13 @@ class JmaAnimation:
         return list(self.root_node_info)
 
     def get_node(self, node_name_or_index):
-        if isinstance(node_name_or_index):
+        if isinstance(node_name_or_index, int):
             node_name_or_index = self.get_node_index(node_name_or_index)
 
         if node_name_or_index in range(self.node_count):
             return self.nodes[node_name_or_index]
     def get_node_frames(self, node_name_or_index):
-        if isinstance(node_name_or_index):
+        if isinstance(node_name_or_index, int):
             node_name_or_index = self.get_node_index(node_name_or_index)
 
         if node_name_or_index in range(self.node_count):
@@ -1164,10 +1155,10 @@ def write_jma(filepath, jma_anim, use_blitzkrieg_rounding=False):
     if jma_anim.actor_count != 1:
         raise ValueError("Cannot write jma files with more than one actor.")
 
-    if use_blitzkrieg_rounding:
-        to_str = lambda f: float_to_str_truncate(f, 6)
-    else:
-        to_str = float_to_str
+    to_str = (
+        float_to_str if not use_blitzkrieg_rounding else
+        (lambda f: float_to_str_truncate(f, 6))
+        )
 
     # If the path doesnt exist, create it
     filepath = Path(filepath)

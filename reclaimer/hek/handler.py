@@ -71,9 +71,7 @@ class HaloHandler(Handler):
         self.tag_fcc_match_set = set()
         self.tag_filepath_match_set = set()
 
-        self.ext_id_map = {}
-        for key in self.id_ext_map.keys():
-            self.ext_id_map[self.id_ext_map[key]] = key
+        self.ext_id_map = dict(reversed(kv) for kv in self.id_ext_map.items())
 
         if "default_conversion_flags" in kwargs:
             self.default_conversion_flags = kwargs["default_conversion_flags"]
@@ -103,7 +101,7 @@ class HaloHandler(Handler):
             new_val = Path(new_val)
         self._datadir = new_val
 
-    def _build_loc_cache(self, cond, desc={}):
+    def _build_loc_cache(self, cond, desc=()):
         try:
             f_type = desc['TYPE']
         except Exception:
@@ -123,13 +121,14 @@ class HaloHandler(Handler):
         return nodepath_ref
 
     def build_loc_caches(self, cond):
-        # if we are looking for only one specific FieldType, make it a tuple
-        if isinstance(cond, FieldType):
-            cond = (cond,)
-
-        # if we are looking for FieldTypes, make it into a function
-        if isinstance(cond, (tuple, list)):
-            cond = lambda desc, f_types=cond: desc.get('TYPE') in f_types
+        cond = (
+            # need a comparator if searching for one or more FieldTypes
+            (lambda desc, f_type=cond: desc.get('TYPE') == f_type)
+            if isinstance(cond, FieldType) else
+            (lambda desc, f_types=cond: desc.get('TYPE') in f_types)
+            if isinstance(cond, (tuple, list)) else
+            cond
+            )
 
         cache = {}
 
@@ -188,7 +187,7 @@ class HaloHandler(Handler):
             if def_id in self.defs and engine_id == self.tag_header_engine_id:
                 return def_id
         except Exception:
-            print(format_exc());
+            print(format_exc())
 
         return self.ext_id_map.get(filepath.suffix.lower())
 

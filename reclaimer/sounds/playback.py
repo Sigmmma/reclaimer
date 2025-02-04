@@ -230,7 +230,7 @@ class SoundPlayerBase:
             self._merged_player_lock,
             self._merged_force_stop,
             )
-        for wave_id in self._play_objects_by_wave_ids.keys():
+        for wave_id in self._play_objects_by_wave_ids:
             self._stop_play_objects(
                 self._play_objects_by_wave_ids.get(wave_id),
                 self._player_locks_by_wave_ids.get(wave_id),
@@ -329,19 +329,13 @@ class SoundTagPlayer(SoundPlayerBase):
     @property
     def pitch_ranges(self):
         try:
-            return {
-                i: pr for i, pr in enumerate(
-                self.sound_data.pitch_ranges.STEPTREE
-                )}
+            return dict(enumerate(self.sound_data.pitch_ranges.STEPTREE))
         except AttributeError:
             return {}
     @property
     def permutations(self):
         try:
-            return {
-                i: pr for i, pr in enumerate(
-                self.get_pitch_range().permutations.STEPTREE
-                )}
+            return dict(enumerate(self.get_pitch_range().permutations.STEPTREE))
         except AttributeError:
             return {}
 

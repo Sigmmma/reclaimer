@@ -35,3 +35,14 @@ class JmsTriangle:
     v0=%s, v1=%s, v2=%s
 )""" % (self.region, self.shader,
         self.v0, self.v1, self.v2)
+
+    def __eq__(self, other):
+        if (not isinstance(other, JmsTriangle) or
+            self.shader != other.shader  or
+            self.region != other.region  or
+            self.v0     != other.v0      or
+            self.v1     != other.v1      or
+            self.v2     != other.v2
+            ):
+            return False
+        return True

@@ -60,7 +60,7 @@ class Halo1AnniMap(Halo1MccMap):
         #       it's  also overlapping with the tag data address range.
         pass
 
-    def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, **kw):
+    def get_meta(self, tag_id, reextract=False, ignore_rsrc_sounds=False, *a, **kw):
         '''
         Takes a tag reference id as the sole argument.
         Returns that tags meta data as a parsed block.

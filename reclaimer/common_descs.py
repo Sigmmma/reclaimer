@@ -65,36 +65,38 @@ def tag_class(*args, **kwargs):
         )
 
 
-def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names,
-              EXT_MAX=SANE_MAX_REFLEXIVE_COUNT, **kwargs):
+def reflexive(name, substruct, max_count=MAX_REFLEXIVE_COUNT, *names, **kw):
     '''This function serves to macro the creation of a reflexive'''
-    EXT_MAX = max(EXT_MAX, max_count)
+    ext_max = max(kw.pop(EXT_MAX, SANE_MAX_REFLEXIVE_COUNT), max_count)
     reflexive_fields = (
-        SInt32("size", VISIBLE=VISIBILITY_METADATA, EDITABLE=False, MAX=max_count, EXT_MAX=EXT_MAX),
+        SInt32("size", VISIBLE=VISIBILITY_METADATA,
+               EDITABLE=False, MAX=max_count, EXT_MAX=ext_max
+               ),
         reflexive_struct[1],
         reflexive_struct[2],
         )
-    kwargs.update(
+    kw.update(
         STEPTREE=ReflexiveArray(name + "_array",
             SIZE=".size", SUB_STRUCT=substruct, WIDGET=ReflexiveFrame,
             # NOTE: also adding max here since various things rely on it
             #       (i.e. compilation/mozz tag block size limit/etc)
-            MAX=max_count, EXT_MAX=EXT_MAX
+            MAX=max_count, EXT_MAX=ext_max
             ),
         SIZE=12
         )
 
-    if DYN_NAME_PATH in kwargs:
-        kwargs[STEPTREE][DYN_NAME_PATH] = kwargs.pop(DYN_NAME_PATH)
+    if DYN_NAME_PATH in kw:
+        kw[STEPTREE][DYN_NAME_PATH] = kw.pop(DYN_NAME_PATH)
+
     if names:
         name_map = {}
         for i in range(len(names)):
             e_name = BlockDef.str_to_name(None, names[i])
             name_map[e_name] = i
 
-        kwargs[STEPTREE][NAME_MAP] = name_map
+        kw[STEPTREE][NAME_MAP] = name_map
 
-    return Reflexive(name, *reflexive_fields, **kwargs)
+    return Reflexive(name, *reflexive_fields, **kw)
 
 def get_raw_reflexive_offsets(desc, two_byte_offs, four_byte_offs, off=0):
     if INCLUDE in desc:
@@ -254,8 +256,8 @@ def object_type(default=-1):
         VISIBLE=False, DEFAULT=default
         )
 
-def obje_attrs_variant(obje_attrs, typ="", **desc):
-    obj_index = object_types.index(typ) if typ else 0
+def obje_attrs_variant(obje_attrs, obje_type="", **desc):
+    obj_index = object_types.index(obje_type) if obje_type else 0
     return desc_variant(obje_attrs, object_type(obj_index - 1))
 
 def zone_asset(name, **kwargs):

@@ -201,32 +201,30 @@ def extract_h2_sounds(tagdata, tag_path, **kw):
         compression = constants.COMPRESSION_UNKNOWN
 
     if tagdata.encoding.enum_name == "codec":
+        # The codec format seems to be encoded with wmaudio2.
+        # 
+        # Bytes:
+        #     0-31
+        #         Two nearly identical GUIDs, with the second one specifying in
+        #         its first 2 bytes that the audio data is encoded with wmaudio2.
+        #     32-39
+        #         Unknown, but always seems to be 01 00 00 00  00 00 00 00
+        #     40-43
+        #         Number of blocks of data(same value found in the header below)
+        #     44-55
+        #         Unknown, but I think it always seems to be the same.
+        #     56-87
+        #         wav_format header struct. sig is "ZYU\x00" instead of "fmt ",
+        #         length is 28 instead of 20, and fmt is(always?) 0x0161,
+        #         which is the format code for wmaudio2.
+        #         channels, sample_rate, byte_rate, block_align, and
+        #         bits_per_sample all seem to be set properly. the value
+        #         for block_align is the same as bytes 40-43
+        #     88-91
+        #         Unknown. Might be something to specify the data length?
+        #
+        #     Everything after this appears to be audio data.
         pass # return "    CANNOT YET EXTRACT THIS FORMAT."
-        '''
-        The codec format seems to be encoded with wmaudio2.
-
-        Bytes:
-            0-31
-                Two nearly identical GUIDs, with the second one specifying in
-                its first 2 bytes that the audio data is encoded with wmaudio2.
-            32-39
-                Unknown, but always seems to be 01 00 00 00  00 00 00 00
-            40-43
-                Number of blocks of data(same value found in the header below)
-            44-55
-                Unknown, but I think it always seems to be the same.
-            56-87
-                wav_format header struct. sig is "ZYU\x00" instead of "fmt ",
-                length is 28 instead of 20, and fmt is(always?) 0x0161,
-                which is the format code for wmaudio2.
-                channels, sample_rate, byte_rate, block_align, and
-                bits_per_sample all seem to be set properly. the value
-                for block_align is the same as bytes 40-43
-            88-91
-                Unknown. Might be something to specify the data length?
-
-            Everything after this appears to be audio data.
-        '''
 
     # get the pitch range indices to iterate over
     pr_index = tagdata.pitch_range_index

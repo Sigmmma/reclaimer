@@ -162,7 +162,7 @@ class Halo2Map(HaloMap):
 
         self.clear_map_cache()
 
-    def get_meta(self, tag_id, reextract=False, **kw):
+    def get_meta(self, tag_id, reextract=False, *a, **kw):
         if tag_id is None:
             return
         elif self.engine == "halo2alpha":

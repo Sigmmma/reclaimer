@@ -91,7 +91,7 @@ def encode_oggvorbis(
             )
     elif sample_width not in (1, 2, 4):
         raise NotImplementedError(
-            "Cannot encode %s-byte width samples to OggVorbis." % width
+            "Cannot encode %s-byte width samples to OggVorbis." % sample_width
             )
 
     # one Ogg bitstream page. Vorbis packets inside

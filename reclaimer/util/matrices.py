@@ -268,11 +268,11 @@ def slerp_blend_quaternions(q0, q1, ratio):
 
 class FixedLengthList(list):
     __slots__ = ()
-    def append(self, val): raise NotImplementedError
-    def extend(self, vals): raise NotImplementedError
-    def insert(self, index, val): raise NotImplementedError
-    def pop(self): raise NotImplementedError
-    def __delitem__(self): raise NotImplementedError
+    def append(self, val):          raise NotImplementedError
+    def extend(self, vals):         raise NotImplementedError
+    def insert(self, index, val):   raise NotImplementedError
+    def pop(self):                  raise NotImplementedError
+    def __delitem__(self, index):   raise NotImplementedError
     def __setitem__(self, index, val):
         if isinstance(index, slice):
             start, stop, step = index.indices(len(self))
@@ -363,18 +363,12 @@ class Ray(Vector):
     mag = magnitude
 
     @classmethod
-    def cross(cls_or_ray, v0, v1):
-        if v1 is None:
-            v0, v1, cls_or_ray = cls_or_ray, v0, type(cls_or_ray)
-
+    def cross(cls, v0, v1):
         assert len(v0) >= 3
         assert len(v1) >= 3
-        return cls_or_ray(cross_product(v0, v1))
+        return cls(cross_product(v0, v1))
     @classmethod
-    def dot(cls_or_ray, v0, v1):
-        if v1 is None:
-            v0, v1 = cls_or_ray, v0
-
+    def dot(cls, v0, v1):
         assert len(v0) == len(v1)
         return dot_product(v0, v1)
 
@@ -382,7 +376,7 @@ class Ray(Vector):
         return self.cross(self, other)
 
     def dot_with(self, other):
-        return self.cross_product(self, other)
+        return self.dot(self, other)
 
     def normalize(self):
         div = self.magnitude
@@ -395,6 +389,17 @@ class Quaternion(FixedLengthList, Ray):
     def __init__(self, initializer=(0, 0, 0, 1)):
         assert len(initializer) == 4
         list.__init__(self, initializer)
+    def append(self, val):
+        raise ValueError("Cannot append on %s" % type(self))
+    def extend(self, vals):
+        raise ValueError("Cannot extend on %s" % type(self))
+    def insert(self, index, val):
+        raise ValueError("Cannot insert on %s" % type(self))
+    def pop(self):
+        raise ValueError("Cannot pop on %s" % type(self))
+    def __delitem__(self, index):
+        raise ValueError("Cannot delete in %s" % type(self))
+
     def __mul__(self, other):
         if isinstance(other, Quaternion):
             new = Quaternion(multiply_quaternions(self, other))
@@ -455,6 +460,17 @@ class Quaternion(FixedLengthList, Ray):
 
 class MatrixRow(FixedLengthList, Vector):
     __slots__ = ()
+
+    def append(self, val):
+        raise ValueError("Cannot append on %s" % type(self))
+    def extend(self, vals):
+        raise ValueError("Cannot extend on %s" % type(self))
+    def insert(self, index, val):
+        raise ValueError("Cannot insert on %s" % type(self))
+    def pop(self):
+        raise ValueError("Cannot pop on %s" % type(self))
+    def __delitem__(self, index):
+        raise ValueError("Cannot delete in %s" % type(self))
 
 
 class Matrix(list):
@@ -632,7 +648,7 @@ class Matrix(list):
         return transpose
 
     @property
-    def inverse(self, find_best_inverse=True):
+    def inverse(self):
         # cannot invert non-square matrices. check for that
         if self.width != self.height:
             raise MatrixNotInvertable("Cannot invert non-square matrix.")
@@ -641,7 +657,7 @@ class Matrix(list):
 
         regular, inverse = self.row_reduce(
             Matrix(width=self.width, height=self.height, identity=True),
-            find_best_reduction=find_best_inverse
+            find_best_reduction=True
             )
 
         return inverse

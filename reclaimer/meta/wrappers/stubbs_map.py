@@ -46,9 +46,9 @@ class StubbsMap(Halo1XboxMap):
 
             # these imports were moved here because their defs would otherwise
             # be built when this module was imported, which is not good practice
-            from reclaimer.stubbs.defs.antr import antr_def as antr_def
-            from reclaimer.stubbs.defs.mode import mode_def as mode_def
-            from reclaimer.stubbs.defs.mode import pc_mode_def as pc_mode_def
+            from reclaimer.stubbs.defs.antr import antr_def
+            from reclaimer.stubbs.defs.mode import mode_def
+            from reclaimer.stubbs.defs.mode import pc_mode_def
             from reclaimer.stubbs.defs.coll import fast_coll_def as coll_def
             from reclaimer.stubbs.defs.sbsp import fast_sbsp_def as sbsp_def
 

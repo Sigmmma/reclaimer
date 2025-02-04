@@ -259,7 +259,7 @@ class Halo1RsrcMap(HaloMap):
     def is_indexed(self, tag_id):
         return True
 
-    def get_meta(self, tag_id, reextract=False, **kw):
+    def get_meta(self, tag_id, reextract=False, *a, **kw):
         '''Returns just the meta of the tag without any raw data.'''
         if tag_id is None:
             return
@@ -533,17 +533,14 @@ class Halo1RsrcMap(HaloMap):
                 if loc is None or loc.map_header is None: return
                 meta_offset = loc.rsrc_map.data.tags[meta_offset].tag.offset
 
-            string_blocks = meta.strings.STEPTREE
-
-            if len(string_blocks):
-                desc = string_blocks[0].get_desc('STEPTREE')
-                parser = desc['TYPE'].parser
+            string_arr = meta.strings.STEPTREE
+            desc = string_arr[0].get_desc('STEPTREE') if string_arr else {}
 
             try:
                 FieldType.force_little()
-                for b in string_blocks:
-                    parser(desc, None, b, 'STEPTREE',
-                           loc_data, meta_offset, b.pointer)
+                for b in string_arr:
+                    desc['TYPE'].parser(desc, None, b, 'STEPTREE',
+                                        loc_data, meta_offset, b.pointer)
                 FieldType.force_normal()
             except Exception:
                 print(format_exc())

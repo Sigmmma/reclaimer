@@ -162,51 +162,58 @@ def print_tag_def(tag_def):
                 name = "%s = %s" % (names[j], name)
             f.write(enum_strs[i] % name)
 
-tag_defs = {}
 
-#import the tag definition so it can be used for making a blank tag
-while not tag_defs:
-    engine = input("Type in the definition set to use.\n"
-                   "Valid values are hek, os_hek, os_v3_hek, and os_v4_hek.\n"
-                   ">>> ")
-    engine = engine.strip(" ").lower()
-    print()
-    classes = input("Type in the four character codes of the tag classes to write.\n"
-                    "Use commas to separate each one. Spaces are ignored.\n"
-                    "Examples include jpt!, vehi, DeLa, snd!, and bitm.\n"
-                    "Type **** if you want to write every available tag class.\n"
-                    ">>> ")
+def load_tag_defs(engine, classes):
+    tag_defs = {}
     if "****" in classes:
-        all_classes = () 
-        exec("from reclaimer.%s.defs import __all__ as all_classes" % engine)
-        classes = ",".join(all_classes)
+        exec("from reclaimer.%s.defs import __all__ as classes" % engine)
 
-    classes = classes.replace("!", "_").replace("#", "_").replace("+", "_").\
-              replace(" ", '').split(",")
-    fixed_classes = []
     for cls in classes:
-        fixed_classes.append(cls + " " * (4 - len(cls)))
+        cls_id = cls.replace("!", "_").replace("#", "_").replace("+", "_").\
+                 replace(" ", '')
+        cls_id += " " * (4 - len(cls_id))
 
-    classes = []
-    for cls in fixed_classes:
         try:
-            def_name = cls
-            tag_def = None
-            if "_meta" in cls:
-                def_name = cls.replace("_meta", "")
-            exec("from reclaimer.%s.defs.%s import %s_def as tag_def" %
-                 (engine, def_name, cls))
-            tag_defs[cls] = tag_def
-            classes.append(cls)
+            def_name = cls_id
+            if "_meta" in def_name:
+                def_name = def_name.replace("_meta", "")
+
+            def_id = "%s_def" % def_name
+            exec("from reclaimer.%s.defs.%s import %s" %
+                 (engine, def_name, def_id), globals(), locals())
+            tag_defs[cls] = locals()[def_id]
         except Exception:
             print("Could not load the %s definition" % cls)
             print(format_exc())
 
-for cls in classes:
-    try:
-        print_tag_def(tag_defs[cls])
-    except Exception:
-        print("Could not print the %s definition" % cls)
-        print(format_exc())
+    return tag_defs
 
-input("Finished. Hit enter to exit. . .")
+
+def run():
+    defs = {}
+
+    #import the tag definition so it can be used for making a blank tag
+    while not defs:
+        engine = input("Type in the definition set to use.\n"
+                       "Valid values are hek, os_hek, os_v3_hek, and os_v4_hek.\n"
+                       ">>> ")
+        engine = engine.strip(" ").lower()
+        print()
+        classes = input("Type in the four character codes of the tag classes to write.\n"
+                        "Use commas to separate each one. Spaces are ignored.\n"
+                        "Examples include jpt!, vehi, DeLa, snd!, and bitm.\n"
+                        "Type **** if you want to write every available tag class.\n"
+                        ">>> ")
+        defs = load_tag_defs(engine, [s.strip() for s in classes.split(",")])
+
+    for cls in defs:
+        try:
+            print_tag_def(defs[cls])
+        except Exception:
+            print("Could not print the %s definition" % cls)
+            print(format_exc())
+
+    input("Finished. Hit enter to exit. . .")
+
+if __name__ == "__main__":
+    run()

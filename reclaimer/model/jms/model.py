@@ -51,8 +51,6 @@ class JmsModel:
                 self.lod_level = lod_level
                 break
 
-        node_list_checksum = node_list_checksum
-
         self.name = name
         self.version = version
         self.perm_name = perm_name
@@ -95,18 +93,18 @@ class JmsModel:
                 b = binormals[v_i]
                 t = tangents[v_i]
 
-                x0 = v1.pos_x - v0.pos_x;
-                x1 = v2.pos_x - v0.pos_x;
-                y0 = v1.pos_y - v0.pos_y;
-                y1 = v2.pos_y - v0.pos_y;
-                z0 = v1.pos_z - v0.pos_z;
-                z1 = v2.pos_z - v0.pos_z;
+                x0 = v1.pos_x - v0.pos_x
+                x1 = v2.pos_x - v0.pos_x
+                y0 = v1.pos_y - v0.pos_y
+                y1 = v2.pos_y - v0.pos_y
+                z0 = v1.pos_z - v0.pos_z
+                z1 = v2.pos_z - v0.pos_z
 
 
-                s0 = v1.tex_u - v0.tex_u;
-                s1 = v2.tex_u - v0.tex_u;
-                t0 = v1.tex_v - v0.tex_v;
-                t1 = v2.tex_v - v0.tex_v;
+                s0 = v1.tex_u - v0.tex_u
+                s1 = v2.tex_u - v0.tex_u
+                t0 = v1.tex_v - v0.tex_v
+                t1 = v2.tex_v - v0.tex_v
 
                 r = s0 * t1 - s1 * t0
                 if r == 0:
@@ -173,9 +171,13 @@ class JmsModel:
                         continue
 
                     vert_a = verts[orig_idx]
-                    vert_a_i = vert_a.norm_i; vert_a_j = vert_a.norm_j; vert_a_k = vert_a.norm_k
-                    vert_a_u = vert_a.tex_u;  vert_a_v = vert_a.tex_v
-                    vert_a_n0 = vert_a.node_0; vert_a_n1 = vert_a.node_1
+                    vert_a_i = vert_a.norm_i
+                    vert_a_j = vert_a.norm_j
+                    vert_a_k = vert_a.norm_k
+                    vert_a_u = vert_a.tex_u
+                    vert_a_v = vert_a.tex_v
+                    vert_a_n0 = vert_a.node_0
+                    vert_a_n1 = vert_a.node_1
                     vert_a_n1w = vert_a.node_1_weight
                     for j in similar_vert_indices[i + 1: ]:
                         if j in dup_vert_map:

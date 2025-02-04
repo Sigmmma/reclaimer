@@ -336,8 +336,8 @@ class BlamSoundPermutation:
             # need to encode data to oggvorbis first
             sample_data = ogg.encode_oggvorbis(
                 sample_data, sample_rate,
-                constants.sample_widths[compression], 
-                constants.channel_counts[encoding], 
+                const.sample_widths[compression], 
+                const.channel_counts[encoding], 
                 util.is_big_endian_pcm(compression),
                 **kwargs.get("ogg_kwargs", {})
                 )

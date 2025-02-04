@@ -43,35 +43,32 @@ class JmsNode:
         self.pos_x, self.pos_y, self.pos_z)
 
     def __eq__(self, other):
-        if not isinstance(other, JmsNode):
-            return False
-        elif self.name.lower() != other.name.lower():
-            return False
-        elif self.first_child != other.first_child:
-            return False
-        elif self.sibling_index != other.sibling_index:
-            return False
-        elif (abs(self.rot_i - other.rot_i) > 0.00001 or
-              abs(self.rot_j - other.rot_j) > 0.00001 or
-              abs(self.rot_k - other.rot_k) > 0.00001 or
-              abs(self.rot_w - other.rot_w) > 0.00001):
-            return False
-        elif (abs(self.pos_x - other.pos_x) > 0.00001 or
-              abs(self.pos_y - other.pos_y) > 0.00001 or
-              abs(self.pos_z - other.pos_z) > 0.00001):
+        if (not isinstance(other, JmsNode)            or
+            self.name.lower()  != other.name.lower()  or
+            self.first_child   != other.first_child   or
+            self.sibling_index != other.sibling_index or
+            abs(self.rot_i - other.rot_i) > 0.00001   or
+            abs(self.rot_j - other.rot_j) > 0.00001   or
+            abs(self.rot_k - other.rot_k) > 0.00001   or
+            abs(self.rot_w - other.rot_w) > 0.00001   or
+            abs(self.pos_x - other.pos_x) > 0.00001   or
+            abs(self.pos_y - other.pos_y) > 0.00001   or
+            abs(self.pos_z - other.pos_z) > 0.00001
+            ):
+            print(self)
+            print(other)
+            input()
             return False
         return True
 
     def is_node_hierarchy_equal(self, other, name_only=False):
-        if not isinstance(other, JmsNode):
-            return False
-        elif self.name.lower() != other.name.lower():
-            return False
-        elif name_only:
-            pass
-        elif self.first_child != other.first_child:
-            return False
-        elif self.sibling_index != other.sibling_index:
+        if (not isinstance(other, JmsNode) or
+            self.name.lower() != other.name.lower() or
+            not(name_only or (
+                self.first_child  == other.first_child and
+                self.sibling_index == other.sibling_index)
+                )
+            ):
             return False
         return True
 
