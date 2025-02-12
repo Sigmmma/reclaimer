@@ -495,12 +495,11 @@ class Halo1Map(HaloMap):
                 return
 
             meta = rsrc_map.get_meta(tag_id, **kw)
-            snd_stub = None
             if tag_cls == "snd!":
                 # while the sound samples and complete tag are in the 
-                # resource map, the metadata for the body of the sound
-                # tag is in the main map. Need to copy its values into
-                # the resource map sound tag we extracted.
+                # resource map, the metadata for PART of the body of
+                # the sound tag is in the main map. Need to copy its
+                # values into the resource map sound tag we extracted.
                 try:
                     # read the meta data from the map
                     with FieldType.force_little:
@@ -508,24 +507,12 @@ class Halo1Map(HaloMap):
                             rawdata=map_data,
                             offset=pointer_converter.v_ptr_to_f_ptr(offset),
                             tag_index_manager=self.tag_index_manager)
+
+                    # just need to copy the promotion sound fields
+                    meta.promotion_sound = snd_stub.promotion_sound
+                    meta.promotion_count = snd_stub.promotion_count
                 except Exception:
                     print(format_exc())
-
-            if snd_stub:
-                # copy values over
-                for name in (
-                        "flags", "sound_class", "sample_rate",
-                        "minimum_distance", "maximum_distance", 
-                        "skip_fraction", "random_pitch_bounds",
-                        "inner_cone_angle", "outer_cone_angle",
-                        "outer_cone_gain", "gain_modifier", 
-                        "maximum_bend_per_second", 
-                        "modifiers_when_scale_is_zero",
-                        "modifiers_when_scale_is_one",
-                        "encoding", "compression", "promotion_sound",
-                        "promotion_count", "max_play_length",
-                        ):
-                    setattr(meta, name, getattr(snd_stub, name))
 
             return meta
         elif not reextract:
