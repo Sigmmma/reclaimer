@@ -310,7 +310,7 @@ def _get_set_default_enums(anim_enums, defaults, extend, do_set):
     for i, anim in enumerate(anim_enums):
         curr_idx, def_idx = anim.animation, defaults.get(i, -1)
 
-        if not do_set and curr_idx >= 0 and def_idx < 0:
+        if not do_set and i in defaults and curr_idx >= 0 and def_idx < 0:
             # this animation is set, and we DON'T have a valid default.
             # set the default to this valid animation enum
             defaults[i] = curr_idx
@@ -585,12 +585,12 @@ def sanitize_animation_indices(antr_tag):
     unit_defs = {
         i: -1 for i, name in
         enumerate(unit_animation_names)
-        if i in const.SHARED_UNIT_ANIMATION_NAMES
+        if name in const.SHARED_UNIT_ANIMATION_NAMES
         }
     all_weap_defs = [{
         i: -1 for i, name in
         enumerate(unit_weapon_animation_names)
-        if i in const.SHARED_UNIT_WEAPON_ANIMATION_NAMES
+        if name in const.SHARED_UNIT_WEAPON_ANIMATION_NAMES
         } for _ in antr_units]
 
     # get the unit animations with applicable ones from all units.
