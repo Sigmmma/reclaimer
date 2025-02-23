@@ -10,6 +10,7 @@
 import traceback
 
 from math import pi, sqrt
+from pathlib import Path
 
 from reclaimer.animation import constants as const
 from reclaimer.util import get_block_max
@@ -19,11 +20,12 @@ from reclaimer.enums import unit_animation_names, unit_weapon_animation_names,\
      fp_animation_names, fp_animation_names_mcc,\
      unit_damage_animation_names, unit_damage_types,\
      unit_damage_regions, unit_damage_sides
+from supyr_struct.util import tagpath_to_fullpath
 
 __all__ = (
     'split_anim_name_into_type_strings', 'split_permutation_number',
     'set_animation_enum_index', 'set_animation_index',
-    'get_default_animation_enums', 'set_default_animation_enums',
+    'get_default_enums', 'set_default_enums',
     )
 
 
@@ -62,6 +64,21 @@ def get_anim_flags(anim):
     return rot_flags, trans_flags, scale_flags
 
 
+def get_frame_size(anim):
+    r_flags, t_flags, s_flags = get_anim_flags(anim)
+    return 12*sum(t_flags) + 8*sum(r_flags) + 4*sum(s_flags)
+
+
+def get_default_data_size(anim):
+    return anim.node_count * 24 - get_frame_size(anim)
+
+
+def get_frame_info_size(anim):
+    typ     = anim.frame_info_type.data
+    fields  = (1 + typ) if typ in (1, 2, 3) else 0
+    return anim.frame_count * 4 * fields
+
+
 def pack_anim_flags(rot_flags, trans_flags, scale_flags):
     return [
         sum(int(bool(flag)) << n for n, flag in enumerate(flags))
@@ -76,36 +93,57 @@ def calculate_anim_flags(frames, tolerance=1.0):
     r_abs_diffs = [0]*len(f0)
     t_abs_diffs = [0]*len(f0)
     s_abs_diffs = [0]*len(f0)
-    for n, s0 in enumerate(f0):
-        r_diffs, t_diffs, s_diffs = set(), set(), set()
-        s0_i, s0_j, s0_k, s0_w  = s0.rot_i, s0.rot_j, s0.rot_k, s0.rot_w
-        s0_x, s0_y, s0_z        = s0.pos_x, s0.pos_y, s0.pos_z
-        for f in range(1, len(frames)):
-            s1 = frames[f][n]
-            r_diffs.update([s0_i - s1.rot_i, s0_j - s1.rot_j,
-                            s0_k - s1.rot_k, s0_w - s1.rot_w])
-            t_diffs.update([s0_x - s1.pos_x, s0_y - s1.pos_y,
-                            s0_z - s1.pos_z])
-
-            # scale is calculated a bit differently. we ALWAYS store scale
-            # frame data for a node if its scale is ever not 1.0, even if
-            # it is static for the entire animation length. This seems to
-            # be due to how compressed animations handle default scales.
-            s_diffs.add(1 - s1.scale)
-
-        r_abs_diffs[n] = max(-min(r_diffs), *r_diffs)
-        t_abs_diffs[n] = max(-min(t_diffs), *t_diffs)
-        s_abs_diffs[n] = max(-min(s_diffs), *s_diffs)
 
     tolerance = abs(max(0, tolerance) or 1.0)
     ep_r = const.QUAT_EPSILON  * tolerance
     ep_t = const.TRANS_EPSILON * tolerance
     ep_s = const.SCALE_EPSILON * tolerance
 
+    for n, s0 in enumerate(f0):
+        r_diffs, t_diffs, s_diffs = [0], [0], [0]
+        s0_i, s0_j, s0_k, s0_w  = s0.rot_i, s0.rot_j, s0.rot_k, s0.rot_w
+        s0_x, s0_y, s0_z        = s0.pos_x, s0.pos_y, s0.pos_z
+        for f in range(1, len(frames)):
+            s1 = frames[f][n]
+            r_diffs.append((s0_i - s1.rot_i)**2 +
+                           (s0_j - s1.rot_j)**2 +
+                           (s0_k - s1.rot_k)**2 +
+                           (s0_w - s1.rot_w)**2)
+            t_diffs.append((s0_x - s1.pos_x)**2 +
+                           (s0_y - s1.pos_y)**2 +
+                           (s0_z - s1.pos_z)**2)
+
+            # scale is calculated a bit differently. we ALWAYS store scale
+            # frame data for a node if its scale is ever not 1.0, even if
+            # it is static for the entire animation length. This seems to
+            # be due to how compressed animations handle default scales.
+            s_diffs.append((1 - s1.scale)**2)
+
+        r_abs_diffs[n] = sqrt(max(r_diffs))
+        t_abs_diffs[n] = sqrt(max(t_diffs))
+        s_abs_diffs[n] = sqrt(max(s_diffs))
+
     r_flags = [(diff >= ep_r) << n for n, diff in enumerate(r_abs_diffs)]
     t_flags = [(diff >= ep_t) << n for n, diff in enumerate(t_abs_diffs)]
     s_flags = [(diff >= ep_s) << n for n, diff in enumerate(s_abs_diffs)]
     return r_flags, t_flags, s_flags
+
+
+def get_anim_rename_map(folder="", name=""):
+    rename_map = {}
+    filepath = tagpath_to_fullpath(folder, name or "rename.txt", "", not name)
+    if not filepath:
+        return rename_map
+
+    try:
+        with open(filepath, "r", encoding="latin-1") as f:
+            for line in (line for line in f if "=" in line):
+                new, old = [op.strip() for op in line.split("=", 1)]
+                rename_map[new] = old
+    except Exception:
+        print(traceback.format_exc())
+
+    return rename_map
 
 
 def get_expected_anim_types(anim_name):
@@ -265,24 +303,29 @@ def set_animation_enum_index(anim_enums, enum_index, anim_index,
     return True
 
 
-def get_default_animation_enums(anim_enums, defaults):
-    for i in defaults:
-        if i not in range(len(anim_enums)):
-            continue
-        elif anim_enums[i].animation >= 0 and defaults[i] < 0:
+def _get_set_default_enums(anim_enums, defaults, extend, do_set):
+    if extend:
+        anim_enums.extend(max([-1, *defaults]) + 1 - len(anim_enums))
+
+    for i, anim in enumerate(anim_enums):
+        curr_idx, def_idx = anim.animation, defaults.get(i, -1)
+
+        if not do_set and curr_idx >= 0 and def_idx < 0:
             # this animation is set, and we DON'T have a valid default.
             # set the default to this valid animation enum
-            defaults[i] = anim_enums[i].animation
-
-
-def set_default_animation_enums(anim_enums, defaults):
-    for i in defaults:
-        if i not in range(len(anim_enums)):
-            continue
-        elif anim_enums[i].animation < 0 and defaults[i] >= 0:
+            defaults[i] = curr_idx
+        elif do_set and curr_idx < 0 and def_idx >= 0:
             # this animation is unset, and we DO have a valid default.
             # set this animation enum to the valid default
-            anim_enums[i].animation = defaults[i]
+            anim.animation = def_idx
+
+
+def get_default_enums(anim_enums, defaults, extend=False):
+    _get_set_default_enums(anim_enums, defaults, extend, False)
+
+
+def set_default_enums(anim_enums, defaults, extend=False):
+    _get_set_default_enums(anim_enums, defaults, extend, True)
 
 
 def set_animation_index(antr_tag, anim_name, anim_index,
@@ -348,8 +391,9 @@ def set_animation_index(antr_tag, anim_name, anim_index,
         except ValueError:
             return False
 
-        return set_animation_enum_index(block[0].animations.STEPTREE, enum_index,
-                                        anim_index, indices_to_not_overwrite)
+        return set_animation_enum_index(
+            block[0].animations.STEPTREE, enum_index,
+            anim_index, indices_to_not_overwrite)
 
     elif part1 in unit_damage_types:
         # divided into 16 chunks of 11 sets of animations
@@ -374,6 +418,9 @@ def set_animation_index(antr_tag, anim_name, anim_index,
         # each of these sections of 44 is divided into 4
         # sections of 11 animations, each in this order:
         #     front, left, right, back
+        #
+        # NOTE: left, right, and back default to front
+        #       they do NOT default to any of each other
         #
         #   0 -  43  ==  s-ping
         #  44 -  87  ==  h-ping
@@ -513,3 +560,59 @@ def set_animation_index(antr_tag, anim_name, anim_index,
     return set_animation_enum_index(unit_weap_type.animations.STEPTREE,
                                     enum_index, anim_index,
                                     indices_to_not_overwrite)
+
+
+def sanitize_animation_indices(antr_tag):
+    tagdata = antr_tag.data.tagdata
+    antr_units        = tagdata.units.STEPTREE
+    antr_unit_damages = tagdata.unit_damages.STEPTREE
+
+    # fill in the remaining unit damages
+    max_dmg_ct = 11*4*4 if antr_unit_damages else 0
+    antr_unit_damages.extend(max_dmg_ct - len(antr_unit_damages))
+
+    # loop over  s-ping, h-ping, s-kill, h-kill
+    for i in range(0, 4*4*11, 4*11):
+        # the left, right, and back sides default to the front
+        # make a collection of defaults for all sides of this region
+        defs = {}
+        for j in range(11):
+            idx = antr_unit_damages[i + j].animation
+            defs.update({k: idx for k in range(i+j+11, i+j+44, 11)})
+
+        set_default_enums(antr_unit_damages, defs)
+
+    unit_defs = {
+        i: -1 for i, name in
+        enumerate(unit_animation_names)
+        if i in const.SHARED_UNIT_ANIMATION_NAMES
+        }
+    all_weap_defs = [{
+        i: -1 for i, name in
+        enumerate(unit_weapon_animation_names)
+        if i in const.SHARED_UNIT_WEAPON_ANIMATION_NAMES
+        } for _ in antr_units]
+
+    # get the unit animations with applicable ones from all units.
+    # do this in reverse since thats what tool seems to do.
+    for unit, weap_defs in zip(antr_units[::-1], reversed(all_weap_defs)):
+        get_default_enums(unit.animations.STEPTREE, unit_defs)
+        for weap in unit.weapons.STEPTREE:
+            get_default_enums(weap.animations.STEPTREE, weap_defs)
+
+    # strip any unused animation indices
+    unit_defs     =  {k: v for k, v in unit_defs.items() if v >= 0}
+    all_weap_defs = [{k: v for k, v in weap_defs.items() if v >= 0}
+                     for weap_defs in all_weap_defs]
+
+    # default any unset unit animations with the found defaults.
+    for unit, weap_defs in zip(antr_units, all_weap_defs):
+        set_default_enums(unit.animations.STEPTREE, unit_defs, True)
+
+        for weap in unit.weapons.STEPTREE:
+            set_default_enums(weap.animations.STEPTREE, weap_defs, True)
+
+            # ensure each unit weapon at least has an empty types block
+            # to ensure they are able to enter gunner seats of vehicles
+            if not weap.weapon_types.STEPTREE:
+                weap.weapon_types.STEPTREE.append()

@@ -22,6 +22,7 @@ from supyr_struct.buffer import BytearrayBuffer
 from supyr_struct.field_types import FieldType
 from supyr_struct.defs.frozen_dict import FrozenDict
 
+from reclaimer.animation import util as anim_util
 from reclaimer.halo_script.hsc_decompilation import extract_scripts
 from reclaimer.halo_script.hsc import get_hsc_data_block,\
     get_script_syntax_node_tag_refs, clean_script_syntax_nodes,\
@@ -926,10 +927,29 @@ class Halo1Map(HaloMap):
                             0 if uint16_data < 0x8000 else 0x10000
                             )
 
-            # byteswap animation data
             for anim in meta.animations.STEPTREE:
-                if not byteswap: break
-                byteswap_animation(anim)
+                # pad animation data with empty uncompressed data
+                if anim.flags.compressed_data:
+                    offset  = anim.offset_to_compressed_data
+                    data    = anim.frame_data.STEPTREE
+
+                    d_data_size = anim_util.get_default_data_size(anim)
+                    u_data_size = anim_util.get_frame_size(anim) * anim.frame_count
+                    # preserve any existing uncompressed frame data in the tag
+                    u_read_size     = max(0, min(u_data_size, offset))
+                    u_data, c_data  = data[:u_read_size], data[offset:]
+                    u_data += b'\x00'*max(0, u_data_size - u_read_size)
+
+                    d_data_pad = max(0, d_data_size - len(anim.default_data.data))
+
+                    # adjust the offset and insert the new frame_data
+                    anim.offset_to_compressed_data = len(u_data)
+                    anim.frame_data.STEPTREE    = u_data + c_data
+                    anim.default_data.STEPTREE += bytearray(d_data_pad)
+
+                # byteswap animation data
+                if byteswap:
+                    byteswap_animation(anim)
 
         elif tag_cls in ("bitm", "snd!"):
             meta = Halo1RsrcMap.meta_to_tag_data(self, meta, tag_cls, tag_index_ref, **kwargs)

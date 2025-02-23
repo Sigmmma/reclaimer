@@ -11,18 +11,30 @@ try:
     import arbytmap as ab
     if not hasattr(ab, "FORMAT_P8"):
         ab.FORMAT_P8 = "P8"
-
-        """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
         ab.register_format(
             format_id=ab.FORMAT_P8, depths=(8,8,8,8)
             )
 
     if not hasattr(ab, "FORMAT_P8_BUMP"):
         ab.FORMAT_P8_BUMP = "P8-BUMP"
-
-        """ADD THE P8 FORMAT TO THE BITMAP CONVERTER"""
         ab.register_format(
             format_id=ab.FORMAT_P8_BUMP, depths=(8,8,8,8)
+            )
+
+    if not hasattr(ab, "FORMAT_BC7"):
+        def bc7_unimplemented(*a, **kw):
+            raise NotImplementedError("BC7 format is not supported")
+
+        ab.FORMAT_BC7 = "BC7"
+        ab.register_format(
+            format_id=ab.FORMAT_BC7, bpp=8, depths=(8, 8, 8, 8),
+            unpacker=bc7_unimplemented, packer=bc7_unimplemented,
+            compressed=True, dds_format=True, raw_format=False,
+            packed_size_calc=ab.dds_defs.dxt_packed_size_calc,
+            packed_width_calc=ab.dds_defs.packed_dxt_dimension_calc,
+            packed_height_calc=ab.dds_defs.packed_dxt_dimension_calc,
+            packed_typecode='I', packed_field_sizes=(2, ),
+            block_width=4, block_height=4,
             )
 
 except ImportError:
@@ -103,6 +115,9 @@ def extract_bitmap_tiff_data(tag_path):
 
 
 def extract_bitmaps(tagdata, tag_path, **kw):
+    if ab is None:
+        return "    Arbytmap not loaded. Cannot extract bitmaps."
+
     out_dir = Path(kw.get("out_dir", ""))
     filepath_base = out_dir.joinpath(tag_path).parent
     filename_base = Path(tag_path).name
@@ -119,9 +134,6 @@ def extract_bitmaps(tagdata, tag_path, **kw):
         ext = "dds"
 
     is_gen3 = hasattr(tagdata, "zone_assets_normal")
-    if ab is None:
-        # cant extract xbox bitmaps yet
-        return "    Arbytmap not loaded. Cannot extract bitmaps."
 
     arby = ab.Arbytmap()
     bitm_i = 0
@@ -132,9 +144,29 @@ def extract_bitmaps(tagdata, tag_path, **kw):
     for bitmap in tagdata.bitmaps.STEPTREE:
         typ = bitmap.type.enum_name
         fmt = bitmap.format.enum_name
-        w = bitmap.width
-        h = bitmap.height
-        d = bitmap.depth
+        arby_fmt = {
+            "ay8":  ab.FORMAT_AL8,  "a8": ab.FORMAT_A8,
+            "a8y8": ab.FORMAT_A8L8, "y8": ab.FORMAT_L8,
+            "v8u8": ab.FORMAT_V8U8, "p8": ab.FORMAT_A8,
+            "g8b8": ab.FORMAT_R8G8, "r5g6b5": ab.FORMAT_R5G6B5,
+            "a1r5g5b5": ab.FORMAT_A1R5G5B5, "a4r4g4b4": ab.FORMAT_A4R4G4B4,
+            "x8r8g8b8": ab.FORMAT_A8R8G8B8, "a8r8g8b8": ab.FORMAT_A8R8G8B8,
+            "dxt1": ab.FORMAT_DXT1,  "ctx1": ab.FORMAT_CTX1,
+            "dxt3": ab.FORMAT_DXT3, "dxt3a": ab.FORMAT_DXT3A, "dxt3y": ab.FORMAT_DXT3Y,
+            "dxt5": ab.FORMAT_DXT5, "dxt5a": ab.FORMAT_DXT5A, "dxt5y": ab.FORMAT_DXT5Y,
+            "dxn":  ab.FORMAT_DXN,  "dxt5ay": ab.FORMAT_DXT5AY, "bc7": ab.FORMAT_BC7,
+            "rgbfp16": ab.FORMAT_R16G16B16F, "argbfp32": ab.FORMAT_A32R32G32B32F,
+            "rgbfp32": ab.FORMAT_R32G32B32F, "p8_bump": ab.FORMAT_P8_BUMP,
+            }.get(fmt, None)
+
+        if arby_fmt in (ab.FORMAT_BC7, None):
+            fmt is None or print("Unsupported format %s" % fmt)
+            continue
+
+        w, h  = bitmap.width, bitmap.height
+        d     =  1 if typ == "multipage_2d" else bitmap.depth
+        pages = (6 if typ == "cubemap"      else
+                 1 if typ != "multipage_2d" else bitmap.depth)
         tiled = False
         if hasattr(bitmap, "format_flags"):
             tiled = bitmap.format_flags.tiled
@@ -146,46 +178,20 @@ def extract_bitmaps(tagdata, tag_path, **kw):
 
         tex_block = []
         tex_info = dict(
-            width=w, height=h, depth=d, mipmap_count=bitmap.mipmaps,
-            swizzled=bitmap.flags.swizzled, big_endian=is_gen3,
-            packed=True, tiled=tiled, tile_method="DXGI",
+            width=w, height=h, depth=d, sub_bitmap_count=pages, format=arby_fmt,
+            mipmap_count=bitmap.mipmaps, swizzled=bitmap.flags.swizzled,
+            big_endian=is_gen3, packed=True, tiled=tiled, tile_method="DXGI",
             packed_width_calc=dim_calc, packed_height_calc=dim_calc,
-            filepath=str(filepath_base.joinpath(filename + "." + ext))
+            filepath=str(filepath_base.joinpath(filename + "." + ext)),
+            texture_type=dict(
+                texture_3d=ab.TYPE_3D, cubemap=ab.TYPE_CUBEMAP
+                ).get(typ, ab.TYPE_2D),
             )
-        tex_info["texture_type"] = {
-            "texture_2d": ab.TYPE_2D, "texture_3d": ab.TYPE_3D,
-            "cubemap": ab.TYPE_CUBEMAP}.get(typ, ab.TYPE_2D)
-        tex_info["sub_bitmap_count"] = {
-            "texture_2d": 1, "texture_3d": 1,
-            "cubemap": 6, "multipage_2d": d}.get(typ, 1)
-        if typ == "multipage_2d":
-            tex_info.update(depth=1)
-            d = 1
 
-
-        if fmt == "p8_bump":
+        if arby_fmt == ab.FORMAT_P8_BUMP:
             tex_info.update(
                 palette=[p8_palette.p8_palette_32bit_packed]*(bitmap.mipmaps + 1),
-                palette_packed=True, indexing_size=8, format=ab.FORMAT_P8_BUMP)
-        else:
-            tex_info["format"] = {
-                "a8": ab.FORMAT_A8, "y8": ab.FORMAT_L8, "ay8": ab.FORMAT_AL8,
-                "a8y8": ab.FORMAT_A8L8, "p8": ab.FORMAT_A8,
-                "v8u8": ab.FORMAT_V8U8, "g8b8": ab.FORMAT_R8G8,
-                "x8r8g8b8": ab.FORMAT_A8R8G8B8, "a8r8g8b8": ab.FORMAT_A8R8G8B8,
-                "r5g6b5": ab.FORMAT_R5G6B5, "a1r5g5b5": ab.FORMAT_A1R5G5B5,
-                "a4r4g4b4": ab.FORMAT_A4R4G4B4,
-                "dxt1": ab.FORMAT_DXT1, "dxt3": ab.FORMAT_DXT3, "dxt5": ab.FORMAT_DXT5,
-                "ctx1": ab.FORMAT_CTX1, "dxn": ab.FORMAT_DXN, "dxt5ay": ab.FORMAT_DXT5AY,
-                "dxt3a": ab.FORMAT_DXT3A, "dxt3y": ab.FORMAT_DXT3Y,
-                "dxt5a": ab.FORMAT_DXT5A, "dxt5y": ab.FORMAT_DXT5Y,
-                "rgbfp16": ab.FORMAT_R16G16B16F, "argbfp32": ab.FORMAT_A32R32G32B32F,
-                "rgbfp32": ab.FORMAT_R32G32B32F}.get(fmt, None)
-
-
-        arby_fmt = tex_info["format"]
-        if arby_fmt is None:
-            continue
+                palette_packed=True, indexing_size=8)
 
         off = bitmap.pixels_offset
         for m in range(bitmap.mipmaps + 1):

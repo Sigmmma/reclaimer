@@ -108,7 +108,8 @@ def compile_model_animations(
         compression_mode=const.ANIMATION_COMPRESS_MODE_USE_FLAG,
         delta_tolerance=None, compress_quality=1.0,
         endian=">", fix_anim_types=True,
-        physics_calc_mode=const.PHYSICS_CALC_MODE_GUESS
+        physics_calc_mode=const.PHYSICS_CALC_MODE_GUESS,
+        rename_map=()
         ):
     make_new = (update_mode == const.ANIMATION_COMPILE_MODE_NEW)
     add_only = (update_mode == const.ANIMATION_COMPILE_MODE_ADDITIVE)
@@ -227,20 +228,19 @@ def compile_model_animations(
     # cache the existing animation indices by their names
     for i in range(len(antr_anims)):
         anim = antr_anims[i]
-        name_key = util.split_anim_name_into_type_strings(anim.name.strip())
+        name_key = util.split_anim_name_into_type_strings(anim.name.lower().strip())
         antr_indices_by_type_strings[name_key] = i
 
 
-    indices_to_not_overwrite = set()
+    indices_to_retain   = set()
     indices_modified    = set()
     total_uncomp_sizes  = dict()
     total_comp_sizes    = dict()
-    # loop over the animations to add and add/replace them
+    # loop over the animations to add/replace them
     for jma_anim_name in sorted(jma_anim_set.animations):
         name = jma_anim_name.strip()
-        name_key = util.split_anim_name_into_type_strings(name)
+        name_key = util.split_anim_name_into_type_strings(name.lower())
         has_purpose, name_pieces, perm_name = name_key
-        name0, name1, name2, name3 = name_pieces
 
         jma_anim = jma_anim_set.animations[jma_anim_name]
 
@@ -255,7 +255,7 @@ def compile_model_animations(
         if has_purpose:
             expected = util.get_expected_anim_types(name)
             if expected and jma_anim.anim_type not in expected:
-                print("Expected type of %s for '%s', but got %s.%s" %
+                print("Warning: Expected type of %s for '%s', but got %s.%s" %
                       (expected, jma_anim_name, jma_anim.anim_type,
                        " Fixing." if fix_anim_types else ""))
                 if fix_anim_types:
@@ -305,7 +305,9 @@ def compile_model_animations(
                 anim.mozz_compress_quality  = prev_anim.mozz_compress_quality
 
         # determine if we're able to try to compress this animation
-        if can_compress and ((compress_idle and is_idle) or compress_all):
+        if can_compress and not jma_anim.is_overlay and (
+                (compress_idle and is_idle) or compress_all
+                ):
             jma_anim.compress_quality = compress_quality
 
             if (use_mozz_fields and flags.mozz_override_quality and
@@ -329,17 +331,47 @@ def compile_model_animations(
                 total_uncomp_sizes[jma_anim_name] = uncomp_len
                 total_comp_sizes[jma_anim_name]   = comp_len
 
+        has_purpose or print("Could not determine a purpose for '%s'" % jma_anim_name)
         if not has_purpose or add_only:
-            has_purpose or print(
-                "Could not determine a purpose for '%s'" % jma_anim_name
-                )
             continue
 
         try:
             if util.set_animation_index(antr_tag, jma_anim_name, anim_index,
-                                        indices_to_not_overwrite):
+                                        indices_to_retain):
                 # successfully found an animation index to use this animation
-                indices_to_not_overwrite.add(anim_index)
+                indices_to_retain.add(anim_index)
+            indices_modified.add(anim_index)
+        except Exception:
+            errors.append(traceback.format_exc())
+
+    # loop over the animation map to map existing anims to them
+    for dst_name in sorted([] if add_only else rename_map):
+        src_name = rename_map[dst_name]
+        name_key = util.split_anim_name_into_type_strings(src_name.lower())
+        purpose  = util.split_anim_name_into_type_strings(dst_name.lower())[0]
+
+        if not purpose:
+            print("Could not determine a purpose for '%s'" % dst_name)
+            continue
+
+        # find which anim we're reusing
+        anim_index = antr_indices_by_type_strings.get(name_key)
+        if anim_index is None:
+            print("Warning: No existing animation '%s' to reuse." % src_name)
+            continue
+
+        src_type = antr_anims[anim_index].type.enum_name
+        expected = util.get_expected_anim_types(dst_name)
+        if expected and src_type not in expected:
+            print("Warning: Expected type of %s for '%s', but got '%s'." %
+                  (expected, dst_name, src_type))
+
+        try:
+            if util.set_animation_index(antr_tag, dst_name, anim_index,
+                                        indices_to_retain):
+                # successfully found an animation index to use this animation
+                print("Reusing '%s' for '%s'" % (src_name, dst_name))
+                indices_to_retain.add(anim_index)
             indices_modified.add(anim_index)
         except Exception:
             errors.append(traceback.format_exc())
@@ -426,60 +458,8 @@ def compile_model_animations(
             antr_node.base_vector[:]        = info.vector_ortho
             antr_node.vector_range          = info.vector_range
 
-    # fill in the remaining unit damages
-    if antr_unit_damages:
-        if len(antr_unit_damages) < 11*4*4:
-            antr_unit_damages.extend(11*4*4 - len(antr_unit_damages))
-
-        # loop over  s-ping, h-ping, s-kill, h-kill
-        for i in range(4):
-            # loop over each of the 11 animations per set
-            for k in range(11):
-                # make a collection of defaults for all sides of this region
-                defaults = {i*11*4 + j*11 + k: -1 for j in range(4)}
-                util.get_default_animation_enums(antr_unit_damages, defaults)
-
-                # default any unset sides for this region
-                util.set_default_animation_enums(antr_unit_damages, defaults)
-
-
-    unit_anim_defaults = {enums.unit_animation_names.index(name): -1
-                          for name in const.SHARED_UNIT_ANIMATION_NAMES}
-    unit_weap_anim_defaults = {enums.unit_weapon_animation_names.index(name): -1
-                               for name in const.SHARED_UNIT_WEAPON_ANIMATION_NAMES}
-
-    # get the unit animations with applicable ones from all units.
-    # do this in reverse since thats what tool seems to do.
-    for unit in antr_units[::-1]:
-        anim_enums = unit.animations.STEPTREE
-        util.get_default_animation_enums(anim_enums, unit_anim_defaults)
-        for unit_weap in unit.weapons.STEPTREE:
-            anim_enums = unit_weap.animations.STEPTREE
-            util.get_default_animation_enums(anim_enums, unit_weap_anim_defaults)
-
-    # strip any unused animation indices
-    unit_anim_defaults = {
-        k: v for k, v in unit_anim_defaults.items() if v != -1}
-    unit_weap_anim_defaults = {
-        k: v for k, v in unit_weap_anim_defaults.items() if v != -1}
-
-    for unit in antr_units:
-        if unit_anim_defaults:
-            anim_enums = unit.animations.STEPTREE
-            anim_enums.extend(max(unit_anim_defaults) + 1 - len(anim_enums))
-
-        if unit_weap_anim_defaults:
-            for unit_weap in unit.weapons.STEPTREE:
-                anim_enums = unit_weap.animations.STEPTREE
-                anim_enums.extend(max(unit_weap_anim_defaults) + 1 - len(anim_enums))
-
-    # default any unset unit animations with the found defaults.
-    for unit in antr_units:
-        util.set_default_animation_enums(unit.animations.STEPTREE,
-                                         unit_anim_defaults)
-        for unit_weap in unit.weapons.STEPTREE:
-            util.set_default_animation_enums(unit_weap.animations.STEPTREE,
-                                             unit_weap_anim_defaults)
+    # final tag cleanup(i.e. fill missing anims, remove unused blocks, etc.)
+    util.sanitize_animation_indices(antr_tag)
 
     return errors
 

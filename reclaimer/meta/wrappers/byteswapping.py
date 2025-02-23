@@ -160,23 +160,24 @@ def byteswap_anniversary_antr(meta):
     #       already handled by the non-anniversary antr byteswapping code.
 
     for b in meta.animations.STEPTREE:
-        b.first_permutation_index = end_swap_int16(b.first_permutation_index)
-        b.chance_to_play = end_swap_float(b.chance_to_play)
         if not b.flags.compressed_data:
             continue
 
         # slice out the compressed data and byteswap the 
         # 11 UInt32 that make up the 44 byte header that
-        # points to the 
-        comp_data = bytearray(b.frame_data.data[b.offset_to_compressed_data: ])
-        unswapped = bytes(comp_data)
+        # points to the
+        offset    = b.offset_to_compressed_data
+
+        uncomp_data = bytearray(b.frame_data.data[:offset])
+        comp_data   = bytearray(b.frame_data.data[offset:])
+        unswapped   = bytes(comp_data)
         byteswap_struct_array(
             unswapped, comp_data, count=11, size=4, four_byte_offs=[0],
             )
         header = PyStruct("<11i").unpack(comp_data[: 44])
 
         # figure out where each array starts, ends, and the item size
-        starts = (0, *header)
+        starts = (44, *header)
         ends   = (*header, len(comp_data))
         widths = (4, 2, 2, 2,  4, 2, 4, 4,  4, 2, 4, 4)
 
@@ -184,22 +185,14 @@ def byteswap_anniversary_antr(meta):
         for start, end, width in zip(starts, ends, widths):
             byteswap_struct_array(
                 unswapped, comp_data, size=width, 
-                count = (end - start)//width,
+                count = (end - start)//width, start = start,
                 four_byte_offs=([0] if width == 4 else []),
                 two_byte_offs=( [0] if width == 2 else []),
                 )
 
-        # replace the frame_data with the compressed data and some
-        # blank uncompressed default/frame data so tool doesnt cry
-        frame_data_size   = b.frame_count * b.frame_size
-        default_data_size = b.node_count * (12 + 8 + 4) - b.frame_size
-
-        b.offset_to_compressed_data = frame_data_size
-
-        b.frame_data.data    = bytearray(frame_data_size) + comp_data
-        b.default_data.data += bytearray(
-            max(0, len(b.default_data.data) - default_data_size)
-            )
+        # replace the frame_data with the compressed data and
+        # some blank uncompressed frame data so tool doesnt cry
+        b.frame_data.data    = uncomp_data + comp_data
 
 
 def byteswap_anniversary_sbsp(meta):
@@ -322,15 +315,13 @@ def byteswap_animation(anim):
 
     rot_flags, trans_flags, scale_flags = anim_util.get_anim_flags(anim)
 
-    frame_size = 12*sum(trans_flags) + 8*sum(rot_flags) + 4*sum(scale_flags)
-    finfo_size = anim.frame_count * {
-        1: 8, 2: 12, 3: 16
-        }.get(anim.frame_info_type.data, 0)
+    frame_size = anim_util.get_frame_size(anim)
+    finfo_size = anim_util.get_frame_info_size(anim)
 
     # NOTE: any nodes not animated by frame_data have a default value in
     #       the default_data. the size of the default data is complimentary
     #       to the size of a frame, such that combined they add to 24 bytes
-    default_data_size = anim.node_count * 24 - frame_size
+    default_data_size = anim_util.get_default_data_size(anim)
     uncomp_frame_data_size = frame_size * anim.frame_count
 
     if len(frame_info) < finfo_size:
@@ -339,7 +330,7 @@ def byteswap_animation(anim):
     elif default_data and len(default_data) < default_data_size:
         raise ValueError("Expected %s bytes of default data in '%s', but got %s" %
                          (default_data_size, anim.name, len(default_data)))
-    elif not is_comp and len(frame_data) - comp_offset < uncomp_frame_data_size:
+    elif not is_comp and len(frame_data) < uncomp_frame_data_size:
         raise ValueError(
             "Expected %s bytes of frame data in '%s', but got %s" %
             (uncomp_frame_data_size, anim.name, len(frame_data)))

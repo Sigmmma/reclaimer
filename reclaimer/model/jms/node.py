@@ -55,9 +55,6 @@ class JmsNode:
             abs(self.pos_y - other.pos_y) > 0.00001   or
             abs(self.pos_z - other.pos_z) > 0.00001
             ):
-            print(self)
-            print(other)
-            input()
             return False
         return True
 
