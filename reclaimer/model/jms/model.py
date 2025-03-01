@@ -390,11 +390,7 @@ class JmsModel:
         markers = self.markers
         regions = self.regions
 
-        if isinstance(self, JmsModel):
-            perm_meshes = {self.name: self}
-        else:
-            perm_meshes = self.perm_meshes
-
+        perm_meshes = {self.name: self}
         node_error = False
 
         node_ct = len(self.nodes)

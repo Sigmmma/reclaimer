@@ -17,7 +17,8 @@ from reclaimer.animation import animation_compression, constants as const,\
 
 __all__ = ("compile_animation", "compile_model_animations")
 
-def compile_animation(anim, jma_anim, endian=">", ignore_size_limits=False):
+def compile_animation(anim, jma_anim, endian=">",
+                      ignore_size_limits=False, pos_scale=1.0):
     '''
     Compiles the provided JmaAnimation into the provided antr animation block.
     '''
@@ -91,9 +92,10 @@ def compile_animation(anim, jma_anim, endian=">", ignore_size_limits=False):
     anim.scale_flags0 =  jma_anim.scale_flags_int & 0xFFffFFff
     anim.scale_flags1 = (jma_anim.scale_flags_int >> 32) & 0xFFffFFff
 
-    frame_info = serialization.serialize_frame_info(jma_anim, endian)
-    def_data   = serialization.serialize_default_data(jma_anim, endian)
-    frame_data = serialization.serialize_uncomp_frame_data(jma_anim, endian)
+    args = (jma_anim, endian, pos_scale)
+    frame_info = serialization.serialize_frame_info(*args)
+    def_data   = serialization.serialize_default_data(*args)
+    frame_data = serialization.serialize_uncomp_frame_data(*args)
 
     anim.frame_info.STEPTREE = frame_info
     anim.default_data.STEPTREE = def_data
@@ -109,7 +111,7 @@ def compile_model_animations(
         delta_tolerance=None, compress_quality=1.0,
         endian=">", fix_anim_types=True,
         physics_calc_mode=const.PHYSICS_CALC_MODE_GUESS,
-        rename_map=()
+        rename_map=(), pos_scale=1.0
         ):
     make_new = (update_mode == const.ANIMATION_COMPILE_MODE_NEW)
     add_only = (update_mode == const.ANIMATION_COMPILE_MODE_ADDITIVE)
@@ -275,7 +277,7 @@ def compile_model_animations(
         try:
             jma_anim.calculate_animation_flags(delta_tolerance)
             errors.extend(compile_animation(
-                anim, jma_anim, endian, ignore_size_limits
+                anim, jma_anim, endian, ignore_size_limits, pos_scale
                 ))
         except Exception:
             errors.append(traceback.format_exc())
@@ -316,9 +318,8 @@ def compile_model_animations(
                 jma_anim.compress_quality = anim.mozz_compress_quality/100
 
             # do the compression
-            animation_compression.compress_animation(
-                anim, jma_anim=jma_anim, recalculate_keyframes=True
-                )
+            animation_compression.compress_animation(anim, True, pos_scale,
+                                                     jma_anim=jma_anim)
 
             uncomp_len = anim.offset_to_compressed_data
             comp_len   = len(anim.frame_data.STEPTREE) - uncomp_len
@@ -326,6 +327,7 @@ def compile_model_animations(
             if comp_len >= uncomp_len:
                 # not worth compressing
                 flags.compressed_data = False
+                anim.offset_to_compressed_data = 0
                 anim.frame_data.STEPTREE = anim.frame_data.STEPTREE[: uncomp_len]
             else:
                 total_uncomp_sizes[jma_anim_name] = uncomp_len

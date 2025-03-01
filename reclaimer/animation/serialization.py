@@ -16,7 +16,7 @@ from types import MethodType
 
 from reclaimer.animation.jma import JmaRootNodeState, JmaNodeState
 from reclaimer.animation.structs import compressed_frames_def
-from reclaimer.animation import util
+from reclaimer.animation import constants as const, util
 from reclaimer.util import compression
 from reclaimer.util import matrices
 
@@ -29,19 +29,19 @@ __all__ = (
     )
 
 
-def deserialize(anim, endian=">"):
+def deserialize(anim, endian=">", pos_scale=1.0):
     if anim.flags.compressed_data:
         # decompress compressed animations
-        kfs, frames = deserialize_comp_frame_data(anim, False, True)
+        kfs, frames = deserialize_comp_frame_data(anim, False, True, pos_scale)
     else:
         # create the node states from the frame_data and default_data
-        frames = deserialize_uncomp_frame_data(anim, None, True, endian)
+        frames = deserialize_uncomp_frame_data(anim, None, True, endian, pos_scale)
         kfs = [], [], []
 
     return kfs, frames
 
 
-def serialize_frame_info(jma_anim, endian=">"):
+def serialize_frame_info(jma_anim, endian=">", pos_scale=1.0):
     size  = jma_anim.root_node_info_frame_size
     count = jma_anim.frame_count - 1
     infos = jma_anim.root_node_info[: count]
@@ -52,34 +52,38 @@ def serialize_frame_info(jma_anim, endian=">"):
     pack = MethodType(pack_into, f"{endian}{size//4}f")
 
     # write to the data
+    pos_scale /= const.SCALE_INTERNAL_TO_JMA
     if jma_anim.has_dz:
         for i, info in enumerate(infos):
-            pack(data, i*size, info.dx/100, info.dy/100, info.dz/100, info.dyaw)
+            pack(data, i*size, info.dx*pos_scale, info.dy*pos_scale,
+                 info.dz*pos_scale, info.dyaw)
 
     elif jma_anim.has_dyaw:
         for i, info in enumerate(infos):
-            pack(data, i*size, info.dx/100, info.dy/100, info.dyaw)
+            pack(data, i*size, info.dx*pos_scale, info.dy*pos_scale, info.dyaw)
 
     elif jma_anim.has_dxdy:
         for i, info in enumerate(infos):
-            pack(data, i*size, info.dx/100, info.dy/100)
+            pack(data, i*size, info.dx*pos_scale, info.dy*pos_scale)
 
     return data
 
 
-def deserialize_frame_info(anim, include_extra_base_frame=False, endian=">"):
+def deserialize_frame_info(anim, include_extra_base_frame=False,
+                           endian=">", pos_scale=1.0):
     i = 0
     dx = dy = dz = dyaw = x = y = z = yaw = 0.0
 
     root_node_info = [JmaRootNodeState() for i in range(anim.frame_count)]
     frame_info = anim.frame_info.data
+    pos_scale *= const.SCALE_INTERNAL_TO_JMA
 
     # write to the data
     if "dz" in anim.frame_info_type.enum_name:
         unpack = MethodType(unpack_from, endian + "4f")
         for f in range(anim.frame_count):
             dx, dy, dz, dyaw = unpack(frame_info, i)
-            dx *= 100; dy *= 100; dz *= 100
+            dx *= pos_scale; dy *= pos_scale; dz *= pos_scale
 
             info = root_node_info[f]
             info.dx = dx; info.dy = dy; info.dz = dz; info.dyaw = dyaw
@@ -92,7 +96,7 @@ def deserialize_frame_info(anim, include_extra_base_frame=False, endian=">"):
         unpack = MethodType(unpack_from, endian + "3f")
         for f in range(anim.frame_count):
             dx, dy, dyaw = unpack(frame_info, i)
-            dx *= 100; dy *= 100
+            dx *= pos_scale; dy *= pos_scale
 
             info = root_node_info[f]
             info.dx = dx; info.dy = dy; info.dyaw = dyaw
@@ -105,7 +109,7 @@ def deserialize_frame_info(anim, include_extra_base_frame=False, endian=">"):
         unpack = MethodType(unpack_from, endian + "2f")
         for f in range(anim.frame_count):
             dx, dy = unpack(frame_info, i)
-            dx *= 100; dy *= 100
+            dx *= pos_scale; dy *= pos_scale
 
             info = root_node_info[f]
             info.dx = dx; info.dy = dy
@@ -134,17 +138,17 @@ def deserialize_frame_info(anim, include_extra_base_frame=False, endian=">"):
     return root_node_info
 
 
-def deserialize_default_data(anim, endian=">"):
+def deserialize_default_data(anim, endian=">", pos_scale=1.0):
     if anim.flags.compressed_data:
-        _, frames = deserialize_comp_frame_data(anim, True)
+        _, frames = deserialize_comp_frame_data(anim, True, True, pos_scale)
     else:
-        frames = _deserialize_uncomp_frame_data(anim, True, (), endian)
+        frames = _deserialize_uncomp_frame_data(anim, True, (), endian, pos_scale)
 
     return frames[0]
 
 
 def deserialize_comp_frame_data(anim, get_default_data=False,
-                                include_extra_base_frame=True):
+                                include_extra_base_frame=True, pos_scale=1.0):
     r_kfs_by_nodes = []
     t_kfs_by_nodes = []
     s_kfs_by_nodes = []
@@ -160,6 +164,7 @@ def deserialize_comp_frame_data(anim, get_default_data=False,
     blend_scale = lambda scale_0, scale_1, ratio: (
         scale_0 * (1 - ratio) + scale_1 * ratio
         )
+    pos_scale  *= const.SCALE_INTERNAL_TO_JMA
 
     frame_count = 1 if get_default_data else anim.frame_count
 
@@ -215,9 +220,9 @@ def deserialize_comp_frame_data(anim, get_default_data=False,
         def_ns.rot_k = r_def[2]
         def_ns.rot_w = r_def[3]
 
-        def_ns.pos_x = t_def[0] * 100
-        def_ns.pos_y = t_def[1] * 100
-        def_ns.pos_z = t_def[2] * 100
+        def_ns.pos_x = t_def[0] * pos_scale
+        def_ns.pos_y = t_def[1] * pos_scale
+        def_ns.pos_z = t_def[2] * pos_scale
 
         def_ns.scale = s_def
 
@@ -259,9 +264,9 @@ def deserialize_comp_frame_data(anim, get_default_data=False,
                 fi, t_kf_off, t_kf_end, t_kfs,
                 t_def, t_fdata, blend_trans
                 )
-            node_frame.pos_x = x * 100
-            node_frame.pos_y = y * 100
-            node_frame.pos_z = z * 100
+            node_frame.pos_x = x * pos_scale
+            node_frame.pos_y = y * pos_scale
+            node_frame.pos_z = z * pos_scale
 
             # decompress scale
             node_frame.scale = get_frame_from_keyframe_data(
@@ -281,16 +286,17 @@ def deserialize_comp_frame_data(anim, get_default_data=False,
 
 
 def deserialize_uncomp_frame_data(
-        anim, def_node_states=None, include_extra_base_frame=True, endian=">"
+        anim, def_node_states=None, include_extra_base_frame=True,
+        endian=">", pos_scale=1.0
         ):
     is_overlay = anim.type.enum_name == "overlay"
     if def_node_states is None:
         def_node_states = _deserialize_uncomp_frame_data(
-            anim, True, (), endian
+            anim, True, (), endian, pos_scale
             )[0]
 
     frame_data = _deserialize_uncomp_frame_data(
-        anim, False, def_node_states, endian
+        anim, False, def_node_states, endian, pos_scale
         )
 
     if include_extra_base_frame:
@@ -305,12 +311,14 @@ def deserialize_uncomp_frame_data(
 
 
 def _deserialize_uncomp_frame_data(
-        anim, get_default_data=False, def_node_states=(), endian=">"
+        anim, get_default_data=False, def_node_states=(),
+        endian=">", pos_scale=1.0
         ):
     unpack_rot   = MethodType(unpack_from, endian + "4h")
     unpack_trans = MethodType(unpack_from, endian + "3f")
     unpack_scale = MethodType(unpack_from, endian +  "f")
     sqrt         = math.sqrt
+    pos_scale   *= const.SCALE_INTERNAL_TO_JMA
 
     r_flags, t_flags, s_flags = util.get_anim_flags(anim)
     r_incs = [8  * (f != get_default_data) for f in r_flags]
@@ -348,7 +356,7 @@ def _deserialize_uncomp_frame_data(
                                   def_ns.rot_k, def_ns.rot_w)
 
             x, y, z = (
-                (v*100 for v in unpack_trans(data, i)) if t_inc else
+                (v*pos_scale for v in unpack_trans(data, i)) if t_inc else
                 (def_ns.pos_x, def_ns.pos_y, def_ns.pos_z)
                 )
             i += t_inc
@@ -368,11 +376,11 @@ def _deserialize_uncomp_frame_data(
     return all_node_states
 
 
-def serialize_default_data(jma_anim, endian=">"):
-    return _serialize_uncomp_frame_data(jma_anim, endian, False)
+def serialize_default_data(jma_anim, endian=">", pos_scale=1.0):
+    return _serialize_uncomp_frame_data(jma_anim, endian, False, pos_scale)
 
 
-def serialize_comp_frame_data(jma_anim):
+def serialize_comp_frame_data(jma_anim, pos_scale=1.0):
     # make a comp_anim_block to store the data for serialization
     cab = compressed_frames_def.build()
 
@@ -432,7 +440,7 @@ def serialize_comp_frame_data(jma_anim):
 
 
     sqrt, comp_quat = math.sqrt, compression.compress_quaternion48
-    t_scale = 1/100
+    pos_scale /= const.SCALE_INTERNAL_TO_JMA
 
     # counters to keep track of the default data and frame data
     # index we're writing into in the compressed frame data block
@@ -452,7 +460,7 @@ def serialize_comp_frame_data(jma_anim):
 
         for i, val in enumerate((d_state.pos_x, d_state.pos_y, d_state.pos_z),
                                 def_ti*3):
-            t_ddata[i] = val*t_scale
+            t_ddata[i] = val*pos_scale
 
         # only write a default scale if scale is animated
         if has_scale:
@@ -468,7 +476,7 @@ def serialize_comp_frame_data(jma_anim):
         for i, ns in enumerate((jma_anim.frames[kfi][ni]
                                 for kfi in t_nodes_kfs[ni]), ti):
             for j, val in enumerate((ns.pos_x, ns.pos_y, ns.pos_z), i*3):
-                t_fdata[j] = val*t_scale
+                t_fdata[j] = val*pos_scale
 
         for i, ns in enumerate((jma_anim.frames[kfi][ni]
                                 for kfi in s_nodes_kfs[ni]), si):
@@ -487,13 +495,13 @@ def serialize_comp_frame_data(jma_anim):
     return cab.serialize(calc_pointers=False)
 
 
-def serialize_uncomp_frame_data(jma_anim, endian=">"):
-    return _serialize_uncomp_frame_data(jma_anim, endian, True)
+def serialize_uncomp_frame_data(jma_anim, endian=">", pos_scale=1.0):
+    return _serialize_uncomp_frame_data(jma_anim, endian, True, pos_scale)
 
 
-def _serialize_uncomp_frame_data(jma_anim, endian, write_flag):
+def _serialize_uncomp_frame_data(jma_anim, endian, write_flag, pos_scale=1.0):
     sqrt = math.sqrt
-    t_scale = 1/100
+    pos_scale /= const.SCALE_INTERNAL_TO_JMA
 
     # combining the write-pointer increments with the flags
     r_incs = [8  * (f == write_flag) for f in jma_anim.rot_flags]
@@ -533,7 +541,7 @@ def _serialize_uncomp_frame_data(jma_anim, endian, write_flag):
 
             if t_inc:
                 x, y, z = ns.pos_x, ns.pos_y, ns.pos_z
-                pack_trans(data, i, x*t_scale, y*t_scale, z*t_scale)
+                pack_trans(data, i, x*pos_scale, y*pos_scale, z*pos_scale)
                 i += t_inc
 
             s_inc and pack_scale(data, i, ns.scale)

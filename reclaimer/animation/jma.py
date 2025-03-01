@@ -897,7 +897,7 @@ class JmaAnimationSet:
             for n, node_states in enumerate(all_node_states):
                 node_states.extend(frame[n] for frame in frames)
 
-        if len(all_node_states) < 2:
+        if max(*[len(states) for states in all_node_states], 0) < 2:
             # no anims????
             return
 

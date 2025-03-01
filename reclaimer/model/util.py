@@ -41,7 +41,12 @@ mod2_tri_strip_def = BlockDef(
     endian='>'
     )
 
-MAX_STRIP_LEN = 32763 * 3
+# NOTE: strip are actually stored in chunks of 3 indices across up to 32766 
+#       tri blocks, so the strip length is 3*count-2(the last 2 are degens)
+#       the vertex count is still limited to 32767, so in order to enforce
+#       that limit isn't hit, we're limiting the max strip length to it too.
+MAX_VERT_COUNT = 32767
+MAX_STRIP_LEN  = 32766*3
 
 EMPTY_GEOM_VERTS = (
     JmsVertex(0, 0.000000001, 0.0, 0.0,

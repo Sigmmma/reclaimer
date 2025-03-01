@@ -572,7 +572,7 @@ def sanitize_animation_indices(antr_tag):
     antr_unit_damages.extend(max_dmg_ct - len(antr_unit_damages))
 
     # loop over  s-ping, h-ping, s-kill, h-kill
-    for i in range(0, 4*4*11, 4*11):
+    for i in range(0, max_dmg_ct, 4*11):
         # the left, right, and back sides default to the front
         # make a collection of defaults for all sides of this region
         defs = {}

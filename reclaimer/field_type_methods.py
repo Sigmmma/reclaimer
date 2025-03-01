@@ -252,7 +252,8 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
                     node[0] = node[1] = 0
 
             elif node[0] > arr_abs_len_max:
-                raise ValueError("Reflexive size is above highest allowed value.")
+                raise ValueError("Reflexive size %s above max value %s." %
+                                 (node[0], arr_abs_len_max))
 
             if not node[0]:
                 # reflexive is empty. no need to provide rawdata
@@ -296,7 +297,8 @@ def reflexive_array_parser(self, desc, node=None, parent=None, attr_index=None,
     try:
         if parent is not None and rawdata is not None:
             if root_offset + offset + parent.size * desc['SUB_STRUCT'][SIZE] > len(rawdata):
-                raise ValueError("Reflexive size is out of bounds of input stream.")
+                raise ValueError("Reflexive size %s is outside stream bounds %s." %
+                                 (parent.size * desc['SUB_STRUCT'][SIZE], len(rawdata)))
 
         return array_parser(
             self, desc, node, parent, attr_index, rawdata, root_offset, offset, **kwargs

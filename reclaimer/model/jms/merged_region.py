@@ -21,13 +21,13 @@ class MergedJmsRegion:
     perm_meshes = ()
     _split_by_shader = True
 
-    def __init__(self, name, *jms_models, split_by_shader=True):
+    def __init__(self, name, *jms_models, split_by_shader=True, materials=()):
         self.name = name
         self._split_by_shader = split_by_shader
         self.perm_meshes = {}
 
         for jms_model in jms_models:
-            self.merge_jms_model(jms_model)
+            self.merge_jms_model(jms_model, materials)
 
     def merge_jms_model(self, jms_model, merged_jms_materials):
         assert isinstance(jms_model, JmsModel)

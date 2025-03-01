@@ -105,10 +105,10 @@ def float_to_str_truncate(f, sig_figs=7):
 # Test showing off the regex can be seen here:
 # https://regex101.com/r/Fpd23n/1
 JM_INT_PARSE_REGEX = re.compile(r'^\s*([-+]?\d+)')
-# https://regex101.com/r/rKvo0t/1
+# https://regex101.com/r/rKvo0t/2
 # TODO: Should this match numbers that start with a . and are just commas?
 # Check atof description.
-JM_FLOAT_PARSE_REGEX = re.compile(r'^\s*([-+]?\d+\.?\d*)')
+JM_FLOAT_PARSE_REGEX = re.compile(r'^\s*([-+]?(?:\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?)')
 
 def parse_jm_int(string):
     '''
