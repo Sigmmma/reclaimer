@@ -1411,7 +1411,7 @@ class Halo1Map(HaloMap):
             i = 0
             for source in (*script_sources, *global_sources):
                 source_files.append()
-                source_files[-1].source_name = "decompiled_%s.hsc" % i
+                source_files[-1].source_name = "decompiled_%s" % i
                 source_files[-1].source.data = source.encode('latin-1')
                 i += 1
 
