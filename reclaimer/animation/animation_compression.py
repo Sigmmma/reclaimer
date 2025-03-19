@@ -9,8 +9,8 @@
 
 from copy import deepcopy
 from reclaimer.animation import serialization
-from reclaimer.animation import jma
-from reclaimer.model import jms
+from reclaimer.jm import jma
+from reclaimer.jm import jms
 
 __all__ = ("compress_animation", "decompress_animation")
 

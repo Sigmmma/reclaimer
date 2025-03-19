@@ -29,29 +29,6 @@ __all__ = (
     )
 
 
-def get_curve_derivative(curve, order=1):
-    if order == 0:
-        diff = [list(v) for v in curve]
-
-    ct  = len(curve)
-    for i in range(order):
-        diff = [None for i in range(ct)]
-        if ct == 1:
-            diff[0] = [0]*len(curve[0])
-            return diff
-        elif ct > 2:
-            diff[1: -1] = (
-                [(v1-v0)/2 for v0, v1 in zip(p0, p1)]
-                for p0, p1 in zip(curve[:-1], curve[2:])
-                )
-
-        diff[-1] = [(v1-v0)/2 for v0,v1 in zip(*curve[ct-2: ct])]
-        diff[0]  = [(v1-v0)/2 for v0,v1 in zip(*curve[:2])]
-        curve = diff
-
-    return diff
-
-
 def get_anim_flags(anim):
     rot_flags, trans_flags, scale_flags = [], [], []
     for flags, flags_int in (
@@ -77,56 +54,6 @@ def get_frame_info_size(anim):
     typ     = anim.frame_info_type.data
     fields  = (1 + typ) if typ in (1, 2, 3) else 0
     return anim.frame_count * 4 * fields
-
-
-def pack_anim_flags(rot_flags, trans_flags, scale_flags):
-    return [
-        sum(int(bool(flag)) << n for n, flag in enumerate(flags))
-        for flags in (rot_flags, trans_flags, scale_flags)
-        ]
-
-
-def calculate_anim_flags(frames, tolerance=1.0):
-    # determine which transforms types of each node are animated
-    # by seeing how much they change from the starting frame
-    f0          = frames[0]
-    r_abs_diffs = [0]*len(f0)
-    t_abs_diffs = [0]*len(f0)
-    s_abs_diffs = [0]*len(f0)
-
-    tolerance = abs(max(0, tolerance) or 1.0)
-    ep_r = const.QUAT_EPSILON  * tolerance
-    ep_t = const.TRANS_EPSILON * tolerance
-    ep_s = const.SCALE_EPSILON * tolerance
-
-    for n, s0 in enumerate(f0):
-        r_diffs, t_diffs, s_diffs = [0], [0], [0]
-        s0_i, s0_j, s0_k, s0_w  = s0.rot_i, s0.rot_j, s0.rot_k, s0.rot_w
-        s0_x, s0_y, s0_z        = s0.pos_x, s0.pos_y, s0.pos_z
-        for f in range(1, len(frames)):
-            s1 = frames[f][n]
-            r_diffs.append((s0_i - s1.rot_i)**2 +
-                           (s0_j - s1.rot_j)**2 +
-                           (s0_k - s1.rot_k)**2 +
-                           (s0_w - s1.rot_w)**2)
-            t_diffs.append((s0_x - s1.pos_x)**2 +
-                           (s0_y - s1.pos_y)**2 +
-                           (s0_z - s1.pos_z)**2)
-
-            # scale is calculated a bit differently. we ALWAYS store scale
-            # frame data for a node if its scale is ever not 1.0, even if
-            # it is static for the entire animation length. This seems to
-            # be due to how compressed animations handle default scales.
-            s_diffs.append((1 - s1.scale)**2)
-
-        r_abs_diffs[n] = sqrt(max(r_diffs))
-        t_abs_diffs[n] = sqrt(max(t_diffs))
-        s_abs_diffs[n] = sqrt(max(s_diffs))
-
-    r_flags = [(diff >= ep_r) << n for n, diff in enumerate(r_abs_diffs)]
-    t_flags = [(diff >= ep_t) << n for n, diff in enumerate(t_abs_diffs)]
-    s_flags = [(diff >= ep_s) << n for n, diff in enumerate(s_abs_diffs)]
-    return r_flags, t_flags, s_flags
 
 
 def get_anim_rename_map(folder="", name=""):
@@ -221,57 +148,64 @@ def split_anim_name_into_type_strings(anim_name):
     perm_num = ""
 
     if part1_sani == "suspension":
+        remainder, _, perm_num = split_permutation_number(remainder)
+
         if part4: remainder = " ".join((part4, remainder))
         if part3: remainder = " ".join((part3, remainder))
         if part2: remainder = " ".join((part2, remainder))
 
-        remainder, _, perm_num = split_permutation_number(remainder)
-        type_strings = part1_sani, remainder.lower(), '', ''
+        type_strings = (part1_sani, remainder.lower())
         remainder = ""
 
     elif part1_sani in ("first-person", "device", "vehicle"):
+        part2, part2_sani, perm_num = split_permutation_number(part2, remainder)
+
         if part4: remainder = " ".join((part4, remainder))
         if part3: remainder = " ".join((part3, remainder))
 
-        part2, part2_sani, perm_num = split_permutation_number(part2, remainder)
         if ((part1_sani == "first-person" and part2_sani in fp_animation_names_mcc) or
             (part1_sani == "vehicle" and part2_sani in vehicle_animation_names) or
             (part1_sani == "device"  and part2_sani in device_animation_names)):
-            type_strings = part1_sani, part2_sani, '', ''
+            type_strings = (part1_sani, part2_sani)
+        elif part2:
+            remainder = " ".join((part2, remainder))
 
     elif (part1_sani in unit_damage_types and part2_sani in unit_damage_sides):
-        if part4:
-            remainder = " ".join((part4, remainder))
-
         part3, part3_sani, perm_num = split_permutation_number(part3, remainder)
+
+        if part4: remainder = " ".join((part4, remainder))
+
         if part3_sani in unit_damage_regions:
-            type_strings = part1_sani, part2_sani, part3_sani, ''
+            type_strings = (part1_sani, part2_sani, part3_sani)
+        elif part3:
+            remainder = " ".join((part3, remainder))
 
-    else:
+    elif part4_sani in unit_weapon_type_animation_names:
         part4, part4_sani, perm_num = split_permutation_number(part4, remainder)
-        if part4_sani in unit_weapon_type_animation_names:
-            type_strings = part1, part2, part3, part4_sani
 
-        else:
-            part3, part3_sani, perm_num = split_permutation_number(part3, remainder)
-            if part3_sani in unit_weapon_animation_names:
-                if part4: remainder = " ".join((part4, remainder))
+        type_strings = (part1, part2, part3, part4_sani)
 
-                type_strings = part1, part2, part3_sani, ''
+    elif part3_sani in unit_weapon_animation_names:
+        part4, part4_sani, perm_num = split_permutation_number(part4, remainder)
+        part3, part3_sani, perm_num = split_permutation_number(part3, remainder)
 
-            else:
-                part2, part2_sani, perm_num = split_permutation_number(part2, remainder)
-                if part2_sani in unit_animation_names:
-                    if part4: remainder = " ".join((part4, remainder))
-                    if part3: remainder = " ".join((part3, remainder))
+        if part4: remainder = " ".join((part4, remainder))
 
-                    type_strings = part1, part2_sani, '', ''
-                else:
-                    remainder = True
+        type_strings = (part1, part2, part3_sani, '')
+
+    elif part2_sani in unit_animation_names:
+        part2, part2_sani, perm_num = split_permutation_number(part2, remainder)
+
+        if part4: remainder = " ".join((part4, remainder))
+        if part3: remainder = " ".join((part3, remainder))
+
+        type_strings = (part1, part2_sani)
+
+    type_strings += ('',) * (4-len(type_strings))
 
     # nothing should have a remainder. if it does, it doesnt fit the criteria,
     # and we should just return it split at the permutation character
-    if remainder:
+    if remainder or not any(type_strings):
         pieces = anim_name.lower().split("%")
         if len(pieces) > 1:
             anim_name = "%".join(pieces[: -1])

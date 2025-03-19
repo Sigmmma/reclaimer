@@ -7,49 +7,14 @@
 # See LICENSE for more information.
 #
 
-# There is only 8 spaces allocated for these in the object's gamestate.
+# There is only 8 spaces allocated for regions in an objects gamestate.
 # If you have more and it updates the state for those it would write into
 # unrelated fields.
-HALO_1_MAX_REGIONS = 8
-
-HALO_1_NAME_MAX_LEN = 31
-
+HALO_1_MAX_REGIONS              = 8
+HALO_1_NAME_MAX_LEN             = 31
 HALO_1_MAX_GEOMETRIES_PER_MODEL = 256
-
-HALO_1_MAX_PARTS_PER_GEOMETRY = 32
-
-HALO_1_MAX_MATERIALS = 256
-
-HALO_1_MAX_NODES = 64
-
-HALO_1_MAX_MARKERS = 256
-
-HALO_1_MAX_MARKERS_PER_PERM = 32
-
-UV_EPSILON      = 0.0001
-POS_EPSILON     = 0.001 # slightly more than a thousandth of an inch
-NORM_EPSILON    = 1/5000 #
-WEIGHT_EPSILON  = 1/32768 # compressed weight minimum value
-
-
-# If a jms file is prefixed with this token it
-# cannot be randomly chosen as a permutation
-JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN = "~"
-
-SCALE_INTERNAL_TO_JMS = 100.0
-
-JMS_VER_HALO_1_OLDEST_KNOWN  = 8197
-JMS_VER_HALO_1_TRI_REGIONS   = 8198
-JMS_VER_HALO_1_3D_UVWS       = 8199
-JMS_VER_HALO_1_MARKER_RADIUS = 8200
-JMS_VER_HALO_1_RETAIL        = JMS_VER_HALO_1_MARKER_RADIUS
-JMS_VER_HALO_2_RETAIL        = 8210
-
-JMS_VER_ALL = frozenset((
-    JMS_VER_HALO_1_OLDEST_KNOWN,
-    JMS_VER_HALO_1_TRI_REGIONS,
-    JMS_VER_HALO_1_3D_UVWS,
-    JMS_VER_HALO_1_MARKER_RADIUS,
-    JMS_VER_HALO_1_RETAIL,
-    JMS_VER_HALO_2_RETAIL,
-    ))
+HALO_1_MAX_PARTS_PER_GEOMETRY   = 32
+HALO_1_MAX_MATERIALS            = 256
+HALO_1_MAX_NODES                = 64
+HALO_1_MAX_MARKERS              = 256
+HALO_1_MAX_MARKERS_PER_PERM     = 32

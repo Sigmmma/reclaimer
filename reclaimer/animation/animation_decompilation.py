@@ -13,11 +13,11 @@ from copy import deepcopy
 from math import sqrt
 from pathlib import Path
 
-from reclaimer.animation.jma import JmsNode, JmaAnimation, JmaRootNodeState,\
-     JmaLimpNodeInfo, JmaNodeState, write_jma, get_anim_ext
+from reclaimer.jm.jma import JmsNode, JmaAnimation, JmaRootNodeState,\
+     JmaLimpNodeInfo, JmaNodeState, write_jma, util
 from reclaimer.animation.constants import JMA_RETAIL_NODES
-from reclaimer.animation import serialization, util
-from reclaimer.model import jms
+from reclaimer.animation import serialization
+from reclaimer.jm import jms, constants as const
 
 __all__ = ("extract_model_animations", "extract_animation", )
 
@@ -183,14 +183,15 @@ def extract_model_animations(tagdata, tag_path="", halo_map=None, **kw):
 def extract_animation(anim_index, tagdata, tag_path="", **kw):
     endian    = kw.get("endian", ">")
     serialize = kw.get('write_jma', True)
+    pad_nodes = kw.get('pad_nodes', False)
     out_dir   = kw.get("out_dir", "")
     filepath  = Path(tag_path or "")
 
     anim      = tagdata.animations.STEPTREE[anim_index]
     tag_nodes = tagdata.nodes.STEPTREE
-    anim_ext  = get_anim_ext(anim.type.enum_name,
-                             anim.frame_info_type.enum_name,
-                             anim.flags.world_relative)
+    anim_ext  = util.get_anim_ext(anim.type.enum_name,
+                                  anim.frame_info_type.enum_name,
+                                  anim.flags.world_relative)
     if serialize:
         filepath = Path(out_dir).joinpath(
             filepath.parent, "animations", anim.name + anim_ext
@@ -205,8 +206,9 @@ def extract_animation(anim_index, tagdata, tag_path="", **kw):
         for node in tag_nodes
         ]
 
+    version = const.JMA_VER_HALO_1_RETAIL
     if len(anim_nodes) != anim.node_count:
-        kw.get("fake_nodes_warning", True) and print(
+        kw.get("fake_nodes_warning", True) and pad_nodes and print(
             "WARNING: The following tag is missing nodes:\n"
             f"\t'{tag_path}'\n"
             "\tFake nodes will be created to allow compiling the animations.\n"
@@ -214,11 +216,13 @@ def extract_animation(anim_index, tagdata, tag_path="", **kw):
             "\ttheir model in 3DSMax/Blender, as the node names won't match.")
         anim_nodes = jms.util.generate_fake_nodes(anim.node_count)
         limp_node_infos = [JmaLimpNodeInfo() for n in range(anim.node_count)]
+        if not pad_nodes:
+            version = const.JMA_VER_HALO_1_OLDEST_KNOWN
 
     jma_anim = JmaAnimation(
         anim.name, anim.node_list_checksum, anim.type.enum_name,
         anim.frame_info_type.enum_name, anim.flags.world_relative,
-        anim_nodes
+        anim_nodes, actors=["unnamedActor"], version=version
         )
     jma_anim.limp_node_infos = limp_node_infos
     jma_anim.trans_flags_int = anim.trans_flags0 | (anim.trans_flags1 << 32)

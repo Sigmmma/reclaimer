@@ -11,9 +11,9 @@ from pathlib import Path
 from struct import Struct as PyStruct
 from traceback import format_exc
 
-from reclaimer.model.constants import (
+from reclaimer.jm.constants import (
     JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN, SCALE_INTERNAL_TO_JMS )
-from reclaimer.model.jms import write_jms, JmsModel, JmsNode,\
+from reclaimer.jm.jms import write_jms, JmsModel, JmsNode,\
      JmsMaterial, JmsMarker, JmsVertex, JmsTriangle
 from reclaimer.util.compression import decompress_normal32
 

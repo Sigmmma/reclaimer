@@ -12,13 +12,13 @@ import sys
 from math import sqrt
 from struct import Struct as PyStruct
 
+from reclaimer.jm.constants import SCALE_INTERNAL_TO_JMS
 from reclaimer.model.constants import (
     HALO_1_MAX_MATERIALS, HALO_1_MAX_REGIONS,
     HALO_1_MAX_GEOMETRIES_PER_MODEL, HALO_1_MAX_PARTS_PER_GEOMETRY,
-    HALO_1_MAX_MARKERS_PER_PERM, HALO_1_NAME_MAX_LEN,
-    SCALE_INTERNAL_TO_JMS,
+    HALO_1_MAX_MARKERS_PER_PERM, HALO_1_NAME_MAX_LEN
     )
-from reclaimer.model.jms import GeometryMesh
+from reclaimer.jm.jms import GeometryMesh
 from reclaimer.model.stripify import Stripifier
 from reclaimer.model import util
 

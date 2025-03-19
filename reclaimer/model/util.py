@@ -10,7 +10,7 @@
 import os
 
 from reclaimer.constants import LOD_NAMES, SINT16_MAX
-from reclaimer.model.jms import JmsVertex
+from reclaimer.jm.jms import JmsVertex
 from reclaimer.hek.defs.scex import scex_def
 from reclaimer.hek.defs.schi import schi_def
 from reclaimer.hek.defs.senv import senv_def

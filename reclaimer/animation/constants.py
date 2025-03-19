@@ -1,14 +1,3 @@
-import math
-
-# converting to a normalized "unit" range of -1 to 1
-# one "unit" is a half-revolution around the circle
-DEG_TO_UNIT   = 1/180
-RAD_TO_UNIT   = 1/math.pi
-DEG_TO_RAD    = math.pi/180
-RAD_TO_DEG    = 180/math.pi
-
-SCALE_INTERNAL_TO_JMA = 100.0
-
 ANIMATION_COMPILE_MODE_NEW        = 0
 ANIMATION_COMPILE_MODE_PRESERVE   = 1
 ANIMATION_COMPILE_MODE_ADDITIVE   = 2
@@ -21,59 +10,6 @@ PHYSICS_CALC_MODE_GUESS  = 0
 PHYSICS_CALC_MODE_ALWAYS = 1
 PHYSICS_CALC_MODE_NEVER  = 2
 
-JMA_ANIMATION_EXTENSIONS = (
-    ".jma", ".jmm", ".jmo", ".jmr", ".jmt", ".jmw", ".jmz",
-    )
-
-JMA_VER_HALO_1_OLDEST_KNOWN   = 16390
-JMA_VER_HALO_1_NODE_NAMES     = 16391
-JMA_VER_HALO_1_NODE_HIERARCHY = 16392
-JMA_VER_HALO_1_RETAIL         = JMA_VER_HALO_1_NODE_HIERARCHY
-
-# quats in halo are stored using sint16's, so any change
-# in the components less than this should round to zero.
-QUAT_EPSILON  = 1/32767
-# minimum amounts the position/rotation must
-# change for the node to be considered animated
-# NOTE: these values were derived by comparing transform flags from
-#       tool-compiled tags to ones compiled with mozzarilla
-TRANS_EPSILON = 0.005
-SCALE_EPSILON = 0.000001
-DYAW_EPSILON  = 0.00000001
-
-# not quite sure where this comes from, but it's the
-# minimum amount a node must pivot around y or z for
-# the axis considered eligible for limp node physics
-LIMP_NODE_MIN_RANGE = 10 * DEG_TO_RAD
-LIMP_NODE_CROSS_MIN = 0.8113 * DEG_TO_RAD
-
-# NOTE: these constants were determined through trial and error
-COMPRESS_AREA_ERR_LOWER     = 0.01
-COMPRESS_AREA_ERR_UPPER     = 4.00
-# the width of the X axis when calculating
-# curve angles(x is time, y is component value)
-COMPRESS_FRAME_WIDTH        = 1/30 # number of x units per frame
-# the scaled angle range a single point on the
-# curve must be considered a critical point
-COMPRESS_ANGLE_DIFF_LOWER   =   6 * DEG_TO_UNIT
-COMPRESS_ANGLE_DIFF_UPPER   =  12 * DEG_TO_UNIT
-# range of total angle difference there must be
-# across the curve to create a critical point
-COMPRESS_ANGLE_RANGE_LOWER  =  5 * DEG_TO_UNIT
-COMPRESS_ANGLE_RANGE_UPPER  = 15 * DEG_TO_UNIT
-# range of minimum angles a point must be for it
-# to be considered critical when its concavity
-# flips to a sign opposite from the previous one
-COMPRESS_ANGLE_FLIP_LOWER   = 1.0 * DEG_TO_UNIT
-COMPRESS_ANGLE_FLIP_UPPER   = 2.0 * DEG_TO_UNIT
-
-COMPRESS_QUALITY_MIN        = 0.0
-COMPRESS_QUALITY_MAX        = 1.0
-COMPRESS_RATIO_GOOD_CUTOFF  = 0.7
-# the root node has the biggest effect on all other nodes, so
-# we need to ensure its compression quality never goes too low
-COMPRESS_QUALITY_MIN_NODE_0 = 0.90
-
 SHARED_UNIT_ANIMATION_NAMES = frozenset((
     'airborne-dead', 'landing-dead', 'push', 'twist',
     'look', 'talk', 'emotions'
@@ -85,15 +21,6 @@ SHARED_UNIT_WEAPON_ANIMATION_NAMES = frozenset((
     'signal-move', 'signal-attack', 'warn', 'melee', 'celebrate', 'panic',
     'melee-airborne', 'flaming', 'resurrect-front', 'resurrect-back',
     'melee-continuous', 'feeding', 'leap-start', 'leap-airborne', 'leap-melee'
-    ))
-
-
-
-JMA_VER_ALL = frozenset((
-    JMA_VER_HALO_1_OLDEST_KNOWN,
-    JMA_VER_HALO_1_NODE_NAMES,
-    JMA_VER_HALO_1_NODE_HIERARCHY,
-    JMA_VER_HALO_1_RETAIL,
     ))
 
 # some retail tags don't have nodes due to their
@@ -389,6 +316,3 @@ JMA_RETAIL_NODES = {
         ("frame seat",       -1,  3,  0),
         )
     }
-
-# not for export
-del math

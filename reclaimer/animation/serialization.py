@@ -14,9 +14,10 @@ from copy import deepcopy
 from struct import pack_into, unpack_from
 from types import MethodType
 
-from reclaimer.animation.jma import JmaRootNodeState, JmaNodeState
+from reclaimer.jm import constants as const
+from reclaimer.jm.jma import JmaRootNodeState, JmaNodeState
 from reclaimer.animation.structs import compressed_frames_def
-from reclaimer.animation import constants as const, util
+from reclaimer.animation import util
 from reclaimer.util import compression
 from reclaimer.util import matrices
 

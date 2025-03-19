@@ -9,7 +9,7 @@
 
 import math
 
-from reclaimer.model.jms import JmsNode, JmsMaterial, JmsVertex,\
+from reclaimer.jm.jms import JmsNode, JmsMaterial, JmsVertex,\
      JmsTriangle, JmsModel
 from traceback import format_exc
 
