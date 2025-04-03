@@ -321,5 +321,9 @@ r_a_stream_v0_tagdef = TagDef(r_a_stream_v0, endian="<")
 r_a_stream_v3_tagdef = TagDef(r_a_stream_v3, endian="<")
 r_a_stream_v4_tagdef = TagDef(r_a_stream_v4, endian="<")
 
+r_a_stream_v0_tagdef.def_id = "r_a_stream_v0"
+r_a_stream_v3_tagdef.def_id = "r_a_stream_v3"
+r_a_stream_v4_tagdef.def_id = "r_a_stream_v4"
+
 def get():
     return r_a_stream_v0_tagdef, r_a_stream_v3_tagdef, r_a_stream_v4_tagdef

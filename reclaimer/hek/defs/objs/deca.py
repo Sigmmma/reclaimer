@@ -14,4 +14,4 @@ class DecaTag(HekTag):
     def calc_internal_data(self):
         HekTag.calc_internal_data(self)
         # why is this hardcoded, but exposed to the user?
-        self.data.tagdata.maximum_sprite_extend = 16.0
+        self.data.tagdata.maximum_sprite_extent = 16.0

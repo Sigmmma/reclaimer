@@ -301,6 +301,18 @@ hmt_icon_types = (
     "custom-7",
     "custom-8",
     )
+# used in determining which script object types are tag refs
+script_object_tag_ref_types = (
+    "sound",
+    "effect",
+    "damage",
+    "looping_sound",
+    "animation_graph",
+    "actor_variant",
+    "damage_effect",
+    "object_definition",
+    )
+
 # DO NOT MODIFY ANY OF THESE SCRIPT ENUMS.
 # The exact lettering is important as the script extractor uses
 # these strings to reconstruct scripts
@@ -365,16 +377,9 @@ script_object_types = (
 
     # lower 16bits of data in all of these
     # points to a tag in the maps tag index
-    "sound",
-    "effect",
-    "damage",
-    "looping_sound",
-    "animation_graph",
-    "actor_variant",
-    "damage_effect",
-    "object_definition", # 31
+    *script_object_tag_ref_types,
 
-    "game_difficulty",
+    "game_difficulty", # 32
     "team",
     "ai_default_state",
     # lower 16bits of data points to entry in bipeds palette
@@ -399,17 +404,6 @@ script_object_types = (
     "weapon_name",
     "device_name",
     "scenery_name", # 48
-    )
-# used in determining which script object types are tag refs
-script_object_tag_ref_types = (
-    "sound",
-    "effect",
-    "damage",
-    "looping_sound",
-    "animation_graph",
-    "actor_variant",
-    "damage_effect",
-    "object_definition",
     )
 # DO NOT MODIFY ANY OF THESE ENUMS!
 # The exact lettering is important!
