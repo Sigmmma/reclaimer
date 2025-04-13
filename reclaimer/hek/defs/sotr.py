@@ -84,17 +84,6 @@ sotr_alpha_inputs = (
     'negative_one',
     'negative_one_half',
 
-    'map_blue_0',
-    'map_blue_1',
-    'map_blue_2',
-    'map_blue_3',
-    {NAME: 'vertex_blue_0', GUI_NAME: 'vertex blue 0 / diffuse light'},
-    {NAME: 'vertex_blue_1', GUI_NAME: 'vertex blue 1 / fade(perpendicular)'},
-    'scratch_blue_0',
-    'scratch_blue_1',
-    'constant_blue_0',
-    'constant_blue_1',
-
     'map_alpha_0',
     'map_alpha_1',
     'map_alpha_2',
@@ -105,6 +94,17 @@ sotr_alpha_inputs = (
     'scratch_alpha_1',
     'constant_alpha_0',
     'constant_alpha_1',
+
+    'map_blue_0',
+    'map_blue_1',
+    'map_blue_2',
+    'map_blue_3',
+    {NAME: 'vertex_blue_0', GUI_NAME: 'vertex blue 0 / diffuse light'},
+    {NAME: 'vertex_blue_1', GUI_NAME: 'vertex blue 1 / fade(perpendicular)'},
+    'scratch_blue_0',
+    'scratch_blue_1',
+    'constant_blue_0',
+    'constant_blue_1',
     )
 sotr_alpha_outputs = (
     'discard',
