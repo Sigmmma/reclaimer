@@ -291,6 +291,10 @@ falling_damage = Struct("falling_damage",
     dependency('vehicle_killed_unit_damage', "jpt!"),
     dependency('vehicle_collision_damage', "jpt!"),
     dependency('flaming_death_damage', "jpt!"),
+    Pad(16),
+    FlFloat("max_falling_velocity", VISIBLE=False),
+    FlFloat("harmful_falling_velocity", VISIBLE=False),
+    Pad(4),
     SIZE=152
     )
 

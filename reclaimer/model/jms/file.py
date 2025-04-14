@@ -9,16 +9,20 @@
 
 __all__ = ( 'read_jms', 'write_jms', )
 
-
+import io
+import itertools
+import mmap
 import re
 import traceback
 
 from copy import deepcopy
 from pathlib import Path
 
+
 from reclaimer.model.constants import (
-    JMS_VERSION_HALO_1,
-    JMS_VERSION_HALO_2_8210,
+    JMS_VER_HALO_1_OLDEST_KNOWN,
+    JMS_VER_HALO_1_RETAIL,
+    JMS_VER_HALO_2_RETAIL,
     JMS_PERM_CANNOT_BE_RANDOMLY_CHOSEN_TOKEN,
     )
 from reclaimer.util import (
@@ -32,159 +36,184 @@ from .vertex import JmsVertex
 from .triangle import JmsTriangle
 
 # Test showing off the regex can be seen here:
-# https://regex101.com/r/7PKpWi/1
-JMS_V1_SPLIT_REGEX = re.compile(r'\n+\s*|\t+')
-# https://regex101.com/r/ySgI1Z/1
-JMS_V2_SPLIT_REGEX = re.compile(r'\n+(;.*)*\s*|\t+')
+# https://regex101.com/r/7PKpWi/2
+JMS_V1_REGEX = re.compile(br'([^\s][^\t\r\n]*)')
+# https://regex101.com/r/ySgI1Z/2
+JMS_V2_REGEX = re.compile(br'(?:\n+|\t+|^)([^;\t\r\n]+)')
 
-def read_jms(jms_string, stop_at="", perm_name=None):
+
+def get_jms_data_iter(jms_stream_or_string, regex):
+    # to unify everything, we'll work in bytes
+    jms_stream = (
+        jms_stream_or_string.encode("utf-8")
+        if isinstance(jms_stream_or_string, str) else
+        jms_stream_or_string
+        )
+
+    if isinstance(jms_stream, (bytes, bytearray)):
+        jms_data = jms_stream.lstrip("\ufeff".encode())
+    elif isinstance(jms_stream, io.IOBase):
+        jms_data = mmap.mmap(jms_stream.fileno(), 0, access=mmap.ACCESS_READ)
+    else:
+        raise ValueError("Unsupported stream type %s" % type(jms_stream))
+
+    jms_iter = (
+        map(bytes.decode,
+        map(re.Match.group, regex.finditer(jms_data), itertools.repeat(0)
+        )))
+    return jms_iter
+
+
+def read_jms(jms_stream, stop_at="", perm_name=None):
     '''
     Converts a jms string into a JmsModel instance.
     '''
-    jms_data = tuple(JMS_V1_SPLIT_REGEX.split(jms_string))
+    jms_iter = get_jms_data_iter(jms_stream, JMS_V1_REGEX)
+    try:
+        version = int(next(jms_iter).strip())
+    except ValueError:
+        version = 0
 
-    version = jms_data[0].strip()
-    if version == JMS_VERSION_HALO_1:
+    if (version < JMS_VER_HALO_1_OLDEST_KNOWN or 
+        version > JMS_VER_HALO_2_RETAIL):
+        print("Unknown JMS version '%s'" % version)
+        return None
+
+    if version <= JMS_VER_HALO_1_RETAIL:
         # Halo 1
-        return _read_jms_8200(jms_data, stop_at, perm_name)
+        return _read_jms_8200(jms_iter, stop_at, perm_name, version)
 
     # after 8200, comments are allowed. the comment character
     # is a semicolon, and the line must start with it.
     # filter out any lines that start with a semicolon.
 
-    jms_string = jms_string.lstrip("\ufeff")
-    jms_data = tuple(JMS_V2_SPLIT_REGEX.split(jms_string))
+    jms_iter = get_jms_data_iter(jms_stream, JMS_V2_REGEX)
 
-    version = jms_data[0].strip()
-    if version == JMS_VERSION_HALO_2_8210:
+    version = int(next(jms_iter).strip())
+    if version <= JMS_VER_HALO_2_RETAIL:
         # Halo 2
-        return _read_jms_8210(jms_data, stop_at)
-    else:
-        print("Unknown JMS version '%s'" % version)
-        return None
+        return _read_jms_8210(jms_iter, stop_at, version)
 
 
-def _read_jms_8200(jms_data, stop_at="", perm_name=None):
+def _read_jms_8200(jms_iter, stop_at="", perm_name=None, version=None):
     if perm_name is None:
         perm_name = "__unnamed"
 
-    jms_model = JmsModel(perm_name)
+    jms_model = JmsModel(perm_name, version=version)
+    perm_name = jms_model.name
 
     # Halo 1
-    dat_i = 0
-
     try:
-        jms_model.version = str(parse_jm_int(jms_data[dat_i]))
-        dat_i += 1
-    except Exception:
-        print(traceback.format_exc())
-        print("Could not read version number.")
-        return jms_model
-
-    try:
-        jms_model.node_list_checksum = parse_jm_int(jms_data[dat_i])
-        dat_i += 1
+        jms_model.node_list_checksum = parse_jm_int(next(jms_iter))
     except Exception:
         print(traceback.format_exc())
         print("Could not read node list checksum.")
         return jms_model
 
+    if jms_model.node_list_checksum >= 0x80000000:
+        # jms gave us an unsigned checksum.... sign it
+        jms_model.node_list_checksum -= 0x100000000
+
     stop = (stop_at == "nodes")
     if not stop:
         # read the nodes
         try:
-            i = 0 # make sure i is defined in case of exception
-            jms_model.nodes[:] = (None, ) * parse_jm_int(jms_data[dat_i])
-            dat_i += 1
-            for i in range(len(jms_model.nodes)):
-                jms_model.nodes[i] = JmsNode(
-                    jms_data[dat_i], parse_jm_int(jms_data[dat_i+1]), parse_jm_int(jms_data[dat_i+2]),
-                    parse_jm_float(jms_data[dat_i+3]), parse_jm_float(jms_data[dat_i+4]),
-                    parse_jm_float(jms_data[dat_i+5]), parse_jm_float(jms_data[dat_i+6]),
-                    parse_jm_float(jms_data[dat_i+7]), parse_jm_float(jms_data[dat_i+8]), parse_jm_float(jms_data[dat_i+9]),
-                    )
-                dat_i += 10
+            count = parse_jm_int(next(jms_iter))
+            jms_model.nodes = []
+            for i in range(count):
+                name        = next(jms_iter)
+                first_child = parse_jm_int(next(jms_iter))
+                sibling     = parse_jm_int(next(jms_iter))
+                quat_ijkw   = [parse_jm_float(next(jms_iter)) for _ in range(4)]
+                pos_xyz     = [parse_jm_float(next(jms_iter)) for _ in range(3)]
+                jms_model.nodes.append(JmsNode(
+                    name, first_child, sibling, *quat_ijkw, *pos_xyz
+                    ))
+
             JmsNode.setup_node_hierarchy(jms_model.nodes)
         except Exception:
             print(traceback.format_exc())
             print("Failed to read nodes.")
-            del jms_model.nodes[i: ]
             stop = True
 
     stop |= (stop_at == "materials")
     if not stop:
         # read the materials
         try:
-            i = 0 # make sure i is defined in case of exception
-            jms_model.materials[:] = (None, ) * parse_jm_int(jms_data[dat_i])
-            dat_i += 1
-            for i in range(len(jms_model.materials)):
-                jms_model.materials[i] = JmsMaterial(jms_data[dat_i], jms_data[dat_i+1])
-                dat_i += 2
+            count = parse_jm_int(next(jms_iter))
+            jms_model.materials = []
+            for i in range(count):
+                jms_model.materials.append(
+                    JmsMaterial(next(jms_iter), next(jms_iter))
+                    )
+
         except Exception:
             print(traceback.format_exc())
             print("Failed to read materials.")
-            del jms_model.materials[i: ]
             stop = True
 
     stop |= (stop_at == "markers")
     if not stop:
         # read the markers
         try:
-            i = 0 # make sure i is defined in case of exception
-            jms_model.markers[:] = (None, ) * parse_jm_int(jms_data[dat_i])
-            dat_i += 1
-            for i in range(len(jms_model.markers)):
-                jms_model.markers[i] = JmsMarker(
-                    jms_data[dat_i], jms_model.name,
-                    parse_jm_int(jms_data[dat_i+1]), parse_jm_int(jms_data[dat_i+2]),
-                    parse_jm_float(jms_data[dat_i+3]), parse_jm_float(jms_data[dat_i+4]),
-                    parse_jm_float(jms_data[dat_i+5]), parse_jm_float(jms_data[dat_i+6]),
-                    parse_jm_float(jms_data[dat_i+7]), parse_jm_float(jms_data[dat_i+8]), parse_jm_float(jms_data[dat_i+9]),
-                    parse_jm_float(jms_data[dat_i+10])
-                    )
-                dat_i += 11
+            count = parse_jm_int(next(jms_iter))
+            jms_model.markers = []
+            for i in range(count):
+                name        = next(jms_iter)
+                region      = (parse_jm_int(next(jms_iter))
+                               if jms_model.has_marker_regions else 0)
+                parent      = parse_jm_int(next(jms_iter))
+                quat_ijkw   = [parse_jm_float(next(jms_iter)) for _ in range(4)]
+                pos_xyz     = [parse_jm_float(next(jms_iter)) for _ in range(3)]
+                radius      = (parse_jm_float(next(jms_iter))
+                               if jms_model.has_marker_radius else 1)
+
+                jms_model.markers.append(JmsMarker(
+                    name, perm_name, region, parent,
+                    *quat_ijkw, *pos_xyz, radius
+                    ))
         except Exception:
             print(traceback.format_exc())
             print("Failed to read markers.")
-            del jms_model.markers[i: ]
             stop = True
 
     stop |= (stop_at == "regions")
     if not stop:
         # read the regions
         try:
-            i = 0 # make sure i is defined in case of exception
-            jms_model.regions[:] = (None, ) * parse_jm_int(jms_data[dat_i])
-            dat_i += 1
-            for i in range(len(jms_model.regions)):
-                jms_model.regions[i] = jms_data[dat_i]
-                dat_i += 1
+            count = parse_jm_int(next(jms_iter))
+            jms_model.regions = [next(jms_iter) for i in range(count)]
         except Exception:
             print(traceback.format_exc())
             print("Failed to read regions.")
-            del jms_model.regions[i: ]
             stop = True
 
     stop |= (stop_at == "vertices")
     if not stop:
         # read the vertices
         try:
+            count = parse_jm_int(next(jms_iter))
+            jms_model.verts = [None] * count
             i = 0 # make sure i is defined in case of exception
-            jms_model.verts[:] = (None, ) * parse_jm_int(jms_data[dat_i])
-            dat_i += 1
-            for i in range(len(jms_model.verts)):
+            for i in range(count):
+                region      = (parse_jm_int(next(jms_iter))
+                               if jms_model.has_vert_regions else 0)
+                node_0      = parse_jm_int(next(jms_iter))
+                px, py, pz  = [parse_jm_float(next(jms_iter)) for _ in range(3)]
+                ni, nj, nk  = [parse_jm_float(next(jms_iter)) for _ in range(3)]
+                node_1      = parse_jm_int(next(jms_iter))
+                node_weight = parse_jm_float(next(jms_iter))
+                tu, tv      = [parse_jm_float(next(jms_iter)) for _ in range(2)]
+                tw          = parse_jm_float(next(jms_iter)) if jms_model.has_3d_uvws else 0
+
                 jms_model.verts[i] = JmsVertex(
-                    parse_jm_int(jms_data[dat_i]),
-                    parse_jm_float(jms_data[dat_i+1]), parse_jm_float(jms_data[dat_i+2]), parse_jm_float(jms_data[dat_i+3]),
+                    node_0, px, py, pz,
                     # tool normalizes imported jms normals by clamping, so we have to clamp as well
-                    min(1.0, max(-1.0, parse_jm_float(jms_data[dat_i+4]))),
-                    min(1.0, max(-1.0, parse_jm_float(jms_data[dat_i+5]))),
-                    min(1.0, max(-1.0, parse_jm_float(jms_data[dat_i+6]))),
-                    parse_jm_int(jms_data[dat_i+7]), parse_jm_float(jms_data[dat_i+8]),
-                    parse_jm_float(jms_data[dat_i+9]), parse_jm_float(jms_data[dat_i+10]), parse_jm_float(jms_data[dat_i+11])
+                    (1.0 if ni >= 1.0 else -1.0 if ni <= -1.0 else ni),
+                    (1.0 if nj >= 1.0 else -1.0 if nj <= -1.0 else nj),
+                    (1.0 if nk >= 1.0 else -1.0 if nk <= -1.0 else nk),
+                    node_1, node_weight, tu, tv, tw, region=region
                     )
-                dat_i += 12
         except Exception:
             print(traceback.format_exc())
             print("Failed to read vertices.")
@@ -195,31 +224,49 @@ def _read_jms_8200(jms_data, stop_at="", perm_name=None):
     if not stop:
         # read the triangles
         try:
+            count = parse_jm_int(next(jms_iter))
+            jms_model.tris = [None] * count
             i = 0 # make sure i is defined in case of exception
-            jms_model.tris[:] = (None, ) * parse_jm_int(jms_data[dat_i])
-            dat_i += 1
-            for i in range(len(jms_model.tris)):
-                jms_model.tris[i] = JmsTriangle(
-                    parse_jm_int(jms_data[dat_i]), parse_jm_int(jms_data[dat_i+1]),
-                    parse_jm_int(jms_data[dat_i+2]), parse_jm_int(jms_data[dat_i+3]), parse_jm_int(jms_data[dat_i+4]),
-                    )
-                dat_i += 5
+            for i in range(count):
+                region = (parse_jm_int(next(jms_iter))
+                          if jms_model.has_face_regions else 0)
+                shader = parse_jm_int(next(jms_iter))
+                v0, v1, v2 = [parse_jm_int(next(jms_iter)) for _ in range(3)]
+
+                jms_model.tris[i] = JmsTriangle(region, shader, v0, v1, v2)
+
         except Exception:
             print(traceback.format_exc())
             print("Failed to read triangles.")
             del jms_model.tris[i: ]
             stop = True
 
+    # copy the region from the verts into triangles, or
+    # from the triangles into the verts
+    try:
+        verts = jms_model.verts
+        if jms_model.has_vert_regions:
+            for tri in jms_model.tris:
+                tri.region = verts[tri.v0].region
+        else:
+            for tri in jms_model.tris:
+                verts[tri.v0].region = tri.region
+                verts[tri.v1].region = tri.region
+                verts[tri.v2].region = tri.region
+    except Exception:
+        print(traceback.format_exc())
+        print("Failed to copy regions between vertices and triangles.")
+
     # return (jms_models[name], )
     return jms_model
 
 
-def _read_jms_8210(jms_data, stop_at=""):
+def _read_jms_8210(jms_iter, stop_at="", version=JMS_VER_HALO_2_RETAIL):
     # Halo 2
     # NOTE: This function is incomplete. It will not fully work
     jms_models = {}
 
-    version = str(parse_jm_int(jms_data[0]))
+    jms_data = list(jms_iter) # i'm not reworking this to allow streaming
     dat_i = 1
 
     nodes = []
@@ -459,6 +506,7 @@ def _read_jms_8210(jms_data, stop_at=""):
             # set the permutation name for each marker
             marker.permutation = perm_name
 
+        # TODO: address this
         if True or len(material_perm_names) > 1:
             # more than one perm. need to split into multiple and rebase
             vert_rebase_map = {}
@@ -493,10 +541,10 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
     '''
     Writes a JmsModel to filepath.
     '''
-    if use_blitzkrieg_rounding:
-        to_str = lambda f: float_to_str_truncate(f, 6)
-    else:
-        to_str = float_to_str
+    to_str = (
+        float_to_str if not use_blitzkrieg_rounding else
+        (lambda f: float_to_str_truncate(f, 6))
+        )
 
     materials = jms_model.materials
     regions = jms_model.regions
@@ -527,18 +575,26 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
 
         f.write("%s\n" % len(materials))
         for mat in materials:
-            f.write("%s\n%s\n" % (mat.name + mat.properties, mat.tiff_path))
+            f.write("%s%s%d\n%s\n" % (
+                mat.name, mat.properties, mat.permutation_index,
+                mat.tiff_path
+                ))
 
         f.write("%s\n" % len(jms_model.markers))
         for marker in jms_model.markers:
-            f.write("%s\n%s\n%s\n%s\t%s\t%s\t%s\n%s\t%s\t%s\n%s\n" % (
-                marker.name[: 31], marker.region, marker.parent,
+            f.write("%s\n" % marker.name[: 31])
+            if jms_model.has_marker_regions:
+                f.write("%s\n" % marker.region)
+
+            f.write("%s\n%s\t%s\t%s\t%s\n%s\t%s\t%s\n" % (
+                marker.parent,
                 to_str(marker.rot_i), to_str(marker.rot_j),
                 to_str(marker.rot_k), to_str(marker.rot_w),
-                to_str(marker.pos_x), to_str(marker.pos_y), to_str(marker.pos_z),
-                to_str(marker.radius)
-                )
-            )
+                to_str(marker.pos_x), to_str(marker.pos_y), to_str(marker.pos_z)
+                ))
+
+            if jms_model.has_marker_radius:
+                f.write("%s\n" % to_str(marker.radius))
 
         f.write("%s\n" % len(regions))
         for region in regions:
@@ -546,6 +602,9 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
 
         f.write("%s\n" % len(jms_model.verts))
         for vert in jms_model.verts:
+            if jms_model.has_vert_regions:
+                f.write("%s\n" % vert.region)
+
             f.write("%s\n%s\t%s\t%s\n%s\t%s\t%s\n%s\n%s\n%s\n%s\n%s\n" % (
                 vert.node_0,
                 to_str(vert.pos_x),  to_str(vert.pos_y),  to_str(vert.pos_z),
@@ -558,8 +617,10 @@ def write_jms(filepath, jms_model, use_blitzkrieg_rounding=False):
 
         f.write("%s\n" % len(jms_model.tris))
         for tri in jms_model.tris:
-            f.write("%s\n%s\n%s\t%s\t%s\n" % (
-                tri.region, tri.shader,
-                tri.v0, tri.v1, tri.v2
+            if jms_model.has_marker_regions:
+                f.write("%s\n" % tri.region)
+                
+            f.write("%s\n%s\t%s\t%s\n" % (
+                tri.shader, tri.v0, tri.v1, tri.v2
                 )
             )

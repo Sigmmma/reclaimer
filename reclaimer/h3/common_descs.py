@@ -8,20 +8,19 @@
 #
 
 from copy import copy, deepcopy
+import os
 
-try:
-    from mozzarilla.widgets.field_widgets import ReflexiveFrame,\
-         HaloRawdataFrame, TextFrame, ColorPickerFrame, EntryFrame,\
-         SoundSampleFrame, DynamicArrayFrame, Halo3BitmapTagFrame
-except Exception:
-    ReflexiveFrame = HaloRawdataFrame = TextFrame = ColorPickerFrame =\
-                     EntryFrame = SoundSampleFrame = DynamicArrayFrame = \
-                     Halo3BitmapTagFrame = None
+from reclaimer.h3.constants import RECLAIMER_NO_GUI, h3_tag_class_fcc_to_ext
+
+Halo3BitmapTagFrame = None
+if not os.environ.get(RECLAIMER_NO_GUI):
+    try:
+        from mozzarilla.widgets.field_widgets import Halo3BitmapTagFrame
+    except ImportError:
+        print("Unable to import mozzarilla widgets. UI features may not work.")
+
 from reclaimer.common_descs import *
 from reclaimer.h3.field_types import H3TagRef, H3Reflexive, H3RawdataRef
-from reclaimer.h3.constants import DYN_NAME_PATH, STEPTREE, NAME_MAP, WIDGET,\
-     TOOLTIP, COMMENT, MAX, DEFAULT, VISIBLE, SIZE, MAX_REFLEXIVE_COUNT,\
-     h3_tag_class_fcc_to_ext
 from reclaimer.h3.enums import *
 
 from supyr_struct.defs.block_def import BlockDef

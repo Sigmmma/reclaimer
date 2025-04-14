@@ -7,13 +7,15 @@
 # See LICENSE for more information.
 #
 
-from reclaimer.meta.wrappers.halo1_map import Halo1Map
+from reclaimer.meta.wrappers.halo1_xbox_map import Halo1XboxMap
 from reclaimer.shadowrun_prototype.handler import ShadowrunPrototypeHandler
 from reclaimer.shadowrun_prototype.constants import sr_tag_class_fcc_to_ext
 from supyr_struct.defs.frozen_dict import FrozenDict
 
 
-class ShadowrunMap(Halo1Map):
+class ShadowrunMap(Halo1XboxMap):
+    # NOTE: setting defs to None so setup_defs doesn't think the
+    #       defs are setup cause of class property inheritance.
     defs = None
 
     handler_class = ShadowrunPrototypeHandler
@@ -25,20 +27,19 @@ class ShadowrunMap(Halo1Map):
         if not this_class.defs:
             print("    Loading definitions in %s" %
                   self.handler_class.default_defs_path)
-            this_class.defs = defs = {}
-
             # these imports were moved here because their defs would otherwise
             # be built when this module was imported, which is not good practice
-            from reclaimer.shadowrun_prototype.defs.coll import fast_coll_def as coll_def
-            from reclaimer.shadowrun_prototype.defs.sbsp import fast_sbsp_def as sbsp_def
+            from reclaimer.shadowrun_prototype.defs.coll import fast_coll_def
+            from reclaimer.shadowrun_prototype.defs.sbsp import fast_sbsp_def
 
-            this_class.handler = self.handler_class(
+            handler = self.handler_class(
                 build_reflexive_cache=False, build_raw_data_cache=False,
                 debug=2)
-            this_class.defs = dict(this_class.handler.defs)
-            this_class.defs["coll"] = coll_def
-            this_class.defs["sbsp"] = sbsp_def
-            this_class.defs = FrozenDict(this_class.defs)
+
+            defs = dict(handler.defs)
+            defs.update(coll=fast_coll_def, sbsp=fast_sbsp_def)
+            this_class.defs = FrozenDict(defs)
+            this_class.handler = handler
 
         # make a shallow copy for this instance to manipulate
         self.defs = dict(self.defs)

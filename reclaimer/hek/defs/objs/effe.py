@@ -33,4 +33,4 @@ class EffeTag(HekTag):
                 particle.relative_direction_vector[:] = euler_2d_to_vector_3d(
                     *particle.relative_direction
                     )
-        self.data.tagdata.flags.never_cull = never_cull
+        self.data.tagdata.flags.must_be_deterministic = never_cull

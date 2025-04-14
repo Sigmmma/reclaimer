@@ -4,6 +4,73 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [2.22.0]
+### Changed
+ - fix safe-mode clipping reflexives/rawdata to wrong sizes
+ - fix exception when using recursive extraction on resource maps alone
+ - fix sound metadata being extracted from resource map instead of primary map(i.e. warthog engine)
+ - fix open sauce deprotection possibly corrupting maps due to incorrect offsets being used
+ - fix open sauce animation tags not having extra animation slots recognized and being trimmed on extraction
+ - fix bug where sometimes script decompilation could fail to sort scripts by dependencies
+ - fix incorrect max reflexive sizes model_animations tag(weapon types, animations, oshek/osv3hek/etc)
+ - fix typo in field name in font tag
+ - fix lod cutoffs ordering when extracting/compiling models
+ - fix local markers being globalized on model compile
+ - fix incorrect flag being used when determining if part uses local nodes
+ - fix incorrect type flags offset in auxilary_meter in unit_hud_interface
+ - fix weapon_collection references not being deprotected to item_collection
+ - fix incorrect byteswapping on compressed model vertices
+ - fix incorrect tag definitions being used in certain cases when extracting from maps
+ - fix incorrect resource maps being used in certain cases when loading custom resource maps
+ - fix local markers not being generated for xbox models on extraction
+ - fix material_response.otential_response impact velocities not being scaled properly on extraction
+ - attempt to fix some HEK+ bugs(weapon zoom levels and animation function enum)
+ - attempt to fix old reclaimer bug where lens_flare corona rotation was incorrectly multiplied by pi/360
+ - fix map information reported by HaloMap.generate_map_info_string having some wrong magic offsets
+ - fix yelo maps not having their globals override selected through yelo tag
+ - fix shadowrun prototype grenade count in globals being 2 instead of 5
+ - fix audio being shortened when compiling and extracting xbadpcm sounds
+ - fix audio sample rate being incorrectly set when extracting to wav
+ - fix overlay animations extracting without a valid base pose
+ - animation compilation pipeline now supports all H1 engine variants and their tag size limits
+ - replace all instances of magic numbers in tag definition variants with desc_variant calls
+ - xbox bitmaps now extract unswizzled and with mipmap/cubemap faces swapped for pc(breaks arsenic support)
+ - tag definition variant verification enabled by default(oc, mcc, stubbs, etc)
+ - general reorganization and cleanup(still lots that could be done though)
+ - decompile minified haloscript sources to scenario source files on tag extraction
+ - faster cleaning of certain tags on extraction
+ - faster, more correct sbsp compressed/uncompressed render/lightmap vertex generation
+ - unset blend_shared_normals when extracting models
+ - xbox maps now always load with original halo definitions(open sauce is not the default)
+ - better detection on whether or not tag path in map is protected
+ - improved open sauce definitions by looking over open sauce github
+ - improve stubbs definitions with some extra research(i.e. differences in hud interface tags)
+
+### Added
+ - partial h3 odst extraction(bitmap extraction for most formats)
+ - full mcc support(tag reading/writing, animation/bitmap compilation, etc) except BC7 bitmap preview/compiling
+ - full xbox 360 h1 anniversary extraction(except bitmaps/sounds)
+ - partial stubbs 64bit map support(just map header reading; no tag parsing)
+ - calculate and insert tag crc32 on extraction from maps
+ - animation compilation now supports digsite JMA files(pre-retail formats)
+ - model compilation now supports digsite JMS files(pre-retail formats)
+ - model compilation now supports shader permutations
+ - ability to load reclaimer without loading mozzarilla using RECLAIMER_NO_GUI environment variable
+ - ability to load reclaimer without loading arbytmap using RECLAIMER_NO_ARBY environment variable
+ - support script parameters when decompiling mcc haloscript
+ - support for loading a new previewing script syntax data from maps or tags with reclaimer.haloscript.defs.hsc.h1_script_syntax_data_tagdefs
+ - add many hidden/map-only fields to tag definitions
+ - add calculating many more hidden fields on tag save(including ogg buffer size)
+ - proper mcc scoring definitions added to actor_variant, vehicle, and biped tags
+ - calculate distance and gain defaults when saving sound tag
+ - support 8 magazines in open sauce definitions instead of 2
+ - set mcc flag to use xbox multipurpose map order when extracting xbox shader_models
+ - include more useful information in HaloMap.generate_map_info_string(shown in refinery)
+ - add definition for recorded animation streams(creates possibility to read/edit/create RA's in the future)
+ - add definition for fmod sound bank(creates possiblity to decompile/recompile sound banks in the future)
+ - add replacement for most audioop functions in anticipation for it being phased out in python 3.13
+ - add control over 16bit pcm playback hack in sound compilation pipeline
+
 ## [2.11.2]
 ### Changed
  - Fix bsp extraction bug

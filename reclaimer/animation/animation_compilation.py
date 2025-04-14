@@ -12,19 +12,13 @@ import traceback
 from copy import deepcopy
 
 from reclaimer import enums
-from reclaimer.animation import util
-from reclaimer.animation import serialization
+from reclaimer.animation import animation_compression, constants as const,\
+     serialization, util
 
-__all__ = ("compile_animation", "compile_model_animations",
-           "ANIMATION_COMPILE_MODE_NEW", "ANIMATION_COMPILE_MODE_PRESERVE",
-           "ANIMATION_COMPILE_MODE_ADDITIVE")
+__all__ = ("compile_animation", "compile_model_animations")
 
-ANIMATION_COMPILE_MODE_NEW = 0
-ANIMATION_COMPILE_MODE_PRESERVE = 1
-ANIMATION_COMPILE_MODE_ADDITIVE = 2
-
-
-def compile_animation(anim, jma_anim, ignore_size_limits=False, endian=">"):
+def compile_animation(anim, jma_anim, endian=">",
+                      ignore_size_limits=False, pos_scale=1.0):
     '''
     Compiles the provided JmaAnimation into the provided antr animation block.
     '''
@@ -39,9 +33,9 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False, endian=">"):
     default_data_size = jma_anim.default_data_size
     frame_data_size   = jma_anim.frame_data_frame_size * stored_frame_count
 
-    max_frame_info_size   = anim.frame_info.get_desc('MAX', 'size')
-    max_default_data_size = anim.default_data.get_desc('MAX', 'size')
-    max_frame_data_size   = anim.frame_data.get_desc('MAX', 'size')
+    max_frame_info_size   = util.get_block_max(anim.frame_info)
+    max_default_data_size = util.get_block_max(anim.default_data)
+    max_frame_data_size   = util.get_block_max(anim.frame_data)
 
     if not ignore_size_limits:
         if frame_info_size > max_frame_info_size:
@@ -59,8 +53,14 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False, endian=">"):
     if errors:
         return errors
 
-    if jma_anim.root_node_info_applied:
+    if ((jma_anim.root_node_info_applied and jma_anim.has_frame_info) or
+        (jma_anim.overlay_base_applied   and jma_anim.is_overlay)):
+        # clone the anim since we need to modify all the frames
         jma_anim = deepcopy(jma_anim)
+
+        # remove root info from other frames, and make
+        # overlay frames relative to the initial frame
+        jma_anim.apply_base_pose_to_states(True)
         jma_anim.apply_root_node_info_to_states(True)
 
     anim.name = jma_anim.name
@@ -92,9 +92,10 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False, endian=">"):
     anim.scale_flags0 =  jma_anim.scale_flags_int & 0xFFffFFff
     anim.scale_flags1 = (jma_anim.scale_flags_int >> 32) & 0xFFffFFff
 
-    frame_info = serialization.serialize_frame_info(jma_anim, endian)
-    def_data   = serialization.serialize_default_data(jma_anim, endian)
-    frame_data = serialization.serialize_frame_data(jma_anim, endian)
+    args = (jma_anim, endian, pos_scale)
+    frame_info = serialization.serialize_frame_info(*args)
+    def_data   = serialization.serialize_default_data(*args)
+    frame_data = serialization.serialize_uncomp_frame_data(*args)
 
     anim.frame_info.STEPTREE = frame_info
     anim.default_data.STEPTREE = def_data
@@ -103,13 +104,22 @@ def compile_animation(anim, jma_anim, ignore_size_limits=False, endian=">"):
     return errors
 
 
-def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
-                             animation_count_limit=256, delta_tolerance=None,
-                             update_mode=ANIMATION_COMPILE_MODE_PRESERVE,
-                             mod2_nodes=None):
+def compile_model_animations(
+        antr_tag, jma_anim_set, ignore_size_limits=False,
+        update_mode=const.ANIMATION_COMPILE_MODE_PRESERVE,
+        compression_mode=const.ANIMATION_COMPRESS_MODE_USE_FLAG,
+        delta_tolerance=None, compress_quality=1.0,
+        endian=">", fix_anim_types=True,
+        physics_calc_mode=const.PHYSICS_CALC_MODE_GUESS,
+        rename_map=(), pos_scale=1.0
+        ):
+    make_new = (update_mode == const.ANIMATION_COMPILE_MODE_NEW)
+    add_only = (update_mode == const.ANIMATION_COMPILE_MODE_ADDITIVE)
+    preserve = (update_mode == const.ANIMATION_COMPILE_MODE_PRESERVE)
     errors = []
 
     tagdata = antr_tag.data.tagdata
+    flags = tagdata.flags
     antr_objects = tagdata.objects.STEPTREE
     antr_units = tagdata.units.STEPTREE
     antr_weapons = tagdata.weapons.STEPTREE
@@ -121,7 +131,7 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
     antr_nodes = tagdata.nodes.STEPTREE
 
     # make sure the new animations share nodes with the existing animations
-    if update_mode == ANIMATION_COMPILE_MODE_ADDITIVE and antr_nodes:
+    if add_only and antr_nodes:
         if len(antr_nodes) != len(jma_anim_set.nodes):
             errors.append("Node count of these animations differs from the "
                           "node count of the model_animations tag.")
@@ -142,29 +152,28 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
                               "node(s) of the model_animations tag.")
                 return errors
 
-
     prev_antr_anims_by_type_strings = {}
     antr_indices_by_type_strings = {}
 
     prev_antr_objects  = list(antr_objects)
     prev_antr_units    = list(antr_units)
     prev_antr_vehicles = list(antr_vehicles)
-    prev_antr_nodes  = list(antr_nodes)
-    prev_antr_anims  = list(antr_anims)
-    assert update_mode in (ANIMATION_COMPILE_MODE_NEW,
-                           ANIMATION_COMPILE_MODE_PRESERVE,
-                           ANIMATION_COMPILE_MODE_ADDITIVE)
-    if update_mode != ANIMATION_COMPILE_MODE_ADDITIVE:
-        if update_mode == ANIMATION_COMPILE_MODE_NEW:
-            del tagdata.sound_references.STEPTREE[:]
-            tagdata.limp_body_node_radius = 0.0
-            tagdata.flags.data = 0
-            del prev_antr_objects[:]
-            del prev_antr_units[:]
-            del prev_antr_vehicles[:]
-            del prev_antr_nodes[:]
-            del prev_antr_anims[:]
+    prev_antr_nodes    = list(antr_nodes)
+    prev_antr_anims    = list(antr_anims)
+    assert update_mode in (const.ANIMATION_COMPILE_MODE_NEW,
+                           const.ANIMATION_COMPILE_MODE_PRESERVE,
+                           const.ANIMATION_COMPILE_MODE_ADDITIVE)
+    if make_new:
+        del tagdata.sound_references.STEPTREE[:]
+        tagdata.limp_body_node_radius = 0.0
+        flags.data = 0
+        del prev_antr_objects[:]
+        del prev_antr_units[:]
+        del prev_antr_vehicles[:]
+        del prev_antr_nodes[:]
+        del prev_antr_anims[:]
 
+    if not add_only:
         del antr_objects[:]
         del antr_units[:]
         del antr_weapons[:]
@@ -189,42 +198,72 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
             if i not in range(len(prev_antr_nodes)):
                 continue
 
-        if prev_antr_nodes:
             prev_antr_node = prev_antr_nodes[i]
             if prev_antr_node.name.lower() == antr_node.name.lower():
                 antr_node.node_joint_flags.data = prev_antr_node.node_joint_flags.data
                 antr_node.base_vector[:] = prev_antr_node.base_vector
                 antr_node.vector_range   = prev_antr_node.vector_range
 
+    use_tag_fields  = compression_mode == const.ANIMATION_COMPRESS_MODE_USE_FLAG
+    compress_all    = use_tag_fields and flags.compress_all_animations
+    compress_idle   = use_tag_fields and flags.force_idle_compression
+
+    if compression_mode == const.ANIMATION_COMPRESS_MODE_IF_BETTER:
+        compress_all = True
+
+    has_mozz_fields = hasattr(flags, "mozz_enable_compress_fields")
+    use_mozz_fields = (use_tag_fields and has_mozz_fields and
+                       flags.mozz_enable_compress_fields)
+    can_compress = not (use_mozz_fields and flags.mozz_never_compress)
+
+    if use_mozz_fields:
+        compress_quality  = tagdata.mozz_compress_quality
+    elif has_mozz_fields and not add_only:
+        tagdata.mozz_compress_quality = int(max(min(compress_quality, 100), 0))
+
     # cache the old animations by their names
     for i in range(len(prev_antr_anims)):
         anim = prev_antr_anims[i]
-        _, name_pieces = util.split_anim_name_into_type_strings(anim.name.strip())
-        prev_antr_anims_by_type_strings[name_pieces] = anim
+        name_key = util.split_anim_name_into_type_strings(anim.name.strip())
+        prev_antr_anims_by_type_strings[name_key] = anim
 
     # cache the existing animation indices by their names
     for i in range(len(antr_anims)):
         anim = antr_anims[i]
-        _, name_pieces = util.split_anim_name_into_type_strings(anim.name.strip())
-        antr_indices_by_type_strings[name_pieces] = i
+        name_key = util.split_anim_name_into_type_strings(anim.name.lower().strip())
+        antr_indices_by_type_strings[name_key] = i
 
 
-    indices_to_not_overwrite = set()
-    indices_modified = set()
-    # loop over the animations to add and add/replace them
+    indices_to_retain   = set()
+    indices_modified    = set()
+    total_uncomp_sizes  = dict()
+    total_comp_sizes    = dict()
+    # loop over the animations to add/replace them
     for jma_anim_name in sorted(jma_anim_set.animations):
         name = jma_anim_name.strip()
-        has_purpose, name_pieces = util.split_anim_name_into_type_strings(name)
+        name_key = util.split_anim_name_into_type_strings(name.lower())
+        has_purpose, name_pieces, perm_name = name_key
+
+        jma_anim = jma_anim_set.animations[jma_anim_name]
 
         # find where to put this animation
-        anim_index = antr_indices_by_type_strings.get(
-            name_pieces, len(antr_anims))
+        anim_index = antr_indices_by_type_strings.get(name_key, len(antr_anims))
 
-        if anim_index >= animation_count_limit:
+        if anim_index >= util.get_block_max(tagdata.animations):
             errors.append(
                 "Too many animations. Cannot add '%s'" % jma_anim_name)
             continue
 
+        if has_purpose:
+            expected = util.get_expected_anim_types(name)
+            if expected and jma_anim.anim_type not in expected:
+                print("Warning: Expected type of %s for '%s', but got %s.%s" %
+                      (expected, jma_anim_name, jma_anim.anim_type,
+                       " Fixing." if fix_anim_types else ""))
+                if fix_anim_types:
+                    jma_anim.anim_type = expected[0]
+
+        is_idle    = has_purpose and "idle" in name_pieces
         anim_added = False
         if anim_index == len(antr_anims):
             anim_added = True
@@ -233,11 +272,13 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
         else:
             print("Replacing '%s'" % jma_anim_name)
 
-        anim = antr_anims[anim_index]
+        anim  = antr_anims[anim_index]
+        flags = anim.flags
         try:
-            jma_anim = jma_anim_set.animations[jma_anim_name]
             jma_anim.calculate_animation_flags(delta_tolerance)
-            errors.extend(compile_animation(anim, jma_anim, ignore_size_limits))
+            errors.extend(compile_animation(
+                anim, jma_anim, endian, ignore_size_limits, pos_scale
+                ))
         except Exception:
             errors.append(traceback.format_exc())
             errors.append("Could not compile '%s'" % jma_anim_name)
@@ -247,44 +288,125 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
             continue
 
         # update the antr indices with this animations index
-        antr_indices_by_type_strings[name_pieces] = anim_index
+        antr_indices_by_type_strings[name_key] = anim_index
 
-        if name_pieces in prev_antr_anims_by_type_strings:
+        prev_anim = prev_antr_anims_by_type_strings.get(name_key)
+        if prev_anim:
             # update the animation with the old ones keyframe values and such
-            prev_anim = prev_antr_anims_by_type_strings[name_pieces]
-            anim.weight = prev_anim.weight
-            anim.sound  = prev_anim.sound
+            anim.weight, anim.sound     = prev_anim.weight, prev_anim.sound
             anim.loop_frame_index       = prev_anim.loop_frame_index
             anim.key_frame_index        = prev_anim.key_frame_index
             anim.second_key_frame_index = prev_anim.second_key_frame_index
             anim.sound_frame_index      = prev_anim.sound_frame_index
             anim.left_foot_frame_index  = prev_anim.left_foot_frame_index
             anim.right_foot_frame_index = prev_anim.right_foot_frame_index
+            if has_mozz_fields:
+                flags.mozz_override_quality = prev_anim.flags.mozz_override_quality
+                flags.mozz_always_compress  = prev_anim.flags.mozz_always_compress
+                flags.mozz_never_compress   = prev_anim.flags.mozz_never_compress
+                anim.mozz_compress_quality  = prev_anim.mozz_compress_quality
 
+        # determine if we're able to try to compress this animation
+        if can_compress and not jma_anim.is_overlay and (
+                (compress_idle and is_idle) or compress_all
+                ):
+            jma_anim.compress_quality = compress_quality
 
-        if not has_purpose:
-            print("    Could not determine a purpose for this animation")
+            if (use_mozz_fields and flags.mozz_override_quality and
+                anim.mozz_compress_quality >= 0 and
+                anim.mozz_compress_quality <= 100):
+                jma_anim.compress_quality = anim.mozz_compress_quality/100
+
+            # do the compression
+            animation_compression.compress_animation(anim, True, pos_scale,
+                                                     jma_anim=jma_anim)
+
+            uncomp_len = anim.offset_to_compressed_data
+            comp_len   = len(anim.frame_data.STEPTREE) - uncomp_len
+
+            if comp_len >= uncomp_len:
+                # not worth compressing
+                flags.compressed_data = False
+                anim.offset_to_compressed_data = 0
+                anim.frame_data.STEPTREE = anim.frame_data.STEPTREE[: uncomp_len]
+            else:
+                total_uncomp_sizes[jma_anim_name] = uncomp_len
+                total_comp_sizes[jma_anim_name]   = comp_len
+
+        has_purpose or print("Could not determine a purpose for '%s'" % jma_anim_name)
+        if not has_purpose or add_only:
             continue
 
         try:
             if util.set_animation_index(antr_tag, jma_anim_name, anim_index,
-                                        indices_to_not_overwrite):
+                                        indices_to_retain):
                 # successfully found an animation index to use this animation
-                indices_to_not_overwrite.add(anim_index)
+                indices_to_retain.add(anim_index)
             indices_modified.add(anim_index)
         except Exception:
             errors.append(traceback.format_exc())
 
-    if update_mode == ANIMATION_COMPILE_MODE_PRESERVE:
-        for i in range(len(prev_antr_objects)):
-            prev_obje = prev_antr_objects[i]
+    # loop over the animation map to map existing anims to them
+    for dst_name in sorted([] if add_only else rename_map):
+        src_name = rename_map[dst_name]
+        name_key = util.split_anim_name_into_type_strings(src_name.lower())
+        purpose  = util.split_anim_name_into_type_strings(dst_name.lower())[0]
+
+        if not purpose:
+            print("Could not determine a purpose for '%s'" % dst_name)
+            continue
+
+        # find which anim we're reusing
+        anim_index = antr_indices_by_type_strings.get(name_key)
+        if anim_index is None:
+            print("Warning: No existing animation '%s' to reuse." % src_name)
+            continue
+
+        src_type = antr_anims[anim_index].type.enum_name
+        expected = util.get_expected_anim_types(dst_name)
+        if expected and src_type not in expected:
+            print("Warning: Expected type of %s for '%s', but got '%s'." %
+                  (expected, dst_name, src_type))
+
+        try:
+            if util.set_animation_index(antr_tag, dst_name, anim_index,
+                                        indices_to_retain):
+                # successfully found an animation index to use this animation
+                print("Reusing '%s' for '%s'" % (src_name, dst_name))
+                indices_to_retain.add(anim_index)
+            indices_modified.add(anim_index)
+        except Exception:
+            errors.append(traceback.format_exc())
+
+    if total_comp_sizes:
+        print("Compression savings:")
+        total_uncomp_size  = sum(total_uncomp_sizes.values())
+        total_comp_size    = sum(total_comp_sizes.values())
+        names              = [*sorted(total_uncomp_sizes), "Total"]
+        total_uncomp_sizes["Total"] = total_uncomp_size
+        total_comp_sizes["Total"]   = total_comp_size
+        max_width          = max(9, *(len(name) for name in total_uncomp_sizes))
+
+        print("  animation name  %sbytes removed   \t%% of total removed" % (
+            " "*(max_width - 12)
+            ))
+        for name in names:
+            usize, csize = total_uncomp_sizes[name], total_comp_sizes[name]
+            diff = usize - csize
+            print("  %s   %s%d bytes (%0.1f%%) \t%0.3f%% of total" % (
+                name, " "*(1 + max_width - len(name)), diff,
+                100*diff/usize, 100*diff/total_uncomp_size,
+                ))
+
+    if preserve:
+        for i, prev_obje in enumerate(prev_antr_objects):
             if prev_obje.animation not in range(len(prev_antr_anims)):
                 continue
 
-            _, name_pieces = util.split_anim_name_into_type_strings(
+            name_key = util.split_anim_name_into_type_strings(
                 prev_antr_anims[prev_obje.animation].name.strip())
 
-            new_anim_index = antr_indices_by_type_strings.get(name_pieces)
+            new_anim_index = antr_indices_by_type_strings.get(name_key)
             if new_anim_index is None:
                 continue
 
@@ -304,79 +426,14 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
             copy_vehicle_animation_block_data(antr_vehicles, prev_antr_vehicles)
 
 
-    if (update_mode != ANIMATION_COMPILE_MODE_ADDITIVE and
-        mod2_nodes and antr_units and not antr_vehicles):
-        # only calculate node vectors for units that are not vehicles
-        if len(antr_nodes) != len(mod2_nodes):
-            errors.append("Gbxmodel node count does not match node "
-                          "count in the model_animations tag.")
-            return errors
-        util.calculate_node_vectors(antr_nodes, mod2_nodes,
-                                    jma_anim_set.animations.values())
-
-    # fill in the remaining unit damages
-    if antr_unit_damages:
-        if len(antr_unit_damages) < 176:
-            antr_unit_damages.extend(176 - len(antr_unit_damages))
-
-        # loop over  s-ping, h-ping, s-kill, h-kill
-        for i in range(0, len(antr_unit_damages), 44):
-            # loop over each of the 11 animations per set
-            for j in range(11):
-                # make a collection of defaults for all sides of this region
-                defaults = {i + j + k: -1 for k in (0, 11, 22, 33)}
-                util.get_default_animation_enums(antr_unit_damages, defaults)
-
-                # default any unset sides for this region
-                util.set_default_animation_enums(antr_unit_damages, defaults)
-
-
-    unit_anim_defaults = {enums.unit_animation_names.index(name): -1
-                          for name in util.SHARED_UNIT_ANIMATION_NAMES}
-    unit_weap_anim_defaults = {enums.unit_weapon_animation_names.index(name): -1
-                               for name in util.SHARED_UNIT_WEAPON_ANIMATION_NAMES}
-
-    # get the unit animations with applicable ones from all units.
-    # do this in reverse since thats what tool seems to do.
-    for unit in antr_units[::-1]:
-        anim_enums = unit.animations.STEPTREE
-        util.get_default_animation_enums(anim_enums, unit_anim_defaults)
-        for unit_weap in unit.weapons.STEPTREE:
-            anim_enums = unit_weap.animations.STEPTREE
-            util.get_default_animation_enums(anim_enums, unit_weap_anim_defaults)
-
-    # strip any unused animation indices
-    unit_anim_defaults = {
-        k: v for k, v in unit_anim_defaults.items() if v != -1}
-    unit_weap_anim_defaults = {
-        k: v for k, v in unit_weap_anim_defaults.items() if v != -1}
-
-    for unit in antr_units:
-        if unit_anim_defaults:
-            anim_enums = unit.animations.STEPTREE
-            anim_enums.extend(max(unit_anim_defaults) + 1 - len(anim_enums))
-
-        if unit_weap_anim_defaults:
-            for unit_weap in unit.weapons.STEPTREE:
-                anim_enums = unit_weap.animations.STEPTREE
-                anim_enums.extend(max(unit_weap_anim_defaults) + 1 - len(anim_enums))
-
-    # default any unset unit animations with the found defaults.
-    for unit in antr_units:
-        util.set_default_animation_enums(unit.animations.STEPTREE,
-                                         unit_anim_defaults)
-        for unit_weap in unit.weapons.STEPTREE:
-            util.set_default_animation_enums(unit_weap.animations.STEPTREE,
-                                             unit_weap_anim_defaults)
-
     # setup permutation indices
     last_perm_anim_index = -1
     last_perm_name_pieces = ()
     # loop over the name pieces in a sorted manner so the lowest
     # permutations come first and are followed by the rest of them
-    for name_pieces in sorted(antr_indices_by_type_strings):
-        anim_index = antr_indices_by_type_strings[name_pieces]
-        name_pieces, perm_num = name_pieces[: -1], name_pieces[-1]
+    for name_key in sorted(antr_indices_by_type_strings):
+        anim_index = antr_indices_by_type_strings[name_key]
+        _, name_pieces, perm_num = name_key
         if (anim_index in indices_modified and
             name_pieces == last_perm_name_pieces and
             last_perm_anim_index != -1):
@@ -384,6 +441,27 @@ def compile_model_animations(antr_tag, jma_anim_set, ignore_size_limits=False,
 
         last_perm_anim_index = anim_index
         last_perm_name_pieces = name_pieces
+
+    if add_only:
+        # don't touch blocks in additive mode
+        return errors
+
+    is_biped = antr_units and not antr_vehicles
+    if (physics_calc_mode == const.PHYSICS_CALC_MODE_ALWAYS or
+        (physics_calc_mode == const.PHYSICS_CALC_MODE_GUESS and is_biped)):
+        print("Calculating limp physics vectors")
+        # calculate the biped limp node vectors
+        jma_anim_set.calculate_limp_node_data()
+
+        for antr_node, info in zip(
+                antr_nodes, jma_anim_set.limp_node_infos
+                ):
+            antr_node.node_joint_flags.data = info.joint_flags
+            antr_node.base_vector[:]        = info.vector_ortho
+            antr_node.vector_range          = info.vector_range
+
+    # final tag cleanup(i.e. fill missing anims, remove unused blocks, etc.)
+    util.sanitize_animation_indices(antr_tag)
 
     return errors
 

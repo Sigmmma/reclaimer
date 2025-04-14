@@ -189,9 +189,9 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
                      rawdata=None, root_offset=0, offset=0, **kwargs):
     """
     """
+    orig_offset = offset
     try:
         __lsi__ = list.__setitem__
-        orig_offset = offset
         if node is None:
             parent[attr_index] = node = desc.get(NODE_CLS, self.node_cls)\
                 (desc, parent=parent)
@@ -229,13 +229,21 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
         s_desc = desc.get(STEPTREE)
         if s_desc:
             pointer_converter = kwargs.get('map_pointer_converter')
-            safe_mode = kwargs.get("safe_mode", True) and not desc.get(IGNORE_SAFE_MODE)
+            safe_mode       = kwargs.get("safe_mode", True) and not desc.get(IGNORE_SAFE_MODE)
+            # get the max value from the size field
+            arr_len_max     = desc[0].get(MAX, 0)
+            arr_ext_len_max = desc[0].get(EXT_MAX, SANE_MAX_REFLEXIVE_COUNT)
+            arr_abs_len_max = arr_len_max if (safe_mode and arr_len_max) else arr_ext_len_max
 
             if pointer_converter is not None:
                 file_ptr = pointer_converter.v_ptr_to_f_ptr(node[1])
                 if safe_mode:
                     # make sure the reflexive sizes are within sane bounds.
-                    node[0] = min(node[0], max(SANE_MAX_REFLEXIVE_COUNT, s_desc.get(MAX, 0)))
+                    if node[0] > arr_abs_len_max:
+                        print("Warning: Clipped %s reflexive size from %s to %s" % (
+                            desc[NAME], node[0], arr_abs_len_max
+                            ))
+                        node[0] = arr_abs_len_max
 
                 if (file_ptr < 0 or file_ptr +
                     node[0]*s_desc[SUB_STRUCT].get(SIZE, 0) > len(rawdata)):
@@ -243,8 +251,9 @@ def reflexive_parser(self, desc, node=None, parent=None, attr_index=None,
                     #    (ex: bad hek+ extraction)
                     node[0] = node[1] = 0
 
-            elif node[0] > max(SANE_MAX_REFLEXIVE_COUNT, s_desc.get(MAX, 0)):
-                raise ValueError("Reflexive size is above highest allowed value.")
+            elif node[0] > arr_abs_len_max:
+                raise ValueError("Reflexive size %s above max value %s." %
+                                 (node[0], arr_abs_len_max))
 
             if not node[0]:
                 # reflexive is empty. no need to provide rawdata
@@ -288,7 +297,8 @@ def reflexive_array_parser(self, desc, node=None, parent=None, attr_index=None,
     try:
         if parent is not None and rawdata is not None:
             if root_offset + offset + parent.size * desc['SUB_STRUCT'][SIZE] > len(rawdata):
-                raise ValueError("Reflexive size is out of bounds of input stream.")
+                raise ValueError("Reflexive size %s is outside stream bounds %s." %
+                                 (parent.size * desc['SUB_STRUCT'][SIZE], len(rawdata)))
 
         return array_parser(
             self, desc, node, parent, attr_index, rawdata, root_offset, offset, **kwargs
@@ -303,8 +313,8 @@ def reflexive_array_parser(self, desc, node=None, parent=None, attr_index=None,
 
 def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
                        rawdata=None, root_offset=0, offset=0, **kwargs):
+    orig_offset = offset
     try:
-        orig_offset = offset
         if node is None:
             parent[attr_index] = node = desc.get(NODE_CLS, self.node_cls)\
                 (desc, parent=parent, init_attrs=rawdata is None)
@@ -322,11 +332,11 @@ def rawdata_ref_parser(self, desc, node=None, parent=None, attr_index=None,
         s_desc = desc.get(STEPTREE)
         if s_desc:
             pointer_converter = kwargs.get("map_pointer_converter")
-            safe_mode = kwargs.get("safe_mode", True) and not s_desc.get(IGNORE_SAFE_MODE)
 
             if pointer_converter is not None:
                 node[0] = max(0, min(node[0], s_desc.get(MAX, node[0])))
 
+            #safe_mode = kwargs.get("safe_mode", True) and not s_desc.get(IGNORE_SAFE_MODE)
             #if safe_mode:
             #    if pointer_converter is not None:
             #        node[0] = max(0, min(node[0], s_desc.get(MAX, node[0])))

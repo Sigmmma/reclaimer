@@ -86,6 +86,9 @@ def read_reflexive(map_data, refl_offset, max_count=0xFFffFFff,
         map_data.seek(0, 2)
         max_count = min(max_count,
                         (map_data.tell() - (start - tag_magic)) // struct_size)
+    if count > max_count:
+        print("Warning: Clipped reflexive size from %s to %s" % (count, max_count))
+
     return min(count, max_count), start, id
 
 
@@ -173,8 +176,10 @@ def repair_dependency(index_array, map_data, tag_magic, repair, engine, cls,
             return
 
         cls = shader_class_bytes[shader_type]
+    elif cls == b'lcpw':
+        cls = b'cmti'
     elif cls in (b'2dom', b'edom'):
-        if "xbox" in engine:
+        if "xbox" in engine or "halo" not in engine:
             cls = b'edom'
         else:
             cls = b'2dom'
@@ -199,6 +204,15 @@ def repair_dependency_array(index_array, map_data, magic, repair, engine,
 
 
 class_bytes_by_fcc = {
+    cls: b''.join((
+        bytes(cls[slice(None, None, -1)], "latin1"),
+        dict(efpg=b'ppfe', shpg=b'pphs').get(cls, NULL_CLASS),
+        NULL_CLASS
+        ))
+    for cls in tag_class_be_int_to_fcc_os.values()
+    }
+
+class_bytes_by_fcc.update({
     "senv": b'vnes' + b'rdhs' + NULL_CLASS,  # 3
     "soso": b'osos' + b'rdhs' + NULL_CLASS,  # 4
     "sotr": b'rtos' + b'rdhs' + NULL_CLASS,  # 5
@@ -223,15 +237,4 @@ class_bytes_by_fcc = {
     "plac": b'calp' + b'ejbo' + NULL_CLASS,  # 10
     "ssce": b'ecss' + b'ejbo' + NULL_CLASS,  # 11
     "obje": b'ejbo' + NULL_CLASS + NULL_CLASS  # -1
-    }
-
-for cls in tag_class_be_int_to_fcc_os.values():
-    if cls not in class_bytes_by_fcc:
-        cls_1 = bytes(cls[slice(None, None, -1)], "latin1")
-        cls_2 = cls_3 = NULL_CLASS
-        if cls_1 == b'gpfe':
-            cls_2 == b'ppfe'
-        elif cls_1 == b'gphs':
-            cls_2 == b'pphs'
-
-        class_bytes_by_fcc[cls] = cls_1 + cls_2 + cls_3
+    })

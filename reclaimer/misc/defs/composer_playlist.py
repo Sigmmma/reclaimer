@@ -11,7 +11,7 @@ from supyr_struct.defs.common_descs import *
 from supyr_struct.field_types import *
 from supyr_struct.defs.tag_def import TagDef
 
-from binilla.constants import VISIBILITY_METADATA
+from reclaimer.constants import VISIBILITY_METADATA
 
 def get(): return composer_playlist_def
 

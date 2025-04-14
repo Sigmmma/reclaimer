@@ -8,7 +8,7 @@
 #
 
 from ...common_descs import *
-from .objs.tag import HekTag
+from .objs.part import PartTag
 from supyr_struct.defs.tag_def import TagDef
 
 part_body = Struct("tagdata",
@@ -50,7 +50,7 @@ part_body = Struct("tagdata",
             Float("to",   UNIT_SCALE=per_sec_unit_scale),
             ORIENT='h', SIDETIP='frames/sec'
             ),
-        Float("contact_deterioration"),
+        Float("contact_deterioration", VISIBLE=False, DEFAULT=0.0),
         Float("fade_start_size", SIDETIP="pixels"),
         Float("fade_end_size", SIDETIP="pixels"),
 
@@ -60,7 +60,8 @@ part_body = Struct("tagdata",
         SInt16("looping_sequence_count"),
         SInt16("final_sequence_count"),
 
-        Pad(12),
+        Pad(8),
+        FlFloat("sprite_size", VISIBLE=False),
         SEnum16("orientation", *render_mode),
 
         Pad(38),
@@ -101,5 +102,5 @@ part_def = TagDef("part",
     blam_header("part", 2),
     part_body,
 
-    ext=".particle", endian=">", tag_cls=HekTag,
+    ext=".particle", endian=">", tag_cls=PartTag,
     )

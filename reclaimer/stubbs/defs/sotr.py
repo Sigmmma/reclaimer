@@ -14,7 +14,6 @@ from supyr_struct.defs.tag_def import TagDef
 sotr_body = Struct("tagdata",
     shdr_attrs,
     sotr_attrs,
-
     SIZE=108,
     )
 

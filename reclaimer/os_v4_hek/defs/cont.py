@@ -9,11 +9,13 @@
 
 from ...os_v3_hek.defs.cont import *
 
-cont_body = dict(cont_body)
-cont_body[4] = reflexive(
-    "shader_extensions",
-    Struct("shader_extension", INCLUDE=os_shader_extension),
-    1)
+shader_extensions = reflexive("shader_extensions",
+    Struct("shader_extension", INCLUDE=os_shader_extension), 
+    1
+    )
+cont_body = desc_variant(cont_body,
+    ("pad_4", shader_extensions),
+    )
 
 
 def get():

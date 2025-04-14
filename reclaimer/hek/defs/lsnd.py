@@ -75,7 +75,7 @@ lsnd_body = Struct("tagdata",
     FlFloat("unknown3", DEFAULT=1.0, VISIBLE=False),
     FlSInt16("unknown4", DEFAULT=-1, VISIBLE=False),
     FlSInt16("unknown5", DEFAULT=-1, VISIBLE=False),
-    FlFloat("unknown6", DEFAULT=1.0, VISIBLE=False),
+    FlFloat("max_distance", DEFAULT=1.0, VISIBLE=False),
     Pad(8),
     dependency("continuous_damage_effect", "cdmg"),
 

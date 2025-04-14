@@ -11,4 +11,7 @@ from reclaimer.meta.wrappers.halo4_map import Halo4Map
 
 class Halo4BetaMap(Halo4Map):
     tag_defs_module = ""
-    tag_classes_to_load = tuple()
+    tag_classes_to_load = ()
+    # NOTE: setting defs to None so setup_defs doesn't think the
+    #       defs are setup cause of class property inheritance.
+    defs = None

@@ -183,3 +183,15 @@ HARDCODED_TAG_PATHS = frozenset(
     HARDCODED_matg_TAG_PATHS + HARDCODED_scnr_TAG_PATHS +
     HARDCODED_lsnd_TAG_PATHS + HARDCODED_snd__TAG_PATHS
     )
+
+HARDCODED_TAG_PATHS_BY_TYPE = {
+    "ustr": HARDCODED_ustr_TAG_PATHS,
+    "DeLa": HARDCODED_DeLa_TAG_PATHS,
+    "font": HARDCODED_font_TAG_PATHS,
+    "vcky": HARDCODED_vcky_TAG_PATHS,
+    "bitm": HARDCODED_bitm_TAG_PATHS,
+    "matg": HARDCODED_matg_TAG_PATHS,
+    "scnr": HARDCODED_scnr_TAG_PATHS,
+    "lsnd": HARDCODED_lsnd_TAG_PATHS,
+    "snd!": HARDCODED_snd__TAG_PATHS,
+    }

@@ -237,10 +237,9 @@ class TagDirectoryNode:
             indexed_pad_str = " " * len(INDEXED_HEADER_STR)
 
         # put together tag path strings
+        pprint_kw = dict(kw if dirs_first else {})
         if print_files and not dirs_first:
             string += self.pprint_files(**kw)
-        else:
-            files_kw = dict(kw)
 
         dir_indent_str = indent_str
         if print_guides:
@@ -267,8 +266,8 @@ class TagDirectoryNode:
             if depth > 0:
                 string += self._sub_nodes[dir_name].pprint(**kw)
 
-        if print_files and dirs_first:
-            string += self.pprint_files(**files_kw)
+        if print_files and pprint_kw:
+            string += self.pprint_files(**pprint_kw)
 
         # add extra spacing after last directory
         for i in range(extra_returns):

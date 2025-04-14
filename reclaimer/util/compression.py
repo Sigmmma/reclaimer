@@ -58,17 +58,16 @@ def decompress_normal32(n):
 
 
 def compress_normal32(i, j, k):
-    i = min(max(i, -1.0), 1.0)
-    j = min(max(j, -1.0), 1.0)
-    k = min(max(k, -1.0), 1.0)
+    # logical comparisons like this are faster than chaining 2(more) function calls
+    ci = 1024 if i <= -1 else 1023 if i >= 1 else int(round(i*1023)) % 2047
+    cj = 1024 if j <= -1 else 1023 if j >= 1 else int(round(j*1023)) % 2047
+    ck = 512  if k <= -1 else 511  if k >= 1 else int(round(k*511))  % 1023
     # original algorithm before shelly's optimization, kept for clarity
     #if i < 0: i += 2047
     #if j < 0: j += 2047
     #if k < 0: k += 1023
     #return i | (j << 11) | (k << 22)
-    return ((int(round(i*1023)) % 2047) |
-            ((int(round(j*1023)) % 2047) << 11) |
-            ((int(round(k*511)) % 1023) << 22))
+    return ci | (cj << 11) | (ck << 22)
 
 
 #uncomp_norm = [.333, -.75, 1]

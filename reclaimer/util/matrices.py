@@ -13,6 +13,8 @@ This module implements some basic matrix classes
 from math import log, sqrt, cos, sin, atan2, asin, acos, pi
 from sys import float_info
 
+POLAR_SINGULARITY_SINE = 0.999999999999
+
 
 class CannotRowReduce(ValueError): pass
 class MatrixNotInvertable(ValueError): pass
@@ -52,11 +54,38 @@ def line_from_verts(v0, v1):
     return tuple(b - a for a, b in zip(v0, v1))
 
 
+def polar_2d_to_vector_3d(t, p):
+    '''Angles are expected to be in radians.'''
+    # theta is angle from x-axis, phi is angle AROUND x-axis
+    return (cos(t), sin(t)*cos(p), sin(t)*sin(p))
+
+
+def vector_3d_to_polar_2d(i, j, k):
+    '''Angles returned are in radians.'''
+    # check for singularities at north and south poles
+    mag = 1 / (sqrt(i**2 + j**2 + k**2) or 1)
+    i, j, k = i * mag, j * mag, k * mag
+    return (
+        (-pi/2 if k < 0 else pi/2, 0) if abs(k) >= POLAR_SINGULARITY_SINE else
+        (atan2(sqrt(j**2 + k**2), i), atan2(k, j))
+        )
+
+
 def euler_2d_to_vector_3d(y, p):
     '''Angles are expected to be in radians.'''
-    return (cos(y) * cos(p),
-            sin(y) * cos(p),
-            sin(p))
+    # yaw is angle from x-axis, pitch is angle from z-axis
+    return (cos(y)*cos(p), sin(y)*cos(p), sin(p))
+
+
+def vector_3d_to_euler_2d(i, j, k):
+    '''Angles returned are in radians.'''
+    mag = 1 / (sqrt(i**2 + j**2 + k**2) or 1)
+    i, j, k = i*mag, j*mag, k*mag
+    # check for singularities at north and south poles
+    return (
+        (-pi/2 if k < 0 else pi/2, 0) if abs(k) >= POLAR_SINGULARITY_SINE else
+        (atan2(j, i), asin(k))
+        )
 
 
 def euler_to_quaternion(y, p, r):
@@ -71,15 +100,16 @@ def quaternion_to_euler(i, j, k, w):
     '''Angles returned are in radians.'''
     p_sin = 2*(i * j + k * w)
     # check for singularities at north and south poles
-    if p_sin > 0.999999999999:
-        return 2 * atan2(i, w),   pi / 2, 0
-    elif p_sin < -0.999999999999:
-        return -2 * atan2(i, w), -pi / 2, 0
-    else:
+    if abs(p_sin) < POLAR_SINGULARITY_SINE:
         y = atan2(2*(j*w - i*k), 1 - 2*(j**2 + k**2))
         p = asin(p_sin)
         r = atan2(2*(i*w - j*k), 1 - 2*(i**2 + k**2))
-        return y, p, r
+    else:
+        y, p, r = (2*atan2(i, w), pi/2, 0)
+        if p_sin < 0:
+            y, p = -y, -p
+
+    return y, p, r
 
 
 def axis_angle_to_quaternion(x, y, z, a):
@@ -90,6 +120,7 @@ def axis_angle_to_quaternion(x, y, z, a):
 
 
 def quaternion_to_axis_angle(i, j, k, w):
+    '''Angle returned is in radians.'''
     ray_len = sqrt(i**2 + j**2 + k**2 + w**2)
     i /= ray_len
     j /= ray_len
@@ -237,11 +268,11 @@ def slerp_blend_quaternions(q0, q1, ratio):
 
 class FixedLengthList(list):
     __slots__ = ()
-    def append(self, val): raise NotImplementedError
-    def extend(self, vals): raise NotImplementedError
-    def insert(self, index, val): raise NotImplementedError
-    def pop(self): raise NotImplementedError
-    def __delitem__(self): raise NotImplementedError
+    def append(self, val):          raise NotImplementedError
+    def extend(self, vals):         raise NotImplementedError
+    def insert(self, index, val):   raise NotImplementedError
+    def pop(self):                  raise NotImplementedError
+    def __delitem__(self, index):   raise NotImplementedError
     def __setitem__(self, index, val):
         if isinstance(index, slice):
             start, stop, step = index.indices(len(self))
@@ -335,11 +366,17 @@ class Ray(Vector):
     def cross(cls, v0, v1):
         assert len(v0) >= 3
         assert len(v1) >= 3
-        return Ray(cross_product(v0, v1))
+        return cls(cross_product(v0, v1))
     @classmethod
     def dot(cls, v0, v1):
         assert len(v0) == len(v1)
         return dot_product(v0, v1)
+
+    def cross_with(self, other):
+        return self.cross(self, other)
+
+    def dot_with(self, other):
+        return self.dot(self, other)
 
     def normalize(self):
         div = self.magnitude
@@ -352,6 +389,17 @@ class Quaternion(FixedLengthList, Ray):
     def __init__(self, initializer=(0, 0, 0, 1)):
         assert len(initializer) == 4
         list.__init__(self, initializer)
+    def append(self, val):
+        raise ValueError("Cannot append on %s" % type(self))
+    def extend(self, vals):
+        raise ValueError("Cannot extend on %s" % type(self))
+    def insert(self, index, val):
+        raise ValueError("Cannot insert on %s" % type(self))
+    def pop(self):
+        raise ValueError("Cannot pop on %s" % type(self))
+    def __delitem__(self, index):
+        raise ValueError("Cannot delete in %s" % type(self))
+
     def __mul__(self, other):
         if isinstance(other, Quaternion):
             new = Quaternion(multiply_quaternions(self, other))
@@ -412,6 +460,17 @@ class Quaternion(FixedLengthList, Ray):
 
 class MatrixRow(FixedLengthList, Vector):
     __slots__ = ()
+
+    def append(self, val):
+        raise ValueError("Cannot append on %s" % type(self))
+    def extend(self, vals):
+        raise ValueError("Cannot extend on %s" % type(self))
+    def insert(self, index, val):
+        raise ValueError("Cannot insert on %s" % type(self))
+    def pop(self):
+        raise ValueError("Cannot pop on %s" % type(self))
+    def __delitem__(self, index):
+        raise ValueError("Cannot delete in %s" % type(self))
 
 
 class Matrix(list):
@@ -589,7 +648,7 @@ class Matrix(list):
         return transpose
 
     @property
-    def inverse(self, find_best_inverse=True):
+    def inverse(self):
         # cannot invert non-square matrices. check for that
         if self.width != self.height:
             raise MatrixNotInvertable("Cannot invert non-square matrix.")
@@ -598,7 +657,7 @@ class Matrix(list):
 
         regular, inverse = self.row_reduce(
             Matrix(width=self.width, height=self.height, identity=True),
-            find_best_reduction=find_best_inverse
+            find_best_reduction=True
             )
 
         return inverse

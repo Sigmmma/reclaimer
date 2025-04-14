@@ -15,8 +15,8 @@ from copy import deepcopy
 
 from reclaimer.constants import map_build_dates, map_magics, GEN_3_ENGINES
 from reclaimer.meta.halo1_map import map_header_def, map_header_vap_def,\
-     map_header_anni_def, map_header_demo_def, tag_index_pc_def,\
-     tag_index_xbox_def, tag_index_anni_def
+     map_header_anni_def, map_header_demo_def, map_header_mcc_def,\
+     tag_index_pc_def, tag_index_xbox_def, tag_index_anni_def
 from reclaimer.meta.halo2_alpha_map import h2_alpha_map_header_def,\
      h2_alpha_tag_index_def
 from reclaimer.meta.halo2_map import h2v_map_header_full_def,\
@@ -24,7 +24,8 @@ from reclaimer.meta.halo2_map import h2v_map_header_full_def,\
      h2_tag_index_def
 from reclaimer.meta.halo3_map import h3_map_header_def, h3_tag_index_def
 from reclaimer.meta.shadowrun_map import sr_tag_index_def
-from reclaimer.meta.stubbs_map import stubbs_tag_index_def
+from reclaimer.meta.stubbs_map import stubbs_tag_index_def,\
+    stubbs_64bit_tag_index_def
 
 from supyr_struct.defs.tag_def import TagDef
 from supyr_struct.buffer import get_rawdata
@@ -58,8 +59,9 @@ def get_map_version(header):
             # Xbox maps don't have a build date, but they do have this bit of data
             if header.unknown in (11, 1033):
                 version = "halo1xboxdemo"
-            # Stubs PC headers match xbox headers without the unknown data
-            else:
+            else: # Stubs PC headers match xbox headers without the unknown data
+                # unfortunately, its impossible to tell apart 32 and 64bit stubbs
+                # maps from just the header alone. you need to look at the tag index
                 version = "stubbspc"
         elif build_date == map_build_dates["shadowrun_proto"]:
             version = "shadowrun_proto"
@@ -92,6 +94,19 @@ def get_map_version(header):
     return version
 
 
+def get_engine_name(map_header, map_data):
+    # NOTE: this is basically just get_map_version, but with the ability to
+    #       further refine the choice by looking at the rest of the map data.
+    engine = get_map_version(map_header)
+    if engine == "stubbspc":
+        map_data.seek(map_header.tag_index_header_offset + 52)
+        # thank god for the tags sig
+        if map_data.read(4) == b'sgat':
+            engine = "stubbspc64bit"
+
+    return engine
+
+
 def get_map_header(map_file, header_only=False):
     if hasattr(map_file, "read"):
         orig_pos = map_file.tell()
@@ -122,6 +137,9 @@ def get_map_header(map_file, header_only=False):
 
         elif ver_little in (5, 6, 609):
             header_def = map_header_def
+
+        elif ver_little == 13:
+            header_def = map_header_mcc_def
 
         elif ver_little == 134:
             header_def = map_header_vap_def
@@ -169,16 +187,20 @@ def get_tag_index(map_data, header=None):
     base_address = header.tag_index_header_offset
 
     tag_index_def = tag_index_pc_def
-    version = get_map_version(header)
-    if "shadowrun" in version:
+    engine = get_engine_name(header, map_data)
+    if "shadowrun" in engine:
         tag_index_def = sr_tag_index_def
-    elif "stubbs" in version:
-        tag_index_def = stubbs_tag_index_def
+    elif "stubbs" in engine:
+        tag_index_def = (
+            stubbs_64bit_tag_index_def
+            if engine == "stubbspc64bit" else
+            stubbs_tag_index_def
+            )
     elif header.version.data < 6:
         tag_index_def = tag_index_xbox_def
-    elif version == "halo2alpha":
+    elif engine == "halo2alpha":
         tag_index_def = h2_alpha_tag_index_def
-    elif version == "halo1anni":
+    elif engine == "halo1anni":
         tag_index_def = tag_index_anni_def
     elif header.version.enum_name == "halo2":
         tag_index_def = h2_tag_index_def
@@ -227,9 +249,9 @@ def get_map_magic(header):
 def get_is_compressed_map(comp_data, header):
     if header.version.data == 134:
         return header.vap_header.compression_type.data != 0
-    elif header.version.data not in (7, 609):
+    elif header.version.data not in (7, 13, 609):
         decomp_len = header.decomp_len
-        if get_map_version(header) == "pcstubbs":
+        if get_map_version(header) == "stubbspc":
             decomp_len -= 2048
 
         return decomp_len > len(comp_data)
@@ -296,7 +318,7 @@ def decompress_map_deflate(comp_data, header, decomp_path="", writable=False):
     decomp_start = 2048
     decomp_len   = header.decomp_len
     version      = get_map_version(header)
-    if version == "pcstubbs":
+    if version == "stubbspc":
         decomp_len -= 2048
     elif version == "halo2vista":
         decomp_start = 0

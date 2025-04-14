@@ -9,134 +9,211 @@
 
 import traceback
 
-from math import pi
+from math import pi, sqrt
+from pathlib import Path
 
+from reclaimer.animation import constants as const
+from reclaimer.util import get_block_max
 from reclaimer.enums import unit_animation_names, unit_weapon_animation_names,\
      unit_weapon_type_animation_names, vehicle_animation_names,\
-     weapon_animation_names, device_animation_names, fp_animation_names,\
-     unit_damage_animation_names
-from reclaimer.hek.defs.mod2 import TagDef, Pad, marker as mod2_marker_desc,\
-     node as mod2_node_desc, reflexive, Struct
+     weapon_animation_names, device_animation_names,\
+     fp_animation_names, fp_animation_names_mcc,\
+     unit_damage_animation_names, unit_damage_types,\
+     unit_damage_regions, unit_damage_sides
+from supyr_struct.util import tagpath_to_fullpath
 
 __all__ = (
-    'SHARED_UNIT_ANIMATION_NAMES', 'SHARED_UNIT_WEAPON_ANIMATION_NAMES',
     'split_anim_name_into_type_strings', 'split_permutation_number',
     'set_animation_enum_index', 'set_animation_index',
-    'get_default_animation_enums', 'set_default_animation_enums',
-    'partial_mod2_def', 'calculate_node_vectors'
+    'get_default_enums', 'set_default_enums',
     )
 
 
-SHARED_UNIT_ANIMATION_NAMES = frozenset((
-    'airborne-dead', 'landing-dead', 'talk', 'emotions'
-    ))
+def get_anim_flags(anim):
+    rot_flags, trans_flags, scale_flags = [], [], []
+    for flags, flags_int in (
+        [rot_flags,   anim.rot_flags0   | (anim.rot_flags1<<32)  ],
+        [trans_flags, anim.trans_flags0 | (anim.trans_flags1<<32)],
+        [scale_flags, anim.scale_flags0 | (anim.scale_flags1<<32)],
+        ):
+        flags.extend(bool(flags_int & (1 << i)) for i in range(anim.node_count))
 
-SHARED_UNIT_WEAPON_ANIMATION_NAMES = frozenset((
-    'dive-front', 'dive-back', 'dive-left', 'dive-right', 'airborne',
-    'land-soft', 'land-hard', 'throw-grenade', 'berserk',
-    'surprise-front', 'surprise-back', 'evade-left', 'evade-right',
-    'signal-move', 'signal-attack', 'warn', 'melee', 'celebrate', 'panic',
-    'melee-airborne', 'flaming', 'resurrect-front', 'resurrect-back',
-    'melee-continuous', 'feeding', 'leap-start', 'leap-airborne', 'leap-melee'
-    ))
+    return rot_flags, trans_flags, scale_flags
 
 
-partial_mod2_def = TagDef("mod2",
-    Pad(64),
-    Struct('tagdata',
-        Pad(172),
-        reflexive("markers", mod2_marker_desc, 256, DYN_NAME_PATH=".name"),
-        reflexive("nodes", mod2_node_desc, 64, DYN_NAME_PATH=".name"),
-        SIZE=232
-        ),
-    ext=".gbxmodel", endian=">"
-    )
+def get_frame_size(anim):
+    r_flags, t_flags, s_flags = get_anim_flags(anim)
+    return 12*sum(t_flags) + 8*sum(r_flags) + 4*sum(s_flags)
+
+
+def get_default_data_size(anim):
+    return anim.node_count * 24 - get_frame_size(anim)
+
+
+def get_frame_info_size(anim):
+    typ     = anim.frame_info_type.data
+    fields  = (1 + typ) if typ in (1, 2, 3) else 0
+    return anim.frame_count * 4 * fields
+
+
+def get_anim_rename_map(folder="", name=""):
+    rename_map = {}
+    filepath = tagpath_to_fullpath(folder, name or "rename.txt", "", not name)
+    if not filepath:
+        return rename_map
+
+    try:
+        with open(filepath, "r", encoding="latin-1") as f:
+            for line in (line for line in f if "=" in line):
+                new, old = [op.strip() for op in line.split("=", 1)]
+                rename_map[new] = old
+    except Exception:
+        print(traceback.format_exc())
+
+    return rename_map
+
+
+def get_expected_anim_types(anim_name):
+    has_purpose, pieces, perm = split_anim_name_into_type_strings(anim_name)
+    anim_types = []
+    if not has_purpose:
+        return anim_types
+
+    part1, part2, part3, part4 = pieces
+    if part4:
+        if part4 in unit_weapon_type_animation_names:
+            if part3 in ('fire-1', 'fire-2', 'charged-1', 'charged-2'):
+                anim_types.append("overlay")
+            elif part3 == 'melee':
+                anim_types.append("replacement")
+            else:
+                anim_types.append("overlay")
+                anim_types.append("replacement")
+
+    elif part3:
+        if (part1 in unit_damage_types and  part2 in unit_damage_sides and
+            part3 in unit_damage_regions):
+            anim_types.append(
+                "overlay" if part1 in ("s-ping", "h-ping") else "base"
+                )
+
+        elif part3 in unit_weapon_animation_names:
+            if part3 in ('aim-still', 'aim-move'):
+                anim_types.append("overlay")
+            elif part3 in ('throw-grenade', 'melee', 'ready'):
+                anim_types.append("replacement")
+                anim_types.append("base")
+            elif not part3.startswith('unused'):
+                anim_types.append("base")
+
+    elif part2:
+        if ((part1 == "device"  and part2 in device_animation_names) or
+            (part1 == "vehicle" and part2 in vehicle_animation_names)):
+            anim_types.append("overlay")
+
+        elif part1 == "first-person" and part2 in fp_animation_names:
+            if part2 in ('moving', 'overlays', 'ammunition',
+                         'overcharged-jitter'):
+                anim_types.append("overlay")
+            elif not part2.startswith('light-'):
+                anim_types.append("base")
+
+        elif part2 in unit_animation_names:
+            if (part2.startswith("acc") or part2.startswith("flying-") or
+                part2 in ('push', 'twist', 'look', 'talk', 'emotions')):
+                anim_types.append("overlay")
+
+            elif part2 in ('enter', 'exit', 'opening', 'closing', 'hovering'):
+                anim_types.append("base")
+
+    elif part1 in weapon_animation_names:
+        anim_types.append("base")
+
+    return anim_types
 
 
 def split_anim_name_into_type_strings(anim_name):
-    anim_name_len = -1
-    while len(anim_name) != anim_name_len:
-        anim_name_len = len(anim_name)
-        anim_name = anim_name.replace("  ", " ")
+    anim_name = ' '.join(s for s in anim_name.split(" ") if s)
 
-    name_pieces = anim_name.split(" ", 4)
-    part1 = name_pieces[0] if len(name_pieces) > 0 else ""
-    part2 = name_pieces[1] if len(name_pieces) > 1 else ""
-    part3 = name_pieces[2] if len(name_pieces) > 2 else ""
-    part4 = name_pieces[3] if len(name_pieces) > 3 else ""
+    pieces = anim_name.split(" ", 4)
+    part1, part2, part3, part4 = (pieces.pop(0) if pieces else "" for i in range(4))
 
-    part1_sani = part1.lower().replace("_", "-")
-    part2_sani = part2.lower().replace("_", "-")
-    part3_sani = part3.lower().replace("_", "-")
-    part4_sani = part4.lower().replace("_", "-")
+    part1_sani, part2_sani, part3_sani, part4_sani = (
+        s.lower().replace("_", "-") for s in [part1, part2, part3, part4]
+        )
 
-    remainder = " ".join(name_pieces[4: ])
+    remainder = " ".join(pieces)
 
     type_strings = ()
     perm_num = ""
 
     if part1_sani == "suspension":
+        remainder, _, perm_num = split_permutation_number(remainder)
+
         if part4: remainder = " ".join((part4, remainder))
         if part3: remainder = " ".join((part3, remainder))
         if part2: remainder = " ".join((part2, remainder))
 
-        remainder, _, perm_num = split_permutation_number(remainder)
-        type_strings = part1_sani, remainder.lower(), perm_num
+        type_strings = (part1_sani, remainder.lower())
         remainder = ""
 
     elif part1_sani in ("first-person", "device", "vehicle"):
+        part2, part2_sani, perm_num = split_permutation_number(part2, remainder)
+
         if part4: remainder = " ".join((part4, remainder))
         if part3: remainder = " ".join((part3, remainder))
 
-        part2, part2_sani, perm_num = split_permutation_number(part2, remainder)
-        if ((part1_sani == "first-person" and part2_sani in fp_animation_names) or
+        if ((part1_sani == "first-person" and part2_sani in fp_animation_names_mcc) or
             (part1_sani == "vehicle" and part2_sani in vehicle_animation_names) or
             (part1_sani == "device"  and part2_sani in device_animation_names)):
-            type_strings = part1_sani, part2_sani, perm_num
+            type_strings = (part1_sani, part2_sani)
+        elif part2:
+            remainder = " ".join((part2, remainder))
 
-    elif (part1_sani in ("s-ping", "h-ping", "s-kill", "h-kill") and
-          part2_sani in ("front", "left", "right", "back")):
+    elif (part1_sani in unit_damage_types and part2_sani in unit_damage_sides):
+        part3, part3_sani, perm_num = split_permutation_number(part3, remainder)
 
         if part4: remainder = " ".join((part4, remainder))
 
-        part3, part3_sani, perm_num = split_permutation_number(part3, remainder)
-        if part3_sani in ("gut", "chest", "head", "l-arm", "l-hand", "l-leg",
-                          "l-foot", "r-arm", "r-hand", "r-leg", "r-foot"):
-            type_strings = part1_sani, part2_sani, part3_sani, perm_num
+        if part3_sani in unit_damage_regions:
+            type_strings = (part1_sani, part2_sani, part3_sani)
+        elif part3:
+            remainder = " ".join((part3, remainder))
 
-    else:
+    elif part4_sani in unit_weapon_type_animation_names:
         part4, part4_sani, perm_num = split_permutation_number(part4, remainder)
-        if part4_sani in unit_weapon_type_animation_names:
-            type_strings = part1, part2, part3, part4_sani, perm_num
 
-        else:
-            part3, part3_sani, perm_num = split_permutation_number(part3, remainder)
-            if part3_sani in unit_weapon_animation_names:
-                if part4: remainder = " ".join((part4, remainder))
+        type_strings = (part1, part2, part3, part4_sani)
 
-                type_strings = part1, part2, part3_sani, perm_num
+    elif part3_sani in unit_weapon_animation_names:
+        part4, part4_sani, perm_num = split_permutation_number(part4, remainder)
+        part3, part3_sani, perm_num = split_permutation_number(part3, remainder)
 
-            else:
-                part2, part2_sani, perm_num = split_permutation_number(part2, remainder)
-                if part2_sani in unit_animation_names:
-                    if part4: remainder = " ".join((part4, remainder))
-                    if part3: remainder = " ".join((part3, remainder))
+        if part4: remainder = " ".join((part4, remainder))
 
-                    type_strings = part1, part2_sani, perm_num
-                else:
-                    remainder = True
+        type_strings = (part1, part2, part3_sani, '')
+
+    elif part2_sani in unit_animation_names:
+        part2, part2_sani, perm_num = split_permutation_number(part2, remainder)
+
+        if part4: remainder = " ".join((part4, remainder))
+        if part3: remainder = " ".join((part3, remainder))
+
+        type_strings = (part1, part2_sani)
+
+    type_strings += ('',) * (4-len(type_strings))
 
     # nothing should have a remainder. if it does, it doesnt fit the criteria,
     # and we should just return it split at the permutation character
-    if remainder:
-        name_pieces = anim_name.lower().split("%")
-        if len(name_pieces) > 1:
-            anim_name = "%".join(name_pieces[: -1])
-            perm_num  = name_pieces[-1]
+    if remainder or not any(type_strings):
+        pieces = anim_name.lower().split("%")
+        if len(pieces) > 1:
+            anim_name = "%".join(pieces[: -1])
+            perm_num  = pieces[-1]
 
-        return False, (anim_name, perm_num)
+        return False, (anim_name, '', '', ''), perm_num
 
-    return True, type_strings
+    return True, type_strings, perm_num
 
 
 def split_permutation_number(*strings):
@@ -160,24 +237,29 @@ def set_animation_enum_index(anim_enums, enum_index, anim_index,
     return True
 
 
-def get_default_animation_enums(anim_enums, defaults):
-    for i in defaults:
-        if i not in range(len(anim_enums)):
-            continue
-        elif anim_enums[i].animation >= 0 and defaults[i] < 0:
+def _get_set_default_enums(anim_enums, defaults, extend, do_set):
+    if extend:
+        anim_enums.extend(max([-1, *defaults]) + 1 - len(anim_enums))
+
+    for i, anim in enumerate(anim_enums):
+        curr_idx, def_idx = anim.animation, defaults.get(i, -1)
+
+        if not do_set and i in defaults and curr_idx >= 0 and def_idx < 0:
             # this animation is set, and we DON'T have a valid default.
             # set the default to this valid animation enum
-            defaults[i] = anim_enums[i].animation
-
-
-def set_default_animation_enums(anim_enums, defaults):
-    for i in defaults:
-        if i not in range(len(anim_enums)):
-            continue
-        elif anim_enums[i].animation < 0 and defaults[i] >= 0:
+            defaults[i] = curr_idx
+        elif do_set and curr_idx < 0 and def_idx >= 0:
             # this animation is unset, and we DO have a valid default.
             # set this animation enum to the valid default
-            anim_enums[i].animation = defaults[i]
+            anim.animation = def_idx
+
+
+def get_default_enums(anim_enums, defaults, extend=False):
+    _get_set_default_enums(anim_enums, defaults, extend, False)
+
+
+def set_default_enums(anim_enums, defaults, extend=False):
+    _get_set_default_enums(anim_enums, defaults, extend, True)
 
 
 def set_animation_index(antr_tag, anim_name, anim_index,
@@ -194,14 +276,8 @@ def set_animation_index(antr_tag, anim_name, anim_index,
     antr_anims = tagdata.animations.STEPTREE
     antr_nodes = tagdata.nodes.STEPTREE
 
-    _, name_pieces = split_anim_name_into_type_strings(anim_name)
-    name_pieces = list(name_pieces)
-    perm_num = name_pieces.pop(-1)
-
-    part1 = name_pieces[0] if len(name_pieces) > 0 else ""
-    part2 = name_pieces[1] if len(name_pieces) > 1 else ""
-    part3 = name_pieces[2] if len(name_pieces) > 2 else ""
-    part4 = name_pieces[3] if len(name_pieces) > 3 else ""
+    _, pieces, perm_num = split_anim_name_into_type_strings(anim_name)
+    part1, part2, part3, part4 = pieces
 
     if part1 in ("vehicle", "suspension") and len(antr_vehicles) < 1:
         # default right/left yaw/pitch to 1 frame count
@@ -215,9 +291,10 @@ def set_animation_index(antr_tag, anim_name, anim_index,
 
     if part1 == "suspension":
         anim_name = anim_name.split(" ", 1)[1]
-        anim_enums = antr_vehicles[0].suspension_animations.STEPTREE
-        if len(anim_enums) >= 8:
-            # max of 8 suspension animations
+        susp_anims = antr_vehicles[0].suspension_animations
+        anim_enums = susp_anims.STEPTREE
+        if len(anim_enums) >= get_block_max(susp_anims):
+            # at the limit of suspension animations
             return False
 
         anim_enums.append()
@@ -226,7 +303,8 @@ def set_animation_index(antr_tag, anim_name, anim_index,
 
     elif part1 in ("first-person", "device", "vehicle"):
         if part1 == "first-person":
-            options = fp_animation_names
+            # NOTE: using mcc because they're the same, with an extension
+            options = fp_animation_names_mcc
             block = antr_fp_animations
         elif part1 == "device":
             options = device_animation_names
@@ -238,15 +316,20 @@ def set_animation_index(antr_tag, anim_name, anim_index,
         if not block:
             block.append()
 
+        # trim the options to how many are actually allowed
+        # NOTE: this is really just for fp_animation_names_mcc
+        max_anims   = get_block_max(block[0].animations)
+        options     = options[:max_anims]
         try:
             enum_index = options.index(part2)
         except ValueError:
             return False
 
-        return set_animation_enum_index(block[0].animations.STEPTREE, enum_index,
-                                        anim_index, indices_to_not_overwrite)
+        return set_animation_enum_index(
+            block[0].animations.STEPTREE, enum_index,
+            anim_index, indices_to_not_overwrite)
 
-    elif part1 in ("s-ping", "h-ping", "s-kill", "h-kill"):
+    elif part1 in unit_damage_types:
         # divided into 16 chunks of 11 sets of animations
         #   NOTE: Defaults to "gut" if no matches can be found
         #         Otherwise, defaults to the first matching
@@ -270,6 +353,9 @@ def set_animation_index(antr_tag, anim_name, anim_index,
         # sections of 11 animations, each in this order:
         #     front, left, right, back
         #
+        # NOTE: left, right, and back default to front
+        #       they do NOT default to any of each other
+        #
         #   0 -  43  ==  s-ping
         #  44 -  87  ==  h-ping
         #  88 - 131  ==  s-kill
@@ -287,8 +373,8 @@ def set_animation_index(antr_tag, anim_name, anim_index,
         except ValueError:
             return False
 
-        if len(antr_unit_damages) < 176:
-            antr_unit_damages.extend(176 - len(antr_unit_damages))
+        if len(antr_unit_damages) < 11*4*4:
+            antr_unit_damages.extend(11*4*4 - len(antr_unit_damages))
 
         indices_to_set = range(1, 11)
         if   enum_index == 1: indices_to_set = [2, 3, 4, 7, 8]
@@ -338,7 +424,7 @@ def set_animation_index(antr_tag, anim_name, anim_index,
             break
 
     if unit is None:
-        if len(antr_units) >= antr_units.MAX:
+        if len(antr_units) >= get_block_max(antr_units.parent):
             return False
 
         antr_units.append()
@@ -369,7 +455,7 @@ def set_animation_index(antr_tag, anim_name, anim_index,
             break
 
     if unit_weap is None:
-        if len(unit_weaps) >= unit_weaps.MAX:
+        if len(unit_weaps) >= get_block_max(unit_weaps.parent):
             return False
 
         unit_weaps.append()
@@ -397,7 +483,7 @@ def set_animation_index(antr_tag, anim_name, anim_index,
             break
 
     if unit_weap_type is None:
-        if len(unit_weap_types) >= unit_weap_types.MAX:
+        if len(unit_weap_types) >= get_block_max(unit_weap_types.parent):
             return False
 
         unit_weap_types.append()
@@ -410,16 +496,57 @@ def set_animation_index(antr_tag, anim_name, anim_index,
                                     indices_to_not_overwrite)
 
 
-def calculate_node_vectors(antr_nodes, mod2_nodes, jma_anims):
-    # NOTE: The base vector is a ray starting at the node that points
-    # relative to the parent node. It points toward the center of the
-    # bounds of all the rotations of that node across all animations.
-    # The vector range is twice the max rotation in any direction that
-    # node will vary across all animations.
-    # ball-socket type means the joint can pitch, yaw, and roll freely.
-    # hinge type means the joint can pitch and roll freely.
+def sanitize_animation_indices(antr_tag):
+    tagdata = antr_tag.data.tagdata
+    antr_units        = tagdata.units.STEPTREE
+    antr_unit_damages = tagdata.unit_damages.STEPTREE
 
-    # The cyborgs head has a base vector of 80 degrees, points up, and
-    # the joint is set as a ball socket. This means the head can pitch,
-    # yaw, and roll 40 degrees in any direction from the base vector.
-    pass
+    # fill in the remaining unit damages
+    max_dmg_ct = 11*4*4 if antr_unit_damages else 0
+    antr_unit_damages.extend(max_dmg_ct - len(antr_unit_damages))
+
+    # loop over  s-ping, h-ping, s-kill, h-kill
+    for i in range(0, max_dmg_ct, 4*11):
+        # the left, right, and back sides default to the front
+        # make a collection of defaults for all sides of this region
+        defs = {}
+        for j in range(11):
+            idx = antr_unit_damages[i + j].animation
+            defs.update({k: idx for k in range(i+j+11, i+j+44, 11)})
+
+        set_default_enums(antr_unit_damages, defs)
+
+    unit_defs = {
+        i: -1 for i, name in
+        enumerate(unit_animation_names)
+        if name in const.SHARED_UNIT_ANIMATION_NAMES
+        }
+    all_weap_defs = [{
+        i: -1 for i, name in
+        enumerate(unit_weapon_animation_names)
+        if name in const.SHARED_UNIT_WEAPON_ANIMATION_NAMES
+        } for _ in antr_units]
+
+    # get the unit animations with applicable ones from all units.
+    # do this in reverse since thats what tool seems to do.
+    for unit, weap_defs in zip(antr_units[::-1], reversed(all_weap_defs)):
+        get_default_enums(unit.animations.STEPTREE, unit_defs)
+        for weap in unit.weapons.STEPTREE:
+            get_default_enums(weap.animations.STEPTREE, weap_defs)
+
+    # strip any unused animation indices
+    unit_defs     =  {k: v for k, v in unit_defs.items() if v >= 0}
+    all_weap_defs = [{k: v for k, v in weap_defs.items() if v >= 0}
+                     for weap_defs in all_weap_defs]
+
+    # default any unset unit animations with the found defaults.
+    for unit, weap_defs in zip(antr_units, all_weap_defs):
+        set_default_enums(unit.animations.STEPTREE, unit_defs, True)
+
+        for weap in unit.weapons.STEPTREE:
+            set_default_enums(weap.animations.STEPTREE, weap_defs, True)
+
+            # ensure each unit weapon at least has an empty types block
+            # to ensure they are able to enter gunner seats of vehicles
+            if not weap.weapon_types.STEPTREE:
+                weap.weapon_types.STEPTREE.append()

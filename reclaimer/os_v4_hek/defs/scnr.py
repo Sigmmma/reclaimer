@@ -19,7 +19,6 @@ lightmap_set = Struct("lightmap_set",
     SIZE=124
     )
 
-
 sky_set_sky = Struct("sky",
     Pad(2),
     dyn_senum16("sky_index",
@@ -28,13 +27,11 @@ sky_set_sky = Struct("sky",
     SIZE=20
     )
 
-
 sky_set = Struct("sky_set",
     ascii_str32("name"),
     reflexive("skies", sky_set_sky, 8),
     SIZE=44
     )
-
 
 bsp_modifier = Struct("bsp_modifier",
     Pad(2),
@@ -45,9 +42,9 @@ bsp_modifier = Struct("bsp_modifier",
     SIZE=64
     )
 
-
-scnr_body = dict(scnr_body)
-scnr_body[64] = reflexive("bsp_modifiers", bsp_modifier, 32)
+scnr_body = desc_variant(scnr_body,
+    ("pad_65", reflexive("bsp_modifiers", bsp_modifier, 32)),
+    )
 
 def get():
     return scnr_def
@@ -56,5 +53,5 @@ scnr_def = TagDef("scnr",
     blam_header('scnr', 2),
     scnr_body,
 
-    ext=".scenario", endian=">", tag_cls=HekTag
+    ext=".scenario", endian=">", tag_cls=ScnrTag
     )

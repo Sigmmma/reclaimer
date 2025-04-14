@@ -21,7 +21,8 @@ import os
 from math import sqrt
 
 DEFAULT_TEX = 0
-MAX_STRIP_LEN = 2**32-4
+MAX_STRIP_LEN  = 2**32-4
+MAX_VERT_COUNT = 2**32-1
 
 
 class StripTri(list):
@@ -54,7 +55,8 @@ class StripTri(list):
 class Stripifier():
     ''''''
     # the max length a strip can be
-    max_strip_len = MAX_STRIP_LEN
+    max_strip_len  = MAX_STRIP_LEN
+    max_vert_count = MAX_VERT_COUNT
 
     # whether or not the strips have all been linked together
     linked = False
@@ -117,7 +119,7 @@ class Stripifier():
 
         strip_dir = self._winding
 
-        seen = set()
+        seen_tris = set()
         set_added = bool(set_added)
 
         '''navigate the strip in reverse to find the best place to start'''
@@ -127,7 +129,7 @@ class Stripifier():
             tri = tri.siblings[neighbor_i]
 
             # exit if the strip has ended
-            if tri is None or tri.added or id(tri) in seen:
+            if tri is None or tri.added or id(tri) in seen_tris:
                 tri = last_tri
                 break
 
@@ -138,10 +140,10 @@ class Stripifier():
             # reverse the direction of travel
             # and set the triangle as seen
             strip_dir = not strip_dir
-            seen.add(id(last_tri))
+            seen_tris.add(id(last_tri))
 
-        # reset the seen set
-        seen = set()
+        seen_tris  = set()
+        seen_verts = set()
 
         # make a strip starting with the first 2 verts to the triangle
         strip = [tri[neighbor_i], tri[(neighbor_i + 1) % 3]]
@@ -151,7 +153,10 @@ class Stripifier():
         '''loop over triangles until the length is maxed or
         we reach a triangle without a neighbor on that edge'''
         curr_dir = strip_dir
-        while not(tri.added or id(tri) in seen or len(strip) > self.max_strip_len):
+        while not(tri.added or id(tri) in seen_tris or
+                  len(strip)      >= self.max_strip_len or
+                  len(seen_verts) >= self.max_vert_count
+                  ):
             # get the index of the vert that will be added to the strip
             v_i = tri[(neighbor_i + 2) % 3]
 
@@ -168,7 +173,8 @@ class Stripifier():
             # as added and seen, and increment the strip length
             last_tri.added = set_added
             curr_dir = not curr_dir
-            seen.add(id(last_tri))
+            seen_tris.add(id(last_tri))
+            seen_verts.add(v_i)
 
             # exit if the strip has ended
             if tri is None: break
@@ -190,8 +196,9 @@ class Stripifier():
         all_strips = self.all_strips
         all_face_dirs = self.all_face_dirs
 
-        max_len = self.max_strip_len
-        winding = self._winding
+        max_len  = self.max_strip_len
+        max_vert = self.max_vert_count
+        winding  = self._winding
 
         for tex_index in all_strips:
             strips = all_strips[tex_index]
@@ -273,6 +280,7 @@ class Stripifier():
                     strip0_dir = not strip0_dir
 
                 # link strips together until their length is maxed
+                seen_verts = set(strip0)
                 while strip_i < strip_ct:
                     strip1 = fully_sorted_strips[strip_i]
                     strip1_dir = fully_sorted_face_dirs[strip_i]
@@ -283,8 +291,10 @@ class Stripifier():
                     add_degen = (end_dir0 == strip1_dir)
 
                     strip_i += 1
+                    seen_verts.update(strip1)
                     # if the strip being added is empty, skip it
-                    if len0 + len1 + add_degen + 2 > max_len:
+                    if ((len0 + len1 + add_degen + 2) > max_len or
+                        len(seen_verts) > max_vert):
                         # total length will be over max. dont try to combine
                         break
                     elif len1 == 0:

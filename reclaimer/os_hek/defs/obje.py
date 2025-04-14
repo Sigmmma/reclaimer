@@ -9,16 +9,13 @@
 
 from ...hek.defs.obje import *
 
+obje_attrs = desc_variant(obje_attrs,
+    dependency('animation_graph', valid_model_animations_yelo)
+    )
+obje_attrs = obje_attrs_variant(obje_attrs)
+
 def get():
     return obje_def
-
-# replace the model animations dependency with an open sauce one
-obje_attrs = dict(obje_attrs)
-obje_attrs[8] = dependency('animation_graph', valid_model_animations_yelo)
-
-obje_body = Struct('tagdata',
-    obje_attrs
-    )
 
 obje_def = TagDef("obje",
     blam_header('obje'),

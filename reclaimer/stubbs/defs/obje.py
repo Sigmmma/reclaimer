@@ -13,8 +13,7 @@ from ..common_descs import *
 def get():
     return obje_def
 
-obje_attrs = dict(obje_attrs)
-obje_attrs[7] = dependency_stubbs('model', 'mode')
+obje_attrs = desc_variant(obje_attrs, dependency_stubbs('model', 'mode'))
 
 obje_body = Struct('tagdata',
     obje_attrs,
@@ -27,6 +26,3 @@ obje_def = TagDef("obje",
 
     ext=".object", endian=">", tag_cls=ObjeTag
     )
-
-def get():
-    return obje_def

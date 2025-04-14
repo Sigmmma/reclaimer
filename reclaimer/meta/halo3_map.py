@@ -45,35 +45,32 @@ def compute_section_offset(parent, **kwargs):
     parent.file_offset = file_offset
 
 
-def virtual_ptr_to_file_ptr(ptr, section=0, map_header=None, **kwargs):
+def virtual_ptr_to_file_ptr(ptr, sect_num=0, map_header=None, **kwargs):
     if not map_header:
         return ptr
-    elif section in (0, 1, 3):
-        for section in map_header.sections:
-            if ptr in range(section.virtual_address,
-                            section.virtual_address + section.size):
-                return ptr - section.virtual_address + section.file_offset
+    elif sect_num in (0, 1, 3):
+        for sect in map_header.sections:
+            if ptr in range(sect.virtual_address,
+                            sect.virtual_address + sect.size):
+                return ptr - sect.virtual_address + sect.file_offset
     else:
-        for partition in map_header.partitions:
-            if ptr in range(partition.load_address,
-                            partition.load_address + partition.size):
-                return ptr - partition.load_address + partition.file_offset
+        for part in map_header.partitions:
+            if ptr in range(part.load_address, part.load_address + part.size):
+                return ptr - part.load_address + part.file_offset
     raise ValueError("Pointer '%s' is not in any partitions." % ptr)
 
 
-def file_ptr_to_virtual_ptr(ptr, section=0, map_header=None, **kwargs):
+def file_ptr_to_virtual_ptr(ptr, sect_num=0, map_header=None, **kwargs):
     if not map_header:
         return ptr
-    elif section in (0, 1, 3):
-        for section in map_header.sections:
-            if ptr in range(section.file_offset,
-                            section.file_offset + section.size):
-                return ptr - section.file_offset + section.virtual_address
+    elif sect_num in (0, 1, 3):
+        for sect in map_header.sections:
+            if ptr in range(sect.file_offset, sect.file_offset + sect.size):
+                return ptr - sect.file_offset + sect.virtual_address
     else:
-        for partition in map_header.partitions:
-            if ptr in range(partition.file_offset,
-                            partition.file_offset + partition.size):
-                return ptr - partition.file_offset + partition.load_address
+        for part in map_header.partitions:
+            if ptr in range(part.file_offset, part.file_offset + part.size):
+                return ptr - part.file_offset + part.load_address
     raise ValueError("Pointer '%s' is not in any partitions." % ptr)
 
 
@@ -174,16 +171,7 @@ h3_map_header = Struct("map header",
     UEnum32('head', ('head', 'head'),
         EDITABLE=False, VISIBLE=False, DEFAULT='head'
         ),
-    UEnum32("version",
-        ("halo1xbox",   5),
-        ("halo1pcdemo", 6),
-        ("halo1pc", 7),
-        ("halo2", 8),
-        ("halo3beta", 9),
-        ("halo3", 11),
-        ("haloreach", 12),
-        ("halo1ce", 609),
-        ),
+    map_version, # NOTE: in common_descs.py
     UInt32("decomp len"),
     UInt32("unknown0", VISIBLE=False),
     UInt32("tag index header offset"),
@@ -192,13 +180,7 @@ h3_map_header = Struct("map header",
     Pad(256),
 
     ascii_str32("build date"),
-    UEnum16("map type",
-        "sp",
-        "mp",
-        "ui",
-        "shared",
-        "sharedsp",
-        ),
+    gen2_map_type, # NOTE: in common_descs.py
     UInt16("unknown2", VISIBLE=False),
     UInt8("unknown3", VISIBLE=False),
     UInt8("unknown4", VISIBLE=False),

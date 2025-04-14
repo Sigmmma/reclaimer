@@ -7,18 +7,14 @@
 # See LICENSE for more information.
 #
 
-from ...common_descs import *
-from ...hek.defs.objs.tag import HekTag
-from supyr_struct.defs.tag_def import TagDef
+from ...hek.defs.tagc import *
 
-tag_reference = Struct("tag_reference",
-    dependency_os("tag"),
-    SIZE=16
-    )
+tag_reference = desc_variant(tag_reference, dependency_os("tag"))
 
-tagc_body = Struct("tagdata",
-    reflexive("tag_references", tag_reference, 200),
-    SIZE=12,
+tagc_body = desc_variant(tagc_body,
+    reflexive("tag_references", tag_reference, 200,
+        DYN_NAME_PATH='.tag.filepath'
+        )
     )
 
 

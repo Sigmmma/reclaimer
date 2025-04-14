@@ -9,7 +9,8 @@
 
 import os
 
-from reclaimer.model.jms import JmsVertex
+from reclaimer.constants import LOD_NAMES, SINT16_MAX
+from reclaimer.jm.jms import JmsVertex
 from reclaimer.hek.defs.scex import scex_def
 from reclaimer.hek.defs.schi import schi_def
 from reclaimer.hek.defs.senv import senv_def
@@ -31,17 +32,21 @@ __all__ = (
 
 
 mod2_verts_def = BlockDef(
-    raw_reflexive("vertices", mod2_vert_struct, 65535),
+    raw_reflexive("vertices", mod2_vert_struct, SINT16_MAX),
     endian='>'
     )
 
 mod2_tri_strip_def = BlockDef(
-    raw_reflexive("triangle", mod2_tri_struct, 65535),
+    raw_reflexive("triangle", mod2_tri_struct, SINT16_MAX),
     endian='>'
     )
 
-LOD_NAMES = ("superhigh", "high", "medium", "low", "superlow")
-MAX_STRIP_LEN = 32763 * 3
+# NOTE: strip are actually stored in chunks of 3 indices across up to 32766 
+#       tri blocks, so the strip length is 3*count-2(the last 2 are degens)
+#       the vertex count is still limited to 32767, so in order to enforce
+#       that limit isn't hit, we're limiting the max strip length to it too.
+MAX_VERT_COUNT = 32767
+MAX_STRIP_LEN  = 32766*3
 
 EMPTY_GEOM_VERTS = (
     JmsVertex(0, 0.000000001, 0.0, 0.0,

@@ -9,7 +9,7 @@
 
 from pathlib import Path
 from reclaimer.util.matrices import Matrix, matrix_to_quaternion
-from reclaimer.model.jms import write_jms, JmsModel, JmsNode, JmsMarker, util
+from reclaimer.jm.jms import write_jms, JmsModel, JmsNode, JmsMarker, util
 
 __all__ = ("extract_physics", )
 

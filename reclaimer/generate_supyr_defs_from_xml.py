@@ -857,26 +857,27 @@ def parse_xml(xml_path, version_infos):
     return nodes
 
 
-timestamp = datetime.now().strftime("%Y/%m/%d  %H:%M")
-for _, dirs, __ in os.walk("xml/"):
-    tag_def_dirs = dict.fromkeys(dirs)
-    for tag_def_dir in tag_def_dirs:
-        for _, __, files in os.walk(os.path.join("xml", tag_def_dir)):
-            tag_def_dirs[tag_def_dir] = tuple(f[: -4] for f in files if
-                                              f.lower().endswith(".xml"))
-    break
+def locate_xml_files(root):
+    tag_def_dirs = {}
+    for _, dirs, __ in os.walk(root):
+        tag_def_dirs.update(dict.fromkeys(dirs))
+        for tag_def_dir in tag_def_dirs:
+            for _, __, files in os.walk(os.path.join("xml", tag_def_dir)):
+                tag_def_dirs[tag_def_dir] = tuple(f[: -4] for f in files if
+                                                  f.lower().endswith(".xml"))
+        break
+    return tag_def_dirs
 
 
-for tag_def_dir in sorted(tag_def_dirs):
-
+def xml_to_supyr_def(defs_dir, engine, xml_filepaths,
+                     timestamp=datetime.now().strftime("%Y/%m/%d  %H:%M")):
     # TODO: Make this more versatile
-    tag_engine_cls_name = tag_def_dir.upper() + "Tag"
+    tag_engine_cls_name = engine.upper() + "Tag"
 
-    defs_dir = os.path.join(tag_def_dir, "defs")
     os.makedirs(defs_dir, exist_ok=True)
 
-    common_descs_filepath = os.path.join(tag_def_dir, "common_descs.py")
-    enum_descs_filepath = os.path.join(tag_def_dir, "enums.py")
+    common_descs_filepath = os.path.join(engine, "common_descs.py")
+    enum_descs_filepath = os.path.join(engine, "enums.py")
     if not os.path.exists(common_descs_filepath):
         with open(common_descs_filepath, "w+") as pyf:
             pyf.write('''from reclaimer.common_descs import *\n''')
@@ -885,7 +886,7 @@ for tag_def_dir in sorted(tag_def_dirs):
     with open(os.path.join(defs_dir, "__init__.py"), "w+") as pyf:
         pyf.write('__all__ = (')
         i = 0
-        for fname in sorted(tag_def_dirs[tag_def_dir]):
+        for fname in sorted(xml_filepaths):
             if i % 8 == 0:
                 pyf.write('\n    ')
             module_name = "".join(c if c in VALID_MODULE_NAME_CHARS
@@ -903,8 +904,8 @@ for tag_def_dir in sorted(tag_def_dirs):
 
     # convert all xml's into struct node trees
     print("Parsing XML's...")
-    for fname in tag_def_dirs[tag_def_dir]:
-        xml_path = os.path.join("xml", tag_def_dir, fname + ".xml")
+    for fname in xml_filepaths:
+        xml_path = os.path.join("xml", engine, fname + ".xml")
         version_infos = []
         tag_struct_nodes = parse_xml(xml_path, version_infos)
         if tag_struct_nodes is None:
@@ -922,7 +923,7 @@ for tag_def_dir in sorted(tag_def_dirs):
         struct_node_to_supyr_desc(deepcopy(all_tag_struct_nodes[fname]),
                                   descs_by_name, enum_bool_names_by_desc,
                                   shared_enum_bool_names_by_desc,
-                                  tag_def_dir, report_optimize=False)
+                                  engine, report_optimize=False)
         for desc_str, desc_name in enum_bool_names_by_desc.items():
             if desc_str in all_enum_bool_names_by_desc:
                 shared_enum_bool_names_by_desc[desc_str] = desc_name
@@ -953,7 +954,7 @@ for tag_def_dir in sorted(tag_def_dirs):
         struct_node_to_supyr_desc(tag_struct_nodes, descs_by_name,
                                   enum_bool_names_by_desc,
                                   shared_enum_bool_names_by_desc,
-                                  tag_def_dir, report_optimize=True)
+                                  engine, report_optimize=True)
 
         module_name = "".join(c if c in VALID_MODULE_NAME_CHARS
                               else "_" for c in tag_cls)
@@ -1001,7 +1002,15 @@ from supyr_struct.defs.tag_def import TagDef''')
     %s_body,
 
     ext=".%%s" %% %s_tag_class_fcc_to_ext["%s"], endian=">", tag_cls=%s
-    )''' % (module_name, tag_cls, tag_def_dir, tag_cls, module_name,
-            tag_def_dir, tag_cls, tag_engine_cls_name))
+    )''' % (module_name, tag_cls, engine, tag_cls, module_name,
+            engine, tag_cls, tag_engine_cls_name))
 
-print("Finished")
+def run(root):
+    xml_files_by_engine = locate_xml_files(root)
+    for engine in sorted(xml_files_by_engine): #pylint disable=W0621
+        xml_to_supyr_def(os.path.join(engine, "defs"),
+                         engine, xml_files_by_engine[engine])
+    print("Finished")
+
+if __name__ == "__main__":
+    run("xml")

@@ -67,22 +67,20 @@ For all intents and purposes, "ima adpcm" is useless.
 """
     )
 
-
 permutation = Struct('permutation',
     ascii_str32("name"),
     Float("skip_fraction"),
     Float("gain", DEFAULT=1.0),
     compression,
     SInt16("next_permutation_index", DEFAULT=-1),
-    FlSInt32("unknown0", VISIBLE=False),
-    FlUInt32("unknown1", VISIBLE=False),  # always zero?
-    FlUInt32("unknown2", VISIBLE=False),
-    # this is actually the required length of the ogg
+    UInt32("sample_data_pointer", VISIBLE=False),
+    UInt32("unknown", VISIBLE=False),  # always zero?
+    UInt32("parent_tag_id", VISIBLE=False),
+    # for ogg vorbis, this is the required length of the
     # decompression buffer. For "none" compression, this
-    # mirrors samples.size, so a more appropriate name
-    # for this field should be pcm_buffer_size
-    FlUInt32("ogg_sample_count", EDITABLE=False),
-    FlUInt32("unknown3", VISIBLE=False),  # seems to always be == unknown2
+    # mirrors samples.size
+    FlUInt32("buffer_size", EDITABLE=False),
+    UInt32("parent_tag_id2", VISIBLE=False),
     rawdata_ref("samples", max_size=4194304, widget=SoundSampleFrame),
     rawdata_ref("mouth_data", max_size=8192),
     rawdata_ref("subtitle_data", max_size=512),
@@ -101,7 +99,8 @@ pitch_range = Struct('pitch_range',
     SInt32("unknown2", VISIBLE=False, DEFAULT=-1),
 
     reflexive("permutations", permutation, 256,
-        DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True),
+        DYN_NAME_PATH='.name', IGNORE_SAFE_MODE=True, EXT_MAX=SINT16_MAX
+        ),
     SIZE=72,
     )
 
@@ -150,12 +149,15 @@ snd__body = Struct("tagdata",
     compression,
     dependency("promotion_sound", "snd!"),
     SInt16("promotion_count"),
-    SInt16("unknown1", VISIBLE=False),
-    Struct("unknown2", INCLUDE=rawdata_ref_struct, VISIBLE=False),
+    Pad(2),
+    FlUInt32("max_play_length", VISIBLE=False),
+    Pad(8),
+    FlUInt32("unknown1", VISIBLE=False, DEFAULT=0xFFFFFFFF),
+    FlUInt32("unknown2", VISIBLE=False, DEFAULT=0xFFFFFFFF),
     reflexive("pitch_ranges", pitch_range, 8,
         DYN_NAME_PATH='.name'),
 
-    SIZE=164,
+    SIZE=164, WIDGET=SoundPlayerFrame
     )
 
 
@@ -170,6 +172,6 @@ snd__def = TagDef("snd!",
     )
 
 snd__meta_stub = desc_variant(
-    snd__body, ("pitch_ranges", Pad(12))
+    snd__body, ("pitch_ranges", reflexive_struct)
     )
 snd__meta_stub_blockdef = BlockDef(snd__meta_stub)

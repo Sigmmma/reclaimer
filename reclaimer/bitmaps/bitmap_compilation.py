@@ -12,7 +12,10 @@ from traceback import format_exc
 
 from arbytmap.bitmap_io import get_channel_order_by_masks,\
      get_channel_swap_mapping, swap_array_items
+from arbytmap.format_defs import clip_dimensions
+from arbytmap.dds_defs import clip_dxt_dimensions
 from supyr_struct.defs.bitmaps.dds import dds_def
+from reclaimer.util import get_block_max
 
 __all__ = ("compile_bitmap_from_dds_files", "add_bitmap_to_bitmap_tag",
            "parse_dds_file", )
@@ -45,16 +48,20 @@ def add_bitmap_to_bitmap_tag(bitm_tag, width, height, depth, typ, fmt,
                              mip_count, new_pixels, seq_name=""):
     bitm_data = bitm_tag.data.tagdata
     sequences = bitm_data.sequences.STEPTREE
-    bitmaps = bitm_data.bitmaps.STEPTREE
-    seq_name = seq_name[: 31]
+    bitmaps   = bitm_data.bitmaps.STEPTREE
+    seq_name  = seq_name[: 31]
 
-    if len(bitmaps) >= 2048:
-        raise ValueError("Cannot add more bitmaps(max of 2048 per tag).")
+    max_bitmaps     = get_block_max(bitm_data.bitmaps)
+    max_sequences   = get_block_max(bitm_data.sequences)
+    max_pixel_bytes = get_block_max(bitm_data.processed_pixel_data)
+
+    if len(bitmaps) >= max_bitmaps:
+        raise ValueError("Cannot add more bitmaps(max of %s per tag)." % max_bitmaps)
 
     bitmaps.append()
     if not sequences or sequences[-1].sequence_name != seq_name:
-        if len(sequences) >= 256:
-            print("Cannot add more sequences(max of 256 per tag).")
+        if len(sequences) >= max_sequences:
+            print("Cannot add more sequences(max of %s per tag)." % max_sequences)
         else:
             sequences.append()
             sequences[-1].sequence_name = seq_name
@@ -64,6 +71,10 @@ def add_bitmap_to_bitmap_tag(bitm_tag, width, height, depth, typ, fmt,
     bitm_block = bitmaps[-1]
     if seq_block.sequence_name == seq_name:
         seq_block.bitmap_count += 1
+
+    if fmt not in bitm_block.format.NAME_MAP:
+        raise ValueError("%s does not support the bitmap format '%s'" %
+                         (type(bitm_tag), fmt))
 
     if len(bitmaps) == 1:
         if typ == "texture_2d":
@@ -85,9 +96,11 @@ def add_bitmap_to_bitmap_tag(bitm_tag, width, height, depth, typ, fmt,
             bitm_data.format.set_to("color_32bit")
         elif fmt in ("a8", "y8", "ay8", "a8y8"):
             bitm_data.format.set_to("monochrome")
+        elif fmt == "bc7":
+            bitm_data.format.set_to("high_quality_compression")
 
     bitm_block.bitm_id.set_to("bitm")
-    if fmt in ("dxt1", "dxt3", "dxt5"):
+    if fmt in ("dxt1", "dxt3", "dxt5", "bc7"):
         bitm_block.flags.compressed = True
     bitm_block.flags.power_of_2_dim = True
 
@@ -102,6 +115,9 @@ def add_bitmap_to_bitmap_tag(bitm_tag, width, height, depth, typ, fmt,
 
     bitm_block.pixels_offset = len(bitm_data.processed_pixel_data.data)
 
+    if len(bitm_data.processed_pixel_data.data) + len(new_pixels) >= max_pixel_bytes:
+        raise ValueError("Cannot add more pixel data(max of %s bytes per tag)." % max_pixel_bytes)
+
     # place the pixels from the dds tag into the bitmap tag
     bitm_data.processed_pixel_data.data += new_pixels
 
@@ -111,8 +127,7 @@ def parse_dds_file(filepath):
     dds_head = dds_tag.data.header
     caps  = dds_head.caps
     caps2 = dds_head.caps2
-    pixelformat = dds_head.dds_pixelformat
-    pf_flags = pixelformat.flags
+    pf = dds_head.dds_pixelformat
     dds_pixels = dds_tag.data.pixel_data
     if caps2.cubemap and not(caps2.pos_x and caps2.neg_x and
                              caps2.pos_y and caps2.neg_y and
@@ -127,21 +142,17 @@ def parse_dds_file(filepath):
             "    contain a pixelformat structure.")
 
     # get the dimensions
-    width = dds_head.width
+    width  = dds_head.width
     height = dds_head.height
-    depth = dds_head.depth
+    depth  = dds_head.depth
     mip_count = max(dds_head.mipmap_count - 1, 0)
     if not caps2.volume:
         depth = 1
 
     # set up the flags
-    fcc = pixelformat.four_cc.enum_name
-    min_w = min_h = min_d = 1
-    if fcc in ("DXT1", "DXT2", "DXT3", "DXT4", "DXT5"):
-        min_w = min_h = 4
-
-    bitm_format = ""
+    fcc = pf.four_cc.enum_name if pf.flags.four_cc else None
     bpp = 8  # bits per pixel
+    bitm_format = ""
     channel_map = None
 
     # choose bitmap format
@@ -152,27 +163,42 @@ def parse_dds_file(filepath):
         bitm_format = "dxt3"
     elif fcc in ("DXT4", "DXT5"):
         bitm_format = "dxt5"
-    elif pf_flags.rgb_space:
-        bitcount = pixelformat.rgb_bitcount
+    elif fcc == "DX10":
+        dx10_head = dds_tag.data.dxt10_header
+        dx10_fmt  = dx10_head.format.enum_name[:3]
+        # NOTE: we don't really care about if the alpha is premultiplied
+        #       or not since we don't intend to do anything about it
+        if dx10_fmt == "BC1":
+            bitm_format = "dxt1"
+            bpp = 4
+        elif dx10_fmt in ("BC2", "BC3"):
+            bitm_format = "dxt3"
+        elif dx10_fmt in ("BC4", "BC5"):
+            bitm_format = "dxt5"
+        elif dx10_fmt in "BC7":
+            bitm_format = "bc7"
+
+    elif pf.flags.rgb_space:
+        bitcount = pf.rgb_bitcount
         bpp = 32
 
         if bitcount == 32:
             channel_order = get_channel_order_by_masks(
-                pixelformat.a_bitmask, pixelformat.r_bitmask,
-                pixelformat.g_bitmask, pixelformat.b_bitmask)
+                pf.a_bitmask, pf.r_bitmask,
+                pf.g_bitmask, pf.b_bitmask)
 
             channel_map = get_channel_swap_mapping("BGRA", channel_order)
-            if pf_flags.has_alpha:
+            if pf.flags.has_alpha:
                 bitm_format = "a8r8g8b8"
             elif bitcount == 32:
                 bitm_format = "x8r8g8b8"
 
         elif bitcount in (15, 16):
             bpp = 16
-            a_mask = pixelformat.a_bitmask
-            r_mask = pixelformat.r_bitmask
-            g_mask = pixelformat.g_bitmask
-            b_mask = pixelformat.b_bitmask
+            a_mask = pf.a_bitmask
+            r_mask = pf.r_bitmask
+            g_mask = pf.g_bitmask
+            b_mask = pf.b_bitmask
             # shift the masks right until they're all the same scale
             while a_mask and not(a_mask&1): a_mask = a_mask >> 1
             while r_mask and not(r_mask&1): r_mask = r_mask >> 1
@@ -187,11 +213,11 @@ def parse_dds_file(filepath):
             elif mask_set == set((15, )):
                 bitm_format = "a4r4g4b4"
 
-    elif pf_flags.alpha_only:
+    elif pf.flags.alpha_only:
         bitm_format = "a8"
 
-    elif pf_flags.luminance:
-        if pf_flags.has_alpha:
+    elif pf.flags.luminance:
+        if pf.flags.has_alpha:
             bitm_format = "a8y8"
         else:
             bitm_format = "y8"
@@ -205,11 +231,12 @@ def parse_dds_file(filepath):
     pixel_counts = []
 
     # make a list of all the pixel counts of all the mipmaps.
-    for mip in range(mip_count):
-        pixel_counts.append(w*h*d)
-        w, h, d = (max(w//2, min_w),
-                   max(h//2, min_h),
-                   max(d//2, min_d))
+    for mip in range(mip_count + 1):
+        mw, mh, md = clip_dimensions(w>>mip, h>>mip, d>>mip)
+        if bitm_format in ("dxt1", "dxt3", "dxt5", "bc7"):
+            mw, mh = clip_dxt_dimensions(mw, mh)
+
+        pixel_counts.append(mw*mh*md)
 
     # see how many mipmaps can fit in the number of pixels in the dds file.
     while True:
@@ -225,13 +252,14 @@ def parse_dds_file(filepath):
                 "Size of the pixel data is too small to read even " +
                 "the fullsize image from. This dds file is malformed.")
 
-    if len(pixel_counts) != mip_count:
+    if len(pixel_counts) != mip_count+1:
         raise ValueError(
             "Mipmap count is too high for the number of pixels stored " +
             "in the dds file. The mipmap count has been reduced from " +
             "%s to %s." % (mip_count, len(pixel_counts)))
 
-    mip_count = len(pixel_counts)
+    # the mip_count in the tag always excludes the toplevel image
+    mip_count = len(pixel_counts) - 1
 
     # choose the texture type
     if caps2.volume:
@@ -240,25 +268,17 @@ def parse_dds_file(filepath):
 
     elif caps2.cubemap:
         # gotta rearrange the mipmaps and cubemap faces
-        image_count = mip_count + 1
-        images = [None]*6*(image_count)
+        images = [None]*6*len(pixel_counts)
         pos = 0
 
         # dds images store all mips for one face next to each
         # other, and then the next set of mips for the next face.
         for face in range(6):
-            w, h, d = width, height, depth
-            for mip in range(image_count):
+            for mip, pixel_count in enumerate(pixel_counts):
                 i = mip*6 + face
 
-                # TODO: Fix this to determine the pixel data size
-                # using arbytmap's size calculation functions
-                image_size = (bpp*w*h*d)//8
-                images[i] = dds_pixels[pos: pos + image_size]
-
-                w, h, d = (max(w//2, min_w),
-                           max(h//2, min_h),
-                           max(d//2, min_d))
+                image_size = (bpp*pixel_count)//8
+                images[i]  = dds_pixels[pos: pos + image_size]
                 pos += image_size
 
         bitm_type = "cubemap"

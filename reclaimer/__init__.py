@@ -12,11 +12,11 @@
 # ##############
 __author__ = "Sigmmma"
 #           YYYY.MM.DD
-__date__ = "2021.03.23"
-__version__ = (2, 11, 2)
+__date__ = "2025.04.13"
+__version__ = (2, 13, 2)
 __website__ = "https://github.com/Sigmmma/reclaimer"
 __all__ = (
-    "animation", "bitmaps", "h2", "h3", "halo_script", "hek", "meta", "misc",
+    "animation", "bitmaps", "h2", "h3", "halo_script", "hek", "jm", "meta", "misc",
     "model", "os_hek", "os_v3_hek", "os_v4_hek", "physics",
     "shadowrun_prototype", "sounds", "strings", "stubbs", "util",
 

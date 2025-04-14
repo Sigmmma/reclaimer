@@ -1,9 +1,10 @@
 import re
 import zlib
 
-from math import log
+from math import log, sqrt
 
 from supyr_struct.util import *
+from supyr_struct.exceptions import DescKeyError
 from reclaimer.util import compression
 from reclaimer.util import geometry
 from reclaimer.util import matrices
@@ -11,18 +12,16 @@ from reclaimer.util import matrices
 
 POS_INF = float("inf")
 NEG_INF = float("-inf")
-RESERVED_WINDOWS_FILENAME_MAP = {}
-INVALID_PATH_CHARS = set([str(i.to_bytes(1, 'little'), 'latin-1')
-                          for i in (tuple(range(32)) +
-                                    tuple(range(128, 256)))]
-                         )
-VALID_NUMERIC_CHARS = frozenset("0123456789")
-for name in ('CON', 'PRN', 'AUX', 'NUL'):
-    RESERVED_WINDOWS_FILENAME_MAP[name] = '_' + name
-for i in range(1, 9):
-    RESERVED_WINDOWS_FILENAME_MAP['COM%s' % i] = '_COM%s' % i
-    RESERVED_WINDOWS_FILENAME_MAP['LPT%s' % i] = '_LPT%s' % i
-INVALID_PATH_CHARS.update('<>:"|?*')
+
+INVALID_PATH_CHARS = set(
+    "".join(str(i.to_bytes(1, 'little'), 'latin-1')
+            for i in (*range(32), *range(128, 256))) + '<>:"|?*'
+    )
+RESERVED_WINDOWS_FILENAME_MAP = {
+    **{name: '_%s' % name for name in ('COM', 'PRN', 'AUX', 'NUL')},
+    **{'COM%s' % i: '_COM%s' %i for i in range(10)},
+    **{'LPT%s' % i: '_LPT%s' %i for i in range(10)},
+    }
 
 
 def is_reserved_tag(tag_index_ref):
@@ -33,6 +32,19 @@ def is_reserved_tag(tag_index_ref):
 def is_protected_tag(tagpath):
     return not tagpath or tagpath in RESERVED_WINDOWS_FILENAME_MAP or (
         not INVALID_PATH_CHARS.isdisjoint(set(tagpath)))
+
+
+def std_dev(*vals):
+    if len(vals) == 1 and hasattr(vals[0], "__iter__"):
+        vals = vals[0]
+
+    ct = len(vals)
+    if ct == 0:
+        return 0
+
+    # calculate standard deviation
+    avg = sum(vals) / ct
+    return sqrt(sum((v - avg)**2 for v in vals) / ct)
 
 
 def is_overlapping_ranges(range_0, range_1):
@@ -46,6 +58,13 @@ def is_overlapping_ranges(range_0, range_1):
 
 def get_is_xbox_map(engine):
     return "xbox" in engine or engine in ("stubbs", "shadowrun_proto")
+
+
+def get_block_max(block, default=0xFFffFFff):
+    try:
+        return block.get_desc('MAX', 'size')
+    except DescKeyError:
+        return default
 
 
 def float_to_str(f, max_sig_figs=7):
@@ -86,10 +105,10 @@ def float_to_str_truncate(f, sig_figs=7):
 # Test showing off the regex can be seen here:
 # https://regex101.com/r/Fpd23n/1
 JM_INT_PARSE_REGEX = re.compile(r'^\s*([-+]?\d+)')
-# https://regex101.com/r/rKvo0t/1
+# https://regex101.com/r/rKvo0t/2
 # TODO: Should this match numbers that start with a . and are just commas?
 # Check atof description.
-JM_FLOAT_PARSE_REGEX = re.compile(r'^\s*([-+]?\d+\.?\d*)')
+JM_FLOAT_PARSE_REGEX = re.compile(r'^\s*([-+]?(?:\.\d+|\d+\.?\d*)(?:[eE][-+]?\d+)?)')
 
 def parse_jm_int(string):
     '''
@@ -126,10 +145,15 @@ def is_valid_ascii_name_str(string):
     return True
 
 def calc_halo_crc32(buffer, offset=None, size=None, crc=0xFFffFFff):
-    if offset is not None:
+    offset = 0 if offset is None else offset
+    if isinstance(buffer, (bytes, bytearray)):
+        size      = len(buffer) if size is None else size
+        tag_bytes = buffer[offset: offset + size]
+    else:
         buffer.seek(offset)
+        tag_bytes = buffer.read(size)
 
-    return zlib.crc32(buffer.read(size), crc ^ 0xFFffFFff) ^ 0xFFffFFff
+    return zlib.crc32(tag_bytes, crc ^ 0xFFffFFff) ^ 0xFFffFFff
 
 NEWLINE_MATCHER = re.compile(r'\r\n|\n\r|\r|\n')
 

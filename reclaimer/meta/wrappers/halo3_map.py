@@ -18,7 +18,6 @@ from reclaimer.h3.constants import h3_tag_class_fcc_to_ext, FORMAT_NAME_MAP
 from reclaimer.h3.util import HALO3_SHARED_MAP_TYPES, get_h3_pixel_bytes_size,\
      int_to_fourcc
 from reclaimer.h3.handler import Halo3Handler
-from reclaimer.h3.constants import h3_tag_class_fcc_to_ext
 from reclaimer.meta.gen3_resources.bitmap import s_tag_d3d_texture_def,\
      s_tag_d3d_texture_interleaved_def
 from reclaimer.meta.wrappers.halo_map import HaloMap
@@ -66,8 +65,6 @@ def get_bitmap_pixel_data(halo_map, bitm_meta, bitmap_index):
 def inject_bitmap_data(halo_map, bitm_meta):
     processed_pixel_data = bitm_meta.processed_pixel_data
     bitmaps = bitm_meta.bitmaps.STEPTREE
-    n_assets = bitm_meta.zone_assets_normal.STEPTREE
-    i_assets = bitm_meta.zone_assets_interleaved.STEPTREE
 
     processed_pixel_data.data = bytearray()
     for i in range(len(bitmaps)):
@@ -184,7 +181,7 @@ class Halo3Map(HaloMap):
         if isinstance(tag_id_or_cls, int):
             tag_id_or_cls &= 0xFFff
             if tag_id_or_cls not in self.root_tags:
-                self.load_root_tags(tag_id_or_cls)
+                self.load_root_tags([tag_id_or_cls])
 
         return self.root_tags.get(tag_id_or_cls)
 
@@ -198,7 +195,7 @@ class Halo3Map(HaloMap):
                 ("scenario", "globals"))
 
         for tag_id in tag_ids_to_load:
-            tag_cls = tag_classes_to_load_by_ids[tag_id]
+            tag_cls = tag_classes_to_load_by_ids.get(tag_id)
             meta = self.get_meta(tag_id)
             if meta:
                 self.root_tags[tag_id & 0xFFff] = meta
@@ -268,7 +265,7 @@ class Halo3Map(HaloMap):
 
         return map_paths
 
-    def get_meta(self, tag_id, reextract=False, **kw):
+    def get_meta(self, tag_id, reextract=False, *a, **kw):
         if tag_id is None or self.map_header.map_type.data > 2:
             # shared maps don't have a tag index
             return

@@ -178,8 +178,11 @@ def find_intersect_point_of_planes(plane_0, plane_1, plane_2, use_double_roundin
 
 
 def plane_from_verts(v0, v1, v2):
-    p_dir = matrices.Ray.cross(matrices.line_from_verts(v1, v0),
-                               matrices.line_from_verts(v1, v2))
+    # NOTE: pylint indicated v0 and v1 are misordered, so they've been swapped.
+    #       this function isn't used in any MEK tooling, so it's preferrable
+    #       to swap it here instead of in matrices.vertex_cross_product
+    p_dir = matrices.Ray.cross(matrices.line_from_verts(v0, v1),
+                               matrices.line_from_verts(v0, v2))
     p_dir.normalize()
     if p_dir.is_zero:
         return None
@@ -202,6 +205,16 @@ class Plane(matrices.FixedLengthList, matrices.Ray):
     def __init__(self, initializer=(0, 0, 1, 0)):
         assert len(initializer) == 4
         list.__init__(self, initializer)
+    def append(self, val):
+        raise ValueError("Cannot append on %s" % type(self))
+    def extend(self, vals):
+        raise ValueError("Cannot extend on %s" % type(self))
+    def insert(self, index, val):
+        raise ValueError("Cannot insert on %s" % type(self))
+    def pop(self):
+        raise ValueError("Cannot pop on %s" % type(self))
+    def __delitem__(self, index):
+        raise ValueError("Cannot delete in %s" % type(self))
     def __eq__(self, other):
         return are_planes_equal(self, other)
     @property
@@ -278,13 +291,13 @@ class EdgeLoopNode(list):
                 edges_by_verts.setdefault(edge[0], []).append(edge)
                 edges_by_verts.setdefault(edge[1], []).append(edge)
 
-            for vert_index in edges_by_verts:
-                self.append(EdgeLoopNode(
-                    vert_index, edges=edges_by_verts))
+            for i in edges_by_verts:
+                self.append(EdgeLoopNode(i, edges=edges_by_verts))
         else:
             for edge in edges.get(self.vert_index, ()):
                 if edge[0] == self.vert_index:
-                    self.append(EdgeLoopNode(edge[1], edges=edges, seen=set(seen)))
+                    self.append(EdgeLoopNode(
+                        edge[1], edges=edges, seen=set(seen)))
 
     def __str__(self, **kw):
         depth = kw.pop("depth", 0)
@@ -345,9 +358,8 @@ class EdgeLoopNode(list):
         return depth
 
 
-def planes_to_verts_and_edge_loops(planes, center, plane_dir=True, max_plane_ct=32,
+def planes_to_verts_and_edge_loops(planes, plane_dir=True, max_plane_ct=32,
                                    use_double_rounding=False, round_adjust=0):
-    assert len(center) == 3
     # make a set out of the planes to remove duplicates
     planes = list(set(tuple(Plane(p).normalized) for p in planes))
     indices_by_planes = {p: set() for p in planes}
@@ -371,7 +383,7 @@ def planes_to_verts_and_edge_loops(planes, center, plane_dir=True, max_plane_ct=
             p1 = planes[j]
             p1_indices = indices_by_planes[p1]
             for k in range(len(planes)):
-                if k == i or k == j: continue
+                if k in (i, j): continue
                 p2 = planes[k]
                 p2_indices = indices_by_planes[p2]
 
